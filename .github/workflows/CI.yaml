@@ -1,0 +1,43 @@
+name: Event Connect - CI
+on: [pull_request]
+jobs:
+  event-connect-build:
+    env:
+      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+    concurrency:
+      group: event-connect-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    name: Build and Test
+    steps:
+      - name: Set up GraalVM
+        uses: DeLaGuardo/setup-graalvm@4.0
+        with:
+          graalvm: '21.1.0'
+          java: 'java11'
+      - name: Install native-image Binary
+        shell: bash
+        run: gu install native-image
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache Maven Packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+      - name: Compile and Validate Formating
+        shell: bash
+        run: mvn -Dmaven.test.skip=true -Pvalidate-formatting package
+      - name: Run Test Suite
+        shell: bash
+        run: mvn test
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1.0.10
+        with:
+          skip_publishing: true
+          check_name: Test Results
+          fail_on_test_failures: true
+          fail_if_no_tests: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
