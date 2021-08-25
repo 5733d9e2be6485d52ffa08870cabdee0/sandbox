@@ -13,8 +13,23 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>runner</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <name>Event Connect :: Runner</name>
 
   <dependencies>
+
+    <dependency>
+      <groupId>com.redhat.developer</groupId>
+      <artifactId>manager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.developer</groupId>
+      <artifactId>shard</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.developer</groupId>
+      <artifactId>executor</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>

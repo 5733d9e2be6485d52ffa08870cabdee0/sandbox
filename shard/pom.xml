@@ -13,6 +13,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>shard</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <name>Event Connect :: Shard</name>
 
   <dependencies>
     <dependency>
@@ -22,6 +23,18 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
