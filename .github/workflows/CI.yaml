@@ -37,4 +37,3 @@ jobs:
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
-          github_token: ${{ secrets.GITHUB_TOKEN }}
