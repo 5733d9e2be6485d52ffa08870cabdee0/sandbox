@@ -16,9 +16,6 @@ jobs:
         with:
           graalvm: '21.1.0'
           java: 'java11'
-      - name: Install native-image Binary
-        shell: bash
-        run: gu install native-image
       - name: Checkout
         uses: actions/checkout@v2
       - name: Cache Maven Packages
@@ -31,7 +28,7 @@ jobs:
         run: mvn -Dmaven.test.skip=true -Pvalidate-formatting package
       - name: Run Test Suite
         shell: bash
-        run: mvn test
+        run: mvn verify
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
