@@ -4,26 +4,14 @@
   <parent>
     <groupId>com.redhat.developer</groupId>
     <artifactId>build-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.redhat.developer</groupId>
   <artifactId>executor</artifactId>
-  <version>0.0.1</version>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>${quarkus.platform.group-id}</groupId>
-        <artifactId>${quarkus.platform.artifact-id}</artifactId>
-        <version>${quarkus.platform.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <version>0.0.1-SNAPSHOT</version>
 
   <dependencies>
     <dependency>

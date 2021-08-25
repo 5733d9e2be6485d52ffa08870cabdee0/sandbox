@@ -4,7 +4,7 @@
   <parent>
     <artifactId>event-connect</artifactId>
     <groupId>com.redhat.developer</groupId>
-    <version>0.0.1</version>
+    <version>0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -33,7 +33,7 @@
     <version.compiler.plugin>3.8.1</version.compiler.plugin>
     <version.surefire.plugin>2.22.2</version.surefire.plugin> <!-- minimum required by JUnit 5 -->
     <version.install.plugin>2.5.2</version.install.plugin>
-    <kogito.version>1.10.0.Final</kogito.version>
+    <kogito.formatter.version>1.10.0.Final</kogito.formatter.version>
     <formatter.plugin.version>2.13.0</formatter.plugin.version>
     <impsort.plugin.version>1.5.0</impsort.plugin.version>
 
@@ -53,7 +53,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
 
   <build>
     <pluginManagement>
@@ -153,7 +152,7 @@
             <dependency>
               <artifactId>kogito-ide-config</artifactId>
               <groupId>org.kie.kogito</groupId>
-              <version>${kogito.version}</version>
+              <version>${kogito.formatter.version}</version>
             </dependency>
           </dependencies>
           <configuration>
