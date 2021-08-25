@@ -29,7 +29,6 @@
       <groupId>com.redhat.developer</groupId>
       <artifactId>executor</artifactId>
     </dependency>
-
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
