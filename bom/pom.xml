@@ -12,7 +12,7 @@
 
   <artifactId>bom</artifactId>
   <packaging>pom</packaging>
-  <name>Platform :: BOM</name>
+  <name>Event Connect :: BOM</name>
 
   <dependencyManagement>
     <dependencies>

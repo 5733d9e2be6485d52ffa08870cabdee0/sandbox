@@ -11,7 +11,7 @@
   <packaging>pom</packaging>
 
   <artifactId>build-parent</artifactId>
-  <name>Event Connect build BOM</name>
+  <name>Event Connect :: Build Parent</name>
   <description>Event Connect Dependency Management Project BOM</description>
 
   <properties>
@@ -48,6 +48,13 @@
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
         <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>bom</artifactId>
+        <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
