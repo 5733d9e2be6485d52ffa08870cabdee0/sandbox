@@ -87,6 +87,42 @@
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
+
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>ingress</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>ingress</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>ingress</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>infra</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>infra</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.developer</groupId>
+        <artifactId>infra</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

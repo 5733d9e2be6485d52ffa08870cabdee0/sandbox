@@ -1,7 +1,7 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>com.redhat.developer</groupId>
     <artifactId>build-parent</artifactId>
@@ -11,9 +11,9 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.redhat.developer</groupId>
-  <artifactId>shard</artifactId>
+  <artifactId>ingress</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Shard</name>
+  <name>Event Connect :: Ingress</name>
 
   <dependencies>
     <dependency>
@@ -22,35 +22,29 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+      <artifactId>quarkus-resteasy</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-scheduler</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-mutiny-vertx-web-client</artifactId>
+      <artifactId>quarkus-resteasy-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-vertx</artifactId>
+      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
     </dependency>
-
-    <!-- Otherwise Scheduler does not work with the runner..... ??????   -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <!-- Otherwise api are not included in the runner...?????? -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-orm-panache</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.redhat.developer</groupId>
       <artifactId>infra</artifactId>
-    </dependency>
-
-    <!-- TODO: remove after we move to k8s implementation-->
-    <dependency>
-      <groupId>com.redhat.developer</groupId>
-      <artifactId>ingress</artifactId>
     </dependency>
 
     <dependency>
