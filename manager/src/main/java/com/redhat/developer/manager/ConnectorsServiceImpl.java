@@ -33,7 +33,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         connector.setStatus(ConnectorStatus.REQUESTED);
         connector.setCustomerId(customerId);
         connectorDAO.persist(connector);
-        LOGGER.info(String.format("[manager] Connector with id %s has been created", connector.getId()));
+        LOGGER.info("[manager] Connector with id '{}' has been created for customer '{}'", connector.getId(), connector.getCustomerId());
         return connector;
     }
 
@@ -52,7 +52,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional
     public Connector updateConnector(Connector connector) {
         connectorDAO.getEntityManager().merge(connector);
-        LOGGER.info(String.format("[manager] Connector with id %s has been updated", connector.getId()));
+        LOGGER.info("[manager] Connector with id '{}' has been updated for customer '{}'", connector.getId(), connector.getCustomerId());
         return connector;
     }
 }

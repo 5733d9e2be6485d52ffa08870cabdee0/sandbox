@@ -38,7 +38,7 @@ public class ShardConnectorsSyncAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response notifyDeployment(ConnectorDTO dto) {
-        LOGGER.info(String.format("[manager] shard wants to update the connector with id %s with the status %s", dto.getId(), dto.getStatus()));
+        LOGGER.info("[manager] shard wants to update the connector with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         connectorsService.updateConnector(Connector.fromDTO(dto));
         return Response.ok().build();
     }

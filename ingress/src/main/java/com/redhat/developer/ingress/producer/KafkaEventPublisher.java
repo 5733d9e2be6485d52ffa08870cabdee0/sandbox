@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.developer.ingress.api.exceptions.IngressRuntimeException;
+import com.redhat.developer.ingress.api.exceptions.mappers.IngressExceptionMapper;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.logging.Logger;
@@ -21,15 +23,17 @@ public class KafkaEventPublisher {
     @Channel("events-out")
     Emitter<String> emitter;
 
-    public boolean sendEvent(CloudEvent cloudEvent) {
+    public void sendEvent(CloudEvent cloudEvent) {
         logger.info("Sending event to event queue");
-        Optional<String> serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
-        if (!serializedCloudEvent.isPresent()) {
-            logger.info("Sending event to event queue - FAILED TO SERIALIZE");
-            return false;
+        String serializedCloudEvent;
+        try {
+            serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
         }
-        emitter.send(serializedCloudEvent.get());
+        catch(RuntimeException e){
+            throw new IngressRuntimeException("Failed to encode cloud event", e);
+        }
+
+        emitter.send(serializedCloudEvent);
         logger.info("Sending event to event queue - SUCCESS");
-        return true;
     }
 }

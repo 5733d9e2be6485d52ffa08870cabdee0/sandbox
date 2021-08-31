@@ -7,8 +7,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 public class ManagerMockResource implements QuarkusTestResourceLifecycleManager {
 
     WireMockServer wireMockServer;

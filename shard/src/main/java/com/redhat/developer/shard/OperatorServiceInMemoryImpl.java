@@ -32,22 +32,23 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
     @Override
     public ConnectorDTO createConnectorDeployment(ConnectorDTO connector) {
         connectors.add(connector);
-        LOGGER.info("[shard] Request deployment of Connector with ID " + connector.getId() + "... MOCKED!");
+        LOGGER.info("[shard] Processing deployment of Connector with id '{}' and name '{}' for customer '{}'",
+                    connector.getId(), connector.getName(), connector.getCustomerId());
         return connector;
     }
 
     // TODO: replace with operator reconcile loop and logic
     @Scheduled(every = "30s")
     void reconcileLoopMock() {
-        LOGGER.info("[shard] Connector reconcile loop mock wakes up");
+        LOGGER.debug("[shard] Connector reconcile loop mock wakes up");
         for (ConnectorDTO dto : connectors.stream().filter(x -> x.getStatus().equals(ConnectorStatusDTO.PROVISIONING)).collect(Collectors.toList())) {
-            LOGGER.info("[shard] Updating connector with id " + dto.getId());
+            LOGGER.info("[shard] Updating connector with id '{}'", dto.getId());
             String endpoint = ingressService.deploy(dto.getName()); // TODO: replace with CR creation and fetch endpoint info from CRD
             dto.setStatus(ConnectorStatusDTO.AVAILABLE);
             dto.setEndpoint(endpoint);
             managerSyncService.notifyConnectorStatusChange(dto).subscribe().with(
-                    success -> LOGGER.info("[shard] Updating connector with id " + dto.getId() + " done"),
-                    failure -> LOGGER.warn("[shard] Updating connector with id " + dto.getId() + " FAILED"));
+                    success -> LOGGER.info("[shard] Updating connector with id '{}' done", dto.getId()),
+                    failure -> LOGGER.warn("[shard] Updating connector with id '{}' FAILED", dto.getId()));
         }
     }
 }

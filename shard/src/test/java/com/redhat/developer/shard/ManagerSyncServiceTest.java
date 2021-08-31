@@ -32,7 +32,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 @QuarkusTest
-@QuarkusTestResource(ManagerMockResource.class)
+@QuarkusTestResource(restrictToAnnotatedClass = true, value = ManagerMockResource.class)
 public class ManagerSyncServiceTest {
 
     @Inject
@@ -58,6 +58,19 @@ public class ManagerSyncServiceTest {
         addConnectorUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessConnectorsFromManager().await().atMost(Duration.ofSeconds(5));
+
+        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testNotifyConnectorStatusChange() throws InterruptedException {
+        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatusDTO.REQUESTED);
+        stubConnectorUpdate();
+
+        CountDownLatch latch = new CountDownLatch(1); // Two updates to the manager are expected
+        addConnectorUpdateRequestListener(latch);
+
+        managerSyncService.notifyConnectorStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
     }

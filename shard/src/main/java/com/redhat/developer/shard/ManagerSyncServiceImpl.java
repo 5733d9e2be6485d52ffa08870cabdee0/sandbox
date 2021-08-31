@@ -55,7 +55,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyConnectorStatusChange(ConnectorDTO connectorDTO) {
-        LOGGER.info("[shard] Notifying manager about the new status of the connector " + connectorDTO.getId());
+        LOGGER.info("[shard] Notifying manager about the new status of the connector '{}'", connectorDTO.getId());
         return webClient.post("/shard/connectors/toDeploy").sendJson(connectorDTO);
     }
 
