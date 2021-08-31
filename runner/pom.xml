@@ -16,7 +16,6 @@
   <name>Event Connect :: Runner</name>
 
   <dependencies>
-
     <dependency>
       <groupId>com.redhat.developer</groupId>
       <artifactId>manager</artifactId>
