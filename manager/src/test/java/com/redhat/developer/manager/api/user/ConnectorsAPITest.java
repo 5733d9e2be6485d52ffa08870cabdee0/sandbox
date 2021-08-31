@@ -3,46 +3,49 @@ package com.redhat.developer.manager.api.user;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.GenericType;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
+import com.redhat.developer.manager.utils.TestUtils;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.common.mapper.TypeRef;
 
 @QuarkusTest
 public class ConnectorsAPITest {
-
     @Inject
-    ConnectorsAPI connectorsAPI;
+    DatabaseManagerUtils databaseManagerUtils;
+
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
 
     @Test
-    @TestTransaction
     public void testGetEmptyConnectors() {
-        List<ConnectorDTO> response = connectorsAPI.getConnectors().readEntity(new GenericType<List<ConnectorDTO>>() {
+        List<ConnectorDTO> response = TestUtils.getConnectors().as(new TypeRef<List<ConnectorDTO>>() {
         });
         Assertions.assertEquals(0, response.size());
     }
 
     @Test
-    @TestTransaction
     public void createConnector() {
-        int statusCode = connectorsAPI.createConnector(new ConnectorRequest("test")).getStatus();
-
-        Assertions.assertEquals(HttpResponseStatus.OK.code(), statusCode);
+        TestUtils.createConnector(new ConnectorRequest("test"))
+                .then().statusCode(200);
     }
 
     @Test
-    @TestTransaction
     public void testCreateAndGetConnector() {
-        connectorsAPI.createConnector(new ConnectorRequest("test")).getStatus();
-        List<ConnectorDTO> response = connectorsAPI.getConnectors().readEntity(new GenericType<List<ConnectorDTO>>() {
+        TestUtils.createConnector(new ConnectorRequest("test"))
+                .then().statusCode(200);
+
+        List<ConnectorDTO> response = TestUtils.getConnectors().as(new TypeRef<List<ConnectorDTO>>() {
         });
 
         Assertions.assertEquals(1, response.size());
@@ -51,5 +54,13 @@ public class ConnectorsAPITest {
         Assertions.assertEquals("jrota", connector.getCustomerId());
         Assertions.assertEquals(ConnectorStatusDTO.REQUESTED, connector.getStatus());
         Assertions.assertNull(connector.getEndpoint());
+    }
+
+    @Test
+    public void testAlreadyExistingConnector() {
+        TestUtils.createConnector(new ConnectorRequest("test"))
+                .then().statusCode(200);
+        TestUtils.createConnector(new ConnectorRequest("test"))
+                .then().statusCode(400);
     }
 }

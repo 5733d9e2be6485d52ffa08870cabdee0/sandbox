@@ -8,4 +8,6 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 
 public interface ManagerSyncService {
     Uni<HttpResponse<Buffer>> notifyConnectorStatusChange(ConnectorDTO connectorDTO);
+
+    Uni<Object> fetchAndProcessConnectorsFromManager();
 }

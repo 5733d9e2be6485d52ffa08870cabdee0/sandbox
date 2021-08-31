@@ -3,42 +3,43 @@ package com.redhat.developer.manager.api.internal;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.GenericType;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
-import com.redhat.developer.manager.api.user.ConnectorsAPI;
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
+import com.redhat.developer.manager.utils.TestUtils;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.common.mapper.TypeRef;
 
 @QuarkusTest
 public class ShardConnectorsSyncAPITest {
 
     @Inject
-    ConnectorsAPI connectorsAPI;
+    DatabaseManagerUtils databaseManagerUtils;
 
-    @Inject
-    ShardConnectorsSyncAPI shardConnectorsSyncAPI;
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
 
     @Test
-    @TestTransaction
     public void testGetEmptyConnectorsToDeploy() {
-        List<ConnectorDTO> response = shardConnectorsSyncAPI.getConnectorsToDeploy().readEntity(new GenericType<List<ConnectorDTO>>() {
+        List<ConnectorDTO> response = TestUtils.getConnectorsToDeploy().as(new TypeRef<List<ConnectorDTO>>() {
         });
         Assertions.assertEquals(0, response.size());
     }
 
     @Test
-    @TestTransaction
     public void testGetConnectorsToDeploy() {
-        connectorsAPI.createConnector(new ConnectorRequest("test")).getStatus();
+        TestUtils.createConnector(new ConnectorRequest("test"));
 
-        List<ConnectorDTO> response = shardConnectorsSyncAPI.getConnectorsToDeploy().readEntity(new GenericType<List<ConnectorDTO>>() {
+        List<ConnectorDTO> response = TestUtils.getConnectorsToDeploy().as(new TypeRef<List<ConnectorDTO>>() {
         });
 
         Assertions.assertEquals(1, response.size());
@@ -50,20 +51,19 @@ public class ShardConnectorsSyncAPITest {
     }
 
     @Test
-    @TestTransaction
     public void testNotifyDeployment() {
-        connectorsAPI.createConnector(new ConnectorRequest("test")).getStatus();
+        TestUtils.createConnector(new ConnectorRequest("test"));
 
-        List<ConnectorDTO> connectorsToDeploy = shardConnectorsSyncAPI.getConnectorsToDeploy().readEntity(new GenericType<List<ConnectorDTO>>() {
+        List<ConnectorDTO> connectorsToDeploy = TestUtils.getConnectorsToDeploy().as(new TypeRef<List<ConnectorDTO>>() {
         });
 
         Assertions.assertEquals(1, connectorsToDeploy.size());
 
         ConnectorDTO connector = connectorsToDeploy.get(0);
         connector.setStatus(ConnectorStatusDTO.PROVISIONING);
-        shardConnectorsSyncAPI.notifyDeployment(connector);
+        TestUtils.updateConnector(connector).then().statusCode(200);
 
-        connectorsToDeploy = shardConnectorsSyncAPI.getConnectorsToDeploy().readEntity(new GenericType<List<ConnectorDTO>>() {
+        connectorsToDeploy = TestUtils.getConnectorsToDeploy().as(new TypeRef<List<ConnectorDTO>>() {
         });
 
         Assertions.assertEquals(0, connectorsToDeploy.size());

@@ -5,12 +5,13 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.models.Connector;
 import com.redhat.developer.manager.models.ConnectorStatus;
 
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -19,8 +20,15 @@ public class ConnectorDAOTest {
     @Inject
     ConnectorDAO connectorDAO;
 
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
+
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
+
     @Test
-    @TestTransaction
     public void testFindByStatus() {
         Connector connector = buildConnector();
         connectorDAO.persist(connector);
@@ -36,7 +44,6 @@ public class ConnectorDAOTest {
     }
 
     @Test
-    @TestTransaction
     public void testFindByNameAndCustomerId() {
         Connector connector = buildConnector();
         connectorDAO.persist(connector);

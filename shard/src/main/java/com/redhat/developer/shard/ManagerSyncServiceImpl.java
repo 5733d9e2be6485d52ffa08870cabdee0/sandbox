@@ -48,7 +48,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Scheduled(every = "20s")
     void syncConnectors() {
         LOGGER.info("[Shard] wakes up to get connectors to deploy");
-        fetchAndCreate().subscribe().with(
+        fetchAndProcessConnectorsFromManager().subscribe().with(
                 success -> LOGGER.info("[shard] has processed all the connectors"),
                 failure -> LOGGER.warn("[shard] something went wrong during the process of the connectors to be deployed"));
     }
@@ -59,7 +59,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         return webClient.post("/shard/connectors/toDeploy").sendJson(connectorDTO);
     }
 
-    private Uni<Object> fetchAndCreate() {
+    @Override
+    public Uni<Object> fetchAndProcessConnectorsFromManager() {
         return webClient.get("/shard/connectors/toDeploy").send()
                 .onItem().transform(x -> deserializeConnectors(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(

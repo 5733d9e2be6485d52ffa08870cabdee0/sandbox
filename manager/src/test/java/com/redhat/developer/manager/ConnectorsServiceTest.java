@@ -4,14 +4,15 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.manager.models.Connector;
 import com.redhat.developer.manager.models.ConnectorStatus;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 
-import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
@@ -20,22 +21,27 @@ public class ConnectorsServiceTest {
     @Inject
     ConnectorsService connectorsService;
 
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
+
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
+
     @Test
-    @TestTransaction
     public void testGetEmptyConnectorsToDeploy() {
         List<Connector> connectors = connectorsService.getConnectorsToDeploy();
         Assertions.assertEquals(0, connectors.size());
     }
 
     @Test
-    @TestTransaction
     public void testGetEmptyConnectors() {
         List<Connector> connectors = connectorsService.getConnectors("jrota");
         Assertions.assertEquals(0, connectors.size());
     }
 
     @Test
-    @TestTransaction
     public void testGetConnectors() {
         ConnectorRequest request = new ConnectorRequest("test");
         connectorsService.createConnector("jrota", request);
@@ -49,7 +55,6 @@ public class ConnectorsServiceTest {
     }
 
     @Test
-    @TestTransaction
     public void testCreateConnector() {
         ConnectorRequest request = new ConnectorRequest("test");
         connectorsService.createConnector("jrota", request);
@@ -64,7 +69,6 @@ public class ConnectorsServiceTest {
     }
 
     @Test
-    @TestTransaction
     public void testUpdateConnectorStatus() {
         ConnectorRequest request = new ConnectorRequest("test");
         connectorsService.createConnector("jrota", request);
