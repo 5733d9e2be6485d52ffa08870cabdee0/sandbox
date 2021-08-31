@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.developer.ingress.IngressService;
-import org.eclipse.microprofile.context.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.ingress.IngressService;
 
 import io.quarkus.scheduler.Scheduled;
 

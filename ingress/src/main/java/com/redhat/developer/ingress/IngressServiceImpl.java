@@ -45,7 +45,7 @@ public class IngressServiceImpl implements IngressService {
     }
 
     @Override
-    public boolean undeploy(String name){
+    public boolean undeploy(String name) {
         return deployments.remove(name);
     }
 }
