@@ -28,7 +28,7 @@ public class IngressAPI {
     @Path("/events/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response notifyDeployment(@PathParam("name") @NotNull String name, @NotNull JsonNode event) {
+    public Response publishEvent(@PathParam("name") @NotNull String name, @NotNull JsonNode event) {
         LOGGER.info(String.format("[ingress] new event has been uploaded to endpoint /events/" + name));
         ingressService.processEvent(name, event);
         return Response.ok().build();

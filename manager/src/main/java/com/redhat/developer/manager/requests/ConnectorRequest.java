@@ -8,6 +8,13 @@ public class ConnectorRequest {
     @JsonProperty("name")
     private String name;
 
+    public ConnectorRequest() {
+    }
+
+    public ConnectorRequest(String name) {
+        this.name = name;
+    }
+
     public Connector toEntity() {
         Connector connector = new Connector(name);
         return connector;

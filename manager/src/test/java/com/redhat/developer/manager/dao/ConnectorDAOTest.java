@@ -1,0 +1,63 @@
+package com.redhat.developer.manager.dao;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import com.redhat.developer.manager.models.Connector;
+import com.redhat.developer.manager.models.ConnectorStatus;
+
+import io.quarkus.test.TestTransaction;
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
+public class ConnectorDAOTest {
+
+    @Inject
+    ConnectorDAO connectorDAO;
+
+    @Test
+    @TestTransaction
+    public void testFindByStatus() {
+        Connector connector = buildConnector();
+        connectorDAO.persist(connector);
+
+        List<Connector> retrievedConnectors = connectorDAO.findByStatus(ConnectorStatus.PROVISIONING);
+        Assertions.assertEquals(0, retrievedConnectors.size());
+
+        retrievedConnectors = connectorDAO.findByStatus(ConnectorStatus.AVAILABLE);
+        Assertions.assertEquals(0, retrievedConnectors.size());
+
+        retrievedConnectors = connectorDAO.findByStatus(ConnectorStatus.REQUESTED);
+        Assertions.assertEquals(1, retrievedConnectors.size());
+    }
+
+    @Test
+    @TestTransaction
+    public void testFindByNameAndCustomerId() {
+        Connector connector = buildConnector();
+        connectorDAO.persist(connector);
+
+        List<Connector> retrievedConnectors = connectorDAO.findByNameAndCustomerId("not-the-id", "jrota");
+        Assertions.assertEquals(0, retrievedConnectors.size());
+
+        retrievedConnectors = connectorDAO.findByNameAndCustomerId("myConnector", "not-the-customer-id");
+        Assertions.assertEquals(0, retrievedConnectors.size());
+
+        retrievedConnectors = connectorDAO.findByNameAndCustomerId("myConnector", "jrota");
+        Assertions.assertEquals(1, retrievedConnectors.size());
+    }
+
+    private Connector buildConnector() {
+        Connector connector = new Connector();
+        connector.setId("myId");
+        connector.setCustomerId("jrota");
+        connector.setName("myConnector");
+        connector.setStatus(ConnectorStatus.REQUESTED);
+
+        return connector;
+    }
+}

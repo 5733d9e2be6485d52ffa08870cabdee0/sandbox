@@ -1,6 +1,7 @@
 package com.redhat.developer.manager.api.user;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -29,7 +30,7 @@ public class ConnectorsAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConnectors() {
         List<Connector> connectors = connectorsService.getConnectors(customerIdResolver.resolveCustomerId());
-        return Response.ok(connectors).build();
+        return Response.ok(connectors.stream().map(Connector::toDTO).collect(Collectors.toList())).build();
     }
 
     @POST
@@ -37,7 +38,7 @@ public class ConnectorsAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createConnector(ConnectorRequest connectorRequest) {
         Connector connector = connectorsService.createConnector(customerIdResolver.resolveCustomerId(), connectorRequest);
-        return Response.ok(connector).build();
+        return Response.ok(connector.toDTO()).build();
     }
 
 }
