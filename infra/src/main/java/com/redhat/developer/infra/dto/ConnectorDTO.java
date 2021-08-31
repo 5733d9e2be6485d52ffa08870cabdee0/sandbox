@@ -18,6 +18,17 @@ public class ConnectorDTO {
     @JsonProperty("status")
     private ConnectorStatusDTO status;
 
+    public ConnectorDTO() {
+    }
+
+    public ConnectorDTO(String id, String name, String endpoint, String customerId, ConnectorStatusDTO status) {
+        this.id = id;
+        this.name = name;
+        this.endpoint = endpoint;
+        this.customerId = customerId;
+        this.status = status;
+    }
+
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }

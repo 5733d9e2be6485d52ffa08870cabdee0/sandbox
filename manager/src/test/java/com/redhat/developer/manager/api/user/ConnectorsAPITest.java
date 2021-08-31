@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.manager.requests.ConnectorRequest;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
-import com.redhat.developer.manager.requests.ConnectorRequest;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;

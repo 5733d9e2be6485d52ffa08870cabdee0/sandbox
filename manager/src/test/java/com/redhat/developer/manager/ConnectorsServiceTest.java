@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.developer.manager.models.Connector;
 import com.redhat.developer.manager.models.ConnectorStatus;
 import com.redhat.developer.manager.requests.ConnectorRequest;
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
 
