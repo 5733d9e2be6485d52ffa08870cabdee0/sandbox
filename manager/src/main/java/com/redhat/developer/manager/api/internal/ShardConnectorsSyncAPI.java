@@ -20,6 +20,7 @@ import com.redhat.developer.manager.models.Connector;
 
 @Path("/shard/connectors")
 public class ShardConnectorsSyncAPI {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardConnectorsSyncAPI.class);
 
     @Inject

@@ -10,6 +10,7 @@ import io.restassured.response.Response;
 import static io.restassured.RestAssured.given;
 
 public class TestUtils {
+
     public static Response getConnectors() {
         return given()
                 .filter(new ResponseLoggingFilter())

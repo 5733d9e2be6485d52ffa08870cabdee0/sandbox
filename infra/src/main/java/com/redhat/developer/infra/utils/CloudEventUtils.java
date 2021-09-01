@@ -1,10 +1,6 @@
 package com.redhat.developer.infra.utils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +19,11 @@ public class CloudEventUtils {
     private static final Logger LOG = LoggerFactory.getLogger(CloudEventUtils.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(JsonFormat.getCloudEventJacksonModule());
 
-    public static CloudEvent build(String id, String topic, URI source, String type, String subject, JsonNode data) {
+    public static CloudEvent build(String id, String topic, URI source, String subject, JsonNode data) {
         CloudEventBuilder builder = CloudEventBuilder.v1()
                 .withId(id)
                 .withSource(source)
-                .withType(type)
+                .withType(JsonNode.class.getName())
                 .withExtension("topic", topic)
                 .withData(JsonCloudEventData.wrap(data));
 

@@ -27,6 +27,7 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
 public class ManagerSyncServiceImpl implements ManagerSyncService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
 
     @ConfigProperty(name = "event-connect.manager.url")

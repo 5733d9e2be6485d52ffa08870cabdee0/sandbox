@@ -19,6 +19,7 @@ import io.restassured.common.mapper.TypeRef;
 
 @QuarkusTest
 public class ConnectorsAPITest {
+
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 

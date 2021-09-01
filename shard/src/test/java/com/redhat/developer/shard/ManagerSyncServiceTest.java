@@ -26,10 +26,14 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 
 @QuarkusTest
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = ManagerMockResource.class)
@@ -53,6 +57,7 @@ public class ManagerSyncServiceTest {
         connectorDTOs.add(new ConnectorDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", ConnectorStatusDTO.REQUESTED));
         stubConnectorsToDeploy(connectorDTOs);
         stubConnectorUpdate();
+        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addConnectorUpdateRequestListener(latch);
@@ -60,12 +65,16 @@ public class ManagerSyncServiceTest {
         managerSyncService.fetchAndProcessConnectorsFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        verify(postRequestedFor(urlEqualTo("/shard/connectors/toDeploy"))
+                .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
     public void testNotifyConnectorStatusChange() throws InterruptedException {
-        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatusDTO.REQUESTED);
+        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatusDTO.PROVISIONING);
         stubConnectorUpdate();
+        String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(1); // Two updates to the manager are expected
         addConnectorUpdateRequestListener(latch);
@@ -73,6 +82,9 @@ public class ManagerSyncServiceTest {
         managerSyncService.notifyConnectorStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        verify(postRequestedFor(urlEqualTo("/shard/connectors/toDeploy"))
+                .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     private void stubConnectorsToDeploy(List<ConnectorDTO> connectorDTOs) throws JsonProcessingException {

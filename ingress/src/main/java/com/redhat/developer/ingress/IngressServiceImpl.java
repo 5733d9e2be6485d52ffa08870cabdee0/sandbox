@@ -8,19 +8,19 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.jboss.logging.Logger;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.developer.infra.utils.CloudEventUtils;
+import com.redhat.developer.ingress.api.exceptions.IngressRuntimeException;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
 
 @ApplicationScoped
 public class IngressServiceImpl implements IngressService {
-    private final Logger LOGGER = Logger.getLogger(IngressServiceImpl.class);
 
-    private List<String> deployments = new ArrayList<>();
+    private static final URI URI_PRODUCER = URI.create("ingreservice/IngressServiceImpl");
+
+    private final List<String> deployments = new ArrayList<>();
 
     @Inject
     KafkaEventPublisher kafkaEventPublisher;
@@ -29,11 +29,11 @@ public class IngressServiceImpl implements IngressService {
     public void processEvent(String name, JsonNode event) {
         //TODO: remove after we move to k8s
         if (!deployments.contains(name)) {
-            throw new RuntimeException("Ingress with name " + name + " is not deployed.");
+            throw new IngressRuntimeException("Ingress with name " + name + " is not deployed.");
         }
 
         CloudEvent cloudEvent = CloudEventUtils.build(UUID.randomUUID().toString(), name,
-                URI.create("http://localhost"), JsonNode.class.getName(), "subject", event);
+                URI_PRODUCER, "subject", event);
         kafkaEventPublisher.sendEvent(cloudEvent);
     }
 

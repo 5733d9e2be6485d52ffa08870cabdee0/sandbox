@@ -18,6 +18,7 @@ import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
 public class OperatorServiceInMemoryImpl implements OperatorService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OperatorServiceInMemoryImpl.class);
 
     private List<ConnectorDTO> connectors = new ArrayList<>();
@@ -33,7 +34,7 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
     public ConnectorDTO createConnectorDeployment(ConnectorDTO connector) {
         connectors.add(connector);
         LOGGER.info("[shard] Processing deployment of Connector with id '{}' and name '{}' for customer '{}'",
-                    connector.getId(), connector.getName(), connector.getCustomerId());
+                connector.getId(), connector.getName(), connector.getCustomerId());
         return connector;
     }
 

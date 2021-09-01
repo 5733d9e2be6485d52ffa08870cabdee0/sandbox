@@ -19,6 +19,7 @@ import com.redhat.developer.ingress.IngressService;
 //TODO: when we move to k8s, revisit the endpoint name
 @Path("/ingress")
 public class IngressAPI {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IngressAPI.class);
 
     @Inject
@@ -29,7 +30,7 @@ public class IngressAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@PathParam("name") @NotNull String name, @NotNull JsonNode event) {
-        LOGGER.info(String.format("[ingress] new event has been uploaded to endpoint /events/" + name));
+        LOGGER.debug("[ingress] new event has been uploaded to endpoint /ingress/events/{}", name);
         ingressService.processEvent(name, event);
         return Response.ok().build();
     }

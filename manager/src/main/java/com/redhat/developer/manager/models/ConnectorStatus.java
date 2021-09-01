@@ -3,6 +3,7 @@ package com.redhat.developer.manager.models;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
 
 public enum ConnectorStatus {
+
     REQUESTED("REQUESTED"),
     PROVISIONING("PROVISIONING"),
     AVAILABLE("AVAILABLE");
