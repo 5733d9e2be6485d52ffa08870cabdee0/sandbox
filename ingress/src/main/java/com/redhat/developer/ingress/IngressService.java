@@ -1,10 +1,10 @@
 package com.redhat.developer.ingress;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.cloudevents.CloudEvent;
 
 public interface IngressService {
 
-    void processEvent(String name, JsonNode event);
+    void processEvent(String name, CloudEvent event);
 
     // TODO: remove after we move to k8s
     String deploy(String name);

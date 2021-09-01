@@ -13,8 +13,9 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.developer.ingress.IngressService;
+
+import io.cloudevents.CloudEvent;
 
 //TODO: when we move to k8s, revisit the endpoint name
 @Path("/ingress")
@@ -29,7 +30,7 @@ public class IngressAPI {
     @Path("/events/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response publishEvent(@PathParam("name") @NotNull String name, @NotNull JsonNode event) {
+    public Response publishEvent(@PathParam("name") @NotNull String name, @NotNull CloudEvent event) {
         LOGGER.debug("[ingress] new event has been uploaded to endpoint /ingress/events/{}", name);
         ingressService.processEvent(name, event);
         return Response.ok().build();

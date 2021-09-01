@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.ingress.api.exceptions.IngressRuntimeException;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 
@@ -39,9 +38,8 @@ public class IngressServiceTest {
 
     @Test
     public void testSendEvent() throws JsonProcessingException {
-        String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
         ingressService.deploy("topicName"); // TODO: remove after we move to k8s
-        ingressService.processEvent("topicName", new ObjectMapper().readTree(jsonString));
+        ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent());
 
         verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
         ingressService.undeploy("topicName");
@@ -50,9 +48,8 @@ public class IngressServiceTest {
     @Test
     // TODO: remove after we move to k8s
     public void testSendEventToUndeployedInstance() throws JsonProcessingException {
-        String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
         Assertions.assertThrows(IngressRuntimeException.class,
-                () -> ingressService.processEvent("topicName", new ObjectMapper().readTree(jsonString)));
+                () -> ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent()));
         verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }
 }

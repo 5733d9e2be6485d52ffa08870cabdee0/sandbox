@@ -1,7 +1,5 @@
 package com.redhat.developer.ingress.api;
 
-import java.net.URI;
-
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -9,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.infra.utils.CloudEventUtils;
 import com.redhat.developer.ingress.IngressService;
+import com.redhat.developer.ingress.TestUtils;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
@@ -50,11 +48,27 @@ public class IngressAPITest {
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(buildEvent())
+                .body(CloudEventUtils.encode(TestUtils.buildTestCloudEvent()))
                 .post("/ingress/events/topicName")
                 .then().statusCode(200);
 
         verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
+        ingressService.undeploy("topicName");
+    }
+
+    @Test
+    public void testNonCloudEvent() throws JsonProcessingException {
+        ingressService.deploy("topicName");
+
+        given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .body("{\"key\": \"not a cloud event\"}")
+                .post("/ingress/events/topicName")
+                .then().statusCode(400);
+
+        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
         ingressService.undeploy("topicName");
     }
 
@@ -65,16 +79,10 @@ public class IngressAPITest {
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(buildEvent())
+                .body(CloudEventUtils.encode(TestUtils.buildTestCloudEvent()))
                 .post("/ingress/events/topicName")
                 .then().statusCode(400);
 
         verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
-    }
-
-    private String buildEvent() throws JsonProcessingException {
-        String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
-        return CloudEventUtils.encode(
-                CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
     }
 }

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.developer.infra.utils.exceptions.CloudEventDeserializationException;
+import com.redhat.developer.infra.utils.exceptions.CloudEventSerializationException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -20,7 +22,8 @@ public class CloudEventUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(JsonFormat.getCloudEventJacksonModule());
 
     public static CloudEvent build(String id, String topic, URI source, String subject, JsonNode data) {
-        CloudEventBuilder builder = CloudEventBuilder.v1()
+        CloudEventBuilder builder = null;
+        builder = CloudEventBuilder.v1()
                 .withId(id)
                 .withSource(source)
                 .withType(JsonNode.class.getName())
@@ -34,12 +37,20 @@ public class CloudEventUtils {
         return builder.build();
     }
 
+    public static CloudEvent build(String id, String topic, URI source, String subject, CloudEvent data) {
+        try {
+            return build(id, topic, source, subject, OBJECT_MAPPER.readTree(encode(data)));
+        } catch (JsonProcessingException e) {
+            throw new CloudEventDeserializationException("Failed to parse cloud event to wrap");
+        }
+    }
+
     public static String encode(CloudEvent event) {
         try {
             return OBJECT_MAPPER.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             LOG.error("Unable to encode CloudEvent", e);
-            throw new RuntimeException("Unable to encode CloudEvent");
+            throw new CloudEventSerializationException("Failed to encode CloudEvent");
         }
     }
 
@@ -48,7 +59,7 @@ public class CloudEventUtils {
             return OBJECT_MAPPER.readValue(json, CloudEvent.class);
         } catch (JsonProcessingException e) {
             LOG.error("Unable to decode CloudEvent", e);
-            throw new RuntimeException("Unable to decode CloudEvent");
+            throw new CloudEventDeserializationException("Failed to decode Cloud Event");
         }
     }
 
