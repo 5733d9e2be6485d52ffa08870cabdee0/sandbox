@@ -25,7 +25,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Override
     @Transactional
     public Connector createConnector(String customerId, ConnectorRequest connectorRequest) {
-        if (connectorDAO.findByNameAndCustomerId(connectorRequest.getName(), customerId).size() > 0) {
+        if (connectorDAO.findByNameAndCustomerId(connectorRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException("Element already present in storage.");
         }
 

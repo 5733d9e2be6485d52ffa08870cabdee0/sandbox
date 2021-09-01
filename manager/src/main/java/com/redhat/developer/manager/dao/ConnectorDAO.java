@@ -21,9 +21,9 @@ public class ConnectorDAO implements PanacheRepositoryBase<Connector, String> {
         return find("#CONNECTOR.findByStatus", params).list();
     }
 
-    public List<Connector> findByNameAndCustomerId(String name, String customerId) {
+    public Connector findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
                 .with("name", name).and("customerId", customerId);
-        return find("#CONNECTOR.findByNameAndCustomerId", params).list();
+        return find("#CONNECTOR.findByNameAndCustomerId", params).firstResult();
     }
 }

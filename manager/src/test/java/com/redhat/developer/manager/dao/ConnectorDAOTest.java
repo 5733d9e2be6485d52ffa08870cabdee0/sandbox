@@ -48,14 +48,14 @@ public class ConnectorDAOTest {
         Connector connector = buildConnector();
         connectorDAO.persist(connector);
 
-        List<Connector> retrievedConnectors = connectorDAO.findByNameAndCustomerId("not-the-id", "jrota");
-        Assertions.assertEquals(0, retrievedConnectors.size());
+        Connector retrievedConnector = connectorDAO.findByNameAndCustomerId("not-the-id", "jrota");
+        Assertions.assertNull(retrievedConnector);
 
-        retrievedConnectors = connectorDAO.findByNameAndCustomerId("myConnector", "not-the-customer-id");
-        Assertions.assertEquals(0, retrievedConnectors.size());
+        retrievedConnector = connectorDAO.findByNameAndCustomerId("myConnector", "not-the-customer-id");
+        Assertions.assertNull(retrievedConnector);
 
-        retrievedConnectors = connectorDAO.findByNameAndCustomerId("myConnector", "jrota");
-        Assertions.assertEquals(1, retrievedConnectors.size());
+        retrievedConnector = connectorDAO.findByNameAndCustomerId("myConnector", "jrota");
+        Assertions.assertNotNull(retrievedConnector);
     }
 
     private Connector buildConnector() {
