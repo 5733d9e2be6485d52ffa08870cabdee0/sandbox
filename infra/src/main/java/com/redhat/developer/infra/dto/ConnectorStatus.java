@@ -1,6 +1,6 @@
 package com.redhat.developer.infra.dto;
 
-public enum ConnectorStatusDTO {
+public enum ConnectorStatus {
     REQUESTED,
     PROVISIONING,
     AVAILABLE

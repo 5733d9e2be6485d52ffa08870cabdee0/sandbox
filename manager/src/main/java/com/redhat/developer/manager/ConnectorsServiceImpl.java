@@ -9,10 +9,10 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.developer.infra.dto.ConnectorStatus;
 import com.redhat.developer.manager.api.exceptions.AlreadyExistingItemException;
 import com.redhat.developer.manager.dao.ConnectorDAO;
 import com.redhat.developer.manager.models.Connector;
-import com.redhat.developer.manager.models.ConnectorStatus;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 
 @ApplicationScoped

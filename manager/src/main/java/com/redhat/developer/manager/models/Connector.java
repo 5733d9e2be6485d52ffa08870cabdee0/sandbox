@@ -14,6 +14,7 @@ import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.developer.infra.dto.ConnectorDTO;
+import com.redhat.developer.infra.dto.ConnectorStatus;
 
 @NamedQueries({
         @NamedQuery(name = "CONNECTOR.findByStatus",
@@ -98,7 +99,7 @@ public class Connector {
         dto.setId(id);
         dto.setName(name);
         dto.setEndpoint(endpoint);
-        dto.setStatus(status.toDTO());
+        dto.setStatus(status);
         dto.setCustomerId(customerId);
 
         return dto;
@@ -109,7 +110,7 @@ public class Connector {
         connector.setId(dto.getId());
         connector.setEndpoint(dto.getEndpoint());
         connector.setCustomerId(dto.getCustomerId());
-        connector.setStatus(ConnectorStatus.fromDTO(dto.getStatus()));
+        connector.setStatus(dto.getStatus());
 
         return connector;
     }

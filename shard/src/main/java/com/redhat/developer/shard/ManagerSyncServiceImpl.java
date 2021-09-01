@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.infra.dto.ConnectorStatus;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -56,7 +56,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
-                                    y.setStatus(ConnectorStatusDTO.PROVISIONING);
+                                    y.setStatus(ConnectorStatus.PROVISIONING);
                                     return notifyConnectorStatusChange(y).subscribe().with(
                                             success -> operatorService.createConnectorDeployment(y),
                                             failure -> LOGGER.warn("[shard] could not notify the manager with the new status"));

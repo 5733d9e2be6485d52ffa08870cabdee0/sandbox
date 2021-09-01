@@ -5,8 +5,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
+import com.redhat.developer.infra.dto.ConnectorStatus;
 import com.redhat.developer.manager.models.Connector;
-import com.redhat.developer.manager.models.ConnectorStatus;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;

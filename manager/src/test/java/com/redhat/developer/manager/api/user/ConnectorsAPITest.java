@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.infra.dto.ConnectorStatus;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
@@ -53,7 +53,7 @@ public class ConnectorsAPITest {
         ConnectorDTO connector = response.get(0);
         Assertions.assertEquals("test", connector.getName());
         Assertions.assertEquals("jrota", connector.getCustomerId());
-        Assertions.assertEquals(ConnectorStatusDTO.REQUESTED, connector.getStatus());
+        Assertions.assertEquals(ConnectorStatus.REQUESTED, connector.getStatus());
         Assertions.assertNull(connector.getEndpoint());
     }
 

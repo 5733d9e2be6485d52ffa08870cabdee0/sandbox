@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.infra.dto.ConnectorStatus;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,8 +53,8 @@ public class ManagerSyncServiceTest {
     @Test
     public void testConnectorsAreDeployed() throws JsonProcessingException, InterruptedException {
         List<ConnectorDTO> connectorDTOs = new ArrayList<>();
-        connectorDTOs.add(new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatusDTO.REQUESTED));
-        connectorDTOs.add(new ConnectorDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", ConnectorStatusDTO.REQUESTED));
+        connectorDTOs.add(new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatus.REQUESTED));
+        connectorDTOs.add(new ConnectorDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", ConnectorStatus.REQUESTED));
         stubConnectorsToDeploy(connectorDTOs);
         stubConnectorUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
@@ -72,7 +72,7 @@ public class ManagerSyncServiceTest {
 
     @Test
     public void testNotifyConnectorStatusChange() throws InterruptedException {
-        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatusDTO.PROVISIONING);
+        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatus.PROVISIONING);
         stubConnectorUpdate();
         String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 

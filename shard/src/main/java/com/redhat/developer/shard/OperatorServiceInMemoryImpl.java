@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatusDTO;
+import com.redhat.developer.infra.dto.ConnectorStatus;
 import com.redhat.developer.ingress.IngressService;
 
 import io.quarkus.scheduler.Scheduled;
@@ -42,10 +42,10 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
     @Scheduled(every = "30s")
     void reconcileLoopMock() {
         LOGGER.debug("[shard] Connector reconcile loop mock wakes up");
-        for (ConnectorDTO dto : connectors.stream().filter(x -> x.getStatus().equals(ConnectorStatusDTO.PROVISIONING)).collect(Collectors.toList())) {
+        for (ConnectorDTO dto : connectors.stream().filter(x -> x.getStatus().equals(ConnectorStatus.PROVISIONING)).collect(Collectors.toList())) {
             LOGGER.info("[shard] Updating connector with id '{}'", dto.getId());
             String endpoint = ingressService.deploy(dto.getName()); // TODO: replace with CR creation and fetch endpoint info from CRD
-            dto.setStatus(ConnectorStatusDTO.AVAILABLE);
+            dto.setStatus(ConnectorStatus.AVAILABLE);
             dto.setEndpoint(endpoint);
             managerSyncService.notifyConnectorStatusChange(dto).subscribe().with(
                     success -> LOGGER.info("[shard] Updating connector with id '{}' done", dto.getId()),

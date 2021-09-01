@@ -17,12 +17,12 @@ public class ConnectorDTO {
     private String customerId;
 
     @JsonProperty("status")
-    private ConnectorStatusDTO status;
+    private ConnectorStatus status;
 
     public ConnectorDTO() {
     }
 
-    public ConnectorDTO(String id, String name, String endpoint, String customerId, ConnectorStatusDTO status) {
+    public ConnectorDTO(String id, String name, String endpoint, String customerId, ConnectorStatus status) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -34,7 +34,7 @@ public class ConnectorDTO {
         this.customerId = customerId;
     }
 
-    public void setStatus(ConnectorStatusDTO status) {
+    public void setStatus(ConnectorStatus status) {
         this.status = status;
     }
 
@@ -66,7 +66,7 @@ public class ConnectorDTO {
         return name;
     }
 
-    public ConnectorStatusDTO getStatus() {
+    public ConnectorStatus getStatus() {
         return status;
     }
 }
