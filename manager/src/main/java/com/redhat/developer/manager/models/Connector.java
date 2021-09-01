@@ -12,7 +12,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatus;
 
@@ -20,31 +19,26 @@ import com.redhat.developer.infra.dto.ConnectorStatus;
         @NamedQuery(name = "CONNECTOR.findByStatus",
                 query = "from Connector where status=:status"),
         @NamedQuery(name = "CONNECTOR.findByNameAndCustomerId",
-                query = "from Connector where name=:name and customerId=:customerId"),
+                query = "from Connector where name=:name and customer_id=:customerId"),
 })
 @Entity
-@Table(name = "CONNECTOR", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customerId" }) })
+@Table(name = "CONNECTOR", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Connector {
 
     @Id
-    @JsonProperty("id")
     private String id = UUID.randomUUID().toString();
 
-    @Column(name = "name")
-    @JsonProperty("name")
+    @Column(name = "name", nullable = false, updatable = false)
     private String name;
 
     @Column(name = "endpoint")
-    @JsonProperty("endpoint")
     private String endpoint;
 
-    @Column(name = "customerId")
-    @JsonProperty("customerId")
+    @Column(name = "customer_id", nullable = false, updatable = false)
     private String customerId;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    @JsonProperty("status")
     private ConnectorStatus status;
 
     public Connector() {
