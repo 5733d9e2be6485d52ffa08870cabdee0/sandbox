@@ -3,6 +3,7 @@ package com.redhat.developer.infra.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ConnectorDTO {
+
     @JsonProperty("id")
     private String id;
 

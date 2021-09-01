@@ -3,11 +3,9 @@ package com.redhat.developer.shard;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +14,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatusDTO;
-import com.redhat.developer.shard.utils.WebClientUtils;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
@@ -30,21 +26,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
 
-    @ConfigProperty(name = "event-connect.manager.url")
-    String eventConnectManagerUrl;
-
     @Inject
-    Vertx vertx;
+    ObjectMapper mapper;
 
     @Inject
     OperatorService operatorService;
 
-    WebClient webClient;
-
-    @PostConstruct
-    void init() {
-        webClient = WebClientUtils.getClient(vertx, eventConnectManagerUrl);
-    }
+    @Inject
+    WebClient webClientManager;
 
     @Scheduled(every = "20s")
     void syncConnectors() {
@@ -57,12 +46,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyConnectorStatusChange(ConnectorDTO connectorDTO) {
         LOGGER.info("[shard] Notifying manager about the new status of the connector '{}'", connectorDTO.getId());
-        return webClient.post("/shard/connectors/toDeploy").sendJson(connectorDTO);
+        return webClientManager.post("/shard/connectors/toDeploy").sendJson(connectorDTO);
     }
 
     @Override
     public Uni<Object> fetchAndProcessConnectorsFromManager() {
-        return webClient.get("/shard/connectors/toDeploy").send()
+        return webClientManager.get("/shard/connectors/toDeploy").send()
                 .onItem().transform(x -> deserializeConnectors(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
@@ -76,7 +65,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private List<ConnectorDTO> deserializeConnectors(String s) {
         try {
-            return new ObjectMapper().readValue(s, new TypeReference<List<ConnectorDTO>>() {
+            return mapper.readValue(s, new TypeReference<List<ConnectorDTO>>() {
             });
         } catch (JsonProcessingException e) {
             LOGGER.warn("[shard] failed to deserialize connectors to deploy", e);
