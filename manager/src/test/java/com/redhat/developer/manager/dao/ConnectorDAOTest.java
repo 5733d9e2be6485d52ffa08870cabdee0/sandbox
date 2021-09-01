@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.models.Connector;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
@@ -48,21 +49,21 @@ public class ConnectorDAOTest {
         Connector connector = buildConnector();
         connectorDAO.persist(connector);
 
-        Connector retrievedConnector = connectorDAO.findByNameAndCustomerId("not-the-id", "jrota");
+        Connector retrievedConnector = connectorDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertNull(retrievedConnector);
 
-        retrievedConnector = connectorDAO.findByNameAndCustomerId("myConnector", "not-the-customer-id");
+        retrievedConnector = connectorDAO.findByNameAndCustomerId(TestConstants.DEFAULT_CONNECTOR_NAME, "not-the-customer-id");
         Assertions.assertNull(retrievedConnector);
 
-        retrievedConnector = connectorDAO.findByNameAndCustomerId("myConnector", "jrota");
+        retrievedConnector = connectorDAO.findByNameAndCustomerId(TestConstants.DEFAULT_CONNECTOR_NAME, TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertNotNull(retrievedConnector);
     }
 
     private Connector buildConnector() {
         Connector connector = new Connector();
         connector.setId("myId");
-        connector.setCustomerId("jrota");
-        connector.setName("myConnector");
+        connector.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
         connector.setStatus(ConnectorStatus.REQUESTED);
 
         return connector;

@@ -37,16 +37,16 @@ public class ConnectorsServiceTest {
 
     @Test
     public void testGetEmptyConnectors() {
-        List<Connector> connectors = connectorsService.getConnectors("jrota");
+        List<Connector> connectors = connectorsService.getConnectors(TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertEquals(0, connectors.size());
     }
 
     @Test
     public void testGetConnectors() {
-        ConnectorRequest request = new ConnectorRequest("test");
-        connectorsService.createConnector("jrota", request);
+        ConnectorRequest request = new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connectorsService.createConnector(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Connector> connectors = connectorsService.getConnectors("jrota");
+        List<Connector> connectors = connectorsService.getConnectors(TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertEquals(1, connectors.size());
 
         // filter by customer id not implemented yet
@@ -56,22 +56,22 @@ public class ConnectorsServiceTest {
 
     @Test
     public void testCreateConnector() {
-        ConnectorRequest request = new ConnectorRequest("test");
-        connectorsService.createConnector("jrota", request);
+        ConnectorRequest request = new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connectorsService.createConnector(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         List<Connector> connectors = connectorsService.getConnectorsToDeploy();
         Assertions.assertEquals(1, connectors.size());
         Assertions.assertEquals(ConnectorStatus.REQUESTED, connectors.get(0).getStatus());
         Assertions.assertNull(connectors.get(0).getEndpoint());
 
-        connectors = connectorsService.getConnectors("jrota");
+        connectors = connectorsService.getConnectors(TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertEquals(1, connectors.size());
     }
 
     @Test
     public void testUpdateConnectorStatus() {
-        ConnectorRequest request = new ConnectorRequest("test");
-        connectorsService.createConnector("jrota", request);
+        ConnectorRequest request = new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connectorsService.createConnector(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         List<Connector> connectors = connectorsService.getConnectorsToDeploy();
         Assertions.assertEquals(1, connectors.size());
@@ -84,7 +84,7 @@ public class ConnectorsServiceTest {
         connectors = connectorsService.getConnectorsToDeploy();
         Assertions.assertEquals(0, connectors.size());
 
-        connectors = connectorsService.getConnectors("jrota");
+        connectors = connectorsService.getConnectors(TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertEquals(1, connectors.size());
         Assertions.assertEquals(ConnectorStatus.PROVISIONING, connectors.get(0).getStatus());
     }

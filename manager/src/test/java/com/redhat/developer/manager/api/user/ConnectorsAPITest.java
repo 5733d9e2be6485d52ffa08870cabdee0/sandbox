@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.requests.ConnectorRequest;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
@@ -37,13 +38,13 @@ public class ConnectorsAPITest {
 
     @Test
     public void createConnector() {
-        TestUtils.createConnector(new ConnectorRequest("test"))
+        TestUtils.createConnector(new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME))
                 .then().statusCode(200);
     }
 
     @Test
     public void testCreateAndGetConnector() {
-        TestUtils.createConnector(new ConnectorRequest("test"))
+        TestUtils.createConnector(new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME))
                 .then().statusCode(200);
 
         List<ConnectorDTO> response = TestUtils.getConnectors().as(new TypeRef<List<ConnectorDTO>>() {
@@ -51,17 +52,17 @@ public class ConnectorsAPITest {
 
         Assertions.assertEquals(1, response.size());
         ConnectorDTO connector = response.get(0);
-        Assertions.assertEquals("test", connector.getName());
-        Assertions.assertEquals("jrota", connector.getCustomerId());
+        Assertions.assertEquals(TestConstants.DEFAULT_CONNECTOR_NAME, connector.getName());
+        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, connector.getCustomerId());
         Assertions.assertEquals(ConnectorStatus.REQUESTED, connector.getStatus());
         Assertions.assertNull(connector.getEndpoint());
     }
 
     @Test
     public void testAlreadyExistingConnector() {
-        TestUtils.createConnector(new ConnectorRequest("test"))
+        TestUtils.createConnector(new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME))
                 .then().statusCode(200);
-        TestUtils.createConnector(new ConnectorRequest("test"))
+        TestUtils.createConnector(new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME))
                 .then().statusCode(400);
     }
 }

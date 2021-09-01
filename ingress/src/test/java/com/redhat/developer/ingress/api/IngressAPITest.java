@@ -55,6 +55,7 @@ public class IngressAPITest {
                 .then().statusCode(200);
 
         verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
+        ingressService.undeploy("topicName");
     }
 
     @Test

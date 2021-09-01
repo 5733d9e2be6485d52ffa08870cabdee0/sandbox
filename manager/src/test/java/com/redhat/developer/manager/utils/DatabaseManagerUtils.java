@@ -12,7 +12,6 @@ public class DatabaseManagerUtils {
     ConnectorDAO connectorDAO;
 
     public void cleanDatabase() {
-        System.out.println("CALLED");
         connectorDAO.deleteAll();
     }
 }

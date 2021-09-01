@@ -15,6 +15,6 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        Assertions.assertEquals("jrota", customerIdResolver.resolveCustomerId());
+        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, customerIdResolver.resolveCustomerId());
     }
 }
