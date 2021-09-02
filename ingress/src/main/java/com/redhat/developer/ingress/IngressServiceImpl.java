@@ -20,10 +20,6 @@ import io.cloudevents.CloudEvent;
 @ApplicationScoped
 public class IngressServiceImpl implements IngressService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngressServiceImpl.class);
-
-    private static final URI URI_PRODUCER = URI.create("ingress/IngressServiceImpl");
-
     private final List<String> deployments = new ArrayList<>();
 
     @Inject
@@ -36,15 +32,7 @@ public class IngressServiceImpl implements IngressService {
             throw new IngressException("Ingress with name " + name + " is not deployed.");
         }
 
-        /*
-         * User cloud event is wrapped by EventConnect cloud event.
-         * This is needed until we move to a deployed ingress service that writes to a specific topic -> we use some extension
-         * in the EventConnect cloud event to route the event
-         */
-        CloudEvent cloudEvent = CloudEventUtils.build(UUID.randomUUID().toString(), name,
-                URI_PRODUCER, "subject", event);
-        LOGGER.info("[ingress] User cloud event with id '{}' has been wrapped with cloud event with id '{}'", event.getId(), cloudEvent.getId());
-        kafkaEventPublisher.sendEvent(cloudEvent);
+        kafkaEventPublisher.sendEvent(event);
     }
 
     // TODO: remove after we move to k8s

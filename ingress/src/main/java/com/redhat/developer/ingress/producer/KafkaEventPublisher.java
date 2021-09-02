@@ -21,7 +21,7 @@ public class KafkaEventPublisher {
     private final BroadcastProcessor<String> eventSubject = BroadcastProcessor.create();
 
     public void sendEvent(CloudEvent cloudEvent) {
-        LOGGER.info("[ingress] Sending ingress cloudEvent with id '{}' to event queue", cloudEvent.getId());
+        LOGGER.info("[ingress] Sending cloudEvent with id '{}' to event queue", cloudEvent.getId());
         String serializedCloudEvent;
         try {
             serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
@@ -29,7 +29,7 @@ public class KafkaEventPublisher {
             throw new IngressException("Failed to encode cloud event", e);
         }
         eventSubject.onNext(serializedCloudEvent);
-        LOGGER.info("[ingress] Sending ingress cloudEvent with id '{}' to event queue - SUCCESS", cloudEvent.getId());
+        LOGGER.info("[ingress] Sending cloudEvent with id '{}' to event queue - SUCCESS", cloudEvent.getId());
     }
 
     @Outgoing("events-out")
