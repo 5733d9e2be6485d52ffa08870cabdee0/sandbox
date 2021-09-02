@@ -32,7 +32,7 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
 
     @Override
     public ConnectorDTO createConnectorDeployment(ConnectorDTO connector) {
-        connectors.add(connector);
+        connectors.add(connector); // TODO: when we move to k8s, replace this with CRD 
         LOGGER.info("[shard] Processing deployment of Connector with id '{}' and name '{}' for customer '{}'",
                 connector.getId(), connector.getName(), connector.getCustomerId());
         return connector;
