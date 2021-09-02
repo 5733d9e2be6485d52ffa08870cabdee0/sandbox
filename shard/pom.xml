@@ -41,11 +41,6 @@
       <artifactId>quarkus-vertx</artifactId>
     </dependency>
 
-    <!-- Otherwise Scheduler does not work with the runner..... ??????   -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-orm-panache</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.redhat.developer</groupId>
       <artifactId>infra</artifactId>

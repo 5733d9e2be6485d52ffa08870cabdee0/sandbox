@@ -36,11 +36,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
     </dependency>
-    <!-- Otherwise api are not included in the runner...?????? -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-orm-panache</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>com.redhat.developer</groupId>
