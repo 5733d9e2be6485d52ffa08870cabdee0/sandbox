@@ -5,17 +5,22 @@ import javax.inject.Inject;
 
 import com.redhat.developer.manager.dao.ConnectorDAO;
 
+/**
+ *   This bean must be injected in every test class that uses the database.
+ *   In addition to that and the `cleanDatabase` method must be call `@BeforeEach` test.
+ */
 @ApplicationScoped
 public class DatabaseManagerUtils {
+
+    /**
+     *  Inject all the DAOs of the application
+     */
 
     @Inject
     ConnectorDAO connectorDAO;
 
     /**
-     *   In this method there should be all the DAOs so to clean up the database entirely.
-     *
-     *   This is needed because we have tests with restassured + data stored in the database and @TestTransaction does not
-     *   rollback the transaction on server side: the database must be cleaned up manually. See https://github.com/quarkusio/quarkus/issues/15436
+     *  Call the `deleteAll` method of all the DAOs injected so to clean up the database entirely.
      */
     public void cleanDatabase() {
         connectorDAO.deleteAll();
