@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.developer.ingress.api.exceptions.IngressRuntimeException;
+import com.redhat.developer.ingress.api.exceptions.IngressException;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
@@ -48,7 +48,7 @@ public class IngressServiceTest {
     @Test
     // TODO: remove after we move to k8s
     public void testSendEventToUndeployedInstance() throws JsonProcessingException {
-        Assertions.assertThrows(IngressRuntimeException.class,
+        Assertions.assertThrows(IngressException.class,
                 () -> ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent()));
         verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }

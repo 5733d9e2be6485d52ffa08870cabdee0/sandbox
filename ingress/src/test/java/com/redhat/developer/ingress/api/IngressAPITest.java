@@ -81,7 +81,7 @@ public class IngressAPITest {
                 .when()
                 .body(CloudEventUtils.encode(TestUtils.buildTestCloudEvent()))
                 .post("/ingress/events/topicName")
-                .then().statusCode(400);
+                .then().statusCode(500);
 
         verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }

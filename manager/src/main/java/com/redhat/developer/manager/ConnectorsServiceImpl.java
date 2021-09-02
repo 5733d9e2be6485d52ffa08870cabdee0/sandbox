@@ -26,7 +26,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional
     public Connector createConnector(String customerId, ConnectorRequest connectorRequest) {
         if (connectorDAO.findByNameAndCustomerId(connectorRequest.getName(), customerId) != null) {
-            throw new AlreadyExistingItemException("Element already present in storage.");
+            throw new AlreadyExistingItemException(String.format("Connector with name '%s' already exists for customer with id '%s'", connectorRequest.getName(), customerId));
         }
 
         Connector connector = connectorRequest.toEntity();

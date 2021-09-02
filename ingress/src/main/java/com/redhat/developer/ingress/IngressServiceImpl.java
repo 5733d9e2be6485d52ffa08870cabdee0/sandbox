@@ -8,8 +8,11 @@ import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.developer.infra.utils.CloudEventUtils;
-import com.redhat.developer.ingress.api.exceptions.IngressRuntimeException;
+import com.redhat.developer.ingress.api.exceptions.IngressException;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
@@ -17,7 +20,9 @@ import io.cloudevents.CloudEvent;
 @ApplicationScoped
 public class IngressServiceImpl implements IngressService {
 
-    private static final URI URI_PRODUCER = URI.create("ingreservice/IngressServiceImpl");
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngressServiceImpl.class);
+
+    private static final URI URI_PRODUCER = URI.create("ingress/IngressServiceImpl");
 
     private final List<String> deployments = new ArrayList<>();
 
@@ -28,7 +33,7 @@ public class IngressServiceImpl implements IngressService {
     public void processEvent(String name, CloudEvent event) {
         //TODO: remove after we move to k8s
         if (!deployments.contains(name)) {
-            throw new IngressRuntimeException("Ingress with name " + name + " is not deployed.");
+            throw new IngressException("Ingress with name " + name + " is not deployed.");
         }
 
         /*
@@ -38,6 +43,7 @@ public class IngressServiceImpl implements IngressService {
          */
         CloudEvent cloudEvent = CloudEventUtils.build(UUID.randomUUID().toString(), name,
                 URI_PRODUCER, "subject", event);
+        LOGGER.info("[ingress] User cloud event with id '{}' has been wrapped with cloud event with id '{}'", event.getId(), cloudEvent.getId());
         kafkaEventPublisher.sendEvent(cloudEvent);
     }
 

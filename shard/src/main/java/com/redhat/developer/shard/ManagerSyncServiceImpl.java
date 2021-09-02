@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -35,7 +36,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     WebClient webClientManager;
 
-    @Scheduled(every = "20s")
+    @Scheduled(every = "30s")
     void syncConnectors() {
         LOGGER.info("[Shard] wakes up to get connectors to deploy");
         fetchAndProcessConnectorsFromManager().subscribe().with(
@@ -68,8 +69,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             return mapper.readValue(s, new TypeReference<List<ConnectorDTO>>() {
             });
         } catch (JsonProcessingException e) {
-            LOGGER.warn("[shard] failed to deserialize connectors to deploy", e);
+            LOGGER.warn("[shard] Failed to deserialize connectors to deploy", e);
+            throw new DeserializationException("Failed to deserialize connectors fetched from the manager.", e);
         }
-        return null;
     }
 }
