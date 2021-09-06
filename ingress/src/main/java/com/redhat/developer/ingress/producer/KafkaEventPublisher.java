@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.utils.CloudEventUtils;
+import com.redhat.developer.infra.utils.exceptions.CloudEventSerializationException;
 import com.redhat.developer.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;
@@ -25,7 +26,7 @@ public class KafkaEventPublisher {
         String serializedCloudEvent;
         try {
             serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
-        } catch (RuntimeException e) {
+        } catch (CloudEventSerializationException e) {
             throw new IngressException("Failed to encode cloud event", e);
         }
         eventSubject.onNext(serializedCloudEvent);
