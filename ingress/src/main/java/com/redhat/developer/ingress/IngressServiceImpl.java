@@ -1,17 +1,11 @@
 package com.redhat.developer.ingress;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.developer.infra.utils.CloudEventUtils;
 import com.redhat.developer.ingress.api.exceptions.IngressException;
 import com.redhat.developer.ingress.producer.KafkaEventPublisher;
 

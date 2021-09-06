@@ -1,4 +1,4 @@
-package com.redhat.developer.manager.api.exceptions.mappers;
+package com.redhat.developer.manager.api;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -7,7 +7,7 @@ import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.developer.manager.api.exceptions.EventConnectManagerException;
+import com.redhat.developer.manager.exceptions.EventConnectManagerException;
 
 @Provider
 public class EventConnectManagerExceptionMapper implements ExceptionMapper<EventConnectManagerException> {

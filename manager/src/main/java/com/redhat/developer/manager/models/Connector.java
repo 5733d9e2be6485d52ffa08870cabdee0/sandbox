@@ -1,5 +1,6 @@
 package com.redhat.developer.manager.models;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -14,12 +15,13 @@ import javax.persistence.UniqueConstraint;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.manager.api.models.responses.ConnectorResponse;
 
 @NamedQueries({
         @NamedQuery(name = "CONNECTOR.findByStatus",
                 query = "from Connector where status=:status"),
         @NamedQuery(name = "CONNECTOR.findByNameAndCustomerId",
-                query = "from Connector where name=:name and customer_id=:customerId"),
+                query = "from Connector where name=:name and customer_id=:customerId order by submitted_at desc"),
 })
 @Entity
 @Table(name = "CONNECTOR", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
@@ -37,6 +39,12 @@ public class Connector {
     @Column(name = "customer_id", nullable = false, updatable = false)
     private String customerId;
 
+    @Column(name = "submitted_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
+    private ZonedDateTime submittedAt;
+
+    @Column(name = "published_at", columnDefinition = "TIMESTAMP")
+    private ZonedDateTime publishedAt;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private ConnectorStatus status;
@@ -52,14 +60,6 @@ public class Connector {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }
@@ -68,20 +68,44 @@ public class Connector {
         return endpoint;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public ZonedDateTime getPublishedAt() {
+        return publishedAt;
+    }
+
+    public ZonedDateTime getSubmittedAt() {
+        return submittedAt;
     }
 
     public ConnectorStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ConnectorStatus status) {
-        this.status = status;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getCustomerId() {
-        return customerId;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public void setPublishedAt(ZonedDateTime publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
+    public void setSubmittedAt(ZonedDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public void setStatus(ConnectorStatus status) {
+        this.status = status;
     }
 
     public void setCustomerId(String customerId) {
@@ -107,5 +131,17 @@ public class Connector {
         connector.setStatus(dto.getStatus());
 
         return connector;
+    }
+
+    public ConnectorResponse toResponse() {
+        ConnectorResponse response = new ConnectorResponse();
+        response.setId(id);
+        response.setName(name);
+        response.setEndpoint(endpoint);
+        response.setSubmittedAt(submittedAt);
+        response.setPublishedAt(publishedAt);
+        response.setStatus(status);
+
+        return response;
     }
 }

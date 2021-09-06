@@ -2,8 +2,8 @@ package com.redhat.developer.manager;
 
 import java.util.List;
 
+import com.redhat.developer.manager.api.models.requests.ConnectorRequest;
 import com.redhat.developer.manager.models.Connector;
-import com.redhat.developer.manager.requests.ConnectorRequest;
 
 public interface ConnectorsService {
 

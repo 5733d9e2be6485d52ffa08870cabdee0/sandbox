@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.manager.api.models.requests.ConnectorRequest;
 import com.redhat.developer.manager.models.Connector;
-import com.redhat.developer.manager.requests.ConnectorRequest;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;

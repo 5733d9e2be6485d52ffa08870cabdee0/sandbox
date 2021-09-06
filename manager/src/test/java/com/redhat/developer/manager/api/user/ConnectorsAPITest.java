@@ -1,22 +1,20 @@
 package com.redhat.developer.manager.api.user;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.infra.dto.ConnectorStatus;
 import com.redhat.developer.manager.TestConstants;
-import com.redhat.developer.manager.requests.ConnectorRequest;
+import com.redhat.developer.manager.api.models.requests.ConnectorRequest;
+import com.redhat.developer.manager.api.models.responses.ConnectorListResponse;
+import com.redhat.developer.manager.api.models.responses.ConnectorResponse;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.common.mapper.TypeRef;
 
 @QuarkusTest
 public class ConnectorsAPITest {
@@ -31,9 +29,8 @@ public class ConnectorsAPITest {
 
     @Test
     public void testGetEmptyConnectors() {
-        List<ConnectorDTO> response = TestUtils.getConnectors().as(new TypeRef<List<ConnectorDTO>>() {
-        });
-        Assertions.assertEquals(0, response.size());
+        ConnectorListResponse response = TestUtils.getConnectors().as(ConnectorListResponse.class);
+        Assertions.assertEquals(0, response.getItems().size());
     }
 
     @Test
@@ -47,14 +44,14 @@ public class ConnectorsAPITest {
         TestUtils.createConnector(new ConnectorRequest(TestConstants.DEFAULT_CONNECTOR_NAME))
                 .then().statusCode(200);
 
-        List<ConnectorDTO> response = TestUtils.getConnectors().as(new TypeRef<List<ConnectorDTO>>() {
-        });
+        ConnectorListResponse response = TestUtils.getConnectors().as(ConnectorListResponse.class);
 
-        Assertions.assertEquals(1, response.size());
-        ConnectorDTO connector = response.get(0);
+        Assertions.assertEquals(1, response.getItems().size());
+        ConnectorResponse connector = response.getItems().get(0);
         Assertions.assertEquals(TestConstants.DEFAULT_CONNECTOR_NAME, connector.getName());
-        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, connector.getCustomerId());
         Assertions.assertEquals(ConnectorStatus.REQUESTED, connector.getStatus());
+        Assertions.assertNotNull(connector.getSubmittedAt());
+
         Assertions.assertNull(connector.getEndpoint());
     }
 

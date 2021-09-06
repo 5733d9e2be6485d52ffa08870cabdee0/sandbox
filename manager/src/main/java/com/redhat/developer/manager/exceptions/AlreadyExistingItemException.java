@@ -1,4 +1,4 @@
-package com.redhat.developer.manager.api.exceptions;
+package com.redhat.developer.manager.exceptions;
 
 import javax.ws.rs.core.Response;
 

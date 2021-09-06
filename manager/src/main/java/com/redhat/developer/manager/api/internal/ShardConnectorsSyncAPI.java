@@ -18,7 +18,7 @@ import com.redhat.developer.infra.dto.ConnectorDTO;
 import com.redhat.developer.manager.ConnectorsService;
 import com.redhat.developer.manager.models.Connector;
 
-@Path("/shard/connectors")
+@Path("/api/v1/shard/connectors")
 public class ShardConnectorsSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardConnectorsSyncAPI.class);

@@ -1,5 +1,6 @@
 package com.redhat.developer.manager.dao;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -65,6 +66,7 @@ public class ConnectorDAOTest {
         connector.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
         connector.setStatus(ConnectorStatus.REQUESTED);
+        connector.setSubmittedAt(ZonedDateTime.now());
 
         return connector;
     }

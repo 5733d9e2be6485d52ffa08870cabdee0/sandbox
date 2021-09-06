@@ -1,5 +1,7 @@
 package com.redhat.developer.manager;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -10,10 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.dto.ConnectorStatus;
-import com.redhat.developer.manager.api.exceptions.AlreadyExistingItemException;
+import com.redhat.developer.manager.api.models.requests.ConnectorRequest;
 import com.redhat.developer.manager.dao.ConnectorDAO;
+import com.redhat.developer.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.developer.manager.models.Connector;
-import com.redhat.developer.manager.requests.ConnectorRequest;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -31,6 +33,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         Connector connector = connectorRequest.toEntity();
         connector.setStatus(ConnectorStatus.REQUESTED);
+        connector.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         connector.setCustomerId(customerId);
         connectorDAO.persist(connector);
         LOGGER.info("[manager] Connector with id '{}' has been created for customer '{}'", connector.getId(), connector.getCustomerId());

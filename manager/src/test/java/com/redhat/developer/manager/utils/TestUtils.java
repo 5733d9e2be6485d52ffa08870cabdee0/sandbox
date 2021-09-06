@@ -1,7 +1,7 @@
 package com.redhat.developer.manager.utils;
 
 import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.manager.requests.ConnectorRequest;
+import com.redhat.developer.manager.api.models.requests.ConnectorRequest;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -16,7 +16,7 @@ public class TestUtils {
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .get("/connectors");
+                .get("/api/v1/connectors");
     }
 
     public static Response createConnector(ConnectorRequest request) {
@@ -25,7 +25,7 @@ public class TestUtils {
                 .contentType(ContentType.JSON)
                 .when()
                 .body(request)
-                .post("/connectors");
+                .post("/api/v1/connectors");
     }
 
     public static Response getConnectorsToDeploy() {
@@ -33,7 +33,7 @@ public class TestUtils {
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .get("/shard/connectors/toDeploy");
+                .get("/api/v1/shard/connectors/toDeploy");
     }
 
     public static Response updateConnector(ConnectorDTO connectorDTO) {
@@ -42,6 +42,6 @@ public class TestUtils {
                 .contentType(ContentType.JSON)
                 .when()
                 .body(connectorDTO)
-                .post("/shard/connectors/toDeploy");
+                .post("/api/v1/shard/connectors/toDeploy");
     }
 }

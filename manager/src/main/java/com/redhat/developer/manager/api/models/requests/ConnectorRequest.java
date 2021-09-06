@@ -1,4 +1,4 @@
-package com.redhat.developer.manager.requests;
+package com.redhat.developer.manager.api.models.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.developer.manager.models.Connector;
