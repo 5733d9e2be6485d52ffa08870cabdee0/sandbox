@@ -2,7 +2,7 @@ package com.redhat.developer.manager.exceptions;
 
 import javax.ws.rs.core.Response;
 
-public class AlreadyExistingItemException extends EventConnectManagerException {
+public class AlreadyExistingItemException extends EventBridgeManagerException {
 
     public AlreadyExistingItemException(String message) {
         super(message);

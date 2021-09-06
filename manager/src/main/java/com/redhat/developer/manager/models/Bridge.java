@@ -13,19 +13,19 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatus;
-import com.redhat.developer.manager.api.models.responses.ConnectorResponse;
+import com.redhat.developer.infra.dto.BridgeDTO;
+import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.manager.api.models.responses.BridgeResponse;
 
 @NamedQueries({
-        @NamedQuery(name = "CONNECTOR.findByStatus",
-                query = "from Connector where status=:status"),
-        @NamedQuery(name = "CONNECTOR.findByNameAndCustomerId",
-                query = "from Connector where name=:name and customer_id=:customerId order by submitted_at desc"),
+        @NamedQuery(name = "BRIDGE.findByStatus",
+                query = "from Bridge where status=:status"),
+        @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
+                query = "from Bridge where name=:name and customer_id=:customerId order by submitted_at desc"),
 })
 @Entity
-@Table(name = "CONNECTOR", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Connector {
+@Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
+public class Bridge {
 
     @Id
     private String id = UUID.randomUUID().toString();
@@ -47,12 +47,12 @@ public class Connector {
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private ConnectorStatus status;
+    private BridgeStatus status;
 
-    public Connector() {
+    public Bridge() {
     }
 
-    public Connector(String name) {
+    public Bridge(String name) {
         this.name = name;
     }
 
@@ -80,7 +80,7 @@ public class Connector {
         return submittedAt;
     }
 
-    public ConnectorStatus getStatus() {
+    public BridgeStatus getStatus() {
         return status;
     }
 
@@ -104,7 +104,7 @@ public class Connector {
         this.submittedAt = submittedAt;
     }
 
-    public void setStatus(ConnectorStatus status) {
+    public void setStatus(BridgeStatus status) {
         this.status = status;
     }
 
@@ -112,8 +112,8 @@ public class Connector {
         this.customerId = customerId;
     }
 
-    public ConnectorDTO toDTO() {
-        ConnectorDTO dto = new ConnectorDTO();
+    public BridgeDTO toDTO() {
+        BridgeDTO dto = new BridgeDTO();
         dto.setId(id);
         dto.setName(name);
         dto.setEndpoint(endpoint);
@@ -123,18 +123,18 @@ public class Connector {
         return dto;
     }
 
-    public static Connector fromDTO(ConnectorDTO dto) {
-        Connector connector = new Connector();
-        connector.setId(dto.getId());
-        connector.setEndpoint(dto.getEndpoint());
-        connector.setCustomerId(dto.getCustomerId());
-        connector.setStatus(dto.getStatus());
+    public static Bridge fromDTO(BridgeDTO dto) {
+        Bridge bridge = new Bridge();
+        bridge.setId(dto.getId());
+        bridge.setEndpoint(dto.getEndpoint());
+        bridge.setCustomerId(dto.getCustomerId());
+        bridge.setStatus(dto.getStatus());
 
-        return connector;
+        return bridge;
     }
 
-    public ConnectorResponse toResponse() {
-        ConnectorResponse response = new ConnectorResponse();
+    public BridgeResponse toResponse() {
+        BridgeResponse response = new BridgeResponse();
         response.setId(id);
         response.setName(name);
         response.setEndpoint(endpoint);

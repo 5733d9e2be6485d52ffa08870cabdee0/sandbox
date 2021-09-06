@@ -5,13 +5,13 @@ import java.time.ZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.infra.dto.BridgeStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ConnectorResponse {
+public class BridgeResponse {
 
     @JsonProperty("kind")
-    private final String kind = "Connector";
+    private final String kind = "Bridge";
 
     @JsonProperty("id")
     private String id;
@@ -20,7 +20,7 @@ public class ConnectorResponse {
     private String name;
 
     @JsonProperty("href")
-    private String href; // TODO: implement connector endpoint and set href to endpoint
+    private String href; // TODO: implement bridge endpoint and set href to endpoint
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -31,7 +31,7 @@ public class ConnectorResponse {
     private ZonedDateTime publishedAt;
 
     @JsonProperty("status")
-    private ConnectorStatus status;
+    private BridgeStatus status;
 
     @JsonProperty("endpoint")
     private String endpoint;
@@ -56,7 +56,7 @@ public class ConnectorResponse {
         return publishedAt;
     }
 
-    public ConnectorStatus getStatus() {
+    public BridgeStatus getStatus() {
         return status;
     }
 
@@ -80,7 +80,7 @@ public class ConnectorResponse {
         this.publishedAt = publishedAt;
     }
 
-    public void setStatus(ConnectorStatus status) {
+    public void setStatus(BridgeStatus status) {
         this.status = status;
     }
 

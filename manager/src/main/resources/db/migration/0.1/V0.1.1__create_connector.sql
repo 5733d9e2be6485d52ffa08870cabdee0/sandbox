@@ -1,4 +1,4 @@
-create table CONNECTOR
+create table BRIDGE
 (
     id                 varchar(255) NOT NULL PRIMARY KEY,
     customer_id        varchar(255) NOT NULL,

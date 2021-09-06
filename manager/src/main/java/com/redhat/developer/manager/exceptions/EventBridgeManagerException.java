@@ -2,13 +2,13 @@ package com.redhat.developer.manager.exceptions;
 
 import javax.ws.rs.core.Response;
 
-public class EventConnectManagerException extends RuntimeException {
+public class EventBridgeManagerException extends RuntimeException {
 
-    public EventConnectManagerException(String message) {
+    public EventBridgeManagerException(String message) {
         super(message);
     }
 
-    public EventConnectManagerException(String message, Throwable cause) {
+    public EventBridgeManagerException(String message, Throwable cause) {
         super(message, cause);
     }
 

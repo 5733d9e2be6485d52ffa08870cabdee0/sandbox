@@ -5,25 +5,25 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
-import com.redhat.developer.infra.dto.ConnectorStatus;
-import com.redhat.developer.manager.models.Connector;
+import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.manager.models.Bridge;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 @Transactional
-public class ConnectorDAO implements PanacheRepositoryBase<Connector, String> {
+public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
-    public List<Connector> findByStatus(ConnectorStatus status) {
+    public List<Bridge> findByStatus(BridgeStatus status) {
         Parameters params = Parameters
                 .with("status", status);
-        return find("#CONNECTOR.findByStatus", params).list();
+        return find("#BRIDGE.findByStatus", params).list();
     }
 
-    public Connector findByNameAndCustomerId(String name, String customerId) {
+    public Bridge findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
                 .with("name", name).and("customerId", customerId);
-        return find("#CONNECTOR.findByNameAndCustomerId", params).firstResult();
+        return find("#BRIDGE.findByNameAndCustomerId", params).firstResult();
     }
 }

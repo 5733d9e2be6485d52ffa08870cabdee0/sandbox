@@ -14,7 +14,7 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 @Dependent
 public class WebClientManagerProducer {
 
-    @ConfigProperty(name = "event-connect.manager.url")
+    @ConfigProperty(name = "event-bridge.manager.url")
     String eventConnectManagerUrl;
 
     @Inject

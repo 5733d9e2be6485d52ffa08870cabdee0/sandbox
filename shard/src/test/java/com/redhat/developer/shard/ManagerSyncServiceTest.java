@@ -19,8 +19,8 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
-import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.infra.dto.BridgeDTO;
+import com.redhat.developer.infra.dto.BridgeStatus;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -51,61 +51,61 @@ public class ManagerSyncServiceTest {
     }
 
     @Test
-    public void testConnectorsAreDeployed() throws JsonProcessingException, InterruptedException {
-        List<ConnectorDTO> connectorDTOs = new ArrayList<>();
-        connectorDTOs.add(new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatus.REQUESTED));
-        connectorDTOs.add(new ConnectorDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", ConnectorStatus.REQUESTED));
-        stubConnectorsToDeploy(connectorDTOs);
-        stubConnectorUpdate();
+    public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
+        List<BridgeDTO> bridgeDTOS = new ArrayList<>();
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
+        stubBridgesToDeploy(bridgeDTOS);
+        stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
-        addConnectorUpdateRequestListener(latch);
+        addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessConnectorsFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/shard/connectors/toDeploy"))
+        verify(postRequestedFor(urlEqualTo("/shard/bridges/toDeploy"))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
-    public void testNotifyConnectorStatusChange() throws InterruptedException {
-        ConnectorDTO dto = new ConnectorDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", ConnectorStatus.PROVISIONING);
-        stubConnectorUpdate();
+    public void testNotifyBridgeStatusChange() throws InterruptedException {
+        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING);
+        stubBridgeUpdate();
         String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(1); // Two updates to the manager are expected
-        addConnectorUpdateRequestListener(latch);
+        addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.notifyConnectorStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+        managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/shard/connectors/toDeploy"))
+        verify(postRequestedFor(urlEqualTo("/shard/bridges/toDeploy"))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
-    private void stubConnectorsToDeploy(List<ConnectorDTO> connectorDTOs) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/shard/connectors/toDeploy"))
+    private void stubBridgesToDeploy(List<BridgeDTO> bridgeDTOS) throws JsonProcessingException {
+        stubFor(get(urlEqualTo("/shard/bridges/toDeploy"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(new ObjectMapper().writeValueAsString(connectorDTOs))));
+                        .withBody(new ObjectMapper().writeValueAsString(bridgeDTOS))));
     }
 
-    private void stubConnectorUpdate() {
-        stubFor(post(urlEqualTo("/shard/connectors/toDeploy"))
+    private void stubBridgeUpdate() {
+        stubFor(post(urlEqualTo("/shard/bridges/toDeploy"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
     }
 
-    private void addConnectorUpdateRequestListener(CountDownLatch latch) {
+    private void addBridgeUpdateRequestListener(CountDownLatch latch) {
         wireMockServer.addMockServiceRequestListener(new RequestListener() {
             @Override
             public void requestReceived(Request request, Response response) {
-                if (request.getUrl().equals("/shard/connectors/toDeploy") && request.getMethod().equals(RequestMethod.POST)) {
+                if (request.getUrl().equals("/shard/bridges/toDeploy") && request.getMethod().equals(RequestMethod.POST)) {
                     latch.countDown();
                 }
             }

@@ -2,7 +2,7 @@ package com.redhat.developer.infra.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ConnectorDTO {
+public class BridgeDTO {
 
     @JsonProperty("id")
     private String id;
@@ -17,12 +17,12 @@ public class ConnectorDTO {
     private String customerId;
 
     @JsonProperty("status")
-    private ConnectorStatus status;
+    private BridgeStatus status;
 
-    public ConnectorDTO() {
+    public BridgeDTO() {
     }
 
-    public ConnectorDTO(String id, String name, String endpoint, String customerId, ConnectorStatus status) {
+    public BridgeDTO(String id, String name, String endpoint, String customerId, BridgeStatus status) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -34,7 +34,7 @@ public class ConnectorDTO {
         this.customerId = customerId;
     }
 
-    public void setStatus(ConnectorStatus status) {
+    public void setStatus(BridgeStatus status) {
         this.status = status;
     }
 
@@ -66,7 +66,7 @@ public class ConnectorDTO {
         return name;
     }
 
-    public ConnectorStatus getStatus() {
+    public BridgeStatus getStatus() {
         return status;
     }
 }

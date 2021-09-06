@@ -16,7 +16,7 @@ public class ManagerMockResource implements QuarkusTestResourceLifecycleManager 
         wireMockServer = new WireMockServer();
         wireMockServer.start();
 
-        return Collections.singletonMap("event-connect.manager.url", wireMockServer.baseUrl());
+        return Collections.singletonMap("event-bridge.manager.url", wireMockServer.baseUrl());
     }
 
     @Override

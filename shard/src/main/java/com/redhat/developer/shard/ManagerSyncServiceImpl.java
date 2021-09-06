@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.developer.infra.dto.ConnectorDTO;
-import com.redhat.developer.infra.dto.ConnectorStatus;
+import com.redhat.developer.infra.dto.BridgeDTO;
+import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
@@ -37,40 +37,40 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     WebClient webClientManager;
 
     @Scheduled(every = "30s")
-    void syncConnectors() {
-        LOGGER.info("[Shard] wakes up to get connectors to deploy");
-        fetchAndProcessConnectorsFromManager().subscribe().with(
-                success -> LOGGER.info("[shard] has processed all the connectors"),
-                failure -> LOGGER.warn("[shard] something went wrong during the process of the connectors to be deployed"));
+    void syncBridges() {
+        LOGGER.info("[Shard] wakes up to get Bridges to deploy");
+        fetchAndProcessBridgesFromManager().subscribe().with(
+                success -> LOGGER.info("[shard] has processed all the Bridges"),
+                failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed"));
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyConnectorStatusChange(ConnectorDTO connectorDTO) {
-        LOGGER.info("[shard] Notifying manager about the new status of the connector '{}'", connectorDTO.getId());
-        return webClientManager.post("/shard/connectors/toDeploy").sendJson(connectorDTO);
+    public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
+        LOGGER.info("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
+        return webClientManager.post("/shard/bridges/toDeploy").sendJson(bridgeDTO);
     }
 
     @Override
-    public Uni<Object> fetchAndProcessConnectorsFromManager() {
-        return webClientManager.get("/shard/connectors/toDeploy").send()
-                .onItem().transform(x -> deserializeConnectors(x.bodyAsString()))
+    public Uni<Object> fetchAndProcessBridgesFromManager() {
+        return webClientManager.get("/shard/bridges/toDeploy").send()
+                .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
-                                    y.setStatus(ConnectorStatus.PROVISIONING);
-                                    return notifyConnectorStatusChange(y).subscribe().with(
-                                            success -> operatorService.createConnectorDeployment(y),
-                                            failure -> LOGGER.warn("[shard] could not notify the manager with the new status"));
+                                    y.setStatus(BridgeStatus.PROVISIONING);
+                                    return notifyBridgeStatusChange(y).subscribe().with(
+                                            success -> operatorService.createBridgeDeployment(y),
+                                            failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
                                 }).collect(Collectors.toList())));
     }
 
-    private List<ConnectorDTO> deserializeConnectors(String s) {
+    private List<BridgeDTO> deserializeBridges(String s) {
         try {
-            return mapper.readValue(s, new TypeReference<List<ConnectorDTO>>() {
+            return mapper.readValue(s, new TypeReference<List<BridgeDTO>>() {
             });
         } catch (JsonProcessingException e) {
-            LOGGER.warn("[shard] Failed to deserialize connectors to deploy", e);
-            throw new DeserializationException("Failed to deserialize connectors fetched from the manager.", e);
+            LOGGER.warn("[shard] Failed to deserialize Bridges to deploy", e);
+            throw new DeserializationException("Failed to deserialize Bridges fetched from the manager.", e);
         }
     }
 }

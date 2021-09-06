@@ -1,7 +1,7 @@
 package com.redhat.developer.shard;
 
-import com.redhat.developer.infra.dto.ConnectorDTO;
+import com.redhat.developer.infra.dto.BridgeDTO;
 
 public interface OperatorService {
-    ConnectorDTO createConnectorDeployment(ConnectorDTO connector);
+    BridgeDTO createBridgeDeployment(BridgeDTO bridge);
 }

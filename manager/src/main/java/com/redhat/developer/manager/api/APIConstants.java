@@ -1,7 +1,7 @@
 package com.redhat.developer.manager.api;
 
 /**
- * Some constants used for parameter naming and defaults for the DaaS API
+ * Some constants used for parameter naming and defaults for the API
  */
 public class APIConstants {
 

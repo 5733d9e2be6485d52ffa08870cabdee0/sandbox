@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ConnectorListResponse extends ListResponse {
+public class BridgeListResponse extends ListResponse {
 
     @JsonProperty("kind")
-    private String kind = "ConnectorList";
+    private String kind = "BridgeList";
 
     @JsonProperty("items")
-    private List<ConnectorResponse> items = new ArrayList<>();
+    private List<BridgeResponse> items = new ArrayList<>();
 
     public String getKind() {
         return kind;
@@ -23,11 +23,11 @@ public class ConnectorListResponse extends ListResponse {
         this.kind = kind;
     }
 
-    public List<ConnectorResponse> getItems() {
+    public List<BridgeResponse> getItems() {
         return items;
     }
 
-    public void setItems(List<ConnectorResponse> items) {
+    public void setItems(List<BridgeResponse> items) {
         this.items = items;
     }
 }
