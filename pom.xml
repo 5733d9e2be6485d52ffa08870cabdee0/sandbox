@@ -16,6 +16,8 @@
     <module>runner</module>
     <module>bom</module>
     <module>build-parent</module>
+    <module>ingress</module>
+    <module>infra</module>
   </modules>
 
 </project>
