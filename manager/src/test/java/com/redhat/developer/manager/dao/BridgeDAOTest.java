@@ -33,7 +33,7 @@ public class BridgeDAOTest {
 
     @Test
     public void testFindByStatus() {
-        Bridge bridge = buildBridge();
+        Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
         List<Bridge> retrievedBridges = bridgeDAO.findByStatus(BridgeStatus.PROVISIONING);
@@ -48,7 +48,7 @@ public class BridgeDAOTest {
 
     @Test
     public void testFindByNameAndCustomerId() {
-        Bridge bridge = buildBridge();
+        Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
         Bridge retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
@@ -63,12 +63,10 @@ public class BridgeDAOTest {
 
     @Test
     public void testListByCustomerId() {
-        Bridge firstBridge = buildBridge();
+        Bridge firstBridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(firstBridge);
 
-        Bridge secondBridge = buildBridge();
-        secondBridge.setId("mySecondBridgeId");
-        secondBridge.setName("mySecondBridgeName");
+        Bridge secondBridge = buildBridge("mySecondBridgeId", "mySecondBridgeName");
         bridgeDAO.persist(secondBridge);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.listByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
@@ -85,10 +83,8 @@ public class BridgeDAOTest {
     @Test
     public void testListByCustomerIdPagination() {
         for (int i = 0; i < 10; i++) {
-            Bridge bridge = buildBridge();
-            bridge.setId(String.valueOf(i));
-            bridge.setName(String.valueOf(i));
-
+            String id = String.valueOf(i);
+            Bridge bridge = buildBridge(id, id);
             bridgeDAO.persist(bridge);
         }
 
@@ -123,11 +119,11 @@ public class BridgeDAOTest {
         Assertions.assertEquals(5, retrievedBridges.getPage());
     }
 
-    private Bridge buildBridge() {
+    private Bridge buildBridge(String id, String name) {
         Bridge bridge = new Bridge();
-        bridge.setId("myId");
+        bridge.setId(id);
         bridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        bridge.setName(TestConstants.DEFAULT_BRIDGE_NAME);
+        bridge.setName(name);
         bridge.setStatus(BridgeStatus.REQUESTED);
         bridge.setSubmittedAt(ZonedDateTime.now());
 
