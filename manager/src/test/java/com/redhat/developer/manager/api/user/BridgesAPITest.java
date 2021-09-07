@@ -15,6 +15,7 @@ import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 
 @QuarkusTest
 public class BridgesAPITest {
@@ -40,6 +41,25 @@ public class BridgesAPITest {
     }
 
     @Test
+    public void getBridge() {
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        bridgeCreateResponse.then().statusCode(200);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        Assertions.assertNotNull(retrievedBridge);
+        Assertions.assertEquals(bridge.getId(), retrievedBridge.getId());
+        Assertions.assertEquals(bridge.getName(), retrievedBridge.getName());
+        Assertions.assertEquals(bridge.getEndpoint(), retrievedBridge.getEndpoint());
+    }
+
+    @Test
+    public void getUnexistingBridge() {
+        TestUtils.getBridge("not-the-id").then().statusCode(400);
+    }
+
+    @Test
     public void testCreateAndGetBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(200);
@@ -50,6 +70,7 @@ public class BridgesAPITest {
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
         Assertions.assertEquals(TestConstants.DEFAULT_BRIDGE_NAME, bridgeResponse.getName());
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridgeResponse.getStatus());
+        Assertions.assertEquals("/api/v1/bridges/" + bridgeResponse.getId(), bridgeResponse.getHref());
         Assertions.assertNotNull(bridgeResponse.getSubmittedAt());
 
         Assertions.assertNull(bridgeResponse.getEndpoint());

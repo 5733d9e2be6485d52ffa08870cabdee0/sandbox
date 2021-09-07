@@ -15,7 +15,9 @@ import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
 import com.redhat.developer.manager.dao.BridgeDAO;
 import com.redhat.developer.manager.exceptions.AlreadyExistingItemException;
+import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
+import com.redhat.developer.manager.models.ListResult;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -41,9 +43,18 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public List<Bridge> getBridges(String customerId) {
-        // TODO: filter by customerId and add pagination
-        return bridgeDAO.listAll();
+    public Bridge getBridge(String id, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge '%s' for customer '%s' does not exist", id, customerId));
+        }
+
+        return bridge;
+    }
+
+    @Override
+    public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
+        return bridgeDAO.listByCustomerId(customerId, page, pageSize);
     }
 
     @Override

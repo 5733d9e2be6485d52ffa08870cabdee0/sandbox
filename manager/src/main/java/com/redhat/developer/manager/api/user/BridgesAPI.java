@@ -11,6 +11,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -22,11 +23,12 @@ import com.redhat.developer.manager.api.models.requests.BridgeRequest;
 import com.redhat.developer.manager.api.models.responses.BridgeListResponse;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
 import com.redhat.developer.manager.models.Bridge;
+import com.redhat.developer.manager.models.ListResult;
 
 import static com.redhat.developer.manager.api.APIConstants.PAGE;
 import static com.redhat.developer.manager.api.APIConstants.PAGE_DEFAULT;
 import static com.redhat.developer.manager.api.APIConstants.PAGE_MIN;
-import static com.redhat.developer.manager.api.APIConstants.SIZE;
+import static com.redhat.developer.manager.api.APIConstants.PAGE_SIZE;
 import static com.redhat.developer.manager.api.APIConstants.SIZE_DEFAULT;
 import static com.redhat.developer.manager.api.APIConstants.SIZE_MAX;
 import static com.redhat.developer.manager.api.APIConstants.SIZE_MIN;
@@ -41,21 +43,22 @@ public class BridgesAPI {
     BridgesService bridgesService;
 
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBridges(@DefaultValue(PAGE_DEFAULT) @Min(PAGE_MIN) @QueryParam(PAGE) int page,
-            @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(SIZE) int size) {
-        List<BridgeResponse> bridges = bridgesService
-                .getBridges(customerIdResolver.resolveCustomerId())
+            @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
+        ListResult<Bridge> bridges = bridgesService
+                .getBridges(customerIdResolver.resolveCustomerId(), page, pageSize);
+
+        List<BridgeResponse> bridgeResponses = bridges.getItems()
                 .stream()
                 .map(Bridge::toResponse)
                 .collect(Collectors.toList());
 
         BridgeListResponse response = new BridgeListResponse();
-        response.setItems(bridges);
-        response.setPage(page);
-        response.setSize(bridges.size());
-        response.setTotal(-1); // TODO: replace when pagination is implemented
+        response.setItems(bridgeResponses);
+        response.setPage(bridges.getPage());
+        response.setSize(bridges.getSize());
+        response.setTotal(bridges.getTotal());
 
         return Response.ok(response).build();
     }
@@ -68,4 +71,11 @@ public class BridgesAPI {
         return Response.ok(bridge.toResponse()).build();
     }
 
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBridge(@PathParam("id") String id) {
+        Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId());
+        return Response.ok(bridge.toResponse()).build();
+    }
 }

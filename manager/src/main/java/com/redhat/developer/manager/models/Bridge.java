@@ -21,7 +21,11 @@ import com.redhat.developer.manager.api.models.responses.BridgeResponse;
         @NamedQuery(name = "BRIDGE.findByStatus",
                 query = "from Bridge where status=:status"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
-                query = "from Bridge where name=:name and customer_id=:customerId order by submitted_at desc"),
+                query = "from Bridge where name=:name and customer_id=:customerId"),
+        @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
+                query = "from Bridge where id=:id and customer_id=:customerId"),
+        @NamedQuery(name = "BRIDGE.findByCustomerId",
+                query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
 })
 @Entity
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
@@ -141,6 +145,7 @@ public class Bridge {
         response.setSubmittedAt(submittedAt);
         response.setPublishedAt(publishedAt);
         response.setStatus(status);
+        response.setHref("/api/v1/bridges/" + id);
 
         return response;
     }

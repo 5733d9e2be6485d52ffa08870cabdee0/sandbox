@@ -23,7 +23,7 @@ public class APIConstants {
     /**
      * The size query parameter name
      */
-    public static final String SIZE = "size";
+    public static final String PAGE_SIZE = "size";
 
     /**
      * The minimum value for the size query parameter
