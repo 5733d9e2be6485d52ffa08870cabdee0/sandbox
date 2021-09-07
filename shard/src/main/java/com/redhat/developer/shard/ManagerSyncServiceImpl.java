@@ -47,12 +47,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.info("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.post("/shard/bridges/toDeploy").sendJson(bridgeDTO);
+        return webClientManager.post("/api/v1/shard/bridges/toDeploy").sendJson(bridgeDTO);
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesFromManager() {
-        return webClientManager.get("/shard/bridges/toDeploy").send()
+        return webClientManager.get("/api/v1/shard/bridges/toDeploy").send()
                 .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
