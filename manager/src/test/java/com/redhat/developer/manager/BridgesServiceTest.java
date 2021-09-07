@@ -10,7 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
+import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
+import com.redhat.developer.manager.models.ListResult;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -37,8 +39,10 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridges() {
-        List<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertEquals(0, bridges.size());
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        Assertions.assertEquals(0, bridges.getPage());
+        Assertions.assertEquals(0, bridges.getTotal());
+        Assertions.assertEquals(0, bridges.getSize());
     }
 
     @Test
@@ -46,12 +50,41 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertEquals(1, bridges.size());
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        Assertions.assertEquals(1, bridges.getSize());
+        Assertions.assertEquals(1, bridges.getTotal());
+        Assertions.assertEquals(0, bridges.getPage());
 
         // filter by customer id not implemented yet
-        bridges = bridgesService.getBridges("not-the-id");
-        Assertions.assertEquals(1, bridges.size());
+        bridges = bridgesService.getBridges("not-the-id", TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        Assertions.assertEquals(0, bridges.getSize());
+        Assertions.assertEquals(0, bridges.getTotal());
+        Assertions.assertEquals(0, bridges.getPage());
+    }
+
+    @Test
+    public void testGetBridge() {
+        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Assertions.assertNotNull(retrievedBridge);
+        Assertions.assertEquals(bridge.getName(), retrievedBridge.getName());
+        Assertions.assertEquals(bridge.getCustomerId(), retrievedBridge.getCustomerId());
+        Assertions.assertEquals(bridge.getStatus(), retrievedBridge.getStatus());
+    }
+
+    @Test
+    public void testGetUnexistingBridge() {
+        Assertions.assertThrows(ItemNotFoundException.class, () -> bridgesService.getBridge("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID));
+    }
+
+    @Test
+    public void testGetBridgeWithWrongCustomerId() {
+        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+
+        Assertions.assertThrows(ItemNotFoundException.class, () -> bridgesService.getBridge(bridge.getId(), "not-the-customerId"));
     }
 
     @Test
@@ -59,33 +92,31 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridgesToDeploy();
-        Assertions.assertEquals(1, bridges.size());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, bridges.get(0).getStatus());
-        Assertions.assertNull(bridges.get(0).getEndpoint());
+        List<Bridge> bridgesToDeploy = bridgesService.getBridgesToDeploy();
+        Assertions.assertEquals(1, bridgesToDeploy.size());
+        Assertions.assertEquals(BridgeStatus.REQUESTED, bridgesToDeploy.get(0).getStatus());
+        Assertions.assertNull(bridgesToDeploy.get(0).getEndpoint());
 
-        bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertEquals(1, bridges.size());
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        Assertions.assertEquals(1, bridges.getSize());
     }
 
     @Test
     public void testUpdateBridgeStatus() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         List<Bridge> bridges = bridgesService.getBridgesToDeploy();
         Assertions.assertEquals(1, bridges.size());
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridges.get(0).getStatus());
 
-        Bridge bridge = bridges.get(0);
         bridge.setStatus(BridgeStatus.PROVISIONING);
         bridgesService.updateBridge(bridge);
 
         bridges = bridgesService.getBridgesToDeploy();
         Assertions.assertEquals(0, bridges.size());
 
-        bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertEquals(1, bridges.size());
-        Assertions.assertEquals(BridgeStatus.PROVISIONING, bridges.get(0).getStatus());
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Assertions.assertEquals(BridgeStatus.PROVISIONING, retrievedBridge.getStatus());
     }
 }

@@ -20,7 +20,7 @@ public class BridgeResponse {
     private String name;
 
     @JsonProperty("href")
-    private String href; // TODO: implement bridge endpoint and set href to endpoint
+    private String href;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -70,6 +70,10 @@ public class BridgeResponse {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
     }
 
     public void setSubmittedAt(ZonedDateTime submittedAt) {

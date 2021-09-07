@@ -19,6 +19,14 @@ public class TestUtils {
                 .get("/api/v1/bridges");
     }
 
+    public static Response getBridge(String id) {
+        return given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/api/v1/bridges/" + id);
+    }
+
     public static Response createBridge(BridgeRequest request) {
         return given()
                 .filter(new ResponseLoggingFilter())

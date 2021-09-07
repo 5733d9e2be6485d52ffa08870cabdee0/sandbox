@@ -2,11 +2,11 @@ version: '3.2'
 services:
   db:
     image: library/postgres:13.1
-    container_name: event-connect-postgres
+    container_name: event-bridge-postgres
     environment:
-      POSTGRES_USER: event-connect
-      POSTGRES_PASSWORD: event-connect
-      POSTGRES_DB: event-connect
+      POSTGRES_USER: event-bridge
+      POSTGRES_PASSWORD: event-bridge
+      POSTGRES_DB: event-bridge
     ports:
       - "5432:5432"
 

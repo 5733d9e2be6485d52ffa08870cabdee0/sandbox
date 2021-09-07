@@ -65,7 +65,7 @@ public class ManagerSyncServiceTest {
         managerSyncService.fetchAndProcessBridgesFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/shard/bridges/toDeploy"))
+        verify(postRequestedFor(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
@@ -82,20 +82,20 @@ public class ManagerSyncServiceTest {
         managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/shard/bridges/toDeploy"))
+        verify(postRequestedFor(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
     private void stubBridgesToDeploy(List<BridgeDTO> bridgeDTOS) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/shard/bridges/toDeploy"))
+        stubFor(get(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(new ObjectMapper().writeValueAsString(bridgeDTOS))));
     }
 
     private void stubBridgeUpdate() {
-        stubFor(post(urlEqualTo("/shard/bridges/toDeploy"))
+        stubFor(post(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
@@ -105,7 +105,7 @@ public class ManagerSyncServiceTest {
         wireMockServer.addMockServiceRequestListener(new RequestListener() {
             @Override
             public void requestReceived(Request request, Response response) {
-                if (request.getUrl().equals("/shard/bridges/toDeploy") && request.getMethod().equals(RequestMethod.POST)) {
+                if (request.getUrl().equals("/api/v1/shard/bridges/toDeploy") && request.getMethod().equals(RequestMethod.POST)) {
                     latch.countDown();
                 }
             }
