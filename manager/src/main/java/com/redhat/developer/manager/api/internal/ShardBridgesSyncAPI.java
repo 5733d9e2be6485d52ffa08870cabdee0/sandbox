@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.dto.BridgeDTO;
+import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.BridgesService;
 import com.redhat.developer.manager.models.Bridge;
 
@@ -31,14 +32,29 @@ public class ShardBridgesSyncAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBridgesToDeploy() {
         LOGGER.info("[Manager] Shard asks for Bridges to deploy");
-        return Response.ok(bridgesService.getBridgesToDeploy().stream().map(Bridge::toDTO).collect(Collectors.toList())).build();
+        return Response.ok(bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED)
+                .stream()
+                .map(Bridge::toDTO)
+                .collect(Collectors.toList()))
+                .build();
     }
 
-    @POST
-    @Path("/toDeploy")
+    @GET
+    @Path("/toDelete")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getBridgesToDelete() {
+        LOGGER.info("[Manager] Shard asks for Bridges to deploy");
+        return Response.ok(bridgesService.getBridgesByStatus(BridgeStatus.DELETION_REQUESTED)
+                .stream()
+                .map(Bridge::toDTO)
+                .collect(Collectors.toList()))
+                .build();
+    }
+
+    @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response notifyDeployment(BridgeDTO dto) {
+    public Response updateBridge(BridgeDTO dto) {
         LOGGER.info("[manager] shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         bridgesService.updateBridge(Bridge.fromDTO(dto));
         return Response.ok().build();

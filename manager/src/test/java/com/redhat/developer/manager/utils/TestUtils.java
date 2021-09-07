@@ -36,6 +36,14 @@ public class TestUtils {
                 .post("/api/v1/bridges");
     }
 
+    public static Response deleteBridge(String id) {
+        return given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/api/v1/bridges/" + id);
+    }
+
     public static Response getBridgesToDeploy() {
         return given()
                 .filter(new ResponseLoggingFilter())
@@ -44,12 +52,20 @@ public class TestUtils {
                 .get("/api/v1/shard/bridges/toDeploy");
     }
 
+    public static Response getBridgesToDelete() {
+        return given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/api/v1/shard/bridges/toDelete");
+    }
+
     public static Response updateBridge(BridgeDTO bridgeDTO) {
         return given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
                 .body(bridgeDTO)
-                .post("/api/v1/shard/bridges/toDeploy");
+                .put("/api/v1/shard/bridges");
     }
 }
