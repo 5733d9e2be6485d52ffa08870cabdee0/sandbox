@@ -53,18 +53,35 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
+    @Transactional
+    public void deleteBridge(String id, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge '%s' for customer '%s' does not exist", id, customerId));
+        }
+
+        bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
+        LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+    }
+
+    @Override
     public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
         return bridgeDAO.listByCustomerId(customerId, page, pageSize);
     }
 
     @Override
-    public List<Bridge> getBridgesToDeploy() {
-        return bridgeDAO.findByStatus(BridgeStatus.REQUESTED);
+    public List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses) {
+        return bridgeDAO.findByStatuses(statuses);
     }
 
     @Override
     @Transactional
     public Bridge updateBridge(Bridge bridge) {
+        if (bridge.getStatus().equals(BridgeStatus.DELETED)) {
+            bridgeDAO.deleteById(bridge.getId());
+            return bridge;
+        }
+
         bridgeDAO.getEntityManager().merge(bridge);
         LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;

@@ -2,6 +2,7 @@ package com.redhat.developer.shard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -38,12 +39,27 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
         return bridge;
     }
 
+    @Override
+    public BridgeDTO deleteBridgeDeployment(BridgeDTO bridge) {
+        Optional<BridgeDTO> optionalBridgeToDelete = bridges.stream().filter(x -> x.getId().equals(bridge.getId())).findFirst(); // TODO: when we move to k8s, replace this with CRD removal
+        if (!optionalBridgeToDelete.isPresent()) {
+            LOGGER.info("[shard] could not find Bridge '{}' deployment for customer '{}', ignoring.", bridge.getId(), bridge.getCustomerId());
+        } else {
+            bridges.remove(optionalBridgeToDelete.get());
+            ingressService.undeploy(bridge.getName()); // TODO: in k8s we just delete the deployment
+            LOGGER.info("[shard] Bridge with id '{}' and name '{}' for customer '{}' has been deleted",
+                    bridge.getId(), bridge.getName(), bridge.getCustomerId());
+        }
+
+        return bridge;
+    }
+
     // TODO: replace with operator reconcile loop and logic
     @Scheduled(every = "30s")
     void reconcileLoopMock() {
         LOGGER.debug("[shard] Bridge reconcile loop mock wakes up");
         for (BridgeDTO dto : bridges.stream().filter(x -> x.getStatus().equals(BridgeStatus.PROVISIONING)).collect(Collectors.toList())) {
-            LOGGER.info("[shard] Updating Bridge with id '{}'", dto.getId());
+            LOGGER.info("[shard] Updating deployment of ingress Bridge with id '{}'", dto.getId());
             String endpoint = ingressService.deploy(dto.getName()); // TODO: replace with CR creation and fetch endpoint info from CRD
             dto.setStatus(BridgeStatus.AVAILABLE);
             dto.setEndpoint(endpoint);

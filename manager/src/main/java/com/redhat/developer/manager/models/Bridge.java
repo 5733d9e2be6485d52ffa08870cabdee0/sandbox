@@ -18,8 +18,8 @@ import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByStatus",
-                query = "from Bridge where status=:status"),
+        @NamedQuery(name = "BRIDGE.findByStatuses",
+                query = "from Bridge where status IN :statuses"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
