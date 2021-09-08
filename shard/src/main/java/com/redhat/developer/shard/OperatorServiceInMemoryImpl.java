@@ -41,11 +41,11 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
 
     @Override
     public BridgeDTO deleteBridgeDeployment(BridgeDTO bridge) {
-        Optional<BridgeDTO> first = bridges.stream().filter(x -> x.getId().equals(bridge.getId())).findFirst(); // TODO: when we move to k8s, replace this with CRD removal
-        if (!first.isPresent()) {
+        Optional<BridgeDTO> optionalBridgeToDelete = bridges.stream().filter(x -> x.getId().equals(bridge.getId())).findFirst(); // TODO: when we move to k8s, replace this with CRD removal
+        if (!optionalBridgeToDelete.isPresent()) {
             LOGGER.info("[shard] could not find Bridge '{}' deployment for customer '{}', ignoring.", bridge.getId(), bridge.getCustomerId());
         } else {
-            bridges.remove(first.get());
+            bridges.remove(optionalBridgeToDelete.get());
             ingressService.undeploy(bridge.getName()); // TODO: in k8s we just delete the deployment
             LOGGER.info("[shard] Bridge with id '{}' and name '{}' for customer '{}' has been deleted",
                     bridge.getId(), bridge.getName(), bridge.getCustomerId());
