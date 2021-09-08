@@ -42,14 +42,19 @@ public class TestUtils {
                 .post("/api/v1/bridges");
     }
 
-    public static Response getBridgesToDeploy() {
+    public static Response deleteBridge(String id) {
         return jsonRequest()
-                .get("/api/v1/shard/bridges/toDeploy");
+                .delete("/api/v1/bridges/" + id);
+    }
+
+    public static Response getBridgesToDeployOrDelete() {
+        return jsonRequest()
+                .get("/api/v1/shard/bridges");
     }
 
     public static Response updateBridge(BridgeDTO bridgeDTO) {
         return jsonRequest()
                 .body(bridgeDTO)
-                .post("/api/v1/shard/bridges/toDeploy");
+                .put("/api/v1/shard/bridges");
     }
 }

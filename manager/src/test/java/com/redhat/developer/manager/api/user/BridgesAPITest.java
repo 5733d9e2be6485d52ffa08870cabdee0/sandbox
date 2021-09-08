@@ -91,6 +91,15 @@ public class BridgesAPITest {
     }
 
     @Test
+    public void testDeleteBridge() {
+        BridgeResponse response = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        TestUtils.deleteBridge(response.getId()).then().statusCode(202);
+        response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
+
+        Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, response.getStatus());
+    }
+
+    @Test
     public void testAlreadyExistingBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(201);

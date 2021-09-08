@@ -9,6 +9,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -85,6 +86,14 @@ public class BridgesAPI {
     public Response getBridge(@PathParam("id") @NotEmpty String id) {
         Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId());
         return Response.ok(bridge.toResponse()).build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteBridge(@PathParam("id") String id) {
+        bridgesService.deleteBridge(id, customerIdResolver.resolveCustomerId());
+        return Response.accepted().build();
     }
 
     @Path("/{id}/processors")

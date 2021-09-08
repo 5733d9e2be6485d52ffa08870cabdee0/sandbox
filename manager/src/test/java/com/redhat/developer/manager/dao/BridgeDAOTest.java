@@ -1,6 +1,7 @@
 package com.redhat.developer.manager.dao;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -36,13 +37,13 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByStatus(BridgeStatus.PROVISIONING);
+        List<Bridge> retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.PROVISIONING));
         Assertions.assertEquals(0, retrievedBridges.size());
 
-        retrievedBridges = bridgeDAO.findByStatus(BridgeStatus.AVAILABLE);
+        retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.AVAILABLE));
         Assertions.assertEquals(0, retrievedBridges.size());
 
-        retrievedBridges = bridgeDAO.findByStatus(BridgeStatus.REQUESTED);
+        retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(1, retrievedBridges.size());
     }
 

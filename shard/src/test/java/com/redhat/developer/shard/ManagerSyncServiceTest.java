@@ -29,8 +29,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
@@ -55,17 +55,37 @@ public class ManagerSyncServiceTest {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
-        stubBridgesToDeploy(bridgeDTOS);
+        stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessBridgesFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
+                .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    @Test
+    public void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
+        List<BridgeDTO> bridgeDTOS = new ArrayList<>();
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
+        stubBridgesToDeployOrDelete(bridgeDTOS);
+        stubBridgeUpdate();
+        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETED\"}";
+
+        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
+        addBridgeUpdateRequestListener(latch);
+
+        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
+
+        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
@@ -82,20 +102,20 @@ public class ManagerSyncServiceTest {
         managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(postRequestedFor(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
-    private void stubBridgesToDeploy(List<BridgeDTO> bridgeDTOS) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
+    private void stubBridgesToDeployOrDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
+        stubFor(get(urlEqualTo("/api/v1/shard/bridges"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
-                        .withBody(new ObjectMapper().writeValueAsString(bridgeDTOS))));
+                        .withBody(new ObjectMapper().writeValueAsString(bridgeDTOs))));
     }
 
     private void stubBridgeUpdate() {
-        stubFor(post(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
+        stubFor(put(urlEqualTo("/api/v1/shard/bridges"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
@@ -105,7 +125,7 @@ public class ManagerSyncServiceTest {
         wireMockServer.addMockServiceRequestListener(new RequestListener() {
             @Override
             public void requestReceived(Request request, Response response) {
-                if (request.getUrl().equals("/api/v1/shard/bridges/toDeploy") && request.getMethod().equals(RequestMethod.POST)) {
+                if (request.getUrl().equals("/api/v1/shard/bridges") && request.getMethod().equals(RequestMethod.PUT)) {
                     latch.countDown();
                 }
             }
