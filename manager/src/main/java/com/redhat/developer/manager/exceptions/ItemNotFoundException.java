@@ -14,6 +14,6 @@ public class ItemNotFoundException extends EventBridgeManagerException {
 
     @Override
     public int getStatusCode() {
-        return Response.Status.BAD_REQUEST.getStatusCode();
+        return Response.Status.NOT_FOUND.getStatusCode();
     }
 }

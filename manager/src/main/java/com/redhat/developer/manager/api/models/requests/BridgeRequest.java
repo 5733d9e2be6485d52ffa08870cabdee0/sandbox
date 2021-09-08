@@ -1,10 +1,13 @@
 package com.redhat.developer.manager.api.models.requests;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.developer.manager.models.Bridge;
 
 public class BridgeRequest {
 
+    @NotEmpty(message = "Bridge name cannot be null or empty")
     @JsonProperty("name")
     private String name;
 

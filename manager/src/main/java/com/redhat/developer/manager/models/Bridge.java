@@ -1,15 +1,20 @@
 package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -28,7 +33,7 @@ import com.redhat.developer.manager.api.models.responses.BridgeResponse;
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
 })
 @Entity
-@Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
+@Table(name = "BRIDGE", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "customer_id"})})
 public class Bridge {
 
     @Id
@@ -53,7 +58,20 @@ public class Bridge {
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "bridge", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Processor> processors = new ArrayList<>();
+
     public Bridge() {
+    }
+
+    public void addProcessor(Processor processor) {
+        this.processors.add(processor);
+        processor.setBridge(this);
+    }
+
+    public void removeProcessor(Processor processor) {
+        this.processors.remove(processor);
+        processor.setBridge(null);
     }
 
     public Bridge(String name) {
@@ -114,6 +132,14 @@ public class Bridge {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public List<Processor> getProcessors() {
+        return processors;
+    }
+
+    public void setProcessors(List<Processor> processors) {
+        this.processors = processors;
     }
 
     public BridgeDTO toDTO() {

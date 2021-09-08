@@ -2,6 +2,7 @@ package com.redhat.developer.manager.utils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import com.redhat.developer.manager.dao.BridgeDAO;
 
@@ -19,9 +20,11 @@ public class DatabaseManagerUtils {
     BridgeDAO bridgeDAO;
 
     /**
-     * Call the `deleteAll` method of all the DAOs injected so to clean up the database entirely.
+     * Completely non performant way to cascade the delete of all bridges to their Processors. Performance
+     * doesn't really matter as this is only used in a testing scenario.
      */
+    @Transactional
     public void cleanDatabase() {
-        bridgeDAO.deleteAll();
+        bridgeDAO.listAll().stream().forEach(bridgeDAO::delete);
     }
 }

@@ -10,4 +10,6 @@ public interface ManagerSyncService {
     Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO);
 
     Uni<Object> fetchAndProcessBridgesFromManager();
+
+
 }
