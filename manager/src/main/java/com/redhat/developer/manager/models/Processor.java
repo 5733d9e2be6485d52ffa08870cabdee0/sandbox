@@ -20,7 +20,7 @@ import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
-        @NamedQuery(name = "PROCESSOR.listByBridgeAndStatus",
+        @NamedQuery(name = "PROCESSOR.findByBridgeAndStatus",
                 query = "from Processor p where p.status in (:statuses) and p.bridge.id=:bridgeId")
 })
 @Entity

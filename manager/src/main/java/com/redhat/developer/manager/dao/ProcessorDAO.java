@@ -11,8 +11,6 @@ import com.redhat.developer.manager.models.Processor;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
-import static java.util.Arrays.asList;
-
 @ApplicationScoped
 @Transactional
 public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
@@ -22,8 +20,8 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return find("#PROCESSOR.findByBridgeIdAndName", p).firstResultOptional().orElse(null);
     }
 
-    public List<Processor> listProcessorsToDeployOrDelete(String bridgeId) {
-        Parameters p = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId).and("statuses", asList(BridgeStatus.REQUESTED));
-        return find("#PROCESSOR.listByBridgeAndStatus", p).list();
+    public List<Processor> findByStatuses(String bridgeId, List<BridgeStatus> statuses) {
+        Parameters p = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId).and("statuses", statuses);
+        return find("#PROCESSOR.findByBridgeAndStatus", p).list();
     }
 }
