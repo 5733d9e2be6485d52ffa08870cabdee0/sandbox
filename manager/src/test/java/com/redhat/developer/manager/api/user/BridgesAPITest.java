@@ -2,27 +2,25 @@ package com.redhat.developer.manager.api.user;
 
 import javax.inject.Inject;
 
-import com.redhat.developer.infra.dto.BridgeDTO;
-import com.redhat.developer.manager.CustomerIdResolver;
-import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
-import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.manager.CustomerIdResolver;
 import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
+import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
 import com.redhat.developer.manager.api.models.responses.BridgeListResponse;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
+import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static org.hamcrest.MatcherAssert.assertThat;

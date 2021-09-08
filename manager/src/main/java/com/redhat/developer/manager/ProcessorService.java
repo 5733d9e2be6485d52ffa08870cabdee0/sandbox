@@ -1,8 +1,6 @@
 package com.redhat.developer.manager;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

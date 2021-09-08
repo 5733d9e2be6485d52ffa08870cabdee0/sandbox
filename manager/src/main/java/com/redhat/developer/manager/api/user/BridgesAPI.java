@@ -54,7 +54,7 @@ public class BridgesAPI {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBridges(@DefaultValue(PAGE_DEFAULT) @Min(PAGE_MIN) @QueryParam(PAGE) int page,
-                               @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
+            @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
         ListResult<Bridge> bridges = bridgesService
                 .getBridges(customerIdResolver.resolveCustomerId(), page, pageSize);
 

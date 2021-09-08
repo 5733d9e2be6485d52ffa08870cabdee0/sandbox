@@ -1,6 +1,5 @@
 package com.redhat.developer.manager.dao;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -8,6 +7,7 @@ import javax.transaction.Transactional;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.models.Processor;
+
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 

@@ -33,7 +33,7 @@ import com.redhat.developer.manager.api.models.responses.BridgeResponse;
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
 })
 @Entity
-@Table(name = "BRIDGE", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "customer_id"})})
+@Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge {
 
     @Id

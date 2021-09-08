@@ -2,9 +2,10 @@ package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
 
+import org.junit.jupiter.api.Test;
+
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
-import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

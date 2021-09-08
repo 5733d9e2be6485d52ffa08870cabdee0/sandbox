@@ -103,6 +103,6 @@ public class ShardBridgesSyncAPITest {
         bridge.setStatus(BridgeStatus.DELETED);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
-        TestUtils.getBridge(bridge.getId()).then().statusCode(400);
+        TestUtils.getBridge(bridge.getId()).then().statusCode(404);
     }
 }

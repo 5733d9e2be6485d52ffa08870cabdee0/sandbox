@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Test;
+
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
 import com.redhat.developer.manager.dao.BridgeDAO;
@@ -12,8 +14,8 @@ import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
 import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

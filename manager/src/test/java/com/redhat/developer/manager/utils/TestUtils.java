@@ -2,8 +2,8 @@ package com.redhat.developer.manager.utils;
 
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
-
 import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
+
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
