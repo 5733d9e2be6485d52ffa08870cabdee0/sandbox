@@ -65,8 +65,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETED);
+                                        operatorService.deleteBridgeDeployment(y);
                                         return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> operatorService.deleteBridgeDeployment(y),
+                                                success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                                 failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
                                     }
                                     LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
