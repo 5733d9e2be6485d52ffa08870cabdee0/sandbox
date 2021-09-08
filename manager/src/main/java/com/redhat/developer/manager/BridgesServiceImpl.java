@@ -61,7 +61,6 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
-        bridgeDAO.getEntityManager().merge(bridge);
         LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
