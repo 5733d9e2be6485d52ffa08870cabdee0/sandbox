@@ -17,7 +17,7 @@ public interface BridgesService {
 
     ListResult<Bridge> getBridges(String customerId, int page, int pageSize);
 
-    List<Bridge> getBridgesByStatus(BridgeStatus status);
+    List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses);
 
     Bridge updateBridge(Bridge bridge);
 }

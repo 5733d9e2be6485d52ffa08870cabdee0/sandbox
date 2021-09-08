@@ -1,5 +1,6 @@
 package com.redhat.developer.manager;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -33,7 +34,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<Bridge> bridges = bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED);
+        List<Bridge> bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(0, bridges.size());
     }
 
@@ -92,7 +93,7 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED);
+        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(1, bridgesToDeploy.size());
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridgesToDeploy.get(0).getStatus());
         Assertions.assertNull(bridgesToDeploy.get(0).getEndpoint());
@@ -106,14 +107,14 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED);
+        List<Bridge> bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(1, bridges.size());
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridges.get(0).getStatus());
 
         bridge.setStatus(BridgeStatus.PROVISIONING);
         bridgesService.updateBridge(bridge);
 
-        bridges = bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED);
+        bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(0, bridges.size());
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);

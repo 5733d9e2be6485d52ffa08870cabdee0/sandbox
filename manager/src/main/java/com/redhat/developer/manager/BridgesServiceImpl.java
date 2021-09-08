@@ -70,8 +70,8 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public List<Bridge> getBridgesByStatus(BridgeStatus status) {
-        return bridgeDAO.findByStatus(status);
+    public List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses) {
+        return bridgeDAO.findByStatuses(statuses);
     }
 
     @Override

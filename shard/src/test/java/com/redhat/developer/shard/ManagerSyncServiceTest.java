@@ -55,14 +55,14 @@ public class ManagerSyncServiceTest {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
-        stubBridgesToDeploy(bridgeDTOS);
+        stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessBridgesToDeployFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
         verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
@@ -75,14 +75,14 @@ public class ManagerSyncServiceTest {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
-        stubBridgesToDelete(bridgeDTOS);
+        stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETED\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessBridgesToDeleteFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
         verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
@@ -107,15 +107,8 @@ public class ManagerSyncServiceTest {
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
-    private void stubBridgesToDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/api/v1/shard/bridges/toDelete"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(new ObjectMapper().writeValueAsString(bridgeDTOs))));
-    }
-
-    private void stubBridgesToDeploy(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/api/v1/shard/bridges/toDeploy"))
+    private void stubBridgesToDeployOrDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
+        stubFor(get(urlEqualTo("/api/v1/shard/bridges"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(new ObjectMapper().writeValueAsString(bridgeDTOs))));

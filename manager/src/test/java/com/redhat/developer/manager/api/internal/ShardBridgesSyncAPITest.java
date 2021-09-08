@@ -32,7 +32,7 @@ public class ShardBridgesSyncAPITest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<BridgeDTO> response = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
         Assertions.assertEquals(0, response.size());
     }
@@ -41,10 +41,10 @@ public class ShardBridgesSyncAPITest {
     public void testGetBridgesToDeploy() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
-        List<BridgeDTO> response = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(1, response.size());
+        Assertions.assertEquals(1, response.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
         BridgeDTO bridge = response.get(0);
         Assertions.assertEquals(TestConstants.DEFAULT_BRIDGE_NAME, bridge.getName());
         Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, bridge.getCustomerId());
@@ -55,44 +55,43 @@ public class ShardBridgesSyncAPITest {
     @Test
     public void testGetBridgesToDelete() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
-        List<BridgeDTO> bridgesToDeploy = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
-        BridgeDTO bridge = bridgesToDeploy.get(0);
+        BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
-        bridgesToDeploy = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
-        });
-        List<BridgeDTO> bridgesToDelete = TestUtils.getBridgesToDelete().as(new TypeRef<List<BridgeDTO>>() {
+
+        bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(0, bridgesToDeploy.size());
-        Assertions.assertEquals(1, bridgesToDelete.size());
+        Assertions.assertEquals(0, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
+        Assertions.assertEquals(1, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.DELETION_REQUESTED)).count());
     }
 
     @Test
     public void testNotifyDeployment() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
-        List<BridgeDTO> bridgesToDeploy = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(1, bridgesToDeploy.size());
+        Assertions.assertEquals(1, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
 
-        BridgeDTO bridge = bridgesToDeploy.get(0);
+        BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         bridge.setStatus(BridgeStatus.PROVISIONING);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
-        bridgesToDeploy = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(0, bridgesToDeploy.size());
+        Assertions.assertEquals(0, bridgesToDeployOrDelete.size());
     }
 
     @Test
     public void testNotifyDeletion() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
-        List<BridgeDTO> bridgesToDeploy = TestUtils.getBridgesToDeploy().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> bridgesToDeploy = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
         BridgeDTO bridge = bridgesToDeploy.get(0);
 

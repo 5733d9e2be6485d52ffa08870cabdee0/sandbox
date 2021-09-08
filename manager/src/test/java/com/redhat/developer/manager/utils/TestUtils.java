@@ -44,20 +44,12 @@ public class TestUtils {
                 .delete("/api/v1/bridges/" + id);
     }
 
-    public static Response getBridgesToDeploy() {
+    public static Response getBridgesToDeployOrDelete() {
         return given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .get("/api/v1/shard/bridges/toDeploy");
-    }
-
-    public static Response getBridgesToDelete() {
-        return given()
-                .filter(new ResponseLoggingFilter())
-                .contentType(ContentType.JSON)
-                .when()
-                .get("/api/v1/shard/bridges/toDelete");
+                .get("/api/v1/shard/bridges");
     }
 
     public static Response updateBridge(BridgeDTO bridgeDTO) {

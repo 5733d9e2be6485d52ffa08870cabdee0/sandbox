@@ -39,13 +39,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Scheduled(every = "30s")
     void syncBridges() {
         LOGGER.info("[Shard] wakes up to get Bridges to deploy and delete");
-        fetchAndProcessBridgesToDeployFromManager().subscribe().with(
-                success -> LOGGER.info("[shard] has processed all the Bridges to deploy"),
-                failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed"));
-
-        fetchAndProcessBridgesToDeleteFromManager().subscribe().with(
-                success -> LOGGER.info("[shard] has processed all the Bridges to delete"),
-                failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deleted"));
+        fetchAndProcessBridgesToDeployOrDeleteFromManager().subscribe().with(
+                success -> LOGGER.info("[shard] has processed all the Bridges to deploy or delete"),
+                failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed or deleted"));
     }
 
     @Override
@@ -55,30 +51,26 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Uni<Object> fetchAndProcessBridgesToDeployFromManager() {
-        return webClientManager.get("/api/v1/shard/bridges/toDeploy").send()
+    public Uni<Object> fetchAndProcessBridgesToDeployOrDeleteFromManager() {
+        return webClientManager.get("/api/v1/shard/bridges").send()
                 .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
-                                    y.setStatus(BridgeStatus.PROVISIONING);
-                                    return notifyBridgeStatusChange(y).subscribe().with(
-                                            success -> operatorService.createBridgeDeployment(y),
-                                            failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
-                                }).collect(Collectors.toList())));
-    }
-
-    @Override
-    public Uni<Object> fetchAndProcessBridgesToDeleteFromManager() {
-        return webClientManager.get("/api/v1/shard/bridges/toDelete").send()
-                .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
-                .onItem().transformToUni(x -> Uni.createFrom().item(
-                        x.stream()
-                                .map(y -> {
-                                    y.setStatus(BridgeStatus.DELETED);
-                                    return notifyBridgeStatusChange(y).subscribe().with(
-                                            success -> operatorService.deleteBridgeDeployment(y),
-                                            failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
+                                    if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
+                                        y.setStatus(BridgeStatus.PROVISIONING);
+                                        return notifyBridgeStatusChange(y).subscribe().with(
+                                                success -> operatorService.createBridgeDeployment(y),
+                                                failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
+                                    }
+                                    if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
+                                        y.setStatus(BridgeStatus.DELETED);
+                                        return notifyBridgeStatusChange(y).subscribe().with(
+                                                success -> operatorService.deleteBridgeDeployment(y),
+                                                failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
+                                    }
+                                    LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
+                                    return Uni.createFrom().voidItem();
                                 }).collect(Collectors.toList())));
     }
 

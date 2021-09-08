@@ -1,5 +1,7 @@
 package com.redhat.developer.manager.api.internal;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -23,28 +25,16 @@ import com.redhat.developer.manager.models.Bridge;
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
+    private static final List<BridgeStatus> statuses = Arrays.asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED);
 
     @Inject
     BridgesService bridgesService;
 
     @GET
-    @Path("/toDeploy")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBridgesToDeploy() {
-        LOGGER.info("[Manager] Shard asks for Bridges to deploy");
-        return Response.ok(bridgesService.getBridgesByStatus(BridgeStatus.REQUESTED)
-                .stream()
-                .map(Bridge::toDTO)
-                .collect(Collectors.toList()))
-                .build();
-    }
-
-    @GET
-    @Path("/toDelete")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getBridgesToDelete() {
-        LOGGER.info("[Manager] Shard asks for Bridges to deploy");
-        return Response.ok(bridgesService.getBridgesByStatus(BridgeStatus.DELETION_REQUESTED)
+    public Response getBridges() {
+        LOGGER.info("[Manager] Shard asks for Bridges to deploy or delete");
+        return Response.ok(bridgesService.getBridgesByStatuses(statuses)
                 .stream()
                 .map(Bridge::toDTO)
                 .collect(Collectors.toList()))

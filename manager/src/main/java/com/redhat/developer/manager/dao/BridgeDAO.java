@@ -16,10 +16,10 @@ import io.quarkus.panache.common.Parameters;
 @Transactional
 public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
-    public List<Bridge> findByStatus(BridgeStatus status) {
+    public List<Bridge> findByStatuses(List<BridgeStatus> statuses) {
         Parameters params = Parameters
-                .with("status", status);
-        return find("#BRIDGE.findByStatus", params).list();
+                .with("statuses", statuses);
+        return find("#BRIDGE.findByStatuses", params).list();
     }
 
     public Bridge findByNameAndCustomerId(String name, String customerId) {

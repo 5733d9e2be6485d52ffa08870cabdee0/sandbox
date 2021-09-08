@@ -9,7 +9,5 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 public interface ManagerSyncService {
     Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO);
 
-    Uni<Object> fetchAndProcessBridgesToDeployFromManager();
-
-    Uni<Object> fetchAndProcessBridgesToDeleteFromManager();
+    Uni<Object> fetchAndProcessBridgesToDeployOrDeleteFromManager();
 }
