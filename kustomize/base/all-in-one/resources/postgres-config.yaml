@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-bridge-db-config
+data:
+  POSTGRES_USER: toReplace
+  POSTGRES_PASSWORD: toReplace
+  POSTGRES_DB: toReplace
+  PGDATA: /var/lib/postgresql/data/pgdata

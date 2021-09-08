@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-bridge
+spec:
+  selector:
+    matchLabels:
+      app: event-bridge
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: event-bridge-all-in-one
+          imagePullPolicy: Always
+          name: event-bridge-all-in-one
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: event-bridge-all-in-one-config
