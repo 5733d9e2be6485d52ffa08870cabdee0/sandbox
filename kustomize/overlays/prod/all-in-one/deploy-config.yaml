@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-bridge-all-in-one-config
+data:
+  EVENT_BRIDGE_DB_USERNAME: "postgres"
+  EVENT_BRIDGE_DB_PASSWORD: "postgres"
+  EVENT_BRIDGE_DB_HOST: "event-bridge-db"
+  EVENT_BRIDGE_DB_PORT: "5432"
+  EVENT_BRIDGE_DB_SCHEMA: "event-bridge"
+  EVENT_BRIDGE_MANAGER_URL: "http://event-bridge:8080"
+  KAFKA_BOOTSTRAP_SERVERS: "event-bridge-kafka-kafka-bootstrap:9092"
