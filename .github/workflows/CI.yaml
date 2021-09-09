@@ -1,11 +1,11 @@
-name: Event Connect - CI
+name: Event Bridge - CI
 on: [pull_request]
 jobs:
-  event-connect-build:
+  event-bridge-build:
     env:
       MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
     concurrency:
-      group: event-connect-pr-${{ github.head_ref }}
+      group: event-bridge-pr-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 45
     runs-on: ubuntu-latest
