@@ -9,8 +9,8 @@ on:
       - '**.md'
       - '**.adoc'
       - '*.txt'
-      - '.github/*'
-      - 'kustomize/*'
+      - '.github/**'
+      - 'kustomize/**'
       
 jobs:
   event-bridge-build:
