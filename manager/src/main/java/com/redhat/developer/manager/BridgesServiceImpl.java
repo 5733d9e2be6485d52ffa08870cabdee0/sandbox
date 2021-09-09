@@ -66,7 +66,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
-        return bridgeDAO.listByCustomerId(customerId, page, pageSize);
+        return bridgeDAO.findByCustomerId(customerId, page, pageSize);
     }
 
     @Override

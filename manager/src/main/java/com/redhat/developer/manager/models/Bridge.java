@@ -1,6 +1,7 @@
 package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -13,6 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
@@ -145,8 +147,29 @@ public class Bridge {
         response.setSubmittedAt(submittedAt);
         response.setPublishedAt(publishedAt);
         response.setStatus(status);
-        response.setHref("/api/v1/bridges/" + id);
+        response.setHref(APIConstants.USER_API_BASE_PATH + id);
 
         return response;
+    }
+
+    /*
+     * See: https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+     * In the context of JPA equality, our id is our unique business key as we generate it via UUID.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Bridge bridge = (Bridge) o;
+        return id.equals(bridge.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.shard.exceptions.DeserializationException;
@@ -47,12 +48,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.info("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.put("/api/v1/shard/bridges").sendJson(bridgeDTO);
+        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDeleteFromManager() {
-        return webClientManager.get("/api/v1/shard/bridges").send()
+        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
                 .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
