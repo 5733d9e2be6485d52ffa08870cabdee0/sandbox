@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
 
-import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +15,7 @@ import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
 import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
 

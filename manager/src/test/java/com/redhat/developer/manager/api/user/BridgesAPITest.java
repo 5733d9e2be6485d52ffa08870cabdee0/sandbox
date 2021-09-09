@@ -2,11 +2,11 @@ package com.redhat.developer.manager.api.user;
 
 import javax.inject.Inject;
 
-import com.redhat.developer.infra.api.APIConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.CustomerIdResolver;

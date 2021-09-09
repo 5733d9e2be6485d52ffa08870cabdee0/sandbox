@@ -2,11 +2,11 @@ package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
 
-import com.redhat.developer.infra.api.APIConstants;
-import com.redhat.developer.manager.TestConstants;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
