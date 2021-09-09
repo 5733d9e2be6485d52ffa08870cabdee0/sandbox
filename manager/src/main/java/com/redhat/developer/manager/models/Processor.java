@@ -15,13 +15,14 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Version;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByBridgeAndStatus",
-                query = "from Processor p where p.status in (:statuses) and p.bridge.id=:bridgeId")
+                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.id=:bridgeId")
 })
 @Entity
 public class Processor {
@@ -119,5 +120,19 @@ public class Processor {
         }
 
         return processorResponse;
+    }
+
+    public ProcessorDTO toDTO() {
+
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setStatus(this.status);
+        dto.setName(this.name);
+        dto.setId(this.id);
+
+        if (this.bridge != null) {
+            dto.setBridge(this.bridge.toDTO());
+        }
+
+        return dto;
     }
 }

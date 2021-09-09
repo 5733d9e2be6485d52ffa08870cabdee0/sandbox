@@ -1,6 +1,7 @@
 package com.redhat.developer.manager;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -32,10 +33,7 @@ public class ProcessorService {
             throw new ItemNotFoundException("Bridge with id '" + bridgeId + "' does not exist for customer '" + customerId + "'");
         }
 
-        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
-            /* We cannot deploy Processors to a Bridge that is not Available */
-            throw new BridgeLifecycleException("Bridge with id '" + bridge.getId() + "' for customer '" + customerId + "' is not in the '" + BridgeStatus.AVAILABLE + "' state.");
-        }
+        checkBridgeIsInActiveState(bridge);
 
         Processor p = processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName());
         if (p != null) {
@@ -49,5 +47,23 @@ public class ProcessorService {
         bridge.addProcessor(p);
         processorDAO.persist(p);
         return p;
+    }
+
+    private void checkBridgeIsInActiveState(Bridge b) {
+        if (BridgeStatus.AVAILABLE != b.getStatus()) {
+            /* We cannot deploy Processors to a Bridge that is not Available */
+            throw new BridgeLifecycleException("Bridge with id '" + b.getId() + "' for customer '" + b.getCustomerId() + "' is not in the '" + BridgeStatus.AVAILABLE + "' state.");
+        }
+    }
+
+    @Transactional
+    public List<Processor> getProcessorByStatuses(String bridgeId, List<BridgeStatus> statuses) {
+        Bridge b = bridgeDAO.findById(bridgeId);
+        if (b == null) {
+            throw new ItemNotFoundException("Bridge with id '" + bridgeId + "' does not exist.");
+        }
+
+        checkBridgeIsInActiveState(b);
+        return processorDAO.findByStatuses(b.getId(), statuses);
     }
 }
