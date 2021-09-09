@@ -9,4 +9,4 @@ data:
   EVENT_BRIDGE_DB_PORT: "5432"
   EVENT_BRIDGE_DB_SCHEMA: "event-bridge"
   EVENT_BRIDGE_MANAGER_URL: "http://event-bridge:8080"
-  KAFKA_BOOTSTRAP_SERVERS: "event-bridge-kafka:9092"
+  KAFKA_BOOTSTRAP_SERVERS: "event-bridge-kafka-kafka-bootstrap:9092"
