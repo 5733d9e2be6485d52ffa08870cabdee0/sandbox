@@ -11,10 +11,23 @@ spec:
     spec:
       containers:
         - image: event-bridge-all-in-one
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: event-bridge-all-in-one
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
                 name: event-bridge-all-in-one-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-bridge
+spec:
+  ports:
+    - name: web
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: event-bridge
