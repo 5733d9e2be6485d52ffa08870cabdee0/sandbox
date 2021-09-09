@@ -14,13 +14,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.developer.infra.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.manager.BridgesService;
 import com.redhat.developer.manager.ProcessorService;
 import com.redhat.developer.manager.models.Bridge;
@@ -45,7 +45,8 @@ public class ShardBridgesSyncAPI {
     @PUT
     @Path("{id}/processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
-        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridge().getId(), processorDTO.getBridge().getCustomerId());
+        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridge().getId(),
+                processorDTO.getBridge().getCustomerId());
         processorService.updateProcessorStatus(processorDTO);
         return Response.ok().build();
     }
@@ -55,9 +56,9 @@ public class ShardBridgesSyncAPI {
     public Response getProcessorsForBridge(@PathParam("id") @NotEmpty String bridgeId) {
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
         return Response.ok(processorService.getProcessorByStatuses(bridgeId, statuses)
-                                   .stream()
-                                   .map(Processor::toDTO)
-                                   .collect(toList()))
+                .stream()
+                .map(Processor::toDTO)
+                .collect(toList()))
                 .build();
     }
 
@@ -65,9 +66,9 @@ public class ShardBridgesSyncAPI {
     public Response getBridges() {
         LOGGER.info("[Manager] Shard asks for Bridges to deploy or delete");
         return Response.ok(bridgesService.getBridgesByStatuses(statuses)
-                                   .stream()
-                                   .map(Bridge::toDTO)
-                                   .collect(toList()))
+                .stream()
+                .map(Bridge::toDTO)
+                .collect(toList()))
                 .build();
     }
 

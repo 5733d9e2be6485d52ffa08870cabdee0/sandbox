@@ -1,8 +1,8 @@
 package com.redhat.developer.shard;
 
 import com.redhat.developer.infra.dto.BridgeDTO;
-
 import com.redhat.developer.infra.dto.ProcessorDTO;
+
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;

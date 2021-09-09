@@ -2,10 +2,12 @@ package com.redhat.developer.executor;
 
 import java.util.Objects;
 
-import com.redhat.developer.infra.dto.ProcessorDTO;
-import io.cloudevents.CloudEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.redhat.developer.infra.dto.ProcessorDTO;
+
+import io.cloudevents.CloudEvent;
 
 public class Executor {
 

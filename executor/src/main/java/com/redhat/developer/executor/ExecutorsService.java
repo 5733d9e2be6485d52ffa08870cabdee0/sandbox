@@ -6,14 +6,16 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-import com.redhat.developer.infra.dto.BridgeStatus;
-import com.redhat.developer.infra.dto.ProcessorDTO;
-import com.redhat.developer.infra.utils.CloudEventUtils;
-import io.cloudevents.CloudEvent;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.redhat.developer.infra.dto.ProcessorDTO;
+import com.redhat.developer.infra.utils.CloudEventUtils;
+
+import io.cloudevents.CloudEvent;
 
 @ApplicationScoped
 public class ExecutorsService {
@@ -22,13 +24,12 @@ public class ExecutorsService {
 
     private Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 
+    @Inject
+    ExecutorFactory executorFactory;
+
     public void createExecutor(ProcessorDTO processorDTO) {
 
-        if(BridgeStatus.AVAILABLE == processorDTO.getStatus()) {
-            // throw an Exception, we've already created an Executor for this Processor
-        }
-
-        Executor executor = new Executor(processorDTO);
+        Executor executor = executorFactory.createExecutor(processorDTO);
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());
@@ -41,10 +42,10 @@ public class ExecutorsService {
         }
     }
 
-//    @Incoming("events-in")
+    @Incoming("events-in")
     public void processBridgeEvent(String event) {
         CloudEvent cloudEvent = CloudEventUtils.decode(event);
-        String bridgeId = cloudEvent.getAttribute("bridgeId").toString();
+        String bridgeId = cloudEvent.getExtension("obbridgeid").toString();
         Set<Executor> executors = bridgeToProcessorMap.get(bridgeId);
         if (executors != null) {
             for (Executor e : executors) {

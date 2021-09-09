@@ -6,6 +6,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.junit.jupiter.api.Test;
+
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.infra.dto.ProcessorDTO;
@@ -17,8 +19,8 @@ import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
 import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -144,10 +146,8 @@ public class ProcessorServiceTest {
         ProcessorDTO processor = new ProcessorDTO();
         processor.setBridge(bridge);
 
-        assertThrows(ItemNotFoundException.class, ()-> processorService.updateProcessorStatus(processor));
+        assertThrows(ItemNotFoundException.class, () -> processorService.updateProcessorStatus(processor));
     }
-
-
 
     @Test
     public void updateProcessorStatus_processorDoesNotExist() {
@@ -156,6 +156,6 @@ public class ProcessorServiceTest {
         processor.setBridge(b.toDTO());
         processor.setId("foo");
 
-        assertThrows(ItemNotFoundException.class, ()-> processorService.updateProcessorStatus(processor));
+        assertThrows(ItemNotFoundException.class, () -> processorService.updateProcessorStatus(processor));
     }
 }
