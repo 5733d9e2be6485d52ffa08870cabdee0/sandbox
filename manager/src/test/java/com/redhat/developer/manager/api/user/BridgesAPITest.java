@@ -2,6 +2,7 @@ package com.redhat.developer.manager.api.user;
 
 import javax.inject.Inject;
 
+import com.redhat.developer.infra.api.APIConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,6 @@ import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -82,7 +81,7 @@ public class BridgesAPITest {
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
         Assertions.assertEquals(TestConstants.DEFAULT_BRIDGE_NAME, bridgeResponse.getName());
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridgeResponse.getStatus());
-        Assertions.assertEquals("/api/v1/bridges/" + bridgeResponse.getId(), bridgeResponse.getHref());
+        Assertions.assertEquals(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId(), bridgeResponse.getHref());
         Assertions.assertNotNull(bridgeResponse.getSubmittedAt());
 
         Assertions.assertNull(bridgeResponse.getEndpoint());
@@ -108,7 +107,7 @@ public class BridgesAPITest {
     @Test
     public void addProcessorToBridge() {
 
-        BridgeRequest r = new BridgeRequest("myBridge");
+        BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);
 
         BridgeDTO dto = new BridgeDTO();
@@ -138,14 +137,14 @@ public class BridgesAPITest {
     @Test
     public void addProcessorToBridge_bridgeNotInAvailableStatus() {
 
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest("myBridge")).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor"));
         assertThat(response.getStatusCode(), equalTo(400));
     }
 
     @Test
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
-        Response response = RestAssured.given().contentType(ContentType.JSON).when().body(new ProcessorRequest()).post("/api/v1/bridges/myBridge/processors");
+        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
         assertThat(response.getStatusCode(), equalTo(400));
     }
 }

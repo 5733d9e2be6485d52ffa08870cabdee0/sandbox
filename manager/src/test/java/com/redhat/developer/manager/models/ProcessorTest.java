@@ -2,6 +2,8 @@ package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
 
+import com.redhat.developer.infra.api.APIConstants;
+import com.redhat.developer.manager.TestConstants;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
@@ -19,9 +21,9 @@ public class ProcessorTest {
 
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
-        b.setCustomerId("bar");
+        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(BridgeStatus.AVAILABLE);
-        b.setName("bridgerton");
+        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setEndpoint("https://bridge.redhat.com");
 
@@ -35,7 +37,7 @@ public class ProcessorTest {
         ProcessorResponse r = p.toResponse();
         assertThat(r, is(notNullValue()));
 
-        assertThat(r.getHref(), equalTo("/api/v1/bridges/" + b.getId() + "/processors/" + p.getId()));
+        assertThat(r.getHref(), equalTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId()));
         assertThat(r.getName(), equalTo(p.getName()));
         assertThat(r.getStatus(), equalTo(p.getStatus()));
         assertThat(r.getId(), equalTo(p.getId()));

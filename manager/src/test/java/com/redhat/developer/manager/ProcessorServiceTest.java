@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
 
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
@@ -32,10 +34,18 @@ public class ProcessorServiceTest {
     @Inject
     ProcessorService processorService;
 
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
+
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
+
     private Bridge createBridge(BridgeStatus status) {
 
         Bridge b = new Bridge();
-        b.setName("foo-" + System.currentTimeMillis());
+        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(status);
         b.setSubmittedAt(ZonedDateTime.now());
@@ -52,7 +62,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor_bridgeDoesNotExist() {
-        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor("foo", TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
+        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test

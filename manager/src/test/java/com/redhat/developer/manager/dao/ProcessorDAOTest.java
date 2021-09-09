@@ -56,7 +56,7 @@ public class ProcessorDAOTest {
 
     private Bridge createBridge() {
         Bridge b = new Bridge();
-        b.setName("foo-" + System.currentTimeMillis());
+        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(BridgeStatus.REQUESTED);
         b.setSubmittedAt(ZonedDateTime.now());
