@@ -58,7 +58,7 @@ jobs:
         env:
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
-        run: echo "$CONTAINER_REGISTRY_PASSWORD" | docker login quay.io --username $CONTAINER_REGISTRY_USER --password-stdin
+        run: docker login quay.io --username $CONTAINER_REGISTRY_USER --password $CONTAINER_REGISTRY_PASSWORD
       - name: Build and Publish JVM Container
         shell: bash
         run: |
