@@ -1,23 +1,20 @@
 package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
@@ -58,20 +55,7 @@ public class Bridge {
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "bridge", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Processor> processors = new ArrayList<>();
-
     public Bridge() {
-    }
-
-    public void addProcessor(Processor processor) {
-        this.processors.add(processor);
-        processor.setBridge(this);
-    }
-
-    public void removeProcessor(Processor processor) {
-        this.processors.remove(processor);
-        processor.setBridge(null);
     }
 
     public Bridge(String name) {
@@ -134,14 +118,6 @@ public class Bridge {
         this.customerId = customerId;
     }
 
-    public List<Processor> getProcessors() {
-        return processors;
-    }
-
-    public void setProcessors(List<Processor> processors) {
-        this.processors = processors;
-    }
-
     public BridgeDTO toDTO() {
         BridgeDTO dto = new BridgeDTO();
         dto.setId(id);
@@ -171,8 +147,29 @@ public class Bridge {
         response.setSubmittedAt(submittedAt);
         response.setPublishedAt(publishedAt);
         response.setStatus(status);
-        response.setHref("/api/v1/bridges/" + id);
+        response.setHref(APIConstants.USER_API_BASE_PATH + id);
 
         return response;
+    }
+
+    /*
+     * See: https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+     * In the context of JPA equality, our id is our unique business key as we generate it via UUID.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Bridge bridge = (Bridge) o;
+        return id.equals(bridge.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

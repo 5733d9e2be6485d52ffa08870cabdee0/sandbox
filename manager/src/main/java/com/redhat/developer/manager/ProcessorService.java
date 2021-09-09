@@ -8,11 +8,9 @@ import javax.transaction.Transactional;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
-import com.redhat.developer.manager.dao.BridgeDAO;
 import com.redhat.developer.manager.dao.ProcessorDAO;
 import com.redhat.developer.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
-import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
 
@@ -23,15 +21,11 @@ public class ProcessorService {
     ProcessorDAO processorDAO;
 
     @Inject
-    BridgeDAO bridgeDAO;
+    BridgesService bridgesService;
 
     @Transactional
-    public Processor createProcessor(String customerId, String bridgeId, ProcessorRequest processorRequest) {
-        Bridge bridge = bridgeDAO.findByIdAndCustomerId(bridgeId, customerId);
-        if (bridge == null) {
-            throw new ItemNotFoundException("Bridge with id '" + bridgeId + "' does not exist for customer '" + customerId + "'");
-        }
-
+    public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
         if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
             /* We cannot deploy Processors to a Bridge that is not Available */
             throw new BridgeLifecycleException("Bridge with id '" + bridge.getId() + "' for customer '" + customerId + "' is not in the '" + BridgeStatus.AVAILABLE + "' state.");
@@ -46,7 +40,7 @@ public class ProcessorService {
         p.setName(processorRequest.getName());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
-        bridge.addProcessor(p);
+        p.setBridge(bridge);
         processorDAO.persist(p);
         return p;
     }

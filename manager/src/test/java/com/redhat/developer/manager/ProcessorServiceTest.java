@@ -36,7 +36,7 @@ public class ProcessorServiceTest {
 
         Bridge b = new Bridge();
         b.setName("foo-" + System.currentTimeMillis());
-        b.setCustomerId("bar");
+        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(status);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
@@ -47,34 +47,32 @@ public class ProcessorServiceTest {
     @Test
     public void createProcessor_bridgeNotActive() {
         Bridge b = createBridge(BridgeStatus.PROVISIONING);
-        assertThrows(BridgeLifecycleException.class, () -> processorService.createProcessor(b.getCustomerId(), b.getId(), new ProcessorRequest()));
+        assertThrows(BridgeLifecycleException.class, () -> processorService.createProcessor(b.getId(), b.getCustomerId(), new ProcessorRequest()));
     }
 
     @Test
     public void createProcessor_bridgeDoesNotExist() {
-        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor("foo", "bar", new ProcessorRequest()));
+        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor("foo", TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test
     public void createProcessor_processorWithSameNameAlreadyExists() {
 
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest();
-        r.setName("My Processor");
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
-        Processor processor = processorService.createProcessor(b.getCustomerId(), b.getId(), r);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
 
-        assertThrows(AlreadyExistingItemException.class, () -> processorService.createProcessor(b.getCustomerId(), b.getId(), r));
+        assertThrows(AlreadyExistingItemException.class, () -> processorService.createProcessor(b.getId(), b.getCustomerId(), r));
     }
 
     @Test
     public void createProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest();
-        r.setName("My Processor");
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
-        Processor processor = processorService.createProcessor(b.getCustomerId(), b.getId(), r);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
 
         assertThat(processor.getBridge().getId(), equalTo(b.getId()));

@@ -1,6 +1,7 @@
 package com.redhat.developer.manager.models;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -14,6 +15,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Version;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.api.models.responses.ProcessorResponse;
 
@@ -114,10 +116,31 @@ public class Processor {
         processorResponse.setSubmittedAt(submittedAt);
 
         if (this.bridge != null) {
-            processorResponse.setHref("/api/v1/bridges/" + bridge.getId() + "/processors/" + id);
+            processorResponse.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId() + "/processors/" + id);
             processorResponse.setBridge(this.bridge.toResponse());
         }
 
         return processorResponse;
+    }
+
+    /*
+     * See: https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+     * In the context of JPA equality, our id is our unique business key as we generate it via UUID.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Processor processor = (Processor) o;
+        return id.equals(processor.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

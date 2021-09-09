@@ -16,12 +16,13 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.BridgesService;
 import com.redhat.developer.manager.models.Bridge;
 
-@Path("/api/v1/shard/bridges")
+@Path(APIConstants.SHARD_API_BASE_PATH)
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
