@@ -3,6 +3,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/*'
+      - 'kustomize/*'
+      
 jobs:
   event-bridge-build:
     env:
