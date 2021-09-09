@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
@@ -44,7 +45,7 @@ public class ProcessorDAOTest {
 
     private Processor createProcessor(Bridge bridge, String name) {
         Processor p = new Processor();
-        bridge.addProcessor(p);
+        p.setBridge(bridge);
         p.setName(name);
         p.setStatus(BridgeStatus.REQUESTED);
         p.setSubmittedAt(ZonedDateTime.now());
@@ -56,7 +57,7 @@ public class ProcessorDAOTest {
     private Bridge createBridge() {
         Bridge b = new Bridge();
         b.setName("foo-" + System.currentTimeMillis());
-        b.setCustomerId("bar");
+        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(BridgeStatus.REQUESTED);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
@@ -96,7 +97,7 @@ public class ProcessorDAOTest {
     public void findByStatuses() {
 
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo");
+        createProcessor(b, "foo");
 
         Processor q = createProcessor(b, "bob");
         q.setStatus(BridgeStatus.AVAILABLE);

@@ -25,7 +25,6 @@ public class IngressServiceImpl implements IngressService {
         if (!deployments.contains(name)) {
             throw new IngressException("Ingress with name " + name + " is not deployed.");
         }
-
         kafkaEventPublisher.sendEvent(event);
     }
 

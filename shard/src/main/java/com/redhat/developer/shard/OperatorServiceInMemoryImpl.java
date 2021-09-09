@@ -3,11 +3,11 @@ package com.redhat.developer.shard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.developer.shard.processors.ProcessorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,11 +31,14 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
     @Inject
     IngressService ingressService;
 
+    @Inject
+    ProcessorController processorController;
+
     @Override
     public BridgeDTO createBridgeDeployment(BridgeDTO bridge) {
         bridges.add(bridge); // TODO: when we move to k8s, replace this with CRD
         LOGGER.info("[shard] Processing deployment of Bridge with id '{}' and name '{}' for customer '{}'",
-                bridge.getId(), bridge.getName(), bridge.getCustomerId());
+                    bridge.getId(), bridge.getName(), bridge.getCustomerId());
         return bridge;
     }
 
@@ -48,7 +51,7 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
             bridges.remove(optionalBridgeToDelete.get());
             ingressService.undeploy(bridge.getName()); // TODO: in k8s we just delete the deployment
             LOGGER.info("[shard] Bridge with id '{}' and name '{}' for customer '{}' has been deleted",
-                    bridge.getId(), bridge.getName(), bridge.getCustomerId());
+                        bridge.getId(), bridge.getName(), bridge.getCustomerId());
         }
 
         return bridge;
@@ -58,14 +61,26 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
     @Scheduled(every = "30s")
     void reconcileLoopMock() {
         LOGGER.debug("[shard] Bridge reconcile loop mock wakes up");
-        for (BridgeDTO dto : bridges.stream().filter(x -> x.getStatus().equals(BridgeStatus.PROVISIONING)).collect(Collectors.toList())) {
-            LOGGER.info("[shard] Updating deployment of ingress Bridge with id '{}'", dto.getId());
-            String endpoint = ingressService.deploy(dto.getName()); // TODO: replace with CR creation and fetch endpoint info from CRD
-            dto.setStatus(BridgeStatus.AVAILABLE);
-            dto.setEndpoint(endpoint);
-            managerSyncService.notifyBridgeStatusChange(dto).subscribe().with(
-                    success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
-                    failure -> LOGGER.warn("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
+        for (BridgeDTO dto : bridges) {
+            if (BridgeStatus.PROVISIONING == dto.getStatus()) {
+                reconcileBridge(dto);
+            } else if (BridgeStatus.AVAILABLE == dto.getStatus()) {
+                reconcileBridgeProcessors(dto);
+            }
         }
+    }
+
+    private void reconcileBridge(BridgeDTO dto) {
+        LOGGER.info("[shard] Creating deployment of ingress for Bridge with id '{}'", dto.getId());
+        String endpoint = ingressService.deploy(dto.getName()); // TODO: replace with CR creation and fetch endpoint info from CRD
+        dto.setStatus(BridgeStatus.AVAILABLE);
+        dto.setEndpoint(endpoint);
+        managerSyncService.notifyBridgeStatusChange(dto).subscribe().with(
+                success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
+                failure -> LOGGER.warn("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
+    }
+
+    private void reconcileBridgeProcessors(BridgeDTO bridgeDTO) {
+        processorController.reconcileProcessorsFor(bridgeDTO);
     }
 }

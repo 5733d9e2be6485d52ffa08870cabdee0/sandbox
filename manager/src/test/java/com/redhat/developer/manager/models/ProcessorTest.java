@@ -30,7 +30,7 @@ public class ProcessorTest {
         p.setStatus(BridgeStatus.AVAILABLE);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
-        b.addProcessor(p);
+        p.setBridge(b);
 
         ProcessorResponse r = p.toResponse();
         assertThat(r, is(notNullValue()));

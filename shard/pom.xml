@@ -51,6 +51,11 @@
       <groupId>com.redhat.developer</groupId>
       <artifactId>ingress</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.redhat.developer</groupId>
+      <artifactId>executor</artifactId>
+    </dependency>
+    <!-- TODO: End remove after move to K8S -->
 
     <dependency>
       <groupId>io.quarkus</groupId>

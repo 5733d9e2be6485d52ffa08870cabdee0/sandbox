@@ -62,7 +62,7 @@ public class ManagerSyncServiceTest {
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
         verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
@@ -82,7 +82,7 @@ public class ManagerSyncServiceTest {
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessBridgesToDeployOrDeleteFromManager().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
         verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))

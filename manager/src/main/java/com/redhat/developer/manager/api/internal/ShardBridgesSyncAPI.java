@@ -2,7 +2,6 @@ package com.redhat.developer.manager.api.internal;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
@@ -16,21 +15,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.redhat.developer.infra.dto.ProcessorDTO;
-import com.redhat.developer.manager.ProcessorService;
-import com.redhat.developer.manager.models.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.manager.BridgesService;
+import com.redhat.developer.manager.ProcessorService;
 import com.redhat.developer.manager.models.Bridge;
+import com.redhat.developer.manager.models.Processor;
 
 import static java.util.stream.Collectors.toList;
 
+@Path(APIConstants.SHARD_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Path("/api/v1/shard/bridges")
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
@@ -41,6 +41,14 @@ public class ShardBridgesSyncAPI {
 
     @Inject
     ProcessorService processorService;
+
+    @PUT
+    @Path("{id}/processors")
+    public Response updateProcessorStatus(ProcessorDTO processorDTO) {
+        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridge().getId(), processorDTO.getBridge().getCustomerId());
+        processorService.updateProcessorStatus(processorDTO);
+        return Response.ok().build();
+    }
 
     @GET
     @Path("/{id}/processors")

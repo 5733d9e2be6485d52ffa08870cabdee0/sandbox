@@ -20,6 +20,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.manager.BridgesService;
 import com.redhat.developer.manager.CustomerIdResolver;
 import com.redhat.developer.manager.ProcessorService;
@@ -31,15 +32,15 @@ import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.ListResult;
 import com.redhat.developer.manager.models.Processor;
 
-import static com.redhat.developer.manager.api.APIConstants.PAGE;
-import static com.redhat.developer.manager.api.APIConstants.PAGE_DEFAULT;
-import static com.redhat.developer.manager.api.APIConstants.PAGE_MIN;
-import static com.redhat.developer.manager.api.APIConstants.PAGE_SIZE;
-import static com.redhat.developer.manager.api.APIConstants.SIZE_DEFAULT;
-import static com.redhat.developer.manager.api.APIConstants.SIZE_MAX;
-import static com.redhat.developer.manager.api.APIConstants.SIZE_MIN;
+import static com.redhat.developer.infra.api.APIConstants.PAGE;
+import static com.redhat.developer.infra.api.APIConstants.PAGE_DEFAULT;
+import static com.redhat.developer.infra.api.APIConstants.PAGE_MIN;
+import static com.redhat.developer.infra.api.APIConstants.PAGE_SIZE;
+import static com.redhat.developer.infra.api.APIConstants.SIZE_DEFAULT;
+import static com.redhat.developer.infra.api.APIConstants.SIZE_MAX;
+import static com.redhat.developer.infra.api.APIConstants.SIZE_MIN;
 
-@Path("/api/v1/bridges")
+@Path(APIConstants.USER_API_BASE_PATH)
 public class BridgesAPI {
 
     @Inject
@@ -81,7 +82,7 @@ public class BridgesAPI {
     }
 
     @GET
-    @Path("/{id}")
+    @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBridge(@PathParam("id") @NotEmpty String id) {
         Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId());
@@ -89,18 +90,18 @@ public class BridgesAPI {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteBridge(@PathParam("id") String id) {
         bridgesService.deleteBridge(id, customerIdResolver.resolveCustomerId());
         return Response.accepted().build();
     }
 
-    @Path("/{id}/processors")
+    @Path("{id}/processors")
     @POST
     public Response addProcessorToBridge(@PathParam("id") @NotEmpty String id, @Valid ProcessorRequest processorRequest) {
         String customerId = customerIdResolver.resolveCustomerId();
-        Processor processor = processorService.createProcessor(customerId, id, processorRequest);
+        Processor processor = processorService.createProcessor(id, customerId, processorRequest);
         return Response.status(Response.Status.CREATED).entity(processor.toResponse()).build();
     }
 }

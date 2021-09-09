@@ -1,9 +1,19 @@
-package com.redhat.developer.manager.api;
+package com.redhat.developer.infra.api;
 
 /**
- * Some constants used for parameter naming and defaults for the API
+ * Some constants used for URL construction, parameter naming and defaults for the API
  */
 public class APIConstants {
+
+    /**
+     * Base Path for the user-facing API
+     */
+    public static final String USER_API_BASE_PATH = "/api/v1/bridges/";
+
+    /**
+     * Base Path for Shard facing API.
+     */
+    public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
      * The page query parameter name

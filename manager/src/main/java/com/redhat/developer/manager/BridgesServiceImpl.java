@@ -20,14 +20,15 @@ import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.ListResult;
 
 @ApplicationScoped
+@Transactional
 public class BridgesServiceImpl implements BridgesService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
     @Inject
     BridgeDAO bridgeDAO;
 
     @Override
-    @Transactional
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
@@ -43,23 +44,30 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public Bridge getBridge(String id, String customerId) {
+    public Bridge getBridge(String id) {
+        Bridge b = bridgeDAO.findById(id);
+        if (b == null) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' does not exist", id));
+        }
+        return b;
+    }
+
+    private Bridge findByIdAndCustomerId(String id, String customerId) {
         Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
         if (bridge == null) {
-            throw new ItemNotFoundException(String.format("Bridge '%s' for customer '%s' does not exist", id, customerId));
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
         }
-
         return bridge;
     }
 
     @Override
-    @Transactional
-    public void deleteBridge(String id, String customerId) {
-        Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
-        if (bridge == null) {
-            throw new ItemNotFoundException(String.format("Bridge '%s' for customer '%s' does not exist", id, customerId));
-        }
+    public Bridge getBridge(String id, String customerId) {
+        return findByIdAndCustomerId(id, customerId);
+    }
 
+    @Override
+    public void deleteBridge(String id, String customerId) {
+        Bridge bridge = findByIdAndCustomerId(id, customerId);
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
         LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -75,7 +83,6 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    @Transactional
     public Bridge updateBridge(Bridge bridge) {
         if (bridge.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());

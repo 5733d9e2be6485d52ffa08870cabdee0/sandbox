@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.redhat.developer.manager.dao.BridgeDAO;
+import com.redhat.developer.manager.dao.ProcessorDAO;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -19,12 +20,15 @@ public class DatabaseManagerUtils {
     @Inject
     BridgeDAO bridgeDAO;
 
+    @Inject
+    ProcessorDAO processorDAO;
+
     /**
-     * Completely non performant way to cascade the delete of all bridges to their Processors. Performance
-     * doesn't really matter as this is only used in a testing scenario.
+     * Clean everything from the DB. Processors must be deleted before bridges.
      */
     @Transactional
     public void cleanDatabase() {
-        bridgeDAO.listAll().stream().forEach(bridgeDAO::delete);
+        processorDAO.deleteAll();
+        bridgeDAO.deleteAll();
     }
 }

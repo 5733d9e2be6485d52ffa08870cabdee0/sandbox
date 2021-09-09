@@ -1,5 +1,7 @@
 package com.redhat.developer.infra.dto;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProcessorDTO {
@@ -46,5 +48,22 @@ public class ProcessorDTO {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ProcessorDTO that = (ProcessorDTO) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
