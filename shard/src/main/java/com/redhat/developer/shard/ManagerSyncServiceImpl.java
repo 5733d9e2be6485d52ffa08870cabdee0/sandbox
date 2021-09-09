@@ -92,17 +92,18 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
-        return deserializeResponseBody(httpResponse, ProcessorDTO.class);
+        return deserializeResponseBody(httpResponse, new TypeReference<List<ProcessorDTO>>() {
+        });
     }
 
     private List<BridgeDTO> getBridges(HttpResponse<Buffer> httpResponse) {
-        return deserializeResponseBody(httpResponse, BridgeDTO.class);
+        return deserializeResponseBody(httpResponse, new TypeReference<List<BridgeDTO>>() {
+        });
     }
 
-    private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, Class<T> clazz) {
+    private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
         try {
-            return mapper.readValue(httpResponse.bodyAsString(), new TypeReference<List<T>>() {
-            });
+            return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
             LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
             throw new DeserializationException("Failed to deserialize response from Manager.", e);

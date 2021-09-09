@@ -65,7 +65,7 @@ public class ManagerSyncServiceTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges/"))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
@@ -85,7 +85,7 @@ public class ManagerSyncServiceTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges/"))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
@@ -102,20 +102,20 @@ public class ManagerSyncServiceTest {
         managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges"))
+        verify(putRequestedFor(urlEqualTo("/api/v1/shard/bridges/"))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
     private void stubBridgesToDeployOrDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
-        stubFor(get(urlEqualTo("/api/v1/shard/bridges"))
+        stubFor(get(urlEqualTo("/api/v1/shard/bridges/"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(new ObjectMapper().writeValueAsString(bridgeDTOs))));
     }
 
     private void stubBridgeUpdate() {
-        stubFor(put(urlEqualTo("/api/v1/shard/bridges"))
+        stubFor(put(urlEqualTo("/api/v1/shard/bridges/"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
@@ -125,7 +125,7 @@ public class ManagerSyncServiceTest {
         wireMockServer.addMockServiceRequestListener(new RequestListener() {
             @Override
             public void requestReceived(Request request, Response response) {
-                if (request.getUrl().equals("/api/v1/shard/bridges") && request.getMethod().equals(RequestMethod.PUT)) {
+                if (request.getUrl().equals("/api/v1/shard/bridges/") && request.getMethod().equals(RequestMethod.PUT)) {
                     latch.countDown();
                 }
             }
