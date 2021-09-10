@@ -10,8 +10,10 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.manager.TestConstants;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
+import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
 import com.redhat.developer.manager.api.models.responses.BridgeResponse;
 import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 import com.redhat.developer.manager.utils.TestUtils;
@@ -28,6 +30,44 @@ public class ShardBridgesSyncAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+    }
+
+    @Test
+    public void getProcessorsForBridge() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        TestUtils.updateBridge(bridge);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME));
+
+        List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete(bridgeResponse.getId()).as(new TypeRef<List<ProcessorDTO>>() {
+        });
+
+        Assertions.assertEquals(1, processors.size());
+
+        ProcessorDTO processor = processors.get(0);
+        Assertions.assertEquals(TestConstants.DEFAULT_PROCESSOR_NAME, processor.getName());
+        Assertions.assertEquals(BridgeStatus.REQUESTED, processor.getStatus());
+    }
+
+    @Test
+    public void updateProcessorStatus() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        TestUtils.updateBridge(bridge);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME));
+
+        List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete(bridgeResponse.getId()).as(new TypeRef<List<ProcessorDTO>>() {
+        });
+
+        ProcessorDTO processor = processors.get(0);
+        processor.setStatus(BridgeStatus.AVAILABLE);
+
+        TestUtils.updateProcessor(bridge.getId(), processor);
+
+        processors = TestUtils.getProcessorsToDeployOrDelete(bridgeResponse.getId()).as(new TypeRef<List<ProcessorDTO>>() {
+        });
+
+        Assertions.assertEquals(0, processors.size());
     }
 
     @Test

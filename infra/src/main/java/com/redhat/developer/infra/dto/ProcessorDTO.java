@@ -18,6 +18,16 @@ public class ProcessorDTO {
     @JsonProperty("status")
     private BridgeStatus status;
 
+    public ProcessorDTO() {
+    }
+
+    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status) {
+        this.id = id;
+        this.name = name;
+        this.bridge = bridge;
+        this.status = status;
+    }
+
     public String getId() {
         return id;
     }

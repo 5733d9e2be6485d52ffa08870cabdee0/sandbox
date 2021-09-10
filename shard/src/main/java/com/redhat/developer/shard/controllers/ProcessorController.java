@@ -33,7 +33,7 @@ public class ProcessorController {
                 .subscribe()
                 .with(item -> reconcileProcessor(item),
                         failure -> LOG.error("Failed to retrieve list of Processors from Manager for Bridge '{}'", bridgeDTO.getId()),
-                        () -> LOG.info("Reconciled all Processors for bridge '{}' for customer '{}'.", bridgeDTO.getId(), bridgeDTO.getCustomerId()));
+                        () -> LOG.info("Initiated Reconcile for all Processors for bridge '{}' for customer '{}'.", bridgeDTO.getId(), bridgeDTO.getCustomerId()));
     }
 
     private void failedToSendUpdateToManager(ProcessorDTO dto, Throwable error) {
@@ -50,7 +50,7 @@ public class ProcessorController {
             processorDTO.setStatus(BridgeStatus.FAILED);
         }
         managerSyncService.notifyProcessorStatusChange(processorDTO).subscribe()
-                .with(success -> LOG.info("Reconciled Executor for Processor '{}' on Bridge '{}'. Final status: '{}'", processorDTO.getId(), processorDTO.getBridge().getId(),
+                .with(success -> LOG.info("Completed reconcile of Executor for Processor '{}' on Bridge '{}'. Final status: '{}'", processorDTO.getId(), processorDTO.getBridge().getId(),
                         processorDTO.getStatus()),
                         failure -> failedToSendUpdateToManager(processorDTO, failure));
     }
@@ -67,7 +67,7 @@ public class ProcessorController {
                             failure -> failedToSendUpdateToManager(processorDTO, failure));
         } else if (processorDTO.getStatus() == BridgeStatus.PROVISIONING) {
             /*
-             * If we're still provisioning and a new reconcile loop starts, try to provision again. This operation is
+             * If the Manager is still reporting the Processor as provisioning and a new reconcile loop starts, try to provision again. This operation is
              * idempotent
              */
             createExecutor(processorDTO);

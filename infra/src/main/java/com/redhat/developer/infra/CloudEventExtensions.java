@@ -5,7 +5,7 @@ public class CloudEventExtensions {
     /**
      * An extension attribute added to incoming events to identify the target bridge instance
      */
-    public static final String BRIDGE_ID_EXTENSION = "obbridgeid";
+    public static final String BRIDGE_ID_EXTENSION = "ebbridgeid";
 
     private CloudEventExtensions() {
 
