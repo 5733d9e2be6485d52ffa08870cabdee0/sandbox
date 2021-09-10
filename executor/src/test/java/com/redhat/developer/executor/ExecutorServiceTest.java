@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.developer.infra.CloudEventExtensions;
+import com.redhat.developer.infra.BridgeCloudEventExtension;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.infra.utils.CloudEventUtils;
@@ -66,7 +66,7 @@ public class ExecutorServiceTest {
                 .withId("foo")
                 .withSource(URI.create("bar"))
                 .withType("myType")
-                .withExtension(CloudEventExtensions.BRIDGE_ID_EXTENSION, bridgeId).build();
+                .withExtension(new BridgeCloudEventExtension(bridgeId)).build();
 
         ProcessorDTO processor = createProcessor(bridgeId);
 
@@ -75,7 +75,8 @@ public class ExecutorServiceTest {
 
         verify(executor).onEvent(cap.capture());
         CloudEvent invokedWith = cap.getValue();
-        assertThat(invokedWith.getExtension(CloudEventExtensions.BRIDGE_ID_EXTENSION), equalTo("myBridge"));
+
+        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID), equalTo("myBridge"));
     }
 
     @Test
@@ -88,7 +89,7 @@ public class ExecutorServiceTest {
                 .withId("foo")
                 .withSource(URI.create("bar"))
                 .withType("myType")
-                .withExtension(CloudEventExtensions.BRIDGE_ID_EXTENSION, "anotherBridge").build();
+                .withExtension(BridgeCloudEventExtension.BRIDGE_ID, "anotherBridge").build();
 
         ProcessorDTO processor = createProcessor(bridgeId);
 

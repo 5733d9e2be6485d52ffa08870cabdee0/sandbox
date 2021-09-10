@@ -65,12 +65,6 @@ public class ProcessorController {
                     .subscribe()
                     .with(item -> createExecutor(processorDTO),
                             failure -> failedToSendUpdateToManager(processorDTO, failure));
-        } else if (processorDTO.getStatus() == BridgeStatus.PROVISIONING) {
-            /*
-             * If the Manager is still reporting the Processor as provisioning and a new reconcile loop starts, try to provision again. This operation is
-             * idempotent
-             */
-            createExecutor(processorDTO);
         }
     }
 }

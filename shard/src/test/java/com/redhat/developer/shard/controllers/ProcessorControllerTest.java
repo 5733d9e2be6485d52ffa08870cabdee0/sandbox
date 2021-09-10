@@ -68,30 +68,6 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void reconcileProcessor_inProvisioningFromManager() throws Exception {
-        BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
-
-        stubProcessorsToDeployOrDelete(bridge, asList(processor));
-        stubProcessorUpdate(bridge);
-
-        CountDownLatch latch = new CountDownLatch(1);
-        addProcessorUpdateRequestListener(bridge, latch);
-
-        processorController.reconcileProcessorsFor(bridge);
-
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-
-        processor.setStatus(BridgeStatus.AVAILABLE);
-
-        WireMock.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + bridge.getId() + "/processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
-
-        verify(executorsService).createExecutor(processor);
-    }
-
-    @Test
     public void reconcileProcessor_withFailure() throws Exception {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);

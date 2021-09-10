@@ -1,19 +1,22 @@
 package com.redhat.developer.ingress.producer;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.developer.infra.CloudEventExtensions;
+import com.redhat.developer.infra.BridgeCloudEventExtension;
 import com.redhat.developer.infra.utils.CloudEventUtils;
 import com.redhat.developer.infra.utils.exceptions.CloudEventSerializationException;
 import com.redhat.developer.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.ExtensionProvider;
+import io.quarkus.runtime.StartupEvent;
 import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 
 @ApplicationScoped
@@ -23,12 +26,16 @@ public class KafkaEventPublisher {
 
     private final BroadcastProcessor<String> eventSubject = BroadcastProcessor.create();
 
+    public void init(@Observes StartupEvent e) {
+        ExtensionProvider.getInstance().registerExtension(BridgeCloudEventExtension.class, BridgeCloudEventExtension::new);
+    }
+
     /*
      * Add our specific metadata to the incoming event
      */
     private CloudEvent addMetadataToIncomingEvent(String bridgeId, CloudEvent cloudEvent) {
         return CloudEventBuilder.v1(cloudEvent)
-                .withExtension(CloudEventExtensions.BRIDGE_ID_EXTENSION, bridgeId)
+                .withExtension(new BridgeCloudEventExtension(bridgeId))
                 .build();
     }
 

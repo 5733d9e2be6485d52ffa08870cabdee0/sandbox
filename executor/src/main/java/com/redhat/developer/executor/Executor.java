@@ -21,6 +21,8 @@ public class Executor {
 
     public void onEvent(CloudEvent cloudEvent) {
         LOG.info("Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
+
+        //TODO - consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
     }
 
     public ProcessorDTO getProcessor() {
