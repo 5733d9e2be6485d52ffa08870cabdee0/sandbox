@@ -11,7 +11,7 @@
   <name>Event Bridge</name>
   <description>Parent module for event bridge</description>
 
-  <inceptionYear>2019</inceptionYear>
+  <inceptionYear>2021</inceptionYear>
   <organization>
     <name>JBoss by Red Hat</name>
     <url>http://www.jboss.org/</url>
