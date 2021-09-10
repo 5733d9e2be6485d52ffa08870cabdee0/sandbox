@@ -13,7 +13,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>infra</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Infra</name>
+  <name>Event Bridge :: Infra</name>
 
   <dependencies>
     <dependency>

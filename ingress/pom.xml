@@ -13,7 +13,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>ingress</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Ingress</name>
+  <name>Event Bridge :: Ingress</name>
 
   <dependencies>
     <dependency>

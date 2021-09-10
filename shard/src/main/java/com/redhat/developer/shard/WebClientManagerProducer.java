@@ -15,13 +15,13 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 public class WebClientManagerProducer {
 
     @ConfigProperty(name = "event-bridge.manager.url")
-    String eventConnectManagerUrl;
+    String eventBridgeManagerUrl;
 
     @Inject
     Vertx vertx;
 
     @Produces
     public WebClient produce() {
-        return WebClientUtils.getClient(vertx, eventConnectManagerUrl);
+        return WebClientUtils.getClient(vertx, eventBridgeManagerUrl);
     }
 }
