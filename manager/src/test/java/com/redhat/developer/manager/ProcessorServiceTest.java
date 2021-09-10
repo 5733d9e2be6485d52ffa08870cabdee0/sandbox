@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.developer.infra.dto.BridgeDTO;
@@ -19,6 +20,7 @@ import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
 import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
+import com.redhat.developer.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -43,10 +45,18 @@ public class ProcessorServiceTest {
     @Inject
     ProcessorService processorService;
 
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
+
+    @BeforeEach
+    public void cleanUp() {
+        databaseManagerUtils.cleanDatabase();
+    }
+
     private Bridge createBridge(BridgeStatus status) {
 
         Bridge b = new Bridge();
-        b.setName("foo-" + System.currentTimeMillis());
+        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(status);
         b.setSubmittedAt(ZonedDateTime.now());
@@ -63,7 +73,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor_bridgeDoesNotExist() {
-        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor("foo", TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
+        assertThrows(ItemNotFoundException.class, () -> processorService.createProcessor(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test

@@ -4,18 +4,38 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.redhat.developer</groupId>
-  <artifactId>event-connect</artifactId>
+  <artifactId>event-bridge</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Event Connect</name>
-  <description>Parent module for event connect</description>
+
+  <name>Event Bridge</name>
+  <description>Parent module for event bridge</description>
+
+  <inceptionYear>2021</inceptionYear>
+  <organization>
+    <name>Red Hat</name>
+    <url>http://www.redhat.com/</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <modules>
+    <module>build-parent</module>
+    <module>bom</module>
     <module>manager</module>
     <module>executor</module>
     <module>shard</module>
     <module>runner</module>
-    <module>bom</module>
-    <module>build-parent</module>
     <module>ingress</module>
     <module>infra</module>
   </modules>

@@ -1,0 +1,9 @@
+commonLabels:
+  app: event-bridge
+resources:
+  - resources/postgres.yaml
+  - resources/postgres-config.yaml
+  - resources/volume.yaml
+  - resources/deploy.yaml
+  - resources/deploy-config.yaml
+  - resources/kafka.yaml
