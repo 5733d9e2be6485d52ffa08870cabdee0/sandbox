@@ -12,7 +12,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>manager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Manager</name>
+  <name>Event Bridge :: Manager</name>
 
   <dependencies>
     <dependency>

@@ -12,7 +12,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>executor</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Executor</name>
+  <name>Event Bridge :: Executor</name>
 
   <dependencies>
     <dependency>

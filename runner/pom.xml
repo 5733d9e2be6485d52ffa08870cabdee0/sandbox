@@ -13,7 +13,7 @@
   <groupId>com.redhat.developer</groupId>
   <artifactId>runner</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Connect :: Runner</name>
+  <name>Event Bridge :: Runner</name>
 
   <dependencies>
     <dependency>
