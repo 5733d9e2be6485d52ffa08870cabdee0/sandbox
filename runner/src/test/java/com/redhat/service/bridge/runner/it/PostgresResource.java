@@ -26,11 +26,9 @@ public class PostgresResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        System.out.println("starting");
         postgres.start();
-        System.out.println("started");
-        Map<String, String> config = new HashMap<>();
 
+        Map<String, String> config = new HashMap<>();
         config.put("EVENT_BRIDGE_DB_USERNAME", postgres.getUsername());
         config.put("EVENT_BRIDGE_DB_PASSWORD", postgres.getPassword());
         config.put("EVENT_BRIDGE_DB_HOST", postgres.getHost());
