@@ -1,4 +1,4 @@
-package com.redhat.developer.runner.it;
+package com.redhat.service.bridge.runner.it;
 
 import java.net.URI;
 import java.time.Duration;
@@ -32,6 +32,7 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @QuarkusTestResource(KafkaResource.class)
+@QuarkusTestResource(PostgresResource.class)
 public class End2EndTestIT {
     private static final String bridgeName = "notificationBridge";
 
@@ -43,6 +44,7 @@ public class End2EndTestIT {
     @Order(1)
     @Test
     public void getEmptyBridges() {
+        System.out.println(managerUrl);
         BridgeListResponse response = jsonRequest()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
@@ -89,7 +91,7 @@ public class End2EndTestIT {
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                                 .then()
                                 .body("status", Matchers.equalTo("AVAILABLE"))
-                                .body("endpoint", Matchers.equalTo("/ingress/events/" + bridgeName)));
+                                .body("endpoint", Matchers.equalTo("/ingress/events/" + bridgeId)));
     }
 
     @Order(4)
@@ -103,7 +105,7 @@ public class End2EndTestIT {
 
         jsonRequest()
                 .body(buildTestCloudEvent())
-                .post(managerUrl + "/ingress/events/" + bridgeName)
+                .post(managerUrl + "/ingress/events/" + bridgeId)
                 .then()
                 .statusCode(200);
     }
@@ -133,6 +135,8 @@ public class End2EndTestIT {
                 .then()
                 .statusCode(500);
     }
+
+    // TODO: Add processors integration tests when CRUD api will be implemented.
 
     private String buildTestCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
