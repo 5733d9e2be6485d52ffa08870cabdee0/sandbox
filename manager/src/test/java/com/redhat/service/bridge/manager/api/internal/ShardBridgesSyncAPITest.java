@@ -124,7 +124,7 @@ public class ShardBridgesSyncAPITest {
         bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(1, bridgesToDeployOrDelete.size());
+        Assertions.assertEquals(0, bridgesToDeployOrDelete.size());
     }
 
     @Test

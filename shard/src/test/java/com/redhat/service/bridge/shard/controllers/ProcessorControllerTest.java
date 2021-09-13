@@ -79,7 +79,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(2);
         addProcessorUpdateRequestListener(bridge, latch);
 
-        Mockito.doThrow(new RuntimeException("Failed to provision executor")).when(executorsService).createExecutor(processor);
+        Mockito.doThrow(new RuntimeException("Test Mock Failure: This is an expected Failure for Testing only.")).when(executorsService).createExecutor(processor);
 
         processorController.reconcileProcessorsFor(bridge);
 

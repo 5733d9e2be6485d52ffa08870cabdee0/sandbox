@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
-    private static final List<BridgeStatus> statuses = Arrays.asList(BridgeStatus.REQUESTED, BridgeStatus.PROVISIONING, BridgeStatus.DELETION_REQUESTED);
+    private static final List<BridgeStatus> statuses = Arrays.asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED);
 
     @Inject
     BridgesService bridgesService;
