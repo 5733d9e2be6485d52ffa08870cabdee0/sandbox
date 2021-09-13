@@ -91,15 +91,15 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
                 .send().onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
-                                                                            .map(y -> {
-                                                                                if (BridgeStatus.REQUESTED == y.getStatus()) {
-                                                                                    y.setStatus(BridgeStatus.PROVISIONING);
-                                                                                    return notifyProcessorStatusChange(y).subscribe().with(
-                                                                                            success -> operatorService.createProcessorDeployment(y),
-                                                                                            failure -> failedToSendUpdateToManager(y, failure));
-                                                                                }
-                                                                                return Uni.createFrom().voidItem();
-                                                                            }).collect(Collectors.toList())));
+                        .map(y -> {
+                            if (BridgeStatus.REQUESTED == y.getStatus()) {
+                                y.setStatus(BridgeStatus.PROVISIONING);
+                                return notifyProcessorStatusChange(y).subscribe().with(
+                                        success -> operatorService.createProcessorDeployment(y),
+                                        failure -> failedToSendUpdateToManager(y, failure));
+                            }
+                            return Uni.createFrom().voidItem();
+                        }).collect(Collectors.toList())));
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
