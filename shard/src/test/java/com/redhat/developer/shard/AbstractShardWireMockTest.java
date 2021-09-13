@@ -43,8 +43,8 @@ public abstract class AbstractShardWireMockTest {
         wireMockServer.resetAll();
     }
 
-    protected void stubProcessorsToDeployOrDelete(BridgeDTO bridge, List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
-        stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + bridge.getId() + "/processors"))
+    protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
+        stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
@@ -57,8 +57,8 @@ public abstract class AbstractShardWireMockTest {
                         .withBody(objectMapper.writeValueAsString(bridgeDTOs))));
     }
 
-    protected void stubProcessorUpdate(BridgeDTO bridgeDTO) {
-        stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + bridgeDTO.getId() + "/processors"))
+    protected void stubProcessorUpdate() {
+        stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
@@ -82,8 +82,8 @@ public abstract class AbstractShardWireMockTest {
         });
     }
 
-    protected void addProcessorUpdateRequestListener(BridgeDTO bridge, CountDownLatch latch) {
-        addUpdateRequestListener(APIConstants.SHARD_API_BASE_PATH + bridge.getId() + "/processors", latch);
+    protected void addProcessorUpdateRequestListener(CountDownLatch latch) {
+        addUpdateRequestListener(APIConstants.SHARD_API_BASE_PATH + "processors", latch);
     }
 
     protected void addBridgeUpdateRequestListener(CountDownLatch latch) {

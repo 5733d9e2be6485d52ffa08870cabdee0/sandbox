@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,8 +23,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.in;
 
 @QuarkusTest
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
@@ -88,30 +85,37 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void fetchProcessorsForBridge() throws Exception {
+    public void testProcessorsAreDeployed() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
-        ProcessorDTO processor2 = new ProcessorDTO("processorId-2", "processorName-2", bridge, BridgeStatus.DELETION_REQUESTED);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.REQUESTED);
 
-        stubProcessorsToDeployOrDelete(bridge, asList(processor, processor2));
+        stubProcessorsToDeployOrDelete(asList(processor));
+        CountDownLatch latch = new CountDownLatch(1);
+        addProcessorUpdateRequestListener(latch);
 
-        Stream<ProcessorDTO> fetchedProcessors = managerSyncService.fetchProcessorsForBridge(bridge).subscribe().asStream();
-        fetchedProcessors.forEach((p) -> assertThat(p.getId(), in(asList("processorId-1", "processorId-2"))));
+        managerSyncService.fetchAndProcessorProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
+        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+
+        processor.setStatus(BridgeStatus.PROVISIONING);
+
+        verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", dto, BridgeStatus.PROVISIONING);
-        stubProcessorUpdate(dto);
+        stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
-        addProcessorUpdateRequestListener(dto, latch);
+        addProcessorUpdateRequestListener(latch);
 
         managerSyncService.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
-        verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + dto.getId() + "/processors"))
+        verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }

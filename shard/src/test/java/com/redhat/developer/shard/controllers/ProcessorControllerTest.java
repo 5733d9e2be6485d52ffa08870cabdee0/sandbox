@@ -25,7 +25,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 
 @QuarkusTest
@@ -46,21 +45,21 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     @Test
     public void reconcileProcessor() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.REQUESTED);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
 
-        stubProcessorsToDeployOrDelete(bridge, asList(processor));
-        stubProcessorUpdate(bridge);
+        stubProcessorUpdate();
 
-        CountDownLatch latch = new CountDownLatch(2);
-        addProcessorUpdateRequestListener(bridge, latch);
+        CountDownLatch latch = new CountDownLatch(1);
+        addProcessorUpdateRequestListener(latch);
 
-        processorController.reconcileProcessorsFor(bridge);
+        processorController.deployProcessor(processor);
+        processorController.reconcileProcessors();
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         processor.setStatus(BridgeStatus.AVAILABLE);
 
-        WireMock.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + bridge.getId() + "/processors"))
+        WireMock.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
 
@@ -71,23 +70,23 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     public void reconcileProcessor_withFailure() throws Exception {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.REQUESTED);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
 
-        stubProcessorsToDeployOrDelete(bridge, asList(processor));
-        stubProcessorUpdate(bridge);
+        stubProcessorUpdate();
 
-        CountDownLatch latch = new CountDownLatch(2);
-        addProcessorUpdateRequestListener(bridge, latch);
+        CountDownLatch latch = new CountDownLatch(1);
+        addProcessorUpdateRequestListener(latch);
 
         Mockito.doThrow(new RuntimeException("Failed to provision executor")).when(executorsService).createExecutor(processor);
 
-        processorController.reconcileProcessorsFor(bridge);
+        processorController.deployProcessor(processor);
+        processorController.reconcileProcessors();
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         processor.setStatus(BridgeStatus.FAILED);
 
-        WireMock.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + bridge.getId() + "/processors"))
+        WireMock.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
 

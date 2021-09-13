@@ -4,12 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -43,7 +41,7 @@ public class ShardBridgesSyncAPI {
     ProcessorService processorService;
 
     @PUT
-    @Path("{id}/processors")
+    @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
         LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridge().getId(),
                 processorDTO.getBridge().getCustomerId());
@@ -52,10 +50,10 @@ public class ShardBridgesSyncAPI {
     }
 
     @GET
-    @Path("/{id}/processors")
-    public Response getProcessorsForBridge(@PathParam("id") @NotEmpty String bridgeId) {
+    @Path("processors")
+    public Response getProcessors() {
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        return Response.ok(processorService.getProcessorByStatuses(bridgeId, statuses)
+        return Response.ok(processorService.getProcessorByStatuses(statuses)
                 .stream()
                 .map(Processor::toDTO)
                 .collect(toList()))

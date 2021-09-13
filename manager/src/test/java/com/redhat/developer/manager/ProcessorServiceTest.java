@@ -120,20 +120,9 @@ public class ProcessorServiceTest {
         processor.setStatus(BridgeStatus.DELETION_REQUESTED);
         processorDAO.getEntityManager().merge(processor);
 
-        List<Processor> processors = processorService.getProcessorByStatuses(b.getId(), asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED));
+        List<Processor> processors = processorService.getProcessorByStatuses(asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED));
         assertThat(processors, hasSize(2));
         processors.stream().forEach((px) -> assertThat(px.getName(), in(asList("My Processor", "My Processor 3"))));
-    }
-
-    @Test
-    public void getProcessorByStatuses_bridgeDoesNotExist() {
-        assertThrows(ItemNotFoundException.class, () -> processorService.getProcessorByStatuses("foo", asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED)));
-    }
-
-    @Test
-    public void getProcessorByStatuses_bridgeNotInActiveStatus() {
-        Bridge b = createBridge(BridgeStatus.PROVISIONING);
-        assertThrows(BridgeLifecycleException.class, () -> processorService.getProcessorByStatuses(b.getId(), asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED)));
     }
 
     @Test

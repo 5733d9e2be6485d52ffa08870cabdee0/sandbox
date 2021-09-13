@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.developer.executor.ExecutorsService;
-import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
 import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.shard.ManagerSyncService;
@@ -20,6 +19,7 @@ public class ProcessorController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessorController.class);
 
+    //TODO - In memory list of Processors to reconcile. As/when we move to K8S, this will be represented by CRDs
     private List<ProcessorDTO> processors = new ArrayList<>();
 
     @Inject
@@ -28,12 +28,13 @@ public class ProcessorController {
     @Inject
     ExecutorsService executorsService;
 
-    public void reconcileProcessorsFor(BridgeDTO bridgeDTO) {
-        managerSyncService.fetchProcessorsForBridge(bridgeDTO)
-                .subscribe()
-                .with(item -> reconcileProcessor(item),
-                        failure -> LOG.error("Failed to retrieve list of Processors from Manager for Bridge '{}'", bridgeDTO.getId()),
-                        () -> LOG.info("Initiated Reconcile for all Processors for bridge '{}' for customer '{}'.", bridgeDTO.getId(), bridgeDTO.getCustomerId()));
+    public ProcessorDTO deployProcessor(ProcessorDTO processorDTO) {
+        this.processors.add(processorDTO);
+        return processorDTO;
+    }
+
+    public void reconcileProcessors() {
+        this.processors.forEach(this::reconcileProcessor);
     }
 
     private void failedToSendUpdateToManager(ProcessorDTO dto, Throwable error) {
@@ -41,6 +42,7 @@ public class ProcessorController {
     }
 
     private void createExecutor(ProcessorDTO processorDTO) {
+
         try {
             executorsService.createExecutor(processorDTO);
             processorDTO.setStatus(BridgeStatus.AVAILABLE);
@@ -56,15 +58,8 @@ public class ProcessorController {
     }
 
     private void reconcileProcessor(ProcessorDTO processorDTO) {
-
-        if (processorDTO.getStatus() == BridgeStatus.REQUESTED) {
-
-            processorDTO.setStatus(BridgeStatus.PROVISIONING);
-            this.processors.add(processorDTO);
-            managerSyncService.notifyProcessorStatusChange(processorDTO)
-                    .subscribe()
-                    .with(item -> createExecutor(processorDTO),
-                            failure -> failedToSendUpdateToManager(processorDTO, failure));
+        if (processorDTO.getStatus() == BridgeStatus.PROVISIONING) {
+            createExecutor(processorDTO);
         }
     }
 }

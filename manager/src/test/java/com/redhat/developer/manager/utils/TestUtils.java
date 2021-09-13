@@ -60,14 +60,14 @@ public class TestUtils {
                 .put(APIConstants.SHARD_API_BASE_PATH);
     }
 
-    public static Response getProcessorsToDeployOrDelete(String bridgeId) {
+    public static Response getProcessorsToDeployOrDelete() {
         return jsonRequest()
-                .get(APIConstants.SHARD_API_BASE_PATH + bridgeId + "/processors");
+                .get(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
-    public static Response updateProcessor(String bridgeId, ProcessorDTO processorDTO) {
+    public static Response updateProcessor(ProcessorDTO processorDTO) {
         return jsonRequest()
                 .body(processorDTO)
-                .put(APIConstants.SHARD_API_BASE_PATH + bridgeId + "/processors");
+                .put(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 }

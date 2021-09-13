@@ -19,7 +19,6 @@ import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -40,8 +39,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     WebClient webClientManager;
 
     @Scheduled(every = "30s")
-    void syncBridges() {
-        LOGGER.info("[Shard] wakes up to get Bridges to deploy and delete");
+    void syncUpdatesFromManager() {
+        LOGGER.info("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
                 success -> LOGGER.info("[shard] has processed all the Bridges to deploy or delete"),
                 failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed or deleted"));
@@ -55,7 +54,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + processorDTO.getBridge().getId() + "/processors").sendJson(processorDTO);
+        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors").sendJson(processorDTO);
     }
 
     @Override
@@ -69,14 +68,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         y.setStatus(BridgeStatus.PROVISIONING);
                                         return notifyBridgeStatusChange(y).subscribe().with(
                                                 success -> operatorService.createBridgeDeployment(y),
-                                                failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
+                                                failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETED);
                                         operatorService.deleteBridgeDeployment(y);
                                         return notifyBridgeStatusChange(y).subscribe().with(
                                                 success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                failure -> LOGGER.warn("[shard] could not notify the manager with the new Bridges status"));
+                                                failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
@@ -84,11 +83,19 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Multi<ProcessorDTO> fetchProcessorsForBridge(BridgeDTO bridgeDTO) {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + bridgeDTO.getId() + "/processors")
-                .send()
-                .onItem()
-                .transformToMulti(r -> Multi.createFrom().items(getProcessors(r).stream()));
+    public Uni<Object> fetchAndProcessorProcessorsToDeployOrDelete() {
+        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
+                .send().onItem().transform(this::getProcessors)
+                .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
+                        .map(y -> {
+                            if (BridgeStatus.REQUESTED == y.getStatus()) {
+                                y.setStatus(BridgeStatus.PROVISIONING);
+                                return notifyProcessorStatusChange(y).subscribe().with(
+                                        success -> operatorService.createProcessorDeployment(y),
+                                        failure -> failedToSendUpdateToManager(y, failure));
+                            }
+                            return Uni.createFrom().voidItem();
+                        }).collect(Collectors.toList())));
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
@@ -108,5 +115,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
             throw new DeserializationException("Failed to deserialize response from Manager.", e);
         }
+    }
+
+    private void failedToSendUpdateToManager(Object entity, Throwable t) {
+        LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
     }
 }
