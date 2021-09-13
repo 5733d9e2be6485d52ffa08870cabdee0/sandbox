@@ -120,4 +120,19 @@ public class BridgesServiceTest {
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         Assertions.assertEquals(BridgeStatus.PROVISIONING, retrievedBridge.getStatus());
     }
+
+    @Test
+    public void getBridge() {
+        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+
+        Bridge found = bridgesService.getBridge(bridge.getId());
+        Assertions.assertNotNull(found);
+        Assertions.assertEquals(bridge.getId(), found.getId());
+    }
+
+    @Test
+    public void getBridge_bridgeDoesNotExist() {
+        Assertions.assertThrows(ItemNotFoundException.class, () -> bridgesService.getBridge("foo"));
+    }
 }

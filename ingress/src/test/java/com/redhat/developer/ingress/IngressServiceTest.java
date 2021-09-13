@@ -17,6 +17,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -32,7 +33,7 @@ public class IngressServiceTest {
     @BeforeAll
     public static void setup() {
         KafkaEventPublisher mock = Mockito.mock(KafkaEventPublisher.class);
-        Mockito.doNothing().when(mock).sendEvent(any(CloudEvent.class));
+        Mockito.doNothing().when(mock).sendEvent(any(String.class), any(CloudEvent.class));
         QuarkusMock.installMockForType(mock, KafkaEventPublisher.class);
     }
 
@@ -41,7 +42,7 @@ public class IngressServiceTest {
         ingressService.deploy("topicName"); // TODO: remove after we move to k8s
         ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent());
 
-        verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
         ingressService.undeploy("topicName");
     }
 
@@ -50,6 +51,6 @@ public class IngressServiceTest {
     public void testSendEventToUndeployedInstance() throws JsonProcessingException {
         Assertions.assertThrows(IngressException.class,
                 () -> ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent()));
-        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
     }
 }

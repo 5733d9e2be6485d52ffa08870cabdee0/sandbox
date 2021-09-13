@@ -2,6 +2,7 @@ package com.redhat.developer.manager.utils;
 
 import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.manager.api.models.requests.BridgeRequest;
 import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
 
@@ -57,5 +58,16 @@ public class TestUtils {
         return jsonRequest()
                 .body(bridgeDTO)
                 .put(APIConstants.SHARD_API_BASE_PATH);
+    }
+
+    public static Response getProcessorsToDeployOrDelete(String bridgeId) {
+        return jsonRequest()
+                .get(APIConstants.SHARD_API_BASE_PATH + bridgeId + "/processors");
+    }
+
+    public static Response updateProcessor(String bridgeId, ProcessorDTO processorDTO) {
+        return jsonRequest()
+                .body(processorDTO)
+                .put(APIConstants.SHARD_API_BASE_PATH + bridgeId + "/processors");
     }
 }

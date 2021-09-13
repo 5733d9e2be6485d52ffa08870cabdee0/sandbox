@@ -15,9 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.developer.infra.api.APIConstants;
 import com.redhat.developer.infra.dto.BridgeDTO;
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -40,7 +42,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Scheduled(every = "30s")
     void syncBridges() {
         LOGGER.info("[Shard] wakes up to get Bridges to deploy and delete");
-        fetchAndProcessBridgesToDeployOrDeleteFromManager().subscribe().with(
+        fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
                 success -> LOGGER.info("[shard] has processed all the Bridges to deploy or delete"),
                 failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed or deleted"));
     }
@@ -52,9 +54,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Uni<Object> fetchAndProcessBridgesToDeployOrDeleteFromManager() {
+    public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
+        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + processorDTO.getBridge().getId() + "/processors").sendJson(processorDTO);
+    }
+
+    @Override
+    public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
         return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
-                .onItem().transform(x -> deserializeBridges(x.bodyAsString()))
+                .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
@@ -76,13 +83,30 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 }).collect(Collectors.toList())));
     }
 
-    private List<BridgeDTO> deserializeBridges(String s) {
+    @Override
+    public Multi<ProcessorDTO> fetchProcessorsForBridge(BridgeDTO bridgeDTO) {
+        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + bridgeDTO.getId() + "/processors")
+                .send()
+                .onItem()
+                .transformToMulti(r -> Multi.createFrom().items(getProcessors(r).stream()));
+    }
+
+    private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
+        return deserializeResponseBody(httpResponse, new TypeReference<List<ProcessorDTO>>() {
+        });
+    }
+
+    private List<BridgeDTO> getBridges(HttpResponse<Buffer> httpResponse) {
+        return deserializeResponseBody(httpResponse, new TypeReference<List<BridgeDTO>>() {
+        });
+    }
+
+    private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
         try {
-            return mapper.readValue(s, new TypeReference<List<BridgeDTO>>() {
-            });
+            return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
-            LOGGER.warn("[shard] Failed to deserialize Bridges to deploy", e);
-            throw new DeserializationException("Failed to deserialize Bridges fetched from the manager.", e);
+            LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
+            throw new DeserializationException("Failed to deserialize response from Manager.", e);
         }
     }
 }

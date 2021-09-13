@@ -20,24 +20,23 @@ public class IngressServiceImpl implements IngressService {
     KafkaEventPublisher kafkaEventPublisher;
 
     @Override
-    public void processEvent(String name, CloudEvent event) {
+    public void processEvent(String id, CloudEvent event) {
         //TODO: remove after we move to k8s
-        if (!deployments.contains(name)) {
-            throw new IngressException("Ingress with name " + name + " is not deployed.");
+        if (!deployments.contains(id)) {
+            throw new IngressException("Ingress with name " + id + " is not deployed.");
         }
-
-        kafkaEventPublisher.sendEvent(event);
+        kafkaEventPublisher.sendEvent(id, event);
     }
 
     // TODO: remove after we move to k8s
     @Override
-    public String deploy(String name) {
-        deployments.add(name);
-        return "/ingress/events/" + name;
+    public String deploy(String id) {
+        deployments.add(id);
+        return "/ingress/events/" + id;
     }
 
     @Override
-    public boolean undeploy(String name) {
-        return deployments.remove(name);
+    public boolean undeploy(String id) {
+        return deployments.remove(id);
     }
 }

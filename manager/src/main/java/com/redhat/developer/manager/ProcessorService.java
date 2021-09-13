@@ -1,19 +1,23 @@
 package com.redhat.developer.manager;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.redhat.developer.infra.dto.BridgeStatus;
+import com.redhat.developer.infra.dto.ProcessorDTO;
 import com.redhat.developer.manager.api.models.requests.ProcessorRequest;
 import com.redhat.developer.manager.dao.ProcessorDAO;
 import com.redhat.developer.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.developer.manager.exceptions.BridgeLifecycleException;
+import com.redhat.developer.manager.exceptions.ItemNotFoundException;
 import com.redhat.developer.manager.models.Bridge;
 import com.redhat.developer.manager.models.Processor;
 
+@Transactional
 @ApplicationScoped
 public class ProcessorService {
 
@@ -23,13 +27,9 @@ public class ProcessorService {
     @Inject
     BridgesService bridgesService;
 
-    @Transactional
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
-            /* We cannot deploy Processors to a Bridge that is not Available */
-            throw new BridgeLifecycleException("Bridge with id '" + bridge.getId() + "' for customer '" + customerId + "' is not in the '" + BridgeStatus.AVAILABLE + "' state.");
-        }
+        checkBridgeInActiveStatus(bridge);
 
         Processor p = processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName());
         if (p != null) {
@@ -42,6 +42,29 @@ public class ProcessorService {
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
         processorDAO.persist(p);
+        return p;
+    }
+
+    public List<Processor> getProcessorByStatuses(String bridgeId, List<BridgeStatus> statuses) {
+        Bridge bridge = bridgesService.getBridge(bridgeId);
+        checkBridgeInActiveStatus(bridge);
+        return processorDAO.findByStatuses(bridge.getId(), statuses);
+    }
+
+    private void checkBridgeInActiveStatus(Bridge bridge) {
+        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
+            /* We cannot deploy Processors to a Bridge that is not Available */
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.AVAILABLE));
+        }
+    }
+
+    public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
+        Bridge bridge = bridgesService.getBridge(processorDTO.getBridge().getId());
+        Processor p = processorDAO.findById(processorDTO.getId());
+        if (p == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", processorDTO.getId(), bridge.getId(), bridge.getCustomerId()));
+        }
+        p.setStatus(processorDTO.getStatus());
         return p;
     }
 }

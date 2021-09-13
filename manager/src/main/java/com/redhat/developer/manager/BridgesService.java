@@ -11,6 +11,8 @@ public interface BridgesService {
 
     Bridge createBridge(String customerId, BridgeRequest bridgeRequest);
 
+    Bridge getBridge(String id);
+
     Bridge getBridge(String id, String customerId);
 
     void deleteBridge(String id, String customerId);
