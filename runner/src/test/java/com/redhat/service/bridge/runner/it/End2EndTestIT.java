@@ -14,12 +14,12 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.developer.infra.api.APIConstants;
-import com.redhat.developer.infra.dto.BridgeStatus;
-import com.redhat.developer.infra.utils.CloudEventUtils;
-import com.redhat.developer.manager.api.models.requests.BridgeRequest;
-import com.redhat.developer.manager.api.models.responses.BridgeListResponse;
-import com.redhat.developer.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
+import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
