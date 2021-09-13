@@ -42,8 +42,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     void syncUpdatesFromManager() {
         LOGGER.info("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
-                success -> LOGGER.info("[shard] has processed all the Bridges to deploy or delete"),
-                failure -> LOGGER.warn("[shard] something went wrong during the process of the Bridges to be deployed or deleted"));
+                success -> processingComplete(BridgeDTO.class),
+                failure -> processingFailed(BridgeDTO.class, failure));
+
+        fetchAndProcessorProcessorsToDeployOrDelete().subscribe().with(
+                success -> processingComplete(ProcessorDTO.class),
+                failure -> processingFailed(ProcessorDTO.class, failure));
     }
 
     @Override
@@ -87,15 +91,15 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
                 .send().onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
-                        .map(y -> {
-                            if (BridgeStatus.REQUESTED == y.getStatus()) {
-                                y.setStatus(BridgeStatus.PROVISIONING);
-                                return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> operatorService.createProcessorDeployment(y),
-                                        failure -> failedToSendUpdateToManager(y, failure));
-                            }
-                            return Uni.createFrom().voidItem();
-                        }).collect(Collectors.toList())));
+                                                                            .map(y -> {
+                                                                                if (BridgeStatus.REQUESTED == y.getStatus()) {
+                                                                                    y.setStatus(BridgeStatus.PROVISIONING);
+                                                                                    return notifyProcessorStatusChange(y).subscribe().with(
+                                                                                            success -> operatorService.createProcessorDeployment(y),
+                                                                                            failure -> failedToSendUpdateToManager(y, failure));
+                                                                                }
+                                                                                return Uni.createFrom().voidItem();
+                                                                            }).collect(Collectors.toList())));
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
@@ -119,5 +123,13 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private void failedToSendUpdateToManager(Object entity, Throwable t) {
         LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
+    }
+
+    private void processingFailed(Class<?> entity, Throwable t) {
+        LOGGER.error("[shard] Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
+    }
+
+    private void processingComplete(Class<?> entity) {
+        LOGGER.info("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 }
