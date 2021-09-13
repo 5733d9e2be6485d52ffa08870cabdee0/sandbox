@@ -21,6 +21,7 @@ import io.restassured.http.ContentType;
 
 import static io.restassured.RestAssured.given;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -36,7 +37,7 @@ public class IngressAPITest {
     @BeforeAll
     public static void setup() {
         KafkaEventPublisher mock = Mockito.mock(KafkaEventPublisher.class);
-        Mockito.doNothing().when(mock).sendEvent(any(CloudEvent.class));
+        Mockito.doNothing().when(mock).sendEvent(any(String.class), any(CloudEvent.class));
         QuarkusMock.installMockForType(mock, KafkaEventPublisher.class);
     }
 
@@ -52,7 +53,7 @@ public class IngressAPITest {
                 .post("/ingress/events/topicName")
                 .then().statusCode(200);
 
-        verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
         ingressService.undeploy("topicName");
     }
 
@@ -68,7 +69,7 @@ public class IngressAPITest {
                 .post("/ingress/events/topicName")
                 .then().statusCode(400);
 
-        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
         ingressService.undeploy("topicName");
     }
 
@@ -83,6 +84,6 @@ public class IngressAPITest {
                 .post("/ingress/events/topicName")
                 .then().statusCode(500);
 
-        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
     }
 }

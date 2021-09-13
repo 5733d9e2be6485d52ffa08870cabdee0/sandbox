@@ -26,10 +26,4 @@ public class WebClientUtils {
                 .setSsl(sslEnabled)
                 .setLogActivity(true));
     }
-
-    public static String getEndpoint(String url) {
-        URI uri = URI.create(url);
-        return uri.getRawPath();
-    }
-
 }

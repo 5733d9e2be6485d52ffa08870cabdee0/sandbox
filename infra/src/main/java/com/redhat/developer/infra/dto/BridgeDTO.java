@@ -1,5 +1,7 @@
 package com.redhat.developer.infra.dto;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BridgeDTO {
@@ -68,5 +70,22 @@ public class BridgeDTO {
 
     public BridgeStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BridgeDTO bridgeDTO = (BridgeDTO) o;
+        return id.equals(bridgeDTO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

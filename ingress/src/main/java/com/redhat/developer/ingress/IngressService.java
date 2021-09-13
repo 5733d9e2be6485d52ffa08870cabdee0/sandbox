@@ -4,10 +4,10 @@ import io.cloudevents.CloudEvent;
 
 public interface IngressService {
 
-    void processEvent(String name, CloudEvent event);
+    void processEvent(String id, CloudEvent event);
 
     // TODO: remove after we move to k8s
-    String deploy(String name);
+    String deploy(String id);
 
-    boolean undeploy(String name);
+    boolean undeploy(String id);
 }

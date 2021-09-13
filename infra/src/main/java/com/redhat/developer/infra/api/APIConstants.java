@@ -13,7 +13,7 @@ public class APIConstants {
     /**
      * Base Path for Shard facing API.
      */
-    public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges";
+    public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
      * The page query parameter name
