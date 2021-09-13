@@ -3,33 +3,32 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <parent>
-    <groupId>com.redhat.developer</groupId>
+    <groupId>com.redhat.service.bridge</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.redhat.developer</groupId>
   <artifactId>runner</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Event Bridge :: Runner</name>
 
   <dependencies>
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>manager</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>shard</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>executor</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>ingress</artifactId>
     </dependency>
 
