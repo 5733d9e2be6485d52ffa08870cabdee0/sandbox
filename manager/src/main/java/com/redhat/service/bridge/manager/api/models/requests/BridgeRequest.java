@@ -1,0 +1,29 @@
+package com.redhat.service.bridge.manager.api.models.requests;
+
+import javax.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.manager.models.Bridge;
+
+public class BridgeRequest {
+
+    @NotEmpty(message = "Bridge name cannot be null or empty")
+    @JsonProperty("name")
+    private String name;
+
+    public BridgeRequest() {
+    }
+
+    public BridgeRequest(String name) {
+        this.name = name;
+    }
+
+    public Bridge toEntity() {
+        Bridge bridge = new Bridge(name);
+        return bridge;
+    }
+
+    public String getName() {
+        return name;
+    }
+}

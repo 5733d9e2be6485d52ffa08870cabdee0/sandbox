@@ -3,14 +3,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <parent>
-    <groupId>com.redhat.developer</groupId>
+    <groupId>com.redhat.service.bridge</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.redhat.developer</groupId>
   <artifactId>shard</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Event Bridge :: Shard</name>
@@ -42,25 +41,21 @@
     </dependency>
 
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
 
     <!-- TODO: remove after we move to k8s implementation-->
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>ingress</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.developer</groupId>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>executor</artifactId>
     </dependency>
     <!-- TODO: End remove after move to K8S -->
 
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
-    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
