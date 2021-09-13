@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>event-bridge</artifactId>
-    <groupId>com.redhat.developer</groupId>
+    <groupId>com.redhat.service.bridge</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
@@ -17,108 +17,108 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>shard</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>shard</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>shard</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>runner</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>runner</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>runner</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.developer</groupId>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
