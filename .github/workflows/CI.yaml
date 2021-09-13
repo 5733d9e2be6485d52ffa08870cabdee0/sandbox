@@ -3,7 +3,7 @@ on: [pull_request]
 jobs:
   event-bridge-build:
     env:
-      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
     concurrency:
       group: event-bridge-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -42,10 +42,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
       - name: Compile and Validate Formating
         shell: bash
-        run: mvn -Dmaven.test.skip=true -Pvalidate-formatting package
-      - name: Run Test Suite
-        shell: bash
-        run: mvn verify
+        run: mvn -Dvalidate-formatting verify -nsu -fae -e
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
