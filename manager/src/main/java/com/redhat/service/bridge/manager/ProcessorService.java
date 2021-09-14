@@ -27,6 +27,17 @@ public class ProcessorService {
     @Inject
     BridgesService bridgesService;
 
+    public Processor getProcessor(String processorId, String bridgeId, String customerId) {
+
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridge.getId(), bridge.getCustomerId());
+        if (processor == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on Bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+        }
+
+        return processor;
+    }
+
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
         checkBridgeInActiveStatus(bridge);
