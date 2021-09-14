@@ -3,7 +3,6 @@ package com.redhat.service.bridge.shard;
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -15,5 +14,5 @@ public interface ManagerSyncService {
 
     Uni<Object> fetchAndProcessBridgesToDeployOrDelete();
 
-    Multi<ProcessorDTO> fetchProcessorsForBridge(BridgeDTO bridgeDTO);
+    Uni<Object> fetchAndProcessProcessorsToDeployOrDelete();
 }

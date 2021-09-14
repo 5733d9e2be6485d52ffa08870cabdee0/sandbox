@@ -58,7 +58,7 @@ public class ProcessorDAOTest {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.REQUESTED);
+        b.setStatus(BridgeStatus.AVAILABLE);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
         bridgeDAO.persist(b);
@@ -107,7 +107,7 @@ public class ProcessorDAOTest {
         r.setStatus(BridgeStatus.DELETION_REQUESTED);
         processorDAO.getEntityManager().merge(r);
 
-        List<Processor> processors = processorDAO.findByStatuses(b.getId(), asList(BridgeStatus.AVAILABLE, BridgeStatus.DELETION_REQUESTED));
+        List<Processor> processors = processorDAO.findByStatuses(asList(BridgeStatus.AVAILABLE, BridgeStatus.DELETION_REQUESTED));
         assertThat(processors, hasSize(2));
         processors.stream().forEach((px) -> assertThat(px.getName(), in(asList("bob", "frank"))));
     }

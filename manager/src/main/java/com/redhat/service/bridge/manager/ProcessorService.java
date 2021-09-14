@@ -45,10 +45,8 @@ public class ProcessorService {
         return p;
     }
 
-    public List<Processor> getProcessorByStatuses(String bridgeId, List<BridgeStatus> statuses) {
-        Bridge bridge = bridgesService.getBridge(bridgeId);
-        checkBridgeInActiveStatus(bridge);
-        return processorDAO.findByStatuses(bridge.getId(), statuses);
+    public List<Processor> getProcessorByStatuses(List<BridgeStatus> statuses) {
+        return processorDAO.findByStatuses(statuses);
     }
 
     private void checkBridgeInActiveStatus(Bridge bridge) {

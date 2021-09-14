@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 import com.redhat.service.bridge.ingress.IngressService;
 import com.redhat.service.bridge.shard.controllers.ProcessorController;
 
@@ -57,17 +58,21 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
         return bridge;
     }
 
+    @Override
+    public ProcessorDTO createProcessorDeployment(ProcessorDTO processor) {
+        return processorController.deployProcessor(processor);
+    }
+
     // TODO: replace with operator reconcile loop and logic
     @Scheduled(every = "30s")
     void reconcileLoopMock() {
-        LOGGER.debug("[shard] Bridge reconcile loop mock wakes up");
-        for (BridgeDTO dto : bridges) {
-            if (BridgeStatus.PROVISIONING == dto.getStatus()) {
-                reconcileBridge(dto);
-            } else if (BridgeStatus.AVAILABLE == dto.getStatus()) {
-                reconcileBridgeProcessors(dto);
-            }
-        }
+        LOGGER.debug("[shard] Reconcile loop mock wakes up");
+        reconcileBridges();
+        processorController.reconcileProcessors();
+    }
+
+    private void reconcileBridges() {
+        bridges.stream().forEach(this::reconcileBridge);
     }
 
     private void reconcileBridge(BridgeDTO dto) {
@@ -78,9 +83,5 @@ public class OperatorServiceInMemoryImpl implements OperatorService {
         managerSyncService.notifyBridgeStatusChange(dto).subscribe().with(
                 success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
                 failure -> LOGGER.warn("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
-    }
-
-    private void reconcileBridgeProcessors(BridgeDTO bridgeDTO) {
-        processorController.reconcileProcessorsFor(bridgeDTO);
     }
 }
