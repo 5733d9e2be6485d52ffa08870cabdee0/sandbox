@@ -4,7 +4,6 @@ import java.net.URI;
 import java.time.Duration;
 
 import org.awaitility.Awaitility;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;

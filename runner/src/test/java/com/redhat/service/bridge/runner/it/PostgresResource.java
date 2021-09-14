@@ -5,10 +5,6 @@ import java.util.Map;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
-
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class PostgresResource implements QuarkusTestResourceLifecycleManager {
