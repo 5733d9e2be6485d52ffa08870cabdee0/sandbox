@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Duration;
 
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +45,6 @@ public class End2EndTestIT {
     @Order(1)
     @Test
     public void getEmptyBridges() {
-        System.out.println(managerUrl);
         BridgeListResponse response = jsonRequest()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
