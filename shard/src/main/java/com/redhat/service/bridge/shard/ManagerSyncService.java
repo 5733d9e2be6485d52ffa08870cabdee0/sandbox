@@ -14,5 +14,5 @@ public interface ManagerSyncService {
 
     Uni<Object> fetchAndProcessBridgesToDeployOrDelete();
 
-    Uni<Object> fetchAndProcessorProcessorsToDeployOrDelete();
+    Uni<Object> fetchAndProcessProcessorsToDeployOrDelete();
 }

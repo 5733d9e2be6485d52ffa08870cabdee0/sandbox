@@ -45,7 +45,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
 
-        fetchAndProcessorProcessorsToDeployOrDelete().subscribe().with(
+        fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
                 success -> processingComplete(ProcessorDTO.class),
                 failure -> processingFailed(ProcessorDTO.class, failure));
     }
@@ -87,7 +87,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Uni<Object> fetchAndProcessorProcessorsToDeployOrDelete() {
+    public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
         return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
                 .send().onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()

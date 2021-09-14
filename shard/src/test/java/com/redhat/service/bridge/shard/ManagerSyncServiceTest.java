@@ -93,7 +93,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        managerSyncService.fetchAndProcessorProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         processor.setStatus(BridgeStatus.PROVISIONING);
