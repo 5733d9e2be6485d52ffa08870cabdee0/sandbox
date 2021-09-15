@@ -111,4 +111,23 @@ public class ProcessorDAOTest {
         assertThat(processors, hasSize(2));
         processors.stream().forEach((px) -> assertThat(px.getName(), in(asList("bob", "frank"))));
     }
+
+    @Test
+    public void findByIdBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+
+        Processor found = processorDAO.findByIdBridgeIdAndCustomerId(p.getId(), b.getId(), b.getCustomerId());
+        assertThat(found, is(notNullValue()));
+        assertThat(found.getId(), equalTo(p.getId()));
+    }
+
+    @Test
+    public void findByIdBridgeIdAndCustomerId_doesNotExist() {
+        Bridge b = createBridge();
+        createProcessor(b, "foo");
+
+        Processor found = processorDAO.findByIdBridgeIdAndCustomerId("doesntExist", b.getId(), b.getCustomerId());
+        assertThat(found, is(nullValue()));
+    }
 }
