@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -28,9 +27,6 @@ public class ProcessorAPITest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    @Inject
-    CustomerIdResolver customerIdResolver;
-
     private BridgeResponse createBridge() {
         BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);
@@ -43,7 +39,7 @@ public class ProcessorAPITest {
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridgeResponse.getId());
         dto.setStatus(BridgeStatus.AVAILABLE);
-        dto.setCustomerId(customerIdResolver.resolveCustomerId());
+        dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         dto.setEndpoint("https://foo.bridges.redhat.com");
 
         Response deployment = TestUtils.updateBridge(dto);
