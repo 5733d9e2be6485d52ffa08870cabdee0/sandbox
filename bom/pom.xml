@@ -123,6 +123,24 @@
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>k8s</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>k8s</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>k8s</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

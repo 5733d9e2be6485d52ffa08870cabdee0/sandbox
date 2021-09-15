@@ -17,6 +17,7 @@ import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.AbstractShardWireMockTest;
+import com.redhat.service.bridge.shard.OperatorService;
 
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -33,7 +34,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     ExecutorsService executorsService;
 
     @Inject
-    ProcessorController processorController;
+    OperatorService operatorService;
 
     @BeforeEach
     public void beforeEach() {
@@ -52,8 +53,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        processorController.deployProcessor(processor);
-        processorController.reconcileProcessors();
+        operatorService.createProcessorDeployment(processor);
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
@@ -79,8 +79,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
 
         Mockito.doThrow(new RuntimeException("Test Mock Failure: This is an expected Failure for Testing only.")).when(executorsService).createExecutor(processor);
 
-        processorController.deployProcessor(processor);
-        processorController.reconcileProcessors();
+        operatorService.createProcessorDeployment(processor);
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 

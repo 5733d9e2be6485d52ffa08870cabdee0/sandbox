@@ -38,6 +38,7 @@
     <module>runner</module>
     <module>ingress</module>
     <module>infra</module>
+    <module>k8s</module>
   </modules>
 
 </project>
