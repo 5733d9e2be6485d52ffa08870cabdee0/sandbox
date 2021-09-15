@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -23,14 +22,11 @@ import javax.ws.rs.core.Response;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.CustomerIdResolver;
-import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
-import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.Processor;
 
 import static com.redhat.service.bridge.infra.api.APIConstants.PAGE;
 import static com.redhat.service.bridge.infra.api.APIConstants.PAGE_DEFAULT;
@@ -48,9 +44,6 @@ public class BridgesAPI {
 
     @Inject
     BridgesService bridgesService;
-
-    @Inject
-    ProcessorService processorService;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -95,13 +88,5 @@ public class BridgesAPI {
     public Response deleteBridge(@PathParam("id") String id) {
         bridgesService.deleteBridge(id, customerIdResolver.resolveCustomerId());
         return Response.accepted().build();
-    }
-
-    @Path("{id}/processors")
-    @POST
-    public Response addProcessorToBridge(@PathParam("id") @NotEmpty String id, @Valid ProcessorRequest processorRequest) {
-        String customerId = customerIdResolver.resolveCustomerId();
-        Processor processor = processorService.createProcessor(id, customerId, processorRequest);
-        return Response.status(Response.Status.CREATED).entity(processor.toResponse()).build();
     }
 }

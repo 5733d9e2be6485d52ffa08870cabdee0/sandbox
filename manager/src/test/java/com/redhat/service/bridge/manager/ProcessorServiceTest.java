@@ -157,4 +157,42 @@ public class ProcessorServiceTest {
 
         assertThrows(ItemNotFoundException.class, () -> processorService.updateProcessorStatus(processor));
     }
+
+    @Test
+    public void getProcessor() {
+
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor");
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        Processor found = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
+        assertThat(found, is(notNullValue()));
+        assertThat(found.getId(), equalTo(processor.getId()));
+        assertThat(found.getBridge().getId(), equalTo(b.getId()));
+        assertThat(found.getBridge().getCustomerId(), equalTo(b.getCustomerId()));
+    }
+
+    @Test
+    public void getProcessor_bridgeDoesNotExist() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor");
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        assertThrows(ItemNotFoundException.class, () -> processorService.getProcessor(processor.getId(), "doesNotExist", b.getCustomerId()));
+    }
+
+    @Test
+    public void getProcessor_processorDoesNotExist() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor");
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        assertThrows(ItemNotFoundException.class, () -> processorService.getProcessor("doesNotExist", b.getId(), b.getCustomerId()));
+    }
 }

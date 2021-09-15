@@ -33,6 +33,8 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge {
 
+    public static final String CUSTOMER_ID_PARAM = "customerId";
+
     @Id
     private String id = UUID.randomUUID().toString();
 

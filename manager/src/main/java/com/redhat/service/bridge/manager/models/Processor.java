@@ -24,10 +24,14 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByStatus",
-                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'")
+                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
+        @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
+                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)")
 })
 @Entity
 public class Processor {
+
+    public static final String ID_PARAM = "id";
 
     public static final String NAME_PARAM = "name";
 
