@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 
-public class BridgeCustomResource { // to be moved to shard or shard-api. It is in this infra module because I have to use them in k8s module
+// TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
+public class BridgeCustomResource {
     @JsonProperty("id")
     private String id;
 

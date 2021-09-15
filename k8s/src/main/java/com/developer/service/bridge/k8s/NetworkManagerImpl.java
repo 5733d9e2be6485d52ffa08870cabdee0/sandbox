@@ -58,19 +58,21 @@ public class NetworkManagerImpl implements NetworkManager {
         }
 
         String type = KubernetesUtils.extractTypeFromMetadata(ingress);
-
+        Action action;
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             ingressService.deploy(name);
             if (ingressEndpointMap.containsKey(name)) {
                 ingressEndpointMap.replace(name, ingress);
+                action = Action.MODIFIED;
             } else {
                 ingressEndpointMap.put(name, ingress);
+                action = Action.ADDED;
             }
         } else {
             throw new IllegalStateException("[k8s] It's possible to create an Ingress only for Bridge Ingress applications.");
         }
 
-        event.fire(new ResourceEvent(type, name, Action.ADDED));
+        event.fire(new ResourceEvent(type, name, action));
     }
 
     @Override

@@ -39,10 +39,13 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
     @Override
     public void createOrUpdate(Deployment deployment) {
         String name = deployment.getMetadata().getName();
+        Action action;
         if (deploymentMap.containsKey(name)) {
             deploymentMap.replace(name, deployment);
+            action = Action.MODIFIED;
         } else {
             deploymentMap.put(name, deployment);
+            action = Action.ADDED;
         }
 
         DeploymentStatus status = new DeploymentStatusBuilder()
@@ -60,7 +63,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
         }
 
-        event.fire(new ResourceEvent(type, name, Action.ADDED));
+        event.fire(new ResourceEvent(type, name, action));
     }
 
     @Override

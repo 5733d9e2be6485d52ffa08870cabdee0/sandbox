@@ -20,13 +20,16 @@ public class CustomResourceManagerImpl implements CustomResourceManager {
 
     @Override
     public void createOrUpdateCustomResource(String name, Object customResource, String type) {
+        Action action;
         if (resourcesMap.containsKey(name)) {
             resourcesMap.replace(name, customResource);
+            action = Action.MODIFIED;
         } else {
             resourcesMap.put(name, customResource);
+            action = Action.ADDED;
         }
+        event.fire(new ResourceEvent(type, name, action));
 
-        event.fire(new ResourceEvent(type, name, Action.ADDED));
     }
 
     @Override

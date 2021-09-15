@@ -5,7 +5,8 @@ import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 
-public class ProcessorCustomResource { // to be moved to shard or shard-api. It is in this infra module because It's needed in the k8s module
+// TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
+public class ProcessorCustomResource {
 
     @JsonProperty("id")
     private String id;

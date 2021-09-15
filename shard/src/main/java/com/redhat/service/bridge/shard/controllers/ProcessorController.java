@@ -39,7 +39,6 @@ public class ProcessorController {
         if (event.getSubject().equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             ProcessorCustomResource resource = kubernetesClient.getCustomResource(event.getResourceId(), ProcessorCustomResource.class);
             if (event.getAction().equals(Action.ERROR)) {
-                LOGGER.error("[shard] Failed to deploy Deployment with id '{}'", resource.getId());
                 notifyFailedDeployment(resource);
                 return;
             }
@@ -79,11 +78,12 @@ public class ProcessorController {
         // TODO: Create service for deployment
 
         // Update the custom resource if needed
-        if (!customResource.getStatus().equals(BridgeStatus.AVAILABLE)) {
+        if (!customResource.getStatus().equals(BridgeStatus.FAILED) && !customResource.getStatus().equals(BridgeStatus.AVAILABLE)) {
             customResource.setStatus(BridgeStatus.AVAILABLE);
 
             kubernetesClient.createOrUpdateCustomResource(customResource.getId(), customResource, K8SBridgeConstants.PROCESSOR_TYPE);
 
+            LOGGER.info(customResource.getStatus().toString());
             ProcessorDTO dto = customResource.toDTO();
             managerSyncService.notifyProcessorStatusChange(dto).subscribe().with(
                     success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
@@ -101,11 +101,14 @@ public class ProcessorController {
     }
 
     private void notifyFailedDeployment(ProcessorCustomResource resource) {
-        resource.setStatus(BridgeStatus.FAILED);
-        kubernetesClient.createOrUpdateCustomResource(resource.getId(), resource, K8SBridgeConstants.PROCESSOR_TYPE);
-        ProcessorDTO dto = resource.toDTO();
-        managerSyncService.notifyProcessorStatusChange(dto).subscribe().with(
-                success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
-                failure -> LOGGER.warn("[shard] Updating Processor with id '{}' FAILED", dto.getId()));
+        if (!resource.getStatus().equals(BridgeStatus.FAILED)) {
+            LOGGER.error("[shard] Failed to deploy Deployment with id '{}'", resource.getId());
+            resource.setStatus(BridgeStatus.FAILED);
+            kubernetesClient.createOrUpdateCustomResource(resource.getId(), resource, K8SBridgeConstants.PROCESSOR_TYPE);
+            ProcessorDTO dto = resource.toDTO();
+            managerSyncService.notifyProcessorStatusChange(dto).subscribe().with(
+                    success -> LOGGER.info("[shard] Updating Processor with id '{}' about the failure. Done", dto.getId()),
+                    failure -> LOGGER.warn("[shard] Updating Processor with id '{}' about the failure. FAILED", dto.getId()));
+        }
     }
 }
