@@ -21,7 +21,6 @@ import com.redhat.service.bridge.infra.k8s.KubernetesClient;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.shard.AbstractShardWireMockTest;
-import com.redhat.service.bridge.shard.OperatorService;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,9 +33,6 @@ import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 public class ProcessorControllerTest extends AbstractShardWireMockTest {
-
-    @Inject
-    OperatorService operatorService;
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -54,7 +50,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        operatorService.createProcessorDeployment(processor);
+        kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
@@ -80,7 +76,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        operatorService.createProcessorDeployment(processor);
+        kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 

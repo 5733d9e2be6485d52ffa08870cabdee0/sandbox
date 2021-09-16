@@ -20,6 +20,8 @@ import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.BridgeCustomResource;
 import com.redhat.service.bridge.shard.ManagerSyncService;
 
+import io.fabric8.kubernetes.api.model.LoadBalancerIngress;
+import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
@@ -36,6 +38,7 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressRuleBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressServiceBackendBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressSpec;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressSpecBuilder;
+import io.fabric8.kubernetes.api.model.networking.v1.IngressStatus;
 import io.fabric8.kubernetes.api.model.networking.v1.ServiceBackendPortBuilder;
 
 @ApplicationScoped
@@ -171,12 +174,19 @@ public class IngressController {
                 .build();
     }
 
-    private boolean isNetworkIngressReady(Ingress ingress) {
-        return ingress.getStatus() != null
-                && ingress.getStatus().getLoadBalancer() != null
-                && ingress.getStatus().getLoadBalancer().getIngress() != null
-                && !ingress.getStatus().getLoadBalancer().getIngress().isEmpty()
-                && ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() != null;
+    public boolean isNetworkIngressReady(Ingress ingress) {
+        return Optional.ofNullable(ingress)
+                .map(Ingress::getStatus)
+                .map(IngressStatus::getLoadBalancer)
+                .map(LoadBalancerStatus::getIngress)
+                .flatMap(x -> {
+                    if (!x.isEmpty()) {
+                        return Optional.of(x.get(0));
+                    }
+                    return Optional.empty();
+                })
+                .map(LoadBalancerIngress::getIp)
+                .isPresent();
     }
 
     private String extractEndpoint(Ingress ingress) {

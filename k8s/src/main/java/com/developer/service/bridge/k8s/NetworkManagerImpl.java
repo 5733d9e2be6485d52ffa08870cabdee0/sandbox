@@ -87,8 +87,6 @@ public class NetworkManagerImpl implements NetworkManager {
 
     @Override
     public Ingress getIngress(String name) {
-        LOGGER.info("Asked ingress name " + name);
-        LOGGER.info("And I have " + ingressEndpointMap.keySet());
         return ingressEndpointMap.get(name);
     }
 }
