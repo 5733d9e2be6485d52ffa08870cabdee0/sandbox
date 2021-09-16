@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ProcessorListResponse extends ListResponse {
 
     @JsonProperty("kind")
-    private String kind = "BridgeList";
+    private String kind = "ProcessorList";
 
     @JsonProperty("items")
     private List<ProcessorResponse> items = new ArrayList<>();
