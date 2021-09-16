@@ -11,6 +11,7 @@ import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
@@ -18,8 +19,10 @@ import com.redhat.service.bridge.manager.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.in;
 
 @QuarkusTest
 public class ProcessorAPITest {
@@ -50,6 +53,42 @@ public class ProcessorAPITest {
     @BeforeEach
     public void beforeEach() {
         databaseManagerUtils.cleanDatabase();
+    }
+
+    @Test
+    public void listProcessors() {
+
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2")).as(ProcessorResponse.class);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 0, 100).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage(), equalTo(0L));
+        assertThat(listResponse.getSize(), equalTo(2L));
+        assertThat(listResponse.getTotal(), equalTo(2L));
+
+        listResponse.getItems().forEach((i) -> assertThat(i.getId(), in(asList(p.getId(), p2.getId()))));
+    }
+
+    @Test
+    public void listProcessors_pageOffset() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2")).as(ProcessorResponse.class);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 1, 1).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage(), equalTo(1L));
+        assertThat(listResponse.getSize(), equalTo(1L));
+        assertThat(listResponse.getTotal(), equalTo(2L));
+
+        assertThat(listResponse.getItems().get(0).getId(), equalTo(p2.getId()));
+    }
+
+    @Test
+    public void listProcessors_bridgeDoesNotExist() {
+        assertThat(TestUtils.listProcessors("doesNotExist", 0, 100).getStatusCode(), equalTo(404));
     }
 
     @Test

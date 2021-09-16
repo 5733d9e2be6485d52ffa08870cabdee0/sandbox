@@ -32,6 +32,11 @@ public class TestUtils {
                 .get(APIConstants.USER_API_BASE_PATH + id);
     }
 
+    public static Response listProcessors(String bridgeId, int page, int size) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?size=" + size + "&page=" + page);
+    }
+
     public static Response getProcessor(String bridgeId, String processorId) {
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
