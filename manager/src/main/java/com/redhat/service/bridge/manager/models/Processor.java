@@ -2,8 +2,11 @@ package com.redhat.service.bridge.manager.models;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -13,11 +16,13 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
@@ -58,6 +63,9 @@ public class Processor {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
+
+    @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    private Set<Filter> filters;
 
     public String getId() {
         return id;
@@ -111,6 +119,10 @@ public class Processor {
         this.status = status;
     }
 
+    public void setFilters(Set<Filter> filters) {
+        this.filters = filters;
+    }
+
     public ProcessorResponse toResponse() {
 
         ProcessorResponse processorResponse = new ProcessorResponse();
@@ -125,6 +137,8 @@ public class Processor {
             processorResponse.setBridge(this.bridge.toResponse());
         }
 
+        processorResponse.setFilters(buildFilters());
+
         return processorResponse;
     }
 
@@ -134,6 +148,7 @@ public class Processor {
         dto.setStatus(this.status);
         dto.setName(this.name);
         dto.setId(this.id);
+        dto.setFilters(buildFilters());
 
         if (this.bridge != null) {
             dto.setBridge(this.bridge.toDTO());
@@ -161,5 +176,12 @@ public class Processor {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    private Set<com.redhat.service.bridge.infra.filters.Filter> buildFilters() {
+        return this.filters
+                .stream()
+                .map(x -> FilterFactory.buildFilter(x.getType(), x.getKey(), x.getValue()))
+                .collect(Collectors.toSet());
     }
 }

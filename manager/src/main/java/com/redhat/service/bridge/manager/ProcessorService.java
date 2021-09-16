@@ -2,6 +2,8 @@ package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,6 +17,7 @@ import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.Processor;
 
 @Transactional
@@ -42,16 +45,17 @@ public class ProcessorService {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
         checkBridgeInActiveStatus(bridge);
 
-        Processor p = processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName());
-        if (p != null) {
+        if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        p = new Processor();
+        final Processor p = new Processor();
+        Set<Filter> filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getStringValue(), p)).collect(Collectors.toSet());
         p.setName(processorRequest.getName());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
+        p.setFilters(filters);
         processorDAO.persist(p);
         return p;
     }

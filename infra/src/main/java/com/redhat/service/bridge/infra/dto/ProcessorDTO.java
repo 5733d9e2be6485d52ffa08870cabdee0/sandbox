@@ -1,8 +1,10 @@
 package com.redhat.service.bridge.infra.dto;
 
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.infra.filters.Filter;
 
 public class ProcessorDTO {
 
@@ -18,10 +20,13 @@ public class ProcessorDTO {
     @JsonProperty("status")
     private BridgeStatus status;
 
+    @JsonProperty("filters")
+    private Set<Filter> filters;
+
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status) {
+    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<Filter> filters) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
@@ -58,6 +63,14 @@ public class ProcessorDTO {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public Set<Filter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(Set<Filter> filters) {
+        this.filters = filters;
     }
 
     @Override

@@ -1,11 +1,13 @@
 package com.redhat.service.bridge.manager.api.models.responses;
 
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.filters.Filter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessorResponse {
@@ -35,6 +37,9 @@ public class ProcessorResponse {
 
     @JsonProperty("status")
     private BridgeStatus status;
+
+    @JsonProperty("filters")
+    private Set<Filter> filters;
 
     public String getId() {
         return id;
@@ -94,5 +99,13 @@ public class ProcessorResponse {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public Set<Filter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(Set<Filter> filters) {
+        this.filters = filters;
     }
 }
