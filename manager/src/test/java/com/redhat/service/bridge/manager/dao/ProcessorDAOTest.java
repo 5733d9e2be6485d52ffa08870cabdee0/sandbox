@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 
@@ -129,5 +130,42 @@ public class ProcessorDAOTest {
 
         Processor found = processorDAO.findByIdBridgeIdAndCustomerId("doesntExist", b.getId(), b.getCustomerId());
         assertThat(found, is(nullValue()));
+    }
+
+    @Test
+    public void findByBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        Processor p1 = createProcessor(b, "bar");
+
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        assertThat(listResult.getPage(), equalTo(0L));
+        assertThat(listResult.getSize(), equalTo(2L));
+        assertThat(listResult.getTotal(), equalTo(2L));
+
+        listResult.getItems().forEach((px) -> assertThat(px.getId(), in(asList(p.getId(), p1.getId()))));
+    }
+
+    @Test
+    public void findByBridgeIdAndCustomerId_noProcessors() {
+        Bridge b = createBridge();
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        assertThat(listResult.getPage(), equalTo(0L));
+        assertThat(listResult.getSize(), equalTo(0L));
+        assertThat(listResult.getTotal(), equalTo(0L));
+    }
+
+    @Test
+    public void findByBridgeIdAndCustomerId_pageOffset() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        Processor p1 = createProcessor(b, "bar");
+
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 1, 1);
+        assertThat(listResult.getPage(), equalTo(1L));
+        assertThat(listResult.getSize(), equalTo(1L));
+        assertThat(listResult.getTotal(), equalTo(2L));
+
+        assertThat(listResult.getItems().get(0).getId(), equalTo(p1.getId()));
     }
 }
