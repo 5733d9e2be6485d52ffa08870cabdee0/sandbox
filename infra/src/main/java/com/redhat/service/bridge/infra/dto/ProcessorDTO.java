@@ -31,6 +31,7 @@ public class ProcessorDTO {
         this.name = name;
         this.bridge = bridge;
         this.status = status;
+        this.filters = filters;
     }
 
     public String getId() {
