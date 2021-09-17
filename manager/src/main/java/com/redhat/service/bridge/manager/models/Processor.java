@@ -179,6 +179,10 @@ public class Processor {
     }
 
     private Set<com.redhat.service.bridge.infra.filters.Filter> buildFilters() {
+        if (this.filters == null) {
+            return null;
+        }
+
         return this.filters
                 .stream()
                 .map(x -> FilterFactory.buildFilter(x.getType(), x.getKey(), x.getValue()))

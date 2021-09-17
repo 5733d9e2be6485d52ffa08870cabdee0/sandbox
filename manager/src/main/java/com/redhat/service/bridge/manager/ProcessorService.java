@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
@@ -20,7 +19,6 @@ import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.Processor;
 
-@Transactional
 @ApplicationScoped
 public class ProcessorService {
 
@@ -50,7 +48,12 @@ public class ProcessorService {
         }
 
         final Processor p = new Processor();
-        Set<Filter> filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getStringValue(), p)).collect(Collectors.toSet());
+
+        Set<Filter> filters = null;
+        if (processorRequest.getFilters() != null) {
+            filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getStringValue(), p)).collect(Collectors.toSet());
+        }
+
         p.setName(processorRequest.getName());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);

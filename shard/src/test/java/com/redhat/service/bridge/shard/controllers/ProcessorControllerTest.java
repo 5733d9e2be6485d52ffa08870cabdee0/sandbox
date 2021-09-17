@@ -45,7 +45,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     @Test
     public void reconcileProcessor() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
 
         stubProcessorUpdate();
 
@@ -70,7 +70,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     public void reconcileProcessor_withFailure() throws Exception {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
 
         stubProcessorUpdate();
 

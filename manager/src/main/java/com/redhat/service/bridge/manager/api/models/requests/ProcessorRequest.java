@@ -19,8 +19,9 @@ public class ProcessorRequest {
     public ProcessorRequest() {
     }
 
-    public ProcessorRequest(String name) {
+    public ProcessorRequest(String name, Set<Filter> filters) {
         this.name = name;
+        this.filters = filters;
     }
 
     public String getName() {

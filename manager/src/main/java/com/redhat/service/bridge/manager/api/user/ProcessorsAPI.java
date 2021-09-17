@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.api.user;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.GET;
@@ -19,6 +20,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 @Path(APIConstants.USER_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
+@Transactional
 public class ProcessorsAPI {
 
     @Inject

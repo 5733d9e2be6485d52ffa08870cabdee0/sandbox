@@ -3,7 +3,7 @@ package com.redhat.service.bridge.infra.filters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StringEquals extends Filter {
-    public static final String FILTER_TYPE_NAME = "StringEndsWith";
+    public static final String FILTER_TYPE_NAME = "StringEquals";
 
     @JsonProperty("type")
     private String type = FILTER_TYPE_NAME;
