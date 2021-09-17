@@ -20,6 +20,7 @@ import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 
@@ -195,5 +196,36 @@ public class ProcessorServiceTest {
         assertThat(processor, is(notNullValue()));
 
         assertThrows(ItemNotFoundException.class, () -> processorService.getProcessor("doesNotExist", b.getId(), b.getCustomerId()));
+    }
+
+    @Test
+    public void getProcessors() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        assertThat(results.getPage(), equalTo(0L));
+        assertThat(results.getSize(), equalTo(1L));
+        assertThat(results.getTotal(), equalTo(1L));
+
+        assertThat(results.getItems().get(0).getId(), equalTo(processor.getId()));
+    }
+
+    @Test
+    public void getProcessors_noProcessorsOnBridge() {
+
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        assertThat(results.getPage(), equalTo(0L));
+        assertThat(results.getSize(), equalTo(0L));
+        assertThat(results.getTotal(), equalTo(0L));
+    }
+
+    @Test
+    public void getProcessors_bridgeDoesNotExist() {
+        assertThrows(ItemNotFoundException.class, () -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, 0, 100));
     }
 }
