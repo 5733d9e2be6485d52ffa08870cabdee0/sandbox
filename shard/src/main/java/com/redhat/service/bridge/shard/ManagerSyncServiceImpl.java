@@ -16,6 +16,10 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
+import com.redhat.service.bridge.infra.k8s.KubernetesClient;
+import com.redhat.service.bridge.infra.k8s.crds.BridgeCustomResource;
+import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
@@ -33,10 +37,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     ObjectMapper mapper;
 
     @Inject
-    OperatorService operatorService;
+    WebClient webClientManager;
 
     @Inject
-    WebClient webClientManager;
+    KubernetesClient kubernetesClient;
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
@@ -71,12 +75,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                     if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
                                         y.setStatus(BridgeStatus.PROVISIONING);
                                         return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> operatorService.createBridgeDeployment(y),
+                                                success -> deployBridgeCustomResource(y),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETED);
-                                        operatorService.deleteBridgeDeployment(y);
+                                        deleteBridgeCustomResource(y);
                                         return notifyBridgeStatusChange(y).subscribe().with(
                                                 success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                                 failure -> failedToSendUpdateToManager(y, failure));
@@ -95,11 +99,25 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                             if (BridgeStatus.REQUESTED == y.getStatus()) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> operatorService.createProcessorDeployment(y),
+                                        success -> deployProcessorCustomResource(y),
                                         failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
+    }
+
+    // Create the custom resource, and let the controller create what it needs
+    protected void deployBridgeCustomResource(BridgeDTO bridgeDTO) {
+        kubernetesClient.createOrUpdateCustomResource(bridgeDTO.getId(), BridgeCustomResource.fromDTO(bridgeDTO), K8SBridgeConstants.BRIDGE_TYPE);
+    }
+
+    protected void deleteBridgeCustomResource(BridgeDTO bridgeDTO) {
+        kubernetesClient.deleteCustomResource(bridgeDTO.getId(), K8SBridgeConstants.BRIDGE_TYPE);
+    }
+
+    // Create the custom resource, and let the controller create what it needs
+    protected void deployProcessorCustomResource(ProcessorDTO processorDTO) {
+        kubernetesClient.createOrUpdateCustomResource(processorDTO.getId(), ProcessorCustomResource.fromDTO(processorDTO), K8SBridgeConstants.PROCESSOR_TYPE);
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {

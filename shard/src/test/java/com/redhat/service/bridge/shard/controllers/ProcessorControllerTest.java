@@ -3,22 +3,26 @@ package com.redhat.service.bridge.shard.controllers;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.redhat.service.bridge.executor.ExecutorsService;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.k8s.Action;
+import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
+import com.redhat.service.bridge.infra.k8s.KubernetesClient;
+import com.redhat.service.bridge.infra.k8s.ResourceEvent;
+import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.shard.AbstractShardWireMockTest;
 
-import io.quarkus.test.junit.QuarkusMock;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -30,20 +34,14 @@ import static org.mockito.Mockito.verify;
 @QuarkusTest
 public class ProcessorControllerTest extends AbstractShardWireMockTest {
 
-    ExecutorsService executorsService;
+    @Inject
+    KubernetesClient kubernetesClient;
 
     @Inject
-    ProcessorController processorController;
-
-    @BeforeEach
-    public void beforeEach() {
-        super.beforeEach();
-        executorsService = Mockito.mock(ExecutorsService.class);
-        QuarkusMock.installMockForType(executorsService, ExecutorsService.class);
-    }
+    Event<ResourceEvent> event;
 
     @Test
-    public void reconcileProcessor() throws Exception {
+    public void reconcileProcessor() throws JsonProcessingException, InterruptedException {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
 
@@ -52,8 +50,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        processorController.deployProcessor(processor);
-        processorController.reconcileProcessors();
+        kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
@@ -63,11 +60,13 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
 
-        verify(executorsService).createExecutor(processor);
+        Deployment deployment = kubernetesClient.getDeployment(processor.getId());
+        Assertions.assertTrue(deployment.getStatus().getConditions().stream().anyMatch(x -> x.getStatus().equals("Ready")));
+        Assertions.assertEquals(BridgeStatus.AVAILABLE, kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus());
     }
 
     @Test
-    public void reconcileProcessor_withFailure() throws Exception {
+    public void reconcileProcessor_withFailure() throws JsonProcessingException, InterruptedException {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
@@ -77,11 +76,13 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        Mockito.doThrow(new RuntimeException("Test Mock Failure: This is an expected Failure for Testing only.")).when(executorsService).createExecutor(processor);
+        kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
-        processorController.deployProcessor(processor);
-        processorController.reconcileProcessors();
+        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
+        latch = new CountDownLatch(1);
+        addProcessorUpdateRequestListener(latch);
+        event.fire(new ResourceEvent(K8SBridgeConstants.PROCESSOR_TYPE, processor.getId(), Action.ERROR));
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         processor.setStatus(BridgeStatus.FAILED);
@@ -90,6 +91,6 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
 
-        verify(executorsService).createExecutor(processor);
+        Assertions.assertEquals(BridgeStatus.FAILED, kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus());
     }
 }
