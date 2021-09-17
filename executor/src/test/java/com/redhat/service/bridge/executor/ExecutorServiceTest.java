@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;

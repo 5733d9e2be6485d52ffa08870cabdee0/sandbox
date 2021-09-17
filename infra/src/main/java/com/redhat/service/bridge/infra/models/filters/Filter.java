@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.filters;
+package com.redhat.service.bridge.infra.models.filters;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,6 +24,14 @@ public abstract class Filter {
     @JsonProperty("key")
     protected String key;
 
+    public Filter() {
+    }
+
+    public Filter(String key, String value) {
+        this.key = key;
+        setValueFromString(value);
+    }
+
     public void setKey(String key) {
         this.key = key;
     }
@@ -42,6 +50,9 @@ public abstract class Filter {
 
     @JsonIgnore
     public abstract String getStringValue();
+
+    @JsonIgnore
+    public abstract Object getValue();
 
     @JsonIgnore
     protected abstract void setValueFromString(String value);

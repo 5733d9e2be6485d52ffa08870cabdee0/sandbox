@@ -7,9 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
@@ -84,6 +86,15 @@ public class BridgesAPITest {
         response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
 
         Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, response.getStatus());
+    }
+
+    @Test
+    public void testDeleteBridgeWithActiveProcessors() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        TestUtils.updateBridge(new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, null)).then().statusCode(201);
+
+        TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
     }
 
     @Test

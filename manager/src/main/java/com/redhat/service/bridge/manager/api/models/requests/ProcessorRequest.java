@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.Filter;
 
 public class ProcessorRequest {
 

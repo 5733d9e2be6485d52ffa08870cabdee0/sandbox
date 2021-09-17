@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.filters;
+package com.redhat.service.bridge.infra.models.filters;
 
 import java.util.List;
 
@@ -20,8 +20,7 @@ public class StringBeginsWith extends Filter {
     }
 
     public StringBeginsWith(String key, String values) {
-        this.key = key;
-        setValueFromString(values);
+        super(key, values);
     }
 
     public String getType() {
@@ -34,12 +33,17 @@ public class StringBeginsWith extends Filter {
     }
 
     @Override
+    public Object getValue() {
+        return values;
+    }
+
+    @Override
     public void setValueFromString(String value) {
         try {
             this.values = new ObjectMapper().readValue(value, new TypeReference<List<String>>() {
             });
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("The value is not a list of strings.");
         }
     }
 }

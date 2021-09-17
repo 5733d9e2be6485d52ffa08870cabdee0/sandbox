@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.filters;
+package com.redhat.service.bridge.infra.models.filters;
 
 import java.util.List;
 
@@ -24,8 +24,7 @@ public class StringContains extends Filter {
     }
 
     public StringContains(String key, String value) {
-        this.key = key;
-        setValueFromString(value);
+        super(key, value);
     }
 
     @Override
@@ -34,12 +33,17 @@ public class StringContains extends Filter {
     }
 
     @Override
+    public Object getValue() {
+        return values;
+    }
+
+    @Override
     public void setValueFromString(String value) {
         try {
             this.values = new ObjectMapper().readValue(value, new TypeReference<List<String>>() {
             });
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("The value is not a list of strings.");
         }
     }
 }

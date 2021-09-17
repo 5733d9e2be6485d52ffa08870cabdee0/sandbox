@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
@@ -27,6 +27,10 @@ public class ProcessorService {
 
     @Inject
     BridgesService bridgesService;
+
+    public List<Processor> getProcessorsByBridgeAndCustomerId(String bridgeId, String customerId) {
+        return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId);
+    }
 
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
 

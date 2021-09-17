@@ -13,6 +13,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -20,9 +21,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.filters.FilterFactory;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
@@ -31,7 +32,9 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
         @NamedQuery(name = "PROCESSOR.findByStatus",
                 query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)")
+                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+        @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
+                query = "from Processor p join fetch p.bridge where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId")
 })
 @Entity
 public class Processor {
@@ -49,6 +52,7 @@ public class Processor {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
     @Version
@@ -178,7 +182,7 @@ public class Processor {
         return Objects.hash(id);
     }
 
-    private Set<com.redhat.service.bridge.infra.filters.Filter> buildFilters() {
+    private Set<com.redhat.service.bridge.infra.models.filters.Filter> buildFilters() {
         if (this.filters == null) {
             return null;
         }

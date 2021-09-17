@@ -1,14 +1,18 @@
 package com.redhat.service.bridge.manager.api.user;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -22,6 +26,7 @@ import io.restassured.response.Response;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 @QuarkusTest
 public class ProcessorAPITest {
@@ -94,12 +99,54 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>()));
+        Set<Filter> filters = Collections.singleton(new StringEquals("json.key", "value"));
+        Response response = TestUtils.addProcessorToBridge(
+                bridgeResponse.getId(),
+                new ProcessorRequest("myProcessor", filters));
         assertThat(response.getStatusCode(), equalTo(201));
 
         ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
         assertThat(processorResponse.getName(), equalTo("myProcessor"));
         assertThat(processorResponse.getBridge().getId(), equalTo(bridgeResponse.getId()));
+        assertThat(processorResponse.getFilters().size(), equalTo(1));
+
+        ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
+        assertThat(retrieved.getName(), equalTo("myProcessor"));
+        assertThat(retrieved.getBridge().getId(), equalTo(bridgeResponse.getId()));
+        assertThat(retrieved.getFilters().size(), equalTo(1));
+    }
+
+    @Test
+    public void addProcessorWithNullFiltersToBridge() {
+
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        Response response = TestUtils.addProcessorToBridge(
+                bridgeResponse.getId(),
+                new ProcessorRequest("myProcessor", null));
+        assertThat(response.getStatusCode(), equalTo(201));
+
+        ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
+        assertThat(processorResponse.getName(), equalTo("myProcessor"));
+        assertThat(processorResponse.getBridge().getId(), equalTo(bridgeResponse.getId()));
+        assertThat(processorResponse.getFilters(), nullValue());
+    }
+
+    @Test
+    public void addProcessorToBridgeAndRetrieve() {
+
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        Set<Filter> filters = Collections.singleton(new StringEquals("json.key", "value"));
+        Response response = TestUtils.addProcessorToBridge(
+                bridgeResponse.getId(),
+                new ProcessorRequest("myProcessor", filters));
+        assertThat(response.getStatusCode(), equalTo(201));
+
+        ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), response.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        assertThat(retrieved.getName(), equalTo("myProcessor"));
+        assertThat(retrieved.getBridge().getId(), equalTo(bridgeResponse.getId()));
+        assertThat(retrieved.getFilters().size(), equalTo(1));
     }
 
     @Test

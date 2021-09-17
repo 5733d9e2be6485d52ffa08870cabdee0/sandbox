@@ -2,11 +2,14 @@ package com.redhat.service.bridge.runner.it;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Set;
 
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -15,11 +18,15 @@ import org.junit.jupiter.api.TestMethodOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -35,8 +42,11 @@ import static io.restassured.RestAssured.given;
 @QuarkusTestResource(PostgresResource.class)
 public class End2EndTestIT {
     private static final String bridgeName = "notificationBridge";
+    private static final String processorName = "myProcessor";
+    private static final Set<Filter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
 
     private static String bridgeId;
+    private static String processorId;
 
     @ConfigProperty(name = "event-bridge.manager.url")
     String managerUrl;
@@ -86,7 +96,6 @@ public class End2EndTestIT {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> jsonRequest()
-                                .body(new BridgeRequest(bridgeName))
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                                 .then()
                                 .body("status", Matchers.equalTo("AVAILABLE"))
@@ -111,6 +120,41 @@ public class End2EndTestIT {
 
     @Order(5)
     @Test
+    public void testAddProcessor() {
+        ProcessorResponse response = jsonRequest()
+                .body(new ProcessorRequest(processorName, filters))
+                .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
+                .then()
+                .statusCode(201)
+                .extract()
+                .as(ProcessorResponse.class);
+
+        processorId = response.getId();
+
+        Assertions.assertEquals(processorName, response.getName());
+        Assertions.assertEquals("Processor", response.getKind());
+        Assertions.assertNotNull(response.getHref());
+        Assertions.assertNotNull(response.getBridge());
+        Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
+        Assertions.assertEquals(1, response.getFilters().size());
+    }
+
+    @Order(6)
+    @Test
+    public void testProcessorIsDeployed() {
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> jsonRequest()
+                                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
+                                .then()
+                                .body("status", Matchers.equalTo("AVAILABLE")));
+    }
+
+    @Order(7)
+    @Test
+    @Disabled("Disabled until the deletion of the Processor is implemented https://issues.redhat.com/browse/MGDOBR-8")
     public void testDeleteBridge() throws JsonProcessingException {
         jsonRequest()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)

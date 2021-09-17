@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.filters;
+package com.redhat.service.bridge.infra.models.filters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,12 +19,16 @@ public class StringEquals extends Filter {
     }
 
     public StringEquals(String key, String value) {
-        this.key = key;
-        setValueFromString(value);
+        super(key, value);
     }
 
     @Override
     public String getStringValue() {
+        return value;
+    }
+
+    @Override
+    public Object getValue() {
         return value;
     }
 

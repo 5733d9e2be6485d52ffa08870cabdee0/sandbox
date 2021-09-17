@@ -5,7 +5,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -19,6 +19,14 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
         Parameters p = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
         return find("#PROCESSOR.findByBridgeIdAndName", p).firstResultOptional().orElse(null);
+    }
+
+    public List<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId) {
+
+        Parameters p = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId)
+                .and(Bridge.CUSTOMER_ID_PARAM, customerId);
+
+        return find("#PROCESSOR.findByBridgeIdAndCustomerId", p).list();
     }
 
     public Processor findByIdBridgeIdAndCustomerId(String id, String bridgeId, String customerId) {

@@ -1,10 +1,10 @@
-package com.redhat.service.bridge.infra.dto;
+package com.redhat.service.bridge.infra.models.dto;
 
 import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.Filter;
 
 public class ProcessorDTO {
 

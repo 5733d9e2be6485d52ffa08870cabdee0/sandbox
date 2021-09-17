@@ -9,7 +9,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -129,5 +129,24 @@ public class ProcessorDAOTest {
 
         Processor found = processorDAO.findByIdBridgeIdAndCustomerId("doesntExist", b.getId(), b.getCustomerId());
         assertThat(found, is(nullValue()));
+    }
+
+    @Test
+    public void findByBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+
+        List<Processor> found = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId());
+        assertThat(found.size(), equalTo(1));
+        assertThat(found.get(0).getId(), equalTo(p.getId()));
+    }
+
+    @Test
+    public void findByBridgeIdAndCustomerId_doesNotExist() {
+        Bridge b = createBridge();
+        createProcessor(b, "foo");
+
+        List<Processor> found = processorDAO.findByBridgeIdAndCustomerId("doesntExist", b.getCustomerId());
+        assertThat(found.size(), equalTo(0));
     }
 }

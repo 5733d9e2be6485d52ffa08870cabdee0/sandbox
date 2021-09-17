@@ -2,7 +2,7 @@ package com.redhat.service.bridge.executor;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 @ApplicationScoped
 public class ExecutorFactory {

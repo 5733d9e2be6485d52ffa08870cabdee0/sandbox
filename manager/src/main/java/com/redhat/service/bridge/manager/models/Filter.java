@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity(name = "FILTER")
@@ -24,6 +25,7 @@ public class Filter {
     private String value;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "processor_id")
     private Processor processor;
 
     public Filter() {

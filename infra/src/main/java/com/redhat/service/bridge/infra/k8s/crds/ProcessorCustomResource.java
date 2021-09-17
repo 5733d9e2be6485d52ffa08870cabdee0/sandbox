@@ -1,9 +1,12 @@
 package com.redhat.service.bridge.infra.k8s.crds;
 
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.Filter;
 
 // TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
 public class ProcessorCustomResource {
@@ -20,14 +23,18 @@ public class ProcessorCustomResource {
     @JsonProperty("status")
     private BridgeStatus status;
 
+    @JsonProperty("filters")
+    private Set<Filter> filters;
+
     public ProcessorCustomResource() {
     }
 
-    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status) {
+    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<Filter> filters) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
         this.status = status;
+        this.filters = filters;
     }
 
     public String getId() {
@@ -62,12 +69,21 @@ public class ProcessorCustomResource {
         this.status = status;
     }
 
+    public Set<Filter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(Set<Filter> filters) {
+        this.filters = filters;
+    }
+
     public static ProcessorCustomResource fromDTO(ProcessorDTO dto) {
         ProcessorCustomResource resource = new ProcessorCustomResource();
         resource.setId(dto.getId());
         resource.setName(dto.getName());
         resource.setBridge(dto.getBridge());
         resource.setStatus(dto.getStatus());
+        resource.setFilters(dto.getFilters());
 
         return resource;
     }
@@ -78,6 +94,7 @@ public class ProcessorCustomResource {
         dto.setName(name);
         dto.setBridge(bridge);
         dto.setStatus(status);
+        dto.setFilters(filters);
 
         return dto;
     }

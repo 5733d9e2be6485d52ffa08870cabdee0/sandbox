@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.filters;
+package com.redhat.service.bridge.infra.models.filters;
 
 public class FilterFactory {
     public static Filter buildFilter(String type, String key, String value) {

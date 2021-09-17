@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 import io.quarkus.test.junit.QuarkusTest;
 

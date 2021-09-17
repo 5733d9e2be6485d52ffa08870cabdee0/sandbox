@@ -13,13 +13,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
 import com.redhat.service.bridge.infra.k8s.crds.BridgeCustomResource;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.exceptions.DeserializationException;
 
 import io.quarkus.scheduler.Scheduled;
