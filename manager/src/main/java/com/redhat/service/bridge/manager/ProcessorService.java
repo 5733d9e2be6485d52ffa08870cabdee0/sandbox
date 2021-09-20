@@ -50,7 +50,7 @@ public class ProcessorService {
 
         Set<Filter> filters = null;
         if (processorRequest.getFilters() != null) {
-            filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getStringValue(), p)).collect(Collectors.toSet());
+            filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getValueAsString(), p)).collect(Collectors.toSet());
         }
 
         p.setName(processorRequest.getName());

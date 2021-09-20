@@ -49,7 +49,7 @@ public abstract class Filter {
     }
 
     @JsonIgnore
-    public abstract String getStringValue();
+    public abstract String getValueAsString();
 
     @JsonIgnore
     public abstract Object getValue();

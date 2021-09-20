@@ -28,7 +28,7 @@ public class StringContains extends Filter {
     }
 
     @Override
-    public String getStringValue() {
+    public String getValueAsString() {
         return values.toString();
     }
 
