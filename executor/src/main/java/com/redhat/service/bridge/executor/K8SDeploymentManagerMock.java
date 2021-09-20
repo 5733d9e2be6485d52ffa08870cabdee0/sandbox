@@ -6,6 +6,4 @@ public interface K8SDeploymentManagerMock {
     void deploy(ProcessorDTO processorDTO);
 
     void undeploy(String bridgeId, String processorId);
-
-    void undeployAll();
 }

@@ -43,7 +43,6 @@ public class ExecutorsService {
             BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
             String bridgeId = bridgeCloudEventExtension.getBridgeId();
             Set<Executor> executors = executorConfigProvider.getExecutors(bridgeId);
-            System.out.println(bridgeId);
             if (executors == null) {
                 LOG.info("[executor] A message for BridgeID {} has been received, but no executors were found.", bridgeId);
             }

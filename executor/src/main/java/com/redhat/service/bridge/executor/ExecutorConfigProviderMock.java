@@ -52,11 +52,4 @@ public class ExecutorConfigProviderMock implements ExecutorConfigProvider, K8SDe
                     .ifPresent(executors::remove);
         }
     }
-
-    @Override
-    public void undeployAll() {
-        synchronized (bridgeToProcessorMap) {
-            bridgeToProcessorMap.clear();
-        }
-    }
 }
