@@ -1,9 +1,12 @@
 package com.redhat.service.bridge.executor;
 
 import java.net.URI;
+import java.util.Collections;
 
 import javax.inject.Inject;
 
+import io.quarkus.test.junit.mockito.InjectMock;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +23,9 @@ import io.quarkus.test.junit.QuarkusTest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,34 +37,23 @@ public class ExecutorServiceTest {
     @Inject
     ExecutorsService executorsService;
 
-    ExecutorFactory executorFactory;
+    // TODO: when we switch to ExecutorConfigProviderImpl, replace this attribute accordingly
+    @InjectMock
+    ExecutorConfigProvider executorConfigProvider;
 
     Executor executor;
 
     @BeforeEach
     public void before() {
-        executorFactory = mock(ExecutorFactory.class);
         executor = mock(Executor.class);
-        QuarkusMock.installMockForType(executorFactory, ExecutorFactory.class);
-    }
-
-    private ProcessorDTO createProcessor(String bridgeId) {
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId(bridgeId);
-
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridge(bridge);
-        processor.setId("myProcessorId");
-        processor.setName("myProcessorName");
-        return processor;
     }
 
     @Test
     public void handleEvent() {
 
-        ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
-        when(executorFactory.createExecutor(any(ProcessorDTO.class))).thenReturn(executor);
         String bridgeId = "myBridge";
+        ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
+        when(executorConfigProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
@@ -68,10 +62,7 @@ public class ExecutorServiceTest {
                 .withType("myType")
                 .withExtension(new BridgeCloudEventExtension(bridgeId)).build();
 
-        ProcessorDTO processor = createProcessor(bridgeId);
-
-        executorsService.createExecutor(processor);
-        executorsService.processBridgeEvent(CloudEventUtils.encode(cloudEvent));
+        executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
         verify(executor).onEvent(cap.capture());
         CloudEvent invokedWith = cap.getValue();
@@ -81,8 +72,8 @@ public class ExecutorServiceTest {
 
     @Test
     public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
-        when(executorFactory.createExecutor(any(ProcessorDTO.class))).thenReturn(executor);
         String bridgeId = "myBridge";
+        when(executorConfigProvider.getExecutors(eq(bridgeId))).thenReturn(null);
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
@@ -91,10 +82,7 @@ public class ExecutorServiceTest {
                 .withType("myType")
                 .withExtension(BridgeCloudEventExtension.BRIDGE_ID, "anotherBridge").build();
 
-        ProcessorDTO processor = createProcessor(bridgeId);
-
-        executorsService.createExecutor(processor);
-        executorsService.processBridgeEvent(CloudEventUtils.encode(cloudEvent));
+        executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
         verify(executor, never()).onEvent(any(CloudEvent.class));
     }

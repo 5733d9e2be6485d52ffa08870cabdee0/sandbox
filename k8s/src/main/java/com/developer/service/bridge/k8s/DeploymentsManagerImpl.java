@@ -7,6 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.executor.K8SDeploymentManagerMock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
     Event<ResourceEvent> event;
 
     @Inject
-    ExecutorsService executorsService;
+    K8SDeploymentManagerMock k8SDeploymentManagerMock;
 
     @Inject
     CustomResourceManager customResourceManager;
@@ -57,7 +58,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
         if (type.equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             // hack for the time being
             ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-            executorsService.createExecutor(processorCustomResource.toDTO());
+            k8SDeploymentManagerMock.deploy(processorCustomResource.toDTO());
         }
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
@@ -70,6 +71,11 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
     public void delete(String name) {
         if (deploymentMap.containsKey(name)) {
             Deployment deployment = deploymentMap.get(name);
+            if (KubernetesUtils.extractTypeFromMetadata(deployment).equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
+                // hack for the time being
+                ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
+                k8SDeploymentManagerMock.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
+            }
             deploymentMap.remove(name);
             event.fire(new ResourceEvent(KubernetesUtils.extractTypeFromMetadata(deployment), name, Action.DELETED));
         }
