@@ -19,7 +19,6 @@ import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.Processor;
 
 @Transactional
 @ApplicationScoped
@@ -72,8 +71,8 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     public void deleteBridge(String id, String customerId) {
-        List<Processor> processors = processorService.getProcessors(id, customerId);
-        if (processors.size() > 0) {
+        Long processorsCount = processorService.getProcessorsCount(id, customerId);
+        if (processorsCount > 0) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }

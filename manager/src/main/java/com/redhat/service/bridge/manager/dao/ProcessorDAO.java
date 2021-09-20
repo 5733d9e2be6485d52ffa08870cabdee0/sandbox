@@ -51,14 +51,6 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         params.map().forEach((key, value) -> namedQuery.setParameter(key, value.toString()));
     }
 
-    public List<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId) {
-
-        Parameters p = Parameters.with(Processor.BRIDGE_ID_PARAM, bridgeId)
-                .and(Bridge.CUSTOMER_ID_PARAM, customerId);
-
-        return find("#PROCESSOR.findByBridgeIdAndCustomerId", p).list();
-    }
-
     public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, int page, int size) {
 
         /*
@@ -84,6 +76,11 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
         List<Processor> processors = list("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, ids));
         return new ListResult<>(processors, page, processorCount);
+    }
+
+    public Long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {
+        Parameters p = Parameters.with(Bridge.CUSTOMER_ID_PARAM, customerId).and(Processor.BRIDGE_ID_PARAM, bridgeId);
+        return countProcessorsOnBridge(p);
     }
 
     private int getFirstResult(int requestedPage, int requestedPageSize) {

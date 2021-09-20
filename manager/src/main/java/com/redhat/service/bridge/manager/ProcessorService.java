@@ -88,8 +88,8 @@ public class ProcessorService {
         return p;
     }
 
-    public List<Processor> getProcessors(String bridgeId, String customerId) {
-        return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId);
+    public Long getProcessorsCount(String bridgeId, String customerId) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, int page, int size) {

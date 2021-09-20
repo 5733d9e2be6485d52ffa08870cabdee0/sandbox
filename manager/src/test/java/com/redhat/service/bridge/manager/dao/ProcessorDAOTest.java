@@ -133,25 +133,6 @@ public class ProcessorDAOTest {
     }
 
     @Test
-    public void findByBridgeIdAndCustomerId() {
-        Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo");
-
-        List<Processor> found = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId());
-        assertThat(found.size(), equalTo(1));
-        assertThat(found.get(0).getId(), equalTo(p.getId()));
-    }
-
-    @Test
-    public void findByBridgeIdAndCustomerId_doesNotExist() {
-        Bridge b = createBridge();
-        createProcessor(b, "foo");
-
-        List<Processor> found = processorDAO.findByBridgeIdAndCustomerId("doesntExist", b.getCustomerId());
-        assertThat(found.size(), equalTo(0));
-    }
-
-    @Test
     public void findByBridgeIdAndCustomerIdPaged() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
@@ -186,5 +167,15 @@ public class ProcessorDAOTest {
         assertThat(listResult.getTotal(), equalTo(2L));
 
         assertThat(listResult.getItems().get(0).getId(), equalTo(p1.getId()));
+    }
+
+    @Test
+    public void testCountByBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        Processor p1 = createProcessor(b, "bar");
+
+        Long result = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(result, equalTo(2L));
     }
 }

@@ -227,4 +227,16 @@ public class ProcessorServiceTest {
     public void getProcessors_bridgeDoesNotExist() {
         assertThrows(ItemNotFoundException.class, () -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, 0, 100));
     }
+
+    @Test
+    public void testGetProcessorsCount() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor");
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(result, equalTo(1L));
+    }
 }
