@@ -7,11 +7,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.executor.K8SDeploymentManagerMock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.executor.ExecutorsService;
+import com.redhat.service.bridge.executor.K8SDeploymentManagerMock;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;

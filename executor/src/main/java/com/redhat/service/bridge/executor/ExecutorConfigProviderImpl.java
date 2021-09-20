@@ -10,7 +10,7 @@ public class ExecutorConfigProviderImpl implements ExecutorConfigProvider {
     private Set<Executor> executors;
 
     @PostConstruct
-    void init(){
+    void init() {
         // TODO: read configuration
 
         // TODO: create and set executors

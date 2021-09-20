@@ -3,7 +3,6 @@ package com.redhat.service.bridge.executor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -15,7 +14,6 @@ import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 public class ExecutorConfigProviderMock implements ExecutorConfigProvider, K8SDeploymentManagerMock {
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
-
 
     @Override
     public Set<Executor> getExecutors() {
