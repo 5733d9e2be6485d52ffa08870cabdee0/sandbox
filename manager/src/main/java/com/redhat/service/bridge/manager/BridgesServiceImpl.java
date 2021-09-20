@@ -11,22 +11,26 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
+import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 
-@ApplicationScoped
 @Transactional
+@ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
     @Inject
     BridgeDAO bridgeDAO;
+
+    @Inject
+    ProcessorService processorService;
 
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
@@ -67,6 +71,12 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     public void deleteBridge(String id, String customerId) {
+        Long processorsCount = processorService.getProcessorsCount(id, customerId);
+        if (processorsCount > 0) {
+            // See https://issues.redhat.com/browse/MGDOBR-43
+            throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
+        }
+
         Bridge bridge = findByIdAndCustomerId(id, customerId);
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
         LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());

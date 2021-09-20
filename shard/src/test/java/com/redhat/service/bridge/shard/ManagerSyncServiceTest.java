@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -87,7 +87,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void testProcessorsAreDeployed() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.REQUESTED);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.REQUESTED, null);
 
         stubProcessorsToDeployOrDelete(asList(processor));
         CountDownLatch latch = new CountDownLatch(1);
@@ -106,7 +106,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void notifyProcessorStatusChange() throws Exception {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", dto, BridgeStatus.PROVISIONING);
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", dto, BridgeStatus.PROVISIONING, null);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected

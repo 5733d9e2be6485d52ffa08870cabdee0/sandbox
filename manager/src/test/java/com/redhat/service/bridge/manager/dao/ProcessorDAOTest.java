@@ -9,7 +9,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
@@ -167,5 +167,15 @@ public class ProcessorDAOTest {
         assertThat(listResult.getTotal(), equalTo(2L));
 
         assertThat(listResult.getItems().get(0).getId(), equalTo(p1.getId()));
+    }
+
+    @Test
+    public void testCountByBridgeIdAndCustomerId() {
+        Bridge b = createBridge();
+        Processor p = createProcessor(b, "foo");
+        Processor p1 = createProcessor(b, "bar");
+
+        Long result = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(result, equalTo(2L));
     }
 }

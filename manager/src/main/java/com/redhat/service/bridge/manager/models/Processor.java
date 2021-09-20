@@ -2,37 +2,46 @@ package com.redhat.service.bridge.manager.models;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
-                query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
+                query = "from Processor p left join fetch p.filters where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByStatus",
-                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+        @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.idsByBridgeIdAndCustomerId",
                 query = "select p.id from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
-                query = "select p from Processor p join fetch p.bridge where p.id in (:ids)")
+                query = "select p from Processor p join fetch p.bridge left join fetch p.filters where p.id in (:ids)")
 })
 @Entity
 public class Processor {
@@ -50,6 +59,7 @@ public class Processor {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
     @Version
@@ -64,6 +74,9 @@ public class Processor {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
+
+    @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    private Set<Filter> filters;
 
     public String getId() {
         return id;
@@ -117,6 +130,10 @@ public class Processor {
         this.status = status;
     }
 
+    public void setFilters(Set<Filter> filters) {
+        this.filters = filters;
+    }
+
     public ProcessorResponse toResponse() {
 
         ProcessorResponse processorResponse = new ProcessorResponse();
@@ -131,6 +148,8 @@ public class Processor {
             processorResponse.setBridge(this.bridge.toResponse());
         }
 
+        processorResponse.setFilters(buildFilters());
+
         return processorResponse;
     }
 
@@ -140,6 +159,7 @@ public class Processor {
         dto.setStatus(this.status);
         dto.setName(this.name);
         dto.setId(this.id);
+        dto.setFilters(buildFilters());
 
         if (this.bridge != null) {
             dto.setBridge(this.bridge.toDTO());
@@ -167,5 +187,16 @@ public class Processor {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    private Set<BaseFilter> buildFilters() {
+        if (this.filters == null) {
+            return null;
+        }
+
+        return this.filters
+                .stream()
+                .map(x -> FilterFactory.buildFilter(x.getType(), x.getKey(), x.getValue()))
+                .collect(Collectors.toSet());
     }
 }
