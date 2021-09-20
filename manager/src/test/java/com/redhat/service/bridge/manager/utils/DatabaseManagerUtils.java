@@ -8,8 +8,6 @@ import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
-import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.Processor;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -46,12 +44,12 @@ public class DatabaseManagerUtils {
      * processorDAO.deleteAll() does not cascade! https://github.com/quarkusio/quarkus/issues/13941
      */
     private void deleteAllProcessors() {
-        List<Processor> processors = processorDAO.listAll();
-        processors.forEach(x -> processorDAO.deleteById(x.getId()));
+        List<String> ids = processorDAO.getEntityManager().createQuery("select p.id from Processor p", String.class).getResultList();
+        ids.forEach(x -> processorDAO.deleteById(x));
     }
 
     private void deleteAllBridges() {
-        List<Bridge> bridges = bridgeDAO.listAll();
-        bridges.forEach(x -> bridgeDAO.deleteById(x.getId()));
+        List<String> ids = bridgeDAO.getEntityManager().createQuery("select b.id from Bridge b", String.class).getResultList();
+        ids.forEach(x -> bridgeDAO.deleteById(x));
     }
 }

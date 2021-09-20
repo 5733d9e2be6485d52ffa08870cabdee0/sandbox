@@ -23,6 +23,7 @@ import javax.persistence.Version;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
@@ -188,7 +189,7 @@ public class Processor {
         return Objects.hash(id);
     }
 
-    private Set<com.redhat.service.bridge.infra.models.filters.Filter> buildFilters() {
+    private Set<BaseFilter> buildFilters() {
         if (this.filters == null) {
             return null;
         }

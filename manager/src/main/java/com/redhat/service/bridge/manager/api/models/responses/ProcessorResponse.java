@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessorResponse {
@@ -39,7 +39,7 @@ public class ProcessorResponse {
     private BridgeStatus status;
 
     @JsonProperty("filters")
-    private Set<Filter> filters;
+    private Set<BaseFilter> filters;
 
     public String getId() {
         return id;
@@ -101,11 +101,11 @@ public class ProcessorResponse {
         this.status = status;
     }
 
-    public Set<Filter> getFilters() {
+    public Set<BaseFilter> getFilters() {
         return filters;
     }
 
-    public void setFilters(Set<Filter> filters) {
+    public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
     }
 }

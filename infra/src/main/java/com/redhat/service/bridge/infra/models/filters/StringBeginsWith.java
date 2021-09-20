@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class StringBeginsWith extends Filter {
+public class StringBeginsWith extends BaseFilter {
     public static final String FILTER_TYPE_NAME = "StringBeginsWith";
 
     @JsonProperty("type")

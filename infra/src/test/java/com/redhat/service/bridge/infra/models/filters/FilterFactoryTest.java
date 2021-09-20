@@ -12,7 +12,7 @@ public class FilterFactoryTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "test"));
 
-        Filter stringContainsFilter = FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "[\"test\"]");
+        BaseFilter stringContainsFilter = FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "[\"test\"]");
         Assertions.assertTrue(stringContainsFilter instanceof StringContains);
         Assertions.assertEquals("key", stringContainsFilter.getKey());
         Assertions.assertEquals(1, ((List<String>) stringContainsFilter.getValue()).size());
@@ -24,7 +24,7 @@ public class FilterFactoryTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "test"));
 
-        Filter stringBeginsFilter = FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "[\"test\"]");
+        BaseFilter stringBeginsFilter = FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "[\"test\"]");
         Assertions.assertTrue(stringBeginsFilter instanceof StringBeginsWith);
         Assertions.assertEquals("key", stringBeginsFilter.getKey());
         Assertions.assertEquals(1, ((List<String>) stringBeginsFilter.getValue()).size());
@@ -33,7 +33,7 @@ public class FilterFactoryTest {
 
     @Test
     public void testStringEqualsFilterFactory() {
-        Filter stringEqualsFilter = FilterFactory.buildFilter(StringEquals.FILTER_TYPE_NAME, "key", "test");
+        BaseFilter stringEqualsFilter = FilterFactory.buildFilter(StringEquals.FILTER_TYPE_NAME, "key", "test");
         Assertions.assertTrue(stringEqualsFilter instanceof StringEquals);
         Assertions.assertEquals("key", stringEqualsFilter.getKey());
         Assertions.assertEquals("test", stringEqualsFilter.getValue());

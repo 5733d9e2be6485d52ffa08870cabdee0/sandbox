@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 // TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
 public class ProcessorCustomResource {
@@ -24,12 +24,12 @@ public class ProcessorCustomResource {
     private BridgeStatus status;
 
     @JsonProperty("filters")
-    private Set<Filter> filters;
+    private Set<BaseFilter> filters;
 
     public ProcessorCustomResource() {
     }
 
-    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<Filter> filters) {
+    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
@@ -69,11 +69,11 @@ public class ProcessorCustomResource {
         this.status = status;
     }
 
-    public Set<Filter> getFilters() {
+    public Set<BaseFilter> getFilters() {
         return filters;
     }
 
-    public void setFilters(Set<Filter> filters) {
+    public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
     }
 

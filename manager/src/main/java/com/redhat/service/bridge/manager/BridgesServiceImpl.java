@@ -74,6 +74,7 @@ public class BridgesServiceImpl implements BridgesService {
     public void deleteBridge(String id, String customerId) {
         List<Processor> processors = processorService.getProcessors(id, customerId);
         if (processors.size() > 0) {
+            // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
 

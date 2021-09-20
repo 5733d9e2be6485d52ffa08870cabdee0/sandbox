@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -82,7 +81,7 @@ public class ProcessorServiceTest {
     public void createProcessor_processorWithSameNameAlreadyExists() {
 
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -93,7 +92,7 @@ public class ProcessorServiceTest {
     @Test
     public void createProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -108,7 +107,7 @@ public class ProcessorServiceTest {
     @Transactional
     public void getProcessorByStatuses() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
 
@@ -130,7 +129,7 @@ public class ProcessorServiceTest {
     @Test
     public void updateProcessorStatus() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         ProcessorDTO dto = processor.toDTO();
@@ -164,7 +163,7 @@ public class ProcessorServiceTest {
     public void getProcessor() {
 
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -179,7 +178,7 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessor_bridgeDoesNotExist() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -190,7 +189,7 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessor_processorDoesNotExist() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -201,7 +200,7 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessors() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", new HashSet<>());
+        ProcessorRequest r = new ProcessorRequest("My Processor");
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));

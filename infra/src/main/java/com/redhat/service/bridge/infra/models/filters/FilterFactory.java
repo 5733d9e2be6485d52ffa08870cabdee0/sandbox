@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.infra.models.filters;
 
 public class FilterFactory {
-    public static Filter buildFilter(String type, String key, String value) {
+    public static BaseFilter buildFilter(String type, String key, String value) {
         switch (type) {
             case StringBeginsWith.FILTER_TYPE_NAME:
                 return new StringBeginsWith(key, value);

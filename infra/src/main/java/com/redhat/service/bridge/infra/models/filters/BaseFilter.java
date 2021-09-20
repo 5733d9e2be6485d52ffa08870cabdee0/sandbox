@@ -8,14 +8,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        property = Filter.FILTER_TYPE_FIELD)
+        property = BaseFilter.FILTER_TYPE_FIELD)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = StringBeginsWith.class, name = StringBeginsWith.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringContains.class, name = StringContains.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringEquals.class, name = StringEquals.FILTER_TYPE_NAME),
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class Filter {
+public abstract class BaseFilter {
     public static final String FILTER_TYPE_FIELD = "type";
 
     @JsonProperty(FILTER_TYPE_FIELD)
@@ -24,10 +24,10 @@ public abstract class Filter {
     @JsonProperty("key")
     protected String key;
 
-    public Filter() {
+    public BaseFilter() {
     }
 
-    public Filter(String key, String value) {
+    public BaseFilter(String key, String value) {
         this.key = key;
         setValueFromString(value);
     }

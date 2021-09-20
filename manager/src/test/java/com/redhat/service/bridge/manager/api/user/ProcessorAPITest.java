@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
@@ -67,8 +67,8 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", new HashSet<>())).as(ProcessorResponse.class);
+        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2")).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 0, 100).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage(), equalTo(0L));
@@ -82,8 +82,8 @@ public class ProcessorAPITest {
     public void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", new HashSet<>())).as(ProcessorResponse.class);
+        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2")).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 1, 1).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage(), equalTo(1L));
@@ -116,7 +116,7 @@ public class ProcessorAPITest {
     public void getProcessor_processorDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>()));
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor"));
         assertThat(response.getStatusCode(), equalTo(201));
 
         Response found = TestUtils.getProcessor(bridgeResponse.getId(), "doesNotExist");
@@ -138,7 +138,7 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        Set<Filter> filters = Collections.singleton(new StringEquals("json.key", "value"));
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters));
@@ -176,7 +176,7 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        Set<Filter> filters = Collections.singleton(new StringEquals("json.key", "value"));
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters));
@@ -191,7 +191,7 @@ public class ProcessorAPITest {
     @Test
     public void addProcessorToBridge_bridgeDoesNotExist() {
 
-        Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor", new HashSet<>()));
+        Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor"));
         assertThat(response.getStatusCode(), equalTo(404));
     }
 
@@ -199,7 +199,7 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_bridgeNotInAvailableStatus() {
 
         BridgeResponse bridgeResponse = createBridge();
-        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>()));
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor"));
         assertThat(response.getStatusCode(), equalTo(400));
     }
 

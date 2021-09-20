@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 public class ProcessorDTO {
 
@@ -21,12 +21,12 @@ public class ProcessorDTO {
     private BridgeStatus status;
 
     @JsonProperty("filters")
-    private Set<Filter> filters;
+    private Set<BaseFilter> filters;
 
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<Filter> filters) {
+    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
@@ -66,11 +66,11 @@ public class ProcessorDTO {
         this.status = status;
     }
 
-    public Set<Filter> getFilters() {
+    public Set<BaseFilter> getFilters() {
         return filters;
     }
 
-    public void setFilters(Set<Filter> filters) {
+    public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
     }
 

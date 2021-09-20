@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.Filter;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
@@ -43,7 +43,7 @@ import static io.restassured.RestAssured.given;
 public class End2EndTestIT {
     private static final String bridgeName = "notificationBridge";
     private static final String processorName = "myProcessor";
-    private static final Set<Filter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
+    private static final Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
 
     private static String bridgeId;
     private static String processorId;
