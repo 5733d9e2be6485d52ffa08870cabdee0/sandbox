@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.api.user;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -38,7 +37,6 @@ import static java.util.stream.Collectors.toList;
 
 @Path(APIConstants.USER_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
-@Transactional
 public class ProcessorsAPI {
 
     @Inject

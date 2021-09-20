@@ -5,6 +5,5 @@ create table FILTER
     key                varchar(255) NOT NULL,
     type               varchar(255) NOT NULL,
     value              TEXT NOT NULL,
-    version            integer NOT NULL default 0,
     constraint fk_processor foreign key (processor_id) references PROCESSOR (id)
 );

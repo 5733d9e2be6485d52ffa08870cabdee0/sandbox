@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -38,7 +37,6 @@ import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_MAX;
 import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_MIN;
 
 @Path(APIConstants.USER_API_BASE_PATH)
-@Transactional
 public class BridgesAPI {
 
     @Inject

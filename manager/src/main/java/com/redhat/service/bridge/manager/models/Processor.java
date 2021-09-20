@@ -28,19 +28,19 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
-                query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
+                query = "from Processor p left join fetch p.filters where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByStatus",
-                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.idsByBridgeIdAndCustomerId",
                 query = "select p.id from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
-                query = "select p from Processor p join fetch p.bridge where p.id in (:ids)")
+                query = "select p from Processor p join fetch p.bridge left join fetch p.filters where p.id in (:ids)")
 })
 @Entity
 public class Processor {
