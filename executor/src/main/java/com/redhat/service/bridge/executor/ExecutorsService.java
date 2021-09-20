@@ -30,7 +30,7 @@ public class ExecutorsService {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorsService.class);
 
     @Inject
-    ExecutorConfigProvider executorConfigProvider;
+    ExecutorProvider executorProvider;
 
     public void init(@Observes StartupEvent ev) {
         ExtensionProvider.getInstance().registerExtension(BridgeCloudEventExtension.class, BridgeCloudEventExtension::new);
@@ -42,7 +42,7 @@ public class ExecutorsService {
             CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
             BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
             String bridgeId = bridgeCloudEventExtension.getBridgeId();
-            Set<Executor> executors = executorConfigProvider.getExecutors(bridgeId);
+            Set<Executor> executors = executorProvider.getExecutors(bridgeId);
             if (executors == null) {
                 LOG.info("[executor] A message for BridgeID {} has been received, but no executors were found.", bridgeId);
             }

@@ -2,19 +2,22 @@ package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -41,16 +44,22 @@ public class ProcessorService {
 
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         Bridge bridge = getAvailableBridge(bridgeId, customerId);
-        Processor p = processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName());
-        if (p != null) {
+        if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        p = new Processor();
+        final Processor p = new Processor();
+
+        Set<Filter> filters = null;
+        if (processorRequest.getFilters() != null) {
+            filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getValueAsString(), p)).collect(Collectors.toSet());
+        }
+
         p.setName(processorRequest.getName());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
+        p.setFilters(filters);
         processorDAO.persist(p);
         return p;
     }
@@ -77,6 +86,10 @@ public class ProcessorService {
         }
         p.setStatus(processorDTO.getStatus());
         return p;
+    }
+
+    public Long getProcessorsCount(String bridgeId, String customerId) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, int page, int size) {

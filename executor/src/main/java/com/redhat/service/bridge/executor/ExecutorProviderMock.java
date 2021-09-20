@@ -7,11 +7,12 @@ import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 // TODO: This class has to be removed when we switch to ExecutorConfigProviderImpl
 @ApplicationScoped
-public class ExecutorConfigProviderMock implements ExecutorConfigProvider, K8SDeploymentManagerMock {
+public class ExecutorProviderMock implements ExecutorProvider,
+        ExecutorK8SDeploymentManagerMock {
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 

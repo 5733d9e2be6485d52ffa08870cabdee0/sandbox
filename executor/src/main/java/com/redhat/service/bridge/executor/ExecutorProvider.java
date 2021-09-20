@@ -2,7 +2,7 @@ package com.redhat.service.bridge.executor;
 
 import java.util.Set;
 
-public interface ExecutorConfigProvider {
+public interface ExecutorProvider {
 
     /**
      * TODO: Implement and keep only this method (remove `getExecutors(String bridgeId)`), because when we will move to

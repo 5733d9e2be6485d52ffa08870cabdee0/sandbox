@@ -1,8 +1,8 @@
 package com.redhat.service.bridge.infra.k8s.crds;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 
 // TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
 public class BridgeCustomResource {

@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.infra.dto;
+package com.redhat.service.bridge.infra.models.dto;
 
 public enum BridgeStatus {
     REQUESTED,

@@ -10,13 +10,13 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.ManagerSyncService;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;

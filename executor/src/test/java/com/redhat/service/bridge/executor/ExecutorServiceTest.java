@@ -33,9 +33,8 @@ public class ExecutorServiceTest {
     @Inject
     ExecutorsService executorsService;
 
-    // TODO: when we switch to ExecutorConfigProviderImpl, replace this attribute accordingly
     @InjectMock
-    ExecutorConfigProvider executorConfigProvider;
+    ExecutorProvider executorProvider;
 
     Executor executor;
 
@@ -49,7 +48,7 @@ public class ExecutorServiceTest {
 
         String bridgeId = "myBridge";
         ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
-        when(executorConfigProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
+        when(executorProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
@@ -69,7 +68,7 @@ public class ExecutorServiceTest {
     @Test
     public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
         String bridgeId = "myBridge";
-        when(executorConfigProvider.getExecutors(eq(bridgeId))).thenReturn(null);
+        when(executorProvider.getExecutors(eq(bridgeId))).thenReturn(null);
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()

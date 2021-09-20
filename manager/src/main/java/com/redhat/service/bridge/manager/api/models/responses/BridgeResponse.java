@@ -5,7 +5,7 @@ import java.time.ZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BridgeResponse {

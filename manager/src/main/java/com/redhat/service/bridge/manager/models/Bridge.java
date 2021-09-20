@@ -15,8 +15,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 
 @NamedQueries({

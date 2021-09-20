@@ -9,9 +9,9 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -226,5 +226,17 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessors_bridgeDoesNotExist() {
         assertThrows(ItemNotFoundException.class, () -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, 0, 100));
+    }
+
+    @Test
+    public void testGetProcessorsCount() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor");
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(result, equalTo(1L));
     }
 }

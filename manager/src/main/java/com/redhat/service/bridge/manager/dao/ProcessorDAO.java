@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
-import com.redhat.service.bridge.infra.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -76,6 +76,11 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
         List<Processor> processors = list("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, ids));
         return new ListResult<>(processors, page, processorCount);
+    }
+
+    public Long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {
+        Parameters p = Parameters.with(Bridge.CUSTOMER_ID_PARAM, customerId).and(Processor.BRIDGE_ID_PARAM, bridgeId);
+        return countProcessorsOnBridge(p);
     }
 
     private int getFirstResult(int requestedPage, int requestedPageSize) {
