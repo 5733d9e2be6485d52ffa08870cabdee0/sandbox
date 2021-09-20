@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager.api.user;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -102,7 +101,7 @@ public class ProcessorAPITest {
     public void getProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>()));
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor"));
         assertThat(response.getStatusCode(), equalTo(201));
 
         ProcessorResponse pr = response.as(ProcessorResponse.class);
@@ -127,7 +126,7 @@ public class ProcessorAPITest {
     public void getProcessor_bridgeDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        ProcessorResponse response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", new HashSet<>())).as(ProcessorResponse.class);
+        ProcessorResponse response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor")).as(ProcessorResponse.class);
 
         Response found = TestUtils.getProcessor("doesNotExist", response.getId());
         assertThat(found.getStatusCode(), equalTo(404));

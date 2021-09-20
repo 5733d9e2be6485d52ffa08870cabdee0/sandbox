@@ -133,7 +133,7 @@ public class ProcessorDAOTest {
     }
 
     @Test
-    public void findByBridgeIdAndCustomerIdPaged() {
+    public void findByBridgeIdAndCustomerId() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
@@ -147,7 +147,7 @@ public class ProcessorDAOTest {
     }
 
     @Test
-    public void findByBridgeIdAndCustomerIdPaged_noProcessors() {
+    public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
         assertThat(listResult.getPage(), equalTo(0L));
@@ -156,7 +156,7 @@ public class ProcessorDAOTest {
     }
 
     @Test
-    public void findByBridgeIdAndCustomerIdPaged_pageOffset() {
+    public void findByBridgeIdAndCustomerId_pageOffset() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
