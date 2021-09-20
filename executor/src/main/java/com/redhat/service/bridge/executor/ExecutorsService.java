@@ -57,7 +57,7 @@ public class ExecutorsService {
                 }
             }
         } catch (Throwable t) {
-            LOG.error("Failed to handle Event received on Bridge. The message is acked anyway.", t);
+            LOG.error("[executor] Failed to handle Event received on Bridge. The message is acked anyway.", t);
         }
 
         return message.ack();
