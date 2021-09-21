@@ -7,7 +7,7 @@ import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.manager.api.user.validators.actions.ActionParamsValidator;
 
 @ApplicationScoped
-public class KafkaParamsValidator implements ActionParamsValidator {
+public class KafkaTopicActionParamsValidator implements ActionParamsValidator {
 
     @Override
     public boolean accepts(ActionRequest actionRequest) {
