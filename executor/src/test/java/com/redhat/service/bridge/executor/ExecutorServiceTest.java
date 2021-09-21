@@ -34,7 +34,7 @@ public class ExecutorServiceTest {
     ExecutorsService executorsService;
 
     @InjectMock
-    ExecutorProvider executorProvider;
+    ExecutorsProvider executorsProvider;
 
     Executor executor;
 
@@ -48,7 +48,7 @@ public class ExecutorServiceTest {
 
         String bridgeId = "myBridge";
         ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
-        when(executorProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
+        when(executorsProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
@@ -68,7 +68,7 @@ public class ExecutorServiceTest {
     @Test
     public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
         String bridgeId = "myBridge";
-        when(executorProvider.getExecutors(eq(bridgeId))).thenReturn(null);
+        when(executorsProvider.getExecutors(eq(bridgeId))).thenReturn(null);
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()

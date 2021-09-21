@@ -11,8 +11,8 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 // TODO: This class has to be removed when we switch to ExecutorConfigProviderImpl
 @ApplicationScoped
-public class ExecutorProviderMock implements ExecutorProvider,
-        ExecutorK8SDeploymentManagerMock {
+public class ExecutorsProviderMock implements ExecutorsProvider,
+        ExecutorsK8SDeploymentManager {
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 

@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.executor.ExecutorK8SDeploymentManagerMock;
+import com.redhat.service.bridge.executor.ExecutorsK8SDeploymentManager;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
@@ -31,7 +31,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
     Event<ResourceEvent> event;
 
     @Inject
-    ExecutorK8SDeploymentManagerMock executorK8SDeploymentManagerMock;
+    ExecutorsK8SDeploymentManager executorsK8SDeploymentManagerMock;
 
     @Inject
     CustomResourceManager customResourceManager;
@@ -57,7 +57,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
         if (type.equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             // hack for the time being
             ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-            executorK8SDeploymentManagerMock.deploy(processorCustomResource.toDTO());
+            executorsK8SDeploymentManagerMock.deploy(processorCustomResource.toDTO());
         }
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
@@ -73,7 +73,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
             if (KubernetesUtils.extractTypeFromMetadata(deployment).equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
                 // hack for the time being
                 ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-                executorK8SDeploymentManagerMock.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
+                executorsK8SDeploymentManagerMock.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
             }
             deploymentMap.remove(name);
             event.fire(new ResourceEvent(KubernetesUtils.extractTypeFromMetadata(deployment), name, Action.DELETED));

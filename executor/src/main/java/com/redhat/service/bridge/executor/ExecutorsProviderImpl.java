@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 // TODO: Annotate this class with @ApplicationScoped when we move away from ExecutorConfigProviderMock
-public class ExecutorProviderImpl implements ExecutorProvider {
+public class ExecutorsProviderImpl implements ExecutorsProvider {
 
     private Set<Executor> executors;
 
