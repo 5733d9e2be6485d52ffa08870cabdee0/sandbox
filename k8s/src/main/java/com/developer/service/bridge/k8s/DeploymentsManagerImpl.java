@@ -31,7 +31,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
     Event<ResourceEvent> event;
 
     @Inject
-    ExecutorsK8SDeploymentManager executorsK8SDeploymentManagerMock;
+    ExecutorsK8SDeploymentManager executorsK8SDeploymentManager;
 
     @Inject
     CustomResourceManager customResourceManager;
@@ -57,7 +57,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
         if (type.equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             // hack for the time being
             ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-            executorsK8SDeploymentManagerMock.deploy(processorCustomResource.toDTO());
+            executorsK8SDeploymentManager.deploy(processorCustomResource.toDTO());
         }
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
@@ -73,7 +73,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
             if (KubernetesUtils.extractTypeFromMetadata(deployment).equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
                 // hack for the time being
                 ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-                executorsK8SDeploymentManagerMock.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
+                executorsK8SDeploymentManager.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
             }
             deploymentMap.remove(name);
             event.fire(new ResourceEvent(KubernetesUtils.extractTypeFromMetadata(deployment), name, Action.DELETED));
