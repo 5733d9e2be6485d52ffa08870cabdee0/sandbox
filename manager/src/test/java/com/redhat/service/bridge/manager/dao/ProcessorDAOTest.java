@@ -1,7 +1,9 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -9,8 +11,10 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.models.Action;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -51,6 +55,16 @@ public class ProcessorDAOTest {
         p.setStatus(BridgeStatus.REQUESTED);
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
+
+        Action a = new Action();
+        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        a.setName(TestConstants.DEFAULT_ACTION_NAME);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        a.setParameters(params);
+        p.setAction(a);
+
         processorDAO.persist(p);
         return p;
     }

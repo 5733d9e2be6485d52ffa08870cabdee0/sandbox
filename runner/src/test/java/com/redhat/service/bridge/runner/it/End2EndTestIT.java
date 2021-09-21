@@ -3,12 +3,15 @@ package com.redhat.service.bridge.runner.it;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -18,6 +21,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -41,15 +46,32 @@ import static io.restassured.RestAssured.given;
 @QuarkusTestResource(KafkaResource.class)
 @QuarkusTestResource(PostgresResource.class)
 public class End2EndTestIT {
+
     private static final String bridgeName = "notificationBridge";
     private static final String processorName = "myProcessor";
+    private static final String topicName = "myKafkaTopic";
     private static final Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
 
     private static String bridgeId;
     private static String processorId;
 
+    private static ProcessorRequest processorRequest;
+
     @ConfigProperty(name = "event-bridge.manager.url")
     String managerUrl;
+
+    @BeforeAll
+    public static void beforeAll() {
+        ActionRequest action = new ActionRequest();
+        action.setName("myKafkaAction");
+        action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, topicName);
+        action.setParameters(params);
+
+        processorRequest = new ProcessorRequest(processorName, filters, action);
+    }
 
     @Order(1)
     @Test
@@ -122,7 +144,7 @@ public class End2EndTestIT {
     @Test
     public void testAddProcessor() {
         ProcessorResponse response = jsonRequest()
-                .body(new ProcessorRequest(processorName, filters))
+                .body(processorRequest)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
                 .then()
                 .statusCode(201)
@@ -137,6 +159,10 @@ public class End2EndTestIT {
         Assertions.assertNotNull(response.getBridge());
         Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
         Assertions.assertEquals(1, response.getFilters().size());
+
+        ActionRequest action = response.getAction();
+        Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, action.getType());
+        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
     }
 
     @Order(6)

@@ -4,8 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.infra.models.actions.ActionRequest;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 public class ProcessorRequest {
@@ -14,20 +16,26 @@ public class ProcessorRequest {
     @JsonProperty("name")
     private String name;
 
+    @NotNull(message = "An Action is required for a Processor")
+    @JsonProperty("action")
+    private ActionRequest actionRequest;
+
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
     public ProcessorRequest() {
     }
 
-    public ProcessorRequest(String name) {
+    public ProcessorRequest(String name, ActionRequest actionRequest) {
         this.name = name;
         this.filters = new HashSet<>();
+        this.actionRequest = actionRequest;
     }
 
-    public ProcessorRequest(String name, Set<BaseFilter> filters) {
+    public ProcessorRequest(String name, Set<BaseFilter> filters, ActionRequest actionRequest) {
         this.name = name;
         this.filters = filters;
+        this.actionRequest = actionRequest;
     }
 
     public String getName() {
@@ -44,5 +52,13 @@ public class ProcessorRequest {
 
     public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
+    }
+
+    public ActionRequest getAction() {
+        return actionRequest;
+    }
+
+    public void setAction(ActionRequest actionRequest) {
+        this.actionRequest = actionRequest;
     }
 }

@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.infra.models.actions.ActionRequest;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 public class ProcessorDTO {
@@ -23,15 +24,19 @@ public class ProcessorDTO {
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
+    @JsonProperty("action")
+    private ActionRequest action;
+
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters) {
+    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, ActionRequest action) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
         this.status = status;
         this.filters = filters;
+        this.action = action;
     }
 
     public String getId() {
@@ -72,6 +77,14 @@ public class ProcessorDTO {
 
     public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
+    }
+
+    public ActionRequest getAction() {
+        return action;
+    }
+
+    public void setAction(ActionRequest action) {
+        this.action = action;
     }
 
     @Override

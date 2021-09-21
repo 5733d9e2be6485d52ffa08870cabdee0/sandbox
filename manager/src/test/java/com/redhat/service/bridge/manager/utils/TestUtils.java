@@ -1,8 +1,14 @@
 package com.redhat.service.bridge.manager.utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
@@ -79,5 +85,16 @@ public class TestUtils {
         return jsonRequest()
                 .body(processorDTO)
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
+    }
+
+    public static ActionRequest createKafkaAction() {
+        ActionRequest r = new ActionRequest();
+        r.setName(TestConstants.DEFAULT_ACTION_NAME);
+        r.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        r.setParameters(params);
+        return r;
     }
 }

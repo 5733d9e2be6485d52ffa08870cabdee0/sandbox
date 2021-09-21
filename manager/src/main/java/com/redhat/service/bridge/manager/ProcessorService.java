@@ -16,6 +16,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
+import com.redhat.service.bridge.manager.models.Action;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.ListResult;
@@ -60,6 +61,13 @@ public class ProcessorService {
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
         p.setFilters(filters);
+
+        Action a = new Action();
+        a.setName(processorRequest.getAction().getName());
+        a.setParameters(processorRequest.getAction().getParameters());
+        a.setType(processorRequest.getAction().getType());
+        p.setAction(a);
+
         processorDAO.persist(p);
         return p;
     }

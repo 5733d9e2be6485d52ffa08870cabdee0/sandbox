@@ -3,6 +3,7 @@ package com.redhat.service.bridge.infra.k8s.crds;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.infra.models.actions.ActionRequest;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -26,15 +27,27 @@ public class ProcessorCustomResource {
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
+    @JsonProperty("action")
+    private ActionRequest action;
+
     public ProcessorCustomResource() {
     }
 
-    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters) {
+    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, ActionRequest action) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
         this.status = status;
         this.filters = filters;
+        this.action = action;
+    }
+
+    public ActionRequest getAction() {
+        return action;
+    }
+
+    public void setAction(ActionRequest action) {
+        this.action = action;
     }
 
     public String getId() {
@@ -84,6 +97,7 @@ public class ProcessorCustomResource {
         resource.setBridge(dto.getBridge());
         resource.setStatus(dto.getStatus());
         resource.setFilters(dto.getFilters());
+        resource.setAction(dto.getAction());
 
         return resource;
     }
@@ -95,6 +109,7 @@ public class ProcessorCustomResource {
         dto.setBridge(bridge);
         dto.setStatus(status);
         dto.setFilters(filters);
+        dto.setAction(this.action);
 
         return dto;
     }

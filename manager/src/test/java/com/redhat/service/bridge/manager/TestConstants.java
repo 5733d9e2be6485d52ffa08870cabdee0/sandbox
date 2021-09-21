@@ -7,6 +7,9 @@ public class TestConstants {
 
     public static final String DEFAULT_PROCESSOR_NAME = "processMcProcessor";
 
+    public static final String DEFAULT_ACTION_NAME = "Send to Kafka";
+    public static final String DEFAULT_KAFKA_TOPIC = "myTestTopic";
+
     public static final int DEFAULT_PAGE = 0;
     public static final int DEFAULT_PAGE_SIZE = 10;
 }

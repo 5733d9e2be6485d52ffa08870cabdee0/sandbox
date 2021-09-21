@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -43,7 +44,7 @@ public class ShardBridgesSyncAPITest {
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
 
         TestUtils.updateBridge(bridge);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, TestUtils.createKafkaAction()));
 
         List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
         });
@@ -54,6 +55,8 @@ public class ShardBridgesSyncAPITest {
         Assertions.assertEquals(TestConstants.DEFAULT_PROCESSOR_NAME, processor.getName());
         Assertions.assertEquals(BridgeStatus.REQUESTED, processor.getStatus());
         Assertions.assertEquals(1, processor.getFilters().size());
+        Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, processor.getAction().getType());
+        Assertions.assertEquals(TestConstants.DEFAULT_KAFKA_TOPIC, processor.getAction().getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
     }
 
     @Test
@@ -61,7 +64,7 @@ public class ShardBridgesSyncAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         TestUtils.updateBridge(bridge);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
         List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
         });
