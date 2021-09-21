@@ -14,9 +14,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 public class ExecutorsProviderMock implements ExecutorsProvider,
         ExecutorsK8SDeploymentManager {
 
-    private static final FilterEvaluator filterEvaluator = new FilterEvaluatorFEEL();
-
-    private static final TemplateFactory templateFactory = new TemplateFactoryFEEL();
+    private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 
@@ -33,7 +31,7 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
     @Override
     public void deploy(ProcessorDTO processorDTO) {
 
-        Executor executor = new Executor(processorDTO, templateFactory, filterEvaluator);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory.build(processorDTO.getFilters()));
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());

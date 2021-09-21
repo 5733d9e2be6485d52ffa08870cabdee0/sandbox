@@ -33,7 +33,6 @@
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-feel</artifactId>
-      <version>7.57.0.Final</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

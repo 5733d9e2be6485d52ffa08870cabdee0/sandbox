@@ -13,52 +13,51 @@ import com.redhat.service.bridge.infra.models.filters.StringEquals;
 
 public class FilterEvaluatorFEELTest {
 
-    private static final TemplateFactoryFEEL TEMPLATE_FACTORY_FEEL = new TemplateFactoryFEEL();
-    private static final FilterEvaluatorFEEL FILTER_EVALUATOR_FEEL = new FilterEvaluatorFEEL();
+    private static final FilterEvaluatorFactoryFEEL TEMPLATE_FACTORY_FEEL = new FilterEvaluatorFactoryFEEL();
 
     @Test
     public void testStringEqualsFilter() {
-        String template = TEMPLATE_FACTORY_FEEL.build(new StringEquals("source", "myService"));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringEquals("source", "myService")));
 
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "myService")));
-        Assertions.assertFalse(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "notMyService")));
+        Assertions.assertTrue(evaluator.evaluateFilters(Collections.singletonMap("source", "myService")));
+        Assertions.assertFalse(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyService")));
     }
 
     @Test
     public void testStringBeginsWithFilter() {
-        String template = TEMPLATE_FACTORY_FEEL.build(new StringBeginsWith("source", "[\"mySer\"]"));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringBeginsWith("source", "[\"mySer\"]")));
 
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "myService")));
-        Assertions.assertFalse(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "notMyService")));
+        Assertions.assertTrue(evaluator.evaluateFilters(Collections.singletonMap("source", "myService")));
+        Assertions.assertFalse(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyService")));
     }
 
     @Test
     public void testStringContainsFilter() {
-        String template = TEMPLATE_FACTORY_FEEL.build(new StringContains("source", "[\"Ser\"]"));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringContains("source", "[\"Ser\"]")));
 
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "myService")));
-        Assertions.assertFalse(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "notMyApplication")));
+        Assertions.assertTrue(evaluator.evaluateFilters(Collections.singletonMap("source", "myService")));
+        Assertions.assertFalse(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyApplication")));
     }
 
     @Test
     public void testStringContainsListFilter() {
-        String template = TEMPLATE_FACTORY_FEEL.build(new StringContains("source", "[\"Ser\", \"Tes\"]"));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringContains("source", "[\"Ser\", \"Tes\"]")));
 
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "myService")));
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "myTest")));
-        Assertions.assertFalse(FILTER_EVALUATOR_FEEL.evaluateFilter(template, Collections.singletonMap("source", "notMyApplication")));
+        Assertions.assertTrue(evaluator.evaluateFilters(Collections.singletonMap("source", "myService")));
+        Assertions.assertTrue(evaluator.evaluateFilters(Collections.singletonMap("source", "myTest")));
+        Assertions.assertFalse(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyApplication")));
     }
 
     @Test
     public void testFilterWithNestedObjects() {
-        String template = TEMPLATE_FACTORY_FEEL.build(new StringEquals("data.name", "jacopo"));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringEquals("data.name", "jacopo")));
 
         Map<String, Object> data = new HashMap<>();
         data.put("data", Collections.singletonMap("name", "jacopo"));
-        Assertions.assertTrue(FILTER_EVALUATOR_FEEL.evaluateFilter(template, data));
+        Assertions.assertTrue(evaluator.evaluateFilters(data));
 
         data = new HashMap<>();
         data.put("data", Collections.singletonMap("name", "notJacopo"));
-        Assertions.assertFalse(FILTER_EVALUATOR_FEEL.evaluateFilter(template, data));
+        Assertions.assertFalse(evaluator.evaluateFilters(data));
     }
 }

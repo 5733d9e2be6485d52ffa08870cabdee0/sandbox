@@ -2,14 +2,11 @@ package com.redhat.service.bridge.executor;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
@@ -20,30 +17,25 @@ public class Executor {
 
     private final ProcessorDTO processor;
 
-    private final Set<String> templates;
-
     private final FilterEvaluator filterEvaluator;
 
-    private final TemplateFactory templateFactory;
-
-    public Executor(ProcessorDTO processor, TemplateFactory templateFactory, FilterEvaluator filterEvaluator) {
+    public Executor(ProcessorDTO processor, FilterEvaluator filterEvaluator) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluator;
-        this.templateFactory = templateFactory;
-        this.templates = buildTemplates(processor);
     }
 
+    @SuppressWarnings("unchecked")
     public void onEvent(CloudEvent cloudEvent) {
         LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
 
-        if (matchFilters(cloudEvent)) {
+        if (filterEvaluator.evaluateFilters(CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class))) {
             LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
             // TODO - CALL ACTIONS;
             // TODO - consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
-            return;
+        } else {
+            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            // DO NOTHING;
         }
-        LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
-        // DO NOTHING;
     }
 
     public ProcessorDTO getProcessor() {
@@ -65,24 +57,5 @@ public class Executor {
     @Override
     public int hashCode() {
         return Objects.hash(processor);
-    }
-
-    @SuppressWarnings("unchecked")
-    private boolean matchFilters(CloudEvent cloudEvent) {
-        if (templates == null) {
-            return true;
-        }
-
-        for (String template : templates) {
-            if (!filterEvaluator.evaluateFilter(template, CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Set<String> buildTemplates(ProcessorDTO processorDTO) {
-        Set<BaseFilter> filters = processorDTO.getFilters();
-        return filters == null ? null : filters.stream().map(templateFactory::build).collect(Collectors.toSet());
     }
 }
