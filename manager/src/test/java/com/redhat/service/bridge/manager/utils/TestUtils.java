@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -87,8 +87,8 @@ public class TestUtils {
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
-    public static ActionRequest createKafkaAction() {
-        ActionRequest r = new ActionRequest();
+    public static BaseAction createKafkaAction() {
+        BaseAction r = new BaseAction();
         r.setName(TestConstants.DEFAULT_ACTION_NAME);
         r.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
 

@@ -11,7 +11,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -70,8 +70,8 @@ public class ProcessorServiceTest {
         return b;
     }
 
-    private ActionRequest createKafkaAction() {
-        ActionRequest a = new ActionRequest();
+    private BaseAction createKafkaAction() {
+        BaseAction a = new BaseAction();
         a.setName(TestConstants.DEFAULT_ACTION_NAME);
         a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
 

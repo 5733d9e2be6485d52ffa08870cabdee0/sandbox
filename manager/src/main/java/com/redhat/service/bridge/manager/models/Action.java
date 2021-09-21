@@ -12,7 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @Entity
 public class Action {
@@ -64,8 +64,8 @@ public class Action {
         this.type = type;
     }
 
-    public ActionRequest toActionRequest() {
-        ActionRequest ar = new ActionRequest();
+    public BaseAction toActionRequest() {
+        BaseAction ar = new BaseAction();
         ar.setName(this.name);
         ar.setType(this.type);
         ar.setParameters(this.parameters);

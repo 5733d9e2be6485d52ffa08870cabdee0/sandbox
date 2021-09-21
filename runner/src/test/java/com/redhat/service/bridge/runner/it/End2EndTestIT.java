@@ -21,7 +21,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -62,7 +62,7 @@ public class End2EndTestIT {
 
     @BeforeAll
     public static void beforeAll() {
-        ActionRequest action = new ActionRequest();
+        BaseAction action = new BaseAction();
         action.setName("myKafkaAction");
         action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
 
@@ -160,7 +160,7 @@ public class End2EndTestIT {
         Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
         Assertions.assertEquals(1, response.getFilters().size());
 
-        ActionRequest action = response.getAction();
+        BaseAction action = response.getAction();
         Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, action.getType());
         Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
     }

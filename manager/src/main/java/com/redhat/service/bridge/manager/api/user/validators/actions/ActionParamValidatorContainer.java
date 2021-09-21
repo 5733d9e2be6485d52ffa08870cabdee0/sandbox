@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
 @ApplicationScoped
@@ -35,26 +35,26 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
          * TBD.
          */
 
-        ActionRequest actionRequest = value.getAction();
-        if (actionRequest == null) {
+        BaseAction baseAction = value.getAction();
+        if (baseAction == null) {
             return false;
         }
 
         Optional<ActionParamsValidator> paramsValidator = validators.stream()
-                .filter((v) -> v.accepts(actionRequest))
+                .filter((v) -> v.accepts(baseAction))
                 .findFirst();
 
         if (paramsValidator.isPresent()) {
-            boolean valid = paramsValidator.get().isValid(actionRequest);
+            boolean valid = paramsValidator.get().isValid(baseAction);
 
             if (!valid) {
-                context.buildConstraintViolationWithTemplate("Parameters for Action '" + actionRequest.getName() + "' of Type '" + actionRequest.getType() + "' are not valid");
+                context.buildConstraintViolationWithTemplate("Parameters for Action '" + baseAction.getName() + "' of Type '" + baseAction.getType() + "' are not valid");
             }
 
             return valid;
         } else {
             // No validator present for the submitted "type" of Action. It's not something that we recognise/support
-            context.buildConstraintViolationWithTemplate("Action of type '" + actionRequest.getType() + "' is not recognised.");
+            context.buildConstraintViolationWithTemplate("Action of type '" + baseAction.getType() + "' is not recognised.");
             return false;
         }
     }

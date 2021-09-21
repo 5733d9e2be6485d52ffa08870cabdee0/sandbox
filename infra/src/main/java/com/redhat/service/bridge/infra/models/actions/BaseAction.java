@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ActionRequest {
+public class BaseAction {
 
     @NotNull(message = "An Action must have a name")
     @JsonProperty("name")

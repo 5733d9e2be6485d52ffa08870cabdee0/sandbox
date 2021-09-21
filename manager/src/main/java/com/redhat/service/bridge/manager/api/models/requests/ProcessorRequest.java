@@ -7,7 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 public class ProcessorRequest {
@@ -18,7 +18,7 @@ public class ProcessorRequest {
 
     @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
-    private ActionRequest actionRequest;
+    private BaseAction baseAction;
 
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
@@ -26,16 +26,16 @@ public class ProcessorRequest {
     public ProcessorRequest() {
     }
 
-    public ProcessorRequest(String name, ActionRequest actionRequest) {
+    public ProcessorRequest(String name, BaseAction baseAction) {
         this.name = name;
         this.filters = new HashSet<>();
-        this.actionRequest = actionRequest;
+        this.baseAction = baseAction;
     }
 
-    public ProcessorRequest(String name, Set<BaseFilter> filters, ActionRequest actionRequest) {
+    public ProcessorRequest(String name, Set<BaseFilter> filters, BaseAction baseAction) {
         this.name = name;
         this.filters = filters;
-        this.actionRequest = actionRequest;
+        this.baseAction = baseAction;
     }
 
     public String getName() {
@@ -54,11 +54,11 @@ public class ProcessorRequest {
         this.filters = filters;
     }
 
-    public ActionRequest getAction() {
-        return actionRequest;
+    public BaseAction getAction() {
+        return baseAction;
     }
 
-    public void setAction(ActionRequest actionRequest) {
-        this.actionRequest = actionRequest;
+    public void setAction(BaseAction baseAction) {
+        this.baseAction = baseAction;
     }
 }

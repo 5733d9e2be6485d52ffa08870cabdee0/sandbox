@@ -6,7 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
@@ -43,7 +43,7 @@ public class ProcessorResponse {
     private Set<BaseFilter> filters;
 
     @JsonProperty("action")
-    private ActionRequest action;
+    private BaseAction action;
 
     public String getId() {
         return id;
@@ -113,11 +113,11 @@ public class ProcessorResponse {
         this.filters = filters;
     }
 
-    public ActionRequest getAction() {
+    public BaseAction getAction() {
         return action;
     }
 
-    public void setAction(ActionRequest action) {
+    public void setAction(BaseAction action) {
         this.action = action;
     }
 }

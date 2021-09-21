@@ -17,7 +17,7 @@ import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -49,7 +49,7 @@ public abstract class AbstractShardWireMockTest {
     }
 
     protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
-        ActionRequest a = new ActionRequest();
+        BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
         a.setName("kafkaAction");
 

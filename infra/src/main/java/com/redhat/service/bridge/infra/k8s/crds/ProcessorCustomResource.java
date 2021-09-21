@@ -3,7 +3,7 @@ package com.redhat.service.bridge.infra.k8s.crds;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.ActionRequest;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -28,12 +28,12 @@ public class ProcessorCustomResource {
     private Set<BaseFilter> filters;
 
     @JsonProperty("action")
-    private ActionRequest action;
+    private BaseAction action;
 
     public ProcessorCustomResource() {
     }
 
-    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, ActionRequest action) {
+    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, BaseAction action) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
@@ -42,11 +42,11 @@ public class ProcessorCustomResource {
         this.action = action;
     }
 
-    public ActionRequest getAction() {
+    public BaseAction getAction() {
         return action;
     }
 
-    public void setAction(ActionRequest action) {
+    public void setAction(BaseAction action) {
         this.action = action;
     }
 
