@@ -1,11 +1,13 @@
 package com.redhat.service.bridge.executor;
 
+import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 
@@ -15,14 +17,25 @@ public class Executor {
 
     private final ProcessorDTO processor;
 
-    public Executor(ProcessorDTO processor) {
+    private final FilterEvaluator filterEvaluator;
+
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory) {
         this.processor = processor;
+        this.filterEvaluator = factory.build(processor.getFilters());
     }
 
+    @SuppressWarnings("unchecked")
     public void onEvent(CloudEvent cloudEvent) {
-        LOG.info("Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
+        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
 
-        //TODO - consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
+        if (filterEvaluator.evaluateFilters(CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class))) {
+            LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
+            // TODO - CALL ACTIONS;
+            // TODO - consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
+        } else {
+            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            // DO NOTHING;
+        }
     }
 
     public ProcessorDTO getProcessor() {
