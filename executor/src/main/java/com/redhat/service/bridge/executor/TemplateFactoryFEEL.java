@@ -3,15 +3,12 @@ package com.redhat.service.bridge.executor;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
-
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 
-@ApplicationScoped
-public class TemplateFactoryFEEL {
+public class TemplateFactoryFEEL implements TemplateFactory {
 
     public static final String IS_VALID = "OK";
     public static final String IS_INVALID = "NOT_OK";

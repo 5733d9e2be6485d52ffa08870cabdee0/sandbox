@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
