@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.shard;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
@@ -15,7 +17,10 @@ import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -41,6 +46,18 @@ public abstract class AbstractShardWireMockTest {
     @BeforeEach
     protected void beforeEach() {
         wireMockServer.resetAll();
+    }
+
+    protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
+        BaseAction a = new BaseAction();
+        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        a.setName("kafkaAction");
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, "myTopic");
+
+        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, null, a);
+        return processor;
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

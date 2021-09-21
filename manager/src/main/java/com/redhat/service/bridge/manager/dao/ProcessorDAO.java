@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.TypedQuery;
@@ -11,6 +12,7 @@ import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
@@ -24,7 +26,26 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
         Parameters p = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
-        return find("#PROCESSOR.findByBridgeIdAndName", p).firstResultOptional().orElse(null);
+        return singleResultFromList(find("#PROCESSOR.findByBridgeIdAndName", p));
+    }
+
+    /*
+     * For queries where we need to fetch join associations, this works around the fact that Hibernate has to
+     * apply pagination in-memory _if_ we rely on Panaches .firstResult() or firstResultOptional() methods. This
+     * manifests as "HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!" in the log
+     * 
+     * This performs the query as if we expect a list result, but then converts the list into a single result
+     * response: either the entity if the list has a single result, or null if not.
+     * 
+     * More than 1 entity in the list throws an IllegalStateException as it's not something that we expect to happen
+     * 
+     */
+    private Processor singleResultFromList(PanacheQuery<Processor> find) {
+        List<Processor> processors = find.list();
+        if (processors.size() > 1) {
+            throw new IllegalStateException("Multiple Entities returned from a Query that should only return a single Entity");
+        }
+        return processors.size() == 1 ? processors.get(0) : null;
     }
 
     public Processor findByIdBridgeIdAndCustomerId(String id, String bridgeId, String customerId) {
@@ -33,7 +54,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
                 .and(Processor.BRIDGE_ID_PARAM, bridgeId)
                 .and(Bridge.CUSTOMER_ID_PARAM, customerId);
 
-        return find("#PROCESSOR.findByIdBridgeIdAndCustomerId", p).firstResultOptional().orElse(null);
+        return singleResultFromList(find("#PROCESSOR.findByIdBridgeIdAndCustomerId", p));
     }
 
     public List<Processor> findByStatuses(List<BridgeStatus> statuses) {
@@ -57,7 +78,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
          * Unfortunately we can't rely on Panaches in-built Paging due the fetched join in our query
          * for Processor e.g. join fetch p.bridge. Instead, we simply build a list of ids to fetch and then
          * execute the join fetch as normal. So the workflow here is:
-         * 
+         *
          * - Count the number of Processors on a bridge. If > 0
          * - Select the ids of the Processors that need to be retrieved based on the page/size requirements
          * - Select the Processors in the list of ids, performing the fetch join of the Bridge
@@ -74,7 +95,12 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         addParamsToNamedQuery(p, idsQuery);
         List<String> ids = idsQuery.setMaxResults(size).setFirstResult(firstResult).getResultList();
 
-        List<Processor> processors = list("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, ids));
+        /*
+         * We have to include the Action in the select list, so this returns both the Processor and Action as a pair. We only
+         * want the Processor.
+         */
+        List<Object[]> results = getEntityManager().createNamedQuery("PROCESSOR.findByIds").setParameter(IDS_PARAM, ids).getResultList();
+        List<Processor> processors = results.stream().map((o) -> (Processor) o[0]).collect(Collectors.toList());
         return new ListResult<>(processors, page, processorCount);
     }
 
