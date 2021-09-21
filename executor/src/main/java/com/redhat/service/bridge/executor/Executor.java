@@ -28,9 +28,9 @@ public class Executor {
 
     public Executor(ProcessorDTO processor, TemplateFactory templateFactory, FilterEvaluator filterEvaluator) {
         this.processor = processor;
-        this.templates = buildTemplates(processor);
         this.filterEvaluator = filterEvaluator;
         this.templateFactory = templateFactory;
+        this.templates = buildTemplates(processor);
     }
 
     public void onEvent(CloudEvent cloudEvent) {
