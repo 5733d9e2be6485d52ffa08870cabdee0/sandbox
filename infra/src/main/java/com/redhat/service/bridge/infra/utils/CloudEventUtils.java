@@ -63,6 +63,10 @@ public class CloudEventUtils {
         }
     }
 
+    public static ObjectMapper getMapper() {
+        return OBJECT_MAPPER;
+    }
+
     private CloudEventUtils() {
         throw new IllegalStateException("Instantiation of utility class CloudEventUtils is forbidden");
     }

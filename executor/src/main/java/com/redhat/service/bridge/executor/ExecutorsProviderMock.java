@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 
 // TODO: This class has to be removed when we switch to ExecutorConfigProviderImpl
 @ApplicationScoped
@@ -15,6 +17,12 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
         ExecutorsK8SDeploymentManager {
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
+
+    @Inject
+    FilterEvaluator filterEvaluator;
+
+    @Inject
+    TemplateFactory templateFactory;
 
     @Override
     public Set<Executor> getExecutors() {
@@ -29,7 +37,7 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
     @Override
     public void deploy(ProcessorDTO processorDTO) {
 
-        Executor executor = new Executor(processorDTO);
+        Executor executor = new Executor(processorDTO, templateFactory, filterEvaluator);
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());
