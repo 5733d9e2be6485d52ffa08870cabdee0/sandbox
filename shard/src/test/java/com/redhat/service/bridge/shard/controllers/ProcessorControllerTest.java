@@ -43,7 +43,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     @Test
     public void reconcileProcessor() throws JsonProcessingException, InterruptedException {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
+        ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
         stubProcessorUpdate();
 
@@ -69,7 +69,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     public void reconcileProcessor_withFailure() throws JsonProcessingException, InterruptedException {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, BridgeStatus.PROVISIONING, null);
+        ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
         stubProcessorUpdate();
 

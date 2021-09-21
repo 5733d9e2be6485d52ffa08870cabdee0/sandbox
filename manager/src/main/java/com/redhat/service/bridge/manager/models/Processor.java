@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Version;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
@@ -29,19 +30,19 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
-                query = "from Processor p left join fetch p.filters where p.name=:name and p.bridge.id=:bridgeId"),
+                query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByStatus",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
+                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.idsByBridgeIdAndCustomerId",
                 query = "select p.id from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
-                query = "select p from Processor p join fetch p.bridge left join fetch p.filters where p.id in (:ids)")
+                query = "select p, p.action from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.id in (:ids)")
 })
 @Entity
 public class Processor {
@@ -61,6 +62,9 @@ public class Processor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
     private Bridge bridge;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Action action;
 
     @Version
     private long version;
@@ -130,6 +134,14 @@ public class Processor {
         this.status = status;
     }
 
+    public Action getAction() {
+        return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = action;
+    }
+
     public void setFilters(Set<Filter> filters) {
         this.filters = filters;
     }
@@ -149,6 +161,7 @@ public class Processor {
         }
 
         processorResponse.setFilters(buildFilters());
+        processorResponse.setAction(action.toActionRequest());
 
         return processorResponse;
     }
@@ -165,6 +178,7 @@ public class Processor {
             dto.setBridge(this.bridge.toDTO());
         }
 
+        dto.setAction(this.action.toActionRequest());
         return dto;
     }
 
