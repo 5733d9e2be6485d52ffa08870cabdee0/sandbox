@@ -31,7 +31,7 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
     @Override
     public void deploy(ProcessorDTO processorDTO) {
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory.build(processorDTO.getFilters()));
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory);
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());

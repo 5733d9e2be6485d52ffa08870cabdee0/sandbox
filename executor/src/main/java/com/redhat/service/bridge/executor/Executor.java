@@ -19,9 +19,9 @@ public class Executor {
 
     private final FilterEvaluator filterEvaluator;
 
-    public Executor(ProcessorDTO processor, FilterEvaluator filterEvaluator) {
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory) {
         this.processor = processor;
-        this.filterEvaluator = filterEvaluator;
+        this.filterEvaluator = factory.build(processor.getFilters());
     }
 
     @SuppressWarnings("unchecked")
