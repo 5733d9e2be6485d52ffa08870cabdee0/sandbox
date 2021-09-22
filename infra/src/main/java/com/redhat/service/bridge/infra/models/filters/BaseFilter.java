@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -16,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class BaseFilter {
+    protected static final ObjectMapper MAPPER = new ObjectMapper();
+
     public static final String FILTER_TYPE_FIELD = "type";
 
     @JsonProperty(FILTER_TYPE_FIELD)
