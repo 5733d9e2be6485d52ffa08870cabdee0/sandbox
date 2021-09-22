@@ -1,8 +1,6 @@
 package com.redhat.service.bridge.manager.api.user;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -10,6 +8,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -63,14 +62,7 @@ public class ProcessorAPITest {
     }
 
     private BaseAction createKafkaAction() {
-        BaseAction a = new BaseAction();
-        a.setName(TestConstants.DEFAULT_ACTION_NAME);
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setParameters(params);
-        return a;
+        return new KafkaTopicAction(TestConstants.DEFAULT_ACTION_NAME, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @BeforeEach
@@ -193,16 +185,12 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_unrecognisedActionType() {
+    public void addProcessorToBridge_unrecognisedActionType() throws JsonProcessingException {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
-        action.setType("thisDoesNotExist");
-
-        Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", filters, action));
+                "{\"name\" : \"test\", \"action\": {\"type\": \"notAValidType\", \"name\": \"test\"}}");
 
         assertThat(response.getStatusCode(), equalTo(400));
     }
@@ -211,14 +199,9 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_missingActionParameters() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
-        action.getParameters().clear();
-        action.getParameters().put("thisIsNotCorrect", "myTopic");
-
-        Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", filters, action));
+                "{\"name\" : \"test\", \"action\": {\"type\": \"KafkaTopicAction\", \"name\": \"test\"}}");
 
         assertThat(response.getStatusCode(), equalTo(400));
     }

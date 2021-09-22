@@ -1,8 +1,6 @@
 package com.redhat.service.bridge.shard;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
@@ -49,13 +47,7 @@ public abstract class AbstractShardWireMockTest {
     }
 
     protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
-        BaseAction a = new BaseAction();
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
-        a.setName("kafkaAction");
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, "myTopic");
-
+        BaseAction a = new KafkaTopicAction("kafkaAction", "myTopic");
         ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, null, a);
         return processor;
     }

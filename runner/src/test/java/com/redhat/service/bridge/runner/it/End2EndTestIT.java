@@ -3,8 +3,6 @@ package com.redhat.service.bridge.runner.it;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.awaitility.Awaitility;
@@ -62,14 +60,7 @@ public class End2EndTestIT {
 
     @BeforeAll
     public static void beforeAll() {
-        BaseAction action = new BaseAction();
-        action.setName("myKafkaAction");
-        action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, topicName);
-        action.setParameters(params);
-
+        BaseAction action = new KafkaTopicAction("myKafkaAction", topicName);
         processorRequest = new ProcessorRequest(processorName, filters, action);
     }
 

@@ -1,28 +1,43 @@
 package com.redhat.service.bridge.infra.models.actions;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = BaseAction.ACTION_TYPE_FIELD)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = KafkaTopicAction.class, name = KafkaTopicAction.KAFKA_ACTION_TYPE),
+})
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseAction {
+public abstract class BaseAction {
+    public static final String ACTION_TYPE_FIELD = "type";
 
     @NotNull(message = "An Action must have a name")
-    @JsonProperty("name")
+    @JsonProperty(value = "name")
     private String name;
 
-    @NotNull(message = "An Action Type must be specified")
-    @JsonProperty("type")
-    private String type;
+    @JsonProperty(value = ACTION_TYPE_FIELD)
+    protected String type;
 
-    @NotEmpty(message = "Action parameters must be supplied")
-    @JsonProperty("parameters")
-    private Map<String, String> parameters = new HashMap<>();
+    public BaseAction() {
+    }
+
+    public BaseAction(String name) {
+        this.name = name;
+    }
+
+    public BaseAction(String name, Map<String, String> parameters) {
+        this.name = name;
+        setParameters(parameters);
+    }
 
     public String getName() {
         return name;
@@ -40,11 +55,8 @@ public class BaseAction {
         this.type = type;
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
+    @JsonIgnore
+    public abstract Map<String, String> getParameters();
 
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
+    public abstract void setParameters(Map<String, String> parameters);
 }

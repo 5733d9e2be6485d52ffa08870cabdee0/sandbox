@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 
+import com.redhat.service.bridge.infra.models.actions.ActionFactory;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @Entity
@@ -65,10 +66,6 @@ public class Action {
     }
 
     public BaseAction toActionRequest() {
-        BaseAction ar = new BaseAction();
-        ar.setName(this.name);
-        ar.setType(this.type);
-        ar.setParameters(this.parameters);
-        return ar;
+        return ActionFactory.buildAction(this.type, this.name, this.parameters);
     }
 }

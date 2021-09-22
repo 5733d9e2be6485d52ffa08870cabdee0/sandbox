@@ -23,7 +23,6 @@ import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.bridge.manager.api.user.validators.actions.ValidActionParams;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -73,7 +72,7 @@ public class ProcessorsAPI {
 
     @POST
     @Path("{bridgeId}/processors")
-    public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
+    public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = customerIdResolver.resolveCustomerId();
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
         return Response.status(Response.Status.CREATED).entity(processor.toResponse()).build();

@@ -1,9 +1,7 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -71,14 +69,7 @@ public class ProcessorServiceTest {
     }
 
     private BaseAction createKafkaAction() {
-        BaseAction a = new BaseAction();
-        a.setName(TestConstants.DEFAULT_ACTION_NAME);
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setParameters(params);
-        return a;
+        return new KafkaTopicAction(TestConstants.DEFAULT_ACTION_NAME, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test

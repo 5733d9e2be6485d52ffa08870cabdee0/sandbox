@@ -1,8 +1,5 @@
 package com.redhat.service.bridge.manager.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
@@ -54,6 +51,12 @@ public class TestUtils {
                 .post(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/");
     }
 
+    public static Response addProcessorToBridge(String bridgeId, String body) {
+        return jsonRequest()
+                .body(body)
+                .post(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/");
+    }
+
     public static Response createBridge(BridgeRequest request) {
         return jsonRequest()
                 .body(request)
@@ -88,13 +91,6 @@ public class TestUtils {
     }
 
     public static BaseAction createKafkaAction() {
-        BaseAction r = new BaseAction();
-        r.setName(TestConstants.DEFAULT_ACTION_NAME);
-        r.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        r.setParameters(params);
-        return r;
+        return new KafkaTopicAction(TestConstants.DEFAULT_ACTION_NAME, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 }

@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.api.models.requests;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -18,6 +19,7 @@ public class ProcessorRequest {
 
     @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
+    @Valid
     private BaseAction baseAction;
 
     @JsonProperty("filters")
