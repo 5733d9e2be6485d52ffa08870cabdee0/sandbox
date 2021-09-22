@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.executor.actions.ActionInvoker;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
@@ -19,9 +20,12 @@ public class Executor {
 
     private final FilterEvaluator filterEvaluator;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory) {
+    private final ActionInvoker actionInvoker;
+
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory, ActionInvoker actionInvoker) {
         this.processor = processor;
         this.filterEvaluator = factory.build(processor.getFilters());
+        this.actionInvoker = actionInvoker;
     }
 
     @SuppressWarnings("unchecked")
@@ -30,8 +34,9 @@ public class Executor {
 
         if (filterEvaluator.evaluateFilters(CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class))) {
             LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
-            // TODO - CALL ACTIONS;
-            // TODO - consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
+            //TODO - transform before invoking the action.
+            // TODO - https://issues.redhat.com/browse/MGDOBR-49: consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
+            actionInvoker.onEvent(cloudEvent);
         } else {
             LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
