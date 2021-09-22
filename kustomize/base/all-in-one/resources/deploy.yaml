@@ -18,6 +18,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: event-bridge-all-in-one-config
+            - secretRef:
+                name: kafka-secrets
 ---
 apiVersion: v1
 kind: Service
