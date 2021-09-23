@@ -55,10 +55,13 @@ public class IngressController {
         if (event.getSubject().equals(K8SBridgeConstants.BRIDGE_TYPE)) {
 
             /*
-             * If the CRD is deleted, remove also all the other related resource
+             * If the CRD is deleted, remove also all the other related resource.
              *
              * If another dependent resource is deleted, the `reconcileExecutor` will catch the mismatch between the expected state and the current state.
              * It will redeploy the resources so to reach the expected status at the end.
+             *
+             * TODO: when we move to k8s and we create the real CRD, set the BridgeCustomResource as owner of the ProcessorCustomResource so that when
+             * a Bridge is deleted, the deletion is cascaded to all the Processors.
              */
             if (event.getAction().equals(Action.DELETED) && event.getResourceType().equals(KubernetesResourceType.CUSTOM_RESOURCE)) {
                 delete(event.getResourceId());

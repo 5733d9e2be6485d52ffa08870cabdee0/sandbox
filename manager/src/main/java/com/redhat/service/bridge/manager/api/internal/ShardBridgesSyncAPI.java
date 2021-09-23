@@ -20,7 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
-import com.redhat.service.bridge.manager.ProcessorServiceImpl;
+import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -38,7 +38,7 @@ public class ShardBridgesSyncAPI {
     BridgesService bridgesService;
 
     @Inject
-    ProcessorServiceImpl processorService;
+    ProcessorService processorService;
 
     @PUT
     @Path("processors")
