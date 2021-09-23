@@ -112,7 +112,7 @@ public class BridgesServiceTest {
         Assertions.assertEquals(BridgeStatus.REQUESTED, bridges.get(0).getStatus());
 
         bridge.setStatus(BridgeStatus.PROVISIONING);
-        bridgesService.updateBridge(bridge);
+        bridgesService.updateBridge(bridge.toDTO());
 
         bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         Assertions.assertEquals(0, bridges.size());

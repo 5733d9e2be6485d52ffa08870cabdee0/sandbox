@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -277,5 +278,18 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
         Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
         assertThat(response.getStatusCode(), equalTo(400));
+    }
+
+    @Test
+    public void testDeleteProcessor() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+        ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(
+                bridgeResponse.getId(),
+                new ProcessorRequest("myProcessor", null, createKafkaAction())).as(ProcessorResponse.class);
+
+        TestUtils.deleteProcessor(bridgeResponse.getId(), processorResponse.getId()).then().statusCode(202);
+        processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
+
+        Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, processorResponse.getStatus());
     }
 }

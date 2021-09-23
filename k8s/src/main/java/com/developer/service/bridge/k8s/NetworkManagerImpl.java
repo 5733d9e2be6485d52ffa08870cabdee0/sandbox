@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.ingress.IngressService;
 
@@ -57,7 +58,7 @@ public class NetworkManagerImpl implements NetworkManager {
             return;
         }
 
-        String type = KubernetesUtils.extractTypeFromMetadata(ingress);
+        String type = KubernetesUtils.extractLabelFromMetadata(ingress, K8SBridgeConstants.METADATA_TYPE);
         Action action;
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             ingressService.deploy(name);
@@ -72,16 +73,16 @@ public class NetworkManagerImpl implements NetworkManager {
             throw new IllegalStateException("[k8s] It's possible to create an Ingress only for Bridge Ingress applications.");
         }
 
-        event.fire(new ResourceEvent(type, name, action));
+        event.fire(new ResourceEvent(KubernetesResourceType.INGRESS, type, name, action));
     }
 
     @Override
-    public void delete(String name) {
-        if (ingressEndpointMap.containsKey(name)) {
-            Ingress ingress = ingressEndpointMap.get(name);
-            ingressEndpointMap.remove(name);
-            ingressService.undeploy(name);
-            event.fire(new ResourceEvent(KubernetesUtils.extractTypeFromMetadata(ingress), name, Action.DELETED));
+    public void delete(String id) {
+        if (ingressEndpointMap.containsKey(id)) {
+            Ingress ingress = ingressEndpointMap.get(id);
+            ingressEndpointMap.remove(id);
+            ingressService.undeploy(id);
+            event.fire(new ResourceEvent(KubernetesResourceType.INGRESS, KubernetesUtils.extractLabelFromMetadata(ingress, K8SBridgeConstants.METADATA_TYPE), id, Action.DELETED));
         }
     }
 

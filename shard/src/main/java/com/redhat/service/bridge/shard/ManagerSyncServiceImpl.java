@@ -96,10 +96,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .send().onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
-                            if (BridgeStatus.REQUESTED == y.getStatus()) {
+                            if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y).subscribe().with(
                                         success -> deployProcessorCustomResource(y),
+                                        failure -> failedToSendUpdateToManager(y, failure));
+                            }
+                            if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
+                                y.setStatus(BridgeStatus.DELETED);
+                                deleteProcessorCustomResource(y);
+                                return notifyProcessorStatusChange(y).subscribe().with(
+                                        success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                         failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
@@ -118,6 +125,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     // Create the custom resource, and let the controller create what it needs
     protected void deployProcessorCustomResource(ProcessorDTO processorDTO) {
         kubernetesClient.createOrUpdateCustomResource(processorDTO.getId(), ProcessorCustomResource.fromDTO(processorDTO), K8SBridgeConstants.PROCESSOR_TYPE);
+    }
+
+    protected void deleteProcessorCustomResource(ProcessorDTO processorDTO) {
+        kubernetesClient.deleteCustomResource(processorDTO.getId(), K8SBridgeConstants.PROCESSOR_TYPE);
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {

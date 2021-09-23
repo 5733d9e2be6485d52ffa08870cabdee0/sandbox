@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.executor.ExecutorsK8SDeploymentManager;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 
@@ -53,7 +54,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
                 .build();
         deployment.setStatus(status);
 
-        String type = KubernetesUtils.extractTypeFromMetadata(deployment);
+        String type = KubernetesUtils.extractLabelFromMetadata(deployment, K8SBridgeConstants.METADATA_TYPE);
         if (type.equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             // hack for the time being
             ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
@@ -63,20 +64,19 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
         }
 
-        event.fire(new ResourceEvent(type, name, action));
+        event.fire(new ResourceEvent(KubernetesResourceType.DEPLOYMENT, type, name, action));
     }
 
     @Override
-    public void delete(String name) {
-        if (deploymentMap.containsKey(name)) {
-            Deployment deployment = deploymentMap.get(name);
-            if (KubernetesUtils.extractTypeFromMetadata(deployment).equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
-                // hack for the time being
-                ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-                executorsK8SDeploymentManager.undeploy(processorCustomResource.getBridge().getId(), processorCustomResource.getId());
+    public void delete(String id) {
+        if (deploymentMap.containsKey(id)) {
+            Deployment deployment = deploymentMap.get(id);
+            if (KubernetesUtils.extractLabelFromMetadata(deployment, K8SBridgeConstants.METADATA_TYPE).equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
+                String bridgeId = KubernetesUtils.extractLabelFromMetadata(deployment, K8SBridgeConstants.METADATA_BRIDGE_ID);
+                executorsK8SDeploymentManager.undeploy(bridgeId, id);
             }
-            deploymentMap.remove(name);
-            event.fire(new ResourceEvent(KubernetesUtils.extractTypeFromMetadata(deployment), name, Action.DELETED));
+            deploymentMap.remove(id);
+            event.fire(new ResourceEvent(KubernetesResourceType.DEPLOYMENT, KubernetesUtils.extractLabelFromMetadata(deployment, K8SBridgeConstants.METADATA_TYPE), id, Action.DELETED));
         }
     }
 

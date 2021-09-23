@@ -10,10 +10,10 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.BridgeCustomResource;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -51,30 +51,39 @@ public class IngressController {
     @Inject
     KubernetesClient kubernetesClient;
 
-    void onEvent(@Observes ResourceEvent event) throws JsonProcessingException { // equivalent of ResourceEventSource for operator sdk
+    void onEvent(@Observes ResourceEvent event) { // equivalent of ResourceEventSource for operator sdk
         if (event.getSubject().equals(K8SBridgeConstants.BRIDGE_TYPE)) {
+
+            /*
+             * If the CRD is deleted, remove also all the other related resource
+             *
+             * If another dependent resource is deleted, the `reconcileExecutor` will catch the mismatch between the expected state and the current state.
+             * It will redeploy the resources so to reach the expected status at the end.
+             */
+            if (event.getAction().equals(Action.DELETED) && event.getResourceType().equals(KubernetesResourceType.CUSTOM_RESOURCE)) {
+                delete(event.getResourceId());
+                return;
+            }
+
             BridgeCustomResource resource = kubernetesClient.getCustomResource(event.getResourceId(), BridgeCustomResource.class);
             if (event.getAction().equals(Action.ERROR)) {
                 LOGGER.error("[shard] Failed to deploy Deployment with id '{}'", resource.getId());
                 notifyFailedDeployment(resource.getId());
                 return;
             }
-            if (event.getAction().equals(Action.DELETED)) {
-                delete(resource);
-                return;
-            }
+
             reconcileIngress(resource);
         }
     }
 
-    private void delete(BridgeCustomResource customResource) {
+    private void delete(String resourceId) {
         // Delete Deployment
-        kubernetesClient.deleteDeployment(customResource.getId());
+        kubernetesClient.deleteDeployment(resourceId);
 
         // TODO: Delete service
 
         // Delete ingress
-        kubernetesClient.deleteNetworkIngress(customResource.getId());
+        kubernetesClient.deleteNetworkIngress(resourceId);
     }
 
     private void reconcileIngress(BridgeCustomResource customResource) {

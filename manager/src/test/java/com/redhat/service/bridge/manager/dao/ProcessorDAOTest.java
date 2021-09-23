@@ -110,7 +110,6 @@ public class ProcessorDAOTest {
     @Test
     @Transactional
     public void findByStatuses() {
-
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
