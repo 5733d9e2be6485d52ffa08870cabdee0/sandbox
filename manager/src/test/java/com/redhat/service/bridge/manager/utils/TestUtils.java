@@ -3,9 +3,9 @@ package com.redhat.service.bridge.manager.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.TestConstants;
@@ -90,10 +90,10 @@ public class TestUtils {
     public static BaseAction createKafkaAction() {
         BaseAction r = new BaseAction();
         r.setName(TestConstants.DEFAULT_ACTION_NAME);
-        r.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        r.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         r.setParameters(params);
         return r;
     }

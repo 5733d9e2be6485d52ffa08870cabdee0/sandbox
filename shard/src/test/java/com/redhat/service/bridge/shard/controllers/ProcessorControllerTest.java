@@ -29,7 +29,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 public class ProcessorControllerTest extends AbstractShardWireMockTest {

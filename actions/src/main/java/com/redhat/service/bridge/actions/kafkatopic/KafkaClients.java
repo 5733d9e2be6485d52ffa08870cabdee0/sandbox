@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.executor.actions.kafka;
+package com.redhat.service.bridge.actions.kafkatopic;
 
 import java.util.HashMap;
 import java.util.Map;

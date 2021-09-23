@@ -10,8 +10,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -65,10 +65,10 @@ public class ProcessorAPITest {
     private BaseAction createKafkaAction() {
         BaseAction a = new BaseAction();
         a.setName(TestConstants.DEFAULT_ACTION_NAME);
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
         return a;
     }
@@ -132,8 +132,8 @@ public class ProcessorAPITest {
     private void assertRequestedAction(ProcessorResponse processorResponse) {
         BaseAction baseAction = processorResponse.getAction();
         assertThat(baseAction, is(notNullValue()));
-        assertThat(baseAction.getType(), equalTo(KafkaTopicAction.KAFKA_ACTION_TYPE));
-        assertThat(baseAction.getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM), equalTo(TestConstants.DEFAULT_KAFKA_TOPIC));
+        assertThat(baseAction.getType(), equalTo(KafkaTopicAction.TYPE));
+        assertThat(baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM), equalTo(TestConstants.DEFAULT_KAFKA_TOPIC));
     }
 
     @Test

@@ -21,9 +21,9 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -63,11 +63,11 @@ public abstract class AbstractShardWireMockTest {
 
     protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
         BaseAction a = new BaseAction();
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        a.setType(KafkaTopicAction.TYPE);
         a.setName("kafkaAction");
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, "myTopic");
+        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         a.setParameters(params);
 
         ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, null, a);

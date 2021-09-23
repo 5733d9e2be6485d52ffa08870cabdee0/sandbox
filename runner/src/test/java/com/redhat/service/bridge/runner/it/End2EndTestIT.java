@@ -25,9 +25,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -72,10 +72,10 @@ public class End2EndTestIT {
     public static void beforeAll() {
         BaseAction action = new BaseAction();
         action.setName("myKafkaAction");
-        action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        action.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, topicName);
+        params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
         action.setParameters(params);
 
         processorRequest = new ProcessorRequest(processorName, filters, action);
@@ -176,8 +176,8 @@ public class End2EndTestIT {
         Assertions.assertEquals(1, response.getFilters().size());
 
         BaseAction action = response.getAction();
-        Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, action.getType());
-        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
+        Assertions.assertEquals(KafkaTopicAction.TYPE, action.getType());
+        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
     }
 
     @Order(6)

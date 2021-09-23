@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.executor.actions;
+package com.redhat.service.bridge.actions;
 
 import io.cloudevents.CloudEvent;
 

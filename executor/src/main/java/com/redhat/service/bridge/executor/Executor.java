@@ -6,7 +6,9 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.executor.actions.ActionInvoker;
+import com.redhat.service.bridge.actions.ActionInvoker;
+import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
@@ -22,10 +24,12 @@ public class Executor {
 
     private final ActionInvoker actionInvoker;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory, ActionInvoker actionInvoker) {
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory, ActionProviderFactory actionProviderFactory) {
         this.processor = processor;
         this.filterEvaluator = factory.build(processor.getFilters());
-        this.actionInvoker = actionInvoker;
+
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getAction().getType());
+        this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getAction());
     }
 
     @SuppressWarnings("unchecked")
