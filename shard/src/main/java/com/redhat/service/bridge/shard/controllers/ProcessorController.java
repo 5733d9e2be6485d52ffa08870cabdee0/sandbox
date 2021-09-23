@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.controllers;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -37,22 +39,33 @@ public class ProcessorController {
 
     void onEvent(@Observes ResourceEvent event) { // equivalent of ResourceEventSource for operator sdk
         if (event.getSubject().equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
+
+            /*
+             * If the CRD is deleted, remove also all the other related resource
+             *
+             * If another dependent resource is deleted, the `reconcileExecutor` will catch the mismatch between the expected state and the current state.
+             * It will redeploy the resources so to reach the expected status at the end.
+             * TODO: when we move to k8s and we create the real CRD, set the BridgeCustomResource as owner of the ProcessorCustomResource so that when
+             * a Bridge is deleted, the deletion is cascaded to all the Processors.
+             */
+            if (event.getAction().equals(Action.DELETED) && event.getResourceType().equals(KubernetesResourceType.CUSTOM_RESOURCE)) {
+                delete(event.getResourceId());
+                return;
+            }
+
             ProcessorCustomResource resource = kubernetesClient.getCustomResource(event.getResourceId(), ProcessorCustomResource.class);
             if (event.getAction().equals(Action.ERROR)) {
                 notifyFailedDeployment(resource);
                 return;
             }
-            if (event.getAction().equals(Action.DELETED)) {
-                delete(resource);
-                return;
-            }
+
             reconcileExecutor(resource);
         }
     }
 
-    private void delete(ProcessorCustomResource customResource) {
+    private void delete(String resourceId) {
         // Delete Deployment
-        kubernetesClient.deleteDeployment(customResource.getId());
+        kubernetesClient.deleteDeployment(resourceId);
     }
 
     private void reconcileExecutor(ProcessorCustomResource customResource) {
@@ -64,7 +77,7 @@ public class ProcessorController {
         Deployment deployment = kubernetesClient.getDeployment(id);
         if (deployment == null) {
             LOGGER.info("[shard] There is no deployment for Processor '{}'. Creating.", id);
-            kubernetesClient.createOrUpdateDeployment(createExecutorDeployment(id));
+            kubernetesClient.createOrUpdateDeployment(createExecutorDeployment(id, customResource.getBridge().getId()));
             return;
         }
 
@@ -91,11 +104,15 @@ public class ProcessorController {
         }
     }
 
-    private Deployment createExecutorDeployment(String id) {
+    private Deployment createExecutorDeployment(String id, String bridgeId) {
+        Map<String, String> labels = new HashMap<>();
+        labels.put(K8SBridgeConstants.METADATA_TYPE, K8SBridgeConstants.PROCESSOR_TYPE);
+        labels.put(K8SBridgeConstants.METADATA_BRIDGE_ID, bridgeId);
+
         return new DeploymentBuilder() // TODO: Add kind, replicas, image etc.. Or even read it from a yaml
                 .withMetadata(new ObjectMetaBuilder()
                         .withName(id)
-                        .withLabels(Collections.singletonMap(K8SBridgeConstants.METADATA_TYPE, K8SBridgeConstants.PROCESSOR_TYPE))
+                        .withLabels(labels)
                         .build())
                 .build();
     }

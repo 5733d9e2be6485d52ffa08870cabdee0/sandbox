@@ -2,16 +2,27 @@ package com.redhat.service.bridge.infra.k8s;
 
 public class ResourceEvent {
 
+    private KubernetesResourceType resourceType;
+
     private String subject;
 
     private String resourceId;
 
     private Action action;
 
-    public ResourceEvent(String subject, String resourceId, Action action) {
+    public ResourceEvent(KubernetesResourceType resourceType, String subject, String resourceId, Action action) {
+        this.resourceType = resourceType;
         this.subject = subject;
         this.resourceId = resourceId;
         this.action = action;
+    }
+
+    public KubernetesResourceType getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(KubernetesResourceType resourceType) {
+        this.resourceType = resourceType;
     }
 
     public String getSubject() {

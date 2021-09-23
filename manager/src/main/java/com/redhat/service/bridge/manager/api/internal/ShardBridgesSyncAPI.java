@@ -73,7 +73,7 @@ public class ShardBridgesSyncAPI {
     @PUT
     public Response updateBridge(BridgeDTO dto) {
         LOGGER.info("[manager] shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
-        bridgesService.updateBridge(Bridge.fromDTO(dto));
+        bridgesService.updateBridge(dto);
         return Response.ok().build();
     }
 }

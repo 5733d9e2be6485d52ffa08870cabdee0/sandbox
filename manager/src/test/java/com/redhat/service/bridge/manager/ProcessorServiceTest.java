@@ -59,7 +59,6 @@ public class ProcessorServiceTest {
     }
 
     private Bridge createBridge(BridgeStatus status) {
-
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
@@ -94,7 +93,6 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor_processorWithSameNameAlreadyExists() {
-
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -176,7 +174,6 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessor() {
-
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -253,5 +250,18 @@ public class ProcessorServiceTest {
 
         Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(result, equalTo(1L));
+    }
+
+    @Test
+    public void testDeleteProcessor() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor, is(notNullValue()));
+
+        processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(processor.getStatus(), equalTo(BridgeStatus.DELETION_REQUESTED));
     }
 }

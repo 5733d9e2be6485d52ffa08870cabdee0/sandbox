@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager;
 
 import java.util.List;
 
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
@@ -21,5 +22,5 @@ public interface BridgesService {
 
     List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses);
 
-    Bridge updateBridge(Bridge bridge);
+    Bridge updateBridge(BridgeDTO bridgeDTO);
 }

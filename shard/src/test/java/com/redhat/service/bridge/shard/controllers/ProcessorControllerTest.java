@@ -15,6 +15,7 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.k8s.Action;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -82,7 +83,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
 
         latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
-        event.fire(new ResourceEvent(K8SBridgeConstants.PROCESSOR_TYPE, processor.getId(), Action.ERROR));
+        event.fire(new ResourceEvent(KubernetesResourceType.DEPLOYMENT, K8SBridgeConstants.PROCESSOR_TYPE, processor.getId(), Action.ERROR));
         Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
 
         processor.setStatus(BridgeStatus.FAILED);

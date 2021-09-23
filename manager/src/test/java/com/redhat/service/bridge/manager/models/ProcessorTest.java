@@ -21,7 +21,6 @@ public class ProcessorTest {
 
     @Test
     public void toResponse() {
-
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);

@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -77,5 +78,13 @@ public class ProcessorsAPI {
         String customerId = customerIdResolver.resolveCustomerId();
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
         return Response.status(Response.Status.CREATED).entity(processor.toResponse()).build();
+    }
+
+    @DELETE
+    @Path("{bridgeId}/processors/{processorId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
+        processorService.deleteProcessor(bridgeId, processorId, customerIdResolver.resolveCustomerId());
+        return Response.accepted().build();
     }
 }

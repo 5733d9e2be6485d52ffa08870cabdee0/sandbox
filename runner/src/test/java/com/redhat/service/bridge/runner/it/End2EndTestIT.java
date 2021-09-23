@@ -12,7 +12,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -180,7 +179,25 @@ public class End2EndTestIT {
 
     @Order(7)
     @Test
-    @Disabled("Disabled until the deletion of the Processor is implemented https://issues.redhat.com/browse/MGDOBR-8")
+    public void testDeleteProcessors() {
+        jsonRequest()
+                .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
+                .then()
+                .statusCode(202);
+
+        // Processor instance is undeployed and deleted
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> jsonRequest()
+                                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
+                                .then()
+                                .statusCode(404));
+    }
+
+    @Order(8)
+    @Test
     public void testDeleteBridge() throws JsonProcessingException {
         jsonRequest()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)

@@ -54,6 +54,11 @@ public class TestUtils {
                 .post(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/");
     }
 
+    public static Response deleteProcessor(String bridgeId, String processorId) {
+        return jsonRequest()
+                .delete(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
     public static Response createBridge(BridgeRequest request) {
         return jsonRequest()
                 .body(request)

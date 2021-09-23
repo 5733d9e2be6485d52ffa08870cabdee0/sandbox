@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
@@ -93,13 +94,15 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public Bridge updateBridge(Bridge bridge) {
-        if (bridge.getStatus().equals(BridgeStatus.DELETED)) {
+    public Bridge updateBridge(BridgeDTO bridgeDTO) {
+        Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
+        bridge.setStatus(bridgeDTO.getStatus());
+        bridge.setEndpoint(bridgeDTO.getEndpoint());
+
+        if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
-            return bridge;
         }
 
-        bridgeDAO.getEntityManager().merge(bridge);
         LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }

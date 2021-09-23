@@ -8,6 +8,7 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.k8s.Action;
+import com.redhat.service.bridge.infra.k8s.KubernetesResourceType;
 import com.redhat.service.bridge.infra.k8s.ResourceEvent;
 
 @ApplicationScoped
@@ -28,7 +29,7 @@ public class CustomResourceManagerImpl implements CustomResourceManager {
             resourcesMap.put(name, customResource);
             action = Action.ADDED;
         }
-        event.fire(new ResourceEvent(type, name, action));
+        event.fire(new ResourceEvent(KubernetesResourceType.CUSTOM_RESOURCE, type, name, action));
 
     }
 
@@ -41,7 +42,7 @@ public class CustomResourceManagerImpl implements CustomResourceManager {
     public void deleteCustomResource(String name, String type) {
         if (resourcesMap.containsKey(name)) {
             resourcesMap.remove(name);
-            event.fire(new ResourceEvent(type, name, Action.DELETED));
+            event.fire(new ResourceEvent(KubernetesResourceType.CUSTOM_RESOURCE, type, name, Action.DELETED));
         }
     }
 }
