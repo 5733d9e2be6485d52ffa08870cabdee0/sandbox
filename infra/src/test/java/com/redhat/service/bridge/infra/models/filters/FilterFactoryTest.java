@@ -17,6 +17,7 @@ public class FilterFactoryTest {
         Assertions.assertEquals("key", stringContainsFilter.getKey());
         Assertions.assertEquals(1, ((List<String>) stringContainsFilter.getValue()).size());
         Assertions.assertEquals("test", ((List<String>) stringContainsFilter.getValue()).get(0));
+        Assertions.assertEquals("[\"test\"]", stringContainsFilter.getValueAsString());
     }
 
     @Test
@@ -29,6 +30,7 @@ public class FilterFactoryTest {
         Assertions.assertEquals("key", stringBeginsFilter.getKey());
         Assertions.assertEquals(1, ((List<String>) stringBeginsFilter.getValue()).size());
         Assertions.assertEquals("test", ((List<String>) stringBeginsFilter.getValue()).get(0));
+        Assertions.assertEquals("[\"test\"]", stringBeginsFilter.getValueAsString());
     }
 
     @Test
@@ -37,6 +39,7 @@ public class FilterFactoryTest {
         Assertions.assertTrue(stringEqualsFilter instanceof StringEquals);
         Assertions.assertEquals("key", stringEqualsFilter.getKey());
         Assertions.assertEquals("test", stringEqualsFilter.getValue());
+        Assertions.assertEquals("test", stringEqualsFilter.getValueAsString());
     }
 
     @Test

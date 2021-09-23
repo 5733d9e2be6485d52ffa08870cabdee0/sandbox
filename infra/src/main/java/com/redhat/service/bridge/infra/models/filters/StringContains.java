@@ -5,9 +5,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class StringContains extends BaseFilter {
+
     public static final String FILTER_TYPE_NAME = "StringContains";
 
     @JsonProperty("type")
@@ -29,7 +29,11 @@ public class StringContains extends BaseFilter {
 
     @Override
     public String getValueAsString() {
-        return values.toString();
+        try {
+            return MAPPER.writeValueAsString(values);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Could not serialize the values for StringContains filter.");
+        }
     }
 
     @Override
@@ -40,7 +44,7 @@ public class StringContains extends BaseFilter {
     @Override
     public void setValueFromString(String value) {
         try {
-            this.values = new ObjectMapper().readValue(value, new TypeReference<List<String>>() {
+            this.values = MAPPER.readValue(value, new TypeReference<List<String>>() {
             });
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("The value is not a list of strings.");
