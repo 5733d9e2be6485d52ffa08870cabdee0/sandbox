@@ -1,6 +1,6 @@
 # sandbox
 
-This repository stores the code for the OB project.
+This repository stores the code for the bridge project.
 
 ## Running the all-in-one application locally
 
