@@ -19,6 +19,7 @@ jobs:
       OUTPUT_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one:${{ github.sha }}
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     name: Publish JARs and Containers
     steps:
       - name: Disk space report before modification
