@@ -11,7 +11,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Action;
@@ -57,11 +57,11 @@ public class ProcessorDAOTest {
         p.setPublishedAt(ZonedDateTime.now());
 
         Action a = new Action();
-        a.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        a.setType(KafkaTopicAction.TYPE);
         a.setName(TestConstants.DEFAULT_ACTION_NAME);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
         p.setAction(a);
 

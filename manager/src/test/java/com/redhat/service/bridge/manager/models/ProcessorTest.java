@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -37,10 +37,10 @@ public class ProcessorTest {
         p.setBridge(b);
 
         Action action = new Action();
-        action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        action.setType(KafkaTopicAction.TYPE);
         action.setName(TestConstants.DEFAULT_ACTION_NAME);
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, "myTopic");
+        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         action.setParameters(params);
         p.setAction(action);
 
@@ -55,7 +55,7 @@ public class ProcessorTest {
         assertThat(r.getPublishedAt(), equalTo(p.getPublishedAt()));
         assertThat(r.getKind(), equalTo("Processor"));
         assertThat(r.getBridge(), is(notNullValue()));
-        assertThat(r.getAction().getType(), equalTo(KafkaTopicAction.KAFKA_ACTION_TYPE));
+        assertThat(r.getAction().getType(), equalTo(KafkaTopicAction.TYPE));
         assertThat(r.getAction().getName(), equalTo(TestConstants.DEFAULT_ACTION_NAME));
     }
 }

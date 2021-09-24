@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <parent>
     <groupId>com.redhat.service.bridge</groupId>
     <artifactId>build-parent</artifactId>
@@ -9,19 +9,11 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>executor</artifactId>
+  <artifactId>actions</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Executor</name>
+  <name>Event Bridge :: Actions</name>
 
   <dependencies>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
-    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
@@ -31,12 +23,8 @@
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-dmn-feel</artifactId>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-core</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -46,16 +34,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-mockito</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-vertx</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

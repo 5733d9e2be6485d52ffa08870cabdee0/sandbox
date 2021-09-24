@@ -6,7 +6,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
@@ -19,9 +24,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -59,14 +64,17 @@ public class End2EndTestIT {
     @ConfigProperty(name = "event-bridge.manager.url")
     String managerUrl;
 
+    @Inject
+    AdminClient adminClient;
+
     @BeforeAll
     public static void beforeAll() {
         BaseAction action = new BaseAction();
         action.setName("myKafkaAction");
-        action.setType(KafkaTopicAction.KAFKA_ACTION_TYPE);
+        action.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM, topicName);
+        params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
         action.setParameters(params);
 
         processorRequest = new ProcessorRequest(processorName, filters, action);
@@ -141,7 +149,14 @@ public class End2EndTestIT {
 
     @Order(5)
     @Test
-    public void testAddProcessor() {
+    public void testAddProcessor() throws Exception {
+
+        /*
+         * Ensure that the requested Kafka Topic for the Action exists
+         */
+        NewTopic nt = new NewTopic(topicName, 1, (short) 1);
+        adminClient.createTopics(Collections.singleton(nt)).all().get(10L, TimeUnit.SECONDS);
+
         ProcessorResponse response = jsonRequest()
                 .body(processorRequest)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
@@ -160,8 +175,8 @@ public class End2EndTestIT {
         Assertions.assertEquals(1, response.getFilters().size());
 
         BaseAction action = response.getAction();
-        Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, action.getType());
-        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
+        Assertions.assertEquals(KafkaTopicAction.TYPE, action.getType());
+        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
     }
 
     @Order(6)

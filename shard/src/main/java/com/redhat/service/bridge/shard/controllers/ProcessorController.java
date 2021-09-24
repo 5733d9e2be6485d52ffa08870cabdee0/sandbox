@@ -69,7 +69,7 @@ public class ProcessorController {
     }
 
     private void reconcileExecutor(ProcessorCustomResource customResource) {
-        LOGGER.info("[shard] Processor reconcyle loop called");
+        LOGGER.info("[shard] Processor reconcile loop called");
 
         String id = customResource.getId();
 

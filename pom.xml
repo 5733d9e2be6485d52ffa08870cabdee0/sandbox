@@ -39,6 +39,7 @@
     <module>ingress</module>
     <module>infra</module>
     <module>k8s</module>
+    <module>actions</module>
   </modules>
 
 </project>

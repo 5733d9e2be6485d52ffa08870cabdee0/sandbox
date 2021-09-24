@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.actions.KafkaTopicAction;
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -55,8 +55,8 @@ public class ShardBridgesSyncAPITest {
         Assertions.assertEquals(TestConstants.DEFAULT_PROCESSOR_NAME, processor.getName());
         Assertions.assertEquals(BridgeStatus.REQUESTED, processor.getStatus());
         Assertions.assertEquals(1, processor.getFilters().size());
-        Assertions.assertEquals(KafkaTopicAction.KAFKA_ACTION_TYPE, processor.getAction().getType());
-        Assertions.assertEquals(TestConstants.DEFAULT_KAFKA_TOPIC, processor.getAction().getParameters().get(KafkaTopicAction.KAFKA_ACTION_TOPIC_PARAM));
+        Assertions.assertEquals(KafkaTopicAction.TYPE, processor.getAction().getType());
+        Assertions.assertEquals(TestConstants.DEFAULT_KAFKA_TOPIC, processor.getAction().getParameters().get(KafkaTopicAction.TOPIC_PARAM));
     }
 
     @Test

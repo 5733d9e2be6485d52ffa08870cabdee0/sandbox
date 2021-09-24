@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.shard.controllers;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -9,7 +10,6 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.k8s.Action;
@@ -30,7 +30,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 public class ProcessorControllerTest extends AbstractShardWireMockTest {
@@ -42,10 +41,11 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     Event<ResourceEvent> event;
 
     @Test
-    public void reconcileProcessor() throws JsonProcessingException, InterruptedException {
+    public void reconcileProcessor() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
+        stubListKafkaTopics(Collections.singleton("myTopic"));
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -67,11 +67,12 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void reconcileProcessor_withFailure() throws JsonProcessingException, InterruptedException {
+    public void reconcileProcessor_withFailure() throws Exception {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
+        stubListKafkaTopics(Collections.singleton("myTopic"));
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1);

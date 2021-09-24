@@ -24,6 +24,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
 
 @ApplicationScoped
 public class DeploymentsManagerImpl implements DeploymentsManager {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentsManagerImpl.class);
 
     private final Map<String, Deployment> deploymentMap = new HashMap<>();
@@ -58,7 +59,12 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
         if (type.equals(K8SBridgeConstants.PROCESSOR_TYPE)) {
             // hack for the time being
             ProcessorCustomResource processorCustomResource = customResourceManager.getCustomResource(name, ProcessorCustomResource.class);
-            executorsK8SDeploymentManager.deploy(processorCustomResource.toDTO());
+            try {
+                executorsK8SDeploymentManager.deploy(processorCustomResource.toDTO());
+            } catch (Exception e) {
+                LOGGER.error("Failed to deploy Executor for Processor '{}' on Bridge '{}'", processorCustomResource.getId(), processorCustomResource.getBridge().getId());
+                action = Action.ERROR;
+            }
         }
         if (type.equals(K8SBridgeConstants.BRIDGE_TYPE)) {
             LOGGER.debug("[k8s] New deployment for Ingress Bridge, but it will be available only when the Ingress/Route will be exposed.");
