@@ -1,4 +1,4 @@
-name: Event Bridge - CD
+name: Bridge - CD
 on:
   push:
     branches:

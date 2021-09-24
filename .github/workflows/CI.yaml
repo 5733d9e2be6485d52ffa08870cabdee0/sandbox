@@ -1,4 +1,4 @@
-name: Event Bridge - CI
+name: Bridge - CI
 on: [pull_request]
 jobs:
   event-bridge-build:
