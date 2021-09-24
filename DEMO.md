@@ -70,8 +70,8 @@ It is possible to add Processors to the Bridge instance using the endpoint `/api
 There are 3 basic concepts around a Processor:
 
 - **filters**: when one or more filters are specified, only those events that evaluates the filters to `true` will be processed by the specified action. The documentation around the filters can be found [here](FILTERS.md).
-- **transformations**: if a transformation schema has been specified in the request, the original event is transformed according to the schema before it is sent to the action.
 - **actions**: the action to take with the filtered events.
+- **transformations**: an optional transformation logic can be specified for each action definition.
 
 Note that an action is always required by a Processor, but the filters and the transformation are not mandatory (i.e. the events will always flow into the action without filtering).
 
