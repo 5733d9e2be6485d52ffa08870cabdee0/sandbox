@@ -1,6 +1,6 @@
 # DEMO
 
-The platform service is running on the endpoint specified in [this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (restricted to Red Hat organization). 
+The platform service is running on the endpoint specified in [this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet). 
 
 First of all, export the base address of the Manager. For example, if the application is running on `localhost:8080` (replace this with the endpoint you extract from the link above), run
 
