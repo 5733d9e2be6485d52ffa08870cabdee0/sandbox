@@ -5,6 +5,10 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 public interface ActionProvider {
 
+    default boolean accept(String actionType) {
+        return getType().equals(actionType);
+    }
+
     String getType();
 
     ActionParameterValidator getParameterValidator();
