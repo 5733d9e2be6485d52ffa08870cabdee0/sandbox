@@ -2,6 +2,7 @@ package com.redhat.service.bridge.shard;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static java.util.Arrays.asList;
 
 @QuarkusTest
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
@@ -89,7 +89,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
-        stubProcessorsToDeployOrDelete(asList(processor));
+        stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
