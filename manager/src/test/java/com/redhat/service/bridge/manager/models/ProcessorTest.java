@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -36,7 +37,7 @@ public class ProcessorTest {
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
 
-        Action action = new Action();
+        BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
         action.setName(TestConstants.DEFAULT_ACTION_NAME);
         Map<String, String> params = new HashMap<>();

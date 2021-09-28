@@ -2,8 +2,6 @@ package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -19,9 +17,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
-import com.redhat.service.bridge.manager.models.Action;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -57,22 +53,12 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         final Processor p = new Processor();
 
-        Set<Filter> filters = null;
-        if (processorRequest.getFilters() != null) {
-            filters = processorRequest.getFilters().stream().map(x -> new Filter(x.getKey(), x.getType(), x.getValueAsString(), p)).collect(Collectors.toSet());
-        }
-
         p.setName(processorRequest.getName());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
-        p.setFilters(filters);
-
-        Action a = new Action();
-        a.setName(processorRequest.getAction().getName());
-        a.setParameters(processorRequest.getAction().getParameters());
-        a.setType(processorRequest.getAction().getType());
-        p.setAction(a);
+        p.setFilters(processorRequest.getFilters());
+        p.setAction(processorRequest.getAction());
 
         processorDAO.persist(p);
         return p;

@@ -7,6 +7,8 @@ create table PROCESSOR
     published_at       timestamp,
     status             varchar(255),
     version            integer NOT NULL default 0,
+    filters            JSONB,
+    action             JSONB,
     unique (bridge_id, name),
     constraint fk_bridge foreign key (bridge_id) references BRIDGE (id)
 );

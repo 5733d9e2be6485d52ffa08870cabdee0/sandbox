@@ -12,9 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
-import com.redhat.service.bridge.manager.models.Action;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -56,7 +56,7 @@ public class ProcessorDAOTest {
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
 
-        Action a = new Action();
+        BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
         a.setName(TestConstants.DEFAULT_ACTION_NAME);
 

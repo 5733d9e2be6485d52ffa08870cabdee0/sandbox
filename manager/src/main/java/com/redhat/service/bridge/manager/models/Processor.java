@@ -4,9 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -17,32 +15,45 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Version;
 
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.vladmihalcea.hibernate.type.json.JsonStringType;
 
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByStatus",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
+                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
+                query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
-                query = "from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
+                query = "from Processor p join fetch p.bridge where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.idsByBridgeIdAndCustomerId",
                 query = "select p.id from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
-                query = "select p, p.action from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.id in (:ids)")
+                query = "select p, p.action from Processor p join fetch p.bridge where p.id in (:ids)")
+})
+@Table(name = "PROCESSOR")
+@TypeDefs({
+        @TypeDef(name = "json", typeClass = JsonStringType.class),
+        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 })
 @Entity
 public class Processor {
@@ -63,9 +74,6 @@ public class Processor {
     @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Action action;
-
     @Version
     private long version;
 
@@ -79,8 +87,13 @@ public class Processor {
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
 
-    @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
-    private Set<Filter> filters;
+    @Type(type = "jsonb")
+    @Column(name = "filters")
+    private String filters;
+
+    @Type(type = "jsonb")
+    @Column(name = "action")
+    private String action;
 
     public String getId() {
         return id;
@@ -134,16 +147,37 @@ public class Processor {
         this.status = status;
     }
 
-    public Action getAction() {
-        return action;
+    public BaseAction getAction() {
+        try {
+            return new ObjectMapper().readValue(this.action, BaseAction.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setAction(Action action) {
-        this.action = action;
+    public void setAction(BaseAction action) {
+        try {
+            this.action = new ObjectMapper().writeValueAsString(action);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void setFilters(Set<Filter> filters) {
-        this.filters = filters;
+    public void setFilters(Set<BaseFilter> filters) {
+        try {
+            this.filters = new ObjectMapper().writeValueAsString(filters);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Set<BaseFilter> getFilters() {
+        try {
+            return new ObjectMapper().readValue(this.filters, new TypeReference<Set<BaseFilter>>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ProcessorResponse toResponse() {
@@ -160,8 +194,8 @@ public class Processor {
             processorResponse.setBridge(this.bridge.toResponse());
         }
 
-        processorResponse.setFilters(buildFilters());
-        processorResponse.setAction(action.toActionRequest());
+        processorResponse.setFilters(getFilters());
+        processorResponse.setAction(getAction());
 
         return processorResponse;
     }
@@ -172,13 +206,13 @@ public class Processor {
         dto.setStatus(this.status);
         dto.setName(this.name);
         dto.setId(this.id);
-        dto.setFilters(buildFilters());
+        dto.setFilters(getFilters());
 
         if (this.bridge != null) {
             dto.setBridge(this.bridge.toDTO());
         }
 
-        dto.setAction(this.action.toActionRequest());
+        dto.setAction(getAction());
         return dto;
     }
 
@@ -201,16 +235,5 @@ public class Processor {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    private Set<BaseFilter> buildFilters() {
-        if (this.filters == null) {
-            return null;
-        }
-
-        return this.filters
-                .stream()
-                .map(x -> FilterFactory.buildFilter(x.getType(), x.getKey(), x.getValue()))
-                .collect(Collectors.toSet());
     }
 }

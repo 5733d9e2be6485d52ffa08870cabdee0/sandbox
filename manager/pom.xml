@@ -51,6 +51,11 @@
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.vladmihalcea</groupId>
+      <artifactId>hibernate-types-52</artifactId>
+      <version>2.9.11</version>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
