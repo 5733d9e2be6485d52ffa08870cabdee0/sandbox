@@ -12,6 +12,10 @@ import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -33,6 +37,8 @@ public class ExecutorTest {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
+    private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
+
     private ActionProviderFactory actionProviderFactoryMock;
 
     private ActionInvoker actionInvokerMock;
@@ -49,7 +55,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithFiltersTranformationAndAction() throws JsonProcessingException {
+    public void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
@@ -60,7 +66,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, transformationTemplate, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -79,7 +85,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, null, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -98,7 +104,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, null, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
         CloudEvent cloudEvent = createCloudEvent();
 

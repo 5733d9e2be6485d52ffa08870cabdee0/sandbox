@@ -9,28 +9,32 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluator;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
-import io.quarkus.qute.Engine;
-import io.quarkus.qute.Template;
 
 public class Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
-    private static final Engine engine = Engine.builder().addDefaults().build();
-
     private final ProcessorDTO processor;
 
     private final FilterEvaluator filterEvaluator;
 
+    private final TransformationEvaluator transformationEvaluator;
+
     private final ActionInvoker actionInvoker;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory factory, ActionProviderFactory actionProviderFactory) {
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory) {
         this.processor = processor;
-        this.filterEvaluator = factory.build(processor.getFilters());
+        this.filterEvaluator = filterEvaluatorFactory.build(processor.getFilters());
+
+        this.transformationEvaluator = transformationFactory.build(processor.getTransformationTemplate());
 
         ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getAction().getType());
         this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getAction());
@@ -45,20 +49,12 @@ public class Executor {
         if (filterEvaluator.evaluateFilters(cloudEventData)) {
             LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
 
-            String eventToSend;
-
-            if (processor.getTransformationTemplate() != null) {
-                Template template = engine.parse(processor.getTransformationTemplate());
-                eventToSend = template.data(cloudEventData).render();
-                LOG.info("[executor] Template of processor '{}' successfully applied", processor.getId());
-            } else {
-                eventToSend = CloudEventUtils.encode(cloudEvent);
-            }
-
             // TODO - https://issues.redhat.com/browse/MGDOBR-49: consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
+            String eventToSend = transformationEvaluator.render(cloudEventData);
+
             actionInvoker.onEvent(eventToSend);
         } else {
-            LOG.info("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
         }
     }
