@@ -62,7 +62,7 @@ public class ProcessorsAPI {
 
         String customerId = customerIdResolver.resolveCustomerId();
         ListResult<Processor> processors = processorService.getProcessors(bridgeId, customerId, page, pageSize);
-        List<ProcessorResponse> px = processors.getItems().stream().map((p) -> p.toResponse()).collect(toList());
+        List<ProcessorResponse> px = processors.getItems().stream().map(Processor::toResponse).collect(toList());
 
         ProcessorListResponse listResponse = new ProcessorListResponse();
         listResponse.setItems(px);

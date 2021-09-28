@@ -19,8 +19,6 @@ import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
-import io.cloudevents.CloudEvent;
-
 @ApplicationScoped
 public class KafkaTopicAction implements ActionProvider {
 
@@ -33,7 +31,7 @@ public class KafkaTopicAction implements ActionProvider {
     public static final TimeUnit DEFAULT_LIST_TOPICS_TIMEUNIT = TimeUnit.SECONDS;
 
     @Channel("actions-out")
-    Emitter<CloudEvent> emitter;
+    Emitter<String> emitter;
 
     @Inject
     AdminClient adminClient;

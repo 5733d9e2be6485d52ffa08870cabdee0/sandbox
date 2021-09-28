@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
-import io.cloudevents.CloudEvent;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
 public class KafkaTopicInvoker implements ActionInvoker {
@@ -19,16 +18,16 @@ public class KafkaTopicInvoker implements ActionInvoker {
 
     private final ProcessorDTO processor;
 
-    private final Emitter<CloudEvent> emitter;
+    private final Emitter<String> emitter;
 
-    public KafkaTopicInvoker(Emitter<CloudEvent> emitter, ProcessorDTO processor, String topic) {
+    public KafkaTopicInvoker(Emitter<String> emitter, ProcessorDTO processor, String topic) {
         this.emitter = emitter;
         this.topic = topic;
         this.processor = processor;
     }
 
     @Override
-    public void onEvent(CloudEvent cloudEvent) {
+    public void onEvent(String event) {
 
         /*
          * As the user can specify their target topic in the Action configuration, we set
@@ -38,7 +37,7 @@ public class KafkaTopicInvoker implements ActionInvoker {
         OutgoingKafkaRecordMetadata<?> metadata = OutgoingKafkaRecordMetadata.builder()
                 .withTopic(topic)
                 .build();
-        emitter.send(Message.of(cloudEvent).addMetadata(metadata));
+        emitter.send(Message.of(event).addMetadata(metadata));
         LOG.info("Emitted CloudEvent to target topic '{}' for Action on Processor '{}' on Bridge '{}'", topic, processor.getId(), processor.getBridge().getId());
     }
 }

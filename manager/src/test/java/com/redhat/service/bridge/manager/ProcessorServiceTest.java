@@ -105,7 +105,7 @@ public class ProcessorServiceTest {
     @Test
     public void createProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
+        ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor, is(notNullValue()));
@@ -114,6 +114,7 @@ public class ProcessorServiceTest {
         assertThat(processor.getName(), equalTo(r.getName()));
         assertThat(processor.getStatus(), equalTo(BridgeStatus.REQUESTED));
         assertThat(processor.getSubmittedAt(), is(notNullValue()));
+        assertThat(processor.getTransformationTemplate(), is("{}"));
     }
 
     @Test
@@ -136,7 +137,7 @@ public class ProcessorServiceTest {
 
         List<Processor> processors = processorService.getProcessorByStatuses(asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED));
         assertThat(processors, hasSize(2));
-        processors.stream().forEach((px) -> assertThat(px.getName(), in(asList("My Processor", "My Processor 3"))));
+        processors.forEach((px) -> assertThat(px.getName(), in(asList("My Processor", "My Processor 3"))));
     }
 
     @Test

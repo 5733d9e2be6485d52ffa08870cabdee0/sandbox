@@ -35,6 +35,7 @@ public class ProcessorTest {
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
+        p.setTransformationTemplate("");
 
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
@@ -55,6 +56,7 @@ public class ProcessorTest {
         assertThat(r.getPublishedAt(), equalTo(p.getPublishedAt()));
         assertThat(r.getKind(), equalTo("Processor"));
         assertThat(r.getBridge(), is(notNullValue()));
+        assertThat(r.getTransformationTemplate(), equalTo(""));
         assertThat(r.getAction().getType(), equalTo(KafkaTopicAction.TYPE));
         assertThat(r.getAction().getName(), equalTo(TestConstants.DEFAULT_ACTION_NAME));
     }

@@ -13,10 +13,14 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
+import io.quarkus.qute.Engine;
+import io.quarkus.qute.Template;
 
 public class Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
+
+    private static final Engine engine = Engine.builder().addDefaults().build();
 
     private final ProcessorDTO processor;
 
@@ -36,13 +40,25 @@ public class Executor {
     public void onEvent(CloudEvent cloudEvent) {
         LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
 
-        if (filterEvaluator.evaluateFilters(CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class))) {
+        Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
+
+        if (filterEvaluator.evaluateFilters(cloudEventData)) {
             LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
-            //TODO - transform before invoking the action.
+
+            String eventToSend;
+
+            if (processor.getTransformationTemplate() != null) {
+                Template template = engine.parse(processor.getTransformationTemplate());
+                eventToSend = template.data(cloudEventData).render();
+                LOG.info("[executor] Template of processor '{}' successfully applied", processor.getId());
+            } else {
+                eventToSend = CloudEventUtils.encode(cloudEvent);
+            }
+
             // TODO - https://issues.redhat.com/browse/MGDOBR-49: consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
-            actionInvoker.onEvent(cloudEvent);
+            actionInvoker.onEvent(eventToSend);
         } else {
-            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.info("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
         }
     }

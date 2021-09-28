@@ -25,7 +25,6 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.FilterFactory;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 @NamedQueries({
@@ -81,6 +80,9 @@ public class Processor {
 
     @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Filter> filters;
+
+    @Column(name = "transformationTemplate")
+    private String transformationTemplate;
 
     public String getId() {
         return id;
@@ -146,6 +148,14 @@ public class Processor {
         this.filters = filters;
     }
 
+    public String getTransformationTemplate() {
+        return transformationTemplate;
+    }
+
+    public void setTransformationTemplate(String transformation) {
+        this.transformationTemplate = transformation;
+    }
+
     public ProcessorResponse toResponse() {
 
         ProcessorResponse processorResponse = new ProcessorResponse();
@@ -161,6 +171,7 @@ public class Processor {
         }
 
         processorResponse.setFilters(buildFilters());
+        processorResponse.setTransformationTemplate(transformationTemplate);
         processorResponse.setAction(action.toActionRequest());
 
         return processorResponse;
@@ -178,6 +189,7 @@ public class Processor {
             dto.setBridge(this.bridge.toDTO());
         }
 
+        dto.setTransformationTemplate(this.transformationTemplate);
         dto.setAction(this.action.toActionRequest());
         return dto;
     }
@@ -210,7 +222,7 @@ public class Processor {
 
         return this.filters
                 .stream()
-                .map(x -> FilterFactory.buildFilter(x.getType(), x.getKey(), x.getValue()))
+                .map(Filter::toBaseFilter)
                 .collect(Collectors.toSet());
     }
 }

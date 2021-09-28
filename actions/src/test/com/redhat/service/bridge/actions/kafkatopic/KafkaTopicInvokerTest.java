@@ -28,19 +28,19 @@ public class KafkaTopicInvokerTest {
 
     @Test
     public void onEvent() {
-        ArgumentCaptor<Message<CloudEvent>> captor = ArgumentCaptor.forClass(Message.class);
-        Emitter<CloudEvent> emitter = mock(Emitter.class);
-        CloudEvent cloudEvent = mock(CloudEvent.class);
+        ArgumentCaptor<Message<String>> captor = ArgumentCaptor.forClass(Message.class);
+        Emitter<String> emitter = mock(Emitter.class);
+        String event = "{\"key\": \"value\"}";
         String topic = "myTestTopic";
         ProcessorDTO processor = createProcessor();
 
         KafkaTopicInvoker invoker = new KafkaTopicInvoker(emitter, processor, topic);
-        invoker.onEvent(cloudEvent);
+        invoker.onEvent(event);
 
         verify(emitter).send(captor.capture());
 
-        Message<CloudEvent> sent = captor.getValue();
-        Assertions.assertEquals(cloudEvent, sent.getPayload());
+        Message<String> sent = captor.getValue();
+        Assertions.assertEquals(event, sent.getPayload());
 
         Metadata metadata = sent.getMetadata();
         OutgoingKafkaRecordMetadata recordMetadata = metadata.get(OutgoingKafkaRecordMetadata.class).get();

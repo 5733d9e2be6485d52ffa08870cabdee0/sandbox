@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,8 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.filters.StringEquals;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -62,6 +65,12 @@ public abstract class AbstractShardWireMockTest {
     }
 
     protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
+
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringEquals("key", "value"));
+
+        String transformationTemplate = "{\"test\": {key}}";
+
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
         a.setName("kafkaAction");
@@ -70,8 +79,7 @@ public abstract class AbstractShardWireMockTest {
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         a.setParameters(params);
 
-        ProcessorDTO processor = new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, null, a);
-        return processor;
+        return new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, filters, transformationTemplate, a);
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

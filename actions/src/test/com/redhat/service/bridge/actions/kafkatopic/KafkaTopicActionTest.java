@@ -72,7 +72,7 @@ public class KafkaTopicActionTest {
 
     @Test
     public void getType() {
-        Assertions.assertEquals(KafkaTopicAction.TYPE, equals(kafkaTopicAction.getType()));
+        Assertions.assertEquals(KafkaTopicAction.TYPE, kafkaTopicAction.getType());
     }
 
     @Test

@@ -67,6 +67,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
         p.setFilters(filters);
+        p.setTransformationTemplate(processorRequest.getTransformationTemplate());
 
         Action a = new Action();
         a.setName(processorRequest.getAction().getName());
