@@ -1,1 +1,1 @@
-alter table PROCESSOR add column transformationTemplate TEXT;
+alter table PROCESSOR add column transformation_template TEXT;

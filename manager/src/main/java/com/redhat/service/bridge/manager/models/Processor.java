@@ -81,7 +81,7 @@ public class Processor {
     @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Filter> filters;
 
-    @Column(name = "transformationTemplate")
+    @Column(name = "transformation_template")
     private String transformationTemplate;
 
     public String getId() {
