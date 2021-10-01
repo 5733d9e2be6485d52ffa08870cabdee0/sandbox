@@ -22,7 +22,7 @@ The latest versions of these dependencies are fine.
 Start `docker-compose` by running from the root directory of this repository
 
 ```bash
-docker-compose up
+docker-compose -f dev/docker-compose.yaml up
 ```
 
 and then 

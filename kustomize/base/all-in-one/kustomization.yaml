@@ -6,3 +6,4 @@ resources:
   - resources/volume.yaml
   - resources/deploy.yaml
   - resources/deploy-config.yaml
+  - resources/keycloak.yaml
