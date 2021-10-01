@@ -3,6 +3,8 @@
 Please make sure that your PR meets the following requirements:
 
 - [ ] Your code is properly formatted according to [this configuration](https://github.com/kiegroup/kogito-runtimes/tree/main/kogito-build/kogito-ide-config)
+- [ ] Your commit messages are clear and reference the JIRA issue e.g: "[MGDOBR-1] - $clear_explanation_of_what_you_did"
+- [ ] All new functionality is tested and uses org.assertj.core.api.Assertions for Assertions
 - [ ] Pull Request title is properly formatted: `MGDOBR-XYZ Subject`
 - [ ] Pull Request contains link to the JIRA issue
 - [ ] Pull Request contains link to any dependent or related Pull Request
