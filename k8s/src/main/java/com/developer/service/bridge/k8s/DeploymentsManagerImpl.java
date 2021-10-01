@@ -62,7 +62,7 @@ public class DeploymentsManagerImpl implements DeploymentsManager {
             try {
                 executorsK8SDeploymentManager.deploy(processorCustomResource.toDTO());
             } catch (Exception e) {
-                LOGGER.error("Failed to deploy Executor for Processor '{}' on Bridge '{}'", processorCustomResource.getId(), processorCustomResource.getBridge().getId());
+                LOGGER.error("Failed to deploy Executor for Processor '{}' on Bridge '{}'", processorCustomResource.getId(), processorCustomResource.getBridge().getId(), e);
                 action = Action.ERROR;
             }
         }

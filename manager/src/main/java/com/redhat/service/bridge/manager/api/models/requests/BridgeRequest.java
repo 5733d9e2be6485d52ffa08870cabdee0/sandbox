@@ -19,8 +19,7 @@ public class BridgeRequest {
     }
 
     public Bridge toEntity() {
-        Bridge bridge = new Bridge(name);
-        return bridge;
+        return new Bridge(name);
     }
 
     public String getName() {

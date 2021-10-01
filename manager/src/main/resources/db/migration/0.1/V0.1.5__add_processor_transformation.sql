@@ -1,0 +1,1 @@
+alter table PROCESSOR add column transformation_template TEXT;

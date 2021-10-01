@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.executor;
+package com.redhat.service.bridge.executor.filters;
 
 import java.util.Map;
 import java.util.Set;

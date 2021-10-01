@@ -131,16 +131,6 @@ public class Bridge {
         return dto;
     }
 
-    public static Bridge fromDTO(BridgeDTO dto) {
-        Bridge bridge = new Bridge();
-        bridge.setId(dto.getId());
-        bridge.setEndpoint(dto.getEndpoint());
-        bridge.setCustomerId(dto.getCustomerId());
-        bridge.setStatus(dto.getStatus());
-
-        return bridge;
-    }
-
     public BridgeResponse toResponse() {
         BridgeResponse response = new BridgeResponse();
         response.setId(id);

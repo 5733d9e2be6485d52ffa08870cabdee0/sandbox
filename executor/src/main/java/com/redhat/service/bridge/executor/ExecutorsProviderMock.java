@@ -9,6 +9,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 // TODO: This class has to be removed when we switch to ExecutorConfigProviderImpl
@@ -17,6 +21,8 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
         ExecutorsK8SDeploymentManager {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
+
+    private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 
@@ -36,7 +42,7 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
     @Override
     public void deploy(ProcessorDTO processorDTO) {
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, actionProviderFactory);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory);
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());

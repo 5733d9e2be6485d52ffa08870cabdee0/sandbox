@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.executor;
+package com.redhat.service.bridge.executor.filters;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -24,18 +24,22 @@ public class ProcessorDTO {
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
+    @JsonProperty("transformationTemplate")
+    private String transformationTemplate;
+
     @JsonProperty("action")
     private BaseAction action;
 
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, BaseAction action) {
+    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
         this.status = status;
         this.filters = filters;
+        this.transformationTemplate = transformationTemplate;
         this.action = action;
     }
 
@@ -77,6 +81,14 @@ public class ProcessorDTO {
 
     public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
+    }
+
+    public String getTransformationTemplate() {
+        return transformationTemplate;
+    }
+
+    public void setTransformationTemplate(String transformationTemplate) {
+        this.transformationTemplate = transformationTemplate;
     }
 
     public BaseAction getAction() {

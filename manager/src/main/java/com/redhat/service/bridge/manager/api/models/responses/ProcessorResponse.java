@@ -42,6 +42,9 @@ public class ProcessorResponse {
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
+    @JsonProperty("transformationTemplate")
+    private String transformationTemplate;
+
     @JsonProperty("action")
     private BaseAction action;
 
@@ -111,6 +114,14 @@ public class ProcessorResponse {
 
     public void setFilters(Set<BaseFilter> filters) {
         this.filters = filters;
+    }
+
+    public String getTransformationTemplate() {
+        return transformationTemplate;
+    }
+
+    public void setTransformationTemplate(String transformationTemplate) {
+        this.transformationTemplate = transformationTemplate;
     }
 
     public BaseAction getAction() {

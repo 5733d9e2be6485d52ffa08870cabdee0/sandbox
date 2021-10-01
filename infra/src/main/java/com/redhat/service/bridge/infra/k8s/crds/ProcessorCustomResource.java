@@ -27,27 +27,13 @@ public class ProcessorCustomResource {
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
 
+    @JsonProperty("transformationTemplate")
+    private String transformationTemplate;
+
     @JsonProperty("action")
     private BaseAction action;
 
     public ProcessorCustomResource() {
-    }
-
-    public ProcessorCustomResource(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, BaseAction action) {
-        this.id = id;
-        this.name = name;
-        this.bridge = bridge;
-        this.status = status;
-        this.filters = filters;
-        this.action = action;
-    }
-
-    public BaseAction getAction() {
-        return action;
-    }
-
-    public void setAction(BaseAction action) {
-        this.action = action;
     }
 
     public String getId() {
@@ -90,6 +76,22 @@ public class ProcessorCustomResource {
         this.filters = filters;
     }
 
+    public String getTransformationTemplate() {
+        return transformationTemplate;
+    }
+
+    public void setTransformationTemplate(String transformationTemplate) {
+        this.transformationTemplate = transformationTemplate;
+    }
+
+    public BaseAction getAction() {
+        return action;
+    }
+
+    public void setAction(BaseAction action) {
+        this.action = action;
+    }
+
     public static ProcessorCustomResource fromDTO(ProcessorDTO dto) {
         ProcessorCustomResource resource = new ProcessorCustomResource();
         resource.setId(dto.getId());
@@ -97,6 +99,7 @@ public class ProcessorCustomResource {
         resource.setBridge(dto.getBridge());
         resource.setStatus(dto.getStatus());
         resource.setFilters(dto.getFilters());
+        resource.setTransformationTemplate(dto.getTransformationTemplate());
         resource.setAction(dto.getAction());
 
         return resource;
@@ -109,6 +112,7 @@ public class ProcessorCustomResource {
         dto.setBridge(bridge);
         dto.setStatus(status);
         dto.setFilters(filters);
+        dto.setTransformationTemplate(transformationTemplate);
         dto.setAction(this.action);
 
         return dto;

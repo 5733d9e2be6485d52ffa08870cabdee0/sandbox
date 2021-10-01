@@ -9,6 +9,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.filters.FilterFactory;
+
 @Entity(name = "FILTER")
 public class Filter {
 
@@ -52,5 +55,9 @@ public class Filter {
 
     public String getValue() {
         return value;
+    }
+
+    public BaseFilter toBaseFilter() {
+        return FilterFactory.buildFilter(type, key, value);
     }
 }

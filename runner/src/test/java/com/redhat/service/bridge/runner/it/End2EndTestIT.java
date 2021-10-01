@@ -55,6 +55,7 @@ public class End2EndTestIT {
     private static final String processorName = "myProcessor";
     private static final String topicName = "myKafkaTopic";
     private static final Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
+    private static final String transformationTemplate = "{\"v1\": \"{data.k1}\"}";
 
     private static String bridgeId;
     private static String processorId;
@@ -77,7 +78,7 @@ public class End2EndTestIT {
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
         action.setParameters(params);
 
-        processorRequest = new ProcessorRequest(processorName, filters, action);
+        processorRequest = new ProcessorRequest(processorName, filters, transformationTemplate, action);
     }
 
     @Order(1)
@@ -133,22 +134,6 @@ public class End2EndTestIT {
 
     @Order(4)
     @Test
-    public void testIngressEndpoint() throws JsonProcessingException {
-        jsonRequest()
-                .body(buildTestCloudEvent())
-                .post(managerUrl + "/ingress/events/not-the-bridge-name")
-                .then()
-                .statusCode(500);
-
-        jsonRequest()
-                .body(buildTestCloudEvent())
-                .post(managerUrl + "/ingress/events/" + bridgeId)
-                .then()
-                .statusCode(200);
-    }
-
-    @Order(5)
-    @Test
     public void testAddProcessor() throws Exception {
 
         /*
@@ -179,7 +164,7 @@ public class End2EndTestIT {
         Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
     }
 
-    @Order(6)
+    @Order(5)
     @Test
     public void testProcessorIsDeployed() {
         Awaitility.await()
@@ -190,6 +175,22 @@ public class End2EndTestIT {
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                                 .then()
                                 .body("status", Matchers.equalTo("AVAILABLE")));
+    }
+
+    @Order(6)
+    @Test
+    public void testIngressEndpoint() throws JsonProcessingException {
+        jsonRequest()
+                .body(buildTestCloudEvent())
+                .post(managerUrl + "/ingress/events/not-the-bridge-name")
+                .then()
+                .statusCode(500);
+
+        jsonRequest()
+                .body(buildTestCloudEvent())
+                .post(managerUrl + "/ingress/events/" + bridgeId)
+                .then()
+                .statusCode(200);
     }
 
     @Order(7)

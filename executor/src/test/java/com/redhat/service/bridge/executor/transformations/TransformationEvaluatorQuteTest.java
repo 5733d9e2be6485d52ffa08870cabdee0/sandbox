@@ -1,0 +1,34 @@
+package com.redhat.service.bridge.executor.transformations;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class TransformationEvaluatorQuteTest {
+    private static final TransformationEvaluatorFactoryQute FACTORY = new TransformationEvaluatorFactoryQute();
+
+    @Test
+    public void testNullTemplate() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("key", "value");
+
+        TransformationEvaluator evaluator = FACTORY.build(null);
+
+        String rendered = evaluator.render(data);
+        Assertions.assertEquals("{\"key\":\"value\"}", rendered);
+    }
+
+    @Test
+    public void testTemplate() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("key", "value");
+
+        String template = "Hi {key} how are you?";
+        TransformationEvaluator evaluator = FACTORY.build(template);
+
+        String rendered = evaluator.render(data);
+        Assertions.assertEquals("Hi value how are you?", rendered);
+    }
+}
