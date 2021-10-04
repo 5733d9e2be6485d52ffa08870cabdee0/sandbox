@@ -161,7 +161,7 @@ public class End2EndTestIT {
 
         BaseAction action = response.getAction();
         assertThat(action.getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(action.getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(topicName);
+        assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, topicName);
     }
 
     @Order(5)

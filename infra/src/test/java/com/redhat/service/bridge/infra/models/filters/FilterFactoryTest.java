@@ -14,7 +14,7 @@ public class FilterFactoryTest {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringContainsFilter = FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "[\"test\"]");
-        assertThat(stringContainsFilter instanceof StringContains).isTrue();
+        assertThat(stringContainsFilter).isInstanceOf(StringContains.class);
         assertThat(stringContainsFilter.getKey()).isEqualTo("key");
         assertThat(((List<String>) stringContainsFilter.getValue()).size()).isEqualTo(1);
         assertThat(((List<String>) stringContainsFilter.getValue()).get(0)).isEqualTo("test");
@@ -26,7 +26,7 @@ public class FilterFactoryTest {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringBeginsFilter = FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "[\"test\"]");
-        assertThat(stringBeginsFilter instanceof StringBeginsWith).isTrue();
+        assertThat(stringBeginsFilter).isInstanceOf(StringBeginsWith.class);
         assertThat(stringBeginsFilter.getKey()).isEqualTo("key");
         assertThat(((List<String>) stringBeginsFilter.getValue()).size()).isEqualTo(1);
         assertThat(((List<String>) stringBeginsFilter.getValue()).get(0)).isEqualTo("test");
@@ -36,7 +36,7 @@ public class FilterFactoryTest {
     @Test
     public void testStringEqualsFilterFactory() {
         BaseFilter stringEqualsFilter = FilterFactory.buildFilter(StringEquals.FILTER_TYPE_NAME, "key", "test");
-        assertThat(stringEqualsFilter instanceof StringEquals).isTrue();
+        assertThat(stringEqualsFilter).isInstanceOf(StringEquals.class);
         assertThat(stringEqualsFilter.getKey()).isEqualTo("key");
         assertThat(stringEqualsFilter.getValue()).isEqualTo("test");
         assertThat(stringEqualsFilter.getValueAsString()).isEqualTo("test");
