@@ -12,10 +12,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessorTest {
 
@@ -46,18 +43,18 @@ public class ProcessorTest {
         p.setAction(action);
 
         ProcessorResponse r = p.toResponse();
-        assertThat(r, is(notNullValue()));
+        assertThat(r).isNotNull();
 
-        assertThat(r.getHref(), equalTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId()));
-        assertThat(r.getName(), equalTo(p.getName()));
-        assertThat(r.getStatus(), equalTo(p.getStatus()));
-        assertThat(r.getId(), equalTo(p.getId()));
-        assertThat(r.getSubmittedAt(), equalTo(p.getSubmittedAt()));
-        assertThat(r.getPublishedAt(), equalTo(p.getPublishedAt()));
-        assertThat(r.getKind(), equalTo("Processor"));
-        assertThat(r.getBridge(), is(notNullValue()));
-        assertThat(r.getTransformationTemplate(), equalTo(""));
-        assertThat(r.getAction().getType(), equalTo(KafkaTopicAction.TYPE));
-        assertThat(r.getAction().getName(), equalTo(TestConstants.DEFAULT_ACTION_NAME));
+        assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getName()).isEqualTo(p.getName());
+        assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getId()).isEqualTo(p.getId());
+        assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
+        assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getKind()).isEqualTo("Processor");
+        assertThat(r.getBridge()).isNotNull();
+        assertThat(r.getTransformationTemplate()).isEmpty();
+        assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
     }
 }

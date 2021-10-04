@@ -7,7 +7,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +28,7 @@ import com.redhat.service.bridge.manager.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.in;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class ProcessorAPITest {
@@ -59,7 +52,7 @@ public class ProcessorAPITest {
         dto.setEndpoint("https://foo.bridges.redhat.com");
 
         Response deployment = TestUtils.updateBridge(dto);
-        assertThat(deployment.getStatusCode(), equalTo(200));
+        assertThat(deployment.getStatusCode()).isEqualTo(200);
         return bridgeResponse;
     }
 
@@ -88,11 +81,11 @@ public class ProcessorAPITest {
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", createKafkaAction())).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 0, 100).as(ProcessorListResponse.class);
-        assertThat(listResponse.getPage(), equalTo(0L));
-        assertThat(listResponse.getSize(), equalTo(2L));
-        assertThat(listResponse.getTotal(), equalTo(2L));
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(2L);
+        assertThat(listResponse.getTotal()).isEqualTo(2L);
 
-        listResponse.getItems().forEach((i) -> assertThat(i.getId(), in(asList(p.getId(), p2.getId()))));
+        listResponse.getItems().forEach((i) -> assertThat(i.getId()).isIn(p.getId(), p2.getId()));
     }
 
     @Test
@@ -103,17 +96,17 @@ public class ProcessorAPITest {
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", createKafkaAction())).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 1, 1).as(ProcessorListResponse.class);
-        assertThat(listResponse.getPage(), equalTo(1L));
-        assertThat(listResponse.getSize(), equalTo(1L));
-        assertThat(listResponse.getTotal(), equalTo(2L));
+        assertThat(listResponse.getPage()).isEqualTo(1L);
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(2L);
 
-        assertThat(listResponse.getItems().get(0).getId(), equalTo(p2.getId()));
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
         assertRequestedAction(listResponse.getItems().get(0));
     }
 
     @Test
     public void listProcessors_bridgeDoesNotExist() {
-        assertThat(TestUtils.listProcessors("doesNotExist", 0, 100).getStatusCode(), equalTo(404));
+        assertThat(TestUtils.listProcessors("doesNotExist", 0, 100).getStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -121,20 +114,20 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(201));
+        assertThat(response.getStatusCode()).isEqualTo(201);
 
         ProcessorResponse pr = response.as(ProcessorResponse.class);
         ProcessorResponse found = TestUtils.getProcessor(bridgeResponse.getId(), pr.getId()).as(ProcessorResponse.class);
 
-        assertThat(found.getId(), equalTo(pr.getId()));
-        assertThat(found.getBridge().getId(), equalTo(bridgeResponse.getId()));
+        assertThat(found.getId()).isEqualTo(pr.getId());
+        assertThat(found.getBridge().getId()).isEqualTo(bridgeResponse.getId());
     }
 
     private void assertRequestedAction(ProcessorResponse processorResponse) {
         BaseAction baseAction = processorResponse.getAction();
-        assertThat(baseAction, is(notNullValue()));
-        assertThat(baseAction.getType(), equalTo(KafkaTopicAction.TYPE));
-        assertThat(baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM), equalTo(TestConstants.DEFAULT_KAFKA_TOPIC));
+        assertThat(baseAction).isNotNull();
+        assertThat(baseAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -142,10 +135,10 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(201));
+        assertThat(response.getStatusCode()).isEqualTo(201);
 
         Response found = TestUtils.getProcessor(bridgeResponse.getId(), "doesNotExist");
-        assertThat(found.getStatusCode(), equalTo(404));
+        assertThat(found.getStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -155,7 +148,7 @@ public class ProcessorAPITest {
         ProcessorResponse response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction())).as(ProcessorResponse.class);
 
         Response found = TestUtils.getProcessor("doesNotExist", response.getId());
-        assertThat(found.getStatusCode(), equalTo(404));
+        assertThat(found.getStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -167,18 +160,18 @@ public class ProcessorAPITest {
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters, "{}", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(201));
+        assertThat(response.getStatusCode()).isEqualTo(201);
 
         ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
-        assertThat(processorResponse.getName(), equalTo("myProcessor"));
-        assertThat(processorResponse.getBridge().getId(), equalTo(bridgeResponse.getId()));
-        assertThat(processorResponse.getFilters().size(), equalTo(1));
+        assertThat(processorResponse.getName()).isEqualTo("myProcessor");
+        assertThat(processorResponse.getBridge().getId()).isEqualTo(bridgeResponse.getId());
+        assertThat(processorResponse.getFilters().size()).isEqualTo(1);
 
         ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
-        assertThat(retrieved.getName(), equalTo("myProcessor"));
-        assertThat(retrieved.getBridge().getId(), equalTo(bridgeResponse.getId()));
-        assertThat(retrieved.getFilters().size(), equalTo(1));
-        assertThat(retrieved.getTransformationTemplate(), equalTo("{}"));
+        assertThat(retrieved.getName()).isEqualTo("myProcessor");
+        assertThat(retrieved.getBridge().getId()).isEqualTo(bridgeResponse.getId());
+        assertThat(retrieved.getFilters().size()).isEqualTo(1);
+        assertThat(retrieved.getTransformationTemplate()).isEqualTo("{}");
         assertRequestedAction(retrieved);
     }
 
@@ -191,7 +184,7 @@ public class ProcessorAPITest {
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters, null, null));
 
-        assertThat(response.getStatusCode(), equalTo(400));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
@@ -206,7 +199,7 @@ public class ProcessorAPITest {
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters, null, action));
 
-        assertThat(response.getStatusCode(), equalTo(400));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
@@ -222,7 +215,7 @@ public class ProcessorAPITest {
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters, null, action));
 
-        assertThat(response.getStatusCode(), equalTo(400));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
@@ -233,13 +226,13 @@ public class ProcessorAPITest {
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(201));
+        assertThat(response.getStatusCode()).isEqualTo(201);
 
         ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
-        assertThat(processorResponse.getName(), equalTo("myProcessor"));
-        assertThat(processorResponse.getBridge().getId(), equalTo(bridgeResponse.getId()));
-        assertThat(processorResponse.getFilters(), nullValue());
-        assertThat(processorResponse.getTransformationTemplate(), nullValue());
+        assertThat(processorResponse.getName()).isEqualTo("myProcessor");
+        assertThat(processorResponse.getBridge().getId()).isEqualTo(bridgeResponse.getId());
+        assertThat(processorResponse.getFilters()).isNull();
+        assertThat(processorResponse.getTransformationTemplate()).isNull();
         assertRequestedAction(processorResponse);
     }
 
@@ -252,13 +245,13 @@ public class ProcessorAPITest {
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(201));
+        assertThat(response.getStatusCode()).isEqualTo(201);
 
         ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), response.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
-        assertThat(retrieved.getName(), equalTo("myProcessor"));
-        assertThat(retrieved.getBridge().getId(), equalTo(bridgeResponse.getId()));
-        assertThat(retrieved.getFilters().size(), equalTo(1));
-        assertThat(retrieved.getTransformationTemplate(), nullValue());
+        assertThat(retrieved.getName()).isEqualTo("myProcessor");
+        assertThat(retrieved.getBridge().getId()).isEqualTo(bridgeResponse.getId());
+        assertThat(retrieved.getFilters().size()).isEqualTo(1);
+        assertThat(retrieved.getTransformationTemplate()).isNull();
         assertRequestedAction(retrieved);
     }
 
@@ -266,7 +259,7 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_bridgeDoesNotExist() {
 
         Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(404));
+        assertThat(response.getStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -274,13 +267,13 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createBridge();
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
-        assertThat(response.getStatusCode(), equalTo(400));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
         Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
-        assertThat(response.getStatusCode(), equalTo(400));
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
@@ -293,6 +286,6 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor(bridgeResponse.getId(), processorResponse.getId()).then().statusCode(202);
         processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
 
-        Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, processorResponse.getStatus());
+        assertThat(processorResponse.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
     }
 }

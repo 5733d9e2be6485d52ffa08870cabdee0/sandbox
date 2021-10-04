@@ -3,8 +3,9 @@ package com.redhat.service.bridge.executor.transformations;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransformationEvaluatorQuteTest {
     private static final TransformationEvaluatorFactoryQute FACTORY = new TransformationEvaluatorFactoryQute();
@@ -17,7 +18,7 @@ public class TransformationEvaluatorQuteTest {
         TransformationEvaluator evaluator = FACTORY.build(null);
 
         String rendered = evaluator.render(data);
-        Assertions.assertEquals("{\"key\":\"value\"}", rendered);
+        assertThat(rendered).isEqualTo("{\"key\":\"value\"}");
     }
 
     @Test
@@ -29,6 +30,6 @@ public class TransformationEvaluatorQuteTest {
         TransformationEvaluator evaluator = FACTORY.build(template);
 
         String rendered = evaluator.render(data);
-        Assertions.assertEquals("Hi value how are you?", rendered);
+        assertThat(rendered).isEqualTo("Hi value how are you?");
     }
 }

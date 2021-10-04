@@ -2,10 +2,11 @@ package com.redhat.service.bridge.manager;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class CustomerIdResolverTest {
@@ -15,6 +16,6 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, customerIdResolver.resolveCustomerId());
+        assertThat(customerIdResolver.resolveCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
     }
 }

@@ -2,7 +2,6 @@ package com.redhat.service.bridge.manager.api.user;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +19,8 @@ import com.redhat.service.bridge.manager.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.Response;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @QuarkusTest
 public class BridgesAPITest {
 
@@ -34,7 +35,7 @@ public class BridgesAPITest {
     @Test
     public void testGetEmptyBridges() {
         BridgeListResponse response = TestUtils.getBridges().as(BridgeListResponse.class);
-        Assertions.assertEquals(0, response.getItems().size());
+        assertThat(response.getItems().size()).isEqualTo(0);
     }
 
     @Test
@@ -51,10 +52,10 @@ public class BridgesAPITest {
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
 
         BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
-        Assertions.assertNotNull(retrievedBridge);
-        Assertions.assertEquals(bridge.getId(), retrievedBridge.getId());
-        Assertions.assertEquals(bridge.getName(), retrievedBridge.getName());
-        Assertions.assertEquals(bridge.getEndpoint(), retrievedBridge.getEndpoint());
+        assertThat(retrievedBridge).isNotNull();
+        assertThat(retrievedBridge.getId()).isEqualTo(bridge.getId());
+        assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
+        assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
     }
 
     @Test
@@ -69,14 +70,14 @@ public class BridgesAPITest {
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
 
-        Assertions.assertEquals(1, bridgeListResponse.getItems().size());
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
-        Assertions.assertEquals(TestConstants.DEFAULT_BRIDGE_NAME, bridgeResponse.getName());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, bridgeResponse.getStatus());
-        Assertions.assertEquals(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId(), bridgeResponse.getHref());
-        Assertions.assertNotNull(bridgeResponse.getSubmittedAt());
+        assertThat(bridgeResponse.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
+        assertThat(bridgeResponse.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(bridgeResponse.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
 
-        Assertions.assertNull(bridgeResponse.getEndpoint());
+        assertThat(bridgeResponse.getEndpoint()).isNull();
     }
 
     @Test
@@ -85,7 +86,7 @@ public class BridgesAPITest {
         TestUtils.deleteBridge(response.getId()).then().statusCode(202);
         response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
 
-        Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, response.getStatus());
+        assertThat(response.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
     }
 
     @Test

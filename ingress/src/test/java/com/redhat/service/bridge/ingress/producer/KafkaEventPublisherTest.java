@@ -3,7 +3,6 @@ package com.redhat.service.bridge.ingress.producer;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +13,8 @@ import com.redhat.service.bridge.ingress.TestUtils;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.ExtensionProvider;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class KafkaEventPublisherTest {
 
@@ -33,11 +34,11 @@ public class KafkaEventPublisherTest {
 
         producer.sendEvent(bridgeId, TestUtils.buildTestCloudEvent());
         List<String> sentEvents = subscriber.getItems();
-        Assertions.assertEquals(1, sentEvents.size());
+        assertThat(sentEvents.size()).isEqualTo(1);
 
         CloudEvent cloudEvent = CloudEventUtils.decode(sentEvents.get(0));
         BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
 
-        Assertions.assertEquals(bridgeId, bridgeCloudEventExtension.getBridgeId());
+        assertThat(bridgeCloudEventExtension.getBridgeId()).isEqualTo(bridgeId);
     }
 }

@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,6 +18,7 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
 import io.quarkus.test.junit.QuarkusTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -56,7 +56,7 @@ public class ActionParamValidatorContainerTest {
     @Test
     public void isValid() {
         ProcessorRequest p = buildRequest();
-        Assertions.assertTrue(container.isValid(p, context));
+        assertThat(container.isValid(p, context)).isTrue();
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildRequest();
         p.setAction(null);
 
-        Assertions.assertFalse(container.isValid(p, context));
+        assertThat(container.isValid(p, context)).isFalse();
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildRequest();
         p.getAction().getParameters().clear();
 
-        Assertions.assertFalse(container.isValid(p, context));
+        assertThat(container.isValid(p, context)).isFalse();
     }
 
     @Test
@@ -80,7 +80,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildRequest();
         p.getAction().setType("doesNotExist");
 
-        Assertions.assertFalse(container.isValid(p, context));
+        assertThat(container.isValid(p, context)).isFalse();
 
         verify(context).disableDefaultConstraintViolation();
         verify(context).buildConstraintViolationWithTemplate(anyString());
@@ -92,13 +92,13 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildRequest();
         p.getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
 
-        Assertions.assertFalse(container.isValid(p, context));
+        assertThat(container.isValid(p, context)).isFalse();
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
 
         verify(context).disableDefaultConstraintViolation();
         verify(context).buildConstraintViolationWithTemplate(messageCap.capture());
         verify(builder).addConstraintViolation();
 
-        Assertions.assertEquals(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE, messageCap.getValue());
+        assertThat(messageCap.getValue()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
     }
 }

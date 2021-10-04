@@ -4,8 +4,10 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 public class ActionProviderFactoryTest {
@@ -15,11 +17,11 @@ public class ActionProviderFactoryTest {
 
     @Test
     public void getActionProvider() {
-        Assertions.assertNotNull(actionProviderFactory.getActionProvider(KafkaTopicAction.TYPE));
+        assertThat(actionProviderFactory.getActionProvider(KafkaTopicAction.TYPE)).isNotNull();
     }
 
     @Test
     public void getActionProvider_actionTypeNotRecognised() {
-        Assertions.assertThrows(ActionProviderException.class, () -> actionProviderFactory.getActionProvider("doesNotExist"));
+        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> actionProviderFactory.getActionProvider("doesNotExist"));
     }
 }

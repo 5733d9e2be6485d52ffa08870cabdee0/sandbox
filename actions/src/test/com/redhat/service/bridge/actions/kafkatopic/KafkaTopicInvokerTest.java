@@ -7,7 +7,7 @@ import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
-import org.junit.jupiter.api.Assertions;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -40,10 +40,10 @@ public class KafkaTopicInvokerTest {
         verify(emitter).send(captor.capture());
 
         Message<String> sent = captor.getValue();
-        Assertions.assertEquals(event, sent.getPayload());
+        assertThat(sent.getPayload()).isEqualTo(event);
 
         Metadata metadata = sent.getMetadata();
         OutgoingKafkaRecordMetadata recordMetadata = metadata.get(OutgoingKafkaRecordMetadata.class).get();
-        Assertions.assertEquals(topic, recordMetadata.getTopic());
+        assertThat(recordMetadata.getTopic()).isEqualTo(topic);
     }
 }

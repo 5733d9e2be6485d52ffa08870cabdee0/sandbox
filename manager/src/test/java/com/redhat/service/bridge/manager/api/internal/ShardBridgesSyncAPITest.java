@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +24,8 @@ import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.common.mapper.TypeRef;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
@@ -49,14 +50,14 @@ public class ShardBridgesSyncAPITest {
         List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
         });
 
-        Assertions.assertEquals(1, processors.size());
+        assertThat(processors.size()).isEqualTo(1);
 
         ProcessorDTO processor = processors.get(0);
-        Assertions.assertEquals(TestConstants.DEFAULT_PROCESSOR_NAME, processor.getName());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, processor.getStatus());
-        Assertions.assertEquals(1, processor.getFilters().size());
-        Assertions.assertEquals(KafkaTopicAction.TYPE, processor.getAction().getType());
-        Assertions.assertEquals(TestConstants.DEFAULT_KAFKA_TOPIC, processor.getAction().getParameters().get(KafkaTopicAction.TOPIC_PARAM));
+        assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
+        assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(processor.getFilters().size()).isEqualTo(1);
+        assertThat(processor.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getAction().getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -77,14 +78,14 @@ public class ShardBridgesSyncAPITest {
         processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
         });
 
-        Assertions.assertEquals(0, processors.size());
+        assertThat(processors.size()).isEqualTo(0);
     }
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
-        Assertions.assertEquals(0, response.size());
+        assertThat(response.size()).isEqualTo(0);
     }
 
     @Test
@@ -94,12 +95,12 @@ public class ShardBridgesSyncAPITest {
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(1, response.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
+        assertThat(response.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count()).isEqualTo(1);
         BridgeDTO bridge = response.get(0);
-        Assertions.assertEquals(TestConstants.DEFAULT_BRIDGE_NAME, bridge.getName());
-        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, bridge.getCustomerId());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, bridge.getStatus());
-        Assertions.assertNull(bridge.getEndpoint());
+        assertThat(bridge.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
+        assertThat(bridge.getCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(bridge.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(bridge.getEndpoint()).isNull();
     }
 
     @Test
@@ -114,8 +115,8 @@ public class ShardBridgesSyncAPITest {
         bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(0, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
-        Assertions.assertEquals(1, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.DELETION_REQUESTED)).count());
+        assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count()).isEqualTo(0);
+        assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.DELETION_REQUESTED)).count()).isEqualTo(1);
     }
 
     @Test
@@ -125,7 +126,7 @@ public class ShardBridgesSyncAPITest {
         List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(1, bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count());
+        assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count()).isEqualTo(1);
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         bridge.setStatus(BridgeStatus.PROVISIONING);
@@ -134,7 +135,7 @@ public class ShardBridgesSyncAPITest {
         bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        Assertions.assertEquals(0, bridgesToDeployOrDelete.size());
+        assertThat(bridgesToDeployOrDelete.size()).isEqualTo(0);
     }
 
     @Test
@@ -148,7 +149,7 @@ public class ShardBridgesSyncAPITest {
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
         BridgeResponse bridgeResponse = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
-        Assertions.assertEquals(BridgeStatus.DELETION_REQUESTED, bridgeResponse.getStatus());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
 
         bridge.setStatus(BridgeStatus.DELETED);
         TestUtils.updateBridge(bridge).then().statusCode(200);
