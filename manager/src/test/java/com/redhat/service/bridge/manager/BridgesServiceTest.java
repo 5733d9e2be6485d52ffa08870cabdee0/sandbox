@@ -37,15 +37,15 @@ public class BridgesServiceTest {
     @Test
     public void testGetEmptyBridgesToDeploy() {
         List<Bridge> bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
-        assertThat(bridges.size()).isEqualTo(0);
+        assertThat(bridges.size()).isZero();
     }
 
     @Test
     public void testGetEmptyBridges() {
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
-        assertThat(bridges.getPage()).isEqualTo(0);
-        assertThat(bridges.getTotal()).isEqualTo(0);
-        assertThat(bridges.getSize()).isEqualTo(0);
+        assertThat(bridges.getPage()).isZero();
+        assertThat(bridges.getTotal()).isZero();
+        assertThat(bridges.getSize()).isZero();
     }
 
     @Test
@@ -56,13 +56,13 @@ public class BridgesServiceTest {
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
         assertThat(bridges.getSize()).isEqualTo(1);
         assertThat(bridges.getTotal()).isEqualTo(1);
-        assertThat(bridges.getPage()).isEqualTo(0);
+        assertThat(bridges.getPage()).isZero();
 
         // filter by customer id not implemented yet
         bridges = bridgesService.getBridges("not-the-id", TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
-        assertThat(bridges.getSize()).isEqualTo(0);
-        assertThat(bridges.getTotal()).isEqualTo(0);
-        assertThat(bridges.getPage()).isEqualTo(0);
+        assertThat(bridges.getSize()).isZero();
+        assertThat(bridges.getTotal()).isZero();
+        assertThat(bridges.getPage()).isZero();
     }
 
     @Test
@@ -117,7 +117,7 @@ public class BridgesServiceTest {
         bridgesService.updateBridge(bridge.toDTO());
 
         bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
-        assertThat(bridges.size()).isEqualTo(0);
+        assertThat(bridges.size()).isZero();
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(BridgeStatus.PROVISIONING);

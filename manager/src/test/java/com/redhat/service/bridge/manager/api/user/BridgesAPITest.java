@@ -35,7 +35,7 @@ public class BridgesAPITest {
     @Test
     public void testGetEmptyBridges() {
         BridgeListResponse response = TestUtils.getBridges().as(BridgeListResponse.class);
-        assertThat(response.getItems().size()).isEqualTo(0);
+        assertThat(response.getItems().size()).isZero();
     }
 
     @Test

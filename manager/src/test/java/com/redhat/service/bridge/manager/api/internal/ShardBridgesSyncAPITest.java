@@ -78,14 +78,14 @@ public class ShardBridgesSyncAPITest {
         processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
         });
 
-        assertThat(processors.size()).isEqualTo(0);
+        assertThat(processors.size()).isZero();
     }
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
-        assertThat(response.size()).isEqualTo(0);
+        assertThat(response.size()).isZero();
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ShardBridgesSyncAPITest {
         bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count()).isEqualTo(0);
+        assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.REQUESTED)).count()).isZero();
         assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(BridgeStatus.DELETION_REQUESTED)).count()).isEqualTo(1);
     }
 
@@ -135,7 +135,7 @@ public class ShardBridgesSyncAPITest {
         bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
 
-        assertThat(bridgesToDeployOrDelete.size()).isEqualTo(0);
+        assertThat(bridgesToDeployOrDelete.size()).isZero();
     }
 
     @Test

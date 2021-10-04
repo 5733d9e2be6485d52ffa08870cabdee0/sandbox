@@ -39,10 +39,10 @@ public class BridgeDAOTest {
         bridgeDAO.persist(bridge);
 
         List<Bridge> retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.PROVISIONING));
-        assertThat(retrievedBridges.size()).isEqualTo(0);
+        assertThat(retrievedBridges.size()).isZero();
 
         retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.AVAILABLE));
-        assertThat(retrievedBridges.size()).isEqualTo(0);
+        assertThat(retrievedBridges.size()).isZero();
 
         retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         assertThat(retrievedBridges.size()).isEqualTo(1);
@@ -75,7 +75,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(2);
         assertThat(retrievedBridges.getTotal()).isEqualTo(2);
-        assertThat(retrievedBridges.getPage()).isEqualTo(0);
+        assertThat(retrievedBridges.getPage()).isZero();
 
         // Newest istances come first
         assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo(firstBridge.getId());
@@ -94,7 +94,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(2);
         assertThat(retrievedBridges.getTotal()).isEqualTo(10);
-        assertThat(retrievedBridges.getPage()).isEqualTo(0);
+        assertThat(retrievedBridges.getPage()).isZero();
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("9");
         assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("8");
 
@@ -116,7 +116,7 @@ public class BridgeDAOTest {
 
         retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, 5, 2);
         assertThat(retrievedBridges).isNotNull();
-        assertThat(retrievedBridges.getSize()).isEqualTo(0);
+        assertThat(retrievedBridges.getSize()).isZero();
         assertThat(retrievedBridges.getTotal()).isEqualTo(10);
         assertThat(retrievedBridges.getPage()).isEqualTo(5);
     }

@@ -92,9 +92,9 @@ public class End2EndTestIT {
                 .as(BridgeListResponse.class);
 
         assertThat(response.getKind()).isEqualTo("BridgeList");
-        assertThat(response.getSize()).isEqualTo(0);
-        assertThat(response.getPage()).isEqualTo(0);
-        assertThat(response.getTotal()).isEqualTo(0);
+        assertThat(response.getSize()).isZero();
+        assertThat(response.getPage()).isZero();
+        assertThat(response.getTotal()).isZero();
     }
 
     @Order(2)
