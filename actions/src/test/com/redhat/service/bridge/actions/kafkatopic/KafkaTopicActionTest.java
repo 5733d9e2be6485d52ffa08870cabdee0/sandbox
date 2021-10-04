@@ -67,7 +67,7 @@ public class KafkaTopicActionTest {
     }
 
     @BeforeEach
-    void beforeEach() throws Exception {
+    public void beforeEach() throws Exception {
         mockKafkaAdmin();
     }
 

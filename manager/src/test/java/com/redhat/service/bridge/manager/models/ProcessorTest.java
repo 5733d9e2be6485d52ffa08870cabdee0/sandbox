@@ -14,10 +14,10 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProcessorTest {
+public class ProcessorTest {
 
     @Test
-    void toResponse() {
+    public void toResponse() {
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);

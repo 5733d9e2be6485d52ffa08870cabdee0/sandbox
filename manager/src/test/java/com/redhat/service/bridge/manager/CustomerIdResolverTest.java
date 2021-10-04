@@ -9,13 +9,13 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class CustomerIdResolverTest {
+public class CustomerIdResolverTest {
 
     @Inject
     CustomerIdResolver customerIdResolver;
 
     @Test
-    void testCustomerIdResolver() {
+    public void testCustomerIdResolver() {
         assertThat(customerIdResolver.resolveCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
     }
 }

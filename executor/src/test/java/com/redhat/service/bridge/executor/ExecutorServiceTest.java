@@ -20,13 +20,14 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class ExecutorServiceTest {
+public class ExecutorServiceTest {
 
     @Inject
     ExecutorsService executorsService;
@@ -37,12 +38,12 @@ class ExecutorServiceTest {
     Executor executor;
 
     @BeforeEach
-    void before() {
+    public void before() {
         executor = mock(Executor.class);
     }
 
     @Test
-    void handleEvent() {
+    public void handleEvent() {
 
         String bridgeId = "myBridge";
         ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
@@ -64,9 +65,9 @@ class ExecutorServiceTest {
     }
 
     @Test
-    void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
+    public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
         String bridgeId = "myBridge";
-        when(executorsProvider.getExecutors(bridgeId)).thenReturn(null);
+        when(executorsProvider.getExecutors(eq(bridgeId))).thenReturn(null);
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()

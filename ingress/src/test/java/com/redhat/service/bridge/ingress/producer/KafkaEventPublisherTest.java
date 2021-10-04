@@ -16,10 +16,10 @@ import io.smallrye.mutiny.helpers.test.AssertSubscriber;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class KafkaEventPublisherTest {
+public class KafkaEventPublisherTest {
 
     @BeforeEach
-    void before() {
+    public void before() {
         ExtensionProvider.getInstance().registerExtension(BridgeCloudEventExtension.class, BridgeCloudEventExtension::new);
     }
 

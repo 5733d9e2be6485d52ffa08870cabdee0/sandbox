@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-class FilterFactoryTest {
+public class FilterFactoryTest {
 
     @Test
-    void testStringBeginsWithFilterFactory() {
+    public void testStringBeginsWithFilterFactory() {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringContainsFilter = FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "[\"test\"]");
@@ -22,7 +22,7 @@ class FilterFactoryTest {
     }
 
     @Test
-    void testStringContainsFilterFactory() {
+    public void testStringContainsFilterFactory() {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringBeginsFilter = FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "[\"test\"]");
@@ -34,7 +34,7 @@ class FilterFactoryTest {
     }
 
     @Test
-    void testStringEqualsFilterFactory() {
+    public void testStringEqualsFilterFactory() {
         BaseFilter stringEqualsFilter = FilterFactory.buildFilter(StringEquals.FILTER_TYPE_NAME, "key", "test");
         assertThat(stringEqualsFilter).isInstanceOf(StringEquals.class);
         assertThat(stringEqualsFilter.getKey()).isEqualTo("key");
@@ -43,7 +43,7 @@ class FilterFactoryTest {
     }
 
     @Test
-    void testUnknownFilterType() {
+    public void testUnknownFilterType() {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter("not-a-filter-type", "key", "test"));
     }
 }

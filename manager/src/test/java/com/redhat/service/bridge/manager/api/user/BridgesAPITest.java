@@ -22,30 +22,30 @@ import io.restassured.response.Response;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class BridgesAPITest {
+public class BridgesAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void cleanUp() {
+    public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
     }
 
     @Test
-    void testGetEmptyBridges() {
+    public void testGetEmptyBridges() {
         BridgeListResponse response = TestUtils.getBridges().as(BridgeListResponse.class);
         assertThat(response.getItems().size()).isZero();
     }
 
     @Test
-    void createBridge() {
+    public void createBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(201);
     }
 
     @Test
-    void getBridge() {
+    public void getBridge() {
         Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
         bridgeCreateResponse.then().statusCode(201);
 
@@ -59,12 +59,12 @@ class BridgesAPITest {
     }
 
     @Test
-    void getUnexistingBridge() {
+    public void getUnexistingBridge() {
         TestUtils.getBridge("not-the-id").then().statusCode(404);
     }
 
     @Test
-    void testCreateAndGetBridge() {
+    public void testCreateAndGetBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(201);
 
@@ -81,7 +81,7 @@ class BridgesAPITest {
     }
 
     @Test
-    void testDeleteBridge() {
+    public void testDeleteBridge() {
         BridgeResponse response = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.deleteBridge(response.getId()).then().statusCode(202);
         response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
@@ -90,7 +90,7 @@ class BridgesAPITest {
     }
 
     @Test
-    void testDeleteBridgeWithActiveProcessors() {
+    public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE));
 
@@ -100,7 +100,7 @@ class BridgesAPITest {
     }
 
     @Test
-    void testAlreadyExistingBridge() {
+    public void testAlreadyExistingBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(201);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))

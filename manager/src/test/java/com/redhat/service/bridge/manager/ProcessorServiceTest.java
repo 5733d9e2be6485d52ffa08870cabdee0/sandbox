@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
-class ProcessorServiceTest {
+public class ProcessorServiceTest {
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -49,7 +49,7 @@ class ProcessorServiceTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void cleanUp() {
+    public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
     }
 
@@ -76,19 +76,19 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void createProcessor_bridgeNotActive() {
+    public void createProcessor_bridgeNotActive() {
         Bridge b = createBridge(BridgeStatus.PROVISIONING);
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), new ProcessorRequest()));
     }
 
     @Test
-    void createProcessor_bridgeDoesNotExist() {
+    public void createProcessor_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
                 .isThrownBy(() -> processorService.createProcessor(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test
-    void createProcessor_processorWithSameNameAlreadyExists() {
+    public void createProcessor_processorWithSameNameAlreadyExists() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -99,7 +99,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void createProcessor() {
+    public void createProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
@@ -115,7 +115,7 @@ class ProcessorServiceTest {
 
     @Test
     @Transactional
-    void getProcessorByStatuses() {
+    public void getProcessorByStatuses() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -137,7 +137,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void updateProcessorStatus() {
+    public void updateProcessorStatus() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -150,7 +150,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void updateProcessorStatus_bridgeDoesNotExist() {
+    public void updateProcessorStatus_bridgeDoesNotExist() {
         BridgeDTO bridge = new BridgeDTO();
         bridge.setId("foo");
         ProcessorDTO processor = new ProcessorDTO();
@@ -160,7 +160,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void updateProcessorStatus_processorDoesNotExist() {
+    public void updateProcessorStatus_processorDoesNotExist() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorDTO processor = new ProcessorDTO();
         processor.setBridge(b.toDTO());
@@ -170,7 +170,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessor() {
+    public void getProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -185,7 +185,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessor_bridgeDoesNotExist() {
+    public void getProcessor_bridgeDoesNotExist() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -196,7 +196,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessor_processorDoesNotExist() {
+    public void getProcessor_processorDoesNotExist() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -207,7 +207,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessors() {
+    public void getProcessors() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -223,7 +223,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessors_noProcessorsOnBridge() {
+    public void getProcessors_noProcessorsOnBridge() {
 
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
@@ -233,12 +233,12 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void getProcessors_bridgeDoesNotExist() {
+    public void getProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, 0, 100));
     }
 
     @Test
-    void testGetProcessorsCount() {
+    public void testGetProcessorsCount() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
@@ -250,7 +250,7 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testDeleteProcessor() {
+    public void testDeleteProcessor() {
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 

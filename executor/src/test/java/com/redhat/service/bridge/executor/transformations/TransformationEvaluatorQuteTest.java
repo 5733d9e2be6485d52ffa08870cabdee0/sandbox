@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TransformationEvaluatorQuteTest {
+public class TransformationEvaluatorQuteTest {
     private static final TransformationEvaluatorFactoryQute FACTORY = new TransformationEvaluatorFactoryQute();
 
     @Test
-    void testNullTemplate() {
+    public void testNullTemplate() {
         Map<String, Object> data = new HashMap<>();
         data.put("key", "value");
 
@@ -22,7 +22,7 @@ class TransformationEvaluatorQuteTest {
     }
 
     @Test
-    void testTemplate() {
+    public void testTemplate() {
         Map<String, Object> data = new HashMap<>();
         data.put("key", "value");
 

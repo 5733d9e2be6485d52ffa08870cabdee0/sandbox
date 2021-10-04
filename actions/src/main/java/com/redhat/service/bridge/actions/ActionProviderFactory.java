@@ -13,7 +13,7 @@ public class ActionProviderFactory {
     Instance<ActionProvider> actionProviders;
 
     public ActionProvider getActionProvider(String actionType) {
-        Optional<ActionProvider> ap = actionProviders.stream().filter(a -> a.accept(actionType)).findFirst();
+        Optional<ActionProvider> ap = actionProviders.stream().filter((a) -> a.accept(actionType)).findFirst();
         if (ap.isPresent()) {
             return ap.get();
         }

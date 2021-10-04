@@ -20,7 +20,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class BridgeDAOTest {
+public class BridgeDAOTest {
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -29,12 +29,12 @@ class BridgeDAOTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void cleanUp() {
+    public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
     }
 
     @Test
-    void testFindByStatus() {
+    public void testFindByStatus() {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
@@ -49,7 +49,7 @@ class BridgeDAOTest {
     }
 
     @Test
-    void testFindByNameAndCustomerId() {
+    public void testFindByNameAndCustomerId() {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
@@ -64,7 +64,7 @@ class BridgeDAOTest {
     }
 
     @Test
-    void testListByCustomerId() {
+    public void testListByCustomerId() {
         Bridge firstBridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(firstBridge);
 
@@ -83,7 +83,7 @@ class BridgeDAOTest {
     }
 
     @Test
-    void testListByCustomerIdPagination() {
+    public void testListByCustomerIdPagination() {
         for (int i = 0; i < 10; i++) {
             String id = String.valueOf(i);
             Bridge bridge = buildBridge(id, id);

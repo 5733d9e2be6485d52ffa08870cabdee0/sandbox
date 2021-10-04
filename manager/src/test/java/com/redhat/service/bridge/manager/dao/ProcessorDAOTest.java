@@ -26,7 +26,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class ProcessorDAOTest {
+public class ProcessorDAOTest {
 
     @Inject
     ProcessorDAO processorDAO;
@@ -38,7 +38,7 @@ class ProcessorDAOTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void before() {
+    public void before() {
         databaseManagerUtils.cleanDatabase();
     }
 
@@ -75,7 +75,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndName_noMatchingBridgeId() {
+    public void findByBridgeIdAndName_noMatchingBridgeId() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
@@ -83,7 +83,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndName_noMatchingProcessorName() {
+    public void findByBridgeIdAndName_noMatchingProcessorName() {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
@@ -91,7 +91,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndName() {
+    public void findByBridgeIdAndName() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
@@ -103,7 +103,7 @@ class ProcessorDAOTest {
 
     @Test
     @Transactional
-    void findByStatuses() {
+    public void findByStatuses() {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
@@ -121,7 +121,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByIdBridgeIdAndCustomerId() {
+    public void findByIdBridgeIdAndCustomerId() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
@@ -131,7 +131,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByIdBridgeIdAndCustomerId_doesNotExist() {
+    public void findByIdBridgeIdAndCustomerId_doesNotExist() {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
@@ -140,7 +140,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndCustomerId() {
+    public void findByBridgeIdAndCustomerId() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
@@ -154,7 +154,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndCustomerId_noProcessors() {
+    public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
         assertThat(listResult.getPage()).isZero();
@@ -163,7 +163,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void findByBridgeIdAndCustomerId_pageOffset() {
+    public void findByBridgeIdAndCustomerId_pageOffset() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
@@ -177,7 +177,7 @@ class ProcessorDAOTest {
     }
 
     @Test
-    void testCountByBridgeIdAndCustomerId() {
+    public void testCountByBridgeIdAndCustomerId() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
