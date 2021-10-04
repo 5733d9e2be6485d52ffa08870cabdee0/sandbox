@@ -1,4 +1,4 @@
-namespace: event-bridge-prod
+namespace: event-bridge-prod-test
 resources:
   - ../../base
   - all-in-one/route.yaml
