@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.manager;
 
+import java.security.Principal;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Assertions;
@@ -15,6 +17,7 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, customerIdResolver.resolveCustomerId());
+        Principal principal = () -> TestConstants.DEFAULT_CUSTOMER_ID;
+        Assertions.assertEquals(TestConstants.DEFAULT_CUSTOMER_ID, customerIdResolver.resolveCustomerId(principal));
     }
 }

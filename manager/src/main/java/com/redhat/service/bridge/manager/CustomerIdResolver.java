@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager;
 
-public interface CustomerIdResolver {
+import java.security.Principal;
 
-    String resolveCustomerId();
+public interface CustomerIdResolver {
+    String resolveCustomerId(Principal principal);
 }
