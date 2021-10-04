@@ -53,6 +53,7 @@ import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_MIN;
 @Path(APIConstants.USER_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class BridgesAPI {
 
     @Inject
@@ -65,7 +66,6 @@ public class BridgesAPI {
     SecurityIdentity identity;
 
     @GET
-    @Authenticated
     public Response getBridges(@DefaultValue(PAGE_DEFAULT) @Min(PAGE_MIN) @QueryParam(PAGE) int page,
             @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
         ListResult<Bridge> bridges = bridgesService
@@ -86,7 +86,6 @@ public class BridgesAPI {
     }
 
     @POST
-    @Authenticated
     public Response createBridge(BridgeRequest bridgeRequest) {
         Bridge bridge = bridgesService.createBridge(customerIdResolver.resolveCustomerId(identity.getPrincipal()), bridgeRequest);
         return Response.status(Response.Status.CREATED).entity(bridge.toResponse()).build();
@@ -94,7 +93,6 @@ public class BridgesAPI {
 
     @GET
     @Path("{id}")
-    @Authenticated
     public Response getBridge(@PathParam("id") @NotEmpty String id) {
         Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId(identity.getPrincipal()));
         return Response.ok(bridge.toResponse()).build();
@@ -102,7 +100,6 @@ public class BridgesAPI {
 
     @DELETE
     @Path("{id}")
-    @Authenticated
     public Response deleteBridge(@PathParam("id") String id) {
         bridgesService.deleteBridge(id, customerIdResolver.resolveCustomerId(identity.getPrincipal()));
         return Response.accepted().build();

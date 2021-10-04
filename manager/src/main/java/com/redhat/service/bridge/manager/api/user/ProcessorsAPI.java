@@ -55,6 +55,7 @@ import static java.util.stream.Collectors.toList;
 @Path(APIConstants.USER_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class ProcessorsAPI {
 
     @Inject
@@ -68,7 +69,6 @@ public class ProcessorsAPI {
 
     @GET
     @Path("{bridgeId}/processors/{processorId}")
-    @Authenticated
     public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
         String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
         Processor processor = processorService.getProcessor(processorId, bridgeId, customerId);
@@ -77,7 +77,6 @@ public class ProcessorsAPI {
 
     @GET
     @Path("{bridgeId}/processors")
-    @Authenticated
     public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @DefaultValue(PAGE_DEFAULT) @Min(PAGE_MIN) @QueryParam(PAGE) int page,
             @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
 
@@ -95,7 +94,6 @@ public class ProcessorsAPI {
 
     @POST
     @Path("{bridgeId}/processors")
-    @Authenticated
     public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
         String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
@@ -104,7 +102,6 @@ public class ProcessorsAPI {
 
     @DELETE
     @Path("{bridgeId}/processors/{processorId}")
-    @Authenticated
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
         processorService.deleteProcessor(bridgeId, processorId, customerIdResolver.resolveCustomerId(identity.getPrincipal()));
         return Response.accepted().build();

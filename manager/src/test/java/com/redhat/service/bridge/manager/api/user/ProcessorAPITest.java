@@ -81,6 +81,11 @@ public class ProcessorAPITest {
     }
 
     @Test
+    public void testAuthentication() {
+        TestUtils.getProcessor(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID).then().statusCode(401);
+    }
+
+    @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors() {
 
