@@ -90,14 +90,14 @@ public class End2EndTestIT {
     }
 
     @Test
-    public void authenticationIsEnabled(){
+    public void authenticationIsEnabled() {
         given()
-            .filter(new ResponseLoggingFilter())
-            .contentType(ContentType.JSON)
-            .when()
-            .get(managerUrl + APIConstants.USER_API_BASE_PATH)
-            .then()
-            .statusCode(401);
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get(managerUrl + APIConstants.USER_API_BASE_PATH)
+                .then()
+                .statusCode(401);
     }
 
     @Order(1)
@@ -278,7 +278,7 @@ public class End2EndTestIT {
     }
 
     private RequestSpecification jsonRequestWithAuth() {
-        if (token == null){
+        if (token == null) {
             token = getAccessToken(USER_NAME, PASSWORD);
         }
 
