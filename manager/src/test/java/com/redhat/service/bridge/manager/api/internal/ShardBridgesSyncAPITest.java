@@ -28,18 +28,18 @@ import io.restassured.common.mapper.TypeRef;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ShardBridgesSyncAPITest {
+class ShardBridgesSyncAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    public void cleanUp() {
+    void cleanUp() {
         databaseManagerUtils.cleanDatabase();
     }
 
     @Test
-    public void getProcessors() {
+    void getProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -61,7 +61,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    public void updateProcessorStatus() {
+    void updateProcessorStatus() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         TestUtils.updateBridge(bridge);
@@ -82,14 +82,14 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    public void testGetEmptyBridgesToDeploy() {
+    void testGetEmptyBridgesToDeploy() {
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
         assertThat(response.size()).isZero();
     }
 
     @Test
-    public void testGetBridgesToDeploy() {
+    void testGetBridgesToDeploy() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
@@ -104,7 +104,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    public void testGetBridgesToDelete() {
+    void testGetBridgesToDelete() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
         List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
@@ -120,7 +120,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    public void testNotifyDeployment() {
+    void testNotifyDeployment() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
         List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
@@ -139,7 +139,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    public void testNotifyDeletion() {
+    void testNotifyDeletion() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
         List<BridgeDTO> bridgesToDeploy = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {

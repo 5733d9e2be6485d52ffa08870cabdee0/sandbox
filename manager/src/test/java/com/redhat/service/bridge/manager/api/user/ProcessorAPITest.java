@@ -31,7 +31,7 @@ import io.restassured.response.Response;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ProcessorAPITest {
+class ProcessorAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
@@ -68,12 +68,12 @@ public class ProcessorAPITest {
     }
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         databaseManagerUtils.cleanDatabase();
     }
 
     @Test
-    public void listProcessors() {
+    void listProcessors() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -89,7 +89,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void listProcessors_pageOffset() {
+    void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction())).as(ProcessorResponse.class);
@@ -105,12 +105,12 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void listProcessors_bridgeDoesNotExist() {
+    void listProcessors_bridgeDoesNotExist() {
         assertThat(TestUtils.listProcessors("doesNotExist", 0, 100).getStatusCode()).isEqualTo(404);
     }
 
     @Test
-    public void getProcessor() {
+    void getProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
@@ -131,7 +131,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void getProcessor_processorDoesNotExist() {
+    void getProcessor_processorDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
@@ -142,7 +142,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void getProcessor_bridgeDoesNotExist() {
+    void getProcessor_bridgeDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         ProcessorResponse response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction())).as(ProcessorResponse.class);
@@ -152,7 +152,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge() {
+    void addProcessorToBridge() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -176,7 +176,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_noActionSpecified() {
+    void addProcessorToBridge_noActionSpecified() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -188,7 +188,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_unrecognisedActionType() {
+    void addProcessorToBridge_unrecognisedActionType() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         BaseAction action = TestUtils.createKafkaAction();
@@ -203,7 +203,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_missingActionParameters() {
+    void addProcessorToBridge_missingActionParameters() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         BaseAction action = TestUtils.createKafkaAction();
@@ -219,7 +219,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorWithNullFiltersToBridge() {
+    void addProcessorWithNullFiltersToBridge() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -237,7 +237,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridgeAndRetrieve() {
+    void addProcessorToBridgeAndRetrieve() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -256,14 +256,14 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_bridgeDoesNotExist() {
+    void addProcessorToBridge_bridgeDoesNotExist() {
 
         Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(404);
     }
 
     @Test
-    public void addProcessorToBridge_bridgeNotInAvailableStatus() {
+    void addProcessorToBridge_bridgeNotInAvailableStatus() {
 
         BridgeResponse bridgeResponse = createBridge();
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
@@ -271,13 +271,13 @@ public class ProcessorAPITest {
     }
 
     @Test
-    public void addProcessorToBridge_noNameSuppliedForProcessor() {
+    void addProcessorToBridge_noNameSuppliedForProcessor() {
         Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
-    public void testDeleteProcessor() {
+    void testDeleteProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
         ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),

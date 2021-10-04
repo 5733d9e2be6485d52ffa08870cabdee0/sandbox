@@ -12,12 +12,12 @@ import com.redhat.service.bridge.infra.models.filters.StringEquals;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilterEvaluatorFEELTest {
+class FilterEvaluatorFEELTest {
 
     private static final FilterEvaluatorFactoryFEEL TEMPLATE_FACTORY_FEEL = new FilterEvaluatorFactoryFEEL();
 
     @Test
-    public void testStringEqualsFilter() {
+    void testStringEqualsFilter() {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringEquals("source", "myService")));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myService"))).isTrue();
@@ -25,7 +25,7 @@ public class FilterEvaluatorFEELTest {
     }
 
     @Test
-    public void testStringBeginsWithFilter() {
+    void testStringBeginsWithFilter() {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringBeginsWith("source", "[\"mySer\"]")));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myService"))).isTrue();
@@ -33,7 +33,7 @@ public class FilterEvaluatorFEELTest {
     }
 
     @Test
-    public void testStringContainsFilter() {
+    void testStringContainsFilter() {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringContains("source", "[\"Ser\"]")));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myService"))).isTrue();
@@ -41,7 +41,7 @@ public class FilterEvaluatorFEELTest {
     }
 
     @Test
-    public void testStringContainsListFilter() {
+    void testStringContainsListFilter() {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringContains("source", "[\"Ser\", \"Tes\"]")));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myService"))).isTrue();
@@ -50,7 +50,7 @@ public class FilterEvaluatorFEELTest {
     }
 
     @Test
-    public void testFilterWithNestedObjects() {
+    void testFilterWithNestedObjects() {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringEquals("data.name", "jacopo")));
 
         Map<String, Object> data = new HashMap<>();

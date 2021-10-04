@@ -25,10 +25,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
+class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
-    public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
+    void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
@@ -48,7 +48,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
+    void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
@@ -68,7 +68,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void testNotifyBridgeStatusChange() throws InterruptedException {
+    void testNotifyBridgeStatusChange() throws InterruptedException {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING);
         stubBridgeUpdate();
         String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
@@ -85,7 +85,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void testProcessorsAreDeployed() throws Exception {
+    void testProcessorsAreDeployed() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
@@ -104,7 +104,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void notifyProcessorStatusChange() throws Exception {
+    void notifyProcessorStatusChange() throws Exception {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(dto, BridgeStatus.PROVISIONING);
         stubProcessorUpdate();

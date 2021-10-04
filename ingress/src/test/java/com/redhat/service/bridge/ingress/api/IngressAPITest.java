@@ -26,7 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @QuarkusTest
-public class IngressAPITest {
+class IngressAPITest {
 
     @InjectMock
     KafkaEventPublisher kafkaEventPublisher;
@@ -35,14 +35,14 @@ public class IngressAPITest {
     IngressService ingressService;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         KafkaEventPublisher mock = Mockito.mock(KafkaEventPublisher.class);
         Mockito.doNothing().when(mock).sendEvent(any(String.class), any(CloudEvent.class));
         QuarkusMock.installMockForType(mock, KafkaEventPublisher.class);
     }
 
     @Test
-    public void testSendCloudEvent() throws JsonProcessingException {
+    void testSendCloudEvent() throws JsonProcessingException {
         ingressService.deploy("topicName");
 
         given()
@@ -58,7 +58,7 @@ public class IngressAPITest {
     }
 
     @Test
-    public void testNonCloudEvent() throws JsonProcessingException {
+    void testNonCloudEvent() throws JsonProcessingException {
         ingressService.deploy("topicName");
 
         given()
@@ -75,7 +75,7 @@ public class IngressAPITest {
 
     @Test
     // TODO: remove after we move to k8s
-    public void testSendCloudEventToUndeployedInstance() throws JsonProcessingException {
+    void testSendCloudEventToUndeployedInstance() throws JsonProcessingException {
         given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)

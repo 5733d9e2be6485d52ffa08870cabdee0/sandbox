@@ -32,7 +32,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ProcessorControllerTest extends AbstractShardWireMockTest {
+class ProcessorControllerTest extends AbstractShardWireMockTest {
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -41,7 +41,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     Event<ResourceEvent> event;
 
     @Test
-    public void reconcileProcessor() throws Exception {
+    void reconcileProcessor() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
@@ -67,7 +67,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    public void reconcileProcessor_withFailure() throws Exception {
+    void reconcileProcessor_withFailure() throws Exception {
 
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);

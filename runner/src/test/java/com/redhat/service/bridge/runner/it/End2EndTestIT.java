@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @QuarkusTestResource(KafkaResource.class)
 @QuarkusTestResource(PostgresResource.class)
-public class End2EndTestIT {
+class End2EndTestIT {
 
     private static final String bridgeName = "notificationBridge";
     private static final String processorName = "myProcessor";
@@ -69,7 +69,7 @@ public class End2EndTestIT {
     AdminClient adminClient;
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         BaseAction action = new BaseAction();
         action.setName("myKafkaAction");
         action.setType(KafkaTopicAction.TYPE);
@@ -83,7 +83,7 @@ public class End2EndTestIT {
 
     @Order(1)
     @Test
-    public void getEmptyBridges() {
+    void getEmptyBridges() {
         BridgeListResponse response = jsonRequest()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
@@ -99,7 +99,7 @@ public class End2EndTestIT {
 
     @Order(2)
     @Test
-    public void createBridge() {
+    void createBridge() {
         BridgeResponse response = jsonRequest()
                 .body(new BridgeRequest(bridgeName))
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH)
@@ -120,7 +120,7 @@ public class End2EndTestIT {
 
     @Order(3)
     @Test
-    public void testBridgeIsDeployed() {
+    void testBridgeIsDeployed() {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
@@ -134,7 +134,7 @@ public class End2EndTestIT {
 
     @Order(4)
     @Test
-    public void testAddProcessor() throws Exception {
+    void testAddProcessor() throws Exception {
 
         /*
          * Ensure that the requested Kafka Topic for the Action exists
@@ -166,7 +166,7 @@ public class End2EndTestIT {
 
     @Order(5)
     @Test
-    public void testProcessorIsDeployed() {
+    void testProcessorIsDeployed() {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
@@ -179,7 +179,7 @@ public class End2EndTestIT {
 
     @Order(6)
     @Test
-    public void testIngressEndpoint() throws JsonProcessingException {
+    void testIngressEndpoint() throws JsonProcessingException {
         jsonRequest()
                 .body(buildTestCloudEvent())
                 .post(managerUrl + "/ingress/events/not-the-bridge-name")
@@ -195,7 +195,7 @@ public class End2EndTestIT {
 
     @Order(7)
     @Test
-    public void testDeleteProcessors() {
+    void testDeleteProcessors() {
         jsonRequest()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                 .then()
@@ -214,7 +214,7 @@ public class End2EndTestIT {
 
     @Order(8)
     @Test
-    public void testDeleteBridge() throws JsonProcessingException {
+    void testDeleteBridge() throws JsonProcessingException {
         jsonRequest()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                 .then()

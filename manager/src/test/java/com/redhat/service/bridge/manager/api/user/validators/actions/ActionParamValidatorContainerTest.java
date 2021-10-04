@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-public class ActionParamValidatorContainerTest {
+class ActionParamValidatorContainerTest {
 
     @Inject
     ActionParamValidatorContainer container;
@@ -47,20 +47,20 @@ public class ActionParamValidatorContainerTest {
     }
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         context = mock(ConstraintValidatorContext.class);
         builder = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
         when(context.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builder);
     }
 
     @Test
-    public void isValid() {
+    void isValid() {
         ProcessorRequest p = buildRequest();
         assertThat(container.isValid(p, context)).isTrue();
     }
 
     @Test
-    public void isValid_nullActionIsNotValid() {
+    void isValid_nullActionIsNotValid() {
         ProcessorRequest p = buildRequest();
         p.setAction(null);
 
@@ -68,7 +68,7 @@ public class ActionParamValidatorContainerTest {
     }
 
     @Test
-    public void isValid_emptyParamsIsNotValid() {
+    void isValid_emptyParamsIsNotValid() {
         ProcessorRequest p = buildRequest();
         p.getAction().getParameters().clear();
 
@@ -76,7 +76,7 @@ public class ActionParamValidatorContainerTest {
     }
 
     @Test
-    public void isValid_unrecognisedActionTypeIsNotValid() {
+    void isValid_unrecognisedActionTypeIsNotValid() {
         ProcessorRequest p = buildRequest();
         p.getAction().setType("doesNotExist");
 
@@ -88,7 +88,7 @@ public class ActionParamValidatorContainerTest {
     }
 
     @Test
-    public void isValid_messageFromActionValidatorAddedOnFailure() {
+    void isValid_messageFromActionValidatorAddedOnFailure() {
         ProcessorRequest p = buildRequest();
         p.getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
 

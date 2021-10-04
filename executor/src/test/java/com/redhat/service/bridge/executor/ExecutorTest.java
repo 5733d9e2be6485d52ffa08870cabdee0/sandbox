@@ -27,13 +27,12 @@ import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import io.cloudevents.CloudEvent;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExecutorTest {
+class ExecutorTest {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
@@ -51,11 +50,11 @@ public class ExecutorTest {
 
         when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
 
-        when(actionProviderFactoryMock.getActionProvider(eq(KafkaTopicAction.TYPE))).thenReturn(actionProvider);
+        when(actionProviderFactoryMock.getActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
     }
 
     @Test
-    public void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
+    void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
@@ -76,7 +75,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithNoMatchingFilters() throws JsonProcessingException {
+    void testOnEventWithNoMatchingFilters() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "notTheValue"));
 
@@ -95,7 +94,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithNullTemplate() throws JsonProcessingException {
+    void testOnEventWithNullTemplate() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 

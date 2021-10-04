@@ -8,19 +8,19 @@ import com.redhat.service.bridge.infra.models.filters.StringEquals;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilterEvaluatorFactoryFEELTest {
+class FilterEvaluatorFactoryFEELTest {
 
     private static final FilterEvaluatorFactoryFEEL TEMPLATE_FACTORY_FEEL = new FilterEvaluatorFactoryFEEL();
 
     @Test
-    public void testStringEqualsTemplate() {
+    void testStringEqualsTemplate() {
         String expected = "if data.name = \"jrota\" then \"OK\" else \"NOT_OK\"";
         String template = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringEquals("data.name", "jrota"));
         assertThat(template).isEqualTo(expected);
     }
 
     @Test
-    public void testStringContainsTemplate() {
+    void testStringContainsTemplate() {
         String expectedSingle = "if (contains (data.name, \"jrota\")) then \"OK\" else \"NOT_OK\"";
         String templateSingle = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringContains("data.name", "[\"jrota\"]"));
         assertThat(templateSingle).isEqualTo(expectedSingle);
@@ -31,7 +31,7 @@ public class FilterEvaluatorFactoryFEELTest {
     }
 
     @Test
-    public void testStringBeginsWithTemplate() {
+    void testStringBeginsWithTemplate() {
         String expectedSingle = "if (starts with (data.name, \"jrota\")) then \"OK\" else \"NOT_OK\"";
         String templateSingle = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringBeginsWith("data.name", "[\"jrota\"]"));
         assertThat(templateSingle).isEqualTo(expectedSingle);

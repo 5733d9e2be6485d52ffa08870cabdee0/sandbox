@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
-public class BridgesServiceTest {
+class BridgesServiceTest {
 
     @Inject
     BridgesService bridgesService;
@@ -30,18 +30,18 @@ public class BridgesServiceTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    public void cleanUp() {
+    void cleanUp() {
         databaseManagerUtils.cleanDatabase();
     }
 
     @Test
-    public void testGetEmptyBridgesToDeploy() {
+    void testGetEmptyBridgesToDeploy() {
         List<Bridge> bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         assertThat(bridges.size()).isZero();
     }
 
     @Test
-    public void testGetEmptyBridges() {
+    void testGetEmptyBridges() {
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
         assertThat(bridges.getPage()).isZero();
         assertThat(bridges.getTotal()).isZero();
@@ -49,7 +49,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void testGetBridges() {
+    void testGetBridges() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -66,7 +66,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void testGetBridge() {
+    void testGetBridge() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -78,12 +78,12 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void testGetUnexistingBridge() {
+    void testGetUnexistingBridge() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridge("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID));
     }
 
     @Test
-    public void testGetBridgeWithWrongCustomerId() {
+    void testGetBridgeWithWrongCustomerId() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -91,7 +91,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void testCreateBridge() {
+    void testCreateBridge() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -105,7 +105,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void testUpdateBridgeStatus() {
+    void testUpdateBridgeStatus() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -124,7 +124,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void getBridge() {
+    void getBridge() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
@@ -134,7 +134,7 @@ public class BridgesServiceTest {
     }
 
     @Test
-    public void getBridge_bridgeDoesNotExist() {
+    void getBridge_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridge("foo"));
     }
 }

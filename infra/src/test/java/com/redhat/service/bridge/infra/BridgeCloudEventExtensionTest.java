@@ -8,10 +8,10 @@ import io.cloudevents.CloudEventExtensions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class BridgeCloudEventExtensionTest {
+class BridgeCloudEventExtensionTest {
 
     @Test
-    public void readFrom() {
+    void readFrom() {
 
         String bridgeId = "myBridgeId";
 
@@ -24,7 +24,7 @@ public class BridgeCloudEventExtensionTest {
     }
 
     @Test
-    public void getValue_bridgeId() {
+    void getValue_bridgeId() {
 
         String bridgeId = "myBridgeId";
 
