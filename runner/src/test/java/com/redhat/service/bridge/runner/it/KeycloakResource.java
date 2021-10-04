@@ -3,6 +3,7 @@ package com.redhat.service.bridge.runner.it;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -13,14 +14,16 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
 
+    private static final String PROPERTY_CONTAINER_IMAGE_NAME = "container.image.keycloak";
+    private static final String REALM_FILE = "/tmp/realm.json";
+
     public static final String USER = "admin";
     public static final String PASSWORD = "admin";
     public static final String CLIENT_ID = "event-bridge";
     public static final String CLIENT_SECRET = "secret";
     public static final int PORT = 8080;
-    private static final String REALM_FILE = "/tmp/realm.json";
 
-    private final GenericContainer keycloak = new GenericContainer(DockerImageName.parse("jboss/keycloak:14.0.0"));
+    private final GenericContainer keycloak = new GenericContainer(DockerImageName.parse(getImageName()));
 
     public KeycloakResource() {
         keycloak.addExposedPort(PORT);
@@ -41,5 +44,11 @@ public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public void stop() {
         keycloak.close();
+    }
+
+    private static String getImageName() {
+        return Optional.ofNullable(System.getProperty(PROPERTY_CONTAINER_IMAGE_NAME))
+                .filter(s -> s.trim().length() > 0)
+                .orElseThrow(() -> new IllegalArgumentException(PROPERTY_CONTAINER_IMAGE_NAME + " property should be set in pom.xml"));
     }
 }
