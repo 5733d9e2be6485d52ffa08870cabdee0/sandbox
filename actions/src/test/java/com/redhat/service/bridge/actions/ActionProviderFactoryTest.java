@@ -2,9 +2,11 @@ package com.redhat.service.bridge.actions;
 
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+
+import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
