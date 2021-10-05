@@ -21,9 +21,8 @@ public class CloudEventUtils {
     private static final Logger LOG = LoggerFactory.getLogger(CloudEventUtils.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(JsonFormat.getCloudEventJacksonModule());
 
-    public static CloudEvent build(String id, String topic, URI source, String subject, JsonNode data) {
-        CloudEventBuilder builder = null;
-        builder = CloudEventBuilder.v1()
+    public static CloudEventBuilder builderFor(String id, String topic, URI source, String subject, JsonNode data) {
+        CloudEventBuilder builder = CloudEventBuilder.v1()
                 .withId(id)
                 .withSource(source)
                 .withType(JsonNode.class.getName())
@@ -34,7 +33,11 @@ public class CloudEventUtils {
             builder.withSubject(subject);
         }
 
-        return builder.build();
+        return builder;
+    }
+
+    public static CloudEvent build(String id, String topic, URI source, String subject, JsonNode data) {
+        return builderFor(id, topic, source, subject, data).build();
     }
 
     public static CloudEvent build(String id, String topic, URI source, String subject, CloudEvent data) {
