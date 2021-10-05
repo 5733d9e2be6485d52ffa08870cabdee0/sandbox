@@ -26,6 +26,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +74,12 @@ public class ProcessorAPITest {
     }
 
     @Test
+    public void testAuthentication() {
+        TestUtils.getProcessor(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID).then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -89,6 +96,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -105,11 +113,13 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors_bridgeDoesNotExist() {
         assertThat(TestUtils.listProcessors("doesNotExist", 0, 100).getStatusCode()).isEqualTo(404);
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -131,6 +141,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor_processorDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -142,6 +153,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor_bridgeDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -152,6 +164,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -176,6 +189,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noActionSpecified() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -188,6 +202,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_unrecognisedActionType() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -203,6 +218,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_missingActionParameters() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -219,6 +235,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorWithNullFiltersToBridge() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -237,6 +254,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridgeAndRetrieve() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -256,6 +274,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_bridgeDoesNotExist() {
 
         Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor", createKafkaAction()));
@@ -263,6 +282,7 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_bridgeNotInAvailableStatus() {
 
         BridgeResponse bridgeResponse = createBridge();
@@ -271,12 +291,14 @@ public class ProcessorAPITest {
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
         Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
         ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(

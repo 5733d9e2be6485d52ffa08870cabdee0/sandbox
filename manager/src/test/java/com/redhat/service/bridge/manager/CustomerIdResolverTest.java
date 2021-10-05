@@ -1,10 +1,11 @@
 package com.redhat.service.bridge.manager;
 
+import java.security.Principal;
+
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +17,7 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        assertThat(customerIdResolver.resolveCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
+        Principal principal = () -> TestConstants.DEFAULT_CUSTOMER_ID;
+        assertThat(customerIdResolver.resolveCustomerId(principal)).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
     }
 }
