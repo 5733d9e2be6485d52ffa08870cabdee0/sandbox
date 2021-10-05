@@ -36,7 +36,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
-        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
+        CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
         addBridgeUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
@@ -90,9 +90,10 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
+        stubProcessorUpdate();
+
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
-
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
