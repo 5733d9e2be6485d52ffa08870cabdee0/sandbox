@@ -21,6 +21,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.keycloak.representations.AccessTokenResponse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,21 +50,28 @@ import static io.restassured.RestAssured.given;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @QuarkusTestResource(KafkaResource.class)
 @QuarkusTestResource(PostgresResource.class)
+@QuarkusTestResource(KeycloakResource.class)
 public class End2EndTestIT {
 
-    private static final String bridgeName = "notificationBridge";
-    private static final String processorName = "myProcessor";
-    private static final String topicName = "myKafkaTopic";
-    private static final Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "createdEvent"));
-    private static final String transformationTemplate = "{\"v1\": \"{data.k1}\"}";
+    private static final String USER_NAME = "kermit";
+    private static final String PASSWORD = "thefrog";
+    private static final String BRIDGE_NAME = "notificationBridge";
+    private static final String PROCESSOR_NAME = "myProcessor";
+    private static final String TOPIC_NAME = "myKafkaTopic";
+    private static final Set<BaseFilter> FILTERS = Collections.singleton(new StringEquals("key", "createdEvent"));
+    private static final String TRANSFORMATION_TEMPLATE = "{\"v1\": \"{data.k1}\"}";
 
     private static String bridgeId;
     private static String processorId;
+    private static String token;
 
     private static ProcessorRequest processorRequest;
 
     @ConfigProperty(name = "event-bridge.manager.url")
     String managerUrl;
+
+    @ConfigProperty(name = "quarkus.oidc.auth-server-url")
+    String keycloakURL;
 
     @Inject
     AdminClient adminClient;
@@ -75,16 +83,27 @@ public class End2EndTestIT {
         action.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
         action.setParameters(params);
 
-        processorRequest = new ProcessorRequest(processorName, filters, transformationTemplate, action);
+        processorRequest = new ProcessorRequest(PROCESSOR_NAME, FILTERS, TRANSFORMATION_TEMPLATE, action);
+    }
+
+    @Test
+    public void authenticationIsEnabled() {
+        given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get(managerUrl + APIConstants.USER_API_BASE_PATH)
+                .then()
+                .statusCode(401);
     }
 
     @Order(1)
     @Test
     public void getEmptyBridges() {
-        BridgeListResponse response = jsonRequest()
+        BridgeListResponse response = jsonRequestWithAuth()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
                 .statusCode(200)
@@ -100,15 +119,15 @@ public class End2EndTestIT {
     @Order(2)
     @Test
     public void createBridge() {
-        BridgeResponse response = jsonRequest()
-                .body(new BridgeRequest(bridgeName))
+        BridgeResponse response = jsonRequestWithAuth()
+                .body(new BridgeRequest(BRIDGE_NAME))
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
                 .statusCode(201)
                 .extract()
                 .as(BridgeResponse.class);
 
-        Assertions.assertEquals(bridgeName, response.getName());
+        Assertions.assertEquals(BRIDGE_NAME, response.getName());
         Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
         Assertions.assertNull(response.getEndpoint());
         Assertions.assertNull(response.getPublishedAt());
@@ -125,7 +144,7 @@ public class End2EndTestIT {
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> jsonRequest()
+                        () -> jsonRequestWithAuth()
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                                 .then()
                                 .body("status", Matchers.equalTo("AVAILABLE"))
@@ -139,10 +158,10 @@ public class End2EndTestIT {
         /*
          * Ensure that the requested Kafka Topic for the Action exists
          */
-        NewTopic nt = new NewTopic(topicName, 1, (short) 1);
+        NewTopic nt = new NewTopic(TOPIC_NAME, 1, (short) 1);
         adminClient.createTopics(Collections.singleton(nt)).all().get(10L, TimeUnit.SECONDS);
 
-        ProcessorResponse response = jsonRequest()
+        ProcessorResponse response = jsonRequestWithAuth()
                 .body(processorRequest)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
                 .then()
@@ -152,7 +171,7 @@ public class End2EndTestIT {
 
         processorId = response.getId();
 
-        Assertions.assertEquals(processorName, response.getName());
+        Assertions.assertEquals(PROCESSOR_NAME, response.getName());
         Assertions.assertEquals("Processor", response.getKind());
         Assertions.assertNotNull(response.getHref());
         Assertions.assertNotNull(response.getBridge());
@@ -161,7 +180,7 @@ public class End2EndTestIT {
 
         BaseAction action = response.getAction();
         Assertions.assertEquals(KafkaTopicAction.TYPE, action.getType());
-        Assertions.assertEquals(topicName, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
+        Assertions.assertEquals(TOPIC_NAME, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
     }
 
     @Order(5)
@@ -171,7 +190,7 @@ public class End2EndTestIT {
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> jsonRequest()
+                        () -> jsonRequestWithAuth()
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                                 .then()
                                 .body("status", Matchers.equalTo("AVAILABLE")));
@@ -180,13 +199,13 @@ public class End2EndTestIT {
     @Order(6)
     @Test
     public void testIngressEndpoint() throws JsonProcessingException {
-        jsonRequest()
+        jsonRequestWithAuth()
                 .body(buildTestCloudEvent())
                 .post(managerUrl + "/ingress/events/not-the-bridge-name")
                 .then()
                 .statusCode(500);
 
-        jsonRequest()
+        jsonRequestWithAuth()
                 .body(buildTestCloudEvent())
                 .post(managerUrl + "/ingress/events/" + bridgeId)
                 .then()
@@ -196,7 +215,7 @@ public class End2EndTestIT {
     @Order(7)
     @Test
     public void testDeleteProcessors() {
-        jsonRequest()
+        jsonRequestWithAuth()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                 .then()
                 .statusCode(202);
@@ -206,7 +225,7 @@ public class End2EndTestIT {
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> jsonRequest()
+                        () -> jsonRequestWithAuth()
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                                 .then()
                                 .statusCode(404));
@@ -215,7 +234,7 @@ public class End2EndTestIT {
     @Order(8)
     @Test
     public void testDeleteBridge() throws JsonProcessingException {
-        jsonRequest()
+        jsonRequestWithAuth()
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                 .then()
                 .statusCode(202);
@@ -225,17 +244,29 @@ public class End2EndTestIT {
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> jsonRequest()
+                        () -> jsonRequestWithAuth()
                                 .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
                                 .then()
                                 .statusCode(404));
 
         // Ingress application is undeployed
-        jsonRequest()
+        jsonRequestWithAuth()
                 .body(buildTestCloudEvent())
-                .post(managerUrl + "/ingress/events/" + bridgeName)
+                .post(managerUrl + "/ingress/events/" + BRIDGE_NAME)
                 .then()
                 .statusCode(500);
+    }
+
+    private String getAccessToken(String userName, String password) {
+        return given().param("grant_type", "password")
+                .param("username", userName)
+                .param("password", password)
+                .param("client_id", KeycloakResource.CLIENT_ID)
+                .param("client_secret", KeycloakResource.CLIENT_SECRET)
+                .when()
+                .post(keycloakURL + "/protocol/openid-connect/token")
+                .as(AccessTokenResponse.class)
+                .getToken();
     }
 
     // TODO: Add processors integration tests when CRUD api will be implemented.
@@ -246,10 +277,16 @@ public class End2EndTestIT {
                 CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
     }
 
-    private RequestSpecification jsonRequest() {
+    private RequestSpecification jsonRequestWithAuth() {
+        if (token == null) {
+            token = getAccessToken(USER_NAME, PASSWORD);
+        }
+
         return given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
-                .when();
+                .when()
+                .auth()
+                .oauth2(token);
     }
 }
