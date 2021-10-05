@@ -15,7 +15,6 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -45,6 +44,7 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -110,10 +110,10 @@ public class End2EndTestIT {
                 .extract()
                 .as(BridgeListResponse.class);
 
-        Assertions.assertEquals("BridgeList", response.getKind());
-        Assertions.assertEquals(0, response.getSize());
-        Assertions.assertEquals(0, response.getPage());
-        Assertions.assertEquals(0, response.getTotal());
+        assertThat(response.getKind()).isEqualTo("BridgeList");
+        assertThat(response.getSize()).isZero();
+        assertThat(response.getPage()).isZero();
+        assertThat(response.getTotal()).isZero();
     }
 
     @Order(2)
@@ -127,12 +127,12 @@ public class End2EndTestIT {
                 .extract()
                 .as(BridgeResponse.class);
 
-        Assertions.assertEquals(BRIDGE_NAME, response.getName());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
-        Assertions.assertNull(response.getEndpoint());
-        Assertions.assertNull(response.getPublishedAt());
-        Assertions.assertNotNull(response.getHref());
-        Assertions.assertNotNull(response.getSubmittedAt());
+        assertThat(response.getName()).isEqualTo(BRIDGE_NAME);
+        assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(response.getEndpoint()).isNull();
+        assertThat(response.getPublishedAt()).isNull();
+        assertThat(response.getHref()).isNotNull();
+        assertThat(response.getSubmittedAt()).isNotNull();
 
         bridgeId = response.getId();
     }
@@ -171,16 +171,16 @@ public class End2EndTestIT {
 
         processorId = response.getId();
 
-        Assertions.assertEquals(PROCESSOR_NAME, response.getName());
-        Assertions.assertEquals("Processor", response.getKind());
-        Assertions.assertNotNull(response.getHref());
-        Assertions.assertNotNull(response.getBridge());
-        Assertions.assertEquals(BridgeStatus.REQUESTED, response.getStatus());
-        Assertions.assertEquals(1, response.getFilters().size());
+        assertThat(response.getName()).isEqualTo(PROCESSOR_NAME);
+        assertThat(response.getKind()).isEqualTo("Processor");
+        assertThat(response.getHref()).isNotNull();
+        assertThat(response.getBridge()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(response.getFilters().size()).isEqualTo(1);
 
         BaseAction action = response.getAction();
-        Assertions.assertEquals(KafkaTopicAction.TYPE, action.getType());
-        Assertions.assertEquals(TOPIC_NAME, action.getParameters().get(KafkaTopicAction.TOPIC_PARAM));
+        assertThat(action.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
     }
 
     @Order(5)

@@ -23,13 +23,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.in;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class ProcessorDAOTest {
@@ -85,7 +79,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
-        assertThat(processorDAO.findByBridgeIdAndName("doesNotExist", p.getName()), is(nullValue()));
+        assertThat(processorDAO.findByBridgeIdAndName("doesNotExist", p.getName())).isNull();
     }
 
     @Test
@@ -93,7 +87,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
-        assertThat(processorDAO.findByBridgeIdAndName(b.getId(), "doesNotExist"), is(nullValue()));
+        assertThat(processorDAO.findByBridgeIdAndName(b.getId(), "doesNotExist")).isNull();
     }
 
     @Test
@@ -102,9 +96,9 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
 
         Processor byBridgeIdAndName = processorDAO.findByBridgeIdAndName(b.getId(), p.getName());
-        assertThat(byBridgeIdAndName, is(notNullValue()));
-        assertThat(byBridgeIdAndName.getName(), equalTo(p.getName()));
-        assertThat(byBridgeIdAndName.getBridge().getId(), equalTo(b.getId()));
+        assertThat(byBridgeIdAndName).isNotNull();
+        assertThat(byBridgeIdAndName.getName()).isEqualTo(p.getName());
+        assertThat(byBridgeIdAndName.getBridge().getId()).isEqualTo(b.getId());
     }
 
     @Test
@@ -122,8 +116,8 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(r);
 
         List<Processor> processors = processorDAO.findByStatuses(asList(BridgeStatus.AVAILABLE, BridgeStatus.DELETION_REQUESTED));
-        assertThat(processors, hasSize(2));
-        processors.stream().forEach((px) -> assertThat(px.getName(), in(asList("bob", "frank"))));
+        assertThat(processors.size()).isEqualTo(2);
+        processors.forEach((px) -> assertThat(px.getName()).isIn("bob", "frank"));
     }
 
     @Test
@@ -132,8 +126,8 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
 
         Processor found = processorDAO.findByIdBridgeIdAndCustomerId(p.getId(), b.getId(), b.getCustomerId());
-        assertThat(found, is(notNullValue()));
-        assertThat(found.getId(), equalTo(p.getId()));
+        assertThat(found).isNotNull();
+        assertThat(found.getId()).isEqualTo(p.getId());
     }
 
     @Test
@@ -142,7 +136,7 @@ public class ProcessorDAOTest {
         createProcessor(b, "foo");
 
         Processor found = processorDAO.findByIdBridgeIdAndCustomerId("doesntExist", b.getId(), b.getCustomerId());
-        assertThat(found, is(nullValue()));
+        assertThat(found).isNull();
     }
 
     @Test
@@ -152,20 +146,20 @@ public class ProcessorDAOTest {
         Processor p1 = createProcessor(b, "bar");
 
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
-        assertThat(listResult.getPage(), equalTo(0L));
-        assertThat(listResult.getSize(), equalTo(2L));
-        assertThat(listResult.getTotal(), equalTo(2L));
+        assertThat(listResult.getPage()).isZero();
+        assertThat(listResult.getSize()).isEqualTo(2L);
+        assertThat(listResult.getTotal()).isEqualTo(2L);
 
-        listResult.getItems().forEach((px) -> assertThat(px.getId(), in(asList(p.getId(), p1.getId()))));
+        listResult.getItems().forEach((px) -> assertThat(px.getId()).isIn(p.getId(), p1.getId()));
     }
 
     @Test
     public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
-        assertThat(listResult.getPage(), equalTo(0L));
-        assertThat(listResult.getSize(), equalTo(0L));
-        assertThat(listResult.getTotal(), equalTo(0L));
+        assertThat(listResult.getPage()).isZero();
+        assertThat(listResult.getSize()).isZero();
+        assertThat(listResult.getTotal()).isZero();
     }
 
     @Test
@@ -175,11 +169,11 @@ public class ProcessorDAOTest {
         Processor p1 = createProcessor(b, "bar");
 
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 1, 1);
-        assertThat(listResult.getPage(), equalTo(1L));
-        assertThat(listResult.getSize(), equalTo(1L));
-        assertThat(listResult.getTotal(), equalTo(2L));
+        assertThat(listResult.getPage()).isEqualTo(1L);
+        assertThat(listResult.getSize()).isEqualTo(1L);
+        assertThat(listResult.getTotal()).isEqualTo(2L);
 
-        assertThat(listResult.getItems().get(0).getId(), equalTo(p1.getId()));
+        assertThat(listResult.getItems().get(0).getId()).isEqualTo(p1.getId());
     }
 
     @Test
@@ -189,6 +183,6 @@ public class ProcessorDAOTest {
         Processor p1 = createProcessor(b, "bar");
 
         Long result = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(result, equalTo(2L));
+        assertThat(result).isEqualTo(2L);
     }
 }

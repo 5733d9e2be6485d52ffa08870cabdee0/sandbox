@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,6 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
@@ -41,7 +41,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
@@ -61,7 +61,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
@@ -78,7 +78,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
@@ -94,7 +94,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         addProcessorUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
         processor.setStatus(BridgeStatus.PROVISIONING);
 
@@ -114,7 +114,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));

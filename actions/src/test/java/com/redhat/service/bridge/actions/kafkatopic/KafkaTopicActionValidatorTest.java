@@ -5,13 +5,16 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class KafkaTopicActionValidatorTest {
@@ -40,7 +43,7 @@ public class KafkaTopicActionValidatorTest {
     @Test
     public void isValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        Assertions.assertTrue(validator.isValid(processor.getAction()).isValid());
+        assertThat(validator.isValid(processor.getAction()).isValid()).isTrue();
     }
 
     @Test
@@ -49,8 +52,8 @@ public class KafkaTopicActionValidatorTest {
         processor.getAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
         ValidationResult validationResult = validator.isValid(processor.getAction());
 
-        Assertions.assertFalse(validationResult.isValid());
-        Assertions.assertEquals(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE, validationResult.getMessage());
+        assertThat(validationResult.isValid()).isFalse();
+        assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
     }
 
     @Test
@@ -59,7 +62,7 @@ public class KafkaTopicActionValidatorTest {
         processor.getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
         ValidationResult validationResult = validator.isValid(processor.getAction());
 
-        Assertions.assertFalse(validationResult.isValid());
-        Assertions.assertEquals(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE, validationResult.getMessage());
+        assertThat(validationResult.isValid()).isFalse();
+        assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
     }
 }

@@ -2,48 +2,48 @@ package com.redhat.service.bridge.infra.models.filters;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class FilterFactoryTest {
 
     @Test
     public void testStringBeginsWithFilterFactory() {
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "test"));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringContainsFilter = FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "[\"test\"]");
-        Assertions.assertTrue(stringContainsFilter instanceof StringContains);
-        Assertions.assertEquals("key", stringContainsFilter.getKey());
-        Assertions.assertEquals(1, ((List<String>) stringContainsFilter.getValue()).size());
-        Assertions.assertEquals("test", ((List<String>) stringContainsFilter.getValue()).get(0));
-        Assertions.assertEquals("[\"test\"]", stringContainsFilter.getValueAsString());
+        assertThat(stringContainsFilter).isInstanceOf(StringContains.class);
+        assertThat(stringContainsFilter.getKey()).isEqualTo("key");
+        assertThat(((List<String>) stringContainsFilter.getValue()).size()).isEqualTo(1);
+        assertThat(((List<String>) stringContainsFilter.getValue()).get(0)).isEqualTo("test");
+        assertThat(stringContainsFilter.getValueAsString()).isEqualTo("[\"test\"]");
     }
 
     @Test
     public void testStringContainsFilterFactory() {
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "test"));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter(StringContains.FILTER_TYPE_NAME, "key", "test"));
 
         BaseFilter stringBeginsFilter = FilterFactory.buildFilter(StringBeginsWith.FILTER_TYPE_NAME, "key", "[\"test\"]");
-        Assertions.assertTrue(stringBeginsFilter instanceof StringBeginsWith);
-        Assertions.assertEquals("key", stringBeginsFilter.getKey());
-        Assertions.assertEquals(1, ((List<String>) stringBeginsFilter.getValue()).size());
-        Assertions.assertEquals("test", ((List<String>) stringBeginsFilter.getValue()).get(0));
-        Assertions.assertEquals("[\"test\"]", stringBeginsFilter.getValueAsString());
+        assertThat(stringBeginsFilter).isInstanceOf(StringBeginsWith.class);
+        assertThat(stringBeginsFilter.getKey()).isEqualTo("key");
+        assertThat(((List<String>) stringBeginsFilter.getValue()).size()).isEqualTo(1);
+        assertThat(((List<String>) stringBeginsFilter.getValue()).get(0)).isEqualTo("test");
+        assertThat(stringBeginsFilter.getValueAsString()).isEqualTo("[\"test\"]");
     }
 
     @Test
     public void testStringEqualsFilterFactory() {
         BaseFilter stringEqualsFilter = FilterFactory.buildFilter(StringEquals.FILTER_TYPE_NAME, "key", "test");
-        Assertions.assertTrue(stringEqualsFilter instanceof StringEquals);
-        Assertions.assertEquals("key", stringEqualsFilter.getKey());
-        Assertions.assertEquals("test", stringEqualsFilter.getValue());
-        Assertions.assertEquals("test", stringEqualsFilter.getValueAsString());
+        assertThat(stringEqualsFilter).isInstanceOf(StringEquals.class);
+        assertThat(stringEqualsFilter.getKey()).isEqualTo("key");
+        assertThat(stringEqualsFilter.getValue()).isEqualTo("test");
+        assertThat(stringEqualsFilter.getValueAsString()).isEqualTo("test");
     }
 
     @Test
     public void testUnknownFilterType() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> FilterFactory.buildFilter("not-a-filter-type", "key", "test"));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> FilterFactory.buildFilter("not-a-filter-type", "key", "test"));
     }
 }

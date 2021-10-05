@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -30,6 +29,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class ProcessorControllerTest extends AbstractShardWireMockTest {
@@ -53,7 +53,7 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
 
         kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
         processor.setStatus(BridgeStatus.AVAILABLE);
 
@@ -62,8 +62,8 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
                 .withHeader("Content-Type", equalTo("application/json")));
 
         Deployment deployment = kubernetesClient.getDeployment(processor.getId());
-        Assertions.assertTrue(deployment.getStatus().getConditions().stream().anyMatch(x -> x.getStatus().equals("Ready")));
-        Assertions.assertEquals(BridgeStatus.AVAILABLE, kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus());
+        assertThat(deployment.getStatus().getConditions().stream().anyMatch(x -> x.getStatus().equals("Ready"))).isTrue();
+        assertThat(kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus()).isEqualTo(BridgeStatus.AVAILABLE);
     }
 
     @Test
@@ -80,12 +80,12 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
 
         kubernetesClient.createOrUpdateCustomResource(processor.getId(), ProcessorCustomResource.fromDTO(processor), K8SBridgeConstants.PROCESSOR_TYPE);
 
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
         latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
         event.fire(new ResourceEvent(KubernetesResourceType.DEPLOYMENT, K8SBridgeConstants.PROCESSOR_TYPE, processor.getId(), Action.ERROR));
-        Assertions.assertTrue(latch.await(30, TimeUnit.SECONDS));
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
         processor.setStatus(BridgeStatus.FAILED);
 
@@ -93,6 +93,6 @@ public class ProcessorControllerTest extends AbstractShardWireMockTest {
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
 
-        Assertions.assertEquals(BridgeStatus.FAILED, kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus());
+        assertThat(kubernetesClient.getCustomResource(processor.getId(), ProcessorCustomResource.class).getStatus()).isEqualTo(BridgeStatus.FAILED);
     }
 }

@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +16,8 @@ import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class BridgeDAOTest {
@@ -38,13 +39,13 @@ public class BridgeDAOTest {
         bridgeDAO.persist(bridge);
 
         List<Bridge> retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.PROVISIONING));
-        Assertions.assertEquals(0, retrievedBridges.size());
+        assertThat(retrievedBridges.size()).isZero();
 
         retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.AVAILABLE));
-        Assertions.assertEquals(0, retrievedBridges.size());
+        assertThat(retrievedBridges.size()).isZero();
 
         retrievedBridges = bridgeDAO.findByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
-        Assertions.assertEquals(1, retrievedBridges.size());
+        assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 
     @Test
@@ -53,13 +54,13 @@ public class BridgeDAOTest {
         bridgeDAO.persist(bridge);
 
         Bridge retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertNull(retrievedBridge);
+        assertThat(retrievedBridge).isNull();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, "not-the-customer-id");
-        Assertions.assertNull(retrievedBridge);
+        assertThat(retrievedBridge).isNull();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID);
-        Assertions.assertNotNull(retrievedBridge);
+        assertThat(retrievedBridge).isNotNull();
     }
 
     @Test
@@ -71,14 +72,14 @@ public class BridgeDAOTest {
         bridgeDAO.persist(secondBridge);
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
-        Assertions.assertNotNull(retrievedBridges);
-        Assertions.assertEquals(2, retrievedBridges.getSize());
-        Assertions.assertEquals(2, retrievedBridges.getTotal());
-        Assertions.assertEquals(0, retrievedBridges.getPage());
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(2);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
+        assertThat(retrievedBridges.getPage()).isZero();
 
         // Newest istances come first
-        Assertions.assertEquals(firstBridge.getId(), retrievedBridges.getItems().get(1).getId());
-        Assertions.assertEquals(secondBridge.getId(), retrievedBridges.getItems().get(0).getId());
+        assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo(firstBridge.getId());
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(secondBridge.getId());
     }
 
     @Test
@@ -90,34 +91,34 @@ public class BridgeDAOTest {
         }
 
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, 0, 2);
-        Assertions.assertNotNull(retrievedBridges);
-        Assertions.assertEquals(2, retrievedBridges.getSize());
-        Assertions.assertEquals(10, retrievedBridges.getTotal());
-        Assertions.assertEquals(0, retrievedBridges.getPage());
-        Assertions.assertEquals("9", retrievedBridges.getItems().get(0).getId());
-        Assertions.assertEquals("8", retrievedBridges.getItems().get(1).getId());
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(2);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
+        assertThat(retrievedBridges.getPage()).isZero();
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("9");
+        assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("8");
 
         retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, 1, 2);
-        Assertions.assertNotNull(retrievedBridges);
-        Assertions.assertEquals(2, retrievedBridges.getSize());
-        Assertions.assertEquals(10, retrievedBridges.getTotal());
-        Assertions.assertEquals(1, retrievedBridges.getPage());
-        Assertions.assertEquals("7", retrievedBridges.getItems().get(0).getId());
-        Assertions.assertEquals("6", retrievedBridges.getItems().get(1).getId());
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(2);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
+        assertThat(retrievedBridges.getPage()).isEqualTo(1);
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("7");
+        assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("6");
 
         retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, 4, 2);
-        Assertions.assertNotNull(retrievedBridges);
-        Assertions.assertEquals(2, retrievedBridges.getSize());
-        Assertions.assertEquals(10, retrievedBridges.getTotal());
-        Assertions.assertEquals(4, retrievedBridges.getPage());
-        Assertions.assertEquals("1", retrievedBridges.getItems().get(0).getId());
-        Assertions.assertEquals("0", retrievedBridges.getItems().get(1).getId());
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isEqualTo(2);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
+        assertThat(retrievedBridges.getPage()).isEqualTo(4);
+        assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("1");
+        assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("0");
 
         retrievedBridges = bridgeDAO.findByCustomerId(TestConstants.DEFAULT_CUSTOMER_ID, 5, 2);
-        Assertions.assertNotNull(retrievedBridges);
-        Assertions.assertEquals(0, retrievedBridges.getSize());
-        Assertions.assertEquals(10, retrievedBridges.getTotal());
-        Assertions.assertEquals(5, retrievedBridges.getPage());
+        assertThat(retrievedBridges).isNotNull();
+        assertThat(retrievedBridges.getSize()).isZero();
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
+        assertThat(retrievedBridges.getPage()).isEqualTo(5);
     }
 
     private Bridge buildBridge(String id, String name) {

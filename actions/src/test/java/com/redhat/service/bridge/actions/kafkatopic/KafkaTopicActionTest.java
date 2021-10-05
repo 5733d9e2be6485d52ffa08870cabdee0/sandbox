@@ -7,20 +7,23 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListTopicsResult;
+import org.apache.kafka.common.KafkaFuture;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.ListTopicsResult;
-import org.apache.kafka.common.KafkaFuture;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,19 +75,19 @@ public class KafkaTopicActionTest {
 
     @Test
     public void getType() {
-        Assertions.assertEquals(KafkaTopicAction.TYPE, kafkaTopicAction.getType());
+        assertThat(kafkaTopicAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
     }
 
     @Test
     public void getValidator() {
-        Assertions.assertNotNull(kafkaTopicAction.getParameterValidator());
+        assertThat(kafkaTopicAction.getParameterValidator()).isNotNull();
     }
 
     @Test
     public void getActionInvoker() {
         ProcessorDTO p = createProcessorWithActionForTopic(TOPIC_NAME);
         ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getAction());
-        Assertions.assertNotNull(actionInvoker);
+        assertThat(actionInvoker).isNotNull();
 
         verify(kafkaAdmin).listTopics();
     }
@@ -92,7 +95,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker_requestedTopicDoesNotExist() {
         ProcessorDTO p = createProcessorWithActionForTopic("thisTopicDoesNotExist");
-        Assertions.assertThrows(ActionProviderException.class, () -> kafkaTopicAction.getActionInvoker(p, p.getAction()));
+        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getAction()));
         verify(kafkaAdmin).listTopics();
     }
 }

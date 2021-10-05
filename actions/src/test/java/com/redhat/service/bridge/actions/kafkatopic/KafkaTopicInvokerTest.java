@@ -1,16 +1,17 @@
 package com.redhat.service.bridge.actions.kafkatopic;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import io.cloudevents.CloudEvent;
-import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+
+import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -40,10 +41,10 @@ public class KafkaTopicInvokerTest {
         verify(emitter).send(captor.capture());
 
         Message<String> sent = captor.getValue();
-        Assertions.assertEquals(event, sent.getPayload());
+        assertThat(sent.getPayload()).isEqualTo(event);
 
         Metadata metadata = sent.getMetadata();
         OutgoingKafkaRecordMetadata recordMetadata = metadata.get(OutgoingKafkaRecordMetadata.class).get();
-        Assertions.assertEquals(topic, recordMetadata.getTopic());
+        assertThat(recordMetadata.getTopic()).isEqualTo(topic);
     }
 }

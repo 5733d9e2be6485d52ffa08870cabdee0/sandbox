@@ -18,8 +18,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -62,7 +61,7 @@ public class ExecutorServiceTest {
         verify(executor).onEvent(cap.capture());
         CloudEvent invokedWith = cap.getValue();
 
-        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID), equalTo("myBridge"));
+        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo("myBridge");
     }
 
     @Test

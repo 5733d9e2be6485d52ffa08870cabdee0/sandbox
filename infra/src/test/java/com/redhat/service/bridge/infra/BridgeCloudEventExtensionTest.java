@@ -5,7 +5,7 @@ import org.mockito.Mockito;
 
 import io.cloudevents.CloudEventExtensions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 public class BridgeCloudEventExtensionTest {
@@ -20,7 +20,7 @@ public class BridgeCloudEventExtensionTest {
 
         BridgeCloudEventExtension b = new BridgeCloudEventExtension();
         b.readFrom(extensions);
-        assertEquals(bridgeId, b.getBridgeId());
+        assertThat(b.getBridgeId()).isEqualTo(bridgeId);
     }
 
     @Test
@@ -31,6 +31,6 @@ public class BridgeCloudEventExtensionTest {
         BridgeCloudEventExtension b = new BridgeCloudEventExtension();
         b.setBridgeId(bridgeId);
 
-        assertEquals(bridgeId, b.getValue(BridgeCloudEventExtension.BRIDGE_ID));
+        assertThat(b.getValue(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo(bridgeId);
     }
 }
