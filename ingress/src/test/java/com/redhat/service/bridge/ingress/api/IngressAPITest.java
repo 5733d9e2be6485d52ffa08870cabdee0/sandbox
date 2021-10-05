@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.IngressService;
 import com.redhat.service.bridge.ingress.TestUtils;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
@@ -50,7 +49,7 @@ public class IngressAPITest {
 
     @Test
     public void testSendCloudEventWithBadRequestException() throws JsonProcessingException {
-        Mockito.doThrow(BadRequestException.class).when(kafkaEventPublisher).sendEvent(any(String.class), any(CloudEvent.class));
+        Mockito.doCallRealMethod().when(kafkaEventPublisher).sendEvent(any(String.class), any(CloudEvent.class));
         doApiCallAfterDeploy(TestUtils.buildTestCloudEventWithReservedAttributes(), 400);
         verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
     }
