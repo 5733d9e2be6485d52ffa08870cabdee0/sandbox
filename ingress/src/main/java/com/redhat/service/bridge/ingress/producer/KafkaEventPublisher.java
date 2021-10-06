@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException;
+import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventExtension;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.ExtensionProvider;
 import io.quarkus.runtime.StartupEvent;
@@ -34,9 +36,19 @@ public class KafkaEventPublisher {
      * Add our specific metadata to the incoming event
      */
     private CloudEvent addMetadataToIncomingEvent(String bridgeId, CloudEvent cloudEvent) {
+        CloudEventExtension bridgeExtension = new BridgeCloudEventExtension(bridgeId);
+        validateIncomingEvent(cloudEvent, bridgeExtension);
         return CloudEventBuilder.v1(cloudEvent)
-                .withExtension(new BridgeCloudEventExtension(bridgeId))
+                .withExtension(bridgeExtension)
                 .build();
+    }
+
+    private void validateIncomingEvent(CloudEvent cloudEvent, CloudEventExtension bridgeExtension) {
+        for (String attribute : cloudEvent.getExtensionNames()) {
+            if (bridgeExtension.getKeys().contains(attribute)) {
+                throw new BadRequestException("Reserved attribute \"" + attribute + "\" is not allowed");
+            }
+        }
     }
 
     public void sendEvent(String bridgeId, CloudEvent cloudEvent) {

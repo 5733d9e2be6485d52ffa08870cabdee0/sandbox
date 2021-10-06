@@ -43,47 +43,51 @@ public class IngressAPITest {
 
     @Test
     public void testSendCloudEvent() throws JsonProcessingException {
-        ingressService.deploy("topicName");
-
-        given()
-                .filter(new ResponseLoggingFilter())
-                .contentType(ContentType.JSON)
-                .when()
-                .body(CloudEventUtils.encode(TestUtils.buildTestCloudEvent()))
-                .post("/ingress/events/topicName")
-                .then().statusCode(200);
-
+        doApiCallAfterDeploy(TestUtils.buildTestCloudEvent(), 200);
         verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
-        ingressService.undeploy("topicName");
     }
 
     @Test
-    public void testNonCloudEvent() throws JsonProcessingException {
-        ingressService.deploy("topicName");
+    public void testSendCloudEventWithBadRequestException() throws JsonProcessingException {
+        Mockito.doCallRealMethod().when(kafkaEventPublisher).sendEvent(any(String.class), any(CloudEvent.class));
+        doApiCallAfterDeploy(TestUtils.buildTestCloudEventWithReservedAttributes(), 400);
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
+    }
 
-        given()
-                .filter(new ResponseLoggingFilter())
-                .contentType(ContentType.JSON)
-                .when()
-                .body("{\"key\": \"not a cloud event\"}")
-                .post("/ingress/events/topicName")
-                .then().statusCode(400);
-
+    @Test
+    public void testNonCloudEvent() {
+        doApiCallAfterDeploy("{\"key\": \"not a cloud event\"}", 400);
         verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
-        ingressService.undeploy("topicName");
     }
 
     @Test
     // TODO: remove after we move to k8s
     public void testSendCloudEventToUndeployedInstance() throws JsonProcessingException {
+        doApiCall(TestUtils.buildTestCloudEvent(), 500);
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
+    }
+
+    private void doApiCall(CloudEvent bodyEvent, int expectedStatusCode) {
+        doApiCall(CloudEventUtils.encode(bodyEvent), expectedStatusCode);
+    }
+
+    private void doApiCall(String body, int expectedStatusCode) {
         given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(CloudEventUtils.encode(TestUtils.buildTestCloudEvent()))
+                .body(body)
                 .post("/ingress/events/topicName")
-                .then().statusCode(500);
+                .then().statusCode(expectedStatusCode);
+    }
 
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
+    private void doApiCallAfterDeploy(CloudEvent bodyEvent, int expectedStatusCode) {
+        doApiCallAfterDeploy(CloudEventUtils.encode(bodyEvent), expectedStatusCode);
+    }
+
+    private void doApiCallAfterDeploy(String body, int expectedStatusCode) {
+        ingressService.deploy("topicName");
+        doApiCall(body, expectedStatusCode);
+        ingressService.undeploy("topicName");
     }
 }
