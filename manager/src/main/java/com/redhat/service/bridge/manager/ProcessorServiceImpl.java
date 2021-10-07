@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +26,9 @@ import com.redhat.service.bridge.manager.models.Filter;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+
 @Transactional
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -35,6 +39,9 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     BridgesService bridgesService;
+
+    @Inject
+    MeterRegistry meterRegistry;
 
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
@@ -93,6 +100,10 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorDTO.getBridge().getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
+
+        // Update metrics
+        meterRegistry.counter("manager.processor.status.change",
+                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());

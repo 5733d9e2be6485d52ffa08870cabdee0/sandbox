@@ -15,19 +15,23 @@ import com.redhat.service.bridge.executor.transformations.TransformationEvaluato
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 // TODO: This class has to be removed when we switch to ExecutorConfigProviderImpl
 @ApplicationScoped
 public class ExecutorsProviderMock implements ExecutorsProvider,
         ExecutorsK8SDeploymentManager {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
-
     private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
 
     private final Map<String, Set<Executor>> bridgeToProcessorMap = new HashMap<>();
 
     @Inject
     ActionProviderFactory actionProviderFactory;
+
+    @Inject
+    MeterRegistry registry;
 
     @Override
     public Set<Executor> getExecutors() {
@@ -42,7 +46,7 @@ public class ExecutorsProviderMock implements ExecutorsProvider,
     @Override
     public void deploy(ProcessorDTO processorDTO) {
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory, registry);
 
         synchronized (bridgeToProcessorMap) {
             Set<Executor> executors = bridgeToProcessorMap.get(processorDTO.getBridge().getId());

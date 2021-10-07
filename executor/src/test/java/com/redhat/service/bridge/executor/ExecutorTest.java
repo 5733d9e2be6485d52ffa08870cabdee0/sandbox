@@ -25,7 +25,10 @@ import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -38,6 +41,8 @@ public class ExecutorTest {
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
     private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
+
+    private MeterRegistry meterRegistry;
 
     private ActionProviderFactory actionProviderFactoryMock;
 
@@ -52,6 +57,8 @@ public class ExecutorTest {
         when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
 
         when(actionProviderFactoryMock.getActionProvider(eq(KafkaTopicAction.TYPE))).thenReturn(actionProvider);
+
+        meterRegistry = new SimpleMeterRegistry();
     }
 
     @Test
@@ -66,7 +73,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, transformationTemplate, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -85,7 +92,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, null, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -104,13 +111,37 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(filters, null, action);
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
         verify(actionInvokerMock, times(1)).onEvent(any());
+    }
+
+    @Test
+    public void testMetricsAreProduced() throws JsonProcessingException {
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringEquals("data.key", "value"));
+
+        BaseAction action = new BaseAction();
+        action.setType(KafkaTopicAction.TYPE);
+
+        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+
+        ProcessorDTO processorDTO = createProcessor(filters, transformationTemplate, action);
+
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+
+        CloudEvent cloudEvent = createCloudEvent();
+
+        executor.onEvent(cloudEvent);
+
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME))).isTrue();
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME))).isTrue();
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME))).isTrue();
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME))).isTrue();
     }
 
     protected CloudEvent createCloudEvent() throws JsonProcessingException {

@@ -57,3 +57,22 @@ services:
     environment:
       KEYCLOAK_USER: "admin"
       KEYCLOAK_PASSWORD: "123"
+
+  prometheus:
+    network_mode: "host"
+    image: prom/prometheus:v2.8.0
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - '9090:9090'
+
+  grafana:
+    network_mode: "host"
+    image: grafana/grafana:6.6.1
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
