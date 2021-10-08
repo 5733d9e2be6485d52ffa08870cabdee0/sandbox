@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.executor;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,9 +56,9 @@ public class ExecutorTest {
     @Test
     public void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+        filters.add(new StringEquals("k1", "v1"));
 
-        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+        String transformationTemplate = "{\"test\": \"{k1}\"}";
 
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
@@ -68,9 +67,9 @@ public class ExecutorTest {
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
-        CloudEvent cloudEvent = createCloudEvent();
+        CloudEvent cloudEvent = TestUtils.buildTestCloudEvent();
 
-        executor.onEvent(cloudEvent);
+        executor.onEvent(CloudEventUtils.extractData(cloudEvent), cloudEvent.getId());
 
         verify(actionInvokerMock, times(1)).onEvent(any());
     }
@@ -78,7 +77,7 @@ public class ExecutorTest {
     @Test
     public void testOnEventWithNoMatchingFilters() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "notTheValue"));
+        filters.add(new StringEquals("k1", "not-the-correct-value"));
 
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
@@ -87,9 +86,9 @@ public class ExecutorTest {
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
-        CloudEvent cloudEvent = createCloudEvent();
+        CloudEvent cloudEvent = TestUtils.buildTestCloudEvent();
 
-        executor.onEvent(cloudEvent);
+        executor.onEvent(CloudEventUtils.extractData(cloudEvent), cloudEvent.getId());
 
         verify(actionInvokerMock, times(0)).onEvent(any());
     }
@@ -97,7 +96,7 @@ public class ExecutorTest {
     @Test
     public void testOnEventWithNullTemplate() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+        filters.add(new StringEquals("k1", "v1"));
 
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
@@ -106,17 +105,11 @@ public class ExecutorTest {
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock);
 
-        CloudEvent cloudEvent = createCloudEvent();
+        CloudEvent cloudEvent = TestUtils.buildTestCloudEvent();
 
-        executor.onEvent(cloudEvent);
+        executor.onEvent(CloudEventUtils.extractData(cloudEvent), cloudEvent.getId());
 
         verify(actionInvokerMock, times(1)).onEvent(any());
-    }
-
-    protected CloudEvent createCloudEvent() throws JsonProcessingException {
-        String jsonString = "{\"key\":\"value\"}";
-        return CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject",
-                CloudEventUtils.getMapper().readTree(jsonString));
     }
 
     protected ProcessorDTO createProcessor(Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {

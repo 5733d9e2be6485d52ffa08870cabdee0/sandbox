@@ -14,9 +14,6 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-
-import io.cloudevents.CloudEvent;
 
 public class Executor {
 
@@ -41,20 +38,18 @@ public class Executor {
     }
 
     @SuppressWarnings("unchecked")
-    public void onEvent(CloudEvent cloudEvent) {
-        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
+    public void onEvent(Map<String, Object> event, String cloudEventEnvelopId) {
+        LOG.info("[executor] Received event with envelope id '{}' for Processor with name '{}' on Bridge '{}", cloudEventEnvelopId, processor.getName(), processor.getBridge().getId());
 
-        Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
-
-        if (filterEvaluator.evaluateFilters(cloudEventData)) {
-            LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
+        if (filterEvaluator.evaluateFilters(event)) {
+            LOG.info("[executor] Filters of processor '{}' matched for event with envelope id '{}'", processor.getId(), cloudEventEnvelopId);
 
             // TODO - https://issues.redhat.com/browse/MGDOBR-49: consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
-            String eventToSend = transformationEvaluator.render(cloudEventData);
+            String eventToSend = transformationEvaluator.render(event);
 
             actionInvoker.onEvent(eventToSend);
         } else {
-            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.debug("[executor] Filters of processor '{}' did not match for event with envelope id '{}'", processor.getId(), cloudEventEnvelopId);
             // DO NOTHING;
         }
     }

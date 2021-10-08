@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.IngressService;
 import com.redhat.service.bridge.ingress.TestUtils;
@@ -37,34 +38,33 @@ public class IngressAPITest {
     @BeforeAll
     public static void setup() {
         KafkaEventPublisher mock = Mockito.mock(KafkaEventPublisher.class);
-        Mockito.doNothing().when(mock).sendEvent(any(String.class), any(CloudEvent.class));
+        Mockito.doNothing().when(mock).sendEvent(any(String.class), any(JsonNode.class));
         QuarkusMock.installMockForType(mock, KafkaEventPublisher.class);
     }
 
     @Test
     public void testSendCloudEvent() throws JsonProcessingException {
         doApiCallAfterDeploy(TestUtils.buildTestCloudEvent(), 200);
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
-    }
-
-    @Test
-    public void testSendCloudEventWithBadRequestException() throws JsonProcessingException {
-        Mockito.doCallRealMethod().when(kafkaEventPublisher).sendEvent(any(String.class), any(CloudEvent.class));
-        doApiCallAfterDeploy(TestUtils.buildTestCloudEventWithReservedAttributes(), 400);
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(JsonNode.class));
     }
 
     @Test
     public void testNonCloudEvent() {
-        doApiCallAfterDeploy("{\"key\": \"not a cloud event\"}", 400);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
+        doApiCallAfterDeploy("{\"key\": \"not a cloud event\"}", 200);
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(JsonNode.class));
+    }
+
+    @Test
+    public void testNonJsonEvent() {
+        doApiCallAfterDeploy("not a json", 400);
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(JsonNode.class));
     }
 
     @Test
     // TODO: remove after we move to k8s
     public void testSendCloudEventToUndeployedInstance() throws JsonProcessingException {
         doApiCall(TestUtils.buildTestCloudEvent(), 500);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(JsonNode.class));
     }
 
     private void doApiCall(CloudEvent bodyEvent, int expectedStatusCode) {

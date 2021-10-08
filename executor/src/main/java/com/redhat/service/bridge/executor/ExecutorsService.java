@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.executor;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
@@ -42,6 +43,10 @@ public class ExecutorsService {
             CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
             BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
             String bridgeId = bridgeCloudEventExtension.getBridgeId();
+
+            // Extract the user event from the envelope
+            Map<String, Object> userEvent = CloudEventUtils.extractData(cloudEvent);
+
             Set<Executor> executors = executorsProvider.getExecutors(bridgeId);
             if (executors == null) {
                 LOG.info("[executor] A message for BridgeID {} has been received, but no executors were found.", bridgeId);
@@ -49,7 +54,7 @@ public class ExecutorsService {
             if (executors != null) {
                 for (Executor e : executors) {
                     try {
-                        e.onEvent(cloudEvent);
+                        e.onEvent(userEvent, cloudEvent.getId());
                     } catch (Throwable t) {
                         // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
                         LOG.error("[executor] Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", e.getProcessor().getId(),

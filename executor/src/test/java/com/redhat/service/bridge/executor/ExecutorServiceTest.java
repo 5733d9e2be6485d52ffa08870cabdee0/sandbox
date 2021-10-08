@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.executor;
 
-import java.net.URI;
 import java.util.Collections;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -10,11 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
@@ -43,41 +42,29 @@ public class ExecutorServiceTest {
     }
 
     @Test
-    public void handleEvent() {
+    public void handleEvent() throws JsonProcessingException {
 
-        String bridgeId = "myBridge";
-        ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
+        ArgumentCaptor<Map<String, Object>> cap = ArgumentCaptor.forClass(Map.class);
         when(executorsProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
 
-        CloudEvent cloudEvent = CloudEventBuilder
-                .v1()
-                .withId("foo")
-                .withSource(URI.create("bar"))
-                .withType("myType")
-                .withExtension(new BridgeCloudEventExtension(bridgeId)).build();
+        CloudEvent cloudEvent = TestUtils.buildTestCloudEvent();
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
-        verify(executor).onEvent(cap.capture());
-        CloudEvent invokedWith = cap.getValue();
+        verify(executor).onEvent(cap.capture(), any(String.class));
+        Map<String, Object> invokedWith = cap.getValue();
 
-        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo("myBridge");
+        assertThat(invokedWith.get("k1")).isEqualTo("v1");
     }
 
     @Test
-    public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
-        String bridgeId = "myBridge";
-        when(executorsProvider.getExecutors(eq(bridgeId))).thenReturn(null);
+    public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() throws JsonProcessingException {
+        when(executorsProvider.getExecutors(eq(TestUtils.BRIDGE_ID))).thenReturn(null);
 
-        CloudEvent cloudEvent = CloudEventBuilder
-                .v1()
-                .withId("foo")
-                .withSource(URI.create("bar"))
-                .withType("myType")
-                .withExtension(BridgeCloudEventExtension.BRIDGE_ID, "anotherBridge").build();
+        CloudEvent cloudEvent = TestUtils.buildTestCloudEvent();
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
-        verify(executor, never()).onEvent(any(CloudEvent.class));
+        verify(executor, never()).onEvent(any(Map.class), any(String.class));
     }
 }

@@ -274,7 +274,7 @@ public class End2EndTestIT {
     private String buildTestCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
         return CloudEventUtils.encode(
-                CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
+                CloudEventUtils.build("myId", URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
     }
 
     private RequestSpecification jsonRequestWithAuth() {

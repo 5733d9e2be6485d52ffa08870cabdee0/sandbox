@@ -9,14 +9,12 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.TestUtils;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.ExtensionProvider;
 import io.smallrye.mutiny.helpers.test.AssertSubscriber;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class KafkaEventPublisherTest {
 
@@ -33,7 +31,7 @@ public class KafkaEventPublisherTest {
         KafkaEventPublisher producer = new KafkaEventPublisher();
         producer.getEventPublisher().subscribe(subscriber);
 
-        producer.sendEvent(bridgeId, TestUtils.buildTestCloudEvent());
+        producer.sendEvent(bridgeId, TestUtils.buildTestCloudEventAsJsonNode());
         List<String> sentEvents = subscriber.getItems();
         assertThat(sentEvents.size()).isEqualTo(1);
 
@@ -41,20 +39,5 @@ public class KafkaEventPublisherTest {
         BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
 
         assertThat(bridgeCloudEventExtension.getBridgeId()).isEqualTo(bridgeId);
-    }
-
-    @Test
-    void testEventIsNotProducedIfInputContainsReservedAttributes() throws IOException {
-        String bridgeId = "myBridge";
-        AssertSubscriber<String> subscriber = AssertSubscriber.create(1);
-
-        KafkaEventPublisher producer = new KafkaEventPublisher();
-        producer.getEventPublisher().subscribe(subscriber);
-
-        CloudEvent inputEvent = TestUtils.buildTestCloudEventWithReservedAttributes();
-        assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> producer.sendEvent(bridgeId, inputEvent));
-
-        List<String> sentEvents = subscriber.getItems();
-        assertThat(sentEvents.size()).isZero();
     }
 }

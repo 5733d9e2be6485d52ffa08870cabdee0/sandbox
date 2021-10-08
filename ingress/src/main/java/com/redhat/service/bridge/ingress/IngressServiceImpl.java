@@ -6,10 +6,9 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
-
-import io.cloudevents.CloudEvent;
 
 @ApplicationScoped
 public class IngressServiceImpl implements IngressService {
@@ -20,7 +19,7 @@ public class IngressServiceImpl implements IngressService {
     KafkaEventPublisher kafkaEventPublisher;
 
     @Override
-    public void processEvent(String id, CloudEvent event) {
+    public void processEvent(String id, JsonNode event) {
         //TODO: remove after we move to k8s
         if (!deployments.contains(id)) {
             throw new IngressException("Ingress with name " + id + " is not deployed.");

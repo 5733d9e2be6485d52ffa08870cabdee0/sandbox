@@ -1,24 +1,22 @@
 package com.redhat.service.bridge.ingress.producer;
 
+import java.net.URI;
+import java.util.UUID;
+
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.CloudEventExtension;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.provider.ExtensionProvider;
-import io.quarkus.runtime.StartupEvent;
 import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 
 @ApplicationScoped
@@ -28,33 +26,13 @@ public class KafkaEventPublisher {
 
     private final BroadcastProcessor<String> eventSubject = BroadcastProcessor.create();
 
-    public void init(@Observes StartupEvent e) {
-        ExtensionProvider.getInstance().registerExtension(BridgeCloudEventExtension.class, BridgeCloudEventExtension::new);
-    }
+    public void sendEvent(String bridgeId, JsonNode event) {
+        LOGGER.info("[ingress] Sending event for bridge '{}' to event queue", bridgeId);
 
-    /*
-     * Add our specific metadata to the incoming event
-     */
-    private CloudEvent addMetadataToIncomingEvent(String bridgeId, CloudEvent cloudEvent) {
-        CloudEventExtension bridgeExtension = new BridgeCloudEventExtension(bridgeId);
-        validateIncomingEvent(cloudEvent, bridgeExtension);
-        return CloudEventBuilder.v1(cloudEvent)
-                .withExtension(bridgeExtension)
-                .build();
-    }
+        // Create a cloud event envelope for the user event
+        CloudEvent cloudEvent = CloudEventUtils.build(UUID.randomUUID().toString(), URI.create("ingressService"),
+                "ingress", event, new BridgeCloudEventExtension(bridgeId));
 
-    private void validateIncomingEvent(CloudEvent cloudEvent, CloudEventExtension bridgeExtension) {
-        for (String attribute : cloudEvent.getExtensionNames()) {
-            if (bridgeExtension.getKeys().contains(attribute)) {
-                throw new BadRequestException("Reserved attribute \"" + attribute + "\" is not allowed");
-            }
-        }
-    }
-
-    public void sendEvent(String bridgeId, CloudEvent cloudEvent) {
-        LOGGER.info("[ingress] Sending cloudEvent with id '{}' for bridge '{}' to event queue", cloudEvent.getId(), bridgeId);
-
-        cloudEvent = addMetadataToIncomingEvent(bridgeId, cloudEvent);
         String serializedCloudEvent;
         try {
             serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
