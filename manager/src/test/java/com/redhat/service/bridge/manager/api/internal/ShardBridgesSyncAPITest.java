@@ -25,7 +25,10 @@ import com.redhat.service.bridge.manager.utils.TestUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -82,6 +85,35 @@ public class ShardBridgesSyncAPITest {
         });
 
         assertThat(processors.size()).isZero();
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void metricsAreProduced() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        TestUtils.updateBridge(bridge);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
+
+        List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
+        });
+
+        ProcessorDTO processor = processors.get(0);
+        processor.setStatus(BridgeStatus.AVAILABLE);
+
+        TestUtils.updateProcessor(processor);
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+        assertThat(metrics).contains("manager_processor_status_change_total");
+        assertThat(metrics).contains("manager_bridge_status_change_total");
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -21,6 +22,9 @@ import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+
 @Transactional
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -32,6 +36,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     ProcessorService processorService;
+
+    @Inject
+    MeterRegistry meterRegistry;
 
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
@@ -102,6 +109,10 @@ public class BridgesServiceImpl implements BridgesService {
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
         }
+
+        // Update metrics
+        meterRegistry.counter("manager.bridge.status.change",
+                Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
         LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;

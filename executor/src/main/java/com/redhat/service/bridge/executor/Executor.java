@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.executor;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,20 +19,25 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 
 public class Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
     private final ProcessorDTO processor;
-
     private final FilterEvaluator filterEvaluator;
-
     private final TransformationEvaluator transformationEvaluator;
-
     private final ActionInvoker actionInvoker;
+    private Timer processorProcessingTime;
+    private Timer filterTimer;
+    private Timer actionTimer;
+    private Timer transformationTimer;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory) {
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
+            MeterRegistry registry) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getFilters());
 
@@ -38,21 +45,29 @@ public class Executor {
 
         ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getAction().getType());
         this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getAction());
+
+        initMetricFields(processor, registry);
+    }
+
+    public void onEvent(CloudEvent cloudEvent) {
+        processorProcessingTime.record(() -> process(cloudEvent));
     }
 
     @SuppressWarnings("unchecked")
-    public void onEvent(CloudEvent cloudEvent) {
+    private void process(CloudEvent cloudEvent) {
         LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
 
         Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
 
-        if (filterEvaluator.evaluateFilters(cloudEventData)) {
+        // Filter evaluation
+        if (Boolean.TRUE.equals(filterTimer.record(() -> filterEvaluator.evaluateFilters(cloudEventData)))) {
             LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
 
-            // TODO - https://issues.redhat.com/browse/MGDOBR-49: consider if the CloudEvent needs cleaning up from our extensions before it is handled by Actions
-            String eventToSend = transformationEvaluator.render(cloudEventData);
+            // Transformation
+            String eventToSend = transformationTimer.record(() -> transformationEvaluator.render(cloudEventData));
 
-            actionInvoker.onEvent(eventToSend);
+            // Action
+            actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
         } else {
             LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
@@ -78,5 +93,14 @@ public class Executor {
     @Override
     public int hashCode() {
         return Objects.hash(processor);
+    }
+
+    private void initMetricFields(ProcessorDTO processor, MeterRegistry registry) {
+        List<Tag> tags = Arrays.asList(
+                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridge().getId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
+        this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
+        this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
+        this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);
+        this.transformationTimer = registry.timer(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME, tags);
     }
 }
