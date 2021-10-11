@@ -31,10 +31,10 @@ public class Executor {
     private final FilterEvaluator filterEvaluator;
     private final TransformationEvaluator transformationEvaluator;
     private final ActionInvoker actionInvoker;
-    private final Timer processorProcessingTime;
-    private final Timer filterTimer;
-    private final Timer actionTimer;
-    private final Timer transformationTimer;
+    private Timer processorProcessingTime;
+    private Timer filterTimer;
+    private Timer actionTimer;
+    private Timer transformationTimer;
 
     public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
             MeterRegistry registry) {
@@ -46,12 +46,7 @@ public class Executor {
         ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getAction().getType());
         this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getAction());
 
-        List<Tag> tags = Arrays.asList(
-                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridge().getId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
-        this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
-        this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
-        this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);
-        this.transformationTimer = registry.timer(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME, tags);
+        initMetricFields(processor, registry);
     }
 
     public void onEvent(CloudEvent cloudEvent) {
@@ -98,5 +93,14 @@ public class Executor {
     @Override
     public int hashCode() {
         return Objects.hash(processor);
+    }
+
+    private void initMetricFields(ProcessorDTO processor, MeterRegistry registry) {
+        List<Tag> tags = Arrays.asList(
+                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridge().getId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
+        this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
+        this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
+        this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);
+        this.transformationTimer = registry.timer(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME, tags);
     }
 }

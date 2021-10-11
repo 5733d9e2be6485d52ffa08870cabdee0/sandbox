@@ -257,6 +257,31 @@ public class End2EndTestIT {
                 .statusCode(500);
     }
 
+    @Order(9)
+    @Test
+    public void testMetrics() {
+        String metrics = jsonRequestWithAuth()
+                .delete(managerUrl + "/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        assertThat(metrics).contains("executor_entire_processing_evaluation_seconds_count");
+        assertThat(metrics).contains("executor_filter_evaluation_seconds_count");
+        assertThat(metrics).contains("executor_transformation_evaluation_seconds_count");
+        assertThat(metrics).contains("executor_action_evaluation_seconds_count");
+
+        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"AVAILABLE\",} 1.0");
+        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"PROVISIONING\",} 1.0");
+        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"DELETED\",} 1.0");
+        assertThat(metrics).contains("manager_processor_status_change_total{status=\"AVAILABLE\",} 1.0");
+        assertThat(metrics).contains("manager_processor_status_change_total{status=\"PROVISIONING\",} 1.0");
+        assertThat(metrics).contains("manager_processor_status_change_total{status=\"DELETED\",} 1.0");
+
+        assertThat(metrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/ingress/events/{name}\",} 1.0");
+    }
+
     private String getAccessToken(String userName, String password) {
         return given().param("grant_type", "password")
                 .param("username", userName)
