@@ -12,4 +12,4 @@ patchesStrategicMerge:
 images:
   - name: event-bridge-all-in-one
     newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-    newTag: 1634b8f62cc47ab1d8cba164b2eabd4979dbdc5d-jvm
+    newTag: 85fad923fb0437db15216e27e1a4266e1891d8d3-jvm
