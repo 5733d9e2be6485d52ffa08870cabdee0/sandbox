@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +24,16 @@ public class EventConsumer {
     @Inject
     ObjectMapper mapper;
 
+    @Inject
+    @RestClient
+    AnsibleTowerClient ansibleTowerClient;
+
     @Incoming(EVENTS_IN_TOPIC)
     public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
         try {
             CloudEvent cloudEvent = decode(message.getPayload());
             LOG.info("Received cloudevent with id {}", cloudEvent.getId());
+            ansibleTowerClient.launchJobTemplate(9);
         } catch (RuntimeException e) {
             LOG.error("Failed to handle Event received on Ansible gateway. The message is acked anyway.", e);
         }
