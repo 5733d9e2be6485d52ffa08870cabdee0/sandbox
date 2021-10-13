@@ -1,0 +1,6 @@
+resources:
+  - kafka-secrets.yaml
+  - keycloak-realm.yaml
+  - keycloak-route.yaml
+  - keycloak-secrets.yaml
+  - route.yaml
