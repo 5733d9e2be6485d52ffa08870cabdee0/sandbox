@@ -67,7 +67,7 @@ public class IngressAPI {
             SpecVersion.parse(cloudEventSpecVersion);
             URI.create(cloudEventSource);
         } catch (Exception e) {
-            throw new BadRequestException("The specified headers are not valid.");
+            throw new BadRequestException("Header values not valid: 'ce-specversion' header must be a valid cloud event version and 'ce-source' a valid URI.");
         }
     }
 }
