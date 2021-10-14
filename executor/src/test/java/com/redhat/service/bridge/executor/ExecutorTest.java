@@ -25,6 +25,7 @@ import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
@@ -146,7 +147,7 @@ public class ExecutorTest {
 
     protected CloudEvent createCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"key\":\"value\"}";
-        return CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject",
+        return CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject",
                 CloudEventUtils.getMapper().readTree(jsonString));
     }
 

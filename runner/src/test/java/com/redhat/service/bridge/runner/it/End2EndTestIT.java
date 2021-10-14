@@ -37,10 +37,13 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
+import io.cloudevents.SpecVersion;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.http.Headers;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
@@ -210,6 +213,26 @@ public class End2EndTestIT {
                 .post(managerUrl + "/ingress/events/" + bridgeId)
                 .then()
                 .statusCode(200);
+
+        // Plain endpoint for non cloud events payloads
+        jsonRequestWithAuth()
+                .body("{\"data\": \"test\"}")
+                .post(managerUrl + "/ingress/events/" + bridgeId + "/plain")
+                .then()
+                .statusCode(400);
+
+        Headers headers = new Headers(
+                new Header("ce-specversion", SpecVersion.V1.toString()),
+                new Header("ce-type", "myType"),
+                new Header("ce-id", "myId"),
+                new Header("ce-source", "mySource"),
+                new Header("ce-subject", "mySubject"));
+        jsonRequestWithAuth()
+                .body("{\"data\": \"test\"}")
+                .headers(headers)
+                .post(managerUrl + "/ingress/events/" + bridgeId + "/plain")
+                .then()
+                .statusCode(200);
     }
 
     @Order(7)
@@ -280,6 +303,7 @@ public class End2EndTestIT {
         assertThat(metrics).contains("manager_processor_status_change_total{status=\"DELETED\",} 1.0");
 
         assertThat(metrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/ingress/events/{name}\",} 1.0");
+        assertThat(metrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/ingress/events/{name}/plain\",} 1.0");
     }
 
     private String getAccessToken(String userName, String password) {
@@ -299,7 +323,7 @@ public class End2EndTestIT {
     private String buildTestCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
         return CloudEventUtils.encode(
-                CloudEventUtils.build("myId", "myTopic", URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
+                CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
     }
 
     private RequestSpecification jsonRequestWithAuth() {
