@@ -19,7 +19,7 @@ demo cluster setup.
 https://learnk8s.io/kubernetes-secrets-in-git
 
 
-### kubeseal create Sealed Secrets using the BAaaS Public Key
+### kubeseal create Sealed Secrets using the Bridge Public Key
 
 The public key for encryption needs to be retrieved from the demo cluster using your login.
 
