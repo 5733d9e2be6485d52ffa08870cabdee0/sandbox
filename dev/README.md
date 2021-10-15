@@ -11,7 +11,7 @@ docker-compose up
 If you want to generate some traffic automatically, we provide the script `generate_traffic.py` that you can run with 
 
 ```bash
-python3 generate_traffic.py --manager=http://localhost:8080 --keycloak=http://localhost:8180 --username=kermit --password=thefrog
+python3 generate_traffic.py --manager=http://localhost:8080 --keycloak=http://localhost:8180 --username=kermit --password=thefrog --bad_request_rate=0.2 --match_filter_rate=0.2
 ```
 
 The script runs forever, press `CTRL+C` to stop it.
