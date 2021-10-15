@@ -12,6 +12,7 @@ import com.redhat.service.bridge.infra.utils.exceptions.CloudEventDeserializatio
 import com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.jackson.JsonCloudEventData;
 import io.cloudevents.jackson.JsonFormat;
@@ -21,12 +22,11 @@ public class CloudEventUtils {
     private static final Logger LOG = LoggerFactory.getLogger(CloudEventUtils.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(JsonFormat.getCloudEventJacksonModule());
 
-    public static CloudEventBuilder builderFor(String id, String topic, URI source, String subject, JsonNode data) {
-        CloudEventBuilder builder = CloudEventBuilder.v1()
+    public static CloudEventBuilder builderFor(String id, SpecVersion specVersion, URI source, String subject, JsonNode data) {
+        CloudEventBuilder builder = CloudEventBuilder.fromSpecVersion(specVersion)
                 .withId(id)
                 .withSource(source)
                 .withType(JsonNode.class.getName())
-                .withExtension("topic", topic)
                 .withData(JsonCloudEventData.wrap(data));
 
         if (subject != null) {
@@ -36,13 +36,13 @@ public class CloudEventUtils {
         return builder;
     }
 
-    public static CloudEvent build(String id, String topic, URI source, String subject, JsonNode data) {
-        return builderFor(id, topic, source, subject, data).build();
+    public static CloudEvent build(String id, SpecVersion specVersion, URI source, String subject, JsonNode data) {
+        return builderFor(id, specVersion, source, subject, data).build();
     }
 
-    public static CloudEvent build(String id, String topic, URI source, String subject, CloudEvent data) {
+    public static CloudEvent build(String id, SpecVersion specVersion, URI source, String subject, CloudEvent data) {
         try {
-            return build(id, topic, source, subject, OBJECT_MAPPER.readTree(encode(data)));
+            return build(id, specVersion, source, subject, OBJECT_MAPPER.readTree(encode(data)));
         } catch (JsonProcessingException e) {
             throw new CloudEventDeserializationException("Failed to parse cloud event to wrap");
         }
