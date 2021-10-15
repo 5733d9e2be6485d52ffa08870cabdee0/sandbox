@@ -19,7 +19,7 @@ processors = []
 
 def create_bridge():
     while True:
-        if (random.random() < bad_request_rate and bridges): # with probability 0.2 create a bad request
+        if (random.random() < bad_request_rate and bridges): # with probability `bad_request_rate` create a bad request
             print('[bridge] Creating a bad request')
             body = {'name': bridges[0]}
         else: #create a valid request
@@ -42,7 +42,7 @@ def create_processor():
         if (len(bridges) == 0):
             continue
 
-        if (random.random() < bad_request_rate): # with probability 0.2 create a bad request
+        if (random.random() < bad_request_rate): # with probability `bad_request_rate` create a bad request
             print('[processor] Creating a bad request')
             body = {'name': 'crashhhhhhhhhhh'}
         else: #create a valid request
@@ -70,7 +70,7 @@ def ingress():
         if (len(processors) == 0):
             continue
 
-        if (random.random() < bad_request_rate): # with probability 0.2 create a bad request
+        if (random.random() < bad_request_rate): # with probability `bad_request_rate` create a bad request
             print('[ingress] Creating a bad request')
             body = {'name': 'crashhhhhhhhhhh with a non valid cloud event'}
         else: #create a valid request
@@ -101,7 +101,7 @@ def get_bearer_token():
     return bearer_token
 
 def get_cloud_event():
-    # With probability 0.2 generate a data.api that is not PutBlockList
+    # With probability `match_filter_rate` generate a data.api that is not PutBlockList
     cloud_event = {
         'specversion': '1.0',
         'type': 'Microsoft.Storage.BlobCreated',
