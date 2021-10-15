@@ -13,3 +13,7 @@ If you want to generate some traffic automatically, we provide the script `gener
 ```bash
 python3 generate_traffic.py --manager=http://localhost:8080 --keycloak=http://localhost:8180 --username=kermit --password=thefrog
 ```
+
+The script runs forever, press `CTRL+C` to stop it.
+
+With the parameters `--manager`, `--keycloak`, `--username` and `--password` you can configure the script so to target any environment (for example the demo environment).
