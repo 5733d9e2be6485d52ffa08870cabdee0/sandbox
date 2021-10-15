@@ -1,14 +1,11 @@
 namespace: event-bridge-prod
 resources:
   - ../../base
-  - all-in-one/route.yaml
-  - all-in-one/kafka-secrets.yaml
-  - all-in-one/keycloak-realm.yaml
-  - all-in-one/keycloak-secrets.yaml
-  - all-in-one/keycloak-route.yaml
+  - all-in-one
+  - observability
 patchesStrategicMerge:
-  - all-in-one/deploy-config.yaml
-  - all-in-one/postgres-config.yaml
+  - all-in-one/patches/deploy-config.yaml
+  - all-in-one/patches/postgres-config.yaml
 images:
   - name: event-bridge-all-in-one
     newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
