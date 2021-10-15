@@ -11,7 +11,8 @@ on:
       - '*.txt'
       - '.github/**'
       - 'kustomize/**'
-      
+      - 'dev/**'
+
 jobs:
   event-bridge-build:
     env:
