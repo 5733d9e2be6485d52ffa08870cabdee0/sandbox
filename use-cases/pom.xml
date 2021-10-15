@@ -4,15 +4,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.redhat.service.bridge</groupId>
-  <artifactId>external</artifactId>
+  <artifactId>use-cases</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge :: External Components</name>
-  <description>External components for event bridge</description>
+  <name>Event Bridge :: Use Cases</name>
+  <description>Use cases for event bridge</description>
 
   <modules>
-    <module>ansible-gateway</module>
+    <module>self-healing-infrastructure</module>
   </modules>
 
 </project>
