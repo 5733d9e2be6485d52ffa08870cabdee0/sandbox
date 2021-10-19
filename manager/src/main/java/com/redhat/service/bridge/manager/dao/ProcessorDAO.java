@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.manager.dao;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,12 @@ import static java.util.Collections.emptyList;
 @Transactional
 public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
+    /*
+     * NOTE: the Processor queries that use a left join on the filters **MUST** be wrapped by the method `removeDuplicates`!
+     * see https://developer.jboss.org/docs/DOC-15782#
+     * jive_content_id_Hibernate_does_not_return_distinct_results_for_a_query_with_outer_join_fetching_enabled_for_a_collection_even_if_I_use_the_distinct_keyword
+     */
+
     private static final String IDS_PARAM = "ids";
 
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
@@ -36,12 +44,12 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
      * 
      * This performs the query as if we expect a list result, but then converts the list into a single result
      * response: either the entity if the list has a single result, or null if not.
-     * 
+     *
      * More than 1 entity in the list throws an IllegalStateException as it's not something that we expect to happen
      * 
      */
     private Processor singleResultFromList(PanacheQuery<Processor> find) {
-        List<Processor> processors = find.list();
+        List<Processor> processors = removeDuplicates(find.list());
         if (processors.size() > 1) {
             throw new IllegalStateException("Multiple Entities returned from a Query that should only return a single Entity");
         }
@@ -59,7 +67,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
     public List<Processor> findByStatuses(List<BridgeStatus> statuses) {
         Parameters p = Parameters.with("statuses", statuses);
-        return find("#PROCESSOR.findByStatus", p).list();
+        return removeDuplicates(find("#PROCESSOR.findByStatus", p).list());
     }
 
     private Long countProcessorsOnBridge(Parameters params) {
@@ -100,7 +108,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
          * want the Processor.
          */
         List<Object[]> results = getEntityManager().createNamedQuery("PROCESSOR.findByIds").setParameter(IDS_PARAM, ids).getResultList();
-        List<Processor> processors = results.stream().map((o) -> (Processor) o[0]).collect(Collectors.toList());
+        List<Processor> processors = removeDuplicates(results.stream().map((o) -> (Processor) o[0]).collect(Collectors.toList()));
         return new ListResult<>(processors, page, processorCount);
     }
 
@@ -115,5 +123,9 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         }
 
         return requestedPage * requestedPageSize;
+    }
+
+    private List<Processor> removeDuplicates(List<Processor> processors) {
+        return new ArrayList<>(new LinkedHashSet<>(processors));
     }
 }
