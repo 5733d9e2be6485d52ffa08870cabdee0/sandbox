@@ -7,7 +7,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.cloudevents.CloudEvent;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -31,9 +30,9 @@ public class EventConsumer {
     @Incoming(EVENTS_IN_TOPIC)
     public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
         try {
-            CloudEvent cloudEvent = decode(message.getPayload());
-            LOG.info("Received cloudevent with id {}", cloudEvent.getId());
-            ansibleTowerClient.launchJobTemplate(9);
+            JobTemplateEvent event = decode(message.getPayload());
+            LOG.info("Received event with job template id {}", event.jobTemplateId);
+            ansibleTowerClient.launchJobTemplate(event.jobTemplateId);
         } catch (RuntimeException e) {
             LOG.error("Failed to handle Event received on Ansible gateway. The message is acked anyway.", e);
         }
@@ -41,9 +40,9 @@ public class EventConsumer {
         return message.ack();
     }
 
-    private CloudEvent decode(String json) {
+    private JobTemplateEvent decode(String json) {
         try {
-            return mapper.reader().readValue(json, CloudEvent.class);
+            return mapper.reader().readValue(json, JobTemplateEvent.class);
         } catch (IOException e) {
             LOG.error("Unable to decode CloudEvent", e);
             throw new RuntimeException(e);
