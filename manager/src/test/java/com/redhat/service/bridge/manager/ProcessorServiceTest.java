@@ -2,8 +2,10 @@ package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -16,6 +18,8 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -260,5 +264,19 @@ public class ProcessorServiceTest {
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
+    }
+
+    @Test
+    public void testMGDOBR_80() {
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringEquals("name", "myName"));
+        filters.add(new StringEquals("surename", "mySurename"));
+        ProcessorRequest r = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        assertThat(processor).isNotNull();
+
+        assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100).getSize()).isEqualTo(1);
     }
 }
