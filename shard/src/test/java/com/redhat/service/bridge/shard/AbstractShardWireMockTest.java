@@ -83,28 +83,28 @@ public abstract class AbstractShardWireMockTest {
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {
-        stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(processorDTOS))));
     }
 
     protected void stubBridgesToDeployOrDelete(List<BridgeDTO> bridgeDTOs) throws JsonProcessingException {
-        stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+        wireMockServer.stubFor(get(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(objectMapper.writeValueAsString(bridgeDTOs))));
     }
 
     protected void stubProcessorUpdate() {
-        stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+        wireMockServer.stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
     }
 
     protected void stubBridgeUpdate() {
-        stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+        wireMockServer.stubFor(put(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
