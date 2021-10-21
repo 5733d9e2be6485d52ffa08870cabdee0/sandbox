@@ -17,7 +17,11 @@ jobs:
   event-bridge-build:
     env:
       MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
-      OUTPUT_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one:${{ github.sha }}
+      ALL_IN_ONE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one:${{ github.sha }}
+      FLEET_MANAGER_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager:${{ github.sha }}
+      FLEET_SHARD_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:${{ github.sha }}
+      EXECUTOR_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:${{ github.sha }}
+      INGRESS_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:${{ github.sha }}
     timeout-minutes: 30
     runs-on: ubuntu-latest
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
@@ -61,10 +65,69 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
         run: docker login quay.io --username $CONTAINER_REGISTRY_USER --password $CONTAINER_REGISTRY_PASSWORD
-      - name: Build and Publish JVM Container
+      - name: Build and Publish JVM Container - All in One
         shell: bash
         run: |
-          docker build -f runner/src/main/docker/Dockerfile.jvm -t $OUTPUT_CONTAINER_NAME-jvm runner/
-          docker push $OUTPUT_CONTAINER_NAME-jvm
-          docker image rm -f $OUTPUT_CONTAINER_NAME-jvm
-#
+          echo "Building and pushing docker image for All-in-One"
+          docker build -f docker/Dockerfile.jvm -t $ALL_IN_ONE_CONTAINER_NAME-jvm runner/
+          docker push $ALL_IN_ONE_CONTAINER_NAME-jvm
+          docker image rm -f $ALL_IN_ONE_CONTAINER_NAME-jvm
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            general &general:
+              - infra/**
+              - bom/**
+              - build-parent/**
+              - infra/**
+              - k8s/**
+            manager:
+              - *general
+              - manager/**
+            shard:
+              - *general
+              - shard/**
+            ingress:
+              - *general
+              - ingress/**
+            shard:
+              - *general
+              - executor/**
+
+      # run only if 'manager' or any 'general' modules have changed
+      - name: Build and Publish JVM Container - Fleet Manager
+        if: steps.filter.outputs.manager == 'true'
+        run: |
+          echo "Building and pushing docker image for Fleet Manager"
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm runner/
+          docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
+          docker image rm -f $FLEET_MANAGER_CONTAINER_NAME-jvm
+
+      # run only if 'ingress' or any 'general' modules have changed
+      - name: Build and Publish JVM Container - Fleet Shard
+        if: steps.filter.outputs.shard == 'true'
+        run: |
+          echo "Building and pushing docker image for Fleet Shard"
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm runner/
+          docker push $FLEET_SHARD_CONTAINER_NAME-jvm
+          docker image rm -f $FLEET_SHARD_CONTAINER_NAME-jvm
+
+      # run only if 'executor' or any 'general' modules have changed
+      - name: Build and Publish JVM Container - Executor
+        if: steps.filter.outputs.executor == 'true'
+        run: |
+          echo "Building and pushing docker image for Executor"
+          docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME-jvm runner/
+          docker push $EXECUTOR_CONTAINER_NAME-jvm
+          docker image rm -f $EXECUTOR_CONTAINER_NAME-jvm
+
+      # run only if 'ingress' or any 'general' modules have changed
+      - name: Build and Publish JVM Container - Ingress
+        if: steps.filter.outputs.ingress == 'true'
+        run: |
+          echo "Building and pushing docker image for Ingress"
+          docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME-jvm runner/
+          docker push $INGRESS_CONTAINER_NAME-jvm
+          docker image rm -f $INGRESS_CONTAINER_NAME-jvm
