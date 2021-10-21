@@ -76,7 +76,7 @@ jobs:
         id: filter
         with:
           filters: |
-            general &general:
+            general: &general
               - infra/**
               - bom/**
               - build-parent/**
