@@ -71,7 +71,6 @@ jobs:
           echo "Building and pushing docker image for All-in-One"
           docker build -f docker/Dockerfile.jvm -t $ALL_IN_ONE_CONTAINER_NAME-jvm runner/
           docker push $ALL_IN_ONE_CONTAINER_NAME-jvm
-          docker image rm -f $ALL_IN_ONE_CONTAINER_NAME-jvm
 
       - uses: dorny/paths-filter@v2
         id: filter
@@ -103,7 +102,6 @@ jobs:
           echo "Building and pushing docker image for Fleet Manager"
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager/
           docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
-          docker image rm -f $FLEET_MANAGER_CONTAINER_NAME-jvm
 
       # run only if 'ingress' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Fleet Shard
@@ -112,7 +110,6 @@ jobs:
           echo "Building and pushing docker image for Fleet Shard"
           docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm shard/
           docker push $FLEET_SHARD_CONTAINER_NAME-jvm
-          docker image rm -f $FLEET_SHARD_CONTAINER_NAME-jvm
 
       # run only if 'executor' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Executor
@@ -121,7 +118,6 @@ jobs:
           echo "Building and pushing docker image for Executor"
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME-jvm executor/
           docker push $EXECUTOR_CONTAINER_NAME-jvm
-          docker image rm -f $EXECUTOR_CONTAINER_NAME-jvm
 
       # run only if 'ingress' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Ingress
@@ -130,4 +126,6 @@ jobs:
           echo "Building and pushing docker image for Ingress"
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME-jvm ingress/
           docker push $INGRESS_CONTAINER_NAME-jvm
-          docker image rm -f $INGRESS_CONTAINER_NAME-jvm
+
+      - name: Clean up images
+        run: docker image prune -f
