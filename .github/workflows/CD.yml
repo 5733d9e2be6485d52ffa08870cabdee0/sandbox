@@ -126,6 +126,3 @@ jobs:
           echo "Building and pushing docker image for Ingress"
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME-jvm ingress/
           docker push $INGRESS_CONTAINER_NAME-jvm
-
-      - name: Clean up images
-        run: docker image prune -f
