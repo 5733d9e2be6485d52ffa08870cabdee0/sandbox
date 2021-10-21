@@ -9,7 +9,7 @@
   <packaging>pom</packaging>
 
   <name>Event Bridge Use Cases :: Ansible Tower Integration</name>
-  <description>Self-healing infrastructure use case for event bridge</description>
+  <description>Simple Quarkus component to integrate with Ansible Tower</description>
 
   <modules>
     <module>ansible-gateway</module>
