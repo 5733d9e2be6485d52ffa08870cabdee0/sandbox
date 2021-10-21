@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.redhat.service.bridge</groupId>
-  <artifactId>self-healing-infrastructure</artifactId>
+  <artifactId>ansible-tower-integration</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge :: Self-Healing Infrastructure Use Case</name>
+  <name>Event Bridge Use Cases :: Ansible Tower Integration</name>
   <description>Self-healing infrastructure use case for event bridge</description>
 
   <modules>

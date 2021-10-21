@@ -7,7 +7,7 @@
   <artifactId>ansible-gateway</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Event Bridge :: Ansible Gateway</name>
+  <name>Event Bridge Use Cases :: Ansible Gateway</name>
   <description>Ansible gateway for event bridge</description>
 
   <properties>
@@ -50,10 +50,6 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc</artifactId>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>io.quarkus</groupId>-->
-<!--      <artifactId>quarkus-resteasy</artifactId>-->
-<!--    </dependency>-->
 
     <dependency>
       <groupId>io.cloudevents</groupId>
