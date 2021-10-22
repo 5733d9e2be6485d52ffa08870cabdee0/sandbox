@@ -27,7 +27,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.2.2.Final</quarkus.platform.version>
+    <quarkus.platform.version>2.3.0.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
     <version.compiler.plugin>3.8.1</version.compiler.plugin>
     <version.surefire.plugin>2.22.2</version.surefire.plugin> <!-- minimum required by JUnit 5 -->
@@ -37,12 +37,13 @@
     <impsort.plugin.version>1.5.0</impsort.plugin.version>
 
     <version.io.cloudevents>2.2.0</version.io.cloudevents>
-    <version.org.testcontainer>1.15.3</version.org.testcontainer>
+    <version.org.testcontainer>1.16.0</version.org.testcontainer>
     <version.com.github.tomakehurst.wiremock>2.30.1</version.com.github.tomakehurst.wiremock>
     <version.org.awaitility>4.1.0</version.org.awaitility>
-    <version.io.fabric8>5.4.1</version.io.fabric8>
+    <version.io.fabric8>5.7.3</version.io.fabric8>
     <version.org.kie.dmn.feel>7.57.0.Final</version.org.kie.dmn.feel>
     <version.org.keycloak>14.0.0</version.org.keycloak>
+    <version.io.quarkiverse.operatorsdk>2.0.0.CR2</version.io.quarkiverse.operatorsdk>
 
     <container.image.keycloak>jboss/keycloak:${version.org.keycloak}</container.image.keycloak>
 
@@ -94,6 +95,16 @@
         <version>${version.org.kie.dmn.feel}</version>
       </dependency>
       <dependency>
+        <groupId>io.quarkiverse.operatorsdk</groupId>
+        <artifactId>quarkus-operator-sdk</artifactId>
+        <version>${version.io.quarkiverse.operatorsdk}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.operatorsdk</groupId>
+        <artifactId>quarkus-operator-sdk-csv-generator</artifactId>
+        <version>${version.io.quarkiverse.operatorsdk}</version>
+      </dependency>
+      <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
         <version>${version.org.testcontainer}</version>
@@ -133,7 +144,7 @@
         <plugin>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
-          <version>${quarkus-plugin.version}</version>
+          <version>${quarkus.platform.version}</version>
         </plugin>
 
         <plugin>
