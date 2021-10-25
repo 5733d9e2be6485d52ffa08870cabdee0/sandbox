@@ -91,7 +91,7 @@ jobs:
             ingress:
               - *general
               - ingress/**
-            shard:
+            executor:
               - *general
               - executor/**
 
