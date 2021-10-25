@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.shard.operator.ResourcesConstants;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -40,8 +41,9 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
     private static Map<String, String> buildLabels(BridgeDTO bridgeDTO) {
         Map<String, String> labels = new HashMap<>();
-        labels.put("customerId", bridgeDTO.getCustomerId());
-        labels.put("bridgeName", bridgeDTO.getName());
+        labels.put(ResourcesConstants.MANAGED_BY_LABEL, ResourcesConstants.OPERATOR_NAME);
+        labels.put(ResourcesConstants.CUSTOMER_LABEL, bridgeDTO.getCustomerId());
+        labels.put(ResourcesConstants.BRIDGE_NAME_LABEL, bridgeDTO.getName());
         return labels;
     }
 }
