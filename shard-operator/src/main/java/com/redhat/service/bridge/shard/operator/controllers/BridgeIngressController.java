@@ -3,6 +3,10 @@ package com.redhat.service.bridge.shard.operator.controllers;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import io.javaoperatorsdk.operator.api.DeleteControl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 
@@ -19,6 +23,8 @@ import io.javaoperatorsdk.operator.api.UpdateControl;
 @Controller
 public class BridgeIngressController implements ResourceController<BridgeIngress> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
+
     // TODO: not using now, but let it here to make sure our configuration is ok and the object is being injected.
     @Inject
     KubernetesClient kubernetesClient;
@@ -26,6 +32,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         // simplistic reconciliation to check with IT
+        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         if (bridgeIngress.getStatus() == null) {
             bridgeIngress.setStatus(new BridgeIngressStatus());
         }
@@ -35,5 +42,11 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         return UpdateControl.noUpdate();
+    }
+
+    @Override
+    public DeleteControl deleteResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
+        LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        return DeleteControl.DEFAULT_DELETE;
     }
 }

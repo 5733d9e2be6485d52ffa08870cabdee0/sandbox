@@ -7,7 +7,6 @@ package com.redhat.service.bridge.shard.operator.resources;
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
  */
 public class BridgeIngressSpec {
-
     private String image;
 
     public String getImage() {
