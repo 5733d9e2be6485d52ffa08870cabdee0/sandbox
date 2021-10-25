@@ -3,7 +3,6 @@ package com.redhat.service.bridge.shard.operator.controllers;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.javaoperatorsdk.operator.api.DeleteControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +12,7 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.Context;
 import io.javaoperatorsdk.operator.api.Controller;
+import io.javaoperatorsdk.operator.api.DeleteControl;
 import io.javaoperatorsdk.operator.api.ResourceController;
 import io.javaoperatorsdk.operator.api.UpdateControl;
 

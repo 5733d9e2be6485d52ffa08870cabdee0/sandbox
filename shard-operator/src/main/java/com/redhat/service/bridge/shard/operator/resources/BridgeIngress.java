@@ -38,7 +38,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         return bridgeIngress;
     }
 
-    private static Map<String, String> buildLabels(BridgeDTO bridgeDTO){
+    private static Map<String, String> buildLabels(BridgeDTO bridgeDTO) {
         Map<String, String> labels = new HashMap<>();
         labels.put("customerId", bridgeDTO.getCustomerId());
         labels.put("bridgeName", bridgeDTO.getName());
