@@ -35,6 +35,7 @@
     <module>manager</module>
     <module>executor</module>
     <module>shard</module>
+    <module>shard-operator</module>
     <module>runner</module>
     <module>ingress</module>
     <module>infra</module>

@@ -1,0 +1,7 @@
+apiVersion: com.redhat.service.bridge/v1alpha1
+kind: BridgeIngress
+metadata:
+  name: my-bridge
+spec:
+  # just a placeholder, at this time the operator won't deploy anything
+  image: my-image:latest
