@@ -1,0 +1,11 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.define "ansible_tower"
+
+  config.vm.box = "ansible/tower"
+
+  config.vm.network "forwarded_port", guest: 80, host: 10080
+  config.vm.network "forwarded_port", guest: 443, host: 10443
+end

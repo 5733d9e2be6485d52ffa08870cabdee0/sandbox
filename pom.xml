@@ -40,6 +40,7 @@
     <module>infra</module>
     <module>k8s</module>
     <module>actions</module>
+    <module>use-cases</module>
   </modules>
 
 </project>
