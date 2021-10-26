@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
-import com.redhat.service.bridge.shard.operator.utils.RFC1123Sanitizer;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.javaoperatorsdk.operator.api.UpdateControl;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -33,8 +33,8 @@ public class BridgeIngressControllerTest {
         BridgeIngress bridgeIngress = new BridgeIngress();
         bridgeIngress.setMetadata(
                 new ObjectMetaBuilder()
-                        .withName(RFC1123Sanitizer.sanitize(TestConstants.BRIDGE_ID))
-                        .withNamespace(RFC1123Sanitizer.sanitize(TestConstants.CUSTOMER_ID))
+                        .withName(KubernetesResourceUtil.sanitizeName(TestConstants.BRIDGE_ID))
+                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .build());
         bridgeIngress.setSpec(bridgeIngressSpec);
 
