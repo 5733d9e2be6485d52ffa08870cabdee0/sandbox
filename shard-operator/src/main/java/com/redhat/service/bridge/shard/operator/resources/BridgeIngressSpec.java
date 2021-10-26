@@ -9,11 +9,31 @@ package com.redhat.service.bridge.shard.operator.resources;
 public class BridgeIngressSpec {
     private String image;
 
+    private String customerId;
+
+    private String bridgeName;
+
     public String getImage() {
         return image;
     }
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getBridgeName() {
+        return bridgeName;
+    }
+
+    public void setBridgeName(String bridgeName) {
+        this.bridgeName = bridgeName;
     }
 }

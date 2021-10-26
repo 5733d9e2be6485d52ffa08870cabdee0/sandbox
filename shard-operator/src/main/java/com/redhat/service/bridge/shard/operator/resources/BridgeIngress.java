@@ -31,6 +31,8 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
         BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
         bridgeIngressSpec.setImage(ingressImage);
+        bridgeIngressSpec.setBridgeName(bridgeDTO.getName());
+        bridgeIngressSpec.setCustomerId(bridgeDTO.getCustomerId());
 
         BridgeIngress bridgeIngress = new BridgeIngress();
         bridgeIngress.setSpec(bridgeIngressSpec);
@@ -42,8 +44,6 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
     private static Map<String, String> buildLabels(BridgeDTO bridgeDTO) {
         Map<String, String> labels = new HashMap<>();
         labels.put(ResourcesConstants.MANAGED_BY_LABEL, ResourcesConstants.OPERATOR_NAME);
-        labels.put(ResourcesConstants.CUSTOMER_LABEL, bridgeDTO.getCustomerId());
-        labels.put(ResourcesConstants.BRIDGE_NAME_LABEL, bridgeDTO.getName());
         return labels;
     }
 }
