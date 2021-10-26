@@ -4,6 +4,8 @@ import javax.ws.rs.core.Response;
 
 public class EventBridgeManagerException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public EventBridgeManagerException(String message) {
         super(message);
     }

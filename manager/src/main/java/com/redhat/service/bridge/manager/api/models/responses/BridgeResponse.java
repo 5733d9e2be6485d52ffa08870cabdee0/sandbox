@@ -8,19 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BridgeResponse {
-
-    @JsonProperty("kind")
-    private final String kind = "Bridge";
-
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("href")
-    private String href;
+public class BridgeResponse extends BaseResponse {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -36,16 +24,8 @@ public class BridgeResponse {
     @JsonProperty("endpoint")
     private String endpoint;
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getHref() {
-        return href;
+    public BridgeResponse() {
+        super("Bridge");
     }
 
     public ZonedDateTime getSubmittedAt() {
@@ -62,18 +42,6 @@ public class BridgeResponse {
 
     public String getEndpoint() {
         return endpoint;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setHref(String href) {
-        this.href = href;
     }
 
     public void setSubmittedAt(ZonedDateTime submittedAt) {
