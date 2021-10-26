@@ -43,6 +43,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .delete(BridgeIngress.fromDTO(bridgeDTO, ingressImage));
     }
 
+    // TODO: https://issues.redhat.com/browse/MGDOBR-92 manage namespaces in a different service to be injected here
     private String getOrCreateNamespace(String customerId) {
         String namespace = customerNamespaceProvider.resolveNamespace(customerId);
         if (kubernetesClient.namespaces().withName(namespace).get() == null) {
