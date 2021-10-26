@@ -6,7 +6,10 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
-public class WebClientUtils {
+public final class WebClientUtils {
+
+    private WebClientUtils() {
+    }
 
     public static WebClient getClient(Vertx vertx, String url) {
         URI uri = URI.create(url);

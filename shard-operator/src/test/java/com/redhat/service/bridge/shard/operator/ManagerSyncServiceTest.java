@@ -17,15 +17,16 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
+@WithKubernetesTestServer
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test

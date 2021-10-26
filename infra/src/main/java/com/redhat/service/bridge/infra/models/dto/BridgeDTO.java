@@ -88,4 +88,15 @@ public class BridgeDTO {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "BridgeDTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", endpoint='" + endpoint + '\'' +
+                ", customerId='" + customerId + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }
