@@ -2,12 +2,12 @@ package com.redhat.service.bridge.shard.operator.controllers;
 
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.shard.operator.TestConstants;
-import com.redhat.service.bridge.shard.operator.utils.RFC1123Sanitizer;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
+import com.redhat.service.bridge.shard.operator.utils.RFC1123Sanitizer;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.javaoperatorsdk.operator.api.UpdateControl;
@@ -35,8 +35,7 @@ public class BridgeIngressControllerTest {
                 new ObjectMetaBuilder()
                         .withName(RFC1123Sanitizer.sanitize(TestConstants.BRIDGE_ID))
                         .withNamespace(RFC1123Sanitizer.sanitize(TestConstants.CUSTOMER_ID))
-                        .build()
-        );
+                        .build());
         bridgeIngress.setSpec(bridgeIngressSpec);
 
         //When
