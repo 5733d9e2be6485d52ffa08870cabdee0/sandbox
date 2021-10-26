@@ -13,6 +13,8 @@ public class BridgeIngressSpec {
 
     private String bridgeName;
 
+    private String id;
+
     public String getImage() {
         return image;
     }
@@ -35,5 +37,13 @@ public class BridgeIngressSpec {
 
     public void setBridgeName(String bridgeName) {
         this.bridgeName = bridgeName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

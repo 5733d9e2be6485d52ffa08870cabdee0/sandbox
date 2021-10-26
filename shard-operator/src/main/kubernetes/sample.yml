@@ -7,3 +7,4 @@ spec:
   image: my-image:latest
   bridgeName: my-bridge
   customerId: kermit
+  id: my-id
