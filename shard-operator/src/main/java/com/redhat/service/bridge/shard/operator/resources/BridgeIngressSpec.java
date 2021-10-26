@@ -7,8 +7,13 @@ package com.redhat.service.bridge.shard.operator.resources;
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
  */
 public class BridgeIngressSpec {
-
     private String image;
+
+    private String customerId;
+
+    private String bridgeName;
+
+    private String id;
 
     public String getImage() {
         return image;
@@ -16,5 +21,29 @@ public class BridgeIngressSpec {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getBridgeName() {
+        return bridgeName;
+    }
+
+    public void setBridgeName(String bridgeName) {
+        this.bridgeName = bridgeName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

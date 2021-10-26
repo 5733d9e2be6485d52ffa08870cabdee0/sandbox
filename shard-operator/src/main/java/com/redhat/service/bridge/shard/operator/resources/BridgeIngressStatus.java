@@ -11,7 +11,10 @@ import java.util.List;
 public class BridgeIngressStatus {
 
     private List<String> conditions;
+
     private String status;
+
+    private String endpoint;
 
     public List<String> getConditions() {
         return conditions;
@@ -27,5 +30,13 @@ public class BridgeIngressStatus {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }
