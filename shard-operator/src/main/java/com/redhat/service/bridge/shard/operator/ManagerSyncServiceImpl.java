@@ -40,7 +40,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
-        LOGGER.info("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
+        LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
@@ -53,7 +53,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
-        LOGGER.info("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
+        LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
         return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
     }
 
@@ -79,7 +79,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         y.setStatus(BridgeStatus.DELETED);
                                         bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
@@ -103,7 +103,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 y.setStatus(BridgeStatus.DELETED);
                                 deleteProcessorCustomResource(y);
                                 return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                         failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
@@ -147,6 +147,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void processingComplete(Class<?> entity) {
-        LOGGER.info("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+        LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 }
