@@ -18,11 +18,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.KubernetesTestServer;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithKubernetesTestServer
@@ -40,8 +36,8 @@ class CustomerNamespaceProviderImplTest {
     @Test
     void testNamespaceIsCreated() {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("123");
-        assertNotNull(namespace);
-        assertEquals(customerNamespaceProvider.resolveName("123"), namespace.getMetadata().getName());
+        assertThat(namespace).isNotNull();
+        assertThat(customerNamespaceProvider.resolveName("123")).isEqualTo(namespace.getMetadata().getName());
     }
 
     @Test
@@ -50,12 +46,12 @@ class CustomerNamespaceProviderImplTest {
         kubernetesTestServer.getClient().namespaces().create(new NamespaceBuilder().withNewMetadata().withName(name).and().build());
 
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("xyz");
-        assertNotNull(namespace);
-        assertEquals(name, namespace.getMetadata().getName());
-        assertNotNull(namespace.getMetadata().getLabels());
-        assertFalse(namespace.getMetadata().getLabels().isEmpty());
-        assertTrue(namespace.getMetadata().getLabels().containsKey(LabelsBuilder.MANAGED_BY_LABEL));
-        assertTrue(namespace.getMetadata().getLabels().containsKey(LabelsBuilder.CREATED_BY_LABEL));
+        assertThat(namespace).isNotNull();
+        assertThat(name).isEqualTo(namespace.getMetadata().getName());
+        assertThat(namespace.getMetadata().getLabels()).isNotNull();
+        assertThat(namespace.getMetadata().getLabels()).isNotEmpty();
+        assertThat(namespace.getMetadata().getLabels()).containsKey(LabelsBuilder.MANAGED_BY_LABEL);
+        assertThat(namespace.getMetadata().getLabels()).containsKey(LabelsBuilder.CREATED_BY_LABEL);
     }
 
     @Test
@@ -69,13 +65,13 @@ class CustomerNamespaceProviderImplTest {
                         .and().build());
 
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("zyx");
-        assertNotNull(namespace);
-        assertEquals(name, namespace.getMetadata().getName());
-        assertNotNull(namespace.getMetadata().getLabels());
-        assertFalse(namespace.getMetadata().getLabels().isEmpty());
-        assertTrue(namespace.getMetadata().getLabels().containsKey(LabelsBuilder.MANAGED_BY_LABEL));
-        assertTrue(namespace.getMetadata().getLabels().containsKey(LabelsBuilder.CREATED_BY_LABEL));
-        assertTrue(namespace.getMetadata().getLabels().containsKey("app"));
+        assertThat(namespace).isNotNull();
+        assertThat(name).isEqualTo(namespace.getMetadata().getName());
+        assertThat(namespace.getMetadata().getLabels()).isNotNull();
+        assertThat(namespace.getMetadata().getLabels()).isNotEmpty();
+        assertThat(namespace.getMetadata().getLabels()).containsKey(LabelsBuilder.MANAGED_BY_LABEL);
+        assertThat(namespace.getMetadata().getLabels()).containsKey(LabelsBuilder.CREATED_BY_LABEL);
+        assertThat(namespace.getMetadata().getLabels()).containsKey("app");
     }
 
     @Test
@@ -86,7 +82,7 @@ class CustomerNamespaceProviderImplTest {
         // try to delete the namespace...
         customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(dto.getCustomerId());
         final Namespace namespace = kubernetesTestServer.getClient().namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
-        assertNotNull(namespace);
+        assertThat(namespace).isNotNull();
     }
 
     @Test
@@ -97,6 +93,6 @@ class CustomerNamespaceProviderImplTest {
         // there's only one bridge there
         bridgeIngressService.deleteBridgeIngress(dto);
         final Namespace namespace = kubernetesTestServer.getClient().namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
-        assertNull(namespace);
+        assertThat(namespace).isNull();
     }
 }

@@ -47,22 +47,19 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
 
     private Namespace ensureManagedLabels(final Namespace namespace, final String customerId) {
         final Map<String, String> labels = this.createLabels(customerId);
-        if (namespace.getMetadata().getLabels() == null || namespace.getMetadata().getLabels().isEmpty()) {
-            return kubernetesClient.namespaces().withName(
-                    namespace.getMetadata().getName()).edit(n -> new NamespaceBuilder(n).editOrNewMetadata().addToLabels(labels).endMetadata().build());
-        } else {
-            boolean mustUpdate = false;
+        boolean mustUpdate = (namespace.getMetadata().getLabels() == null || namespace.getMetadata().getLabels().isEmpty());
+        if (!mustUpdate) {
             for (Map.Entry<String, String> label : labels.entrySet()) {
                 if (!label.getValue().equals(namespace.getMetadata().getLabels().get(label.getKey()))) {
                     mustUpdate = true;
+                    break;
                 }
             }
-            if (mustUpdate) {
-                return kubernetesClient.namespaces().withName(
-                        namespace.getMetadata().getName()).edit(n -> new NamespaceBuilder(n).editOrNewMetadata().addToLabels(labels).endMetadata().build());
-            }
         }
-
+        if (mustUpdate) {
+            return kubernetesClient.namespaces().withName(
+                    namespace.getMetadata().getName()).edit(n -> new NamespaceBuilder(n).editOrNewMetadata().addToLabels(labels).endMetadata().build());
+        }
         return namespace;
     }
 
