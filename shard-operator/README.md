@@ -22,8 +22,6 @@ mvn clean install -Pminikube -Dnamespace=mynamespace
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
 ## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)
 kubectl apply -f target/kubernetes/minikube.yml -n mynamespace
-## now you can build and let the plugin deploy the objects for you
-mvn install -DskipTests -Pminikube -Dnamespace=mynamespace -Dquarkus.kubernetes.deploy=true  #-Dquarkus.kubernetes.node-port=90909 <-- us this if clashes
 ## install the sample
 kubectl apply -f src/main/kubernetes/sample.yml -n mynamespace
 ````

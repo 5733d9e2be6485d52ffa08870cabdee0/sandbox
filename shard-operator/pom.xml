@@ -127,6 +127,7 @@
         <namespace>default</namespace>
         <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
         <quarkus.profile>minikube</quarkus.profile>
       </properties>
       <dependencies>
