@@ -2,9 +2,10 @@ apiVersion: com.redhat.service.bridge/v1alpha1
 kind: BridgeIngress
 metadata:
   name: 99259d8b-3fdd-48de-a810-a66db8b9914c
+  app.kubernetes.io/managed-by: bridge-fleet-shard-operator
 spec:
   # just a placeholder, at this time the operator won't deploy anything
   image: my-image:latest
   bridgeName: my-bridge
-  customerId: kermit
-  id: my-id
+  customerId: mycustomerid
+  id: 99259d8b-3fdd-48de-a810-a66db8b9914c
