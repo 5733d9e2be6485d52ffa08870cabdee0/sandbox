@@ -3,6 +3,9 @@ package com.redhat.service.bridge.shard.operator.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
+import io.fabric8.kubernetes.client.utils.Utils;
+
 /**
  * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are always added with {@link #OPERATOR_NAME} value.
  *
@@ -31,7 +34,7 @@ public final class LabelsBuilder {
      * Useful for querying objects related to a given customer.
      */
     public LabelsBuilder withCustomerId(String customerId) {
-        this.labels.put(CUSTOMER_ID_LABEL, customerId);
+        this.labels.put(CUSTOMER_ID_LABEL, sanitizeAndCheckLabelValue(customerId));
         return this;
     }
 
@@ -39,7 +42,7 @@ public final class LabelsBuilder {
      * The controller/user who created this resource
      */
     public LabelsBuilder withCreatedBy(String createdBy) {
-        this.labels.put(CREATED_BY_LABEL, createdBy);
+        this.labels.put(CREATED_BY_LABEL, sanitizeAndCheckLabelValue(createdBy));
         return this;
     }
 
@@ -47,7 +50,7 @@ public final class LabelsBuilder {
      * The name of the application. Example "mysql".
      */
     public LabelsBuilder withAppName(String name) {
-        this.labels.put(NAME_LABEL, name);
+        this.labels.put(NAME_LABEL, sanitizeAndCheckLabelValue(name));
         return this;
     }
 
@@ -55,7 +58,7 @@ public final class LabelsBuilder {
      * The name of a higher level application this one is part of. Example "wordpress".
      */
     public LabelsBuilder withPartOf(String partOf) {
-        this.labels.put(PART_OF_LABEL, partOf);
+        this.labels.put(PART_OF_LABEL, sanitizeAndCheckLabelValue(partOf));
         return this;
     }
 
@@ -65,7 +68,7 @@ public final class LabelsBuilder {
      * The current version of the application (e.g., a semantic version, revision hash, etc.).
      */
     public LabelsBuilder withVersion(String version) {
-        this.labels.put(VERSION_LABEL, version);
+        this.labels.put(VERSION_LABEL, sanitizeAndCheckLabelValue(version));
         return this;
     }
 
@@ -73,7 +76,7 @@ public final class LabelsBuilder {
      * A unique name identifying the instance of an application. Example "mysql-abcxyz".
      */
     public LabelsBuilder withAppInstance(String instance) {
-        this.labels.put(INSTANCE_LABEL, instance);
+        this.labels.put(INSTANCE_LABEL, sanitizeAndCheckLabelValue(instance));
         return this;
     }
 
@@ -81,7 +84,7 @@ public final class LabelsBuilder {
      * The component within the architecture. Example "database".
      */
     public LabelsBuilder withComponent(String component) {
-        this.labels.put(COMPONENT_LABEL, component);
+        this.labels.put(COMPONENT_LABEL, sanitizeAndCheckLabelValue(component));
         return this;
     }
 
@@ -89,5 +92,17 @@ public final class LabelsBuilder {
         labels.put(MANAGED_BY_LABEL, OPERATOR_NAME);
         labels.putIfAbsent(CREATED_BY_LABEL, OPERATOR_NAME);
         return labels;
+    }
+
+    /**
+     * @see <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set">Kubernetes Labels - Syntax and Character Set</a>
+     */
+    private String sanitizeAndCheckLabelValue(final String labelValue) {
+        final String sanitized = KubernetesResourceUtil.sanitizeName(labelValue);
+        if (Utils.isNotNullOrEmpty(labelValue) &&
+                labelValue.length() <= KubernetesResourceUtil.KUBERNETES_DNS1123_LABEL_MAX_LENGTH) {
+            return sanitized;
+        }
+        throw new IllegalArgumentException(String.format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
     }
 }
