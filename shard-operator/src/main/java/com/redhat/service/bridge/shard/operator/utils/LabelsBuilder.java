@@ -103,6 +103,7 @@ public final class LabelsBuilder {
                 labelValue.length() <= KubernetesResourceUtil.KUBERNETES_DNS1123_LABEL_MAX_LENGTH) {
             return sanitized;
         }
-        throw new IllegalArgumentException(String.format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
+        throw new IllegalArgumentException(String
+                .format("The label value %s is invalid. Label values must be 63 characters or less, begin with [a-z0-9A-Z] and contain only dashes (-), dots (.), or underscores (_)", labelValue));
     }
 }
