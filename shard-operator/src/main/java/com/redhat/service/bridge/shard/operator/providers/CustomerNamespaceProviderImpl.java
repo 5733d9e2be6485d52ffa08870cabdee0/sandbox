@@ -68,13 +68,13 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
         final String name = this.resolveName(customerId);
         final Namespace namespace = kubernetesClient.namespaces().withName(name).get();
         if (namespace == null) {
-            LOGGER.info("Namespace {} for customerId {} does not exist any more, canceling deletion", name, customerId);
+            LOGGER.info("Namespace '{}' for customerId '{}' does not exist any more, canceling deletion", name, customerId);
         } else {
             if (isSafeToDelete(namespace)) {
                 // deletion can be tricky with finalizers, pending objects, etc.
                 // let's start simple and build on top of the constraints and scenarios as we evolve.
                 if (!kubernetesClient.namespaces().withName(name).delete()) {
-                    LOGGER.warn("Namespace {} hasn't been deleted", name);
+                    LOGGER.warn("Namespace '{}' hasn't been deleted", name);
                 }
             }
         }

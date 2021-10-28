@@ -38,6 +38,6 @@ public interface CustomerNamespaceProvider {
             return sanitizedName;
         }
         // TODO: we have to either enforce a valid Kubernetes resource name for customer ids once it's inserted in our database or come up with an alternative way to create the namespace name.
-        throw new IllegalArgumentException(String.format("CustomerID %s can't be sanitized to a Kubernetes valid resource name", customerId));
+        throw new IllegalArgumentException(String.format("CustomerID '%s' can't be sanitized to a Kubernetes valid resource name", customerId));
     }
 }
