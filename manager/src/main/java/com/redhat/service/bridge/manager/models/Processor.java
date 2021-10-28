@@ -21,11 +21,17 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Version;
 
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+
+import io.quarkiverse.hibernate.types.json.JsonBinaryType;
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 // The join fetch on the filters will produce duplicates that must be removed from the results (see https://developer.jboss.org/docs/DOC-15782#jive_content_id_Hibernate_does_not_return_distinct_results_for_a_query_with_outer_join_fetching_enabled_for_a_collection_even_if_I_use_the_distinct_keyword)
 @NamedQueries({
@@ -45,6 +51,7 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
                 query = "select p, p.action from Processor p join fetch p.bridge left join fetch p.filters join fetch p.action join fetch p.action.parameters where p.id in (:ids)")
 })
 @Entity
+@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 public class Processor {
 
     public static final String ID_PARAM = "id";
@@ -82,7 +89,8 @@ public class Processor {
     @OneToMany(mappedBy = "processor", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
     private Set<Filter> filters;
 
-    @Column(name = "transformation_template")
+    @Type(type = JsonTypes.JSON_BIN)
+    @Column(name = "transformation_template", columnDefinition = JsonTypes.JSON_BIN)
     private String transformationTemplate;
 
     public String getId() {
