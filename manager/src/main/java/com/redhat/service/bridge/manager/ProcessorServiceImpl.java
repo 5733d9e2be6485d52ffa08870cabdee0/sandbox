@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.processors.BaseProcessor;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
@@ -59,14 +59,15 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        final Processor p = new Processor();
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), processorRequest.getAction());
+
+        Processor p = new Processor();
 
         p.setName(processorRequest.getName());
+        p.setDefinition(definition);
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
-
-        p.setDefinition(new BaseProcessor(processorRequest.getName(), processorRequest.getFilters(), processorRequest.getTransformationTemplate(), processorRequest.getAction()));
 
         processorDAO.persist(p);
         return p;

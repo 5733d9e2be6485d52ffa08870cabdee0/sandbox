@@ -22,6 +22,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
@@ -153,6 +154,7 @@ public class ExecutorTest {
 
     protected ProcessorDTO createProcessor(Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
         BridgeDTO bridgeDTO = new BridgeDTO("bridgeId-1", "bridgeName-1", "test", "jrota", BridgeStatus.AVAILABLE);
-        return new ProcessorDTO("processorId-1", "processorName-1", bridgeDTO, BridgeStatus.AVAILABLE, filters, transformationTemplate, action);
+        ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, action);
+        return new ProcessorDTO("processorId-1", "processorName-1", definition, bridgeDTO, BridgeStatus.AVAILABLE);
     }
 }

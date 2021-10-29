@@ -20,15 +20,17 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.processors.BaseProcessor;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
-// The join fetch on the filters will produce duplicates that must be removed from the results (see https://developer.jboss.org/docs/DOC-15782#jive_content_id_Hibernate_does_not_return_distinct_results_for_a_query_with_outer_join_fetching_enabled_for_a_collection_even_if_I_use_the_distinct_keyword)
+// Outer join fetches will produce duplicates that must be removed from the results.
+// See: https://developer.jboss.org/docs/DOC-15782#jive_content_id_Hibernate_does_not_return_distinct_results_for_a_query_with_outer_join_fetching_enabled_for_a_collection_even_if_I_use_the_distinct_keyword
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
@@ -63,7 +65,7 @@ public class Processor {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN)
-    private BaseProcessor definition;
+    private ProcessorDefinition definition;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
@@ -98,11 +100,11 @@ public class Processor {
         this.name = name;
     }
 
-    public BaseProcessor getDefinition() {
+    public ProcessorDefinition getDefinition() {
         return definition;
     }
 
-    public void setDefinition(BaseProcessor definition) {
+    public void setDefinition(ProcessorDefinition definition) {
         this.definition = definition;
     }
 
@@ -167,20 +169,8 @@ public class Processor {
     }
 
     public ProcessorDTO toDTO() {
-
-        ProcessorDTO dto = new ProcessorDTO();
-        dto.setId(this.id);
-        dto.setName(this.name);
-        dto.setStatus(this.status);
-        dto.setFilters(definition.getFilters());
-        dto.setTransformationTemplate(definition.getTransformationTemplate());
-        dto.setAction(definition.getAction());
-
-        if (this.bridge != null) {
-            dto.setBridge(this.bridge.toDTO());
-        }
-
-        return dto;
+        BridgeDTO bridgeDTO = bridge != null ? bridge.toDTO() : null;
+        return new ProcessorDTO(id, name, definition, bridgeDTO, status);
     }
 
     /*

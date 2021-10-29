@@ -1,17 +1,20 @@
 package com.redhat.service.bridge.infra.models.dto;
 
 import java.util.Objects;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.processors.BaseProcessor;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
-public class ProcessorDTO extends BaseProcessor {
+public class ProcessorDTO {
 
     @JsonProperty("id")
     private String id;
+
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("definition")
+    private ProcessorDefinition definition;
 
     @JsonProperty("bridge")
     private BridgeDTO bridge;
@@ -22,11 +25,12 @@ public class ProcessorDTO extends BaseProcessor {
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
-        super(name, filters, transformationTemplate, action);
+    public ProcessorDTO(String id, String name, ProcessorDefinition definition, BridgeDTO bridge, BridgeStatus status) {
         this.id = id;
+        this.name = name;
         this.bridge = bridge;
         this.status = status;
+        this.definition = definition;
     }
 
     public String getId() {
@@ -35,6 +39,22 @@ public class ProcessorDTO extends BaseProcessor {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ProcessorDefinition getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(ProcessorDefinition definition) {
+        this.definition = definition;
     }
 
     public BridgeDTO getBridge() {

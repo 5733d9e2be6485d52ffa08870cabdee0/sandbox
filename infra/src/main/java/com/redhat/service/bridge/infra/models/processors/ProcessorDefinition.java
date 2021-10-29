@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
-public class BaseProcessor {
-
-    @JsonProperty("name")
-    private String name;
+public class ProcessorDefinition {
 
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
@@ -21,22 +18,13 @@ public class BaseProcessor {
     @JsonProperty("action")
     private BaseAction action;
 
-    public BaseProcessor() {
+    public ProcessorDefinition() {
     }
 
-    public BaseProcessor(String name, Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
-        this.name = name;
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
         this.action = action;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -71,13 +59,13 @@ public class BaseProcessor {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BaseProcessor processor = (BaseProcessor) o;
-        return Objects.equals(name, processor.name) && Objects.equals(filters, processor.filters) && Objects.equals(transformationTemplate, processor.transformationTemplate)
+        ProcessorDefinition processor = (ProcessorDefinition) o;
+        return Objects.equals(filters, processor.filters) && Objects.equals(transformationTemplate, processor.transformationTemplate)
                 && Objects.equals(action, processor.action);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, filters, transformationTemplate, action);
+        return Objects.hash(filters, transformationTemplate, action);
     }
 }
