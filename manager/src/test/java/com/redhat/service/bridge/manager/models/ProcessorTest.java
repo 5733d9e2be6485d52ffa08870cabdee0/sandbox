@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.models;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.processors.BaseProcessor;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
@@ -32,15 +35,15 @@ public class ProcessorTest {
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
-        p.setTransformationTemplate("");
 
-        Action action = new Action();
+        BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
         action.setName(TestConstants.DEFAULT_ACTION_NAME);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         action.setParameters(params);
-        p.setAction(action);
+
+        p.setDefinition(new BaseProcessor(TestConstants.DEFAULT_BRIDGE_NAME, Collections.emptySet(), "", action));
 
         ProcessorResponse r = p.toResponse();
         assertThat(r).isNotNull();

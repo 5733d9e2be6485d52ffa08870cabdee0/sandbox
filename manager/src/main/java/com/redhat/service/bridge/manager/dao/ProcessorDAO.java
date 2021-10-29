@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.dao;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.TypedQuery;
@@ -103,12 +102,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         addParamsToNamedQuery(p, idsQuery);
         List<String> ids = idsQuery.setMaxResults(size).setFirstResult(firstResult).getResultList();
 
-        /*
-         * We have to include the Action in the select list, so this returns both the Processor and Action as a pair. We only
-         * want the Processor.
-         */
-        List<Object[]> results = getEntityManager().createNamedQuery("PROCESSOR.findByIds").setParameter(IDS_PARAM, ids).getResultList();
-        List<Processor> processors = removeDuplicates(results.stream().map((o) -> (Processor) o[0]).collect(Collectors.toList()));
+        List<Processor> processors = getEntityManager().createNamedQuery("PROCESSOR.findByIds", Processor.class).setParameter(IDS_PARAM, ids).getResultList();
         return new ListResult<>(processors, page, processorCount);
     }
 

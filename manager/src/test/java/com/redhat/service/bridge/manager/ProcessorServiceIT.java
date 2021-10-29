@@ -117,7 +117,8 @@ public class ProcessorServiceIT {
         assertThat(processor.getName()).isEqualTo(r.getName());
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
-        assertThat(processor.getTransformationTemplate()).isEqualTo("{}");
+        assertThat(processor.getDefinition()).isNotNull();
+        assertThat(processor.getDefinition().getTransformationTemplate()).isEqualTo("{}");
     }
 
     @Test
