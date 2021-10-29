@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.runner.it;
+package com.redhat.service.bridge.test.resource;
 
 import java.util.Collections;
 import java.util.Map;
