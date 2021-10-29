@@ -1,12 +1,27 @@
 # DEMO
 
-The platform service is running on the endpoint specified in [this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet). 
+Requirements to run locally:
+* docker-compose
+* curl
+* [jq](https://stedolan.github.io/jq/)    
 
-First of all, export the base address of the Manager. For example, if the application is running on `localhost:8080` (replace this with the endpoint you extract from the link above), run
+The platform service is running on the endpoint specified in [this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet), but this demo is usable also locally.
+
+First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above.
 
 ```bash
 export MANAGER_URL=http://localhost:8080
 ```
+
+# Authentication
+
+Each request will need a [Bearer](https://quarkus.io/guides/security#openid-connect) token passed as an http header. To get the token, run:
+
+```shell
+export OB_TOKEN="Bearer $(curl --insecure -X POST http://localhost:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token     --user event-bridge:secret     -H 'content-type: application/x-www-form-urlencoded'     -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
+```
+
+This token will last 3 minutes. Each time you get a `401 Unauthorized` from OpenBridge, run the command above again.
 
 ## How to create a Bridge instance
 
@@ -19,7 +34,7 @@ In order to send events to an Ingress, it is necessary to create a Bridge instan
 Run 
 
 ```bash
-curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myBridge"}' $MANAGER_URL/api/v1/bridges
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myBridge"}' $MANAGER_URL/api/v1/bridges | jq .
 ```
 
 The response should look like something like
@@ -35,17 +50,17 @@ The response should look like something like
 }
 ```
 
-Extract the Bridge ID and store it in another env variable (replace the value with the Bridge ID you get from the response) 
+Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 
 ```bash
-export BRIDGE_ID=87508471-ee0f-4f53-b574-da8a61285986
+export BRIDGE_ID=87508471-ee0f-4f53-b574-da8a61285986 # same id as before
 ```
 
 Until the Bridge is not in the `AVAILABLE` state, it is not possible to create Processors and to push events to the Ingress. 
 Check the status of the deployment with a GET request to the `/api/v1/bridges/{id}` endpoint: 
 
 ```bash
-curl -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq .
 ```
 
 the response should look like 
@@ -82,7 +97,7 @@ An example payload request is the following:
   "name": "myProcessor",
   "action": {
     "name": "myKafkaAction",
-    "parameters": {"topic":  "myTopic"},
+    "parameters": {"topic":  "demoTopic"},
     "type": "KafkaTopicAction"
   },
   "filters": [
@@ -96,12 +111,12 @@ An example payload request is the following:
 ```
 
 So only the events with `source` equals to `StorageService` will be sent to the 
-the action `KafkaTopicAction`, which will push the event to the kafka instance under the topic `myTopic`.
+the action `KafkaTopicAction`, which will push the event to the kafka instance under the topic `demoTopic`.
 
 Run 
 
 ```bash
-curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"name": "myKafkaAction", "parameters": {"topic":  "myTopic"}, "type": "KafkaTopicAction"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"name": "myKafkaAction", "parameters": {"topic":  "demoTopic"}, "type": "KafkaTopicAction"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -129,13 +144,13 @@ and the response is something like
       "type":"KafkaTopicAction",
       "parameters":
       {
-        "topic":"myTopic"
+        "topic":"demoTopic"
       }
     }
 }
 ```
 
-Extract the Processor ID
+Extract the Processor ID, it's the first id field in top level response. 
 
 ```bash
 export PROCESSOR_ID=cad90605-9836-4378-9250-f9c8d19f4e0c
@@ -144,7 +159,7 @@ export PROCESSOR_ID=cad90605-9836-4378-9250-f9c8d19f4e0c
 Like for the Bridge instance, it is needed to wait until the Processor has been deployed. Monitor its state with the endpoint `/api/v1/bridges/{bridgeId}/processors/{processorId}`
 
 ```bash
-curl -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID  | jq .
 ```
 
 ## Send events to the Ingress
