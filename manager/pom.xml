@@ -13,10 +13,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>Event Bridge :: Manager</name>
 
-  <properties>
-    <version.io.quarkiverse.hibernatetypes>0.1.0</version.io.quarkiverse.hibernatetypes>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -73,7 +69,6 @@
     <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
       <artifactId>quarkus-hibernate-types</artifactId>
-      <version>${version.io.quarkiverse.hibernatetypes}</version>
     </dependency>
 
     <dependency>
