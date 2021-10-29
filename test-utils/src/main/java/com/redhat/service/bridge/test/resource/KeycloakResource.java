@@ -27,7 +27,6 @@ public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
 
     public KeycloakResource() {
         keycloak.addExposedPort(PORT);
-        keycloak.withEnv("DB_VENDOR", "h2");
         keycloak.withEnv("KEYCLOAK_USER", USER);
         keycloak.withEnv("KEYCLOAK_PASSWORD", PASSWORD);
         keycloak.withEnv("KEYCLOAK_IMPORT", REALM_FILE);
