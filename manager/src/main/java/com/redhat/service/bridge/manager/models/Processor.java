@@ -19,18 +19,12 @@ import javax.persistence.Version;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
-import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
-// Outer join fetches will produce duplicates that must be removed from the results.
-// See: https://developer.jboss.org/docs/DOC-15782#jive_content_id_Hibernate_does_not_return_distinct_results_for_a_query_with_outer_join_fetching_enabled_for_a_collection_even_if_I_use_the_distinct_keyword
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
@@ -146,31 +140,6 @@ public class Processor {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
-    }
-
-    public ProcessorResponse toResponse() {
-
-        ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setId(id);
-        processorResponse.setName(name);
-        processorResponse.setStatus(status);
-        processorResponse.setPublishedAt(publishedAt);
-        processorResponse.setSubmittedAt(submittedAt);
-        processorResponse.setFilters(definition.getFilters());
-        processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-        processorResponse.setAction(definition.getAction());
-
-        if (this.bridge != null) {
-            processorResponse.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId() + "/processors/" + id);
-            processorResponse.setBridge(this.bridge.toResponse());
-        }
-
-        return processorResponse;
-    }
-
-    public ProcessorDTO toDTO() {
-        BridgeDTO bridgeDTO = bridge != null ? bridge.toDTO() : null;
-        return new ProcessorDTO(id, name, definition, bridgeDTO, status);
     }
 
     /*

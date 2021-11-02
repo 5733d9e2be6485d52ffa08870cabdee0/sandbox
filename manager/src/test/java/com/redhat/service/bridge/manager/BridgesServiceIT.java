@@ -117,7 +117,7 @@ public class BridgesServiceIT {
         assertThat(bridges.get(0).getStatus()).isEqualTo(BridgeStatus.REQUESTED);
 
         bridge.setStatus(BridgeStatus.PROVISIONING);
-        bridgesService.updateBridge(bridge.toDTO());
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
         bridges = bridgesService.getBridgesByStatuses(Collections.singletonList(BridgeStatus.REQUESTED));
         assertThat(bridges.size()).isZero();

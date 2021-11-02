@@ -11,10 +11,13 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
@@ -116,6 +119,33 @@ public class ProcessorServiceImpl implements ProcessorService {
         processor.setStatus(BridgeStatus.DELETION_REQUESTED);
         LOGGER.info("[manager] Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
+    }
+
+    @Override
+    public ProcessorDTO toDTO(Processor processor) {
+        BridgeDTO bridgeDTO = processor.getBridge() != null ? bridgesService.toDTO(processor.getBridge()) : null;
+        return new ProcessorDTO(processor.getId(), processor.getName(), processor.getDefinition(), bridgeDTO, processor.getStatus());
+    }
+
+    @Override
+    public ProcessorResponse toResponse(Processor processor) {
+        ProcessorResponse processorResponse = new ProcessorResponse();
+
+        processorResponse.setId(processor.getId());
+        processorResponse.setName(processor.getName());
+        processorResponse.setStatus(processor.getStatus());
+        processorResponse.setPublishedAt(processor.getPublishedAt());
+        processorResponse.setSubmittedAt(processor.getSubmittedAt());
+        processorResponse.setFilters(processor.getDefinition().getFilters());
+        processorResponse.setTransformationTemplate(processor.getDefinition().getTransformationTemplate());
+        processorResponse.setAction(processor.getDefinition().getAction());
+
+        if (processor.getBridge() != null) {
+            processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
+            processorResponse.setBridge(bridgesService.toResponse(processor.getBridge()));
+        }
+
+        return processorResponse;
     }
 
     private Bridge getAvailableBridge(String bridgeId, String customerId) {

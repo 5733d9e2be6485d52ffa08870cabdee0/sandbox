@@ -12,9 +12,11 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
@@ -116,5 +118,29 @@ public class BridgesServiceImpl implements BridgesService {
 
         LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
+    }
+
+    @Override
+    public BridgeDTO toDTO(Bridge bridge) {
+        BridgeDTO dto = new BridgeDTO();
+        dto.setId(bridge.getId());
+        dto.setName(bridge.getName());
+        dto.setEndpoint(bridge.getEndpoint());
+        dto.setStatus(bridge.getStatus());
+        dto.setCustomerId(bridge.getCustomerId());
+        return dto;
+    }
+
+    @Override
+    public BridgeResponse toResponse(Bridge bridge) {
+        BridgeResponse response = new BridgeResponse();
+        response.setId(bridge.getId());
+        response.setName(bridge.getName());
+        response.setEndpoint(bridge.getEndpoint());
+        response.setSubmittedAt(bridge.getSubmittedAt());
+        response.setPublishedAt(bridge.getPublishedAt());
+        response.setStatus(bridge.getStatus());
+        response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
+        return response;
     }
 }
