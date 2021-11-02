@@ -11,7 +11,7 @@ public class TemplatesUtils {
     private static final String TEMPLATES_DIR = "/templates/";
     private static final String INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "bridge-ingress-deployment.yaml";
 
-    public static Deployment loadIngressDeploymentTemplate(){
+    public static Deployment loadIngressDeploymentTemplate() {
         return loadYaml(Deployment.class, INGRESS_DEPLOYMENT_PATH);
     }
 
