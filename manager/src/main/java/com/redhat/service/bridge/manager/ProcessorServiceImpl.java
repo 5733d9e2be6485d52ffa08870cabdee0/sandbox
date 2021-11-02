@@ -11,6 +11,9 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -43,6 +46,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     MeterRegistry meterRegistry;
 
+    @Inject
+    ObjectMapper mapper;
+
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
 
@@ -67,7 +73,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor p = new Processor();
 
         p.setName(processorRequest.getName());
-        p.setDefinition(definition);
+        p.setDefinition(definitionToJsonNode(definition));
         p.setSubmittedAt(ZonedDateTime.now());
         p.setStatus(BridgeStatus.REQUESTED);
         p.setBridge(bridge);
@@ -124,7 +130,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public ProcessorDTO toDTO(Processor processor) {
         BridgeDTO bridgeDTO = processor.getBridge() != null ? bridgesService.toDTO(processor.getBridge()) : null;
-        return new ProcessorDTO(processor.getId(), processor.getName(), processor.getDefinition(), bridgeDTO, processor.getStatus());
+        ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
+        return new ProcessorDTO(processor.getId(), processor.getName(), definition, bridgeDTO, processor.getStatus());
     }
 
     @Override
@@ -136,9 +143,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setStatus(processor.getStatus());
         processorResponse.setPublishedAt(processor.getPublishedAt());
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
-        processorResponse.setFilters(processor.getDefinition().getFilters());
-        processorResponse.setTransformationTemplate(processor.getDefinition().getTransformationTemplate());
-        processorResponse.setAction(processor.getDefinition().getAction());
+
+        if (processor.getDefinition() != null) {
+            ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+            processorResponse.setFilters(definition.getFilters());
+            processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
+            processorResponse.setAction(definition.getAction());
+        }
 
         if (processor.getBridge() != null) {
             processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
@@ -146,6 +157,20 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         return processorResponse;
+    }
+
+    @Override
+    public JsonNode definitionToJsonNode(ProcessorDefinition definition) {
+        return mapper.valueToTree(definition);
+    }
+
+    @Override
+    public ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
+        try {
+            return mapper.treeToValue(jsonNode, ProcessorDefinition.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Can't convert JsonNode to ProcessorDefinition", e);
+        }
     }
 
     private Bridge getAvailableBridge(String bridgeId, String customerId) {

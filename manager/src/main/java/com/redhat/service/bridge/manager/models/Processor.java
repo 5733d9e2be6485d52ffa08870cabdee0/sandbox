@@ -19,8 +19,8 @@ import javax.persistence.Version;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -59,7 +59,7 @@ public class Processor {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN)
-    private ProcessorDefinition definition;
+    private JsonNode definition;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
@@ -94,11 +94,11 @@ public class Processor {
         this.name = name;
     }
 
-    public ProcessorDefinition getDefinition() {
+    public JsonNode getDefinition() {
         return definition;
     }
 
-    public void setDefinition(ProcessorDefinition definition) {
+    public void setDefinition(JsonNode definition) {
         this.definition = definition;
     }
 

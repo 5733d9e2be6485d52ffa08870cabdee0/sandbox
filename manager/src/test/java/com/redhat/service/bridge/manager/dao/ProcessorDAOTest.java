@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -39,6 +40,9 @@ public class ProcessorDAOTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @Inject
+    ObjectMapper mapper;
+
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanDatabase();
@@ -60,7 +64,8 @@ public class ProcessorDAOTest {
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
 
-        p.setDefinition(new ProcessorDefinition(Collections.emptySet(), null, a));
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
+        p.setDefinition(mapper.valueToTree(definition));
 
         processorDAO.persist(p);
         return p;

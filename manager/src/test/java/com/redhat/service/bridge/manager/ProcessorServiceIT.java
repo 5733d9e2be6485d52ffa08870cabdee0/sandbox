@@ -122,7 +122,9 @@ public class ProcessorServiceIT {
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
-        assertThat(processor.getDefinition().getTransformationTemplate()).isEqualTo("{}");
+
+        ProcessorDefinition definition = processorService.jsonNodeToDefinition(processor.getDefinition());
+        assertThat(definition.getTransformationTemplate()).isEqualTo("{}");
     }
 
     @Test
@@ -313,7 +315,8 @@ public class ProcessorServiceIT {
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         action.setParameters(params);
 
-        p.setDefinition(new ProcessorDefinition(Collections.emptySet(), "", action));
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
+        p.setDefinition(processorService.definitionToJsonNode(definition));
 
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();
