@@ -127,12 +127,18 @@
         <namespace>default</namespace>
         <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
         <quarkus.profile>minikube</quarkus.profile>
       </properties>
       <dependencies>
         <dependency>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-minikube</artifactId>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-container-image-jib</artifactId>
           <optional>true</optional>
         </dependency>
       </dependencies>

@@ -12,10 +12,12 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.javaoperatorsdk.operator.api.UpdateControl;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
+@WithKubernetesTestServer
 public class BridgeIngressControllerTest {
 
     @Inject

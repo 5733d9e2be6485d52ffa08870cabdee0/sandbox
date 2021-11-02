@@ -1,10 +1,7 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.shard.operator.ResourcesConstants;
+import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -23,11 +20,16 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @ShortNames("bi")
 public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
 
+    private static final String COMPONENT_NAME = "ingress";
+
     public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace, String ingressImage) {
         ObjectMeta meta = new ObjectMetaBuilder()
                 .withName(KubernetesResourceUtil.sanitizeName(bridgeDTO.getId()))
                 .withNamespace(namespace)
-                .withLabels(buildLabels(bridgeDTO))
+                .withLabels(new LabelsBuilder()
+                        .withCustomerId(bridgeDTO.getCustomerId())
+                        .withComponent(COMPONENT_NAME)
+                        .build())
                 .build();
 
         BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
@@ -50,11 +52,5 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         bridgeDTO.setName(this.getSpec().getBridgeName());
         bridgeDTO.setEndpoint(this.getStatus().getEndpoint());
         return bridgeDTO;
-    }
-
-    private static Map<String, String> buildLabels(BridgeDTO bridgeDTO) {
-        Map<String, String> labels = new HashMap<>();
-        labels.put(ResourcesConstants.MANAGED_BY_LABEL, ResourcesConstants.OPERATOR_NAME);
-        return labels;
     }
 }

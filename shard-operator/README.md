@@ -16,7 +16,7 @@ README to be updated once we start implementing all the features.
 ````shell
 ## Make sure that you're pointing to the internal minikube registry
 eval $(minikube -p minikube docker-env)
-## build the image and generate the resources (if namespace not provided, it uses the default - not recommended)
+## generate the resources (if namespace not provided, it uses the default - not recommended)
 mvn clean install -Pminikube -Dnamespace=mynamespace
 ## apply the CRD
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
