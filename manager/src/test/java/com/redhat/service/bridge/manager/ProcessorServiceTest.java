@@ -45,7 +45,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
-public class ProcessorServiceIT {
+public class ProcessorServiceTest {
 
     @Inject
     BridgeDAO bridgeDAO;

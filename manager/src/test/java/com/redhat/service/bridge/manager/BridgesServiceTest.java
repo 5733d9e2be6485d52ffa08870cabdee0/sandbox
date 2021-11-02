@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
-public class BridgesServiceIT {
+public class BridgesServiceTest {
 
     @Inject
     BridgesService bridgesService;
