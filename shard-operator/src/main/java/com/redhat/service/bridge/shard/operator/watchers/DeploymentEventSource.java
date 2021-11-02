@@ -3,7 +3,6 @@ package com.redhat.service.bridge.shard.operator.watchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.ResourcesConstants;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -42,8 +41,8 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
                 .apps()
                 .deployments()
                 .inAnyNamespace()
-                .withLabel(ResourcesConstants.MANAGED_BY_LABEL, ResourcesConstants.OPERATOR_NAME)
-                .withLabel(LabelsBuilder.APPLICATION_TYPE, applicationType)
+                .withLabel(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME)
+                .withLabel(LabelsBuilder.APPLICATION_TYPE_LABEL, applicationType)
                 .watch(this);
     }
 

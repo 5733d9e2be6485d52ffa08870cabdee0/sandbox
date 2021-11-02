@@ -18,6 +18,7 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
@@ -30,7 +31,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -40,8 +40,10 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Inject
     KubernetesClient kubernetesClient;
 
+    @Inject
+    CustomerNamespaceProvider customerNamespaceProvider;
+
     @Test
-    @Disabled("Bug in the sdk? It's working on real k8s clusters")
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
@@ -61,17 +63,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
-                                    .withName(KubernetesResourceUtil.sanitizeName("myId-1"))
-                                    .get();
-
-                            assertThat(deployment).isNotNull();
-                            deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
-                            kubernetesClient.apps().deployments()
-                                    .inNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
-                                    .withName(KubernetesResourceUtil.sanitizeName("myId-1"))
-                                    .replace(deployment);
+                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-1"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
+                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-2"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
                         });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
@@ -154,5 +147,18 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    private void patchDeployment(String name, String namespace) {
+        Deployment deployment = kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+        assertThat(deployment).isNotNull();
+        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
+        kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .replace(deployment);
     }
 }

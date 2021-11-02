@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ""
+  labels:
+    app.kubernetes.io/managed-by: "" # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: "" # Specify the operator
+    app.kubernetes.io/application-type: "" # used to specify the application type
+  ownerReferences: # used for finding which Tomcat does this Deployment belong to
+    - apiVersion: ""
+      kind: ""
+      name: ""
+      uid: ""
+spec:
+  selector:
+    matchLabels:
+      app: ""
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ""
+    spec:
+      containers:
+        - name: ""
+          image: ""
