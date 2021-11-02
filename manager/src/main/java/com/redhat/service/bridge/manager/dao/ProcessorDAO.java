@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.manager.dao;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -48,7 +46,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
      * 
      */
     private Processor singleResultFromList(PanacheQuery<Processor> find) {
-        List<Processor> processors = removeDuplicates(find.list());
+        List<Processor> processors = find.list();
         if (processors.size() > 1) {
             throw new IllegalStateException("Multiple Entities returned from a Query that should only return a single Entity");
         }
@@ -66,7 +64,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
     public List<Processor> findByStatuses(List<BridgeStatus> statuses) {
         Parameters p = Parameters.with("statuses", statuses);
-        return removeDuplicates(find("#PROCESSOR.findByStatus", p).list());
+        return find("#PROCESSOR.findByStatus", p).list();
     }
 
     private Long countProcessorsOnBridge(Parameters params) {
@@ -117,9 +115,5 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         }
 
         return requestedPage * requestedPageSize;
-    }
-
-    private List<Processor> removeDuplicates(List<Processor> processors) {
-        return new ArrayList<>(new LinkedHashSet<>(processors));
     }
 }
