@@ -2,10 +2,8 @@ package com.redhat.service.bridge.manager;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.models.ListResult;
@@ -30,8 +28,4 @@ public interface ProcessorService {
     ProcessorDTO toDTO(Processor processor);
 
     ProcessorResponse toResponse(Processor processor);
-
-    JsonNode definitionToJsonNode(ProcessorDefinition definition);
-
-    ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode);
 }

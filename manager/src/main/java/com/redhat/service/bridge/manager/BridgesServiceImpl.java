@@ -27,7 +27,6 @@ import com.redhat.service.bridge.manager.models.ListResult;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 
-@Transactional
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
@@ -42,6 +41,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MeterRegistry meterRegistry;
 
+    @Transactional
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
@@ -57,6 +57,7 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
+    @Transactional
     @Override
     public Bridge getBridge(String id) {
         Bridge b = bridgeDAO.findById(id);
@@ -74,11 +75,13 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
+    @Transactional
     @Override
     public Bridge getBridge(String id, String customerId) {
         return findByIdAndCustomerId(id, customerId);
     }
 
+    @Transactional
     @Override
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
@@ -92,16 +95,19 @@ public class BridgesServiceImpl implements BridgesService {
         LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
+    @Transactional
     @Override
     public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
         return bridgeDAO.findByCustomerId(customerId, page, pageSize);
     }
 
+    @Transactional
     @Override
     public List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses) {
         return bridgeDAO.findByStatuses(statuses);
     }
 
+    @Transactional
     @Override
     public Bridge updateBridge(BridgeDTO bridgeDTO) {
         Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());

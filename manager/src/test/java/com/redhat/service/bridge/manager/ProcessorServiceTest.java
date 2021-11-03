@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -123,7 +124,7 @@ public class ProcessorServiceTest {
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
 
-        ProcessorDefinition definition = processorService.jsonNodeToDefinition(processor.getDefinition());
+        ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
         assertThat(definition.getTransformationTemplate()).isEqualTo("{}");
     }
 
@@ -316,7 +317,7 @@ public class ProcessorServiceTest {
         action.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
-        p.setDefinition(processorService.definitionToJsonNode(definition));
+        p.setDefinition(definitionToJsonNode(definition));
 
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();
@@ -332,5 +333,15 @@ public class ProcessorServiceTest {
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
         assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
+    }
+
+    private JsonNode definitionToJsonNode(ProcessorDefinition definition) {
+        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
+        return processorServiceImpl.definitionToJsonNode(definition);
+    }
+
+    private ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
+        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
+        return processorServiceImpl.jsonNodeToDefinition(jsonNode);
     }
 }

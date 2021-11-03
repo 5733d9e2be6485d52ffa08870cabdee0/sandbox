@@ -32,7 +32,6 @@ import com.redhat.service.bridge.manager.models.Processor;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 
-@Transactional
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
@@ -49,6 +48,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ObjectMapper mapper;
 
+    @Transactional
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
 
@@ -61,6 +61,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         return processor;
     }
 
+    @Transactional
     @Override
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         Bridge bridge = getAvailableBridge(bridgeId, customerId);
@@ -82,11 +83,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         return p;
     }
 
+    @Transactional
     @Override
     public List<Processor> getProcessorByStatuses(List<BridgeStatus> statuses) {
         return processorDAO.findByStatuses(statuses);
     }
 
+    @Transactional
     @Override
     public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
         Bridge bridge = bridgesService.getBridge(processorDTO.getBridge().getId());
@@ -108,17 +111,20 @@ public class ProcessorServiceImpl implements ProcessorService {
         return p;
     }
 
+    @Transactional
     @Override
     public Long getProcessorsCount(String bridgeId, String customerId) {
         return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
+    @Transactional
     @Override
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, int page, int size) {
         Bridge bridge = getAvailableBridge(bridgeId, customerId);
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), page, size);
     }
 
+    @Transactional
     @Override
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
@@ -159,13 +165,11 @@ public class ProcessorServiceImpl implements ProcessorService {
         return processorResponse;
     }
 
-    @Override
-    public JsonNode definitionToJsonNode(ProcessorDefinition definition) {
+    JsonNode definitionToJsonNode(ProcessorDefinition definition) {
         return mapper.valueToTree(definition);
     }
 
-    @Override
-    public ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
+    ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
         try {
             return mapper.treeToValue(jsonNode, ProcessorDefinition.class);
         } catch (JsonProcessingException e) {
