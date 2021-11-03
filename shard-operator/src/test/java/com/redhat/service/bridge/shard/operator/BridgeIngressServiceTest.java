@@ -100,7 +100,7 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
+//    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
     public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
