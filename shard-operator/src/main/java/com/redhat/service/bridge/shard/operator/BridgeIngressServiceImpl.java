@@ -68,8 +68,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         deployment.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
 
         // Specs
-        deployment.getSpec().getSelector().getMatchLabels().replace(LabelsBuilder.INSTANCE_LABEL, bridgeIngress.getMetadata().getName());
-        deployment.getSpec().getTemplate().getMetadata().getLabels().replace(LabelsBuilder.INSTANCE_LABEL, bridgeIngress.getMetadata().getName());
+        deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
+        deployment.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
