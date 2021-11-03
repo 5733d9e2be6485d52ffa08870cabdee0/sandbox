@@ -52,7 +52,7 @@ public class Bridge {
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    public BridgeStatus status;
+    private BridgeStatus status;
 
     public Bridge() {
     }
