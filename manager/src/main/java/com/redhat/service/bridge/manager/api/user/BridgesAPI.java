@@ -73,7 +73,7 @@ public class BridgesAPI {
 
         List<BridgeResponse> bridgeResponses = bridges.getItems()
                 .stream()
-                .map(Bridge::toResponse)
+                .map(bridgesService::toResponse)
                 .collect(Collectors.toList());
 
         BridgeListResponse response = new BridgeListResponse();
@@ -88,14 +88,14 @@ public class BridgesAPI {
     @POST
     public Response createBridge(BridgeRequest bridgeRequest) {
         Bridge bridge = bridgesService.createBridge(customerIdResolver.resolveCustomerId(identity.getPrincipal()), bridgeRequest);
-        return Response.status(Response.Status.CREATED).entity(bridge.toResponse()).build();
+        return Response.status(Response.Status.CREATED).entity(bridgesService.toResponse(bridge)).build();
     }
 
     @GET
     @Path("{id}")
     public Response getBridge(@PathParam("id") @NotEmpty String id) {
         Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId(identity.getPrincipal()));
-        return Response.ok(bridge.toResponse()).build();
+        return Response.ok(bridgesService.toResponse(bridge)).build();
     }
 
     @DELETE

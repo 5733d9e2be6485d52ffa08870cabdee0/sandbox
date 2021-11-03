@@ -32,6 +32,7 @@
   <modules>
     <module>build-parent</module>
     <module>bom</module>
+    <module>test-utils</module>
     <module>manager</module>
     <module>executor</module>
     <module>shard</module>
