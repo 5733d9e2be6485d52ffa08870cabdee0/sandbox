@@ -3,6 +3,7 @@ package com.redhat.service.bridge.shard.operator.utils;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.utils.Serialization;
 
@@ -10,9 +11,14 @@ public class TemplatesUtils {
 
     private static final String TEMPLATES_DIR = "/templates/";
     private static final String INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "bridge-ingress-deployment.yaml";
+    private static final String INGRESS_SERVICE_PATH = TEMPLATES_DIR + "bridge-ingress-service.yaml";
 
     public static Deployment loadIngressDeploymentTemplate() {
         return loadYaml(Deployment.class, INGRESS_DEPLOYMENT_PATH);
+    }
+
+    public static Service loadIngressServiceTemplate() {
+        return loadYaml(Service.class, INGRESS_SERVICE_PATH);
     }
 
     private static <T> T loadYaml(Class<T> clazz, String yaml) {

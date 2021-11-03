@@ -1,0 +1,78 @@
+package com.redhat.service.bridge.shard.operator.watchers;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
+import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+
+import static io.javaoperatorsdk.operator.processing.KubernetesResourceUtils.getUID;
+import static io.javaoperatorsdk.operator.processing.KubernetesResourceUtils.getVersion;
+
+public class ServiceEventSource extends AbstractEventSource implements Watcher<Service> {
+    private static final Logger log = LoggerFactory.getLogger(ServiceEventSource.class);
+
+    private final KubernetesClient client;
+
+    private final String applicationType;
+
+    public static ServiceEventSource createAndRegisterWatch(KubernetesClient client, String applicationType) {
+        ServiceEventSource serviceEventSource = new ServiceEventSource(client, applicationType);
+        serviceEventSource.registerWatch(applicationType);
+        return serviceEventSource;
+    }
+
+    private ServiceEventSource(KubernetesClient client, String applicationType) {
+        this.client = client;
+        this.applicationType = applicationType;
+    }
+
+    private void registerWatch(String applicationType) {
+        client
+                .services()
+                .inAnyNamespace()
+                .withLabel(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME)
+                .withLabel(LabelsBuilder.APPLICATION_TYPE_LABEL, applicationType)
+                .watch(this);
+    }
+
+    @Override
+    public void eventReceived(Watcher.Action action, Service service) {
+        log.info(
+                "Event received for action: {}, Service: {}",
+                action.name(),
+                service.getMetadata().getName());
+
+        if (action == Watcher.Action.ERROR) {
+            log.warn(
+                    "Skipping {} event for custom resource uid: {}, version: {}",
+                    action,
+                    getUID(service),
+                    getVersion(service));
+            return;
+        }
+
+        eventHandler.handleEvent(new ServiceEvent(action, service, this));
+    }
+
+    @Override
+    public void onClose(WatcherException e) {
+        if (e == null) {
+            return;
+        }
+        if (e.isHttpGone()) {
+            log.warn("Received error for watch, will try to reconnect.", e);
+            registerWatch(this.applicationType);
+        } else {
+            // Note that this should not happen normally, since fabric8 client handles reconnect.
+            // In case it tries to reconnect this method is not called.
+            log.error("Unexpected error happened with watch. Will exit.", e);
+            System.exit(1);
+        }
+    }
+}

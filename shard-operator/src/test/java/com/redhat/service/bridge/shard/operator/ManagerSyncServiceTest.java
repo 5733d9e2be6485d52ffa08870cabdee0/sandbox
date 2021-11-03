@@ -19,10 +19,8 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
@@ -38,10 +36,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
-    KubernetesClient kubernetesClient;
+    CustomerNamespaceProvider customerNamespaceProvider;
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    KubernetesResourcePatcher kubernetesResourcePatcher;
 
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
@@ -58,13 +56,18 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
+        String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
+        String firstBridgeName = KubernetesResourceUtil.sanitizeName("myId-1");
+        String secondBridgeName = KubernetesResourceUtil.sanitizeName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-1"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
-                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-2"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
+                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyServiceOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyServiceOrFail(secondBridgeName, customerNamespace);
                         });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
@@ -147,18 +150,5 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
-    }
-
-    private void patchDeployment(String name, String namespace) {
-        Deployment deployment = kubernetesClient.apps().deployments()
-                .inNamespace(namespace)
-                .withName(name)
-                .get();
-        assertThat(deployment).isNotNull();
-        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
-        kubernetesClient.apps().deployments()
-                .inNamespace(namespace)
-                .withName(name)
-                .replace(deployment);
     }
 }

@@ -14,7 +14,9 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
@@ -34,7 +36,6 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
-    // TODO: not using now, but let it here to make sure our configuration is ok and the object is being injected.
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -48,26 +49,33 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     public void init(EventSourceManager eventSourceManager) {
         DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
+        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
     }
 
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
-        // simplistic reconciliation to check with IT
         LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
+        // Create Deployment
         Deployment deployment = bridgeIngressService.getOrCreateBridgeIngressDeployment(bridgeIngress);
-
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             return UpdateControl.noUpdate();
         }
-
         LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Deploy Service
+        // Create Service
+        Service service = bridgeIngressService.getOrCreateBridgeIngressService(bridgeIngress, deployment);
+        if (service.getStatus() == null) {
+            LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            return UpdateControl.noUpdate();
+        }
+        LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Deploy Route
+        // Create Route
 
         // Extract Route and populate the CRD. Notify the manager.
 
@@ -88,8 +96,6 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
-
-        notifyManager(bridgeIngress, BridgeStatus.DELETED);
 
         return DeleteControl.DEFAULT_DELETE;
     }

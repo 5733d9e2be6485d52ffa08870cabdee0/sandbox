@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -34,7 +35,25 @@ public class BridgeIngressServiceTest {
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Test
+    @Disabled
     public void testBridgeIngressCreation() {
+        // Given
+        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Then
+        BridgeIngress bridgeIngress = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .get();
+        assertThat(bridgeIngress).isNotNull();
+    }
+
+    @Test
+    public void testBridgeIngressCreationTriggersController() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
 
@@ -47,6 +66,7 @@ public class BridgeIngressServiceTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
+                            // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                                     .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
@@ -58,6 +78,25 @@ public class BridgeIngressServiceTest {
     @Test
     @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
     public void testBridgeIngressDeletion() {
+        // Given
+        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+        bridgeIngressService.deleteBridgeIngress(dto);
+
+        // Then
+        BridgeIngress bridgeIngress = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .get();
+        assertThat(bridgeIngress).isNull();
+    }
+
+    @Test
+    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
+    public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
 

@@ -14,6 +14,7 @@ import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.shard.operator.utils.TemplatesUtils;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -73,6 +74,37 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
         return kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(deployment);
+    }
+
+    @Override
+    public Service getOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
+        Service service = kubernetesClient.services().inNamespace(deployment.getMetadata().getNamespace()).withName(deployment.getMetadata().getName()).get();
+
+        if (service != null) {
+            return service;
+        }
+
+        service = TemplatesUtils.loadIngressServiceTemplate();
+
+        // Name and namespace
+        service.getMetadata().setName(bridgeIngress.getMetadata().getName());
+        service.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
+
+        // Labels
+        service.getMetadata().getLabels().replace(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
+        service.getMetadata().getLabels().replace(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
+        service.getMetadata().getLabels().replace(LabelsBuilder.APPLICATION_TYPE_LABEL, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+
+        // Owner reference
+        service.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
+        service.getMetadata().getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
+        service.getMetadata().getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
+        service.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
+
+        // Specs
+        service.getSpec().getSelector().replace(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
+
+        return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(service);
     }
 
     @Override
