@@ -9,7 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +43,14 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    KubernetesClient kubernetesClient;
+
+    @BeforeEach
+    public void setup(){
+        // Kubernetes Server must be cleaned up at startup of every test.
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+    }
 
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {

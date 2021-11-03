@@ -5,6 +5,7 @@ import java.time.Duration;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +35,13 @@ public class BridgeIngressServiceTest {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @BeforeEach
+    public void setup(){
+        // Kubernetes Server must be cleaned up at startup of every test.
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+    }
+
     @Test
-    @Disabled
     public void testBridgeIngressCreation() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
@@ -76,7 +82,6 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
     public void testBridgeIngressDeletion() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);

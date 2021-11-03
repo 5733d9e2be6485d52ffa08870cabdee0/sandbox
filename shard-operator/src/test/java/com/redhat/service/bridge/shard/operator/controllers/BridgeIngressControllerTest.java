@@ -5,6 +5,7 @@ import java.time.Duration;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,31 +31,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BridgeIngressControllerTest {
 
     @Inject
-    BridgeIngressController bridgeIngressController;
-
-    @Inject
     KubernetesClient kubernetesClient;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
 
-    @Test
-    void testCreateNewBridgeIngress() {
-        // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
-
-        // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
-
-        // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
-        assertThat(updateControl.isUpdateCustomResource()).isFalse();
-
-        kubernetesClient.resources(BridgeIngress.class).inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).delete();
+    @BeforeEach
+    public void setup(){
+        // Kubernetes Server must be cleaned up at startup of every test.
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
     }
 
     @Test
-    @Disabled
     void testBridgeIngressReconcileLoop() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
