@@ -20,7 +20,7 @@ public interface CustomerNamespaceProvider {
      *
      * @return the new namespace or the existing namespace based on the customer identification
      */
-    Namespace getOrCreateCustomerNamespace(String customerId);
+    Namespace fetchOrCreateCustomerNamespace(String customerId);
 
     /**
      * Deletes the given custom namespace if owned by the Shard Operator, and it does not have any OpenBridge CRs.

@@ -35,7 +35,7 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceIsCreated() {
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("123");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("123");
         assertThat(namespace).isNotNull();
         assertThat(customerNamespaceProvider.resolveName("123")).isEqualTo(namespace.getMetadata().getName());
     }
@@ -45,7 +45,7 @@ class CustomerNamespaceProviderImplTest {
         final String name = customerNamespaceProvider.resolveName("xyz");
         kubernetesTestServer.getClient().namespaces().create(new NamespaceBuilder().withNewMetadata().withName(name).and().build());
 
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("xyz");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("xyz");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();
@@ -64,7 +64,7 @@ class CustomerNamespaceProviderImplTest {
                         .addToLabels(Collections.singletonMap("app", "test"))
                         .and().build());
 
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("zyx");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("zyx");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();

@@ -26,7 +26,7 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     KubernetesClient kubernetesClient;
 
     @Override
-    public Namespace getOrCreateCustomerNamespace(String customerId) {
+    public Namespace fetchOrCreateCustomerNamespace(String customerId) {
         final String name = this.resolveName(customerId);
         final Namespace namespace = kubernetesClient.namespaces().withName(name).get();
         if (namespace == null) {
@@ -42,7 +42,7 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     }
 
     private Map<String, String> createLabels(final String customerId) {
-        return new LabelsBuilder().withCustomerId(customerId).build();
+        return new LabelsBuilder().withCustomerId(customerId).buildWithDefaults();
     }
 
     private Namespace ensureManagedLabels(final Namespace namespace, final String customerId) {

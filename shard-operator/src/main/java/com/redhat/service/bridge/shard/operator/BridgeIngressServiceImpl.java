@@ -33,7 +33,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
 
         kubernetesClient
                 .resources(BridgeIngress.class)
@@ -42,7 +42,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     }
 
     @Override
-    public Deployment getOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
+    public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
         if (deployment != null) {
@@ -56,9 +56,10 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         deployment.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
 
         // Labels
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.APPLICATION_TYPE_LABEL, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        deployment.getMetadata().setLabels(
+                new LabelsBuilder()
+                        .withApplicationType(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE)
+                        .buildWithDefaults());
 
         // Owner reference
         deployment.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());

@@ -2,6 +2,7 @@ package com.redhat.service.bridge.shard.operator.controllers;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.shard.operator.TestConstants;
@@ -28,28 +29,33 @@ public class BridgeIngressControllerTest {
     @Inject
     KubernetesClient kubernetesClient;
 
+    @BeforeEach
+    void setup() {
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+    }
+
     @Test
     void testCreateNewBridgeIngress() {
-        //Given
+        // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
-        //When
+        // When
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
-        //Then
+        // Then
         assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
         assertThat(updateControl.isUpdateCustomResource()).isFalse();
     }
 
     @Test
     void testBridgeIngressDeployment() {
-        //Given
+        // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
-        //When
+        // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
-        //Then
+        // Then
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
         assertThat(deployment).isNotNull();
         assertThat(deployment.getMetadata().getOwnerReferences().size()).isEqualTo(1);
