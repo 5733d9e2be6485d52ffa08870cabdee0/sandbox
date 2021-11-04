@@ -10,8 +10,8 @@ import io.fabric8.kubernetes.client.utils.Serialization;
 
 @ApplicationScoped
 public class TemplateProviderImpl implements TemplateProvider {
-    private static final String TEMPLATES_DIR = "/templates/";
-    private static final String INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "bridge-ingress-deployment.yaml";
+    private static final String TEMPLATES_DIR = "/templates";
+    private static final String INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-ingress-deployment.yaml";
 
     @Override
     public Deployment loadIngressDeploymentTemplate() {

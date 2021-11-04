@@ -18,13 +18,12 @@ public final class LabelsBuilder {
     public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
 
     // Keep in sync with resources/templates kubernetes templates
-    public static final String BRIDGE_INGRESS_APPLICATION_TYPE = "bridge-ingress";
+    public static final String BRIDGE_INGRESS_COMPONENT = "bridge-ingress";
     /**
      * The tool being used to manage the operation of an application
      */
     public static final String MANAGED_BY_LABEL = "app.kubernetes.io/managed-by";
     public static final String CREATED_BY_LABEL = "app.kubernetes.io/created-by";
-    public static final String APPLICATION_TYPE_LABEL = "app.kubernetes.io/application-type";
     public static final String NAME_LABEL = "app.kubernetes.io/name";
     public static final String PART_OF_LABEL = "app.kubernetes.io/part-of";
     public static final String COMPONENT_LABEL = "app.kubernetes.io/component";
@@ -46,11 +45,6 @@ public final class LabelsBuilder {
      */
     public LabelsBuilder withCreatedBy(String createdBy) {
         this.labels.put(CREATED_BY_LABEL, sanitizeAndCheckLabelValue(createdBy));
-        return this;
-    }
-
-    public LabelsBuilder withApplicationType(String applicationType) {
-        this.labels.put(APPLICATION_TYPE_LABEL, sanitizeAndCheckLabelValue(applicationType));
         return this;
     }
 

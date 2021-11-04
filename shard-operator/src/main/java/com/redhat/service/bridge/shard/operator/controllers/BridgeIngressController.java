@@ -47,7 +47,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
     }
 
