@@ -47,10 +47,6 @@
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -80,14 +76,17 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <scope>test</scope>
     </dependency>
+    </dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>actions</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
