@@ -12,6 +12,7 @@ import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
+import com.redhat.service.bridge.shard.operator.resources.PhaseType;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 
@@ -60,7 +61,11 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            return UpdateControl.noUpdate();
+
+            // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
+
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 
         LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
@@ -71,12 +76,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
         // Extract Route and populate the CRD. Notify the manager.
 
-        if (bridgeIngress.getStatus() == null) {
-            bridgeIngress.setStatus(new BridgeIngressStatus());
-        }
-
-        if (bridgeIngress.getStatus().getStatus() == null || bridgeIngress.getStatus().getStatus().isEmpty()) {
-            bridgeIngress.getStatus().setStatus("OK");
+        if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase())) {
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AVAILABLE));
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }

@@ -43,8 +43,7 @@ public class BridgeIngressControllerTest {
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
-        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
     }
 
     @Test
