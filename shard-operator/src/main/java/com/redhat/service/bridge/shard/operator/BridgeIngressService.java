@@ -11,7 +11,7 @@ public interface BridgeIngressService {
 
     void deleteBridgeIngress(BridgeDTO bridgeDTO);
 
-    Deployment getOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress);
+    Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress);
 
     Service getOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
 }

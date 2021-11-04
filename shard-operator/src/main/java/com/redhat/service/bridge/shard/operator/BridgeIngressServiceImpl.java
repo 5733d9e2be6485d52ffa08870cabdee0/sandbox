@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
-import com.redhat.service.bridge.shard.operator.utils.TemplatesUtils;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Service;
@@ -29,12 +29,15 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @Inject
+    TemplateProvider templateProvider;
+
     @ConfigProperty(name = "event-bridge.ingress.image")
     String ingressImage;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
 
         kubernetesClient
                 .resources(BridgeIngress.class)
@@ -43,23 +46,24 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     }
 
     @Override
-    public Deployment getOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
+    public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
         if (deployment != null) {
             return deployment;
         }
 
-        deployment = TemplatesUtils.loadIngressDeploymentTemplate();
+        deployment = templateProvider.loadIngressDeploymentTemplate();
 
         // Name and namespace
         deployment.getMetadata().setName(bridgeIngress.getMetadata().getName());
         deployment.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
 
         // Labels
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        deployment.getMetadata().getLabels().replace(LabelsBuilder.APPLICATION_TYPE_LABEL, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        deployment.getMetadata().setLabels(
+                new LabelsBuilder()
+                        .withApplicationType(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE)
+                        .buildWithDefaults());
 
         // Owner reference
         deployment.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
@@ -68,8 +72,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         deployment.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
 
         // Specs
-        deployment.getSpec().getSelector().getMatchLabels().replace(LabelsBuilder.INSTANCE_LABEL, bridgeIngress.getMetadata().getName());
-        deployment.getSpec().getTemplate().getMetadata().getLabels().replace(LabelsBuilder.INSTANCE_LABEL, bridgeIngress.getMetadata().getName());
+        deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
+        deployment.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
@@ -84,7 +88,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             return service;
         }
 
-        service = TemplatesUtils.loadIngressServiceTemplate();
+        service = templateProvider.loadIngressServiceTemplate();
 
         // Name and namespace
         service.getMetadata().setName(bridgeIngress.getMetadata().getName());

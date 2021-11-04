@@ -57,8 +57,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Create Deployment
-        Deployment deployment = bridgeIngressService.getOrCreateBridgeIngressDeployment(bridgeIngress);
+        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
+
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());

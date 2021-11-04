@@ -4,9 +4,6 @@ import java.util.Collections;
 
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -16,6 +13,7 @@ import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
@@ -36,7 +34,7 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceIsCreated() {
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("123");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("123");
         assertThat(namespace).isNotNull();
         assertThat(customerNamespaceProvider.resolveName("123")).isEqualTo(namespace.getMetadata().getName());
     }
@@ -46,7 +44,7 @@ class CustomerNamespaceProviderImplTest {
         final String name = customerNamespaceProvider.resolveName("xyz");
         kubernetesClient.namespaces().create(new NamespaceBuilder().withNewMetadata().withName(name).and().build());
 
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("xyz");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("xyz");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();
@@ -65,7 +63,7 @@ class CustomerNamespaceProviderImplTest {
                         .addToLabels(Collections.singletonMap("app", "test"))
                         .and().build());
 
-        final Namespace namespace = customerNamespaceProvider.getOrCreateCustomerNamespace("zyx");
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("zyx");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();

@@ -41,8 +41,11 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
                 .apps()
                 .deployments()
                 .inAnyNamespace()
-                .withLabel(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME)
-                .withLabel(LabelsBuilder.APPLICATION_TYPE_LABEL, applicationType)
+                .withLabels(
+                        new LabelsBuilder()
+                                .withManagedByOperator()
+                                .withApplicationType(applicationType)
+                                .build())
                 .watch(this);
     }
 

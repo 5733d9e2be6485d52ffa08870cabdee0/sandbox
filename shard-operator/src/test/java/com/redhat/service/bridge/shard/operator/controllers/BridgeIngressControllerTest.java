@@ -1,22 +1,16 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
-import java.time.Duration;
-
 import javax.inject.Inject;
 
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
-import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -34,51 +28,42 @@ public class BridgeIngressControllerTest {
     KubernetesClient kubernetesClient;
 
     @Inject
-    KubernetesResourcePatcher kubernetesResourcePatcher;
+    BridgeIngressController bridgeIngressController;
 
     @BeforeEach
-    public void setup(){
-        // Kubernetes Server must be cleaned up at startup of every test.
+    void setup() {
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
     }
 
     @Test
-    void testBridgeIngressReconcileLoop() {
+    void testCreateNewBridgeIngress() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
         // When
-        kubernetesClient.resources(BridgeIngress.class).inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).create(bridgeIngress);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-                            Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
-                            assertThat(deployment).isNotNull();
-                            assertThat(deployment.getMetadata().getOwnerReferences().size()).isEqualTo(1);
-                            assertThat(deployment.getMetadata().getLabels()).isNotNull();
-                            assertThat(deployment.getSpec().getSelector().getMatchLabels().size()).isEqualTo(1);
-                            assertThat(deployment.getSpec().getTemplate().getMetadata().getLabels()).isNotNull();
-                            assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isNotNull();
-                            assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
-                        });
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
         // Then
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            kubernetesResourcePatcher.patchReadyServiceOrFail(bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-                            Service service = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
-                            assertThat(service).isNotNull();
-                            assertThat(service.getMetadata().getOwnerReferences().size()).isEqualTo(1);
-                            assertThat(service.getMetadata().getOwnerReferences().get(0).getKind()).isEqualTo("BridgeIngress");
-                            assertThat(service.getMetadata().getLabels()).isNotNull();
-                            assertThat(service.getSpec().getSelector().get(LabelsBuilder.INSTANCE_LABEL)).isEqualTo(bridgeIngress.getMetadata().getName());
-                        });
+        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
+        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+    }
+
+    @Test
+    void testBridgeIngressDeployment() {
+        // Given
+        BridgeIngress bridgeIngress = buildBridgeIngress();
+
+        bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+
+        // Then
+        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
+        assertThat(deployment).isNotNull();
+        assertThat(deployment.getMetadata().getOwnerReferences().size()).isEqualTo(1);
+        assertThat(deployment.getMetadata().getLabels()).isNotNull();
+        assertThat(deployment.getSpec().getSelector().getMatchLabels().size()).isEqualTo(1);
+        assertThat(deployment.getSpec().getTemplate().getMetadata().getLabels()).isNotNull();
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isNotNull();
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
     }
 
     private BridgeIngress buildBridgeIngress() {
@@ -94,9 +79,9 @@ public class BridgeIngressControllerTest {
                         .withName(KubernetesResourceUtil.sanitizeName(TestConstants.BRIDGE_ID))
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
-                                            .withCustomerId(TestConstants.CUSTOMER_ID)
-                                            .withComponent("ingress")
-                                            .build())
+                                .withCustomerId(TestConstants.CUSTOMER_ID)
+                                .withComponent("ingress")
+                                .build())
                         .build());
         bridgeIngress.setSpec(bridgeIngressSpec);
 

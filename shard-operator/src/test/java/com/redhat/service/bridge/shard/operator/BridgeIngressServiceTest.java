@@ -36,7 +36,7 @@ public class BridgeIngressServiceTest {
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
     }
@@ -100,7 +100,7 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-//    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
+    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
     public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
