@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
-import com.redhat.service.bridge.shard.operator.utils.TemplatesUtils;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -27,6 +27,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
+
+    @Inject
+    TemplateProvider templateProvider;
 
     @ConfigProperty(name = "event-bridge.ingress.image")
     String ingressImage;
@@ -49,7 +52,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             return deployment;
         }
 
-        deployment = TemplatesUtils.loadIngressDeploymentTemplate();
+        deployment = templateProvider.loadIngressDeploymentTemplate();
 
         // Name and namespace
         deployment.getMetadata().setName(bridgeIngress.getMetadata().getName());
