@@ -15,12 +15,12 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@WithKubernetesTestServer
+@WithOpenShiftTestServer
 class CustomerNamespaceProviderImplTest {
 
     @Inject

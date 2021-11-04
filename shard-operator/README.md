@@ -14,6 +14,9 @@ README to be updated once we start implementing all the features.
 ## Building and Trying in a Local Minikube
 
 ````shell
+## The minikube ingress and ingress-dns addon must be enabled
+minikube addons enable ingress ingress-dns
+minikube addons enable ingress-dns
 ## Make sure that you're pointing to the internal minikube registry
 eval $(minikube -p minikube docker-env)
 ## generate the resources (if namespace not provided, it uses the default - not recommended)
