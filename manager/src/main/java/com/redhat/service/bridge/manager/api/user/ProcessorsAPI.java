@@ -72,7 +72,7 @@ public class ProcessorsAPI {
     public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
         String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
         Processor processor = processorService.getProcessor(processorId, bridgeId, customerId);
-        return Response.ok(processor.toResponse()).build();
+        return Response.ok(processorService.toResponse(processor)).build();
     }
 
     @GET
@@ -82,7 +82,7 @@ public class ProcessorsAPI {
 
         String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
         ListResult<Processor> processors = processorService.getProcessors(bridgeId, customerId, page, pageSize);
-        List<ProcessorResponse> px = processors.getItems().stream().map(Processor::toResponse).collect(toList());
+        List<ProcessorResponse> px = processors.getItems().stream().map(processorService::toResponse).collect(toList());
 
         ProcessorListResponse listResponse = new ProcessorListResponse();
         listResponse.setItems(px);
@@ -97,7 +97,7 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
         String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
-        return Response.status(Response.Status.CREATED).entity(processor.toResponse()).build();
+        return Response.status(Response.Status.CREATED).entity(processorService.toResponse(processor)).build();
     }
 
     @DELETE

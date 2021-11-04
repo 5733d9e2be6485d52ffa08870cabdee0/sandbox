@@ -29,13 +29,13 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 import io.quarkus.test.common.QuarkusTestResource;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -77,7 +77,9 @@ public abstract class AbstractShardWireMockTest {
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         a.setParameters(params);
 
-        return new ProcessorDTO("processorId-1", "processorName-1", bridge, requestedStatus, filters, transformationTemplate, a);
+        ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
+
+        return new ProcessorDTO("processorId-1", "processorName-1", definition, bridge, requestedStatus);
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

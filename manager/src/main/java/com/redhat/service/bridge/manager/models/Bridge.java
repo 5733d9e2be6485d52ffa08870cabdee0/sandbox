@@ -14,10 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByStatuses",
@@ -118,30 +115,6 @@ public class Bridge {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
-    }
-
-    public BridgeDTO toDTO() {
-        BridgeDTO dto = new BridgeDTO();
-        dto.setId(id);
-        dto.setName(name);
-        dto.setEndpoint(endpoint);
-        dto.setStatus(status);
-        dto.setCustomerId(customerId);
-
-        return dto;
-    }
-
-    public BridgeResponse toResponse() {
-        BridgeResponse response = new BridgeResponse();
-        response.setId(id);
-        response.setName(name);
-        response.setEndpoint(endpoint);
-        response.setSubmittedAt(submittedAt);
-        response.setPublishedAt(publishedAt);
-        response.setStatus(status);
-        response.setHref(APIConstants.USER_API_BASE_PATH + id);
-
-        return response;
     }
 
     /*
