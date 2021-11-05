@@ -28,8 +28,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     @Override
-    public AbstractEventSource createAndRegisterWatchNetworkResource(String applicationType) {
-        return OpenshiftRouteEventSource.createAndRegisterWatch(client, applicationType);
+    public AbstractEventSource createAndRegisterWatchNetworkResource(String component) {
+        return OpenshiftRouteEventSource.createAndRegisterWatch(client, component);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
                 .withOwnerReferences(service.getMetadata().getOwnerReferences())
                 .withLabels(
                         new LabelsBuilder()
-                                .withApplicationType(service.getMetadata().getLabels().get(LabelsBuilder.APPLICATION_TYPE_LABEL))
+                                .withComponent(service.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL))
                                 .buildWithDefaults())
                 .withName(service.getMetadata().getName())
                 .build();

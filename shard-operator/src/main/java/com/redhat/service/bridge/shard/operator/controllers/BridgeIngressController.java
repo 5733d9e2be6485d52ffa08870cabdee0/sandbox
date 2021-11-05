@@ -58,7 +58,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
         ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
-        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
     }
 
@@ -95,7 +95,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            return UpdateControl.noUpdate();
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 
         // Extract Route and populate the CRD. Notify the manager.

@@ -17,25 +17,25 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
 
     private final OpenShiftClient client;
 
-    private final String applicationType;
+    private final String component;
 
-    public static OpenshiftRouteEventSource createAndRegisterWatch(OpenShiftClient client, String applicationType) {
-        OpenshiftRouteEventSource eventSource = new OpenshiftRouteEventSource(client, applicationType);
-        eventSource.registerWatch(applicationType);
+    public static OpenshiftRouteEventSource createAndRegisterWatch(OpenShiftClient client, String component) {
+        OpenshiftRouteEventSource eventSource = new OpenshiftRouteEventSource(client, component);
+        eventSource.registerWatch(component);
         return eventSource;
     }
 
-    private OpenshiftRouteEventSource(OpenShiftClient client, String applicationType) {
+    private OpenshiftRouteEventSource(OpenShiftClient client, String component) {
         this.client = client;
-        this.applicationType = applicationType;
+        this.component = component;
     }
 
-    private void registerWatch(String applicationType) {
+    private void registerWatch(String component) {
         client.routes().inAnyNamespace()
                 .withLabels(
                         new LabelsBuilder()
                                 .withManagedByOperator()
-                                .withApplicationType(applicationType)
+                                .withComponent(component)
                                 .build())
                 .watch(this);
     }
@@ -80,7 +80,7 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
 
         if (e.isHttpGone()) {
             LOGGER.warn("Received error for watch, will try to reconnect.", e);
-            registerWatch(this.applicationType);
+            registerWatch(this.component);
         } else {
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.

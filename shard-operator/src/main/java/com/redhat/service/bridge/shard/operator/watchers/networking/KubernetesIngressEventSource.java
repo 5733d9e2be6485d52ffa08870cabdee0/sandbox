@@ -17,25 +17,25 @@ public class KubernetesIngressEventSource extends AbstractEventSource implements
 
     private final KubernetesClient client;
 
-    private final String applicationType;
+    private final String component;
 
-    public static KubernetesIngressEventSource createAndRegisterWatch(KubernetesClient client, String applicationType) {
-        KubernetesIngressEventSource eventSource = new KubernetesIngressEventSource(client, applicationType);
-        eventSource.registerWatch(applicationType);
+    public static KubernetesIngressEventSource createAndRegisterWatch(KubernetesClient client, String component) {
+        KubernetesIngressEventSource eventSource = new KubernetesIngressEventSource(client, component);
+        eventSource.registerWatch(component);
         return eventSource;
     }
 
-    private KubernetesIngressEventSource(KubernetesClient client, String applicationType) {
+    private KubernetesIngressEventSource(KubernetesClient client, String component) {
         this.client = client;
-        this.applicationType = applicationType;
+        this.component = component;
     }
 
-    private void registerWatch(String applicationType) {
+    private void registerWatch(String component) {
         client.network().v1().ingresses().inAnyNamespace()
                 .withLabels(
                         new LabelsBuilder()
                                 .withManagedByOperator()
-                                .withApplicationType(applicationType)
+                                .withComponent(component)
                                 .build())
                 .watch(this);
     }
@@ -80,7 +80,7 @@ public class KubernetesIngressEventSource extends AbstractEventSource implements
 
         if (e.isHttpGone()) {
             LOGGER.warn("Received error for watch, will try to reconnect.", e);
-            registerWatch(this.applicationType);
+            registerWatch(this.component);
         } else {
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.

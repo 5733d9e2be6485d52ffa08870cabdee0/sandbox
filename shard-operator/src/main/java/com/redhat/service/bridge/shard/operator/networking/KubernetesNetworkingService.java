@@ -39,8 +39,8 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public AbstractEventSource createAndRegisterWatchNetworkResource(String applicationType) {
-        return KubernetesIngressEventSource.createAndRegisterWatch(client, applicationType);
+    public AbstractEventSource createAndRegisterWatchNetworkResource(String component) {
+        return KubernetesIngressEventSource.createAndRegisterWatch(client, component);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class KubernetesNetworkingService implements NetworkingService {
                 .withOwnerReferences(service.getMetadata().getOwnerReferences())
                 .withLabels(
                         new LabelsBuilder()
-                                .withApplicationType(service.getMetadata().getLabels().get(LabelsBuilder.APPLICATION_TYPE_LABEL))
+                                .withComponent(service.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL))
                                 .buildWithDefaults())
                 .addToAnnotations(NGINX_REWRITE_TARGET_ANNOTATION, REWRITE_TARGET_PLACEHOLDER)
                 .withName(service.getMetadata().getName())
