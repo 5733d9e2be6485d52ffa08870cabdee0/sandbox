@@ -13,6 +13,7 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
@@ -70,7 +71,10 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getUnexistingBridge() {
-        TestUtils.getBridge("not-the-id").then().statusCode(404);
+        ErrorResponse response = TestUtils.getBridge("not-the-id").then().statusCode(404).extract().as(ErrorResponse.class);
+        assertThat(response.getId()).isEqualTo("4");
+        assertThat(response.getCode()).endsWith("4");
+        assertThat(response.getReason()).isNotBlank();
     }
 
     @Test
