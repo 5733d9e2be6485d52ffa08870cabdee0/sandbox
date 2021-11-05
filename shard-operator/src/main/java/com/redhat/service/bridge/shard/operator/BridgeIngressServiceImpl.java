@@ -81,7 +81,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     }
 
     @Override
-    public Service getOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
+    public Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
         Service service = kubernetesClient.services().inNamespace(deployment.getMetadata().getNamespace()).withName(deployment.getMetadata().getName()).get();
 
         if (service != null) {

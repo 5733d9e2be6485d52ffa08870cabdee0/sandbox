@@ -73,7 +73,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Service
-        Service service = bridgeIngressService.getOrCreateBridgeIngressService(bridgeIngress, deployment);
+        Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
             LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());

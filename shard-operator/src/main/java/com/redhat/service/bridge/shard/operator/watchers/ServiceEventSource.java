@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.shard.operator.watchers;
 
+import io.quarkus.runtime.Quarkus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,7 @@ public class ServiceEventSource extends AbstractEventSource implements Watcher<S
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
             log.error("Unexpected error happened with watch. Will exit.", e);
-            System.exit(1);
+            Quarkus.asyncExit(1);
         }
     }
 }
