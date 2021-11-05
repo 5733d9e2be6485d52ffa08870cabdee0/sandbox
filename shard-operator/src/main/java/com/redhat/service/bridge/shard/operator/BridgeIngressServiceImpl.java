@@ -62,7 +62,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         // Labels
         deployment.getMetadata().setLabels(
                 new LabelsBuilder()
-                        .withApplicationType(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE)
+                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
                         .buildWithDefaults());
 
         // Owner reference
@@ -74,7 +74,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         // Specs
         deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
         deployment.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
         return kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(deployment);
@@ -95,9 +95,10 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         service.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
 
         // Labels
-        service.getMetadata().getLabels().replace(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        service.getMetadata().getLabels().replace(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        service.getMetadata().getLabels().replace(LabelsBuilder.APPLICATION_TYPE_LABEL, LabelsBuilder.BRIDGE_INGRESS_APPLICATION_TYPE);
+        service.getMetadata().setLabels(
+                new LabelsBuilder()
+                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
+                        .buildWithDefaults());
 
         // Owner reference
         service.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
@@ -106,7 +107,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         service.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
 
         // Specs
-        service.getSpec().getSelector().replace(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
+        service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
         return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(service);
     }

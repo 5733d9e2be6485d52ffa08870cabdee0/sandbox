@@ -18,6 +18,7 @@ import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -59,7 +60,7 @@ public class KafkaTopicActionTest {
 
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
-        p.setAction(b);
+        p.setDefinition(new ProcessorDefinition(null, null, b));
 
         BridgeDTO bridge = new BridgeDTO();
         bridge.setId("myBridge");
@@ -86,7 +87,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker() {
         ProcessorDTO p = createProcessorWithActionForTopic(TOPIC_NAME);
-        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getAction());
+        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction());
         assertThat(actionInvoker).isNotNull();
 
         verify(kafkaAdmin).listTopics();
@@ -95,7 +96,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker_requestedTopicDoesNotExist() {
         ProcessorDTO p = createProcessorWithActionForTopic("thisTopicDoesNotExist");
-        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getAction()));
+        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction()));
         verify(kafkaAdmin).listTopics();
     }
 }

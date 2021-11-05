@@ -26,7 +26,7 @@ public class DeploymentEvent extends DefaultEvent {
 
     @Override
     public String toString() {
-        return "CustomResourceEvent{"
+        return "DeploymentEvent{"
                 + "action="
                 + action
                 + ", resource=[ name="

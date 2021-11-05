@@ -19,25 +19,28 @@ public class ServiceEventSource extends AbstractEventSource implements Watcher<S
 
     private final KubernetesClient client;
 
-    private final String applicationType;
+    private final String component;
 
-    public static ServiceEventSource createAndRegisterWatch(KubernetesClient client, String applicationType) {
-        ServiceEventSource serviceEventSource = new ServiceEventSource(client, applicationType);
-        serviceEventSource.registerWatch(applicationType);
+    public static ServiceEventSource createAndRegisterWatch(KubernetesClient client, String component) {
+        ServiceEventSource serviceEventSource = new ServiceEventSource(client, component);
+        serviceEventSource.registerWatch(component);
         return serviceEventSource;
     }
 
-    private ServiceEventSource(KubernetesClient client, String applicationType) {
+    private ServiceEventSource(KubernetesClient client, String component) {
         this.client = client;
-        this.applicationType = applicationType;
+        this.component = component;
     }
 
-    private void registerWatch(String applicationType) {
+    private void registerWatch(String component) {
         client
                 .services()
                 .inAnyNamespace()
-                .withLabel(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME)
-                .withLabel(LabelsBuilder.APPLICATION_TYPE_LABEL, applicationType)
+                .withLabels(
+                        new LabelsBuilder()
+                                .withManagedByOperator()
+                                .withComponent(component)
+                                .build())
                 .watch(this);
     }
 
@@ -67,7 +70,7 @@ public class ServiceEventSource extends AbstractEventSource implements Watcher<S
         }
         if (e.isHttpGone()) {
             log.warn("Received error for watch, will try to reconnect.", e);
-            registerWatch(this.applicationType);
+            registerWatch(this.component);
         } else {
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.

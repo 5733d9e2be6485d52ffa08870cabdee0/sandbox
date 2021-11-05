@@ -60,9 +60,9 @@ public class ShardBridgesSyncAPITest {
         ProcessorDTO processor = processors.get(0);
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
-        assertThat(processor.getFilters().size()).isEqualTo(1);
-        assertThat(processor.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(processor.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
+        assertThat(processor.getDefinition().getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getDefinition().getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test

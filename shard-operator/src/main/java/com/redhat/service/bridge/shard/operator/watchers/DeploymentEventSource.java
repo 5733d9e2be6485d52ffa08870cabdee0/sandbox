@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.quarkus.runtime.Quarkus;
 
 import static io.javaoperatorsdk.operator.processing.KubernetesResourceUtils.getUID;
 import static io.javaoperatorsdk.operator.processing.KubernetesResourceUtils.getVersion;
@@ -23,20 +24,20 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
 
     private final KubernetesClient client;
 
-    private final String applicationType;
+    private final String component;
 
-    public static DeploymentEventSource createAndRegisterWatch(KubernetesClient client, String applicationType) {
-        DeploymentEventSource deploymentEventSource = new DeploymentEventSource(client, applicationType);
-        deploymentEventSource.registerWatch(applicationType);
+    public static DeploymentEventSource createAndRegisterWatch(KubernetesClient client, String component) {
+        DeploymentEventSource deploymentEventSource = new DeploymentEventSource(client, component);
+        deploymentEventSource.registerWatch(component);
         return deploymentEventSource;
     }
 
-    private DeploymentEventSource(KubernetesClient client, String applicationType) {
+    private DeploymentEventSource(KubernetesClient client, String component) {
         this.client = client;
-        this.applicationType = applicationType;
+        this.component = component;
     }
 
-    private void registerWatch(String applicationType) {
+    private void registerWatch(String component) {
         client
                 .apps()
                 .deployments()
@@ -44,7 +45,7 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
                 .withLabels(
                         new LabelsBuilder()
                                 .withManagedByOperator()
-                                .withApplicationType(applicationType)
+                                .withComponent(component)
                                 .build())
                 .watch(this);
     }
@@ -52,13 +53,13 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
     @Override
     public void eventReceived(Action action, Deployment deployment) {
         log.info(
-                "Event received for action: {}, Deployment: {}",
+                "Event received for action: '{}', Deployment: '{}'",
                 action.name(),
                 deployment.getMetadata().getName());
 
         if (action == Action.ERROR) {
             log.warn(
-                    "Skipping {} event for custom resource uid: {}, version: {}",
+                    "Skipping '{}' event for custom resource uid: '{}', version: '{}'",
                     action,
                     getUID(deployment),
                     getVersion(deployment));
@@ -75,12 +76,12 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
         }
         if (e.isHttpGone()) {
             log.warn("Received error for watch, will try to reconnect.", e);
-            registerWatch(this.applicationType);
+            registerWatch(this.component);
         } else {
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
             log.error("Unexpected error happened with watch. Will exit.", e);
-            System.exit(1);
+            Quarkus.asyncExit(1);
         }
     }
 }
