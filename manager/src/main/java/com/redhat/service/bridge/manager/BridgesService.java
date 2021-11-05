@@ -8,6 +8,7 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 public interface BridgesService {
 
@@ -19,7 +20,7 @@ public interface BridgesService {
 
     void deleteBridge(String id, String customerId);
 
-    ListResult<Bridge> getBridges(String customerId, int page, int pageSize);
+    ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo);
 
     List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses);
 

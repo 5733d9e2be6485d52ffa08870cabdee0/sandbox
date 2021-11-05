@@ -1,33 +1,9 @@
 package com.redhat.service.bridge.manager.api.models.responses;
 
-import java.util.ArrayList;
-import java.util.List;
+public class BridgeListResponse extends ListResponse<BridgeResponse> {
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class BridgeListResponse extends ListResponse {
-
-    @JsonProperty("kind")
-    private String kind = "BridgeList";
-
-    @JsonProperty("items")
-    private List<BridgeResponse> items = new ArrayList<>();
-
-    public String getKind() {
-        return kind;
+    public BridgeListResponse() {
+        super("BridgeList");
     }
 
-    public void setKind(String kind) {
-        this.kind = kind;
-    }
-
-    public List<BridgeResponse> getItems() {
-        return items;
-    }
-
-    public void setItems(List<BridgeResponse> items) {
-        this.items = items;
-    }
 }

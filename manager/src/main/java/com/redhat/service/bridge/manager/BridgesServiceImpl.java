@@ -23,6 +23,7 @@ import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -97,8 +98,8 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
-        return bridgeDAO.findByCustomerId(customerId, page, pageSize);
+    public ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo) {
+        return bridgeDAO.findByCustomerId(customerId, queryInfo);
     }
 
     @Transactional

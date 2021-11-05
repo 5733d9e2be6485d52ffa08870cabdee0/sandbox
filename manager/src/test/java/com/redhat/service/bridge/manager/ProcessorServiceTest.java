@@ -34,6 +34,7 @@ import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
@@ -230,7 +231,7 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor).isNotNull();
 
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -242,7 +243,7 @@ public class ProcessorServiceTest {
     public void getProcessors_noProcessorsOnBridge() {
 
         Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
@@ -250,7 +251,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessors_bridgeDoesNotExist() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, 0, 100));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
     }
 
     @Test
@@ -289,7 +290,7 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         assertThat(processor).isNotNull();
 
-        assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100).getSize()).isEqualTo(1);
+        assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
     }
 
     @Test
