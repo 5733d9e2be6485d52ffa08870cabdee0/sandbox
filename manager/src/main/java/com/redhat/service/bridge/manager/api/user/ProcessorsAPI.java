@@ -1,21 +1,16 @@
 package com.redhat.service.bridge.manager.api.user;
 
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -28,23 +23,14 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.bridge.manager.api.models.responses.ListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.api.user.validators.actions.ValidActionParams;
-import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
-
-import static com.redhat.service.bridge.infra.api.APIConstants.PAGE;
-import static com.redhat.service.bridge.infra.api.APIConstants.PAGE_DEFAULT;
-import static com.redhat.service.bridge.infra.api.APIConstants.PAGE_MIN;
-import static com.redhat.service.bridge.infra.api.APIConstants.PAGE_SIZE;
-import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_DEFAULT;
-import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_MAX;
-import static com.redhat.service.bridge.infra.api.APIConstants.SIZE_MIN;
-import static java.util.stream.Collectors.toList;
 
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
@@ -77,19 +63,9 @@ public class ProcessorsAPI {
 
     @GET
     @Path("{bridgeId}/processors")
-    public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @DefaultValue(PAGE_DEFAULT) @Min(PAGE_MIN) @QueryParam(PAGE) int page,
-            @DefaultValue(SIZE_DEFAULT) @Min(SIZE_MIN) @Max(SIZE_MAX) @QueryParam(PAGE_SIZE) int pageSize) {
-
-        String customerId = customerIdResolver.resolveCustomerId(identity.getPrincipal());
-        ListResult<Processor> processors = processorService.getProcessors(bridgeId, customerId, page, pageSize);
-        List<ProcessorResponse> px = processors.getItems().stream().map(processorService::toResponse).collect(toList());
-
-        ProcessorListResponse listResponse = new ProcessorListResponse();
-        listResponse.setItems(px);
-        listResponse.setPage(processors.getPage());
-        listResponse.setSize(processors.getSize());
-        listResponse.setTotal(processors.getTotal());
-        return Response.ok(listResponse).build();
+    public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryInfo queryInfo) {
+        return Response.ok(ListResponse.fill(processorService.getProcessors(bridgeId, customerIdResolver.resolveCustomerId(identity.getPrincipal()), queryInfo), new ProcessorListResponse(),
+                processorService::toResponse)).build();
     }
 
     @POST

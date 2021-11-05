@@ -8,6 +8,7 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 public interface ProcessorService {
 
@@ -21,7 +22,7 @@ public interface ProcessorService {
 
     Long getProcessorsCount(String bridgeId, String customerId);
 
-    ListResult<Processor> getProcessors(String bridgeId, String customerId, int page, int size);
+    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo);
 
     void deleteProcessor(String bridgeId, String processorId, String customerId);
 

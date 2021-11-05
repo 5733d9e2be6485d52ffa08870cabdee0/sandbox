@@ -4,6 +4,8 @@ import javax.ws.rs.core.Response;
 
 public class BridgeLifecycleException extends EventBridgeManagerException {
 
+    private static final long serialVersionUID = 1L;
+
     public BridgeLifecycleException(String message) {
         super(message);
     }

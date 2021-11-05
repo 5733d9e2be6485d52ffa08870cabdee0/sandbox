@@ -10,6 +10,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -77,7 +78,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         params.map().forEach((key, value) -> namedQuery.setParameter(key, value.toString()));
     }
 
-    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, int page, int size) {
+    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryInfo queryInfo) {
 
         /*
          * Unfortunately we can't rely on Panaches in-built Paging due the fetched join in our query
@@ -92,16 +93,16 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         Parameters p = Parameters.with(Bridge.CUSTOMER_ID_PARAM, customerId).and(Processor.BRIDGE_ID_PARAM, bridgeId);
         Long processorCount = countProcessorsOnBridge(p);
         if (processorCount == 0L) {
-            return new ListResult<>(emptyList(), page, processorCount);
+            return new ListResult<>(emptyList(), queryInfo.getPageNumber(), processorCount);
         }
 
-        int firstResult = getFirstResult(page, size);
+        int firstResult = getFirstResult(queryInfo.getPageNumber(), queryInfo.getPageSize());
         TypedQuery<String> idsQuery = getEntityManager().createNamedQuery("PROCESSOR.idsByBridgeIdAndCustomerId", String.class);
         addParamsToNamedQuery(p, idsQuery);
-        List<String> ids = idsQuery.setMaxResults(size).setFirstResult(firstResult).getResultList();
+        List<String> ids = idsQuery.setMaxResults(queryInfo.getPageSize()).setFirstResult(firstResult).getResultList();
 
         List<Processor> processors = getEntityManager().createNamedQuery("PROCESSOR.findByIds", Processor.class).setParameter(IDS_PARAM, ids).getResultList();
-        return new ListResult<>(processors, page, processorCount);
+        return new ListResult<>(processors, queryInfo.getPageNumber(), processorCount);
     }
 
     public Long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {

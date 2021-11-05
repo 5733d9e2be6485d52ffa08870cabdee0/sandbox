@@ -28,6 +28,7 @@ import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -119,9 +120,9 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public ListResult<Processor> getProcessors(String bridgeId, String customerId, int page, int size) {
+    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo) {
         Bridge bridge = getAvailableBridge(bridgeId, customerId);
-        return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), page, size);
+        return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 
     @Transactional

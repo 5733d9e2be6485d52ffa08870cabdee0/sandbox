@@ -163,4 +163,17 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
+
+    private void patchDeployment(String name, String namespace) {
+        Deployment deployment = kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+        assertThat(deployment).isNotNull();
+        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
+        kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .replace(deployment);
+    }
 }

@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.exceptions;
 import javax.ws.rs.core.Response;
 
 public class ItemNotFoundException extends EventBridgeManagerException {
+    private static final long serialVersionUID = 1L;
 
     public ItemNotFoundException(String message) {
         super(message);

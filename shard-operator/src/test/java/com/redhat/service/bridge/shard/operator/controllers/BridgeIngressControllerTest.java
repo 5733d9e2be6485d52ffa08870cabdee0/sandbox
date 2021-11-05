@@ -52,6 +52,7 @@ public class BridgeIngressControllerTest {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
+        // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
         // Then

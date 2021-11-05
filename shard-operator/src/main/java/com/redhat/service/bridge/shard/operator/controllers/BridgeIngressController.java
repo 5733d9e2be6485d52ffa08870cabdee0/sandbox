@@ -18,6 +18,7 @@ import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
 import io.fabric8.kubernetes.api.model.Service;
+
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
@@ -85,6 +86,14 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
         // Extract Route and populate the CRD. Notify the manager.
 
+        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
+        // Deploy Service
+
+        // Deploy Route
+
+        // Extract Route and populate the CRD. Notify the manager.
+
         if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase())) {
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AVAILABLE));
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
@@ -98,6 +107,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
+
+        notifyManager(bridgeIngress, BridgeStatus.DELETED);
 
         return DeleteControl.DEFAULT_DELETE;
     }
