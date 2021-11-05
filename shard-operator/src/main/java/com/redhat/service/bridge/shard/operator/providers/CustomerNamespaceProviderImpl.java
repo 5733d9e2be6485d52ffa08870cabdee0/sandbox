@@ -42,7 +42,7 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     }
 
     private Map<String, String> createLabels(final String customerId) {
-        return new LabelsBuilder().withCustomerId(customerId).build();
+        return new LabelsBuilder().withCustomerId(customerId).buildWithDefaults();
     }
 
     private Namespace ensureManagedLabels(final Namespace namespace, final String customerId) {

@@ -8,16 +8,23 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
+import com.redhat.service.bridge.shard.operator.resources.PhaseType;
+import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.javaoperatorsdk.operator.api.Context;
 import io.javaoperatorsdk.operator.api.Controller;
 import io.javaoperatorsdk.operator.api.DeleteControl;
 import io.javaoperatorsdk.operator.api.ResourceController;
 import io.javaoperatorsdk.operator.api.UpdateControl;
+import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
 
 /**
  * To be implemented on <a href="https://issues.redhat.com/browse/MGDOBR-93">MGDOBR-93</a>
@@ -35,16 +42,42 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Inject
     ManagerSyncService managerSyncService;
 
+    @Inject
+    BridgeIngressService bridgeIngressService;
+
+    @Override
+    public void init(EventSourceManager eventSourceManager) {
+        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
+    }
+
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         // simplistic reconciliation to check with IT
         LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-        if (bridgeIngress.getStatus() == null) {
-            bridgeIngress.setStatus(new BridgeIngressStatus());
+
+        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
+
+        if (!Readiness.isDeploymentReady(deployment)) {
+            LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+
+            // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
+
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 
-        if (bridgeIngress.getStatus().getStatus() == null || bridgeIngress.getStatus().getStatus().isEmpty()) {
-            bridgeIngress.getStatus().setStatus("OK");
+        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
+        // Deploy Service
+
+        // Deploy Route
+
+        // Extract Route and populate the CRD. Notify the manager.
+
+        if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase())) {
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AVAILABLE));
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
@@ -54,6 +87,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Override
     public DeleteControl deleteResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
+        // Linked resources are automatically deleted
 
         notifyManager(bridgeIngress, BridgeStatus.DELETED);
 

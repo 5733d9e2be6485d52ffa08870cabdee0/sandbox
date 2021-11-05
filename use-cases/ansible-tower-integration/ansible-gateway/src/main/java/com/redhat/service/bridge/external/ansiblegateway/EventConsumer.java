@@ -31,7 +31,7 @@ public class EventConsumer {
     public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
         try {
             JobTemplateEvent event = decode(message.getPayload());
-            LOG.info("Received event with job template id {}", event.jobTemplateId);
+            LOG.info("Received event with job template id '{}'", event.jobTemplateId);
             ansibleTowerClient.launchJobTemplate(event.jobTemplateId);
         } catch (RuntimeException e) {
             LOG.error("Failed to handle Event received on Ansible gateway. The message is acked anyway.", e);

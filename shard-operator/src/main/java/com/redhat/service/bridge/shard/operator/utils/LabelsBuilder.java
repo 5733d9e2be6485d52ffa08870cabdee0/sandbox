@@ -17,6 +17,8 @@ public final class LabelsBuilder {
 
     public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
 
+    // Keep in sync with resources/templates kubernetes templates
+    public static final String BRIDGE_INGRESS_COMPONENT = "bridge-ingress";
     /**
      * The tool being used to manage the operation of an application
      */
@@ -81,6 +83,14 @@ public final class LabelsBuilder {
     }
 
     /**
+     * A unique name identifying the instance of an application. Example "mysql-abcxyz".
+     */
+    public LabelsBuilder withManagedByOperator() {
+        this.labels.put(MANAGED_BY_LABEL, OPERATOR_NAME);
+        return this;
+    }
+
+    /**
      * The component within the architecture. Example "database".
      */
     public LabelsBuilder withComponent(String component) {
@@ -88,9 +98,13 @@ public final class LabelsBuilder {
         return this;
     }
 
-    public Map<String, String> build() {
+    public Map<String, String> buildWithDefaults() {
         labels.put(MANAGED_BY_LABEL, OPERATOR_NAME);
         labels.putIfAbsent(CREATED_BY_LABEL, OPERATOR_NAME);
+        return build();
+    }
+
+    public Map<String, String> build() {
         return labels;
     }
 

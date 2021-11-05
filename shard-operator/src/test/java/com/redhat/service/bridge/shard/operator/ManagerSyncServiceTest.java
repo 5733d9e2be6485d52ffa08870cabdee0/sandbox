@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +19,13 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
@@ -29,19 +39,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 @WithKubernetesTestServer
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
+    @Inject
+    KubernetesClient kubernetesClient;
+
+    @Inject
+    CustomerNamespaceProvider customerNamespaceProvider;
+
+    @BeforeEach
+    void setup() {
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+    }
+
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
-        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
+        String expectedJsonUpdateRequest =
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestConstants.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
         addBridgeUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-1"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
+                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-2"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
+                        });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
@@ -123,5 +154,18 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    private void patchDeployment(String name, String namespace) {
+        Deployment deployment = kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+        assertThat(deployment).isNotNull();
+        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
+        kubernetesClient.apps().deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .replace(deployment);
     }
 }

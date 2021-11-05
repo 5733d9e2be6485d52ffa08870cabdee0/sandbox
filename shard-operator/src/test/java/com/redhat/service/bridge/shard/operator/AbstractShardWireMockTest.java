@@ -59,7 +59,6 @@ public abstract class AbstractShardWireMockTest {
 
     @BeforeEach
     protected void beforeEach() {
-
         wireMockServer.resetAll();
     }
 
