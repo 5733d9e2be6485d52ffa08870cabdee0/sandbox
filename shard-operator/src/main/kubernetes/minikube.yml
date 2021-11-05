@@ -22,6 +22,15 @@ rules:
     verbs:
       - "get"
       - "list"
+  - apiGroups:
+      - ""
+      - "extensions"
+      - "apps"
+    resources:
+      - deployments
+      - services
+    verbs:
+      - '*'
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""
