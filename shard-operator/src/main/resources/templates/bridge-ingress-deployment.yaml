@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: "" # used for filtering of Deployments created by the controller
     app.kubernetes.io/created-by: "" # Specify the operator
-    app.kubernetes.io/application-type: "" # used to specify the application type
+    app.kubernetes.io/component: "" # used to specify the component
   ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
     - apiVersion: ""
       kind: ""

@@ -12,9 +12,11 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
@@ -25,7 +27,6 @@ import com.redhat.service.bridge.manager.models.ListResult;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 
-@Transactional
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
@@ -40,6 +41,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MeterRegistry meterRegistry;
 
+    @Transactional
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
@@ -55,6 +57,7 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
+    @Transactional
     @Override
     public Bridge getBridge(String id) {
         Bridge b = bridgeDAO.findById(id);
@@ -72,11 +75,13 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
+    @Transactional
     @Override
     public Bridge getBridge(String id, String customerId) {
         return findByIdAndCustomerId(id, customerId);
     }
 
+    @Transactional
     @Override
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
@@ -90,16 +95,19 @@ public class BridgesServiceImpl implements BridgesService {
         LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
+    @Transactional
     @Override
     public ListResult<Bridge> getBridges(String customerId, int page, int pageSize) {
         return bridgeDAO.findByCustomerId(customerId, page, pageSize);
     }
 
+    @Transactional
     @Override
     public List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses) {
         return bridgeDAO.findByStatuses(statuses);
     }
 
+    @Transactional
     @Override
     public Bridge updateBridge(BridgeDTO bridgeDTO) {
         Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
@@ -116,5 +124,29 @@ public class BridgesServiceImpl implements BridgesService {
 
         LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
+    }
+
+    @Override
+    public BridgeDTO toDTO(Bridge bridge) {
+        BridgeDTO dto = new BridgeDTO();
+        dto.setId(bridge.getId());
+        dto.setName(bridge.getName());
+        dto.setEndpoint(bridge.getEndpoint());
+        dto.setStatus(bridge.getStatus());
+        dto.setCustomerId(bridge.getCustomerId());
+        return dto;
+    }
+
+    @Override
+    public BridgeResponse toResponse(Bridge bridge) {
+        BridgeResponse response = new BridgeResponse();
+        response.setId(bridge.getId());
+        response.setName(bridge.getName());
+        response.setEndpoint(bridge.getEndpoint());
+        response.setSubmittedAt(bridge.getSubmittedAt());
+        response.setPublishedAt(bridge.getPublishedAt());
+        response.setStatus(bridge.getStatus());
+        response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
+        return response;
     }
 }

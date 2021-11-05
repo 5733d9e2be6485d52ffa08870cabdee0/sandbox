@@ -1,11 +1,9 @@
 package com.redhat.service.bridge.infra.models.dto;
 
 import java.util.Objects;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 public class ProcessorDTO {
 
@@ -15,32 +13,24 @@ public class ProcessorDTO {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("definition")
+    private ProcessorDefinition definition;
+
     @JsonProperty("bridge")
     private BridgeDTO bridge;
 
     @JsonProperty("status")
     private BridgeStatus status;
 
-    @JsonProperty("filters")
-    private Set<BaseFilter> filters;
-
-    @JsonProperty("transformationTemplate")
-    private String transformationTemplate;
-
-    @JsonProperty("action")
-    private BaseAction action;
-
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, BridgeDTO bridge, BridgeStatus status, Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
+    public ProcessorDTO(String id, String name, ProcessorDefinition definition, BridgeDTO bridge, BridgeStatus status) {
         this.id = id;
         this.name = name;
         this.bridge = bridge;
         this.status = status;
-        this.filters = filters;
-        this.transformationTemplate = transformationTemplate;
-        this.action = action;
+        this.definition = definition;
     }
 
     public String getId() {
@@ -59,6 +49,14 @@ public class ProcessorDTO {
         this.name = name;
     }
 
+    public ProcessorDefinition getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(ProcessorDefinition definition) {
+        this.definition = definition;
+    }
+
     public BridgeDTO getBridge() {
         return bridge;
     }
@@ -73,30 +71,6 @@ public class ProcessorDTO {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
-    }
-
-    public Set<BaseFilter> getFilters() {
-        return filters;
-    }
-
-    public void setFilters(Set<BaseFilter> filters) {
-        this.filters = filters;
-    }
-
-    public String getTransformationTemplate() {
-        return transformationTemplate;
-    }
-
-    public void setTransformationTemplate(String transformationTemplate) {
-        this.transformationTemplate = transformationTemplate;
-    }
-
-    public BaseAction getAction() {
-        return action;
-    }
-
-    public void setAction(BaseAction action) {
-        this.action = action;
     }
 
     @Override

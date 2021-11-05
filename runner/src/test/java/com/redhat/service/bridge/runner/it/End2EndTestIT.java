@@ -36,6 +36,9 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.bridge.test.resource.KafkaResource;
+import com.redhat.service.bridge.test.resource.KeycloakResource;
+import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.cloudevents.SpecVersion;
 import io.quarkus.test.common.QuarkusTestResource;

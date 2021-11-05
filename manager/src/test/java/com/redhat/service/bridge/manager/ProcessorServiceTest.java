@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,14 +14,18 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
@@ -30,7 +35,9 @@ import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.test.resource.PostgresResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static java.util.Arrays.asList;
@@ -38,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
+@QuarkusTestResource(PostgresResource.class)
 public class ProcessorServiceTest {
 
     @Inject
@@ -114,7 +122,10 @@ public class ProcessorServiceTest {
         assertThat(processor.getName()).isEqualTo(r.getName());
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
-        assertThat(processor.getTransformationTemplate()).isEqualTo("{}");
+        assertThat(processor.getDefinition()).isNotNull();
+
+        ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+        assertThat(definition.getTransformationTemplate()).isEqualTo("{}");
     }
 
     @Test
@@ -146,7 +157,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        ProcessorDTO dto = processor.toDTO();
+        ProcessorDTO dto = processorService.toDTO(processor);
         dto.setStatus(BridgeStatus.AVAILABLE);
 
         Processor updated = processorService.updateProcessorStatus(dto);
@@ -165,10 +176,11 @@ public class ProcessorServiceTest {
 
     @Test
     public void updateProcessorStatus_processorDoesNotExist() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridge(b.toDTO());
-        processor.setId("foo");
+        Processor p = new Processor();
+        p.setBridge(createBridge(BridgeStatus.AVAILABLE));
+        p.setId("foo");
+
+        ProcessorDTO processor = processorService.toDTO(p);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
     }
@@ -278,5 +290,58 @@ public class ProcessorServiceTest {
         assertThat(processor).isNotNull();
 
         assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100).getSize()).isEqualTo(1);
+    }
+
+    @Test
+    public void toResponse() {
+        Bridge b = new Bridge();
+        b.setPublishedAt(ZonedDateTime.now());
+        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setStatus(BridgeStatus.AVAILABLE);
+        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
+        b.setSubmittedAt(ZonedDateTime.now());
+        b.setEndpoint("https://bridge.redhat.com");
+
+        Processor p = new Processor();
+        p.setName("foo");
+        p.setStatus(BridgeStatus.AVAILABLE);
+        p.setPublishedAt(ZonedDateTime.now());
+        p.setSubmittedAt(ZonedDateTime.now());
+        p.setBridge(b);
+
+        BaseAction action = new BaseAction();
+        action.setType(KafkaTopicAction.TYPE);
+        action.setName(TestConstants.DEFAULT_ACTION_NAME);
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
+        action.setParameters(params);
+
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
+        p.setDefinition(definitionToJsonNode(definition));
+
+        ProcessorResponse r = processorService.toResponse(p);
+        assertThat(r).isNotNull();
+
+        assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getName()).isEqualTo(p.getName());
+        assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getId()).isEqualTo(p.getId());
+        assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
+        assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getKind()).isEqualTo("Processor");
+        assertThat(r.getBridge()).isNotNull();
+        assertThat(r.getTransformationTemplate()).isEmpty();
+        assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
+    }
+
+    private JsonNode definitionToJsonNode(ProcessorDefinition definition) {
+        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
+        return processorServiceImpl.definitionToJsonNode(definition);
+    }
+
+    private ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
+        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
+        return processorServiceImpl.jsonNodeToDefinition(jsonNode);
     }
 }

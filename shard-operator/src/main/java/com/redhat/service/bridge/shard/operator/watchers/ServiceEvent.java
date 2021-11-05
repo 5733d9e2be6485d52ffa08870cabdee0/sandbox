@@ -7,13 +7,13 @@ import io.javaoperatorsdk.operator.processing.event.DefaultEvent;
 public class ServiceEvent extends DefaultEvent {
 
     private final Watcher.Action action;
-    private final Service deployment;
+    private final Service service;
 
-    public ServiceEvent(Watcher.Action action, Service resource, ServiceEventSource serviceEventSource) {
+    public ServiceEvent(Watcher.Action action, Service service, ServiceEventSource serviceEventSource) {
         // TODO: this mapping is really critical and should be made more explicit by the java operator sdk
-        super(resource.getMetadata().getOwnerReferences().get(0).getUid(), serviceEventSource);
+        super(service.getMetadata().getOwnerReferences().get(0).getUid(), serviceEventSource);
         this.action = action;
-        this.deployment = resource;
+        this.service = service;
     }
 
     public Watcher.Action getAction() {
@@ -21,30 +21,30 @@ public class ServiceEvent extends DefaultEvent {
     }
 
     public String resourceUid() {
-        return getDeployment().getMetadata().getUid();
+        return getService().getMetadata().getUid();
     }
 
     @Override
     public String toString() {
-        return "CustomResourceEvent{"
+        return "ServiceEvent{"
                 + "action="
                 + action
                 + ", resource=[ name="
-                + getDeployment().getMetadata().getName()
+                + getService().getMetadata().getName()
                 + ", kind="
-                + getDeployment().getKind()
+                + getService().getKind()
                 + ", apiVersion="
-                + getDeployment().getApiVersion()
+                + getService().getApiVersion()
                 + " ,resourceVersion="
-                + getDeployment().getMetadata().getResourceVersion()
+                + getService().getMetadata().getResourceVersion()
                 + ", markedForDeletion: "
-                + (getDeployment().getMetadata().getDeletionTimestamp() != null
-                        && !getDeployment().getMetadata().getDeletionTimestamp().isEmpty())
+                + (getService().getMetadata().getDeletionTimestamp() != null
+                        && !getService().getMetadata().getDeletionTimestamp().isEmpty())
                 + " ]"
                 + '}';
     }
 
-    public Service getDeployment() {
-        return deployment;
+    public Service getService() {
+        return service;
     }
 }

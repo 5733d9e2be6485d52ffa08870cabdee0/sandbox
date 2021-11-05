@@ -39,12 +39,12 @@ public class Executor {
     public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
             MeterRegistry registry) {
         this.processor = processor;
-        this.filterEvaluator = filterEvaluatorFactory.build(processor.getFilters());
+        this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
 
-        this.transformationEvaluator = transformationFactory.build(processor.getTransformationTemplate());
+        this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getAction().getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getAction());
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getDefinition().getAction().getType());
+        this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getDefinition().getAction());
 
         initMetricFields(processor, registry);
     }

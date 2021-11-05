@@ -21,8 +21,6 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.ProcessorService;
-import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.Processor;
 
 import static java.util.stream.Collectors.toList;
 
@@ -55,7 +53,7 @@ public class ShardBridgesSyncAPI {
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
         return Response.ok(processorService.getProcessorByStatuses(statuses)
                 .stream()
-                .map(Processor::toDTO)
+                .map(processorService::toDTO)
                 .collect(toList()))
                 .build();
     }
@@ -65,7 +63,7 @@ public class ShardBridgesSyncAPI {
         LOGGER.info("[Manager] Shard asks for Bridges to deploy or delete");
         return Response.ok(bridgesService.getBridgesByStatuses(statuses)
                 .stream()
-                .map(Bridge::toDTO)
+                .map(bridgesService::toDTO)
                 .collect(toList()))
                 .build();
     }

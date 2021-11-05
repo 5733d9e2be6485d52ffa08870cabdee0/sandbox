@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.runner.it;
+package com.redhat.service.bridge.test.resource;
 
 import java.time.Duration;
 import java.util.Collections;

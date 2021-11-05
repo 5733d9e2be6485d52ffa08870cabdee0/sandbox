@@ -11,6 +11,7 @@ import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -31,7 +32,7 @@ public class KafkaTopicActionValidatorTest {
 
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
-        p.setAction(b);
+        p.setDefinition(new ProcessorDefinition(null, null, b));
 
         BridgeDTO bridge = new BridgeDTO();
         bridge.setId("myBridge");
@@ -43,14 +44,14 @@ public class KafkaTopicActionValidatorTest {
     @Test
     public void isValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        assertThat(validator.isValid(processor.getAction()).isValid()).isTrue();
+        assertThat(validator.isValid(processor.getDefinition().getAction()).isValid()).isTrue();
     }
 
     @Test
     public void isValid_noTopicIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
-        ValidationResult validationResult = validator.isValid(processor.getAction());
+        processor.getDefinition().getAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
+        ValidationResult validationResult = validator.isValid(processor.getDefinition().getAction());
 
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
@@ -59,8 +60,8 @@ public class KafkaTopicActionValidatorTest {
     @Test
     public void isValid_emptyTopicStringIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
-        ValidationResult validationResult = validator.isValid(processor.getAction());
+        processor.getDefinition().getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
+        ValidationResult validationResult = validator.isValid(processor.getDefinition().getAction());
 
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);

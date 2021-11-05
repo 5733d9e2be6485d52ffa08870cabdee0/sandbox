@@ -12,9 +12,17 @@ public class BridgeIngressStatus {
 
     private List<String> conditions;
 
-    private String status;
+    private PhaseType phase;
 
     private String endpoint;
+
+    public BridgeIngressStatus() {
+        // Left blank on purpose
+    }
+
+    public BridgeIngressStatus(PhaseType phase) {
+        this.phase = phase;
+    }
 
     public List<String> getConditions() {
         return conditions;
@@ -24,12 +32,12 @@ public class BridgeIngressStatus {
         this.conditions = conditions;
     }
 
-    public String getStatus() {
-        return status;
+    public PhaseType getPhase() {
+        return phase;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setPhase(PhaseType phase) {
+        this.phase = phase;
     }
 
     public String getEndpoint() {

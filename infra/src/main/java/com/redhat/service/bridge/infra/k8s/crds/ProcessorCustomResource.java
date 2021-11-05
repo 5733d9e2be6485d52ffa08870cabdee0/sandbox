@@ -1,13 +1,10 @@
 package com.redhat.service.bridge.infra.k8s.crds;
 
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 // TODO: move to shard or shard-api. It is in this infra module because k8s module needs it atm
 public class ProcessorCustomResource {
@@ -18,20 +15,14 @@ public class ProcessorCustomResource {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("definition")
+    private ProcessorDefinition definition;
+
     @JsonProperty("bridge")
     private BridgeDTO bridge;
 
     @JsonProperty("status")
     private BridgeStatus status;
-
-    @JsonProperty("filters")
-    private Set<BaseFilter> filters;
-
-    @JsonProperty("transformationTemplate")
-    private String transformationTemplate;
-
-    @JsonProperty("action")
-    private BaseAction action;
 
     public ProcessorCustomResource() {
     }
@@ -52,6 +43,14 @@ public class ProcessorCustomResource {
         this.name = name;
     }
 
+    public ProcessorDefinition getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(ProcessorDefinition definition) {
+        this.definition = definition;
+    }
+
     public BridgeDTO getBridge() {
         return bridge;
     }
@@ -68,40 +67,13 @@ public class ProcessorCustomResource {
         this.status = status;
     }
 
-    public Set<BaseFilter> getFilters() {
-        return filters;
-    }
-
-    public void setFilters(Set<BaseFilter> filters) {
-        this.filters = filters;
-    }
-
-    public String getTransformationTemplate() {
-        return transformationTemplate;
-    }
-
-    public void setTransformationTemplate(String transformationTemplate) {
-        this.transformationTemplate = transformationTemplate;
-    }
-
-    public BaseAction getAction() {
-        return action;
-    }
-
-    public void setAction(BaseAction action) {
-        this.action = action;
-    }
-
     public static ProcessorCustomResource fromDTO(ProcessorDTO dto) {
         ProcessorCustomResource resource = new ProcessorCustomResource();
         resource.setId(dto.getId());
         resource.setName(dto.getName());
         resource.setBridge(dto.getBridge());
         resource.setStatus(dto.getStatus());
-        resource.setFilters(dto.getFilters());
-        resource.setTransformationTemplate(dto.getTransformationTemplate());
-        resource.setAction(dto.getAction());
-
+        resource.setDefinition(dto.getDefinition());
         return resource;
     }
 
@@ -111,10 +83,7 @@ public class ProcessorCustomResource {
         dto.setName(name);
         dto.setBridge(bridge);
         dto.setStatus(status);
-        dto.setFilters(filters);
-        dto.setTransformationTemplate(transformationTemplate);
-        dto.setAction(this.action);
-
+        dto.setDefinition(definition);
         return dto;
     }
 }
