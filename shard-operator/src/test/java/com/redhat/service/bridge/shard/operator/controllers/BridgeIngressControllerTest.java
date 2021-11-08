@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BridgeIngressControllerTest {
 
     @Inject
-    KubernetesClient kubernetesClient;
+    BridgeIngressController bridgeIngressController;
 
     @Inject
-    BridgeIngressController bridgeIngressController;
+    KubernetesClient kubernetesClient;
 
     @BeforeEach
     void setup() {
@@ -52,6 +52,7 @@ public class BridgeIngressControllerTest {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
+        // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
         // Then

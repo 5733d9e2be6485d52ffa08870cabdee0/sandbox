@@ -13,6 +13,7 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
@@ -45,7 +46,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridges() {
-        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getPage()).isZero();
         assertThat(bridges.getTotal()).isZero();
         assertThat(bridges.getSize()).isZero();
@@ -56,13 +57,13 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
         assertThat(bridges.getTotal()).isEqualTo(1);
         assertThat(bridges.getPage()).isZero();
 
         // filter by customer id not implemented yet
-        bridges = bridgesService.getBridges("not-the-id", TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        bridges = bridgesService.getBridges("not-the-id", new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isZero();
         assertThat(bridges.getTotal()).isZero();
         assertThat(bridges.getPage()).isZero();
@@ -103,7 +104,7 @@ public class BridgesServiceTest {
         assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(bridgesToDeploy.get(0).getEndpoint()).isNull();
 
-        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE);
+        ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
     }
 

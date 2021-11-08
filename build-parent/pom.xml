@@ -47,6 +47,7 @@
     <version.org.keycloak>14.0.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.1.0</version.io.quarkiverse.hibernatetypes>
     <version.io.quarkiverse.operatorsdk>2.0.0.CR2</version.io.quarkiverse.operatorsdk>
+    <version.io.github.classgraph>4.8.129</version.io.github.classgraph>
 
     <container.image.keycloak>jboss/keycloak:${version.org.keycloak}</container.image.keycloak>
 
@@ -136,6 +137,12 @@
         <version>${version.org.awaitility}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+    	<groupId>io.github.classgraph</groupId>
+    	<artifactId>classgraph</artifactId>
+    	<version>${version.io.github.classgraph}</version>
+    	<scope>test</scope>
+	   </dependency>
     </dependencies>
   </dependencyManagement>
 

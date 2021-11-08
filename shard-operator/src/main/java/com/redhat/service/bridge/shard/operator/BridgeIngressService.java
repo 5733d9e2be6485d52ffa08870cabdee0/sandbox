@@ -13,5 +13,5 @@ public interface BridgeIngressService {
 
     Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress);
 
-    Service getOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
+    Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
 }

@@ -11,19 +11,11 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProcessorResponse {
+public class ProcessorResponse extends BaseResponse {
 
-    @JsonProperty("id")
-    private String id;
-
-    @JsonProperty("kind")
-    private final String kind = "Processor";
-
-    @JsonProperty("href")
-    private String href;
-
-    @JsonProperty("name")
-    private String name;
+    public ProcessorResponse() {
+        super("Processor");
+    }
 
     @JsonProperty("bridge")
     private BridgeResponse bridge;
@@ -47,34 +39,6 @@ public class ProcessorResponse {
 
     @JsonProperty("action")
     private BaseAction action;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getKind() {
-        return kind;
-    }
-
-    public String getHref() {
-        return href;
-    }
-
-    public void setHref(String href) {
-        this.href = href;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public BridgeResponse getBridge() {
         return bridge;

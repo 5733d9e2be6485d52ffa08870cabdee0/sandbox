@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
@@ -34,10 +35,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return find("#BRIDGE.findByIdAndCustomerId", params).firstResult();
     }
 
-    public ListResult<Bridge> findByCustomerId(String customerId, int page, int pageSize) {
+    public ListResult<Bridge> findByCustomerId(String customerId, QueryInfo queryInfo) {
         Parameters parameters = Parameters.with("customerId", customerId);
         long total = find("#BRIDGE.findByCustomerId", parameters).count();
-        List<Bridge> bridges = find("#BRIDGE.findByCustomerId", parameters).page(page, pageSize).list();
-        return new ListResult<>(bridges, page, total);
+        List<Bridge> bridges = find("#BRIDGE.findByCustomerId", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+        return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 }

@@ -80,7 +80,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Service
-        Service service = bridgeIngressService.getOrCreateBridgeIngressService(bridgeIngress, deployment);
+        Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
             LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
@@ -98,6 +98,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
+        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Extract Route and populate the CRD. Notify the manager.
 
@@ -114,6 +115,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
+
+        notifyManager(bridgeIngress, BridgeStatus.DELETED);
 
         return DeleteControl.DEFAULT_DELETE;
     }

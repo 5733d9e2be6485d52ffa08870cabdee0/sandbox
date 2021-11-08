@@ -4,6 +4,8 @@ import javax.ws.rs.core.Response;
 
 public class AlreadyExistingItemException extends EventBridgeManagerException {
 
+    private static final long serialVersionUID = 1L;
+
     public AlreadyExistingItemException(String message) {
         super(message);
     }

@@ -11,6 +11,11 @@ public class APIConstants {
     public static final String USER_API_BASE_PATH = "/api/v1/bridges/";
 
     /**
+     * Base Path for the error API
+     */
+    public static final String ERROR_API_BASE_PATH = "/api/v1/errors/";
+
+    /**
      * Base Path for Shard facing API.
      */
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";

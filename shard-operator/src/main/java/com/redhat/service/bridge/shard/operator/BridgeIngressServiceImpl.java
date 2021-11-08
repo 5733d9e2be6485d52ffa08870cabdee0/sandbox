@@ -14,6 +14,7 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -55,21 +56,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         deployment = templateProvider.loadIngressDeploymentTemplate();
 
-        // Name and namespace
-        deployment.getMetadata().setName(bridgeIngress.getMetadata().getName());
-        deployment.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
-
-        // Labels
-        deployment.getMetadata().setLabels(
-                new LabelsBuilder()
-                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
-                        .buildWithDefaults());
-
-        // Owner reference
-        deployment.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
-        deployment.getMetadata().getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
-        deployment.getMetadata().getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
-        deployment.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
+        setMetadata(bridgeIngress, deployment.getMetadata());
 
         // Specs
         deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
@@ -81,8 +68,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     }
 
     @Override
-    public Service getOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
-        Service service = kubernetesClient.services().inNamespace(deployment.getMetadata().getNamespace()).withName(deployment.getMetadata().getName()).get();
+    public Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
+        Service service = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
         if (service != null) {
             return service;
@@ -90,26 +77,30 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         service = templateProvider.loadIngressServiceTemplate();
 
-        // Name and namespace
-        service.getMetadata().setName(bridgeIngress.getMetadata().getName());
-        service.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
-
-        // Labels
-        service.getMetadata().setLabels(
-                new LabelsBuilder()
-                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
-                        .buildWithDefaults());
-
-        // Owner reference
-        service.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
-        service.getMetadata().getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
-        service.getMetadata().getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
-        service.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
+        setMetadata(bridgeIngress, service.getMetadata());
 
         // Specs
         service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
         return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(service);
+    }
+
+    private void setMetadata(BridgeIngress bridgeIngress, ObjectMeta meta) {
+        // Name and namespace
+        meta.setName(bridgeIngress.getMetadata().getName());
+        meta.setNamespace(bridgeIngress.getMetadata().getNamespace());
+
+        // Labels
+        meta.setLabels(
+                new LabelsBuilder()
+                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
+                        .buildWithDefaults());
+
+        // Owner reference
+        meta.getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
+        meta.getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
+        meta.getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
+        meta.getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
     }
 
     @Override

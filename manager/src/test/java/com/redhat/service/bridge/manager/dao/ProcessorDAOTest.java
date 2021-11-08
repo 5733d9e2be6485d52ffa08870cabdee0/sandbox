@@ -21,6 +21,7 @@ import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.models.QueryInfo;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -153,7 +154,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isEqualTo(2L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
@@ -164,7 +165,7 @@ public class ProcessorDAOTest {
     @Test
     public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 0, 100);
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isZero();
         assertThat(listResult.getTotal()).isZero();
@@ -176,7 +177,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, 1, 1);
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(1, 1));
         assertThat(listResult.getPage()).isEqualTo(1L);
         assertThat(listResult.getSize()).isEqualTo(1L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
