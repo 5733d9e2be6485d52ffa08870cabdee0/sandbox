@@ -24,3 +24,10 @@ spec:
       containers:
         - name: ""
           image: ""
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: ""
+            - name: KAFKA_CLIENT_ID
+              value: ""
+            - name: KAFKA_CLIENT_SECRET
+              value: ""

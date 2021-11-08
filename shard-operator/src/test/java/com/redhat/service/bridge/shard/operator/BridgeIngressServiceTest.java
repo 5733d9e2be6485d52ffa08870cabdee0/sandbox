@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.time.Duration;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -12,8 +13,10 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -78,6 +81,13 @@ public class BridgeIngressServiceTest {
                                     .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
+                            List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
                         });
     }
 
