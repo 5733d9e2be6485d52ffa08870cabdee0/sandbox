@@ -85,14 +85,6 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
         // Extract Route and populate the CRD. Notify the manager.
 
-        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-
-        // Deploy Service
-
-        // Deploy Route
-
-        // Extract Route and populate the CRD. Notify the manager.
-
         if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase())) {
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AVAILABLE));
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
