@@ -41,13 +41,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
+    KubernetesClient kubernetesClient;
+
+    @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @Inject
-    KubernetesClient kubernetesClient;
 
     @BeforeEach
     public void setup() {
