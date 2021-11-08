@@ -21,6 +21,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         return loadYaml(Deployment.class, INGRESS_DEPLOYMENT_PATH);
     }
 
+    @Override
     public Service loadIngressServiceTemplate() {
         return loadYaml(Service.class, INGRESS_SERVICE_PATH);
     }

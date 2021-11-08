@@ -67,6 +67,7 @@ public class ServiceEventSource extends AbstractEventSource implements Watcher<S
     @Override
     public void onClose(WatcherException e) {
         if (e == null) {
+            log.warn("Unknown error happened with watch.");
             return;
         }
         if (e.isHttpGone()) {

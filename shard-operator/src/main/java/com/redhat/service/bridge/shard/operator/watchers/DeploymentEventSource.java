@@ -20,7 +20,7 @@ import static io.javaoperatorsdk.operator.processing.KubernetesResourceUtils.get
  *
  */
 public class DeploymentEventSource extends AbstractEventSource implements Watcher<Deployment> {
-    private static final Logger log = LoggerFactory.getLogger(DeploymentEventSource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentEventSource.class);
 
     private final KubernetesClient client;
 
@@ -52,13 +52,13 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
 
     @Override
     public void eventReceived(Action action, Deployment deployment) {
-        log.info(
+        LOGGER.info(
                 "Event received for action: '{}', Deployment: '{}'",
                 action.name(),
                 deployment.getMetadata().getName());
 
         if (action == Action.ERROR) {
-            log.warn(
+            LOGGER.warn(
                     "Skipping '{}' event for custom resource uid: '{}', version: '{}'",
                     action,
                     getUID(deployment),
@@ -72,15 +72,16 @@ public class DeploymentEventSource extends AbstractEventSource implements Watche
     @Override
     public void onClose(WatcherException e) {
         if (e == null) {
+            LOGGER.warn("Unknown error happened with watch.");
             return;
         }
         if (e.isHttpGone()) {
-            log.warn("Received error for watch, will try to reconnect.", e);
+            LOGGER.warn("Received error for watch, will try to reconnect.", e);
             registerWatch(this.component);
         } else {
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
-            log.error("Unexpected error happened with watch. Will exit.", e);
+            LOGGER.error("Unexpected error happened with watch. Will exit.", e);
             Quarkus.asyncExit(1);
         }
     }
