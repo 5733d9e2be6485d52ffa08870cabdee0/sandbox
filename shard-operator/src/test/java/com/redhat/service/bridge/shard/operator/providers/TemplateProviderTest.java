@@ -53,7 +53,6 @@ public class TemplateProviderTest {
         assertLabels(route.getMetadata());
         assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
         assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
-        assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
     }
 
     @Test
