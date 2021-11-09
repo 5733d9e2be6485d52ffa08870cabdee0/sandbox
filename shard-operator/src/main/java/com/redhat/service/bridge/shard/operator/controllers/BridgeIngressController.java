@@ -90,7 +90,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
-        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(service);
+        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),

@@ -3,14 +3,12 @@ package com.redhat.service.bridge.shard.operator.networking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.watchers.networking.OpenshiftRouteEventSource;
 
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.openshift.api.model.Route;
-import io.fabric8.openshift.api.model.RouteBuilder;
 import io.fabric8.openshift.api.model.RouteSpec;
 import io.fabric8.openshift.api.model.RouteSpecBuilder;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
@@ -22,9 +20,11 @@ public class OpenshiftNetworkingService implements NetworkingService {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
 
     private final OpenShiftClient client;
+    private final TemplateProvider templateProvider;
 
-    public OpenshiftNetworkingService(OpenShiftClient client) {
+    public OpenshiftNetworkingService(OpenShiftClient client, TemplateProvider templateProvider) {
         this.client = client;
+        this.templateProvider = templateProvider;
     }
 
     @Override
@@ -32,12 +32,13 @@ public class OpenshiftNetworkingService implements NetworkingService {
         return OpenshiftRouteEventSource.createAndRegisterWatch(client, component);
     }
 
+    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(Service service) {
+    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Route route = client.routes().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
 
         if (route == null) {
-            route = buildRoute(service);
+            route = buildRoute(bridgeIngress, service);
             client.routes().inNamespace(service.getMetadata().getNamespace()).create(route);
         }
         return buildNetworkingResource(route);
@@ -53,15 +54,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
         }
     }
 
-    private Route buildRoute(Service service) {
-        ObjectMeta metadata = new ObjectMetaBuilder()
-                .withOwnerReferences(service.getMetadata().getOwnerReferences())
-                .withLabels(
-                        new LabelsBuilder()
-                                .withComponent(service.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL))
-                                .buildWithDefaults())
-                .withName(service.getMetadata().getName())
-                .build();
+    private Route buildRoute(BridgeIngress bridgeIngress, Service service) {
+        Route route = templateProvider.loadBridgeOpenshiftRouteTemplate(bridgeIngress);
 
         RouteSpec routeSpec = new RouteSpecBuilder()
                 .withTo(new RouteTargetReferenceBuilder()
@@ -70,10 +64,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
                         .build())
                 .build();
 
-        Route route = new RouteBuilder()
-                .withMetadata(metadata)
-                .withSpec(routeSpec)
-                .build();
+        route.setSpec(routeSpec);
 
         return route;
     }

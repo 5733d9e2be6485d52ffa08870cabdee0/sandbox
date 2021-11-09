@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import com.redhat.service.bridge.shard.operator.app.Platform;
 import com.redhat.service.bridge.shard.operator.app.PlatformConfigProvider;
+import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 
 import io.fabric8.openshift.client.OpenShiftClient;
 
@@ -18,11 +19,14 @@ public class NetworkingServiceProducer {
     @Inject
     PlatformConfigProvider platformConfigProvider;
 
+    @Inject
+    TemplateProvider templateProvider;
+
     @Produces
     public NetworkingService getService() {
         if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
-            return new OpenshiftNetworkingService(client);
+            return new OpenshiftNetworkingService(client, templateProvider);
         }
-        return new KubernetesNetworkingService(client);
+        return new KubernetesNetworkingService(client, templateProvider);
     }
 }
