@@ -43,14 +43,14 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
     @Override
     public void eventReceived(Action action, Route route) {
         if (eventHandler == null) {
-            LOGGER.warn("Ignoring action {} for resource ingress. EventHandler has not yet been initialized.", action);
+            LOGGER.warn("Ignoring action {} for resource Route. EventHandler has not yet been initialized.", action);
             return;
         }
 
         LOGGER.info(
                 "Event received for action: {}, {}: {}",
                 action.name(),
-                "Ingress",
+                "Route",
                 route.getMetadata().getName());
 
         if (action == Action.ERROR) {

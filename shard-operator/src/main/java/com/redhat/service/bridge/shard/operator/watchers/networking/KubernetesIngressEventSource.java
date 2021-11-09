@@ -43,7 +43,7 @@ public class KubernetesIngressEventSource extends AbstractEventSource implements
     @Override
     public void eventReceived(Action action, Ingress ingress) {
         if (eventHandler == null) {
-            LOGGER.warn("Ignoring action {} for resource ingress. EventHandler has not yet been initialized.", action);
+            LOGGER.warn("Ignoring action {} for resource Ingress. EventHandler has not yet been initialized.", action);
             return;
         }
 
