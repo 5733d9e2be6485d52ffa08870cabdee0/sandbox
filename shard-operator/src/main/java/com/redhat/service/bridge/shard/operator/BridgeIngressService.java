@@ -3,6 +3,7 @@ package com.redhat.service.bridge.shard.operator;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public interface BridgeIngressService {
@@ -11,4 +12,6 @@ public interface BridgeIngressService {
     void deleteBridgeIngress(BridgeDTO bridgeDTO);
 
     Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress);
+
+    Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
 }

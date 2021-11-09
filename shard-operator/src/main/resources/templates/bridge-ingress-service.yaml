@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
   name: ""
   labels:
@@ -12,15 +12,10 @@ metadata:
       name: ""
       uid: ""
 spec:
+  ports:
+    - name: web
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
   selector:
-    matchLabels:
-      app.kubernetes.io/instance: ""
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/instance: ""
-    spec:
-      containers:
-        - name: ""
-          image: ""
+    app.kubernetes.io/instance: ""

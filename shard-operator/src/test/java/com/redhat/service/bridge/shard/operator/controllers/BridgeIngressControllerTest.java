@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
+import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -77,6 +78,10 @@ public class BridgeIngressControllerTest {
                 new ObjectMetaBuilder()
                         .withName(KubernetesResourceUtil.sanitizeName(TestConstants.BRIDGE_ID))
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
+                        .withLabels(new LabelsBuilder()
+                                .withCustomerId(TestConstants.CUSTOMER_ID)
+                                .withComponent("ingress")
+                                .build())
                         .build());
         bridgeIngress.setSpec(bridgeIngressSpec);
 

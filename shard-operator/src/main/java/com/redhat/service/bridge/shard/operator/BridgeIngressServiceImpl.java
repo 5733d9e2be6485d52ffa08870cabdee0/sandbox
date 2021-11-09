@@ -14,6 +14,8 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -54,21 +56,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         deployment = templateProvider.loadIngressDeploymentTemplate();
 
-        // Name and namespace
-        deployment.getMetadata().setName(bridgeIngress.getMetadata().getName());
-        deployment.getMetadata().setNamespace(bridgeIngress.getMetadata().getNamespace());
-
-        // Labels
-        deployment.getMetadata().setLabels(
-                new LabelsBuilder()
-                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
-                        .buildWithDefaults());
-
-        // Owner reference
-        deployment.getMetadata().getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
-        deployment.getMetadata().getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
-        deployment.getMetadata().getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
-        deployment.getMetadata().getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
+        setMetadata(bridgeIngress, deployment.getMetadata());
 
         // Specs
         deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
@@ -77,6 +65,42 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
         return kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(deployment);
+    }
+
+    @Override
+    public Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
+        Service service = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
+
+        if (service != null) {
+            return service;
+        }
+
+        service = templateProvider.loadIngressServiceTemplate();
+
+        setMetadata(bridgeIngress, service.getMetadata());
+
+        // Specs
+        service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
+
+        return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(service);
+    }
+
+    private void setMetadata(BridgeIngress bridgeIngress, ObjectMeta meta) {
+        // Name and namespace
+        meta.setName(bridgeIngress.getMetadata().getName());
+        meta.setNamespace(bridgeIngress.getMetadata().getNamespace());
+
+        // Labels
+        meta.setLabels(
+                new LabelsBuilder()
+                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
+                        .buildWithDefaults());
+
+        // Owner reference
+        meta.getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
+        meta.getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
+        meta.getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
+        meta.getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
     }
 
     @Override

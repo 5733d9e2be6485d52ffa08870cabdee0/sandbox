@@ -36,7 +36,8 @@ public class BridgeIngressServiceTest {
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @BeforeEach
-    void setup() {
+    public void setup() {
+        // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
     }
 
@@ -49,11 +50,29 @@ public class BridgeIngressServiceTest {
         bridgeIngressService.createBridgeIngress(dto);
 
         // Then
+        BridgeIngress bridgeIngress = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .get();
+        assertThat(bridgeIngress).isNotNull();
+    }
+
+    @Test
+    public void testBridgeIngressCreationTriggersController() {
+        // Given
+        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Then
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
+                            // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                                     .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
@@ -63,8 +82,26 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK?")
     public void testBridgeIngressDeletion() {
+        // Given
+        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+        bridgeIngressService.deleteBridgeIngress(dto);
+
+        // Then
+        BridgeIngress bridgeIngress = kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .get();
+        assertThat(bridgeIngress).isNull();
+    }
+
+    @Test
+    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK? https://issues.redhat.com/browse/MGDOBR-128")
+    public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
         BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
 

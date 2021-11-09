@@ -21,6 +21,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
@@ -45,8 +46,12 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
     @BeforeEach
-    void setup() {
+    public void setup() {
+        // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
     }
 
@@ -65,13 +70,18 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
+        String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
+        String firstBridgeName = KubernetesResourceUtil.sanitizeName("myId-1");
+        String secondBridgeName = KubernetesResourceUtil.sanitizeName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-1"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
-                            patchDeployment(KubernetesResourceUtil.sanitizeName("myId-2"), customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID));
+                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyServiceOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyServiceOrFail(secondBridgeName, customerNamespace);
                         });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
