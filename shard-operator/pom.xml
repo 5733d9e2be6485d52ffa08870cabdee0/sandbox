@@ -146,15 +146,6 @@
         </dependency>
       </dependencies>
     </profile>
-    <profile>
-      <id>openshift</id>
-      <properties>
-        <namespace>default</namespace>
-        <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
-        <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
-        <quarkus.profile>openshift</quarkus.profile>
-      </properties>
-    </profile>
   </profiles>
 
 </project>
