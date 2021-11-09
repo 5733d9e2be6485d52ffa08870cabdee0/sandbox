@@ -23,6 +23,8 @@ docker tag openbridge/shard-operator:latest quay.io/<username>/shard-operator:la
 docker push quay.io/<username>/shard-operator:latest 
 ## apply the CRD
 oc apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+## Update the operator image in the yml file
+sed -i -e 's/openbridge\/shard-operator:latest/quay.io\/<username>\/shard-operator:latest/g' target/kubernetes/openshift.yml
 ## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)
 oc apply -f target/kubernetes/openshift.yml -n mynamespace
 ## install the sample
