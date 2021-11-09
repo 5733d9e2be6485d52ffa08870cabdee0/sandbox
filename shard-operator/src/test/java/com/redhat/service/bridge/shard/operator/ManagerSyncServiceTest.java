@@ -56,7 +56,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled("to be updated with routes")
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
@@ -83,6 +82,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyDeploymentOrFail(secondBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(firstBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(secondBridgeName, customerNamespace);
                         });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
