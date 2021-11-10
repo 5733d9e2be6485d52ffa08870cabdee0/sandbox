@@ -21,7 +21,6 @@ import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -56,6 +55,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .create(BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName(), ingressImage));
     }
 
+    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
@@ -64,9 +64,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             return deployment;
         }
 
-        deployment = templateProvider.loadIngressDeploymentTemplate();
-
-        setMetadata(bridgeIngress, deployment.getMetadata());
+        deployment = templateProvider.loadBridgeDeploymentTemplate(bridgeIngress);
 
         // Specs
         deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
@@ -84,6 +82,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         return kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(deployment);
     }
 
+    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
         Service service = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
@@ -92,32 +91,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             return service;
         }
 
-        service = templateProvider.loadIngressServiceTemplate();
-
-        setMetadata(bridgeIngress, service.getMetadata());
+        service = templateProvider.loadBridgeServiceTemplate(bridgeIngress);
 
         // Specs
         service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
         return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).create(service);
-    }
-
-    private void setMetadata(BridgeIngress bridgeIngress, ObjectMeta meta) {
-        // Name and namespace
-        meta.setName(bridgeIngress.getMetadata().getName());
-        meta.setNamespace(bridgeIngress.getMetadata().getNamespace());
-
-        // Labels
-        meta.setLabels(
-                new LabelsBuilder()
-                        .withComponent(LabelsBuilder.BRIDGE_INGRESS_COMPONENT)
-                        .buildWithDefaults());
-
-        // Owner reference
-        meta.getOwnerReferences().get(0).setKind(bridgeIngress.getKind());
-        meta.getOwnerReferences().get(0).setName(bridgeIngress.getMetadata().getName());
-        meta.getOwnerReferences().get(0).setApiVersion(bridgeIngress.getApiVersion());
-        meta.getOwnerReferences().get(0).setUid(bridgeIngress.getMetadata().getUid());
     }
 
     @Override

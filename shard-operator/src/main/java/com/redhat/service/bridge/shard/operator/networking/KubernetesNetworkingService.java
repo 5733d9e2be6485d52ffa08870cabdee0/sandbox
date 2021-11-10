@@ -3,11 +3,10 @@ package com.redhat.service.bridge.shard.operator.networking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.watchers.networking.KubernetesIngressEventSource;
 
-import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPathBuilder;
@@ -15,7 +14,6 @@ import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressRuleValueBuilder
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBackend;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressBackendBuilder;
-import io.fabric8.kubernetes.api.model.networking.v1.IngressBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressRule;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressRuleBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressServiceBackendBuilder;
@@ -27,15 +25,18 @@ import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 
 public class KubernetesNetworkingService implements NetworkingService {
 
+    public static final String NGINX_REWRITE_TARGET_ANNOTATION = "nginx.ingress.kubernetes.io/rewrite-target";
+    public static final String REWRITE_TARGET_PLACEHOLDER = "/$2";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
     private static final String PATH_REGEX = "(/|$)(.*)";
-    private static final String NGINX_REWRITE_TARGET_ANNOTATION = "nginx.ingress.kubernetes.io/rewrite-target";
-    private static final String REWRITE_TARGET_PLACEHOLDER = "/$2";
 
     private final KubernetesClient client;
+    private final TemplateProvider templateProvider;
 
-    public KubernetesNetworkingService(KubernetesClient client) {
+    public KubernetesNetworkingService(KubernetesClient client, TemplateProvider templateProvider) {
         this.client = client;
+        this.templateProvider = templateProvider;
     }
 
     @Override
@@ -43,12 +44,13 @@ public class KubernetesNetworkingService implements NetworkingService {
         return KubernetesIngressEventSource.createAndRegisterWatch(client, component);
     }
 
+    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(Service service) {
+    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Ingress ingress = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
 
         if (ingress == null) {
-            ingress = buildIngress(service);
+            ingress = buildIngress(bridgeIngress, service);
             client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).create(ingress);
         }
 
@@ -65,17 +67,8 @@ public class KubernetesNetworkingService implements NetworkingService {
         }
     }
 
-    private Ingress buildIngress(Service service) {
-
-        ObjectMeta metadata = new ObjectMetaBuilder()
-                .withOwnerReferences(service.getMetadata().getOwnerReferences())
-                .withLabels(
-                        new LabelsBuilder()
-                                .withComponent(service.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL))
-                                .buildWithDefaults())
-                .addToAnnotations(NGINX_REWRITE_TARGET_ANNOTATION, REWRITE_TARGET_PLACEHOLDER)
-                .withName(service.getMetadata().getName())
-                .build();
+    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service) {
+        Ingress ingress = templateProvider.loadBridgeKubernetesIngressTemplate(bridgeIngress);
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
@@ -100,7 +93,9 @@ public class KubernetesNetworkingService implements NetworkingService {
                 .withRules(ingressRule)
                 .build();
 
-        return new IngressBuilder().withMetadata(metadata).withSpec(ingressSpec).build();
+        ingress.setSpec(ingressSpec);
+
+        return ingress;
     }
 
     private NetworkResource buildNetworkingResource(Ingress ingress) {

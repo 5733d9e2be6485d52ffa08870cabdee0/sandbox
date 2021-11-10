@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.quarkus.runtime.Quarkus;
 
 public class OpenshiftRouteEventSource extends AbstractEventSource implements Watcher<Route> {
 
@@ -43,14 +44,14 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
     @Override
     public void eventReceived(Action action, Route route) {
         if (eventHandler == null) {
-            LOGGER.warn("Ignoring action {} for resource ingress. EventHandler has not yet been initialized.", action);
+            LOGGER.warn("Ignoring action {} for resource Route. EventHandler has not yet been initialized.", action);
             return;
         }
 
         LOGGER.info(
                 "Event received for action: {}, {}: {}",
                 action.name(),
-                "Ingress",
+                "Route",
                 route.getMetadata().getName());
 
         if (action == Action.ERROR) {
@@ -85,7 +86,7 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
             LOGGER.error("Unexpected error happened with watch. Will exit.", e);
-            System.exit(1);
+            Quarkus.asyncExit(1);
         }
     }
 }

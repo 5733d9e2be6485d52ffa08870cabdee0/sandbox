@@ -3,9 +3,10 @@ package com.redhat.service.bridge.shard.operator.utils;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.utils.networking.NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
+import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceStatusBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -18,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class KubernetesResourcePatcher {
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    KubernetesClient kubernetesClient;
 
     @Inject
-    KubernetesClient kubernetesClient;
+    NetworkingTestUtils networkingTestUtils;
 
     public void patchReadyDeploymentOrFail(String name, String namespace) {
         // Retrieve the deployment
@@ -59,4 +60,14 @@ public class KubernetesResourcePatcher {
                 .replace(service);
     }
 
+    public void patchReadyNetworkResourceOrFail(String name, String namespace) {
+        // Retrieve the network resource
+        Namespaced resource = networkingTestUtils.getNetworkResource(name, namespace);
+
+        // Fail if it has not been deployed yet
+        assertThat(resource).isNotNull();
+
+        // Patch the network resource - This is what k8s would do when the resource is deployed and is ready.
+        networkingTestUtils.patchNetworkResource(name, namespace);
+    }
 }
