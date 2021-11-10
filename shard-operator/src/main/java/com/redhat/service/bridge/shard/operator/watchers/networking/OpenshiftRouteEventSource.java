@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.quarkus.runtime.Quarkus;
 
 public class OpenshiftRouteEventSource extends AbstractEventSource implements Watcher<Route> {
 
@@ -85,7 +86,7 @@ public class OpenshiftRouteEventSource extends AbstractEventSource implements Wa
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
             LOGGER.error("Unexpected error happened with watch. Will exit.", e);
-            System.exit(1);
+            Quarkus.asyncExit(1);
         }
     }
 }

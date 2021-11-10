@@ -18,11 +18,6 @@ public class PlatformConfigProvider {
 
     @PostConstruct
     void init() {
-
-        if (platformConfig == null) {
-            throw new IllegalStateException("event-bridge.k8s.platform configuration must be provided.");
-        }
-
         try {
             this.platform = Platform.parse(platformConfig);
         } catch (IllegalArgumentException e) {

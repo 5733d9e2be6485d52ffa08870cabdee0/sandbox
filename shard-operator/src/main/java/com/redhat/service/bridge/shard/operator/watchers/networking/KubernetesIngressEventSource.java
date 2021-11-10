@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.quarkus.runtime.Quarkus;
 
 public class KubernetesIngressEventSource extends AbstractEventSource implements Watcher<Ingress> {
 
@@ -85,7 +86,7 @@ public class KubernetesIngressEventSource extends AbstractEventSource implements
             // Note that this should not happen normally, since fabric8 client handles reconnect.
             // In case it tries to reconnect this method is not called.
             LOGGER.error("Unexpected error happened with watch. Will exit.", e);
-            System.exit(1);
+            Quarkus.asyncExit(1);
         }
     }
 }
