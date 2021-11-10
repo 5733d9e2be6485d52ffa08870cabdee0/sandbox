@@ -10,6 +10,8 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
+import com.redhat.service.bridge.shard.operator.networking.NetworkResource;
+import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.bridge.shard.operator.resources.PhaseType;
@@ -26,6 +28,7 @@ import io.javaoperatorsdk.operator.api.Controller;
 import io.javaoperatorsdk.operator.api.DeleteControl;
 import io.javaoperatorsdk.operator.api.ResourceController;
 import io.javaoperatorsdk.operator.api.UpdateControl;
+import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
 
 /**
@@ -46,12 +49,17 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Inject
     BridgeIngressService bridgeIngressService;
 
+    @Inject
+    NetworkingService networkingService;
+
     @Override
     public void init(EventSourceManager eventSourceManager) {
         DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
         ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
+        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
     }
 
     @Override
@@ -82,6 +90,15 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
+        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
+
+        if (!networkResource.isReady()) {
+            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
+        }
+        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Extract Route and populate the CRD. Notify the manager.
 

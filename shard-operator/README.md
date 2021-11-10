@@ -11,13 +11,36 @@ See the main EPIC to understand the following up tasks: https://issues.redhat.co
 
 README to be updated once we start implementing all the features.
 
+## Building and Trying in an OCP cluster
+
+By default, the application is compiled for OCP. Once you are logged in your OCP cluster, you can deploy the operator with the following commands
+
+```shell
+## generate the resources (if namespace not provided, it uses the default - not recommended)
+mvn clean install -Dquarkus.container-image.build=true -Dnamespace=mynamespace
+## Change the docker image name and tag according to your docker remote hub (remember to make the repository public)
+docker tag openbridge/shard-operator:latest quay.io/<username>/shard-operator:latest 
+docker push quay.io/<username>/shard-operator:latest 
+## apply the CRD
+oc apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+## Update the operator image in the yml file
+sed -i -e 's/openbridge\/shard-operator:latest/quay.io\/<username>\/shard-operator:latest/g' target/kubernetes/openshift.yml
+## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)
+oc apply -f target/kubernetes/openshift.yml -n mynamespace
+## install the sample
+oc apply -f src/main/kubernetes/sample.yml -n mynamespace
+```
+
 ## Building and Trying in a Local Minikube
 
 ````shell
+## The minikube ingress and ingress-dns addon must be enabled
+minikube addons enable ingress ingress-dns
+minikube addons enable ingress-dns
 ## Make sure that you're pointing to the internal minikube registry
 eval $(minikube -p minikube docker-env)
 ## generate the resources (if namespace not provided, it uses the default - not recommended)
-mvn clean install -Pminikube -Dnamespace=mynamespace
+mvn clean install -Pminikube -Devent-bridge.k8s.platform=k8s -Dnamespace=mynamespace
 ## apply the CRD
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
 ## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)

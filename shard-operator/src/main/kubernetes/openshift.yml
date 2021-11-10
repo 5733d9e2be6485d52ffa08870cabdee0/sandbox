@@ -32,11 +32,11 @@ rules:
     verbs:
       - '*'
   - apiGroups:
-      - networking.k8s.io
+      - route.openshift.io
     resources:
-      - ingresses
+      - routes
     verbs:
-      - "*"
+      - '*'
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""

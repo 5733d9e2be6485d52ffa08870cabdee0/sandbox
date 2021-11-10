@@ -28,7 +28,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
@@ -37,7 +37,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@WithKubernetesTestServer
+@WithOpenShiftTestServer
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
@@ -82,6 +82,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyDeploymentOrFail(secondBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(firstBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(secondBridgeName, customerNamespace);
                         });
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();

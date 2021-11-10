@@ -18,12 +18,12 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
+import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @QuarkusTest
-@WithKubernetesTestServer
+@WithOpenShiftTestServer
 public class BridgeIngressServiceTest {
 
     @Inject

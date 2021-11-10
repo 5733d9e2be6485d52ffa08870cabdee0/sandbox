@@ -47,6 +47,10 @@
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-container-image-jib</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -55,7 +59,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-test-kubernetes-client</artifactId>
+      <artifactId>quarkus-test-openshift-client</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -132,18 +136,12 @@
         <namespace>default</namespace>
         <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
-        <quarkus.container-image.build>true</quarkus.container-image.build>
         <quarkus.profile>minikube</quarkus.profile>
       </properties>
       <dependencies>
         <dependency>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-minikube</artifactId>
-          <optional>true</optional>
-        </dependency>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-container-image-jib</artifactId>
           <optional>true</optional>
         </dependency>
       </dependencies>
