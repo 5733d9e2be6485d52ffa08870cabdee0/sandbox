@@ -56,7 +56,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled("to be updated with routes")
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));

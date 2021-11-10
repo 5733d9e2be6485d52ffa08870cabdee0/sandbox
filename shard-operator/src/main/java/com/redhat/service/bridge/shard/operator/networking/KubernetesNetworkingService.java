@@ -30,7 +30,6 @@ public class KubernetesNetworkingService implements NetworkingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
     private static final String PATH_REGEX = "(/|$)(.*)";
-
     private final KubernetesClient client;
     private final TemplateProvider templateProvider;
 
