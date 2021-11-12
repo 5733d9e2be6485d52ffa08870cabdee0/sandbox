@@ -5,10 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.models.filters.ObjectMapperFactory;
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 
 public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
 
@@ -22,28 +26,34 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
         return new FilterEvaluatorFEEL(templates);
     }
 
-    protected String getTemplateByFilterType(BaseFilter filter) {
+    protected String getTemplateByFilterType(BaseFilter<?> filter) {
         return String.format(TEMPLATE, getFilterCondition(filter));
     }
 
-    private String getFilterCondition(BaseFilter filter) {
+    private String getFilterCondition(BaseFilter<?> filter) {
         switch (filter.getType()) {
             case StringEquals.FILTER_TYPE_NAME:
-                return String.format("%s = \"%s\"", filter.getKey(), filter.getValueAsString());
+                return String.format("%s = \"%s\"", filter.getKey(), filter.getValue());
             case StringContains.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("(contains (%s, \"%s\"))", filter);
+                return getFilterConditionForListValues("(contains (%s, %s))", (StringContains) filter);
             case StringBeginsWith.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("(starts with (%s, \"%s\"))", filter);
+                return getFilterConditionForListValues("(starts with (%s, %s))", (StringBeginsWith) filter);
+            case ValuesIn.FILTER_TYPE_NAME:
+                return getFilterConditionForListValues("%s = %s", (ValuesIn) filter);
             default:
                 throw new IllegalArgumentException("Filter type " + filter.getType() + " is not supported by FEELTemplateFactory.");
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private String getFilterConditionForListValues(String singleFormatTemplate, BaseFilter filter) {
+    private <T> String getFilterConditionForListValues(String singleFormatTemplate, BaseFilter<List<T>> filter) {
         List<String> conditions = new ArrayList<>();
-        for (String value : (List<String>) filter.getValue()) {
-            conditions.add(String.format(singleFormatTemplate, filter.getKey(), value));
+        ObjectMapper objectMapper = ObjectMapperFactory.get();
+        for (T value : filter.getValue()) {
+            try {
+                conditions.add(String.format(singleFormatTemplate, filter.getKey(), objectMapper.writeValueAsString(value)));
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Value " + value + " cannot be converted to string", e);
+            }
         }
         return String.join(" or ", conditions);
     }

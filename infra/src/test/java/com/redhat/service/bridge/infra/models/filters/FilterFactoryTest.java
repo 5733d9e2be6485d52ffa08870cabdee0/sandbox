@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.infra.models.filters;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ public class FilterFactoryTest {
         assertThat(stringContainsFilter.getKey()).isEqualTo("key");
         assertThat(((List<String>) stringContainsFilter.getValue()).size()).isEqualTo(1);
         assertThat(((List<String>) stringContainsFilter.getValue()).get(0)).isEqualTo("test");
-        assertThat(stringContainsFilter.getValueAsString()).isEqualTo("[\"test\"]");
     }
 
     @Test
@@ -30,7 +30,6 @@ public class FilterFactoryTest {
         assertThat(stringBeginsFilter.getKey()).isEqualTo("key");
         assertThat(((List<String>) stringBeginsFilter.getValue()).size()).isEqualTo(1);
         assertThat(((List<String>) stringBeginsFilter.getValue()).get(0)).isEqualTo("test");
-        assertThat(stringBeginsFilter.getValueAsString()).isEqualTo("[\"test\"]");
     }
 
     @Test
@@ -39,7 +38,14 @@ public class FilterFactoryTest {
         assertThat(stringEqualsFilter).isInstanceOf(StringEquals.class);
         assertThat(stringEqualsFilter.getKey()).isEqualTo("key");
         assertThat(stringEqualsFilter.getValue()).isEqualTo("test");
-        assertThat(stringEqualsFilter.getValueAsString()).isEqualTo("test");
+    }
+
+    @Test
+    public void testValuesInFilterFactory() {
+        BaseFilter stringEqualsFilter = FilterFactory.buildFilter(ValuesIn.FILTER_TYPE_NAME, "key", "[\"test\",2]");
+        assertThat(stringEqualsFilter).isInstanceOf(ValuesIn.class);
+        assertThat(stringEqualsFilter.getKey()).isEqualTo("key");
+        assertThat(stringEqualsFilter.getValue()).isEqualTo(Arrays.asList("test", 2));
     }
 
     @Test
