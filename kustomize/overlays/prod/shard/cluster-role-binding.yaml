@@ -9,4 +9,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: shard-operator
-    namespace: jrota-test
+    namespace: event-bridge-prod

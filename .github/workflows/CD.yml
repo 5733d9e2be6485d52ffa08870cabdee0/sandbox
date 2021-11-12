@@ -85,9 +85,9 @@ jobs:
             manager:
               - *general
               - manager/**
-            shard:
+            shard-operator:
               - *general
-              - shard/**
+              - shard-operator/**
             ingress:
               - *general
               - ingress/**
@@ -105,10 +105,10 @@ jobs:
 
       # run only if 'ingress' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Fleet Shard
-        if: steps.filter.outputs.shard == 'true'
+        if: steps.filter.outputs.shard-operator == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Shard"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm shard/
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm shard-operator/
           docker push $FLEET_SHARD_CONTAINER_NAME-jvm
 
       # run only if 'executor' or any 'general' modules have changed

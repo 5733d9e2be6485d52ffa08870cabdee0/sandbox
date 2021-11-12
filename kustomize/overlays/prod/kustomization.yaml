@@ -1,4 +1,4 @@
-namespace: jrota-test
+namespace: event-bridge-prod
 resources:
   - ../../base
   - all-in-one
