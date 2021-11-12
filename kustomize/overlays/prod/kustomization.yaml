@@ -12,7 +12,7 @@ patchesStrategicMerge:
 images:
   - name: event-bridge-all-in-one
     newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-    newTag: 587c24c836a96fa44c7d0ea929c784721616e239-jvm
+    newTag: eee24f864b07133958963d52a3b68cb9072241eb-jvm
   - name: event-bridge-shard-operator
     newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
     newTag: latest
