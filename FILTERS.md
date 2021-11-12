@@ -58,7 +58,7 @@ Assuming that the Filter is the following
     {
       "type": "StringContains", 
       "key": "data.name",
-      "value": ["opo", "Marco"]
+      "values": ["opo", "Marco"]
     }
   ]
 }
@@ -89,7 +89,7 @@ Assuming that the Filter is the following
     {
       "type": "StringBeginsWith", 
       "key": "data.name",
-      "value": ["Jac", "Mar"]
+      "values": ["Jac", "Mar"]
     }
   ]
 }
