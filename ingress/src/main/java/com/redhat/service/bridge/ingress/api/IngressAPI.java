@@ -12,13 +12,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-import com.redhat.service.bridge.ingress.IngressService;
 import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
+import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -28,15 +29,18 @@ public class IngressAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngressAPI.class);
 
+    @ConfigProperty(name = "event-bridge.bridge.id")
+    String bridgeId;
+
     @Inject
-    IngressService ingressService;
+    KafkaEventPublisher kafkaEventPublisher;
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@NotNull CloudEvent event) {
         LOGGER.debug("[ingress] new event has been uploaded to endpoint /events");
-        ingressService.processEvent(event);
+        kafkaEventPublisher.sendEvent(bridgeId, event);
         return Response.ok().build();
     }
 
@@ -55,7 +59,7 @@ public class IngressAPI {
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);
-        ingressService.processEvent(cloudEvent);
+        kafkaEventPublisher.sendEvent(bridgeId, cloudEvent);
         return Response.ok().build();
     }
 
