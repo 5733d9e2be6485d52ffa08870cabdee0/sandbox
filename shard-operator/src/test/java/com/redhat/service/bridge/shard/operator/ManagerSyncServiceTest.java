@@ -62,8 +62,11 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
-        String expectedJsonUpdateRequest =
+        String expectedJsonUpdateProvisioningRequest =
                 String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestConstants.CUSTOMER_ID);
+        String expectedJsonUpdateAvailableRequest =
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
+                        TestConstants.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
         addBridgeUpdateRequestListener(latch);
@@ -88,7 +91,10 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
+                .withRequestBody(equalToJson(expectedJsonUpdateProvisioningRequest, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
+        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+                .withRequestBody(equalToJson(expectedJsonUpdateAvailableRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
