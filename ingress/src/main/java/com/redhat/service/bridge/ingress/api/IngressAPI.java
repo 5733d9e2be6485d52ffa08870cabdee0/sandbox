@@ -8,7 +8,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -24,8 +23,7 @@ import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 
-//TODO: when we move to k8s, revisit the endpoint name
-@Path("/ingress")
+@Path("/events")
 public class IngressAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngressAPI.class);
@@ -34,31 +32,30 @@ public class IngressAPI {
     IngressService ingressService;
 
     @POST
-    @Path("/events/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response publishEvent(@PathParam("name") @NotNull String name, @NotNull CloudEvent event) {
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /ingress/events/{}", name);
-        ingressService.processEvent(name, event);
+    public Response publishEvent(@NotNull CloudEvent event) {
+        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events");
+        ingressService.processEvent(event);
         return Response.ok().build();
     }
 
     @POST
-    @Path("/events/{name}/plain")
+    @Path("/plain")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response publishEvent(@PathParam("name") @NotNull String name,
+    public Response publishEvent(
             @HeaderParam("ce-specversion") @NotNull String cloudEventSpecVersion,
             @HeaderParam("ce-type") @NotNull String cloudEventType,
             @HeaderParam("ce-id") @NotNull String cloudEventId,
             @HeaderParam("ce-source") @NotNull String cloudEventSource,
             @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
             @NotNull JsonNode event) {
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /ingress/events/{}", name);
+        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);
-        ingressService.processEvent(name, cloudEvent);
+        ingressService.processEvent(cloudEvent);
         return Response.ok().build();
     }
 

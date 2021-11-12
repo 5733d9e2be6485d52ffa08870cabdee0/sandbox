@@ -3,11 +3,5 @@ package com.redhat.service.bridge.ingress;
 import io.cloudevents.CloudEvent;
 
 public interface IngressService {
-
-    void processEvent(String id, CloudEvent event);
-
-    // TODO: remove after we move to k8s
-    String deploy(String id);
-
-    boolean undeploy(String id);
+    void processEvent(CloudEvent event);
 }

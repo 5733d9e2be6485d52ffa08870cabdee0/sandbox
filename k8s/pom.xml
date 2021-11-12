@@ -25,10 +25,6 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>ingress</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>executor</artifactId>
     </dependency>
   </dependencies>

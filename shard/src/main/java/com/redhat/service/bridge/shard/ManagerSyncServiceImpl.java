@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.k8s.K8SBridgeConstants;
 import com.redhat.service.bridge.infra.k8s.KubernetesClient;
-import com.redhat.service.bridge.infra.k8s.crds.BridgeCustomResource;
 import com.redhat.service.bridge.infra.k8s.crds.ProcessorCustomResource;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -44,10 +43,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
-        LOGGER.info("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
-        fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
-                success -> processingComplete(BridgeDTO.class),
-                failure -> processingFailed(BridgeDTO.class, failure));
+        LOGGER.info("[Shard] Fetching updates from Manager for Processors to deploy and delete");
 
         fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
                 success -> processingComplete(ProcessorDTO.class),
@@ -55,39 +51,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
-        LOGGER.info("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
-    }
-
-    @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
         return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors").sendJson(processorDTO);
-    }
-
-    @Override
-    public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
-                .onItem().transform(this::getBridges)
-                .onItem().transformToUni(x -> Uni.createFrom().item(
-                        x.stream()
-                                .map(y -> {
-                                    if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
-                                        y.setStatus(BridgeStatus.PROVISIONING);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> deployBridgeCustomResource(y),
-                                                failure -> failedToSendUpdateToManager(y, failure));
-                                    }
-                                    if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
-                                        y.setStatus(BridgeStatus.DELETED);
-                                        deleteBridgeCustomResource(y);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> LOGGER.info("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                failure -> failedToSendUpdateToManager(y, failure));
-                                    }
-                                    LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
-                                    return Uni.createFrom().voidItem();
-                                }).collect(Collectors.toList())));
     }
 
     @Override
@@ -111,15 +76,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
-    }
-
-    // Create the custom resource, and let the controller create what it needs
-    protected void deployBridgeCustomResource(BridgeDTO bridgeDTO) {
-        kubernetesClient.createOrUpdateCustomResource(bridgeDTO.getId(), BridgeCustomResource.fromDTO(bridgeDTO), K8SBridgeConstants.BRIDGE_TYPE);
-    }
-
-    protected void deleteBridgeCustomResource(BridgeDTO bridgeDTO) {
-        kubernetesClient.deleteCustomResource(bridgeDTO.getId(), K8SBridgeConstants.BRIDGE_TYPE);
     }
 
     // Create the custom resource, and let the controller create what it needs

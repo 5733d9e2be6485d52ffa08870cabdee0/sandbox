@@ -1,12 +1,18 @@
-namespace: event-bridge-prod
+namespace: jrota-test
 resources:
   - ../../base
   - all-in-one
+  - secrets
+  - shard
   - observability
 patchesStrategicMerge:
   - all-in-one/patches/deploy-config.yaml
   - all-in-one/patches/postgres-config.yaml
+  - shard/patches/deploy-config.yaml
 images:
   - name: event-bridge-all-in-one
     newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-    newTag: 711f0a6bcce14be5086977a1cb6cdc5d5d375ce4-jvm
+    newTag: 587c24c836a96fa44c7d0ea929c784721616e239-jvm
+  - name: event-bridge-shard-operator
+    newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
+    newTag: latest

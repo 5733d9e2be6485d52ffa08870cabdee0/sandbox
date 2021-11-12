@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
@@ -15,7 +14,6 @@ import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -39,17 +37,8 @@ public class IngressServiceTest {
 
     @Test
     public void testSendEvent() throws JsonProcessingException {
-        ingressService.deploy("topicName"); // TODO: remove after we move to k8s
-        ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent());
+        ingressService.processEvent(TestUtils.buildTestCloudEvent());
 
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq("topicName"), any(CloudEvent.class));
-        ingressService.undeploy("topicName");
-    }
-
-    @Test
-    // TODO: remove after we move to k8s
-    public void testSendEventToUndeployedInstance() throws JsonProcessingException {
-        assertThatExceptionOfType(IngressException.class).isThrownBy(() -> ingressService.processEvent("topicName", TestUtils.buildTestCloudEvent()));
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq("topicName"), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
     }
 }
