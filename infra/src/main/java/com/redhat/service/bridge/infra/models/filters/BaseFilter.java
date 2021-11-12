@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -14,10 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
         @JsonSubTypes.Type(value = StringBeginsWith.class, name = StringBeginsWith.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringContains.class, name = StringContains.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringEquals.class, name = StringEquals.FILTER_TYPE_NAME),
+        @JsonSubTypes.Type(value = ValuesIn.class, name = ValuesIn.FILTER_TYPE_NAME)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class BaseFilter {
-    protected static final ObjectMapper MAPPER = new ObjectMapper();
+public abstract class BaseFilter<T> {
 
     public static final String FILTER_TYPE_FIELD = "type";
 
@@ -27,15 +26,12 @@ public abstract class BaseFilter {
     @JsonProperty("key")
     protected String key;
 
-    public BaseFilter() {
+    protected BaseFilter(String type) {
+        this.type = type;
     }
 
-    public BaseFilter(String key, String value) {
-        this.key = key;
-        setValueFromString(value);
-    }
-
-    public void setKey(String key) {
+    protected BaseFilter(String type, String key) {
+        this(type);
         this.key = key;
     }
 
@@ -43,20 +39,10 @@ public abstract class BaseFilter {
         return key;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getType() {
         return type;
     }
 
     @JsonIgnore
-    public abstract String getValueAsString();
-
-    @JsonIgnore
-    public abstract Object getValue();
-
-    @JsonIgnore
-    protected abstract void setValueFromString(String value);
+    public abstract T getValue();
 }
