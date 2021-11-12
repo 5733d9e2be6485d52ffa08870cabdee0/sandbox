@@ -100,8 +100,6 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         }
         LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Extract Route and populate the CRD. Notify the manager.
-
         if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase()) || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             BridgeIngressStatus bridgeIngressStatus = new BridgeIngressStatus(PhaseType.AVAILABLE);
             bridgeIngressStatus.setEndpoint(networkResource.getEndpoint());
