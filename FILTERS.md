@@ -107,3 +107,35 @@ Then an event like
 
 Would evaluate the Filter to `true`.
 
+### ValuesIn
+
+The `ValuesIn` evaluates to `true` if the **key** value is equal to any of the values specified in the filter **values**.
+
+Assuming that the Filter is the following
+
+```json
+
+{
+  "filters": [
+    {
+      "type": "ValuesIn", 
+      "key": "data.any",
+      "value": ["Jac", 2]
+    }
+  ]
+}
+```
+
+Then an event like
+```json
+{
+  ...
+  "data": {
+    "any": 2
+  }
+}
+```
+
+Would evaluate the Filter to `true`.
+
+
