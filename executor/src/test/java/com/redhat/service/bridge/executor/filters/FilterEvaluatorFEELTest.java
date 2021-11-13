@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,6 +47,17 @@ public class FilterEvaluatorFEELTest {
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myService"))).isTrue();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "myTest"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyApplication"))).isFalse();
+    }
+
+    @Test
+    public void testInFilter() {
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new ValuesIn("source", "[\"Service\", \"Testing\", 2]")));
+
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "Service"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "Testing"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "2"))).isFalse();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyApplication"))).isFalse();
     }
 

@@ -9,6 +9,8 @@ public class FilterFactory {
                 return new StringContains(key, value);
             case StringEquals.FILTER_TYPE_NAME:
                 return new StringEquals(key, value);
+            case ValuesIn.FILTER_TYPE_NAME:
+                return new ValuesIn(key, value);
             default:
                 throw new IllegalArgumentException("Type " + type + " is not valid");
         }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +39,13 @@ public class FilterEvaluatorFactoryFEELTest {
 
         String expectedMulti = "if (starts with (data.name, \"jacopo\")) or (starts with (data.name, \"rota\")) then \"OK\" else \"NOT_OK\"";
         String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringBeginsWith("data.name", "[\"jacopo\", \"rota\"]"));
+        assertThat(templateMulti).isEqualTo(expectedMulti);
+    }
+
+    @Test
+    public void valuesInWithTemplate() {
+        String expectedMulti = "if data.name = \"jacopo\" or data.name = \"rota\" or data.name = 2 then \"OK\" else \"NOT_OK\"";
+        String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new ValuesIn("data.name", "[\"jacopo\", \"rota\", 2]"));
         assertThat(templateMulti).isEqualTo(expectedMulti);
     }
 }
