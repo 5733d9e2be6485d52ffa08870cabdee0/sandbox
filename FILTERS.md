@@ -120,7 +120,7 @@ Assuming that the Filter is the following
     {
       "type": "ValuesIn", 
       "key": "data.any",
-      "value": ["Jac", 2]
+      "values": ["Jac", 2]
     }
   ]
 }
