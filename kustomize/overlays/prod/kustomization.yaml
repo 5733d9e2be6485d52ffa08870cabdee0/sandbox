@@ -1,18 +1,6 @@
-namespace: event-bridge-prod
-resources:
-  - ../../base
-  - all-in-one
-  - secrets
-  - shard
-  - observability
-patchesStrategicMerge:
-  - all-in-one/patches/deploy-config.yaml
-  - all-in-one/patches/postgres-config.yaml
-  - shard/patches/deploy-config.yaml
-images:
-  - name: event-bridge-all-in-one
-    newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-    newTag: bd0de903a19da1fe0c2444ef7621fd7f3b764836-jvm
-  - name: event-bridge-shard-operator
-    newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-    newTag: latest
+{images: [{name: event-bridge-all-in-one, newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one,
+      newTag: cae4073f4ab8b13fe98366d04f1d42b1d4607758-jvm}, {name: event-bridge-shard-operator,
+      newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard, newTag: cae4073f4ab8b13fe98366d04f1d42b1d4607758-jvm}],
+  namespace: event-bridge-prod, patchesStrategicMerge: [all-in-one/patches/deploy-config.yaml,
+    all-in-one/patches/postgres-config.yaml, shard/patches/deploy-config.yaml], resources: [
+    ../../base, all-in-one, secrets, shard, observability]}
