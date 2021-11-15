@@ -12,6 +12,8 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class TestUtils {
 
+    public static final String DEFAULT_BRIDGE_ID = "bridgeId";
+
     public static CloudEvent buildTestCloudEvent() throws JsonProcessingException {
         return builderForTestCloudEvent().build();
     }

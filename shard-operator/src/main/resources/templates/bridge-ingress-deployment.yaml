@@ -31,3 +31,5 @@ spec:
               value: ""
             - name: KAFKA_CLIENT_SECRET
               value: ""
+            - name: EVENT_BRIDGE_BRIDGE_ID
+              value: ""

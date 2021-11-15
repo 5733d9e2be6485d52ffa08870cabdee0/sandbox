@@ -16,6 +16,7 @@ import org.awaitility.Awaitility;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTestResource(KafkaResource.class)
 @QuarkusTestResource(PostgresResource.class)
 @QuarkusTestResource(KeycloakResource.class)
+@Disabled("The shard has to be deployed to a kubernetes cluster in order to make this e2e test working")
 public class End2EndTestIT {
 
     private static final String USER_NAME = "kermit";

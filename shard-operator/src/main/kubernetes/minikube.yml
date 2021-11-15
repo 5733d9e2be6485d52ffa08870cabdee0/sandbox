@@ -6,13 +6,7 @@ rules:
   - apiGroups:
       - com.redhat.service.bridge
     resources:
-      - bridgeingresses
-    verbs:
       - "*"
-  - apiGroups:
-      - com.redhat.service.bridge
-    resources:
-      - bridgeingresses/status
     verbs:
       - "*"
   - apiGroups:
@@ -29,6 +23,7 @@ rules:
     resources:
       - deployments
       - services
+      - namespaces
     verbs:
       - '*'
   - apiGroups:
