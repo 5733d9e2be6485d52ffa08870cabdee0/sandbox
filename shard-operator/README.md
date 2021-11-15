@@ -17,7 +17,7 @@ By default, the application is compiled for OCP. Once you are logged in your OCP
 
 ```shell
 ## generate the resources (if namespace not provided, it uses the default - not recommended)
-mvn clean install -Dquarkus.container-image.build=true -Dnamespace=mynamespace
+mvn clean install -Dnamespace=mynamespace
 ## Change the docker image name and tag according to your docker remote hub (remember to make the repository public)
 docker tag openbridge/shard-operator:latest quay.io/<username>/shard-operator:latest 
 docker push quay.io/<username>/shard-operator:latest 
@@ -40,7 +40,7 @@ minikube addons enable ingress-dns
 ## Make sure that you're pointing to the internal minikube registry
 eval $(minikube -p minikube docker-env)
 ## generate the resources (if namespace not provided, it uses the default - not recommended)
-mvn clean install -Pminikube -Devent-bridge.k8s.platform=k8s -Dnamespace=mynamespace
+mvn clean install -Pminikube -Dnamespace=mynamespace
 ## apply the CRD
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
 ## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)
