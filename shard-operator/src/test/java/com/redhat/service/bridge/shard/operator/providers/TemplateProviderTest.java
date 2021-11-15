@@ -23,7 +23,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressDeploymentTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeDeploymentTemplate(BRIDGE_INGRESS);
+        Deployment deployment = templateProvider.loadBridgeIngressDeploymentTemplate(BRIDGE_INGRESS);
 
         assertOwnerReference(BRIDGE_INGRESS, deployment.getMetadata());
         assertLabels(deployment.getMetadata());
@@ -33,7 +33,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressServiceTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeServiceTemplate(BRIDGE_INGRESS);
+        Service service = templateProvider.loadBridgeIngressServiceTemplate(BRIDGE_INGRESS);
 
         assertOwnerReference(BRIDGE_INGRESS, service.getMetadata());
         assertLabels(service.getMetadata());
@@ -47,7 +47,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeOpenshiftRouteTemplate(BRIDGE_INGRESS);
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS);
 
         assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
         assertLabels(route.getMetadata());
@@ -58,7 +58,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeKubernetesIngressTemplate(BRIDGE_INGRESS);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS);
 
         assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
         assertLabels(ingress.getMetadata());
@@ -71,7 +71,7 @@ public class TemplateProviderTest {
 
     private void assertLabels(ObjectMeta meta) {
         assertThat(meta.getLabels().size()).isEqualTo(3);
-        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(BRIDGE_INGRESS.COMPONENT_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
     }

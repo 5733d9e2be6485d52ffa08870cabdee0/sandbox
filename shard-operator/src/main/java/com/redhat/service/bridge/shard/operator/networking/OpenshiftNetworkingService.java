@@ -55,7 +55,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     private Route buildRoute(BridgeIngress bridgeIngress, Service service) {
-        Route route = templateProvider.loadBridgeOpenshiftRouteTemplate(bridgeIngress);
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress);
 
         RouteSpec routeSpec = new RouteSpecBuilder()
                 .withTo(new RouteTargetReferenceBuilder()

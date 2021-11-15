@@ -20,7 +20,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @ShortNames("bi")
 public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
 
-    private static final String COMPONENT_NAME = "ingress";
+    public static final String COMPONENT_NAME = "ingress";
 
     public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace, String ingressImage) {
         ObjectMeta meta = new ObjectMetaBuilder()

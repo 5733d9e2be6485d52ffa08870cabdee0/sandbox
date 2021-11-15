@@ -38,6 +38,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeIngressService bridgeIngressService;
 
+    @Inject
+    BridgeExecutorService bridgeExecutorService;
+
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
         LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
@@ -112,11 +115,11 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     // Create the custom resource, and let the controller create what it needs
     protected void deployProcessorCustomResource(ProcessorDTO processorDTO) {
-        //        kubernetesClient.createOrUpdateCustomResource(processorDTO.getId(), ProcessorCustomResource.fromDTO(processorDTO), K8SBridgeConstants.PROCESSOR_TYPE);
+        bridgeExecutorService.createBridgeExecutor(processorDTO);
     }
 
     protected void deleteProcessorCustomResource(ProcessorDTO processorDTO) {
-        //        kubernetesClient.deleteCustomResource(processorDTO.getId(), K8SBridgeConstants.PROCESSOR_TYPE);
+        bridgeExecutorService.deleteBridgeExecutor(processorDTO);
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {

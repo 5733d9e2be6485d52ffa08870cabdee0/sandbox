@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -24,28 +25,38 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
 
     @Override
-    public Deployment loadBridgeDeploymentTemplate(BridgeIngress bridgeIngress) {
+    public Deployment loadBridgeIngressDeploymentTemplate(BridgeIngress bridgeIngress) {
         Deployment deployment = loadYaml(Deployment.class, BRIDGE_DEPLOYMENT_PATH);
         updateMetadata(bridgeIngress, deployment.getMetadata());
         return deployment;
     }
 
     @Override
-    public Service loadBridgeServiceTemplate(BridgeIngress bridgeIngress) {
+    public Service loadBridgeIngressServiceTemplate(BridgeIngress bridgeIngress) {
         Service service = loadYaml(Service.class, BRIDGE_SERVICE_PATH);
         updateMetadata(bridgeIngress, service.getMetadata());
         return service;
     }
 
     @Override
-    public Route loadBridgeOpenshiftRouteTemplate(BridgeIngress bridgeIngress) {
+    public Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor) {
+        return null;
+    }
+
+    @Override
+    public Service loadBridgeExecutorServiceTemplate(BridgeExecutor bridgeExecutor) {
+        return null;
+    }
+
+    @Override
+    public Route loadBridgeIngressOpenshiftRouteTemplate(BridgeIngress bridgeIngress) {
         Route route = loadYaml(Route.class, BRIDGE_OPENSHIFT_ROUTE_PATH);
         updateMetadata(bridgeIngress, route.getMetadata());
         return route;
     }
 
     @Override
-    public Ingress loadBridgeKubernetesIngressTemplate(BridgeIngress bridgeIngress) {
+    public Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress) {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         return ingress;

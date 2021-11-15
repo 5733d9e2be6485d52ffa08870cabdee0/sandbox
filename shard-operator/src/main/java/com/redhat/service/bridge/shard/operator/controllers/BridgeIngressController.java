@@ -15,7 +15,6 @@ import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.bridge.shard.operator.resources.PhaseType;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
@@ -54,11 +53,11 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
-        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
-        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
     }
 
