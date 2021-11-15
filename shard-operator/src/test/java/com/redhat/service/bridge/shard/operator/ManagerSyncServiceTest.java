@@ -23,8 +23,6 @@ import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvi
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
@@ -172,18 +170,5 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
-    }
-
-    private void patchDeployment(String name, String namespace) {
-        Deployment deployment = kubernetesClient.apps().deployments()
-                .inNamespace(namespace)
-                .withName(name)
-                .get();
-        assertThat(deployment).isNotNull();
-        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
-        kubernetesClient.apps().deployments()
-                .inNamespace(namespace)
-                .withName(name)
-                .replace(deployment);
     }
 }
