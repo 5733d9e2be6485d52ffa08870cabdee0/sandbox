@@ -81,7 +81,7 @@ public class BridgeExecutorControllerTest {
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
                                 .withCustomerId(TestConstants.CUSTOMER_ID)
-                                .withComponent("executor")
+                                .withComponent(BridgeExecutor.COMPONENT_NAME)
                                 .build())
                         .build());
         bridgeExecutor.setSpec(bridgeExecutorSpec);

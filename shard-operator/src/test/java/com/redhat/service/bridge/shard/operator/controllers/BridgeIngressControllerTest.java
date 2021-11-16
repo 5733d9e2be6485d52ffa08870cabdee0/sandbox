@@ -80,7 +80,7 @@ public class BridgeIngressControllerTest {
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
                                 .withCustomerId(TestConstants.CUSTOMER_ID)
-                                .withComponent("ingress")
+                                .withComponent(BridgeIngress.COMPONENT_NAME)
                                 .build())
                         .build());
         bridgeIngress.setSpec(bridgeIngressSpec);
