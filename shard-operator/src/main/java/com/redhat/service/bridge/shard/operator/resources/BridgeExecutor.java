@@ -32,6 +32,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
         bridgeExecutorSpec.setImage(executorImage);
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
+        bridgeExecutorSpec.setId(processorDTO.getId());
         bridgeExecutorSpec.setBridgeDTO(processorDTO.getBridge());
         bridgeExecutorSpec.setProcessorName(processorDTO.getName()); // metadata.name is sanitized, could not be used.
         bridgeExecutorSpec.setDefinition(processorDTO.getDefinition()); // metadata.name is sanitized, could not be used.

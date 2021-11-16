@@ -11,7 +11,6 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -134,28 +133,37 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled("Operator does not support processors yet")
     public void testProcessorsAreDeployed() throws Exception {
-        BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
 
-        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(2);
         addProcessorUpdateRequestListener(latch);
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
+
+        String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
+        String sanitizedName = KubernetesResourceUtil.sanitizeName(processor.getId());
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(sanitizedName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyServiceOrFail(sanitizedName, customerNamespace);
+                        });
+
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-        processor.setStatus(BridgeStatus.PROVISIONING);
-
+        processor.setStatus(BridgeStatus.AVAILABLE);
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
-    @Disabled("Operator does not support processors yet")
     public void notifyProcessorStatusChange() throws Exception {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
         ProcessorDTO processor = createProcessor(dto, BridgeStatus.PROVISIONING);

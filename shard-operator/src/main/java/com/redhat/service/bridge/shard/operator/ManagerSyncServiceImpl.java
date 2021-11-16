@@ -99,27 +99,18 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                             if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> deployProcessorCustomResource(y),
+                                        success -> bridgeExecutorService.createBridgeExecutor(y),
                                         failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(BridgeStatus.DELETED);
-                                deleteProcessorCustomResource(y);
+                                bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y).subscribe().with(
                                         success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                         failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
-    }
-
-    // Create the custom resource, and let the controller create what it needs
-    protected void deployProcessorCustomResource(ProcessorDTO processorDTO) {
-        bridgeExecutorService.createBridgeExecutor(processorDTO);
-    }
-
-    protected void deleteProcessorCustomResource(ProcessorDTO processorDTO) {
-        bridgeExecutorService.deleteBridgeExecutor(processorDTO);
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
