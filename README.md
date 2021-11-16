@@ -1,5 +1,7 @@
 # sandbox
 
+trigger CI
+
 [![Bridge - CD](https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/CD.yml/badge.svg)](https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/CD.yml)
 
 This repository stores the code for the bridge project.
