@@ -79,7 +79,7 @@ public abstract class AbstractShardWireMockTest {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, bridge, requestedStatus);
+        return new ProcessorDTO(TestConstants.PROCESSOR_ID, TestConstants.PROCESSOR_NAME, definition, bridge, requestedStatus);
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

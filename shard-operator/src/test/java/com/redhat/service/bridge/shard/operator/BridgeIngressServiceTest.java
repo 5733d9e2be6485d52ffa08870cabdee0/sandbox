@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
@@ -47,7 +46,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressCreation() {
         // Given
-        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -64,7 +63,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressCreationTriggersController() {
         // Given
-        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -94,7 +93,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressDeletion() {
         // Given
-        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -113,7 +112,7 @@ public class BridgeIngressServiceTest {
     @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK? https://issues.redhat.com/browse/MGDOBR-128")
     public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
-        BridgeDTO dto = new BridgeDTO(TestConstants.BRIDGE_ID, TestConstants.BRIDGE_NAME, "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.PROVISIONING);
+        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);

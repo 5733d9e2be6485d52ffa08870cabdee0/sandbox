@@ -19,6 +19,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
@@ -50,6 +51,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
     }
 
     @Test
@@ -134,7 +136,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void testProcessorsAreDeployed() throws Exception {
-        BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = TestConstants.newAvailableBridgeDTO();
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
@@ -165,8 +167,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
-        ProcessorDTO processor = createProcessor(dto, BridgeStatus.PROVISIONING);
+        BridgeDTO bridge = TestConstants.newAvailableBridgeDTO();
+        ProcessorDTO processor = createProcessor(bridge, BridgeStatus.PROVISIONING);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
