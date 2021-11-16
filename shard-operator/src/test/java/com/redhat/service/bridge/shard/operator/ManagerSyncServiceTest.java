@@ -142,7 +142,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
 
-        CountDownLatch latch = new CountDownLatch(2);  // Two updates to the manager are expected (1 PROVISIONING + 1 AVAILABLE)
+        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 AVAILABLE)
         addProcessorUpdateRequestListener(latch);
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
