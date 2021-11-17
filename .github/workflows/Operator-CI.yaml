@@ -42,27 +42,27 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
           kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
         # Tests are executed in different PR check, we just need all artifacts in repository
-#      - name: Build complete repo
-#        shell: bash
-#        run: mvn clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
-#        # Build operator image and generate needed operator resources
-#      - name: Build Shard operator image and resources
-#        shell: bash
-#        working-directory: shard-operator
-#        run: mvn clean install -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
-#        # Load built image into KinD
-#      - name: Load Shard operator image into KinD
-#        run: |
-#          # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
-#          kind load docker-image openbridge/shard-operator:$GITHUB_SHA
-#      - name: Deploy Shard operator
-#        run: |
-#          kubectl create namespace $NAMESPACE
-#          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-#          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
-#          kubectl apply -f shard-operator/target/kubernetes/minikube.yml
-#          kubectl wait --for=condition=available --timeout=60s deployment/shard-operator -n $NAMESPACE
-#      - name: Print operator log
-#        if: always()
-#        run: |
-#          kubectl logs deployment/shard-operator -n $NAMESPACE
+      - name: Build complete repo
+        shell: bash
+        run: mvn clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
+        # Build operator image and generate needed operator resources
+      - name: Build Shard operator image and resources
+        shell: bash
+        working-directory: shard-operator
+        run: mvn clean install -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
+        # Load built image into KinD
+      - name: Load Shard operator image into KinD
+        run: |
+          # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
+          kind load docker-image openbridge/shard-operator:$GITHUB_SHA
+      - name: Deploy Shard operator
+        run: |
+          kubectl create namespace $NAMESPACE
+          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/minikube.yml
+          kubectl wait --for=condition=available --timeout=60s deployment/shard-operator -n $NAMESPACE
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/shard-operator -n $NAMESPACE
