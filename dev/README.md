@@ -1,12 +1,105 @@
 # DEV 
 
-We provide a `docker-compose.yaml` file that you can use to spin up all the resources that the manager needs to run (keycloak, postgres, prometheus and grafana). 
+## First time setup
 
-To start it, run from the current directory
+This section contains all the instructions to setup your environment in order to deploy the infrastructure locally. 
+
+First of all, you need to install minikube following [this](https://minikube.sigs.k8s.io/docs/start/) guide. (Tested with minikube v1.16.0 on Redhat 8.4)
+
+Once you have installed minikube, start a new cluster with 
+
+```bash 
+minikube --memory 8192 --cpus 4 start  --kubernetes-version=v1.20.0
+```
+
+You can change the memory and cpu settings according to your system. **Other versions of kubernetes have not been tested**.
+
+Enable the `ingress` and `ingress-dns` addons with the following commands: 
 
 ```bash
-docker-compose up
+minikube addons enable ingress
+minikube addons enable ingress-dns
 ```
+
+Create a namspace for `kafka`
+
+```bash
+kubectl create ns kafka
+```
+
+From the root of the project, deploy the kafka infrastructure with 
+
+```bash
+kubectl apply -f dev/kubernetes/ -n kafka
+```
+
+Wait until all the resources have been deployed (it might take a while for a brand new cluster).
+
+```bash
+kubectl wait pod -l app.kubernetes.io/instance=my-cluster --for=condition=Ready --timeout=600s -n kafka
+```
+
+Extract the external ip to use to reach the kafka cluster with
+```bash
+KAFKA_IP=$(kubectl get nodes --output=jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}')
+```
+
+Extract the external port to use to reach the kafka cluster with
+```bash
+KAFKA_PORT=$(kubectl get service my-cluster-kafka-external-bootstrap -n kafka -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}')
+```
+
+The endpoint to use is then 
+
+```bash
+export KAFKA_ENDPOINT="http://"$KAFKA_IP":"$KAFKA_PORT
+```
+
+## Development environment
+
+Start your minikube cluster with 
+
+```bash
+minikube start
+```
+
+When you want deploy the entire platform, you have to point to the internal minikube registry with the following command
+
+``bash
+eval $(minikube -p minikube docker-env)
+``
+
+So that all the docker images that you build locally will be pushed to the internal registry of minikube. 
+
+**From the root of the project**, build all the modules with 
+
+```bash 
+mvn clean install -DskipTests -Dquarkus.container-image.build=true
+```
+
+We provide a `docker-compose.yaml` file that you can use to spin up all the resources that the manager needs to run (keycloak, postgres, prometheus and grafana). 
+
+**From another terminal** (otherwise the images will be pulled into your minikube internal registry) and the root of the project, run
+
+```bash
+docker-compose -f dev/docker-compose/docker-compose.yml up
+```
+
+**From the root of the project** run the all-in-one application with 
+
+```bash
+mvn clean compile -Dkafka.security.protocol=PLAINTEXT -Dkafka.bootstrap.servers=$KAFKA_ENDPOINT -f runner/pom.xml quarkus:dev
+```
+
+Run the shard operator from the root of the project with 
+
+```bash 
+mvn clean compile -f shard-operator/pom.xml -Dquarkus.http.port=1337 -Pminikube quarkus:dev
+```
+
+## Generate traffic automatically
+
+NOTE: Be careful! If you run this on against your local environment, the infrastructure is going to consume a lot of resources.
 
 If you want to generate some traffic automatically, we provide the script `generate_traffic.py` that you can run with 
 
