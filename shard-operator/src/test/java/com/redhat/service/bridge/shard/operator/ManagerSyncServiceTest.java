@@ -26,7 +26,6 @@ import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -65,7 +64,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String expectedJsonUpdateProvisioningRequest =
                 String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestConstants.CUSTOMER_ID);
         String expectedJsonUpdateAvailableRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
                         TestConstants.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
@@ -74,8 +73,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
-        String firstBridgeName = KubernetesResourceUtil.sanitizeName("myId-1");
-        String secondBridgeName = KubernetesResourceUtil.sanitizeName("myId-2");
+        String firstBridgeName = BridgeIngress.buildResourceName("myId-1");
+        String secondBridgeName = BridgeIngress.buildResourceName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
