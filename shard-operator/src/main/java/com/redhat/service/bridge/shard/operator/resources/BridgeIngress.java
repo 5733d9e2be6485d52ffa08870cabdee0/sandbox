@@ -22,9 +22,11 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
     private static final String COMPONENT_NAME = "ingress";
 
+    private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+
     public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace, String ingressImage) {
         ObjectMeta meta = new ObjectMetaBuilder()
-                .withName(KubernetesResourceUtil.sanitizeName(bridgeDTO.getId()))
+                .withName(OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(bridgeDTO.getId()))
                 .withNamespace(namespace)
                 .withLabels(new LabelsBuilder()
                         .withCustomerId(bridgeDTO.getCustomerId())
