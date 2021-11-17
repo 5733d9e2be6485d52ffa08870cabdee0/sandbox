@@ -28,7 +28,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 @ApplicationScoped
 public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceImpl.class);
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -72,7 +72,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
 
-        // TODO: All the Ingress applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
+        // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(kafkaConfigurationProvider.getBootstrapServers()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR).withValue(kafkaConfigurationProvider.getClient()).build());
@@ -111,7 +111,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(processorDTO.getBridge().getCustomerId());
         } else {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
-            LOGGER.warn("BridgeIngress '{}' not deleted", processorDTO);
+            LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
         }
     }
 }
