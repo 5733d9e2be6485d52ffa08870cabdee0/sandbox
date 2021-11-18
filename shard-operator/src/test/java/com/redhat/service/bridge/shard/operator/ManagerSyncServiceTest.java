@@ -148,8 +148,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                                      .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
-                                      .withHeader("Content-Type", equalTo("application/json")));
+                .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
+                .withHeader("Content-Type", equalTo("application/json")));
     }
 
     @Test
