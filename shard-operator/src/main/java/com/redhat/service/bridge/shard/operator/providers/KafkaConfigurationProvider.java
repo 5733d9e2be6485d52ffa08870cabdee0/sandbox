@@ -8,4 +8,6 @@ public interface KafkaConfigurationProvider {
     String getSecret();
 
     String getBootstrapServers();
+
+    String getSecurityProtocol();
 }
