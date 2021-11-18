@@ -49,7 +49,7 @@ jobs:
       - name: Build Shard operator image and resources
         shell: bash
         working-directory: shard-operator
-        run: mvn clean install -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
+        run: mvn clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
         # Load built image into KinD
       - name: Load Shard operator image into KinD
         run: |
