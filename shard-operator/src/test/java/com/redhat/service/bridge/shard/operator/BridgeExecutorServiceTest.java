@@ -19,7 +19,6 @@ import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -59,7 +58,7 @@ public class BridgeExecutorServiceTest {
         BridgeExecutor bridgeExecutor = kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .withName(BridgeExecutor.buildResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNotNull();
     }
@@ -81,7 +80,7 @@ public class BridgeExecutorServiceTest {
                             // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                                    .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                                    .withName(BridgeExecutor.buildResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
@@ -108,7 +107,7 @@ public class BridgeExecutorServiceTest {
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
+                .withName(BridgeExecutor.buildResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();
     }

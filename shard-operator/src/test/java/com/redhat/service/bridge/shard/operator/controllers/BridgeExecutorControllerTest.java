@@ -81,7 +81,7 @@ public class BridgeExecutorControllerTest {
         BridgeExecutor bridgeExecutor = new BridgeExecutor();
         bridgeExecutor.setMetadata(
                 new ObjectMetaBuilder()
-                        .withName(KubernetesResourceUtil.sanitizeName(TestConstants.PROCESSOR_ID))
+                        .withName(BridgeExecutor.buildResourceName(TestConstants.PROCESSOR_ID))
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
                                 .withCustomerId(TestConstants.CUSTOMER_ID)

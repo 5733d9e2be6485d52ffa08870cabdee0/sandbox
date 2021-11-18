@@ -18,8 +18,9 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
-import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -46,7 +47,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String expectedJsonUpdateProvisioningRequest =
                 String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestConstants.CUSTOMER_ID);
         String expectedJsonUpdateAvailableRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
                         TestConstants.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
@@ -55,8 +56,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
-        String firstBridgeName = KubernetesResourceUtil.sanitizeName("myId-1");
-        String secondBridgeName = KubernetesResourceUtil.sanitizeName("myId-2");
+        String firstBridgeName = BridgeIngress.buildResourceName("myId-1");
+        String secondBridgeName = BridgeIngress.buildResourceName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
@@ -128,7 +129,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
-        String sanitizedName = KubernetesResourceUtil.sanitizeName(processor.getId());
+        String sanitizedName = BridgeExecutor.buildResourceName(processor.getId());
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))

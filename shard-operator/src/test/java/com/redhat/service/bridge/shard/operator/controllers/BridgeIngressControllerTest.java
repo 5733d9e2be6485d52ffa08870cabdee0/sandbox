@@ -80,7 +80,7 @@ public class BridgeIngressControllerTest {
         BridgeIngress bridgeIngress = new BridgeIngress();
         bridgeIngress.setMetadata(
                 new ObjectMetaBuilder()
-                        .withName(KubernetesResourceUtil.sanitizeName(TestConstants.BRIDGE_ID))
+                        .withName(BridgeIngress.buildResourceName(TestConstants.BRIDGE_ID))
                         .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
                                 .withCustomerId(TestConstants.CUSTOMER_ID)

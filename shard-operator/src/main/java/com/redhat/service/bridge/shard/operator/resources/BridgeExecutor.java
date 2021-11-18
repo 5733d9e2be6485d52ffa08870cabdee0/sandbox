@@ -19,9 +19,11 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
     public static final String COMPONENT_NAME = "executor";
 
+    private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+
     public static BridgeExecutor fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
         ObjectMeta meta = new ObjectMetaBuilder()
-                .withName(KubernetesResourceUtil.sanitizeName(processorDTO.getId()))
+                .withName(buildResourceName(processorDTO.getId()))
                 .withNamespace(namespace)
                 .withLabels(new LabelsBuilder()
                         .withCustomerId(processorDTO.getBridge().getCustomerId())
@@ -52,5 +54,9 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         processorDTO.setName(this.getSpec().getProcessorName());
         processorDTO.setDefinition(this.getSpec().getDefinition());
         return processorDTO;
+    }
+
+    public static String buildResourceName(String id) {
+        return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
     }
 }
