@@ -7,12 +7,12 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
@@ -27,10 +27,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-public class BridgeIngressServiceTest {
+public class BridgeExecutorServiceTest {
 
     @Inject
-    BridgeIngressService bridgeIngressService;
+    BridgeExecutorService bridgeExecutorService;
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -48,29 +48,29 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    public void testBridgeIngressCreation() {
+    public void testBridgeExecutorCreation() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
 
         // When
-        bridgeIngressService.createBridgeIngress(dto);
+        bridgeExecutorService.createBridgeExecutor(dto);
 
         // Then
-        BridgeIngress bridgeIngress = kubernetesClient
-                .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+        BridgeExecutor bridgeExecutor = kubernetesClient
+                .resources(BridgeExecutor.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
                 .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
                 .get();
-        assertThat(bridgeIngress).isNotNull();
+        assertThat(bridgeExecutor).isNotNull();
     }
 
     @Test
-    public void testBridgeIngressCreationTriggersController() {
+    public void testBridgeExecutorCreationTriggersController() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
 
         // When
-        bridgeIngressService.createBridgeIngress(dto);
+        bridgeExecutorService.createBridgeExecutor(dto);
 
         // Then
         Awaitility.await()
@@ -80,7 +80,7 @@ public class BridgeIngressServiceTest {
                         () -> {
                             // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
                                     .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
@@ -99,53 +99,17 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressDeletion() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
 
         // When
-        bridgeIngressService.createBridgeIngress(dto);
-        bridgeIngressService.deleteBridgeIngress(dto);
+        bridgeExecutorService.createBridgeExecutor(dto);
 
         // Then
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
                 .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();
-    }
-
-    @Test
-    @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK? https://issues.redhat.com/browse/MGDOBR-128")
-    public void testBridgeIngressDeletionRemovesAllLinkedResource() {
-        // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
-
-        // When
-        bridgeIngressService.createBridgeIngress(dto);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
-                                    .get();
-                            assertThat(deployment).isNotNull();
-                        });
-        bridgeIngressService.deleteBridgeIngress(dto);
-
-        // Then
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(KubernetesResourceUtil.sanitizeName(dto.getId()))
-                                    .get();
-                            assertThat(deployment).isNull();
-                        });
     }
 }

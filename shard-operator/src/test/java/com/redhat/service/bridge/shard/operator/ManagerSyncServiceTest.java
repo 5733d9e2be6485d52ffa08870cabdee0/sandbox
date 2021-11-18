@@ -118,8 +118,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void testProcessorsAreDeployed() throws Exception {
-        BridgeDTO bridge = TestConstants.newAvailableBridgeDTO();
-        ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
+        ProcessorDTO processor = TestConstants.newRequestedProcessorDTO();
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
@@ -149,8 +148,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        BridgeDTO bridge = TestConstants.newAvailableBridgeDTO();
-        ProcessorDTO processor = createProcessor(bridge, BridgeStatus.PROVISIONING);
+        ProcessorDTO processor = TestConstants.newRequestedProcessorDTO();
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
