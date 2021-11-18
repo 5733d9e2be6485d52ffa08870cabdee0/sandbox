@@ -136,7 +136,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled("test")
     public void testProcessorsAreDeployed() throws Exception {
         BridgeDTO bridge = TestConstants.newAvailableBridgeDTO();
         ProcessorDTO processor = createProcessor(bridge, BridgeStatus.REQUESTED);
