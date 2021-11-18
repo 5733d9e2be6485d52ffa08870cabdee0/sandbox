@@ -136,6 +136,23 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
+    public void testNotifyBridgeStatusChange1() throws InterruptedException {
+        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING);
+        stubBridgeUpdate();
+        String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
+
+        CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
+        addBridgeUpdateRequestListener(latch);
+
+        managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+                                      .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
+                                      .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    @Test
     @Disabled("Operator does not support processors yet")
     public void testProcessorsAreDeployed() throws Exception {
         BridgeDTO bridge = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.AVAILABLE);
