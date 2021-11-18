@@ -21,7 +21,7 @@ minikube addons enable ingress
 minikube addons enable ingress-dns
 ```
 
-Create a namspace for `kafka`
+Create a namespace for `kafka`
 
 ```bash
 kubectl create ns kafka
@@ -30,7 +30,7 @@ kubectl create ns kafka
 From the root of the project, deploy the kafka infrastructure with 
 
 ```bash
-kubectl apply -f dev/kubernetes/ -n kafka
+kubectl apply -f dev/kubernetes/kafka/ -n kafka
 ```
 
 Wait until all the resources have been deployed (it might take a while for a brand new cluster).
