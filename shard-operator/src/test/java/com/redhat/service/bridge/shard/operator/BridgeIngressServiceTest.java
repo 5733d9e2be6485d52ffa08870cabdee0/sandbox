@@ -14,6 +14,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -37,10 +38,13 @@ public class BridgeIngressServiceTest {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
-        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        kubernetesResourcePatcher.cleanUp();
     }
 
     @Test

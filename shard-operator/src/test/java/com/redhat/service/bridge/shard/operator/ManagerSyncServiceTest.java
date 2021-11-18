@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,11 +18,8 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
-import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
@@ -39,20 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
-    KubernetesClient kubernetesClient;
-
-    @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @BeforeEach
-    public void setup() {
-        // Kubernetes Server must be cleaned up at startup of every test.
-        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
-        kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
-    }
 
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {

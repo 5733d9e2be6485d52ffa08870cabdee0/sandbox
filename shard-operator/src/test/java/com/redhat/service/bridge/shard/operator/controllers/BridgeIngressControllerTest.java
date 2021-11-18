@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -30,9 +31,12 @@ public class BridgeIngressControllerTest {
     @Inject
     KubernetesClient kubernetesClient;
 
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
     @BeforeEach
     void setup() {
-        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        kubernetesResourcePatcher.cleanUp();
     }
 
     @Test
