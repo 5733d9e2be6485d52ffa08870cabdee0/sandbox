@@ -18,7 +18,6 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
-import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,9 +35,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
-
-    @Inject
-    KubernetesResourcePatcher kubernetesResourcePatcher;
 
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
