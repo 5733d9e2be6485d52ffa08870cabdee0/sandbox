@@ -16,6 +16,9 @@ public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvide
     @ConfigProperty(name = "event-bridge.default.kafka.client.secret")
     String kafkaClientSecret;
 
+    @ConfigProperty(name = "event-bridge.default.kafka.security.protocol")
+    String kafkaSecurityProtocol;
+
     @Override
     public String getClient() {
         return kafkaClientId;
@@ -29,5 +32,10 @@ public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvide
     @Override
     public String getBootstrapServers() {
         return kafkaBootstapServers;
+    }
+
+    @Override
+    public String getSecurityProtocol() {
+        return kafkaSecurityProtocol;
     }
 }
