@@ -53,7 +53,7 @@ public class TemplateProviderTest {
         Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR);
 
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
-        assertLabels(deployment.getMetadata(), BRIDGE_EXECUTOR.COMPONENT_NAME);
+        assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
         assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
     }
 
@@ -63,7 +63,7 @@ public class TemplateProviderTest {
         Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR);
 
         assertOwnerReference(BRIDGE_EXECUTOR, service.getMetadata());
-        assertLabels(service.getMetadata(), BRIDGE_EXECUTOR.COMPONENT_NAME);
+        assertLabels(service.getMetadata(), BridgeExecutor.COMPONENT_NAME);
         assertThat(service.getSpec().getPorts().size()).isEqualTo(1);
         assertThat(service.getSpec().getPorts().get(0).getName()).isEqualTo("web");
         assertThat(service.getSpec().getPorts().get(0).getPort()).isEqualTo(8080);
