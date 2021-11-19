@@ -1,10 +1,10 @@
 images:
 - name: event-bridge-all-in-one
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-  newTag: cae4073f4ab8b13fe98366d04f1d42b1d4607758-jvm
+  newTag: be2d492d175a7351b866f226b6d6321ffb38b770-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: cae4073f4ab8b13fe98366d04f1d42b1d4607758-jvm
+  newTag: be2d492d175a7351b866f226b6d6321ffb38b770-jvm
 namespace: event-bridge-prod
 patchesStrategicMerge:
 - all-in-one/patches/deploy-config.yaml

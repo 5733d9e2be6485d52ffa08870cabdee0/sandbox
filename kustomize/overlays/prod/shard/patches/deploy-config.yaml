@@ -1,8 +1,9 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:cae4073f4ab8b13fe98366d04f1d42b1d4607758-jvm
+  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:f405644c09a7b08a764fc38293a30452f7b344ee-jvm
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
+  KAFKA_SECURITY_PROTOCOL: SASL_SSL
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config
