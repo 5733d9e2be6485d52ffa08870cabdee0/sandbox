@@ -34,7 +34,7 @@ class WebhookInvokerTest extends AbstractWireMockTest {
     @Inject
     Vertx vertx;
 
-    @ConfigProperty(name = "webhookSinkUrl")
+    @ConfigProperty(name = "test.webhookSinkUrl")
     String webhookSinkUrl;
 
     @Test

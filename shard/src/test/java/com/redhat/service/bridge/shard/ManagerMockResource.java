@@ -4,7 +4,7 @@ import com.redhat.service.bridge.test.wiremock.AbstractWireMockResourceManager;
 
 public class ManagerMockResource extends AbstractWireMockResourceManager {
 
-    protected ManagerMockResource() {
+    public ManagerMockResource() {
         super("event-bridge.manager.url");
     }
 }
