@@ -42,12 +42,17 @@ class WebhookActionValidatorTest {
 
     @Test
     void isInvalidWithNonUrlEndpoint() {
-        assertIsInvalid("this-is-not-a-valid-url", WebhookActionValidator.INVALID_ENDPOINT_PARAM_MESSAGE);
+        assertIsInvalid("this-is-not-a-valid-url", WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE);
     }
 
     @Test
     void isInvalidWithIncompleteEndpoint() {
-        assertIsInvalid("www.example.com/webhook", WebhookActionValidator.INVALID_ENDPOINT_PARAM_MESSAGE);
+        assertIsInvalid("www.example.com/webhook", WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE);
+    }
+
+    @Test
+    void isInvalidWithUnknownProtocol() {
+        assertIsInvalid("pizza://www.example.com/webhook", WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE);
     }
 
     @Test
@@ -65,7 +70,7 @@ class WebhookActionValidatorTest {
         BaseAction action = createActionWithEndpoint(endpoint);
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).isEqualTo(errorMessage);
+        assertThat(validationResult.getMessage()).startsWith(errorMessage);
     }
 
     private BaseAction createActionWithEndpoint(String endpoint) {
