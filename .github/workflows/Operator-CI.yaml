@@ -44,7 +44,7 @@ jobs:
         # Tests are executed in different PR check, we just need all artifacts in repository
       - name: Build complete repo
         shell: bash
-        run: mvn clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
+        run: mvn clean install --fail-at-end --errors --quiet -DskipTests
         # Build operator image and generate needed operator resources
       - name: Build Shard operator image and resources
         shell: bash

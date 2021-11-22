@@ -42,7 +42,7 @@ jobs:
 #          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
       - name: Compile and Validate Formating
         shell: bash
-        run: mvn -Dvalidate-formatting verify -nsu -fae -e
+        run: mvn -Dvalidate-formatting verify -fae -e
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
