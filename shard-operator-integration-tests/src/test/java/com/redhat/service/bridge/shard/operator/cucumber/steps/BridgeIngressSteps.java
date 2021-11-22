@@ -1,0 +1,73 @@
+package com.redhat.service.bridge.shard.operator.cucumber.steps;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
+
+import com.redhat.service.bridge.shard.operator.cucumber.common.Context;
+import com.redhat.service.bridge.shard.operator.cucumber.common.TimeUtils;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+
+/**
+ * Step definitions related to BridgeIngress
+ */
+public class BridgeIngressSteps {
+
+    private Context context;
+
+    public BridgeIngressSteps(Context context) {
+        this.context = context;
+    }
+
+    @When("^deploy BridgeIngress:$")
+    public void deployBridgeIngress(String bridgeIngressYaml) {
+        InputStream resourceStream = new ByteArrayInputStream(bridgeIngressYaml.getBytes(StandardCharsets.UTF_8));
+        context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).load(resourceStream).createOrReplace();
+    }
+
+    @When("^delete BridgeIngress \"([^\"]*)\"$")
+    public void deleteBridgeIngress(String name) {
+        Boolean deleted = context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).withName(name).delete();
+        if (deleted == null || !deleted) {
+            throw new IllegalArgumentException(String.format("BridgeIngress '%s' not found, cannot be deleted", name));
+        }
+    }
+
+    @Then("^the BridgeIngress \"([^\"]*)\" exists within (\\d+) (?:minute|minutes)$")
+    public void theBridgeIngressExistsWithinMinutes(String name, int timeoutInMinutes) throws TimeoutException {
+        TimeUtils.waitForCondition(Duration.ofMinutes(timeoutInMinutes),
+                () -> {
+                    BridgeIngress bridgeIngress = context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).withName(name).get();
+                    return bridgeIngress != null;
+                },
+                String.format("Timeout waiting for BridgeIngress '%s' to exist in namespace '%s'", name, context.getNamespace()));
+    }
+
+    @Then("^the BridgeIngress \"([^\"]*)\" does not exist within (\\d+) (?:minute|minutes)$")
+    public void theBridgeIngressDoesNotExistWithinMinutes(String name, int timeoutInMinutes) throws TimeoutException {
+        TimeUtils.waitForCondition(Duration.ofMinutes(timeoutInMinutes),
+                () -> {
+                    BridgeIngress bridgeIngress = context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).withName(name).get();
+                    return bridgeIngress == null;
+                },
+                String.format("Timeout waiting for BridgeIngress '%s' to not exist in namespace '%s'", name, context.getNamespace()));
+    }
+
+    @Then("^the BridgeIngress \"([^\"]*)\" is in phase \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void theBridgeIngressIsInPhaseWithinMinutes(String name, String phase, int timeoutInMinutes) throws TimeoutException {
+        TimeUtils.waitForCondition(Duration.ofMinutes(timeoutInMinutes),
+                () -> {
+                    BridgeIngress bridgeIngress = context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).withName(name).get();
+                    if (bridgeIngress == null || bridgeIngress.getStatus() == null) {
+                        return false;
+                    }
+                    return bridgeIngress.getStatus().getPhase().toString().equals(phase);
+                },
+                String.format("Timeout waiting for BridgeIngress '%s' to be in phase '%s' in namespace '%s'", name, phase, context.getNamespace()));
+    }
+}

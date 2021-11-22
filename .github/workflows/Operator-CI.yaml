@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'shard-operator/**'
+      - 'shard-operator-integration-tests/**'
 jobs:
   event-bridge-build:
     env:
@@ -62,6 +63,10 @@ jobs:
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
           kubectl wait --for=condition=available --timeout=60s deployment/shard-operator -n $NAMESPACE
+      - name: Run integration tests
+        shell: bash
+        working-directory: shard-operator-integration-tests
+        run: mvn clean verify -Pcucumber
       - name: Print operator log
         if: always()
         run: |
