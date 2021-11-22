@@ -17,6 +17,9 @@ public class WebhookActionValidator implements ActionParameterValidator {
     public static final String INVALID_ENDPOINT_PARAM_MESSAGE = "The supplied \"endpoint\" parameter is not a valid URL";
     public static final String INVALID_PROTOCOL_MESSAGE = "The \"endpoint\" protocol must be either \"http\" or \"https\"";
 
+    private static final String PROTOCOL_HTTP = "http";
+    private static final String PROTOCOL_HTTPS = "https";
+
     @Override
     public ValidationResult isValid(BaseAction baseAction) {
         if (baseAction.getParameters() == null) {
@@ -34,7 +37,7 @@ public class WebhookActionValidator implements ActionParameterValidator {
         }
 
         String protocol = optUrl.get().getProtocol();
-        if (!"http".equalsIgnoreCase(protocol) && !"https".equalsIgnoreCase(protocol)) {
+        if (!PROTOCOL_HTTP.equalsIgnoreCase(protocol) && !PROTOCOL_HTTPS.equalsIgnoreCase(protocol)) {
             return ValidationResult.invalid(INVALID_PROTOCOL_MESSAGE);
         }
 
