@@ -49,7 +49,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressCreation() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -66,7 +66,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressCreationTriggersController() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -98,7 +98,7 @@ public class BridgeIngressServiceTest {
     @Test
     public void testBridgeIngressDeletion() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
@@ -117,7 +117,7 @@ public class BridgeIngressServiceTest {
     @Disabled("Delete loop in BridgeIngressController does not get called. Bug in the SDK? https://issues.redhat.com/browse/MGDOBR-128")
     public void testBridgeIngressDeletionRemovesAllLinkedResource() {
         // Given
-        BridgeDTO dto = TestConstants.newProvisioningBridgeDTO();
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 
         // When
         bridgeIngressService.createBridgeIngress(dto);

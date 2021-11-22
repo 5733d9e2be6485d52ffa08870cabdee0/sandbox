@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.shard.operator.TestConstants;
+import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
@@ -72,18 +72,18 @@ public class BridgeIngressControllerTest {
 
     private BridgeIngress buildBridgeIngress() {
         BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
-        bridgeIngressSpec.setId(TestConstants.BRIDGE_ID);
-        bridgeIngressSpec.setBridgeName(TestConstants.BRIDGE_NAME);
-        bridgeIngressSpec.setImage(TestConstants.INGRESS_IMAGE);
-        bridgeIngressSpec.setCustomerId(TestConstants.CUSTOMER_ID);
+        bridgeIngressSpec.setId(TestSupport.BRIDGE_ID);
+        bridgeIngressSpec.setBridgeName(TestSupport.BRIDGE_NAME);
+        bridgeIngressSpec.setImage(TestSupport.INGRESS_IMAGE);
+        bridgeIngressSpec.setCustomerId(TestSupport.CUSTOMER_ID);
 
         BridgeIngress bridgeIngress = new BridgeIngress();
         bridgeIngress.setMetadata(
                 new ObjectMetaBuilder()
-                        .withName(BridgeIngress.buildResourceName(TestConstants.BRIDGE_ID))
-                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
+                        .withName(BridgeIngress.buildResourceName(TestSupport.BRIDGE_ID))
+                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
-                                .withCustomerId(TestConstants.CUSTOMER_ID)
+                                .withCustomerId(TestSupport.CUSTOMER_ID)
                                 .withComponent(BridgeIngress.COMPONENT_NAME)
                                 .build())
                         .build());

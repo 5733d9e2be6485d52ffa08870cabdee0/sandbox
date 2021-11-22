@@ -14,7 +14,7 @@ import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
-public class TestConstants {
+public class TestSupport {
 
     public static final String CUSTOMER_ID = "myCustomer";
     public static final String INGRESS_IMAGE = "myimage:latest";

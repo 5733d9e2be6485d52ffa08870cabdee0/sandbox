@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.shard.operator.TestConstants;
+import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutorSpec;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
@@ -72,19 +72,19 @@ public class BridgeExecutorControllerTest {
 
     private BridgeExecutor buildBridgeExecutor() {
         BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
-        bridgeExecutorSpec.setId(TestConstants.PROCESSOR_ID);
-        bridgeExecutorSpec.setProcessorName(TestConstants.PROCESSOR_NAME);
-        bridgeExecutorSpec.setImage(TestConstants.EXECUTOR_IMAGE);
+        bridgeExecutorSpec.setId(TestSupport.PROCESSOR_ID);
+        bridgeExecutorSpec.setProcessorName(TestSupport.PROCESSOR_NAME);
+        bridgeExecutorSpec.setImage(TestSupport.EXECUTOR_IMAGE);
         bridgeExecutorSpec.setDefinition(null);
-        bridgeExecutorSpec.setBridgeDTO(TestConstants.newAvailableBridgeDTO());
+        bridgeExecutorSpec.setBridgeDTO(TestSupport.newAvailableBridgeDTO());
 
         BridgeExecutor bridgeExecutor = new BridgeExecutor();
         bridgeExecutor.setMetadata(
                 new ObjectMetaBuilder()
-                        .withName(BridgeExecutor.buildResourceName(TestConstants.PROCESSOR_ID))
-                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
+                        .withName(BridgeExecutor.buildResourceName(TestSupport.PROCESSOR_ID))
+                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                         .withLabels(new LabelsBuilder()
-                                .withCustomerId(TestConstants.CUSTOMER_ID)
+                                .withCustomerId(TestSupport.CUSTOMER_ID)
                                 .withComponent(BridgeExecutor.COMPONENT_NAME)
                                 .build())
                         .build());

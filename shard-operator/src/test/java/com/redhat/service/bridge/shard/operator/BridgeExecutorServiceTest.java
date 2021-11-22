@@ -49,7 +49,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeExecutorCreation() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -66,7 +66,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeExecutorCreationTriggersController() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -98,7 +98,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeIngressDeletion() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
