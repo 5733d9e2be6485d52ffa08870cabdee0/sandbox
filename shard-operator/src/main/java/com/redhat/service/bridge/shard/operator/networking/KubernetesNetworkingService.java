@@ -99,7 +99,8 @@ public class KubernetesNetworkingService implements NetworkingService {
 
     private NetworkResource buildNetworkingResource(Ingress ingress) {
         if (ingress.getStatus() == null || ingress.getStatus().getLoadBalancer() == null || ingress.getStatus().getLoadBalancer().getIngress() == null
-                || ingress.getStatus().getLoadBalancer().getIngress().isEmpty() || ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null) {
+                || ingress.getStatus().getLoadBalancer().getIngress().isEmpty()
+                || (ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null && ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname() == null)) {
             LOGGER.info("Ingress {} not ready yet", ingress.getMetadata().getName());
             return new NetworkResource("", false);
         }
