@@ -1,6 +1,9 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
@@ -37,7 +40,14 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         bridgeExecutorSpec.setId(processorDTO.getId());
         bridgeExecutorSpec.setBridgeDTO(processorDTO.getBridge());
         bridgeExecutorSpec.setProcessorName(processorDTO.getName()); // metadata.name is sanitized, could not be used.
-        bridgeExecutorSpec.setDefinition(processorDTO.getDefinition()); // metadata.name is sanitized, could not be used.
+
+        if (processorDTO.getDefinition() != null) {
+            try {
+                bridgeExecutorSpec.setProcessorDefinition(new ObjectMapper().writeValueAsString(processorDTO.getDefinition()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
 
         BridgeExecutor bridgeExecutor = new BridgeExecutor();
         bridgeExecutor.setSpec(bridgeExecutorSpec);
@@ -52,7 +62,15 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
         processorDTO.setBridge(this.getSpec().getBridgeDTO());
         processorDTO.setName(this.getSpec().getProcessorName());
-        processorDTO.setDefinition(this.getSpec().getDefinition());
+
+        if (this.getSpec().getProcessorDefinition() != null) {
+            try {
+                processorDTO.setDefinition(new ObjectMapper().readValue(this.getSpec().getProcessorDefinition(), ProcessorDefinition.class));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
         return processorDTO;
     }
 

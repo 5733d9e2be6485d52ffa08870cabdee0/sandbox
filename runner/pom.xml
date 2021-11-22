@@ -19,23 +19,6 @@
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>manager</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>shard</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>executor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>k8s</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
-    </dependency>
-
 
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>

@@ -24,6 +24,7 @@ spec:
       containers:
         - name: ""
           image: ""
+          imagePullPolicy: IfNotPresent
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: ""
@@ -33,3 +34,12 @@ spec:
               value: ""
             - name: KAFKA_SECURITY_PROTOCOL
               value: ""
+          volumeMounts:
+            - name: processor-definition
+              mountPath: /config
+      volumes:
+        - name: processor-definition
+          configMap:
+            # Provide the name of the ConfigMap containing the files you want
+            # to add to the container
+            name: ""

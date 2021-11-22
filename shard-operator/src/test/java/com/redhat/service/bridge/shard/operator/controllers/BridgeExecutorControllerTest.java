@@ -75,7 +75,7 @@ public class BridgeExecutorControllerTest {
         bridgeExecutorSpec.setId(TestConstants.PROCESSOR_ID);
         bridgeExecutorSpec.setProcessorName(TestConstants.PROCESSOR_NAME);
         bridgeExecutorSpec.setImage(TestConstants.EXECUTOR_IMAGE);
-        bridgeExecutorSpec.setDefinition(null);
+        bridgeExecutorSpec.setProcessorDefinition(null);
         bridgeExecutorSpec.setBridgeDTO(TestConstants.newAvailableBridgeDTO());
 
         BridgeExecutor bridgeExecutor = new BridgeExecutor();

@@ -13,9 +13,11 @@ import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.bridge.shard.operator.resources.PhaseType;
+import com.redhat.service.bridge.shard.operator.watchers.ConfigMapEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -48,14 +50,17 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         eventSourceManager.registerEventSource("bridge-processor-deployment-event-source", deploymentEventSource);
         ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-processor-service-event-source", serviceEventSource);
+        ConfigMapEventSource configMapEventSource = ConfigMapEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
+        eventSourceManager.registerEventSource("bridge-processor-configmap-event-source", configMapEventSource);
     }
 
     @Override
     public UpdateControl<BridgeExecutor> createOrUpdateResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
         LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
-        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor);
+        ConfigMap configMap = bridgeExecutorService.fetchOrCreateBridgeExecutorProcessorConfigMap(bridgeExecutor);
 
+        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, configMap);
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());

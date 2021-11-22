@@ -8,6 +8,7 @@ import javax.enterprise.context.ApplicationScoped;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -23,6 +24,7 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-ingress-deployment.yaml";
     private static final String BRIDGE_INGRESS_SERVICE_PATH = TEMPLATES_DIR + "/bridge-ingress-service.yaml";
     private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
+    private static final String BRIDGE_EXECUTOR_PROCESSOR_CONFIGMAP_PATH = TEMPLATES_DIR + "/bridge-executor-processor-configmap.yaml";
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH = TEMPLATES_DIR + "/bridge-ingress-openshift-route.yaml";
     private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
@@ -67,6 +69,13 @@ public class TemplateProviderImpl implements TemplateProvider {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         return ingress;
+    }
+
+    @Override
+    public ConfigMap loadBridgeExecutorProcessorConfigMapTemplate(BridgeExecutor bridgeExecutor) {
+        ConfigMap processorConfigMap = loadYaml(ConfigMap.class, BRIDGE_EXECUTOR_PROCESSOR_CONFIGMAP_PATH);
+        updateMetadata(bridgeExecutor, processorConfigMap.getMetadata());
+        return processorConfigMap;
     }
 
     private <T> T loadYaml(Class<T> clazz, String yaml) {
