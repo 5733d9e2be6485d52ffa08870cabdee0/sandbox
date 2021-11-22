@@ -44,12 +44,12 @@ jobs:
         # Tests are executed in different PR check, we just need all artifacts in repository
       - name: Build complete repo
         shell: bash
-        run: mvn clean install --fail-at-end --errors --quiet -DskipTests
+        run: mvn clean install --errors -DskipTests
         # Build operator image and generate needed operator resources
       - name: Build Shard operator image and resources
         shell: bash
         working-directory: shard-operator
-        run: mvn clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
+        run: mvn clean install --errors -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE
         # Load built image into KinD
       - name: Load Shard operator image into KinD
         run: |
