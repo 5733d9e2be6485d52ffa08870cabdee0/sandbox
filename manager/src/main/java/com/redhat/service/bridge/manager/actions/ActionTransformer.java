@@ -12,5 +12,5 @@ public interface ActionTransformer {
 
     String getType();
 
-    BaseAction transform(Bridge bridge, ProcessorRequest processorRequest);
+    BaseAction transform(Bridge bridge, String customerId, ProcessorRequest processorRequest);
 }

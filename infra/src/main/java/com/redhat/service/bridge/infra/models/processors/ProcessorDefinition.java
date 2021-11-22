@@ -3,6 +3,7 @@ package com.redhat.service.bridge.infra.models.processors;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -19,9 +20,9 @@ public class ProcessorDefinition {
     @JsonProperty("action")
     private BaseAction action;
 
-    @JsonProperty("executableAction")
+    @JsonProperty("transformedAction")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private BaseAction executableAction;
+    private BaseAction transformedAction;
 
     public ProcessorDefinition() {
     }
@@ -32,9 +33,9 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction executableAction) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction transformedAction) {
         this(filters, transformationTemplate, action);
-        this.executableAction = executableAction;
+        this.transformedAction = transformedAction;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -61,12 +62,17 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public BaseAction getExecutableAction() {
-        return executableAction == null ? action : executableAction;
+    public BaseAction getTransformedAction() {
+        return transformedAction;
     }
 
-    public void setExecutableAction(BaseAction executableAction) {
-        this.executableAction = executableAction;
+    public void setTransformedAction(BaseAction transformedAction) {
+        this.transformedAction = transformedAction;
+    }
+
+    @JsonIgnore
+    public BaseAction getExecutableAction() {
+        return transformedAction == null ? action : transformedAction;
     }
 
     @Override
