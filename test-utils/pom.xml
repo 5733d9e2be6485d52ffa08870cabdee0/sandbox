@@ -16,6 +16,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-test-common</artifactId>
       <scope>compile</scope>

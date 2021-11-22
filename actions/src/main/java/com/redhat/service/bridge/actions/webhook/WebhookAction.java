@@ -2,6 +2,7 @@ package com.redhat.service.bridge.actions.webhook;
 
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -11,7 +12,8 @@ import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
-import okhttp3.OkHttpClient;
+import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
 public class WebhookAction implements ActionProvider {
@@ -19,8 +21,18 @@ public class WebhookAction implements ActionProvider {
     public static final String TYPE = "Webhook";
     public static final String ENDPOINT_PARAM = "endpoint";
 
+    private WebClient client;
+
     @Inject
     WebhookActionValidator validator;
+
+    @Inject
+    Vertx vertx;
+
+    @PostConstruct
+    private void onPostConstruct() {
+        client = WebClient.create(vertx);
+    }
 
     @Override
     public String getType() {
@@ -36,8 +48,6 @@ public class WebhookAction implements ActionProvider {
     public ActionInvoker getActionInvoker(ProcessorDTO processor, BaseAction baseAction) {
         String endpoint = Optional.ofNullable(baseAction.getParameters().get(ENDPOINT_PARAM))
                 .orElseThrow(() -> buildNoEndpointException(processor));
-        // customize http client here if needed (e.g. timeouts)
-        OkHttpClient client = new OkHttpClient.Builder().build();
         return new WebhookInvoker(endpoint, client);
     }
 
