@@ -35,11 +35,11 @@ jobs:
           maven-version: '3.8.1'
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache Maven Packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+#      - name: Cache Maven Packages
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.m2
+#          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
       - name: Compile and Validate Formating
         shell: bash
         run: mvn -Dvalidate-formatting verify -nsu -fae -e

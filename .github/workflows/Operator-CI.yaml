@@ -22,11 +22,11 @@ jobs:
           maven-version: '3.8.1'
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache Maven Packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+#      - name: Cache Maven Packages
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.m2
+#          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
       - name: Set up KinD
         uses: container-tools/kind-action@v1
         with:
