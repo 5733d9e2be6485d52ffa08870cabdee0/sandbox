@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.shard.operator.TestConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -67,24 +64,12 @@ public class BridgeIngressControllerTest {
     }
 
     private BridgeIngress buildBridgeIngress() {
-        BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
-        bridgeIngressSpec.setId(TestConstants.BRIDGE_ID);
-        bridgeIngressSpec.setBridgeName(TestConstants.BRIDGE_NAME);
-        bridgeIngressSpec.setImage(TestConstants.INGRESS_IMAGE);
-        bridgeIngressSpec.setCustomerId(TestConstants.CUSTOMER_ID);
-
-        BridgeIngress bridgeIngress = new BridgeIngress();
-        bridgeIngress.setMetadata(
-                new ObjectMetaBuilder()
-                        .withName(BridgeIngress.buildResourceName(TestConstants.BRIDGE_ID))
-                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
-                        .withLabels(new LabelsBuilder()
-                                .withCustomerId(TestConstants.CUSTOMER_ID)
-                                .withComponent("ingress")
-                                .build())
-                        .build());
-        bridgeIngress.setSpec(bridgeIngressSpec);
-
-        return bridgeIngress;
+        return BridgeIngress.fromBuilder()
+                .withBridgeId(TestConstants.BRIDGE_ID)
+                .withBridgeName(TestConstants.BRIDGE_NAME)
+                .withImageName(TestConstants.INGRESS_IMAGE)
+                .withCustomerId(TestConstants.CUSTOMER_ID)
+                .withNamespace(KubernetesResourceUtil.sanitizeName(TestConstants.CUSTOMER_ID))
+                .build();
     }
 }

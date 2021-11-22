@@ -7,7 +7,6 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -18,7 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateProviderTest {
 
-    private static final BridgeIngress BRIDGE_INGRESS = buildBridgeIngress();
+    private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
+            .withBridgeName("id")
+            .withNamespace("ns")
+            .withImageName("image:latest")
+            .withBridgeId("12345")
+            .withCustomerId("12456")
+            .build();
 
     @Test
     public void bridgeIngressDeploymentTemplateIsProvided() {
@@ -86,15 +91,4 @@ public class TemplateProviderTest {
         assertThat(ownerReference.getUid()).isEqualTo(bridgeIngress.getMetadata().getUid());
     }
 
-    private static BridgeIngress buildBridgeIngress() {
-        ObjectMeta meta = new ObjectMetaBuilder()
-                .withName("id")
-                .withNamespace("ns")
-                .build();
-
-        BridgeIngress bridgeIngress = new BridgeIngress();
-        bridgeIngress.setMetadata(meta);
-
-        return bridgeIngress;
-    }
 }
