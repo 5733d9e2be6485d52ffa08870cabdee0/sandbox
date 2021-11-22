@@ -15,6 +15,7 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
@@ -43,8 +44,9 @@ public class Executor {
 
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getDefinition().getAction().getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getDefinition().getAction());
+        BaseAction action = processor.getDefinition().getExecutableAction();
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(action.getType());
+        this.actionInvoker = actionProvider.getActionInvoker(processor, action);
 
         initMetricFields(processor, registry);
     }

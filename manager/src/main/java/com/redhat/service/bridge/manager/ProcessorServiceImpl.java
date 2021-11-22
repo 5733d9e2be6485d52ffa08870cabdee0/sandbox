@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -15,10 +16,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.manager.actions.ActionTransformer;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -49,6 +52,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ObjectMapper mapper;
 
+    @Inject
+    Instance<ActionTransformer> actionTransformers;
+
     @Transactional
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
@@ -70,7 +76,12 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), processorRequest.getAction());
+        BaseAction action = processorRequest.getAction();
+        BaseAction transformedAction = actionTransformers.stream().filter(a -> a.accept(action.getType())).findFirst()
+                .map(t -> t.transform(bridge, processorRequest))
+                .orElse(null);
+
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), action, transformedAction);
 
         Processor p = new Processor();
 
