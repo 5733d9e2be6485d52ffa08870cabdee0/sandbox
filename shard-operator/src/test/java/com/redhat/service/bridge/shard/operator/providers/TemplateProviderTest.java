@@ -70,6 +70,9 @@ public class TemplateProviderTest {
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
         assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0)
+                .getEnv().stream().filter(x -> x.getName().equals("PROCESSOR_CONFIGURATION_PATH")).findFirst().get().getValue())
+                        .isEqualTo("/config/processor.json");
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts().size()).isEqualTo(1);
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts().get(0).getName()).isEqualTo("processor-definition");
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts().get(0).getMountPath()).isEqualTo("/config");

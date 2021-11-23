@@ -34,12 +34,15 @@ spec:
               value: ""
             - name: KAFKA_SECURITY_PROTOCOL
               value: ""
+            - name: KAFKA_GROUP_ID
+              value: ""
+            - name: PROCESSOR_CONFIGURATION_PATH
+              value: "/config/processor.json"
           volumeMounts:
             - name: processor-definition
               mountPath: /config
       volumes:
         - name: processor-definition
           configMap:
-            # Provide the name of the ConfigMap containing the files you want
-            # to add to the container
+            # Provide the name of the ConfigMap containing the processor.json definition
             name: ""
