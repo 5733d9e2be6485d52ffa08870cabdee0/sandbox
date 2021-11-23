@@ -1,7 +1,11 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
@@ -24,36 +28,30 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
     private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
 
+    /**
+     * Standard way of creating a new {@link BridgeIngress}.
+     * This class has a public constructor for integration with Kubernetes libraries only.
+     * Please don't use the public constructor to create references of this CR.
+     *
+     * @return a Builder to help client code to create new instances of the CR.
+     */
+    public static BridgeExecutor.Builder fromBuilder() {
+        return new Builder();
+    }
+
     public static BridgeExecutor fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
-        ObjectMeta meta = new ObjectMetaBuilder()
-                .withName(buildResourceName(processorDTO.getId()))
-                .withNamespace(namespace)
-                .withLabels(new LabelsBuilder()
-                        .withCustomerId(processorDTO.getBridge().getCustomerId())
-                        .withComponent(COMPONENT_NAME)
-                        .buildWithDefaults())
-                .build();
-
-        BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
-        bridgeExecutorSpec.setImage(executorImage);
-        // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
-        bridgeExecutorSpec.setId(processorDTO.getId());
-        bridgeExecutorSpec.setBridgeDTO(processorDTO.getBridge());
-        bridgeExecutorSpec.setProcessorName(processorDTO.getName()); // metadata.name is sanitized, could not be used.
-
-        if (processorDTO.getDefinition() != null) {
-            try {
-                bridgeExecutorSpec.setProcessorDefinition(new ObjectMapper().writeValueAsString(processorDTO.getDefinition()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+        try {
+            return new Builder()
+                    .withNamespace(namespace)
+                    .withProcessorId(processorDTO.getId())
+                    .withImageName(executorImage)
+                    .withbridgeDTO(processorDTO.getBridge())
+                    .withDefinition(new ObjectMapper().writeValueAsString(processorDTO.getDefinition()))
+                    .withProcessorName(processorDTO.getName())
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Processor definition can not be serialized");
         }
-
-        BridgeExecutor bridgeExecutor = new BridgeExecutor();
-        bridgeExecutor.setSpec(bridgeExecutorSpec);
-        bridgeExecutor.setMetadata(meta);
-
-        return bridgeExecutor;
     }
 
     public ProcessorDTO toDTO() {
@@ -74,7 +72,84 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         return processorDTO;
     }
 
-    public static String buildResourceName(String id) {
+    public static String resolveResourceName(String id) {
         return OB_RESOURCE_NAME_PREFIX + KubernetesResourceUtil.sanitizeName(id);
+    }
+
+    public static final class Builder {
+
+        private String namespace;
+        private String imageName;
+        private String processorId;
+        private BridgeDTO bridgeDTO;
+        private String processorName;
+        private String definition;
+
+        private Builder() {
+
+        }
+
+        public BridgeExecutor.Builder withNamespace(final String namespace) {
+            this.namespace = namespace;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withImageName(final String imageName) {
+            this.imageName = imageName;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withProcessorId(final String processorId) {
+            this.processorId = processorId;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withbridgeDTO(final BridgeDTO bridgeDTO) {
+            this.bridgeDTO = bridgeDTO;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withProcessorName(final String processorName) {
+            this.processorName = processorName;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withDefinition(final String definition) {
+            this.definition = definition;
+            return this;
+        }
+
+        public BridgeExecutor build() {
+            this.validate();
+            ObjectMeta meta = new ObjectMetaBuilder()
+                    .withName(resolveResourceName(this.processorId))
+                    .withNamespace(namespace)
+                    .withLabels(new LabelsBuilder()
+                            .withCustomerId(bridgeDTO.getCustomerId())
+                            .withComponent(COMPONENT_NAME)
+                            .buildWithDefaults())
+                    .build();
+
+            BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
+            bridgeExecutorSpec.setImage(imageName);
+            bridgeExecutorSpec.setId(processorId);
+            bridgeExecutorSpec.setBridgeDTO(bridgeDTO);
+            bridgeExecutorSpec.setProcessorName(processorName);
+            bridgeExecutorSpec.setProcessorDefinition(definition);
+
+            BridgeExecutor bridgeExecutor = new BridgeExecutor();
+            bridgeExecutor.setSpec(bridgeExecutorSpec);
+            bridgeExecutor.setMetadata(meta);
+
+            return bridgeExecutor;
+        }
+
+        private void validate() {
+            Objects.requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.definition), "[BridgeExecutor] Definition can't be null");
+        }
     }
 }

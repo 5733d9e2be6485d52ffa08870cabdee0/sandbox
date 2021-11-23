@@ -40,24 +40,24 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestConstants.CUSTOMER_ID, BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestConstants.CUSTOMER_ID);
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestSupport.CUSTOMER_ID);
         String expectedJsonUpdateAvailableRequest =
                 String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
-                        TestConstants.CUSTOMER_ID);
+                        TestSupport.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
         addBridgeUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
-        String firstBridgeName = BridgeIngress.buildResourceName("myId-1");
-        String secondBridgeName = BridgeIngress.buildResourceName("myId-2");
+        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String firstBridgeName = BridgeIngress.resolveResourceName("myId-1");
+        String secondBridgeName = BridgeIngress.resolveResourceName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
@@ -119,7 +119,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void testProcessorsAreDeployed() throws Exception {
-        ProcessorDTO processor = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
@@ -128,8 +128,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         addProcessorUpdateRequestListener(latch);
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestConstants.CUSTOMER_ID);
-        String sanitizedName = BridgeExecutor.buildResourceName(processor.getId());
+        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
@@ -138,9 +138,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyDeploymentOrFail(sanitizedName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(sanitizedName, customerNamespace);
                         });
-
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
-
         processor.setStatus(BridgeStatus.AVAILABLE);
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
@@ -149,7 +147,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        ProcessorDTO processor = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected

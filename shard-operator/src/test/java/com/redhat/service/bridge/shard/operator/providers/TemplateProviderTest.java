@@ -2,13 +2,16 @@ package com.redhat.service.bridge.shard.operator.providers;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.networking.KubernetesNetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -20,8 +23,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateProviderTest {
 
-    private static final BridgeIngress BRIDGE_INGRESS = buildBridgeIngress();
-    private static final BridgeExecutor BRIDGE_EXECUTOR = buildBridgeExecutor();
+    private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
+            .withBridgeName("id")
+            .withNamespace("ns")
+            .withImageName("image:latest")
+            .withBridgeId("12345")
+            .withCustomerId("12456")
+            .build();
+
+    private static BridgeExecutor BRIDGE_EXECUTOR;
+
+    static {
+        try {
+            BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()
+                    .withProcessorName("id")
+                    .withNamespace("ns")
+                    .withImageName("image:latest")
+                    .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+                    .withProcessorId("id")
+                    .withDefinition(new ObjectMapper().writeValueAsString(new ProcessorDefinition()))
+                    .build();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void bridgeIngressDeploymentTemplateIsProvided() {
@@ -116,29 +141,5 @@ public class TemplateProviderTest {
         assertThat(ownerReference.getApiVersion()).isEqualTo(resource.getApiVersion());
         assertThat(ownerReference.getKind()).isEqualTo(resource.getKind());
         assertThat(ownerReference.getUid()).isEqualTo(resource.getMetadata().getUid());
-    }
-
-    private static BridgeIngress buildBridgeIngress() {
-        ObjectMeta meta = new ObjectMetaBuilder()
-                .withName("id")
-                .withNamespace("ns")
-                .build();
-
-        BridgeIngress bridgeIngress = new BridgeIngress();
-        bridgeIngress.setMetadata(meta);
-
-        return bridgeIngress;
-    }
-
-    private static BridgeExecutor buildBridgeExecutor() {
-        ObjectMeta meta = new ObjectMetaBuilder()
-                .withName("id")
-                .withNamespace("ns")
-                .build();
-
-        BridgeExecutor bridgeExecutor = new BridgeExecutor();
-        bridgeExecutor.setMetadata(meta);
-
-        return bridgeExecutor;
     }
 }

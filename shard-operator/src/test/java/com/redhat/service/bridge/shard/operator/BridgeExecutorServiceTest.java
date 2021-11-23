@@ -49,7 +49,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeExecutorCreation() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -58,7 +58,7 @@ public class BridgeExecutorServiceTest {
         BridgeExecutor bridgeExecutor = kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                .withName(BridgeExecutor.buildResourceName(dto.getId()))
+                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNotNull();
     }
@@ -66,7 +66,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeExecutorCreationTriggersController() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -80,7 +80,7 @@ public class BridgeExecutorServiceTest {
                             // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                                    .withName(BridgeExecutor.buildResourceName(dto.getId()))
+                                    .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
@@ -98,7 +98,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testBridgeIngressDeletion() {
         // Given
-        ProcessorDTO dto = TestConstants.newRequestedProcessorDTO();
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -107,7 +107,7 @@ public class BridgeExecutorServiceTest {
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
-                .withName(BridgeExecutor.buildResourceName(dto.getId()))
+                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();
     }

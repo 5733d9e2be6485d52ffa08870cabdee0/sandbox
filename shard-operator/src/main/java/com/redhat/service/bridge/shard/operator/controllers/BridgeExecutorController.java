@@ -56,13 +56,13 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
 
     @Override
     public UpdateControl<BridgeExecutor> createOrUpdateResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
-        LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         ConfigMap configMap = bridgeExecutorService.fetchOrCreateBridgeExecutorProcessorConfigMap(bridgeExecutor);
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, configMap);
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
             // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
@@ -70,17 +70,17 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             bridgeExecutor.setStatus(new BridgeExecutorStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
-        LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
         if (service.getStatus() == null) {
-            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.setStatus(new BridgeExecutorStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
-        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!PhaseType.AVAILABLE.equals(bridgeExecutor.getStatus().getPhase())) {
             BridgeExecutorStatus bridgeExecutorStatus = new BridgeExecutorStatus(PhaseType.AVAILABLE);
