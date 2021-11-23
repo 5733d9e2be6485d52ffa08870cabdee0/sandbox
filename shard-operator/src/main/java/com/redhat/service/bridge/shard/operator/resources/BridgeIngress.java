@@ -23,7 +23,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @ShortNames("bi")
 public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
 
-    private static final String COMPONENT_NAME = "ingress";
+    public static final String COMPONENT_NAME = "ingress";
 
     private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
 

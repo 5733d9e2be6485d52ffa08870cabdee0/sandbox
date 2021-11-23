@@ -15,7 +15,6 @@ import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.bridge.shard.operator.resources.PhaseType;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
@@ -54,22 +53,22 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
-        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
-        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
     }
 
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
-        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
 
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
             // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
@@ -77,28 +76,28 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
-            LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
         NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
         if (!networkResource.isReady()) {
-            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase()) || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             BridgeIngressStatus bridgeIngressStatus = new BridgeIngressStatus(PhaseType.AVAILABLE);

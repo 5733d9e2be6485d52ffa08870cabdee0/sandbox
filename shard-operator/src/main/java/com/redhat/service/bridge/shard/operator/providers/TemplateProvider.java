@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.shard.operator.providers;
 
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.Service;
@@ -9,11 +10,15 @@ import io.fabric8.openshift.api.model.Route;
 
 public interface TemplateProvider {
 
-    Deployment loadBridgeDeploymentTemplate(BridgeIngress bridgeIngress);
+    Deployment loadBridgeIngressDeploymentTemplate(BridgeIngress bridgeIngress);
 
-    Service loadBridgeServiceTemplate(BridgeIngress bridgeIngress);
+    Service loadBridgeIngressServiceTemplate(BridgeIngress bridgeIngress);
 
-    Route loadBridgeOpenshiftRouteTemplate(BridgeIngress bridgeIngress);
+    Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor);
 
-    Ingress loadBridgeKubernetesIngressTemplate(BridgeIngress bridgeIngress);
+    Service loadBridgeExecutorServiceTemplate(BridgeExecutor bridgeExecutor);
+
+    Route loadBridgeIngressOpenshiftRouteTemplate(BridgeIngress bridgeIngress);
+
+    Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress);
 }

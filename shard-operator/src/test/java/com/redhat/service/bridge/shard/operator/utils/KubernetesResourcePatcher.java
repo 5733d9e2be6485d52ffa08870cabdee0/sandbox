@@ -3,6 +3,8 @@ package com.redhat.service.bridge.shard.operator.utils;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.networking.NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
@@ -23,6 +25,11 @@ public class KubernetesResourcePatcher {
 
     @Inject
     NetworkingTestUtils networkingTestUtils;
+
+    public void cleanUp() {
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
+    }
 
     public void patchReadyDeploymentOrFail(String name, String namespace) {
         // Retrieve the deployment

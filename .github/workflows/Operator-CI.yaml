@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Test Operator
     steps:
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - name: Setup Maven And Java Version
+        uses: s4u/setup-maven-action@v1.2.1
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: 11
+          maven-version: '3.8.1'
       - name: Checkout
         uses: actions/checkout@v2
       - name: Cache Maven Packages
@@ -59,6 +59,7 @@ jobs:
         run: |
           kubectl create namespace $NAMESPACE
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
           kubectl wait --for=condition=available --timeout=60s deployment/shard-operator -n $NAMESPACE
       - name: Print operator log
