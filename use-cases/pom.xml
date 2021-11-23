@@ -13,6 +13,7 @@
 
   <modules>
     <module>ansible-tower-integration</module>
+    <module>managed-connectors-integration</module>
   </modules>
 
 </project>
