@@ -20,7 +20,6 @@ import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -45,6 +44,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @Inject
     KafkaConfigurationProvider kafkaConfigurationProvider;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @ConfigProperty(name = "event-bridge.executor.image")
     String executorImage;
 
@@ -58,29 +60,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .create(BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage));
     }
 
-    @Override
-    public ConfigMap fetchOrCreateBridgeExecutorProcessorConfigMap(BridgeExecutor bridgeExecutor) {
-        ConfigMap configMap = kubernetesClient.configMaps().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
-
-        if (configMap != null) {
-            LOGGER.info("Executor processor ConfigMap for BridgeProcessor: '{}' in namespace '{}' is already present.", bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            return configMap;
-        }
-
-        configMap = templateProvider.loadBridgeExecutorProcessorConfigMapTemplate(bridgeExecutor);
-        try {
-            configMap.getData().replace("processor.json", new ObjectMapper().writeValueAsString(bridgeExecutor.toDTO()));
-        } catch (JsonProcessingException e) {
-            LOGGER.warn("Could not serialize ProcessorDTO into configMap", e);
-        }
-        LOGGER.info("Executor processor ConfigMap for BridgeProcessor: '{}' in namespace '{}' is created.", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
-        return kubernetesClient.configMaps().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(configMap);
-    }
-
     // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
-    public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor, ConfigMap processorConfigMap) {
+    public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor) {
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 
         if (deployment != null) {
@@ -103,10 +85,12 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
+        try {
+            environmentVariables.add(new EnvVarBuilder().withName("PROCESSOR_DEFINITION").withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
-
-        // Set ProcessorDTO configmap
-        deployment.getSpec().getTemplate().getSpec().getVolumes().get(0).getConfigMap().setName(processorConfigMap.getMetadata().getName());
 
         return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(deployment);
     }

@@ -36,13 +36,5 @@ spec:
               value: ""
             - name: KAFKA_GROUP_ID
               value: ""
-            - name: PROCESSOR_CONFIGURATION_PATH
-              value: "/config/processor.json"
-          volumeMounts:
-            - name: processor-definition
-              mountPath: /config
-      volumes:
-        - name: processor-definition
-          configMap:
-            # Provide the name of the ConfigMap containing the processor.json definition
-            name: ""
+            - name: PROCESSOR_CONFIGURATION
+              value: ""

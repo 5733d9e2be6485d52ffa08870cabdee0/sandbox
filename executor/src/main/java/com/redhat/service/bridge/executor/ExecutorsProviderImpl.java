@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.executor;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
@@ -31,14 +30,17 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     @Inject
     MeterRegistry registry;
 
-    @ConfigProperty(name = "event-bridge.processor.configuration.file.path")
-    String processorPath;
+    @ConfigProperty(name = "event-bridge.processor.definition")
+    String processorDefinition;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     private Executor executor;
 
     @PostConstruct
     void init() {
-        ProcessorDTO dto = readProcessor(processorPath);
+        ProcessorDTO dto = readProcessor(processorDefinition);
         this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory, registry);
     }
 
@@ -47,11 +49,11 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
         return executor;
     }
 
-    private ProcessorDTO readProcessor(String path) {
+    private ProcessorDTO readProcessor(String processorDefinition) {
         try {
-            return new ObjectMapper().readValue(new File(path), ProcessorDTO.class);
+            return objectMapper.readValue(processorDefinition, ProcessorDTO.class);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot find processor on classpath: " + path);
+            throw new IllegalStateException("Cannot deserialize processor definition.");
         }
     }
 }

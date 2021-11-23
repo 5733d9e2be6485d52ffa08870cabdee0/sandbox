@@ -94,6 +94,8 @@ public class BridgeExecutorServiceTest {
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals("PROCESSOR_DEFINITION")).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
                         });
     }
 

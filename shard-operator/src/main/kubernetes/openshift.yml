@@ -24,7 +24,6 @@ rules:
       - deployments
       - services
       - namespaces
-      - configmaps
     verbs:
       - '*'
   - apiGroups:

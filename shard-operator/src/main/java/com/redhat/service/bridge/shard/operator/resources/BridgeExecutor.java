@@ -24,6 +24,8 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @ShortNames("be")
 public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExecutorStatus> implements Namespaced {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     public static final String COMPONENT_NAME = "executor";
 
     private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
@@ -59,7 +61,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
         if (this.getSpec().getProcessorDefinition() != null) {
             try {
-                processorDTO.setDefinition(new ObjectMapper().readValue(this.getSpec().getProcessorDefinition(), ProcessorDefinition.class));
+                processorDTO.setDefinition(MAPPER.readValue(this.getSpec().getProcessorDefinition(), ProcessorDefinition.class));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -133,7 +135,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setProcessorName(processorName);
 
             try {
-                bridgeExecutorSpec.setProcessorDefinition(new ObjectMapper().writeValueAsString(processorDefinition));
+                bridgeExecutorSpec.setProcessorDefinition(MAPPER.writeValueAsString(processorDefinition));
             } catch (JsonProcessingException e) {
                 throw new IllegalStateException(String.format("Invalid Processor Definition for processorId: '%s'", processorId), e);
             }
