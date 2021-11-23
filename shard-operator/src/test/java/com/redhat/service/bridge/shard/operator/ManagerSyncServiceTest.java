@@ -129,7 +129,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
-        String sanitizedName = BridgeExecutor.buildResourceName(processor.getId());
+        String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))

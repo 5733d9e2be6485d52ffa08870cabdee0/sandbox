@@ -5,13 +5,11 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.bridge.shard.operator.resources.BridgeExecutorSpec;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -71,25 +69,13 @@ public class BridgeExecutorControllerTest {
     }
 
     private BridgeExecutor buildBridgeExecutor() {
-        BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
-        bridgeExecutorSpec.setId(TestSupport.PROCESSOR_ID);
-        bridgeExecutorSpec.setProcessorName(TestSupport.PROCESSOR_NAME);
-        bridgeExecutorSpec.setImage(TestSupport.EXECUTOR_IMAGE);
-        bridgeExecutorSpec.setDefinition(null);
-        bridgeExecutorSpec.setBridgeDTO(TestSupport.newAvailableBridgeDTO());
-
-        BridgeExecutor bridgeExecutor = new BridgeExecutor();
-        bridgeExecutor.setMetadata(
-                new ObjectMetaBuilder()
-                        .withName(BridgeExecutor.buildResourceName(TestSupport.PROCESSOR_ID))
-                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
-                        .withLabels(new LabelsBuilder()
-                                .withCustomerId(TestSupport.CUSTOMER_ID)
-                                .withComponent(BridgeExecutor.COMPONENT_NAME)
-                                .build())
-                        .build());
-        bridgeExecutor.setSpec(bridgeExecutorSpec);
-
-        return bridgeExecutor;
+        return BridgeExecutor.fromBuilder()
+                .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
+                .withImageName(TestSupport.EXECUTOR_IMAGE)
+                .withProcessorId(TestSupport.PROCESSOR_ID)
+                .withProcessorName(TestSupport.PROCESSOR_NAME)
+                .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+                .withDefinition(new ProcessorDefinition())
+                .build();
     }
 }
