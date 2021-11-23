@@ -20,8 +20,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateProviderTest {
 
-    private static final BridgeIngress BRIDGE_INGRESS = buildBridgeIngress();
     private static final BridgeExecutor BRIDGE_EXECUTOR = buildBridgeExecutor();
+
+    private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
+            .withBridgeName("id")
+            .withNamespace("ns")
+            .withImageName("image:latest")
+            .withBridgeId("12345")
+            .withCustomerId("12456")
+            .build();
 
     @Test
     public void bridgeIngressDeploymentTemplateIsProvided() {
@@ -111,18 +118,6 @@ public class TemplateProviderTest {
         assertThat(ownerReference.getApiVersion()).isEqualTo(resource.getApiVersion());
         assertThat(ownerReference.getKind()).isEqualTo(resource.getKind());
         assertThat(ownerReference.getUid()).isEqualTo(resource.getMetadata().getUid());
-    }
-
-    private static BridgeIngress buildBridgeIngress() {
-        ObjectMeta meta = new ObjectMetaBuilder()
-                .withName("id")
-                .withNamespace("ns")
-                .build();
-
-        BridgeIngress bridgeIngress = new BridgeIngress();
-        bridgeIngress.setMetadata(meta);
-
-        return bridgeIngress;
     }
 
     private static BridgeExecutor buildBridgeExecutor() {

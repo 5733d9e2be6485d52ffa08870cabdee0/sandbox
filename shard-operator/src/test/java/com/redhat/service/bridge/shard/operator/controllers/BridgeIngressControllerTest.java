@@ -7,11 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngressSpec;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
-import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -71,24 +68,12 @@ public class BridgeIngressControllerTest {
     }
 
     private BridgeIngress buildBridgeIngress() {
-        BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
-        bridgeIngressSpec.setId(TestSupport.BRIDGE_ID);
-        bridgeIngressSpec.setBridgeName(TestSupport.BRIDGE_NAME);
-        bridgeIngressSpec.setImage(TestSupport.INGRESS_IMAGE);
-        bridgeIngressSpec.setCustomerId(TestSupport.CUSTOMER_ID);
-
-        BridgeIngress bridgeIngress = new BridgeIngress();
-        bridgeIngress.setMetadata(
-                new ObjectMetaBuilder()
-                        .withName(BridgeIngress.buildResourceName(TestSupport.BRIDGE_ID))
-                        .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
-                        .withLabels(new LabelsBuilder()
-                                .withCustomerId(TestSupport.CUSTOMER_ID)
-                                .withComponent(BridgeIngress.COMPONENT_NAME)
-                                .build())
-                        .build());
-        bridgeIngress.setSpec(bridgeIngressSpec);
-
-        return bridgeIngress;
+        return BridgeIngress.fromBuilder()
+                .withBridgeId(TestSupport.BRIDGE_ID)
+                .withBridgeName(TestSupport.BRIDGE_NAME)
+                .withImageName(TestSupport.INGRESS_IMAGE)
+                .withCustomerId(TestSupport.CUSTOMER_ID)
+                .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
+                .build();
     }
 }

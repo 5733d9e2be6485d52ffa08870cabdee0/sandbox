@@ -58,7 +58,7 @@ public class BridgeIngressServiceTest {
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeIngress.buildResourceName(dto.getId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNotNull();
     }
@@ -80,7 +80,7 @@ public class BridgeIngressServiceTest {
                             // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.buildResourceName(dto.getId()))
+                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
@@ -108,7 +108,7 @@ public class BridgeIngressServiceTest {
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeIngress.buildResourceName(dto.getId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();
     }
@@ -128,7 +128,7 @@ public class BridgeIngressServiceTest {
                         () -> {
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.buildResourceName(dto.getId()))
+                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
                         });
@@ -142,7 +142,7 @@ public class BridgeIngressServiceTest {
                         () -> {
                             Deployment deployment = kubernetesClient.apps().deployments()
                                     .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.buildResourceName(dto.getId()))
+                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNull();
                         });

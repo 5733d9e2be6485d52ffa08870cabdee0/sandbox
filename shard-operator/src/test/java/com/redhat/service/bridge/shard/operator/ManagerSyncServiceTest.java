@@ -56,8 +56,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
-        String firstBridgeName = BridgeIngress.buildResourceName("myId-1");
-        String secondBridgeName = BridgeIngress.buildResourceName("myId-2");
+        String firstBridgeName = BridgeIngress.resolveResourceName("myId-1");
+        String secondBridgeName = BridgeIngress.resolveResourceName("myId-2");
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
