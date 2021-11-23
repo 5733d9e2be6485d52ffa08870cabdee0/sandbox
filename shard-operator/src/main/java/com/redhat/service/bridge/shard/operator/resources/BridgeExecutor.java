@@ -40,18 +40,14 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
     }
 
     public static BridgeExecutor fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
-        try {
-            return new Builder()
-                    .withNamespace(namespace)
-                    .withProcessorId(processorDTO.getId())
-                    .withImageName(executorImage)
-                    .withbridgeDTO(processorDTO.getBridge())
-                    .withDefinition(new ObjectMapper().writeValueAsString(processorDTO.getDefinition()))
-                    .withProcessorName(processorDTO.getName())
-                    .build();
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Processor definition can not be serialized");
-        }
+        return new Builder()
+                .withNamespace(namespace)
+                .withProcessorId(processorDTO.getId())
+                .withImageName(executorImage)
+                .withbridgeDTO(processorDTO.getBridge())
+                .withDefinition(processorDTO.getDefinition())
+                .withProcessorName(processorDTO.getName())
+                .build();
     }
 
     public ProcessorDTO toDTO() {
@@ -83,7 +79,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         private String processorId;
         private BridgeDTO bridgeDTO;
         private String processorName;
-        private String definition;
+        private ProcessorDefinition processorDefinition;
 
         private Builder() {
 
@@ -114,8 +110,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             return this;
         }
 
-        public BridgeExecutor.Builder withDefinition(final String definition) {
-            this.definition = definition;
+        public BridgeExecutor.Builder withDefinition(final ProcessorDefinition processorDefinition) {
+            this.processorDefinition = processorDefinition;
             return this;
         }
 
@@ -135,7 +131,12 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setId(processorId);
             bridgeExecutorSpec.setBridgeDTO(bridgeDTO);
             bridgeExecutorSpec.setProcessorName(processorName);
-            bridgeExecutorSpec.setProcessorDefinition(definition);
+
+            try {
+                bridgeExecutorSpec.setProcessorDefinition(new ObjectMapper().writeValueAsString(processorDefinition));
+            } catch (JsonProcessingException e) {
+                throw new IllegalStateException(String.format("Invalid Processor Definition for processorId: '%s'", processorId), e);
+            }
 
             BridgeExecutor bridgeExecutor = new BridgeExecutor();
             bridgeExecutor.setSpec(bridgeExecutorSpec);
@@ -149,7 +150,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             Objects.requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.definition), "[BridgeExecutor] Definition can't be null");
+            Objects.requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }
 }

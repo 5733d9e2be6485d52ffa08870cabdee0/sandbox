@@ -2,8 +2,6 @@ package com.redhat.service.bridge.shard.operator.providers;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.networking.KubernetesNetworkingService;
@@ -31,22 +29,14 @@ public class TemplateProviderTest {
             .withCustomerId("12456")
             .build();
 
-    private static BridgeExecutor BRIDGE_EXECUTOR;
-
-    static {
-        try {
-            BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()
-                    .withProcessorName("id")
-                    .withNamespace("ns")
-                    .withImageName("image:latest")
-                    .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
-                    .withProcessorId("id")
-                    .withDefinition(new ObjectMapper().writeValueAsString(new ProcessorDefinition()))
-                    .build();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
+    private static final BridgeExecutor BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()
+            .withProcessorName("id")
+            .withNamespace("ns")
+            .withImageName("image:latest")
+            .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+            .withProcessorId("id")
+            .withDefinition(new ProcessorDefinition())
+            .build();
 
     @Test
     public void bridgeIngressDeploymentTemplateIsProvided() {

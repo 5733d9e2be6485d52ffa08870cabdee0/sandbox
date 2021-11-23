@@ -5,8 +5,6 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
@@ -40,7 +38,7 @@ public class BridgeExecutorControllerTest {
     }
 
     @Test
-    void testCreateNewBridgeIngress() throws JsonProcessingException {
+    void testCreateNewBridgeIngress() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
 
@@ -52,7 +50,7 @@ public class BridgeExecutorControllerTest {
     }
 
     @Test
-    void testBridgeIngressDeployment() throws JsonProcessingException {
+    void testBridgeIngressDeployment() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
 
@@ -70,14 +68,14 @@ public class BridgeExecutorControllerTest {
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
     }
 
-    private BridgeExecutor buildBridgeExecutor() throws JsonProcessingException {
+    private BridgeExecutor buildBridgeExecutor() {
         return BridgeExecutor.fromBuilder()
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .withImageName(TestSupport.EXECUTOR_IMAGE)
                 .withProcessorId(TestSupport.PROCESSOR_ID)
                 .withProcessorName(TestSupport.PROCESSOR_NAME)
                 .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
-                .withDefinition(new ObjectMapper().writeValueAsString(new ProcessorDefinition()))
+                .withDefinition(new ProcessorDefinition())
                 .build();
     }
 }
