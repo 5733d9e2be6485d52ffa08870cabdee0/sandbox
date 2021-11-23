@@ -119,7 +119,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled
     public void testProcessorsAreDeployed() throws Exception {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
 
@@ -150,7 +149,6 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
-    @Disabled
     public void notifyProcessorStatusChange() throws Exception {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
         stubProcessorUpdate();
