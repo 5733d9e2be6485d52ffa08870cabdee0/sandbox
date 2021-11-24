@@ -21,7 +21,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.manager.actions.ActionTransformer;
+import com.redhat.service.bridge.manager.actions.VirtualActionProvider;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -52,7 +52,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    Instance<ActionTransformer> actionTransformers;
+    Instance<VirtualActionProvider> actionProviders;
 
     @Transactional
     @Override
@@ -78,7 +78,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         BaseAction action = processorRequest.getAction();
-        BaseAction transformedAction = actionTransformers.stream().filter(a -> a.accept(action.getType())).findFirst()
+        BaseAction transformedAction = actionProviders.stream().filter(a -> a.accept(action.getType())).findFirst()
+                .map(VirtualActionProvider::getTransformer)
                 .map(t -> t.transform(bridge, customerId, processorRequest))
                 .orElse(null);
 

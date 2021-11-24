@@ -20,11 +20,6 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
     BridgesService bridgesService;
 
     @Override
-    public String getType() {
-        return SendToBridgeAction.TYPE;
-    }
-
-    @Override
     public BaseAction transform(Bridge bridge, String customerId, ProcessorRequest processorRequest) {
         BaseAction action = processorRequest.getAction();
 

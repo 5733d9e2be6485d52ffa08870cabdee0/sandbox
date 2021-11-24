@@ -6,11 +6,5 @@ import com.redhat.service.bridge.manager.models.Bridge;
 
 public interface ActionTransformer {
 
-    default boolean accept(String actionType) {
-        return getType().equals(actionType);
-    }
-
-    String getType();
-
     BaseAction transform(Bridge bridge, String customerId, ProcessorRequest processorRequest);
 }
