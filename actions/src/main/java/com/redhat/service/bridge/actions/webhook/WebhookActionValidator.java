@@ -5,9 +5,6 @@ import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.bridge.actions.ActionParameterValidator;
 import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -19,7 +16,6 @@ public class WebhookActionValidator implements ActionParameterValidator {
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
     public static final String INVALID_PROTOCOL_MESSAGE = "The \"endpoint\" protocol must be either \"http\" or \"https\"";
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebhookActionValidator.class);
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
 
@@ -38,16 +34,12 @@ public class WebhookActionValidator implements ActionParameterValidator {
         try {
             endpointUrl = new URL(endpoint);
         } catch (MalformedURLException e) {
-            String errorMsg = malformedUrlMessage(endpoint, e);
-            LOG.warn(errorMsg);
-            return ValidationResult.invalid(errorMsg);
+            return ValidationResult.invalid(malformedUrlMessage(endpoint, e));
         }
 
         String protocol = endpointUrl.getProtocol();
         if (!PROTOCOL_HTTP.equalsIgnoreCase(protocol) && !PROTOCOL_HTTPS.equalsIgnoreCase(protocol)) {
-            String errorMsg = invalidProtocolMessage(protocol);
-            LOG.warn(errorMsg);
-            return ValidationResult.invalid(errorMsg);
+            return ValidationResult.invalid(invalidProtocolMessage(protocol));
         }
 
         return ValidationResult.valid();
