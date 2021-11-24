@@ -30,9 +30,9 @@ kubectl create ns kafka
 From the root of the project, deploy the kafka infrastructure with 
 
 ```bash
-kubectl apply -f dev/kubernetes/kafka/strimzi.yaml -n kafka
-kubectl apply -f dev/kubernetes/kafka/kafka.yaml -n kafka
-kubectl apply -f dev/kubernetes/kafka/kafka-topics.yaml -n kafka
+kubectl apply -f dev/kubernetes/kafka/00_strimzi.yaml -n kafka
+kubectl apply -f dev/kubernetes/kafka/01_kafka.yaml -n kafka
+kubectl apply -f dev/kubernetes/kafka/02_kafka-topics.yaml -n kafka
 ```
 
 Wait until all the resources have been deployed (it might take a while for a brand new cluster).

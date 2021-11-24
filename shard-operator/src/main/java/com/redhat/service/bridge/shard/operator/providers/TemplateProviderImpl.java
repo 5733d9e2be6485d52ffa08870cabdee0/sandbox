@@ -8,7 +8,6 @@ import javax.enterprise.context.ApplicationScoped;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -69,13 +68,6 @@ public class TemplateProviderImpl implements TemplateProvider {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         return ingress;
-    }
-
-    @Override
-    public ConfigMap loadBridgeExecutorProcessorConfigMapTemplate(BridgeExecutor bridgeExecutor) {
-        ConfigMap processorConfigMap = loadYaml(ConfigMap.class, BRIDGE_EXECUTOR_PROCESSOR_CONFIGMAP_PATH);
-        updateMetadata(bridgeExecutor, processorConfigMap.getMetadata());
-        return processorConfigMap;
     }
 
     private <T> T loadYaml(Class<T> clazz, String yaml) {

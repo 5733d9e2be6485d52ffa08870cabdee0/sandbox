@@ -88,7 +88,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         try {
             environmentVariables.add(new EnvVarBuilder().withName("PROCESSOR_DEFINITION").withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOGGER.error("Could not serialize Processor Definition while setting executor deployment environment variables", e);
         }
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 

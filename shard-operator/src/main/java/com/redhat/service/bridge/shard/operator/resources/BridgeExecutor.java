@@ -2,6 +2,9 @@ package com.redhat.service.bridge.shard.operator.resources;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -24,6 +27,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @ShortNames("be")
 public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExecutorStatus> implements Namespaced {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutor.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static final String COMPONENT_NAME = "executor";
@@ -63,7 +67,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             try {
                 processorDTO.setDefinition(MAPPER.readValue(this.getSpec().getProcessorDefinition(), ProcessorDefinition.class));
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                LOGGER.error("Could not deserialize Processor Definition while converting BridgeExecutor to ProcessorDTO", e);
             }
         }
 
