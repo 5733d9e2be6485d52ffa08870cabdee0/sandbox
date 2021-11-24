@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.shard.operator;
+package com.redhat.service.bridge.test.wiremock;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -12,18 +13,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
-public class ActionProviderFactoryTest {
+class ActionProviderFactoryTest {
 
     @Inject
     ActionProviderFactory actionProviderFactory;
 
     @Test
-    public void getActionProvider() {
-        assertThat(actionProviderFactory.getActionProvider(KafkaTopicAction.TYPE)).isNotNull();
+    void getKafkaTopicActionProvider() {
+        assertThat(actionProviderFactory.getActionProvider(KafkaTopicAction.TYPE))
+                .isNotNull()
+                .isInstanceOf(KafkaTopicAction.class);
     }
 
     @Test
-    public void getActionProvider_actionTypeNotRecognised() {
-        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> actionProviderFactory.getActionProvider("doesNotExist"));
+    void getWebhookActionProvider() {
+        assertThat(actionProviderFactory.getActionProvider(WebhookAction.TYPE))
+                .isNotNull()
+                .isInstanceOf(WebhookAction.class);
+    }
+
+    @Test
+    void getActionProvider_actionTypeNotRecognised() {
+        assertThatExceptionOfType(ActionProviderException.class)
+                .isThrownBy(() -> actionProviderFactory.getActionProvider("doesNotExist"));
     }
 }
