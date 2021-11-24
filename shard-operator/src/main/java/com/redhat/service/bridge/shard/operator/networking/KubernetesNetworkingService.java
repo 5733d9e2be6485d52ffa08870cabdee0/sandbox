@@ -67,7 +67,7 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     private Ingress buildIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress ingress = templateProvider.loadBridgeKubernetesIngressTemplate(bridgeIngress);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()

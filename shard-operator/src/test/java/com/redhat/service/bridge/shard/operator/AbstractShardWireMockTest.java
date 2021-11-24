@@ -30,6 +30,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.quarkus.test.common.QuarkusTestResource;
 
@@ -48,6 +49,9 @@ public abstract class AbstractShardWireMockTest {
     protected ManagerSyncService managerSyncService;
 
     @Inject
+    protected KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @Inject
     protected ObjectMapper objectMapper;
 
     // TODO: revisit processor tests when they will be integrated
@@ -60,6 +64,7 @@ public abstract class AbstractShardWireMockTest {
     @BeforeEach
     protected void beforeEach() {
         wireMockServer.resetAll();
+        kubernetesResourcePatcher.cleanUp();
     }
 
     protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
@@ -79,7 +84,7 @@ public abstract class AbstractShardWireMockTest {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, bridge, requestedStatus);
+        return new ProcessorDTO(TestSupport.PROCESSOR_ID, TestSupport.PROCESSOR_NAME, definition, bridge, requestedStatus);
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

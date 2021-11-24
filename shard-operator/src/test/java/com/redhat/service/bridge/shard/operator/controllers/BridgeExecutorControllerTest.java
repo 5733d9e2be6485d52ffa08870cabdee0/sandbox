@@ -5,8 +5,9 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -20,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-public class BridgeIngressControllerTest {
+public class BridgeExecutorControllerTest {
 
     @Inject
-    BridgeIngressController bridgeIngressController;
+    BridgeExecutorController bridgeExecutorController;
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -39,10 +40,10 @@ public class BridgeIngressControllerTest {
     @Test
     void testCreateNewBridgeIngress() {
         // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
+        BridgeExecutor bridgeExecutor = buildBridgeExecutor();
 
         // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
 
         // Then
         assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
@@ -51,13 +52,13 @@ public class BridgeIngressControllerTest {
     @Test
     void testBridgeIngressDeployment() {
         // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
+        BridgeExecutor bridgeExecutor = buildBridgeExecutor();
 
         // When
-        bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
 
         // Then
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
+        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
         assertThat(deployment).isNotNull();
         assertThat(deployment.getMetadata().getOwnerReferences().size()).isEqualTo(1);
         assertThat(deployment.getMetadata().getLabels()).isNotNull();
@@ -67,13 +68,14 @@ public class BridgeIngressControllerTest {
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
     }
 
-    private BridgeIngress buildBridgeIngress() {
-        return BridgeIngress.fromBuilder()
-                .withBridgeId(TestSupport.BRIDGE_ID)
-                .withBridgeName(TestSupport.BRIDGE_NAME)
-                .withImageName(TestSupport.INGRESS_IMAGE)
-                .withCustomerId(TestSupport.CUSTOMER_ID)
+    private BridgeExecutor buildBridgeExecutor() {
+        return BridgeExecutor.fromBuilder()
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
+                .withImageName(TestSupport.EXECUTOR_IMAGE)
+                .withProcessorId(TestSupport.PROCESSOR_ID)
+                .withProcessorName(TestSupport.PROCESSOR_NAME)
+                .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+                .withDefinition(new ProcessorDefinition())
                 .build();
     }
 }

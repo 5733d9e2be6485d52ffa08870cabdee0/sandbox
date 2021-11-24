@@ -5,8 +5,8 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
     app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
-    app.kubernetes.io/component: ingress # used to specify the component
-  ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
+    app.kubernetes.io/component: executor # used to specify the component
+  ownerReferences: # used for finding which Processor does this Deployment belong to
     - apiVersion: ""
       kind: ""
       name: ""
@@ -24,15 +24,12 @@ spec:
       containers:
         - name: ""
           image: ""
-          imagePullPolicy: IfNotPresent
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: ""
             - name: KAFKA_CLIENT_ID
               value: ""
             - name: KAFKA_CLIENT_SECRET
-              value: ""
-            - name: EVENT_BRIDGE_BRIDGE_ID
               value: ""
             - name: KAFKA_SECURITY_PROTOCOL
               value: ""

@@ -17,8 +17,6 @@ public final class LabelsBuilder {
 
     public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
 
-    // Keep in sync with resources/templates kubernetes templates
-    public static final String BRIDGE_INGRESS_COMPONENT = "bridge-ingress";
     /**
      * The tool being used to manage the operation of an application
      */
