@@ -18,6 +18,7 @@ import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCost
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -86,7 +87,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
         try {
-            environmentVariables.add(new EnvVarBuilder().withName("PROCESSOR_DEFINITION").withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
+            environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {
             LOGGER.error("Could not serialize Processor Definition while setting executor deployment environment variables", e);
         }

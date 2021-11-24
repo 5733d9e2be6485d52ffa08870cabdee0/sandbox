@@ -14,6 +14,7 @@ import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvi
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -94,7 +95,7 @@ public class BridgeExecutorServiceTest {
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals("PROCESSOR_DEFINITION")).findFirst().get().getValue().length())
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                         });
     }
