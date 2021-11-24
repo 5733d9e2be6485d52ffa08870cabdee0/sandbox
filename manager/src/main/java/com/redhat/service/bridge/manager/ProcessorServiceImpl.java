@@ -78,12 +78,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         BaseAction action = processorRequest.getAction();
-        BaseAction transformedAction = actionProviders.stream().filter(a -> a.accept(action.getType())).findFirst()
+        BaseAction resolvedAction = actionProviders.stream().filter(a -> a.accept(action.getType())).findFirst()
                 .map(VirtualActionProvider::getTransformer)
                 .map(t -> t.transform(bridge, customerId, processorRequest))
                 .orElse(null);
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), action, transformedAction);
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), action, resolvedAction);
 
         Processor p = new Processor();
 

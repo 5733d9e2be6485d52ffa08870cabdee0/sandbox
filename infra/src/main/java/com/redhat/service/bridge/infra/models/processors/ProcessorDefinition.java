@@ -20,9 +20,9 @@ public class ProcessorDefinition {
     @JsonProperty("action")
     private BaseAction action;
 
-    @JsonProperty("transformedAction")
+    @JsonProperty("resolvedAction")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private BaseAction transformedAction;
+    private BaseAction resolvedAction;
 
     public ProcessorDefinition() {
     }
@@ -33,9 +33,9 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction transformedAction) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction resolvedAction) {
         this(filters, transformationTemplate, action);
-        this.transformedAction = transformedAction;
+        this.resolvedAction = resolvedAction;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -62,17 +62,17 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public BaseAction getTransformedAction() {
-        return transformedAction;
+    public BaseAction getResolvedAction() {
+        return resolvedAction;
     }
 
-    public void setTransformedAction(BaseAction transformedAction) {
-        this.transformedAction = transformedAction;
+    public void setResolvedAction(BaseAction resolvedAction) {
+        this.resolvedAction = resolvedAction;
     }
 
     @JsonIgnore
     public BaseAction getExecutableAction() {
-        return transformedAction == null ? action : transformedAction;
+        return resolvedAction == null ? action : resolvedAction;
     }
 
     @Override
