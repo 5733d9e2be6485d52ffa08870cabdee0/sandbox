@@ -34,7 +34,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        if (baseAction.getParameters() == null || baseAction.getParameters().isEmpty()) {
+        if (baseAction.getParameters() == null) {
             return false;
         }
 
