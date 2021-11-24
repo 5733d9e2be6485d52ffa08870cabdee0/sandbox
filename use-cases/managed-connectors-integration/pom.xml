@@ -21,6 +21,7 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>2.4.1.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+    <redhat.connector-management-sdk.version>0.0.3</redhat.connector-management-sdk.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -63,7 +64,7 @@
     <dependency>
       <groupId>com.redhat.cloud</groupId>
       <artifactId>connector-management-sdk</artifactId>
-      <version>0.0.3</version>
+      <version>${redhat.connector-management-sdk.version}</version>
     </dependency>
 
     <dependency>
