@@ -23,7 +23,6 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-ingress-deployment.yaml";
     private static final String BRIDGE_INGRESS_SERVICE_PATH = TEMPLATES_DIR + "/bridge-ingress-service.yaml";
     private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
-    private static final String BRIDGE_EXECUTOR_PROCESSOR_CONFIGMAP_PATH = TEMPLATES_DIR + "/bridge-executor-processor-configmap.yaml";
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH = TEMPLATES_DIR + "/bridge-ingress-openshift-route.yaml";
     private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
