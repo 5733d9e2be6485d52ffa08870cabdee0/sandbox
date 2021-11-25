@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: event-bridge-all-in-one-config
+  name: event-bridge-manager-config
 data:
   EVENT_BRIDGE_DB_USERNAME: "postgres"
   EVENT_BRIDGE_DB_PASSWORD: "postgres"

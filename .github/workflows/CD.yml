@@ -17,7 +17,6 @@ jobs:
   event-bridge-build:
     env:
       MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
-      ALL_IN_ONE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one:${{ github.sha }}
       FLEET_MANAGER_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager:${{ github.sha }}
       FLEET_SHARD_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:${{ github.sha }}
@@ -65,12 +64,6 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
         run: docker login quay.io --username $CONTAINER_REGISTRY_USER --password $CONTAINER_REGISTRY_PASSWORD
-      - name: Build and Publish JVM Container - All in One
-        shell: bash
-        run: |
-          echo "Building and pushing docker image for All-in-One"
-          docker build -f docker/Dockerfile.jvm -t $ALL_IN_ONE_CONTAINER_NAME-jvm runner/
-          docker push $ALL_IN_ONE_CONTAINER_NAME-jvm
 
       - uses: dorny/paths-filter@v2
         id: filter
