@@ -2,6 +2,11 @@ package com.redhat.service.bridge.shard.operator.resources;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -21,6 +26,9 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Version("v1alpha1")
 @ShortNames("be")
 public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExecutorStatus> implements Namespaced {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutor.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static final String COMPONENT_NAME = "executor";
 
@@ -54,7 +62,15 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
         processorDTO.setBridge(this.getSpec().getBridgeDTO());
         processorDTO.setName(this.getSpec().getProcessorName());
-        processorDTO.setDefinition(this.getSpec().getDefinition());
+
+        if (this.getSpec().getProcessorDefinition() != null) {
+            try {
+                processorDTO.setDefinition(MAPPER.readValue(this.getSpec().getProcessorDefinition(), ProcessorDefinition.class));
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Could not deserialize Processor Definition while converting BridgeExecutor to ProcessorDTO", e);
+            }
+        }
+
         return processorDTO;
     }
 
@@ -69,7 +85,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         private String processorId;
         private BridgeDTO bridgeDTO;
         private String processorName;
-        private ProcessorDefinition definition;
+        private ProcessorDefinition processorDefinition;
 
         private Builder() {
 
@@ -100,8 +116,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             return this;
         }
 
-        public BridgeExecutor.Builder withDefinition(final ProcessorDefinition definition) {
-            this.definition = definition;
+        public BridgeExecutor.Builder withDefinition(final ProcessorDefinition processorDefinition) {
+            this.processorDefinition = processorDefinition;
             return this;
         }
 
@@ -121,7 +137,12 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setId(processorId);
             bridgeExecutorSpec.setBridgeDTO(bridgeDTO);
             bridgeExecutorSpec.setProcessorName(processorName);
-            bridgeExecutorSpec.setDefinition(definition);
+
+            try {
+                bridgeExecutorSpec.setProcessorDefinition(MAPPER.writeValueAsString(processorDefinition));
+            } catch (JsonProcessingException e) {
+                throw new IllegalStateException(String.format("Invalid Processor Definition for processorId: '%s'", processorId), e);
+            }
 
             BridgeExecutor bridgeExecutor = new BridgeExecutor();
             bridgeExecutor.setSpec(bridgeExecutorSpec);
@@ -135,7 +156,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             Objects.requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            Objects.requireNonNull(this.definition, "[BridgeExecutor] Definition can't be null");
+            Objects.requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }
 }

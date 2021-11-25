@@ -21,34 +21,6 @@ spec:
             properties:
               id:
                 type: string
-              definition:
-                properties:
-                  transformationTemplate:
-                    type: string
-                  action:
-                    properties:
-                      parameters:
-                        additionalProperties:
-                          type: string
-                        type: object
-                      name:
-                        type: string
-                      type:
-                        type: string
-                    required:
-                    - name
-                    - type
-                    type: object
-                  filters:
-                    items:
-                      properties:
-                        key:
-                          type: string
-                        type:
-                          type: string
-                      type: object
-                    type: array
-                type: object
               bridgeDTO:
                 properties:
                   id:
@@ -70,6 +42,8 @@ spec:
                     type: string
                 type: object
               image:
+                type: string
+              processorDefinition:
                 type: string
               processorName:
                 type: string

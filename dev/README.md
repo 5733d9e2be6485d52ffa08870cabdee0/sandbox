@@ -30,29 +30,15 @@ kubectl create ns kafka
 From the root of the project, deploy the kafka infrastructure with 
 
 ```bash
-kubectl apply -f dev/kubernetes/kafka/ -n kafka
+kubectl apply -f dev/kubernetes/kafka/00_strimzi.yaml -n kafka
+kubectl apply -f dev/kubernetes/kafka/01_kafka.yaml -n kafka
+kubectl apply -f dev/kubernetes/kafka/02_kafka-topics.yaml -n kafka
 ```
 
 Wait until all the resources have been deployed (it might take a while for a brand new cluster).
 
 ```bash
 kubectl wait pod -l app.kubernetes.io/instance=my-cluster --for=condition=Ready --timeout=600s -n kafka
-```
-
-Extract the external ip to use to reach the kafka cluster with
-```bash
-KAFKA_IP=$(kubectl get nodes --output=jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}')
-```
-
-Extract the external port to use to reach the kafka cluster with
-```bash
-KAFKA_PORT=$(kubectl get service my-cluster-kafka-external-bootstrap -n kafka -o=jsonpath='{.spec.ports[0].nodePort}{"\n"}')
-```
-
-The endpoint to use is then 
-
-```bash
-export KAFKA_ENDPOINT="http://"$KAFKA_IP":"$KAFKA_PORT
 ```
 
 ## Development environment
@@ -88,7 +74,7 @@ docker-compose -f dev/docker-compose/docker-compose.yml up
 **From the root of the project** run the all-in-one application with 
 
 ```bash
-mvn clean compile -Dkafka.security.protocol=PLAINTEXT -Dkafka.bootstrap.servers=$KAFKA_ENDPOINT -f runner/pom.xml quarkus:dev
+mvn clean compile -f runner/pom.xml quarkus:dev
 ```
 
 Run the shard operator from the root of the project with 
