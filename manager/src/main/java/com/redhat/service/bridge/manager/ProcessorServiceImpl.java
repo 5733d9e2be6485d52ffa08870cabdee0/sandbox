@@ -86,7 +86,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         Optional<BaseAction> optTransformedAction = actionProviders.stream().filter(a -> a.accept(requestAction.getType())).findFirst()
                 .map(VirtualActionProvider::getTransformer)
-                .map(t -> t.transform(bridge, customerId, processorRequest));
+                .map(t -> t.transform(processorRequest.getAction(), bridge.getId(), customerId));
 
         ProcessorDefinition definition = optTransformedAction
                 // if the transformed action exists, the request action is a virtual action

@@ -10,7 +10,6 @@ import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.actions.ActionTransformer;
-import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
 
 @ApplicationScoped
@@ -20,16 +19,12 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
     BridgesService bridgesService;
 
     @Override
-    public BaseAction transform(Bridge bridge, String customerId, ProcessorRequest processorRequest) {
-        BaseAction action = processorRequest.getAction();
+    public BaseAction transform(BaseAction action, String bridgeId, String customerId) {
+        String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        Bridge destinationBridge = bridgesService.getAvailableBridge(destinationBridgeId, customerId);
 
         Map<String, String> parameters = new HashMap<>();
-        if (!action.getParameters().containsKey(SendToBridgeAction.BRIDGE_ID_PARAM)) {
-            parameters.put(WebhookAction.ENDPOINT_PARAM, bridge.getEndpoint());
-        } else {
-            Bridge otherBridge = bridgesService.getAvailableBridge(action.getParameters().get(SendToBridgeAction.BRIDGE_ID_PARAM), customerId);
-            parameters.put(WebhookAction.ENDPOINT_PARAM, otherBridge.getEndpoint());
-        }
+        parameters.put(WebhookAction.ENDPOINT_PARAM, destinationBridge.getEndpoint());
 
         BaseAction transformedAction = new BaseAction();
         transformedAction.setType(WebhookAction.TYPE);

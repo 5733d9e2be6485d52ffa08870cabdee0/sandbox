@@ -79,28 +79,28 @@ class SendToBridgeActionTransformerTest {
     @Test
     void testActionWithoutBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
-        BaseAction transformedAction = transformer.transform(bridge, TEST_CUSTOMER_ID, requestWithAction(inputAction));
+        BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
         assertValid(transformedAction, inputAction.getName(), bridge.getEndpoint());
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
-        BaseAction transformedAction = transformer.transform(otherBridge, TEST_CUSTOMER_ID, requestWithAction(inputAction));
+        BaseAction transformedAction = transformer.transform(inputAction, otherBridge.getId(), TEST_CUSTOMER_ID);
         assertValid(transformedAction, inputAction.getName(), otherBridge.getEndpoint());
     }
 
     @Test
     void testActionWithSameBridgeId() {
         BaseAction inputAction = actionWithBridgeId(bridge.getId());
-        BaseAction transformedAction = transformer.transform(bridge, TEST_CUSTOMER_ID, requestWithAction(inputAction));
+        BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
         assertValid(transformedAction, inputAction.getName(), bridge.getEndpoint());
     }
 
     @Test
     void testActionWithOtherBridgeId() {
         BaseAction inputAction = actionWithBridgeId(otherBridge.getId());
-        BaseAction transformedAction = transformer.transform(bridge, TEST_CUSTOMER_ID, requestWithAction(inputAction));
+        BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
         assertValid(transformedAction, inputAction.getName(), otherBridge.getEndpoint());
     }
 
@@ -108,14 +108,14 @@ class SendToBridgeActionTransformerTest {
     void testActionWithUnavailableBridgeId() {
         BaseAction inputAction = actionWithBridgeId(UNAVAILABLE_BRIDGE_ID);
         ProcessorRequest inputRequest = requestWithAction(inputAction);
-        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> transformer.transform(bridge, TEST_CUSTOMER_ID, inputRequest));
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> transformer.transform(inputRequest.getAction(), bridge.getId(), TEST_CUSTOMER_ID));
     }
 
     @Test
     void testActionWithUnknownBridgeId() {
         BaseAction inputAction = actionWithBridgeId(UNKNOWN_BRIDGE_ID);
         ProcessorRequest inputRequest = requestWithAction(inputAction);
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> transformer.transform(bridge, TEST_CUSTOMER_ID, inputRequest));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> transformer.transform(inputRequest.getAction(), bridge.getId(), TEST_CUSTOMER_ID));
     }
 
     private void assertValid(BaseAction transformedAction, String expectedName, String expectedEndpoint) {
