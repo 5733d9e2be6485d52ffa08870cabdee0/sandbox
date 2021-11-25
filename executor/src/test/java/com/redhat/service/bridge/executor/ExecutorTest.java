@@ -33,6 +33,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
@@ -117,6 +118,30 @@ public class ExecutorTest {
 
         verify(actionProviderFactoryMock).getActionProvider(WebhookAction.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
+    }
+
+    @Test
+    public void testOnEventWithFiltersTransformationValidActionAndInvalidResolvedAction() throws JsonProcessingException {
+        String unknownActionType = "UnknownAction";
+
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringEquals("data.key", "value"));
+
+        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+
+        BaseAction action = new BaseAction();
+        action.setType(KafkaTopicAction.TYPE);
+
+        BaseAction resolvedAction = new BaseAction();
+        resolvedAction.setType(unknownActionType);
+
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action, resolvedAction));
+
+        assertThatExceptionOfType(ActionProviderException.class)
+                .isThrownBy(() -> new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry));
+
+        verify(actionProviderFactoryMock).getActionProvider(unknownActionType);
+        verify(actionInvokerMock, never()).onEvent(any());
     }
 
     @Test
