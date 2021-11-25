@@ -3,7 +3,6 @@ package com.redhat.service.bridge.infra.models.processors;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -20,9 +19,9 @@ public class ProcessorDefinition {
     @JsonProperty("action")
     private BaseAction action;
 
-    @JsonProperty("resolvedAction")
+    @JsonProperty("virtualAction")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private BaseAction resolvedAction;
+    private BaseAction virtualAction;
 
     public ProcessorDefinition() {
     }
@@ -33,9 +32,9 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction resolvedAction) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction virtualAction) {
         this(filters, transformationTemplate, action);
-        this.resolvedAction = resolvedAction;
+        this.virtualAction = virtualAction;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -62,17 +61,12 @@ public class ProcessorDefinition {
         this.action = action;
     }
 
-    public BaseAction getResolvedAction() {
-        return resolvedAction;
+    public BaseAction getVirtualAction() {
+        return virtualAction;
     }
 
-    public void setResolvedAction(BaseAction resolvedAction) {
-        this.resolvedAction = resolvedAction;
-    }
-
-    @JsonIgnore
-    public BaseAction getExecutableAction() {
-        return resolvedAction == null ? action : resolvedAction;
+    public void setVirtualAction(BaseAction virtualAction) {
+        this.virtualAction = virtualAction;
     }
 
     @Override

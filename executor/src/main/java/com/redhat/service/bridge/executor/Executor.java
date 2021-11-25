@@ -44,7 +44,7 @@ public class Executor {
 
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
-        BaseAction action = processor.getDefinition().getExecutableAction();
+        BaseAction action = processor.getDefinition().getAction();
         InvokableActionProvider actionProvider = actionProviderFactory.getInvokableActionProvider(action.getType());
         this.actionInvoker = actionProvider.getActionInvoker(processor, action);
 

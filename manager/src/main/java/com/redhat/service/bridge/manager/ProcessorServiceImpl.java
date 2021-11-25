@@ -3,6 +3,8 @@ package com.redhat.service.bridge.manager;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
@@ -20,6 +22,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.actions.VirtualActionProvider;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -77,13 +80,19 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        BaseAction action = processorRequest.getAction();
-        BaseAction resolvedAction = actionProviders.stream().filter(a -> a.accept(action.getType())).findFirst()
-                .map(VirtualActionProvider::getTransformer)
-                .map(t -> t.transform(bridge, customerId, processorRequest))
-                .orElse(null);
+        final Set<BaseFilter> requestFilters = processorRequest.getFilters();
+        final String requestTransformationTemplate = processorRequest.getTransformationTemplate();
+        final BaseAction requestAction = processorRequest.getAction();
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), action, resolvedAction);
+        Optional<BaseAction> optTransformedAction = actionProviders.stream().filter(a -> a.accept(requestAction.getType())).findFirst()
+                .map(VirtualActionProvider::getTransformer)
+                .map(t -> t.transform(bridge, customerId, processorRequest));
+
+        ProcessorDefinition definition = optTransformedAction
+                // if the transformed action exists, the request action is a virtual action
+                .map(transformedAction -> new ProcessorDefinition(requestFilters, requestTransformationTemplate, transformedAction, requestAction))
+                // otherwise, the request action is the actual invokable action
+                .orElseGet(() -> new ProcessorDefinition(requestFilters, requestTransformationTemplate, requestAction));
 
         Processor p = new Processor();
 
@@ -168,7 +177,9 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            processorResponse.setAction(definition.getAction());
+
+            BaseAction responseAction = definition.getVirtualAction() != null ? definition.getVirtualAction() : definition.getAction();
+            processorResponse.setAction(responseAction);
         }
 
         if (processor.getBridge() != null) {

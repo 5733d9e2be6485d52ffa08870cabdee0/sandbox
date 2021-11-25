@@ -31,11 +31,11 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
             parameters.put(WebhookAction.ENDPOINT_PARAM, otherBridge.getEndpoint());
         }
 
-        BaseAction resolvedAction = new BaseAction();
-        resolvedAction.setType(WebhookAction.TYPE);
-        resolvedAction.setName(action.getName());
-        resolvedAction.setParameters(parameters);
+        BaseAction transformedAction = new BaseAction();
+        transformedAction.setType(WebhookAction.TYPE);
+        transformedAction.setName(action.getName());
+        transformedAction.setParameters(parameters);
 
-        return resolvedAction;
+        return transformedAction;
     }
 }

@@ -33,7 +33,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,19 +95,19 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithFiltersTransformationActionAndResolvedAction() throws JsonProcessingException {
+    public void testOnEventWithFiltersTransformationActionAndVirtualAction() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction action = new BaseAction();
-        action.setType("SendToBridge");
+        BaseAction virtualAction = new BaseAction();
+        virtualAction.setType("SendToBridge");
 
-        BaseAction resolvedAction = new BaseAction();
-        resolvedAction.setType(WebhookAction.TYPE);
+        BaseAction transformedAction = new BaseAction();
+        transformedAction.setType(WebhookAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action, resolvedAction));
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, transformedAction, virtualAction));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
@@ -118,30 +117,6 @@ public class ExecutorTest {
 
         verify(actionProviderFactoryMock).getInvokableActionProvider(WebhookAction.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
-    }
-
-    @Test
-    public void testOnEventWithFiltersTransformationValidActionAndInvalidResolvedAction() throws JsonProcessingException {
-        String unknownActionType = "UnknownAction";
-
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
-
-        String transformationTemplate = "{\"test\": \"{data.key}\"}";
-
-        BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
-
-        BaseAction resolvedAction = new BaseAction();
-        resolvedAction.setType(unknownActionType);
-
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action, resolvedAction));
-
-        assertThatExceptionOfType(ActionProviderException.class)
-                .isThrownBy(() -> new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry));
-
-        verify(actionProviderFactoryMock).getInvokableActionProvider(unknownActionType);
-        verify(actionInvokerMock, never()).onEvent(any());
     }
 
     @Test
