@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
@@ -60,14 +60,14 @@ public class ExecutorTest {
     void setup() {
         actionProviderFactoryMock = mock(ActionProviderFactory.class);
         actionInvokerMock = mock(ActionInvoker.class);
-        ActionProvider actionProvider = mock(ActionProvider.class);
+        InvokableActionProvider actionProvider = mock(InvokableActionProvider.class);
 
         when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
 
-        when(actionProviderFactoryMock.getActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
-        when(actionProviderFactoryMock.getActionProvider(WebhookAction.TYPE)).thenReturn(actionProvider);
+        when(actionProviderFactoryMock.getInvokableActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
+        when(actionProviderFactoryMock.getInvokableActionProvider(WebhookAction.TYPE)).thenReturn(actionProvider);
 
-        when(actionProviderFactoryMock.getActionProvider(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
+        when(actionProviderFactoryMock.getInvokableActionProvider(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
                 .thenThrow(new ActionProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
@@ -91,7 +91,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getActionProvider(KafkaTopicAction.TYPE);
+        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 
@@ -116,7 +116,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getActionProvider(WebhookAction.TYPE);
+        verify(actionProviderFactoryMock).getInvokableActionProvider(WebhookAction.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
     }
 
@@ -140,7 +140,7 @@ public class ExecutorTest {
         assertThatExceptionOfType(ActionProviderException.class)
                 .isThrownBy(() -> new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry));
 
-        verify(actionProviderFactoryMock).getActionProvider(unknownActionType);
+        verify(actionProviderFactoryMock).getInvokableActionProvider(unknownActionType);
         verify(actionInvokerMock, never()).onEvent(any());
     }
 
@@ -179,7 +179,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getActionProvider(KafkaTopicAction.TYPE);
+        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 

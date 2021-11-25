@@ -13,11 +13,20 @@ public class ActionProviderFactory {
     Instance<ActionProvider> actionProviders;
 
     public ActionProvider getActionProvider(String actionType) {
-        Optional<ActionProvider> ap = actionProviders.stream().filter((a) -> a.accept(actionType)).findFirst();
-        if (ap.isPresent()) {
-            return ap.get();
-        }
+        return getOptionalActionProvider(actionType)
+                .orElseThrow(() -> new ActionProviderException(String.format("There is no ActionProvider recognised for type '%s'", actionType)));
+    }
 
-        throw new ActionProviderException(String.format("There is no ActionProvider recognised for type '%s'", actionType));
+    public InvokableActionProvider getInvokableActionProvider(String actionType) {
+        return getOptionalActionProvider(actionType)
+                .filter(InvokableActionProvider.class::isInstance)
+                .map(InvokableActionProvider.class::cast)
+                .orElseThrow(() -> new ActionProviderException(String.format("There is no InvokableActionProvider recognised for type '%s'", actionType)));
+    }
+
+    private Optional<ActionProvider> getOptionalActionProvider(String actionType) {
+        return actionProviders.stream()
+                .filter((a) -> a.accept(actionType))
+                .findFirst();
     }
 }
