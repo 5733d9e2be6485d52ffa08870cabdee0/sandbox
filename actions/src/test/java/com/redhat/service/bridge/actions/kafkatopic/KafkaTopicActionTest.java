@@ -87,7 +87,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker() {
         ProcessorDTO p = createProcessorWithActionForTopic(TOPIC_NAME);
-        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction());
+        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getDefinition().getResolvedAction());
         assertThat(actionInvoker).isNotNull();
 
         verify(kafkaAdmin).listTopics();
@@ -96,7 +96,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker_requestedTopicDoesNotExist() {
         ProcessorDTO p = createProcessorWithActionForTopic("thisTopicDoesNotExist");
-        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction()));
+        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getDefinition().getResolvedAction()));
         verify(kafkaAdmin).listTopics();
     }
 }

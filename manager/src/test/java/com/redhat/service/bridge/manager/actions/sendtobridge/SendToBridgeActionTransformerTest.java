@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -40,6 +41,9 @@ class SendToBridgeActionTransformerTest {
 
     static Bridge bridge;
     static Bridge otherBridge;
+
+    @Inject
+    ActionProviderFactory actionProviderFactory;
 
     @Inject
     SendToBridgeActionTransformer transformer;
@@ -123,6 +127,7 @@ class SendToBridgeActionTransformerTest {
         assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(transformedAction.getName()).isEqualTo(expectedName);
         assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
+        assertThat(actionProviderFactory.getActionProvider(transformedAction.getType()).getParameterValidator().isValid(transformedAction).isValid()).isTrue();
     }
 
     private BaseAction actionWithoutBridgeId() {

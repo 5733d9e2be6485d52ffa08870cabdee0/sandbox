@@ -3,7 +3,6 @@ package com.redhat.service.bridge.infra.models.processors;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -16,25 +15,24 @@ public class ProcessorDefinition {
     @JsonProperty("transformationTemplate")
     private String transformationTemplate;
 
-    @JsonProperty("action")
-    private BaseAction action;
+    @JsonProperty("requestedAction")
+    private BaseAction requestedAction;
 
-    @JsonProperty("virtualAction")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private BaseAction virtualAction;
+    @JsonProperty("resolvedAction")
+    private BaseAction resolvedAction;
 
     public ProcessorDefinition() {
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
-        this.filters = filters;
-        this.transformationTemplate = transformationTemplate;
-        this.action = action;
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction requestedAction) {
+        this(filters, transformationTemplate, requestedAction, requestedAction);
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction action, BaseAction virtualAction) {
-        this(filters, transformationTemplate, action);
-        this.virtualAction = virtualAction;
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction requestedAction, BaseAction resolvedAction) {
+        this.filters = filters;
+        this.transformationTemplate = transformationTemplate;
+        this.requestedAction = requestedAction;
+        this.resolvedAction = resolvedAction;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -53,20 +51,20 @@ public class ProcessorDefinition {
         this.transformationTemplate = transformationTemplate;
     }
 
-    public BaseAction getAction() {
-        return action;
+    public BaseAction getRequestedAction() {
+        return requestedAction;
     }
 
-    public void setAction(BaseAction action) {
-        this.action = action;
+    public void setRequestedAction(BaseAction requestedAction) {
+        this.requestedAction = requestedAction;
     }
 
-    public BaseAction getVirtualAction() {
-        return virtualAction;
+    public BaseAction getResolvedAction() {
+        return resolvedAction;
     }
 
-    public void setVirtualAction(BaseAction virtualAction) {
-        this.virtualAction = virtualAction;
+    public void setResolvedAction(BaseAction resolvedAction) {
+        this.resolvedAction = resolvedAction;
     }
 
     @Override
@@ -77,13 +75,13 @@ public class ProcessorDefinition {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ProcessorDefinition processor = (ProcessorDefinition) o;
-        return Objects.equals(filters, processor.filters) && Objects.equals(transformationTemplate, processor.transformationTemplate)
-                && Objects.equals(action, processor.action);
+        ProcessorDefinition that = (ProcessorDefinition) o;
+        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
+                && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, action);
+        return Objects.hash(filters, transformationTemplate, requestedAction, resolvedAction);
     }
 }

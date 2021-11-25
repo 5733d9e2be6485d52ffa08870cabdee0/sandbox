@@ -3,11 +3,9 @@ package com.redhat.service.bridge.manager;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -17,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -24,7 +23,6 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.manager.actions.VirtualActionProvider;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -55,7 +53,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    Instance<VirtualActionProvider> actionProviders;
+    ActionProviderFactory actionProviderFactory;
 
     @Transactional
     @Override
@@ -80,22 +78,14 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        final Set<BaseFilter> requestFilters = processorRequest.getFilters();
-        final String requestTransformationTemplate = processorRequest.getTransformationTemplate();
-        final BaseAction requestAction = processorRequest.getAction();
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+        BaseAction requestedAction = processorRequest.getAction();
+        BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction, bridge.getId(), customerId);
 
-        Optional<BaseAction> optTransformedAction = actionProviders.stream().filter(a -> a.accept(requestAction.getType())).findFirst()
-                .map(VirtualActionProvider::getTransformer)
-                .map(t -> t.transform(processorRequest.getAction(), bridge.getId(), customerId));
-
-        ProcessorDefinition definition = optTransformedAction
-                // if the transformed action exists, the request action is a virtual action
-                .map(transformedAction -> new ProcessorDefinition(requestFilters, requestTransformationTemplate, transformedAction, requestAction))
-                // otherwise, the request action is the actual invokable action
-                .orElseGet(() -> new ProcessorDefinition(requestFilters, requestTransformationTemplate, requestAction));
+        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
 
         Processor p = new Processor();
-
         p.setName(processorRequest.getName());
         p.setDefinition(definitionToJsonNode(definition));
         p.setSubmittedAt(ZonedDateTime.now());
@@ -177,9 +167,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-
-            BaseAction responseAction = definition.getVirtualAction() != null ? definition.getVirtualAction() : definition.getAction();
-            processorResponse.setAction(responseAction);
+            processorResponse.setAction(definition.getRequestedAction());
         }
 
         if (processor.getBridge() != null) {

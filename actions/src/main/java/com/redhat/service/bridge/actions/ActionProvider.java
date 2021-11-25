@@ -10,4 +10,6 @@ public interface ActionProvider {
 
     ActionParameterValidator getParameterValidator();
 
+    ActionTransformer getTransformer();
+
 }

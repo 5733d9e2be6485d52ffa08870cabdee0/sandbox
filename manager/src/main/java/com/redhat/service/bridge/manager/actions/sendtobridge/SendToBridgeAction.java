@@ -3,11 +3,11 @@ package com.redhat.service.bridge.manager.actions.sendtobridge;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.manager.actions.ActionTransformer;
-import com.redhat.service.bridge.manager.actions.VirtualActionProvider;
+import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.actions.ActionTransformer;
 
 @ApplicationScoped
-public class SendToBridgeAction implements VirtualActionProvider {
+public class SendToBridgeAction implements ActionProvider {
 
     public static final String TYPE = "SendToBridge";
     public static final String BRIDGE_ID_PARAM = "bridgeId";

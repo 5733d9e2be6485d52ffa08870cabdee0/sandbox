@@ -28,7 +28,7 @@ public class WebhookActionTest {
     @Test
     void testInvokerOk() {
         ProcessorDTO processor = createProcessorWithActionForEndpoint("http://www.example.com/webhook");
-        ActionInvoker actionInvoker = webhookAction.getActionInvoker(processor, processor.getDefinition().getAction());
+        ActionInvoker actionInvoker = webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction());
         assertThat(actionInvoker)
                 .isNotNull()
                 .isInstanceOf(WebhookInvoker.class);
@@ -38,7 +38,7 @@ public class WebhookActionTest {
     void testInvokerException() {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
         assertThatExceptionOfType(ActionProviderException.class)
-                .isThrownBy(() -> webhookAction.getActionInvoker(processor, processor.getDefinition().getAction()));
+                .isThrownBy(() -> webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction()));
     }
 
     private ProcessorDTO createProcessorWithParameterlessAction() {
@@ -60,7 +60,7 @@ public class WebhookActionTest {
 
     private ProcessorDTO createProcessorWithActionForEndpoint(String endpoint) {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
-        processor.getDefinition().getAction().getParameters().put(WebhookAction.ENDPOINT_PARAM, endpoint);
+        processor.getDefinition().getResolvedAction().getParameters().put(WebhookAction.ENDPOINT_PARAM, endpoint);
         return processor;
     }
 

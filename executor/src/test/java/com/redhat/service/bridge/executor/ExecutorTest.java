@@ -107,7 +107,7 @@ public class ExecutorTest {
         BaseAction transformedAction = new BaseAction();
         transformedAction.setType(WebhookAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, transformedAction, virtualAction));
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, virtualAction, transformedAction));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
