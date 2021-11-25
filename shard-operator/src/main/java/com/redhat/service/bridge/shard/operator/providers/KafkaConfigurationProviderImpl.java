@@ -8,7 +8,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvider {
 
     @ConfigProperty(name = "event-bridge.default.kafka.bootstrap.servers")
-    String kafkaBootstapServers;
+    String kafkaBootstrapServers;
 
     @ConfigProperty(name = "event-bridge.default.kafka.client.id")
     String kafkaClientId;
@@ -31,7 +31,7 @@ public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvide
 
     @Override
     public String getBootstrapServers() {
-        return kafkaBootstapServers;
+        return kafkaBootstrapServers;
     }
 
     @Override

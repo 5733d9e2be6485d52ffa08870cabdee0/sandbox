@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
@@ -23,8 +24,10 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.manager.actions.connectors.ConnectorsAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.bridge.manager.connectors.ConnectorsService;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
@@ -35,14 +38,20 @@ import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.models.QueryInfo;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
@@ -59,6 +68,9 @@ public class ProcessorServiceTest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @InjectMock
+    ConnectorsService connectorsService;
 
     @BeforeEach
     public void cleanUp() {
@@ -292,27 +304,9 @@ public class ProcessorServiceTest {
 
     @Test
     public void toResponse() {
-        Bridge b = new Bridge();
-        b.setPublishedAt(ZonedDateTime.now());
-        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.AVAILABLE);
-        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
-        b.setSubmittedAt(ZonedDateTime.now());
-        b.setEndpoint("https://bridge.redhat.com");
-
-        Processor p = new Processor();
-        p.setName("foo");
-        p.setStatus(BridgeStatus.AVAILABLE);
-        p.setPublishedAt(ZonedDateTime.now());
-        p.setSubmittedAt(ZonedDateTime.now());
-        p.setBridge(b);
-
-        BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
-        action.setName(TestConstants.DEFAULT_ACTION_NAME);
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
-        action.setParameters(params);
+        Bridge b = Fixtures.createBridge();
+        Processor p = Fixtures.createProcessor(b, "foo");
+        BaseAction action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
         p.setDefinition(definitionToJsonNode(definition));
@@ -340,5 +334,24 @@ public class ProcessorServiceTest {
     private ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
         ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
         return processorServiceImpl.jsonNodeToDefinition(jsonNode);
+    }
+
+    @Test
+    public void createProcessor_ManagedConnectorsTransformedToBaseKafka() {
+        BaseAction mcAction = new BaseAction();
+        mcAction.setType(ConnectorsAction.TYPE);
+
+        ProcessorRequest processorRequest = new ProcessorRequest();
+        processorRequest.setName("ManagedConnectorProcessor");
+        processorRequest.setAction(mcAction);
+
+        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+
+        processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+
+        ArgumentCaptor<BaseAction> resolvedActionCaptor = ArgumentCaptor.forClass(BaseAction.class);
+        verify(connectorsService, atMostOnce()).createConnectorIfNeeded(eq(processorRequest), resolvedActionCaptor.capture(), any());
+
+        assertThat(resolvedActionCaptor.getValue().getType()).isEqualTo(KafkaTopicAction.TYPE);
     }
 }

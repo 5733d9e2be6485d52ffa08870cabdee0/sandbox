@@ -70,6 +70,10 @@
       <groupId>io.quarkiverse.hibernatetypes</groupId>
       <artifactId>quarkus-hibernate-types</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.redhat.cloud</groupId>
+      <artifactId>connector-management-sdk</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -49,6 +49,7 @@
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
     <version.io.quarkiverse.operatorsdk>2.0.1</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.129</version.io.github.classgraph>
+    <version.com.redhat.connector-management-sdk>0.11.0</version.com.redhat.connector-management-sdk>
 
     <container.image.keycloak>jboss/keycloak:${version.org.keycloak}</container.image.keycloak>
 
@@ -114,6 +115,12 @@
         <artifactId>quarkus-operator-sdk-csv-generator</artifactId>
         <version>${version.io.quarkiverse.operatorsdk}</version>
       </dependency>
+      <dependency>
+        <groupId>com.redhat.cloud</groupId>
+        <artifactId>connector-management-sdk</artifactId>
+        <version>${version.com.redhat.connector-management-sdk}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.testcontainers</groupId>
         <artifactId>testcontainers</artifactId>
