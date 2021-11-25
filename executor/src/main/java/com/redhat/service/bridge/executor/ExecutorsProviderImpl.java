@@ -1,28 +1,59 @@
 package com.redhat.service.bridge.executor;
 
-import java.util.Set;
+import java.io.IOException;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-// TODO: Annotate this class with @ApplicationScoped when we move away from ExecutorConfigProviderMock
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
+import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+
+import io.micrometer.core.instrument.MeterRegistry;
+
+@ApplicationScoped
 public class ExecutorsProviderImpl implements ExecutorsProvider {
 
-    private Set<Executor> executors;
+    private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
+    private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
+
+    @Inject
+    ActionProviderFactory actionProviderFactory;
+
+    @Inject
+    MeterRegistry registry;
+
+    @ConfigProperty(name = "event-bridge.processor.definition")
+    String processorDefinition;
+
+    @Inject
+    ObjectMapper objectMapper;
+
+    private Executor executor;
 
     @PostConstruct
     void init() {
-        // TODO: read configuration
-
-        // TODO: create and set executors
+        ProcessorDTO dto = readProcessor(processorDefinition);
+        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory, registry);
     }
 
     @Override
-    public Set<Executor> getExecutors() {
-        return executors;
+    public Executor getExecutor() {
+        return executor;
     }
 
-    @Override
-    public Set<Executor> getExecutors(String bridgeId) {
-        throw new UnsupportedOperationException("Not implemented.");
+    private ProcessorDTO readProcessor(String processorDefinition) {
+        try {
+            return objectMapper.readValue(processorDefinition, ProcessorDTO.class);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot deserialize processor definition.");
+        }
     }
 }

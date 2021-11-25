@@ -21,6 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TemplateProviderTest {
 
+    private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
+            .withBridgeName("id")
+            .withNamespace("ns")
+            .withImageName("image:latest")
+            .withBridgeId("12345")
+            .withCustomerId("12456")
+            .build();
+
     private static final BridgeExecutor BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()
             .withProcessorName("id")
             .withNamespace("ns")
@@ -28,14 +36,6 @@ public class TemplateProviderTest {
             .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
             .withProcessorId("id")
             .withDefinition(new ProcessorDefinition())
-            .build();
-
-    private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
-            .withBridgeName("id")
-            .withNamespace("ns")
-            .withImageName("image:latest")
-            .withBridgeId("12345")
-            .withCustomerId("12456")
             .build();
 
     @Test

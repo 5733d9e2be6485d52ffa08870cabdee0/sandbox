@@ -24,6 +24,7 @@ spec:
       containers:
         - name: ""
           image: ""
+          imagePullPolicy: IfNotPresent
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: ""
@@ -32,4 +33,8 @@ spec:
             - name: KAFKA_CLIENT_SECRET
               value: ""
             - name: KAFKA_SECURITY_PROTOCOL
+              value: ""
+            - name: KAFKA_GROUP_ID
+              value: ""
+            - name: PROCESSOR_CONFIGURATION
               value: ""

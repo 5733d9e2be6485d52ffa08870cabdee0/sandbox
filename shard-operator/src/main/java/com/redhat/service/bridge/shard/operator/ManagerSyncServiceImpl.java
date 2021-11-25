@@ -48,10 +48,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
 
-        // TODO: When processor controller is implemented, uncomment the following lines
-        //        fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
-        //                success -> processingComplete(ProcessorDTO.class),
-        //                failure -> processingFailed(ProcessorDTO.class, failure));
+        fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
+                success -> processingComplete(ProcessorDTO.class),
+                failure -> processingFailed(ProcessorDTO.class, failure));
     }
 
     @Override

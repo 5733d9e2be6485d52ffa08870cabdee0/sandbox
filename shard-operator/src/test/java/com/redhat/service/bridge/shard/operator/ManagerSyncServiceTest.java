@@ -138,9 +138,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyDeploymentOrFail(sanitizedName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(sanitizedName, customerNamespace);
                         });
-
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
-
         processor.setStatus(BridgeStatus.AVAILABLE);
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))

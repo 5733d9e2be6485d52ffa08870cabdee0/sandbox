@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
 public class BridgeExecutorSpec {
     private String image;
@@ -12,7 +11,7 @@ public class BridgeExecutorSpec {
 
     private String processorName;
 
-    private ProcessorDefinition definition;
+    private String processorDefinition;
 
     public String getImage() {
         return image;
@@ -46,11 +45,11 @@ public class BridgeExecutorSpec {
         this.processorName = processorName;
     }
 
-    public ProcessorDefinition getDefinition() {
-        return definition;
+    public String getProcessorDefinition() {
+        return processorDefinition;
     }
 
-    public void setDefinition(ProcessorDefinition definition) {
-        this.definition = definition;
+    public void setProcessorDefinition(String processorDefinition) {
+        this.processorDefinition = processorDefinition;
     }
 }
