@@ -1,7 +1,7 @@
 images:
 - name: event-bridge-all-in-one
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-  newTag: d71f2876f6cad19c165242d54da96414390e1c61-jvm
+  newTag: ab0f94c845368675f8fa01c49b3a4150d747b91e-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
   newTag: d71f2876f6cad19c165242d54da96414390e1c61-jvm
