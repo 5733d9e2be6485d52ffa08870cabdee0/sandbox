@@ -95,12 +95,7 @@ development subscription** and configure the license. Once completed, the Ansibl
 
 ### OpenBridge
 
-In the current status all the main OpenBridge components are packaged in one single Quarkus application.
-To start it, run this command from the root of this repository:
-
-```bash
-mvn clean install -DskipTests && mvn clean compile quarkus:dev -f runner/pom.xml
-```
+To start the infrastructure, take a look at [this](/dev) folder
 
 ***WARNING:** the following requests contain some fixed example IDs. Change them with the ones returned by the real machine when running the demo.*
 
@@ -268,10 +263,11 @@ mvn clean compile quarkus:dev -f use-cases/ansible-tower-integration/ansible-gat
 
 ## Run
 
-To run the demo, simply send events matching the processor to the bridge endpoint. These are test events made only for this demo. This is the request:
+To run the demo, simply send events matching the processor to the bridge endpoint. These are test events made only for this demo. This is the request (change the endpoint 
+according to the Bridge Ingress endpoint you have deployed):
 
 ```bash
-curl --request POST 'http://localhost:8080/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911' \
+curl --request POST 'http://<your_bridge_ingress_endpoint>/events' \
      --header 'Content-Type: application/json' \
      --data-raw '{
          "specversion": "1.0",

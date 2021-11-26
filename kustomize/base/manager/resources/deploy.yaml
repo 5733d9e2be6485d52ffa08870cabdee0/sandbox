@@ -10,14 +10,14 @@ spec:
   template:
     spec:
       containers:
-        - image: event-bridge-all-in-one
+        - image: event-bridge-manager
           imagePullPolicy: IfNotPresent
-          name: event-bridge-all-in-one
+          name: event-bridge-manager
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
-                name: event-bridge-all-in-one-config
+                name: event-bridge-manager-config
             - secretRef:
                 name: kafka-secrets
           livenessProbe:

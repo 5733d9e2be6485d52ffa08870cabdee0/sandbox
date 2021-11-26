@@ -10,14 +10,15 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>runner</artifactId>
+  <artifactId>integration-tests</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Runner</name>
+  <name>Event Bridge :: Integration Tests</name>
 
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>manager</artifactId>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>
