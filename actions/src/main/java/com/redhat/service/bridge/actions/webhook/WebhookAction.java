@@ -7,8 +7,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
@@ -16,7 +16,7 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
-public class WebhookAction implements ActionProvider {
+public class WebhookAction implements InvokableActionProvider {
 
     public static final String TYPE = "Webhook";
     public static final String ENDPOINT_PARAM = "endpoint";

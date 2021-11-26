@@ -68,6 +68,15 @@ public class BridgesServiceImpl implements BridgesService {
         return b;
     }
 
+    @Transactional
+    public Bridge getAvailableBridge(String bridgeId, String customerId) {
+        Bridge bridge = getBridge(bridgeId, customerId);
+        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.AVAILABLE));
+        }
+        return bridge;
+    }
+
     private Bridge findByIdAndCustomerId(String id, String customerId) {
         Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
         if (bridge == null) {

@@ -14,13 +14,13 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionParameterValidator;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 @ApplicationScoped
-public class KafkaTopicAction implements ActionProvider {
+public class KafkaTopicAction implements InvokableActionProvider {
 
     public static final String TYPE = "KafkaTopicAction";
 

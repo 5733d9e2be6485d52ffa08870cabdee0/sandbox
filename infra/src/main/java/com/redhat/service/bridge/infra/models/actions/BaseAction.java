@@ -2,6 +2,7 @@ package com.redhat.service.bridge.infra.models.actions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -46,5 +47,22 @@ public class BaseAction {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BaseAction that = (BaseAction) o;
+        return Objects.equals(name, that.name) && Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, parameters);
     }
 }

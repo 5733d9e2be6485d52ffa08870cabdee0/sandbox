@@ -9,6 +9,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
@@ -99,6 +100,17 @@ public class TestUtils {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        r.setParameters(params);
+        return r;
+    }
+
+    public static BaseAction createSendToBridgeAction(String bridgeId) {
+        BaseAction r = new BaseAction();
+        r.setName(TestConstants.DEFAULT_ACTION_NAME);
+        r.setType(SendToBridgeAction.TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         r.setParameters(params);
         return r;
     }

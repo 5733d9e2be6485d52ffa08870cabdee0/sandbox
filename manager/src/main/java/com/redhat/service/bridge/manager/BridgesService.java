@@ -18,6 +18,8 @@ public interface BridgesService {
 
     Bridge getBridge(String id, String customerId);
 
+    Bridge getAvailableBridge(String bridgeId, String customerId);
+
     void deleteBridge(String id, String customerId);
 
     ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo);

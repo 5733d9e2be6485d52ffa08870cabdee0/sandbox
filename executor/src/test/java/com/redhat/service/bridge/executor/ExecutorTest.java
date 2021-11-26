@@ -9,9 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
@@ -31,9 +33,12 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,17 +59,21 @@ public class ExecutorTest {
     void setup() {
         actionProviderFactoryMock = mock(ActionProviderFactory.class);
         actionInvokerMock = mock(ActionInvoker.class);
-        ActionProvider actionProvider = mock(ActionProvider.class);
+        InvokableActionProvider actionProvider = mock(InvokableActionProvider.class);
 
         when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
 
-        when(actionProviderFactoryMock.getActionProvider(eq(KafkaTopicAction.TYPE))).thenReturn(actionProvider);
+        when(actionProviderFactoryMock.getInvokableActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
+        when(actionProviderFactoryMock.getInvokableActionProvider(WebhookAction.TYPE)).thenReturn(actionProvider);
+
+        when(actionProviderFactoryMock.getInvokableActionProvider(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
+                .thenThrow(new ActionProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
     }
 
     @Test
-    public void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
+    public void testOnEventWithFiltersTransformationAndSameRequestedResolvedActions() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
@@ -73,7 +82,7 @@ public class ExecutorTest {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(filters, transformationTemplate, action);
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
@@ -81,6 +90,32 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
+        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
+        verify(actionInvokerMock).onEvent(any());
+    }
+
+    @Test
+    public void testOnEventWithFiltersTransformationAndDifferentRequestedResolvedActions() throws JsonProcessingException {
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringEquals("data.key", "value"));
+
+        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+
+        BaseAction requestedAction = new BaseAction();
+        requestedAction.setType("SendToBridge");
+
+        BaseAction resolvedAction = new BaseAction();
+        resolvedAction.setType(WebhookAction.TYPE);
+
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
+
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+
+        CloudEvent cloudEvent = createCloudEvent();
+
+        executor.onEvent(cloudEvent);
+
+        verify(actionProviderFactoryMock).getInvokableActionProvider(WebhookAction.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
     }
 
@@ -92,7 +127,7 @@ public class ExecutorTest {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(filters, null, action);
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
@@ -100,7 +135,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionInvokerMock, times(0)).onEvent(any());
+        verify(actionInvokerMock, never()).onEvent(any());
     }
 
     @Test
@@ -111,7 +146,7 @@ public class ExecutorTest {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(filters, null, action);
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
@@ -119,7 +154,8 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionInvokerMock, times(1)).onEvent(any());
+        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
+        verify(actionInvokerMock).onEvent(any());
     }
 
     @Test
@@ -132,7 +168,7 @@ public class ExecutorTest {
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        ProcessorDTO processorDTO = createProcessor(filters, transformationTemplate, action);
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
@@ -152,9 +188,9 @@ public class ExecutorTest {
                 CloudEventUtils.getMapper().readTree(jsonString));
     }
 
-    protected ProcessorDTO createProcessor(Set<BaseFilter> filters, String transformationTemplate, BaseAction action) {
+    protected ProcessorDTO createProcessor(ProcessorDefinition definition) {
         BridgeDTO bridgeDTO = new BridgeDTO("bridgeId-1", "bridgeName-1", "test", "jrota", BridgeStatus.AVAILABLE);
-        ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, action);
         return new ProcessorDTO("processorId-1", "processorName-1", definition, bridgeDTO, BridgeStatus.AVAILABLE);
     }
+
 }

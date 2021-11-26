@@ -10,12 +10,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
@@ -44,7 +47,7 @@ public class ShardBridgesSyncAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void getProcessors() {
+    public void getProcessorsWithKafkaAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -61,8 +64,41 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
-        assertThat(processor.getDefinition().getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(processor.getDefinition().getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
+        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
+        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getProcessorsWithSendToBridgeAction() {
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        String bridgeId = bridgeResponse.getId();
+        BridgeDTO bridge = new BridgeDTO(bridgeId, bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
+        BaseAction action = TestUtils.createSendToBridgeAction(bridgeId);
+
+        TestUtils.updateBridge(bridge);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, null, action));
+
+        List<ProcessorDTO> processors = TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<List<ProcessorDTO>>() {
+        });
+
+        assertThat(processors.size()).isEqualTo(1);
+
+        ProcessorDTO processor = processors.get(0);
+        assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
+        assertThat(processor.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
+        assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
+        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
+        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
+        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
+        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, "myEndpoint");
     }
 
     @Test
