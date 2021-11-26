@@ -1,18 +1,18 @@
 images:
-- name: event-bridge-all-in-one
-  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one
-  newTag: d71f2876f6cad19c165242d54da96414390e1c61-jvm
+- name: event-bridge-manager
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
+  newTag: 278035b9190fce27262d75037f29e14f7d2bc971-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: d71f2876f6cad19c165242d54da96414390e1c61-jvm
+  newTag: 278035b9190fce27262d75037f29e14f7d2bc971-jvm
 namespace: event-bridge-prod
 patchesStrategicMerge:
-- all-in-one/patches/deploy-config.yaml
-- all-in-one/patches/postgres-config.yaml
+- manager/patches/deploy-config.yaml
+- manager/patches/postgres-config.yaml
 - shard/patches/deploy-config.yaml
 resources:
 - ../../base
-- all-in-one
+- manager
 - secrets
 - shard
 - observability

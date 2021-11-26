@@ -36,7 +36,7 @@
     <module>manager</module>
     <module>executor</module>
     <module>shard-operator</module>
-    <module>runner</module>
+    <module>integration-tests</module>
     <module>ingress</module>
     <module>infra</module>
     <module>actions</module>

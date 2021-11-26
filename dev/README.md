@@ -71,10 +71,10 @@ We provide a `docker-compose.yaml` file that you can use to spin up all the reso
 docker-compose -f dev/docker-compose/docker-compose.yml up
 ```
 
-**From the root of the project** run the all-in-one application with 
+**From the root of the project** run the manager application with 
 
 ```bash
-mvn clean compile -f runner/pom.xml quarkus:dev
+mvn clean compile -f manager/pom.xml quarkus:dev
 ```
 
 Run the shard operator from the root of the project with 
