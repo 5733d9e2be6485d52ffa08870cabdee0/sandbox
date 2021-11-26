@@ -133,7 +133,7 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void getProcessorWithVirtualAction() {
+    public void getProcessorWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
         String bridgeId = bridgeResponse.getId();
 

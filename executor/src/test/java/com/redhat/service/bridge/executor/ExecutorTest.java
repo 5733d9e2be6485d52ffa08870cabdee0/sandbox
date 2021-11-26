@@ -73,7 +73,7 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithFiltersTransformationAndAction() throws JsonProcessingException {
+    public void testOnEventWithFiltersTransformationAndSameRequestedResolvedActions() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
@@ -95,19 +95,19 @@ public class ExecutorTest {
     }
 
     @Test
-    public void testOnEventWithFiltersTransformationActionAndVirtualAction() throws JsonProcessingException {
+    public void testOnEventWithFiltersTransformationAndDifferentRequestedResolvedActions() throws JsonProcessingException {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction virtualAction = new BaseAction();
-        virtualAction.setType("SendToBridge");
+        BaseAction requestedAction = new BaseAction();
+        requestedAction.setType("SendToBridge");
 
-        BaseAction transformedAction = new BaseAction();
-        transformedAction.setType(WebhookAction.TYPE);
+        BaseAction resolvedAction = new BaseAction();
+        resolvedAction.setType(WebhookAction.TYPE);
 
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, virtualAction, transformedAction));
+        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
 
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
