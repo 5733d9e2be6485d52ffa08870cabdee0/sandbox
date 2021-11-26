@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.runner.it;
+package com.redhat.service.bridge.integration.tests;
 
 import java.net.URI;
 import java.time.Duration;
