@@ -1,9 +1,15 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -18,9 +24,12 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
+import io.quarkus.oidc.client.OidcClient;
+import io.quarkus.oidc.client.Tokens;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -41,6 +50,23 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeExecutorService bridgeExecutorService;
 
+    @Inject
+    Instance<OidcClient> clients;
+    private Optional<OidcClient> client;
+
+    private Tokens tokens;
+    private Lock tokenLock;
+
+    @PostConstruct
+    void init() {
+        if (clients.isResolvable()) {
+            tokenLock = new ReentrantLock();
+            client = Optional.of(clients.get());
+        } else {
+            client = Optional.empty();
+        }
+    }
+
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
         LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
@@ -56,17 +82,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO));
     }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors").sendJson(processorDTO);
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO));
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
@@ -91,8 +117,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Override
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
-                .send().onItem().transform(this::getProcessors)
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
+                .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
                             if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
@@ -141,5 +167,28 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private void processingComplete(Class<?> entity) {
         LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+    }
+
+    private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
+        if (client.isPresent()) {
+            return Uni.createFrom().deferred(() -> {
+                tokenLock.lock();
+                try {
+                    if (tokens == null || tokens.isAccessTokenExpired()) {
+                        tokens = client.get().getTokens().await().indefinitely();
+                    }
+                    return addTokenToRequest(request, executor);
+                } finally {
+                    tokenLock.unlock();
+                }
+            });
+        } else {
+            return executor.apply(request);
+        }
+    }
+
+    private Uni<HttpResponse<Buffer>> addTokenToRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
+        request.bearerTokenAuthentication(tokens.getAccessToken());
+        return executor.apply(request);
     }
 }
