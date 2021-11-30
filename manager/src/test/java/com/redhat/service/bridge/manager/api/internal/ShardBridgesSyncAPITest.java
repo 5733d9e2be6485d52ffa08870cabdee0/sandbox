@@ -37,6 +37,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
 
+    private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
+    private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT + "/events";
+
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
@@ -49,7 +52,7 @@ public class ShardBridgesSyncAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithKafkaAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
 
         TestUtils.updateBridge(bridge);
@@ -77,7 +80,7 @@ public class ShardBridgesSyncAPITest {
     public void getProcessorsWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
-        BridgeDTO bridge = new BridgeDTO(bridgeId, bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = new BridgeDTO(bridgeId, bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         BaseAction action = TestUtils.createSendToBridgeAction(bridgeId);
 
@@ -98,14 +101,14 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
         assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, "myEndpoint");
+        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, TEST_BRIDGE_WEBHOOK);
     }
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void updateProcessorStatus() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
@@ -127,7 +130,7 @@ public class ShardBridgesSyncAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void metricsAreProduced() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), "myEndpoint", TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
         TestUtils.updateBridge(bridge);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
