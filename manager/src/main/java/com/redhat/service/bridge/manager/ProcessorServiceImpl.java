@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -105,11 +104,11 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
-        Bridge bridge = bridgesService.getBridge(processorDTO.getBridge().getId());
+        Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getBridge().getCustomerId()));
+                    processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
 
@@ -148,9 +147,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        BridgeDTO bridgeDTO = processor.getBridge() != null ? bridgesService.toDTO(processor.getBridge()) : null;
         ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
-        return new ProcessorDTO(processor.getId(), processor.getName(), definition, bridgeDTO, processor.getStatus());
+        return new ProcessorDTO(processor.getId(), processor.getName(), definition, processor.getBridge().getId(), processor.getBridge().getCustomerId(), processor.getStatus());
     }
 
     @Override
@@ -172,7 +170,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         if (processor.getBridge() != null) {
             processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
-            processorResponse.setBridge(bridgesService.toResponse(processor.getBridge()));
+            processorResponse.setBridgeId(processor.getBridge().getId());
+            processorResponse.setCustomerId(processor.getBridge().getCustomerId());
         }
 
         return processorResponse;

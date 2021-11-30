@@ -41,8 +41,8 @@ public class ShardBridgesSyncAPI {
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
-        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridge().getId(),
-                processorDTO.getBridge().getCustomerId());
+        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridgeId(),
+                processorDTO.getCustomerId());
         processorService.updateProcessorStatus(processorDTO);
         return Response.ok().build();
     }

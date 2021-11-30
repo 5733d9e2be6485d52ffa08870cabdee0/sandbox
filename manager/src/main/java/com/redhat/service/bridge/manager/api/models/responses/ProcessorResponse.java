@@ -17,8 +17,11 @@ public class ProcessorResponse extends BaseResponse {
         super("Processor");
     }
 
-    @JsonProperty("bridge")
-    private BridgeResponse bridge;
+    @JsonProperty("bridgeId")
+    private String bridgeId;
+
+    @JsonProperty("customerId")
+    private String customerId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -40,12 +43,20 @@ public class ProcessorResponse extends BaseResponse {
     @JsonProperty("action")
     private BaseAction action;
 
-    public BridgeResponse getBridge() {
-        return bridge;
+    public String getBridgeId() {
+        return bridgeId;
     }
 
-    public void setBridge(BridgeResponse bridge) {
-        this.bridge = bridge;
+    public void setBridgeId(String bridgeId) {
+        this.bridgeId = bridgeId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
     public ZonedDateTime getSubmittedAt() {

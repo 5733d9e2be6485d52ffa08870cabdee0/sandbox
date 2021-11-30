@@ -33,7 +33,8 @@ public class TemplateProviderTest {
             .withProcessorName("id")
             .withNamespace("ns")
             .withImageName("image:latest")
-            .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+            .withBridgeId(TestSupport.BRIDGE_ID)
+            .withCustomerId(TestSupport.CUSTOMER_ID)
             .withProcessorId("id")
             .withDefinition(new ProcessorDefinition())
             .build();

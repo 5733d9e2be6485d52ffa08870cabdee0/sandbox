@@ -74,7 +74,8 @@ public class BridgeExecutorControllerTest {
                 .withImageName(TestSupport.EXECUTOR_IMAGE)
                 .withProcessorId(TestSupport.PROCESSOR_ID)
                 .withProcessorName(TestSupport.PROCESSOR_NAME)
-                .withbridgeDTO(TestSupport.newAvailableBridgeDTO())
+                .withBridgeId(TestSupport.BRIDGE_ID)
+                .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withDefinition(new ProcessorDefinition())
                 .build();
     }

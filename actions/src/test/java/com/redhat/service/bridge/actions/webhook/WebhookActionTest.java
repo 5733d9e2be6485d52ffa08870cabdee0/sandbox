@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
@@ -50,10 +49,7 @@ public class WebhookActionTest {
         ProcessorDTO processor = new ProcessorDTO();
         processor.setId("myProcessor");
         processor.setDefinition(new ProcessorDefinition(null, null, action));
-
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId("myBridge");
-        processor.setBridge(bridge);
+        processor.setBridgeId("myBridge");
 
         return processor;
     }

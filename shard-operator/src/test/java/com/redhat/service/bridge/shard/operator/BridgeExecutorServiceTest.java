@@ -58,7 +58,7 @@ public class BridgeExecutorServiceTest {
         // Then
         BridgeExecutor bridgeExecutor = kubernetesClient
                 .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNotNull();
@@ -80,7 +80,7 @@ public class BridgeExecutorServiceTest {
                         () -> {
                             // The deployment is deployed by the controller
                             Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
+                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                                     .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                                     .get();
                             assertThat(deployment).isNotNull();
@@ -111,7 +111,7 @@ public class BridgeExecutorServiceTest {
         // Then
         BridgeIngress bridgeIngress = kubernetesClient
                 .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getBridge().getCustomerId()))
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();

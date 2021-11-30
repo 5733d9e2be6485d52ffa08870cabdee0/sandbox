@@ -53,7 +53,7 @@ public class WebhookAction implements InvokableActionProvider {
 
     private ActionProviderException buildNoEndpointException(ProcessorDTO processor) {
         String message = String.format("There is no endpoint specified in the parameters for Action on Processor '%s' on Bridge '%s'",
-                processor.getId(), processor.getBridge().getId());
+                processor.getId(), processor.getBridgeId());
         return new ActionProviderException(message);
     }
 }

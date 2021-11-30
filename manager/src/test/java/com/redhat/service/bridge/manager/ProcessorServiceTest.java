@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -167,10 +166,8 @@ public class ProcessorServiceTest {
 
     @Test
     public void updateProcessorStatus_bridgeDoesNotExist() {
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId("foo");
         ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridge(bridge);
+        processor.setBridgeId("foo");
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
     }
@@ -330,7 +327,8 @@ public class ProcessorServiceTest {
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
-        assertThat(r.getBridge()).isNotNull();
+        assertThat(r.getBridgeId()).isNotNull();
+        assertThat(r.getCustomerId()).isNotNull();
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
         assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);

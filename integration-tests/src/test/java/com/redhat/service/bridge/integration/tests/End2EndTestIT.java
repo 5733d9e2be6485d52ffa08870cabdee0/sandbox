@@ -182,7 +182,8 @@ public class End2EndTestIT {
         assertThat(response.getName()).isEqualTo(PROCESSOR_NAME);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getBridge()).isNotNull();
+        assertThat(response.getBridgeId()).isNotNull();
+        assertThat(response.getCustomerId()).isNotNull();
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(response.getFilters().size()).isEqualTo(1);
 
