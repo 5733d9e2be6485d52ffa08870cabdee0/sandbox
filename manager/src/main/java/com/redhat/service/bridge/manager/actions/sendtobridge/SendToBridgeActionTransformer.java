@@ -1,11 +1,17 @@
 package com.redhat.service.bridge.manager.actions.sendtobridge;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -14,6 +20,8 @@ import com.redhat.service.bridge.manager.models.Bridge;
 
 @ApplicationScoped
 public class SendToBridgeActionTransformer implements ActionTransformer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SendToBridgeActionTransformer.class);
 
     @Inject
     BridgesService bridgesService;
@@ -24,7 +32,13 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
         Bridge destinationBridge = bridgesService.getAvailableBridge(destinationBridgeId, customerId);
 
         Map<String, String> parameters = new HashMap<>();
-        parameters.put(WebhookAction.ENDPOINT_PARAM, destinationBridge.getEndpoint());
+
+        try {
+            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(destinationBridge.getEndpoint()));
+        } catch (MalformedURLException e) {
+            LOG.error("Error when translating bridge endpoint to webhook URL", e);
+            throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);
+        }
 
         BaseAction transformedAction = new BaseAction();
         transformedAction.setType(WebhookAction.TYPE);
@@ -32,5 +46,10 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
         transformedAction.setParameters(parameters);
 
         return transformedAction;
+    }
+
+    static String getBridgeWebhookUrl(String bridgeEndpoint) throws MalformedURLException {
+        String fullUrl = String.join("", bridgeEndpoint, bridgeEndpoint.endsWith("/") ? "" : "/", "events");
+        return new URL(fullUrl).toString();
     }
 }

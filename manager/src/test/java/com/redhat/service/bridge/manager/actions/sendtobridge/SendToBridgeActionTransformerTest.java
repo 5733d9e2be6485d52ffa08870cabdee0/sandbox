@@ -33,9 +33,11 @@ class SendToBridgeActionTransformerTest {
 
     private static final String TEST_CUSTOMER_ID = "test-customer";
     private static final String BRIDGE_ID = "br-01";
-    private static final String BRIDGE_ENDPOINT = "http://bridge01.example.com/events";
+    private static final String BRIDGE_ENDPOINT = "http://www.example.com/bridge01";
+    private static final String BRIDGE_WEBHOOK = BRIDGE_ENDPOINT + "/events";
     private static final String OTHER_BRIDGE_ID = "br-02";
-    private static final String OTHER_BRIDGE_ENDPOINT = "http://bridge02.example.com/events";
+    private static final String OTHER_BRIDGE_ENDPOINT = "http://www.example.com/bridge02";
+    private static final String OTHER_BRIDGE_WEBHOOK = OTHER_BRIDGE_ENDPOINT + "/events";
     private static final String UNAVAILABLE_BRIDGE_ID = "br-unavailable";
     private static final String UNKNOWN_BRIDGE_ID = "br-unknown";
 
@@ -84,28 +86,28 @@ class SendToBridgeActionTransformerTest {
     void testActionWithoutBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
-        assertValid(transformedAction, inputAction.getName(), bridge.getEndpoint());
+        assertValid(transformedAction, inputAction.getName(), BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
         BaseAction transformedAction = transformer.transform(inputAction, otherBridge.getId(), TEST_CUSTOMER_ID);
-        assertValid(transformedAction, inputAction.getName(), otherBridge.getEndpoint());
+        assertValid(transformedAction, inputAction.getName(), OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithSameBridgeId() {
         BaseAction inputAction = actionWithBridgeId(bridge.getId());
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
-        assertValid(transformedAction, inputAction.getName(), bridge.getEndpoint());
+        assertValid(transformedAction, inputAction.getName(), BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithOtherBridgeId() {
         BaseAction inputAction = actionWithBridgeId(otherBridge.getId());
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID);
-        assertValid(transformedAction, inputAction.getName(), otherBridge.getEndpoint());
+        assertValid(transformedAction, inputAction.getName(), OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
