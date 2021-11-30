@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.test.resource;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,8 +37,11 @@ public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
     @Override
     public Map<String, String> start() {
         keycloak.start();
+        Map<String, String> map = new HashMap<>();
         String url = String.format("http://localhost:%s/auth/realms/event-bridge-fm", keycloak.getFirstMappedPort());
-        return Collections.singletonMap("quarkus.oidc.auth-server-url", url);
+        map.put("quarkus.oidc.auth-server-url", url);
+        map.put("quarkus.oidc-client.auth-server-url", url);
+        return map;
     }
 
     @Override
