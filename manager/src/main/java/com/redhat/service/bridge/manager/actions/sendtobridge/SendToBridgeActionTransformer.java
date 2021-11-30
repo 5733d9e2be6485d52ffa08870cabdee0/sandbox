@@ -8,9 +8,6 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
@@ -20,8 +17,6 @@ import com.redhat.service.bridge.manager.models.Bridge;
 
 @ApplicationScoped
 public class SendToBridgeActionTransformer implements ActionTransformer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SendToBridgeActionTransformer.class);
 
     @Inject
     BridgesService bridgesService;
@@ -36,7 +31,6 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
         try {
             parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(destinationBridge.getEndpoint()));
         } catch (MalformedURLException e) {
-            LOG.error("Error when translating bridge endpoint to webhook URL", e);
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);
         }
 
