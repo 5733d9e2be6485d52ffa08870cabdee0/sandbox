@@ -13,8 +13,8 @@ import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.networking.NetworkResource;
 import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
-import com.redhat.service.bridge.shard.operator.resources.PhaseType;
+import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
@@ -71,9 +71,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
-            // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
+            // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
 
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
@@ -83,7 +83,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         if (service.getStatus() == null) {
             LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
@@ -94,15 +95,16 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         if (!networkResource.isReady()) {
             LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase()) || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
-            BridgeIngressStatus bridgeIngressStatus = new BridgeIngressStatus(PhaseType.AVAILABLE);
-            bridgeIngressStatus.setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.setStatus(bridgeIngressStatus);
+        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
+            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }

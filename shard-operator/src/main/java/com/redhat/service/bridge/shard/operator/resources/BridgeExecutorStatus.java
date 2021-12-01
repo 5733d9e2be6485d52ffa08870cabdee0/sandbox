@@ -1,34 +1,17 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import java.util.List;
+import java.util.HashSet;
 
-public class BridgeExecutorStatus {
+public class BridgeExecutorStatus extends CustomResourceStatus {
 
-    private List<String> conditions;
-
-    private PhaseType phase;
+    private static final HashSet<Condition> EXECUTOR_CONDITIONS = new HashSet<Condition>() {
+        {
+            add(new Condition(ConditionType.Ready, ConditionStatus.Unknown));
+            add(new Condition(ConditionType.Augmentation, ConditionStatus.Unknown));
+        }
+    };
 
     public BridgeExecutorStatus() {
-        // Left blank on purpose
-    }
-
-    public BridgeExecutorStatus(PhaseType phase) {
-        this.phase = phase;
-    }
-
-    public List<String> getConditions() {
-        return conditions;
-    }
-
-    public void setConditions(List<String> conditions) {
-        this.conditions = conditions;
-    }
-
-    public PhaseType getPhase() {
-        return phase;
-    }
-
-    public void setPhase(PhaseType phase) {
-        this.phase = phase;
+        super(EXECUTOR_CONDITIONS);
     }
 }

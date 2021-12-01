@@ -30,19 +30,37 @@ spec:
             type: object
           status:
             properties:
-              conditions:
-                items:
-                  type: string
-                type: array
               endpoint:
                 type: string
-              phase:
-                enum:
-                - ERROR
-                - AUGMENTATION
-                - INITIALIZATION
-                - AVAILABLE
-                type: string
+              conditions:
+                items:
+                  properties:
+                    lastTransitionTime:
+                      type: string
+                    type:
+                      enum:
+                      - Ready
+                      - Augmentation
+                      type: string
+                    reason:
+                      enum:
+                      - DeploymentNotAvailable
+                      - DeploymentFailed
+                      - ServiceNotReady
+                      - DeploymentAvailable
+                      - DeploymentProgressing
+                      - NetworkResourceNotReady
+                      type: string
+                    status:
+                      enum:
+                      - "True"
+                      - Unknown
+                      - "False"
+                      type: string
+                    message:
+                      type: string
+                  type: object
+                type: array
             type: object
         type: object
     served: true

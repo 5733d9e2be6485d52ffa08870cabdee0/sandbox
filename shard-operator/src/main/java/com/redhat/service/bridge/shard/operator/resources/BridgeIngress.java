@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import java.util.Objects;
-
 import com.google.common.base.Strings;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
@@ -15,6 +13,8 @@ import io.fabric8.kubernetes.model.annotation.Group;
 import io.fabric8.kubernetes.model.annotation.ShortNames;
 import io.fabric8.kubernetes.model.annotation.Version;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * OpenBridge Ingress Custom Resource
  */
@@ -27,7 +27,15 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
     private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
 
-    // ideally this class should have a private default constructor. Unfortunately, it's a CR which is created via reflection by fabric8.
+    /**
+     * Don't use this default constructor!
+     * This class should have a private default constructor. Unfortunately, it's a CR which is created via reflection by fabric8.
+     * <p/>
+     * Use {@link #fromBuilder()} to create new instances.
+     */
+    public BridgeIngress() {
+        this.setStatus(new BridgeIngressStatus());
+    }
 
     /**
      * Standard way of creating a new {@link BridgeIngress}.
@@ -119,17 +127,18 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
 
             BridgeIngress bridgeIngress = new BridgeIngress();
             bridgeIngress.setSpec(bridgeIngressSpec);
+            bridgeIngress.setStatus(new BridgeIngressStatus());
             bridgeIngress.setMetadata(meta);
 
             return bridgeIngress;
         }
 
         private void validate() {
-            Objects.requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeIngress] Ingress Image Name can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
+            requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
+            requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
+            requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeIngress] Ingress Image Name can't be null");
+            requireNonNull(Strings.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
+            requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
         }
     }
 }

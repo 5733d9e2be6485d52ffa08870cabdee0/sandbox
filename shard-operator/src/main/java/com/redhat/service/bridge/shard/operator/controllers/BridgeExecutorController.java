@@ -11,8 +11,8 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.bridge.shard.operator.resources.BridgeExecutorStatus;
-import com.redhat.service.bridge.shard.operator.resources.PhaseType;
+import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 
@@ -59,9 +59,9 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
+            // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
 
-            bridgeExecutor.setStatus(new BridgeExecutorStatus(PhaseType.AUGMENTATION));
+            bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
         LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
@@ -71,14 +71,15 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         if (service.getStatus() == null) {
             LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            bridgeExecutor.setStatus(new BridgeExecutorStatus(PhaseType.AUGMENTATION));
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
-        if (!PhaseType.AVAILABLE.equals(bridgeExecutor.getStatus().getPhase())) {
-            BridgeExecutorStatus bridgeExecutorStatus = new BridgeExecutorStatus(PhaseType.AVAILABLE);
-            bridgeExecutor.setStatus(bridgeExecutorStatus);
+        if (!bridgeExecutor.getStatus().isReady()) {
+            bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeExecutor, BridgeStatus.AVAILABLE);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }

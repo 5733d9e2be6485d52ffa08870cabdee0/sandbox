@@ -4,7 +4,7 @@ Feature: BridgeIngress deploy and undeploy
     Given create Namespace
 
   # Using "dummy" image as real BridgeIngress image requires Kafka
-  Scenario: BridgeIngress is in phase AVAILABLE
+  Scenario: BridgeIngress is in condition Ready
     When deploy BridgeIngress:
     """
     apiVersion: com.redhat.service.bridge/v1alpha1
@@ -23,7 +23,7 @@ Feature: BridgeIngress deploy and undeploy
      And the Deployment "my-bridge-ingress" is ready within 1 minute
      And the Service "my-bridge-ingress" exists within 1 minute
      And the Ingress "my-bridge-ingress" is ready within 1 minute
-     And the BridgeIngress "my-bridge-ingress" is in phase "AVAILABLE" within 2 minutes
+     And the BridgeIngress "my-bridge-ingress" is in condition "Ready" within 2 minutes
 
   # Using "dummy" image as real BridgeIngress image requires Kafka
   Scenario: BridgeIngress gets deleted
@@ -40,7 +40,7 @@ Feature: BridgeIngress deploy and undeploy
       customerId: customer
       id: my-bridge-ingress
     """
-    And the BridgeIngress "my-deleted-bridge-ingress" is in phase "AVAILABLE" within 2 minutes
+    And the BridgeIngress "my-deleted-bridge-ingress" is in condition "Ready" within 2 minutes
 
     When delete BridgeIngress "my-deleted-bridge-ingress"
      

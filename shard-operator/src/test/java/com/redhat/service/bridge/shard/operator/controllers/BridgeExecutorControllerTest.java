@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionStatus;
+import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -47,6 +50,15 @@ public class BridgeExecutorControllerTest {
 
         // Then
         assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        assertThat(bridgeExecutor.getStatus()).isNotNull();
+        assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
+        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+        });
+        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+        });
     }
 
     @Test

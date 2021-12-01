@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +19,8 @@ import io.fabric8.kubernetes.model.annotation.Group;
 import io.fabric8.kubernetes.model.annotation.ShortNames;
 import io.fabric8.kubernetes.model.annotation.Version;
 
+import static java.util.Objects.requireNonNull;
+
 @Group("com.redhat.service.bridge")
 @Version("v1alpha1")
 @ShortNames("be")
@@ -32,6 +32,16 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
     public static final String COMPONENT_NAME = "executor";
 
     private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+
+    /**
+     * Don't use this default constructor!
+     * This class should have a private default constructor. Unfortunately, it's a CR which is created via reflection by fabric8.
+     * <p/>
+     * Use {@link #fromBuilder()} to create new instances.
+     */
+    public BridgeExecutor() {
+        this.setStatus(new BridgeExecutorStatus());
+    }
 
     /**
      * Standard way of creating a new {@link BridgeIngress}.
@@ -154,19 +164,20 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
             BridgeExecutor bridgeExecutor = new BridgeExecutor();
             bridgeExecutor.setSpec(bridgeExecutorSpec);
+            bridgeExecutor.setStatus(new BridgeExecutorStatus());
             bridgeExecutor.setMetadata(meta);
 
             return bridgeExecutor;
         }
 
         private void validate() {
-            Objects.requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
-            Objects.requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
-            Objects.requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
+            requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeExecutor] Executor Image Name can't be null");
+            requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
+            requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
+            requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
+            requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
+            requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }
 }
