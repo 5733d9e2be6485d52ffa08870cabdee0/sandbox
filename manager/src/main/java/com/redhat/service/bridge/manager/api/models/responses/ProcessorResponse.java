@@ -17,9 +17,6 @@ public class ProcessorResponse extends BaseResponse {
         super("Processor");
     }
 
-    @JsonProperty("bridgeId")
-    private String bridgeId;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
     private ZonedDateTime submittedAt;
@@ -39,14 +36,6 @@ public class ProcessorResponse extends BaseResponse {
 
     @JsonProperty("action")
     private BaseAction action;
-
-    public String getBridgeId() {
-        return bridgeId;
-    }
-
-    public void setBridgeId(String bridgeId) {
-        this.bridgeId = bridgeId;
-    }
 
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;

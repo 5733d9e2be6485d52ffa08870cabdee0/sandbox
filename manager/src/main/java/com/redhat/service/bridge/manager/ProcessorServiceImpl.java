@@ -170,7 +170,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         if (processor.getBridge() != null) {
             processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
-            processorResponse.setBridgeId(processor.getBridge().getId());
         }
 
         return processorResponse;
