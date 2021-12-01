@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -32,8 +33,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Condition {
 
+    /**
+     * The time zone using UTC is sometimes denoted UTC±00:00 or
+     * by the letter Z—a reference to the equivalent nautical time zone (GMT), which has been denoted by a Z since about 1950.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal Time</a>
+     */
+    private static final String KUBERNETES_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+
     private final ConditionType type;
     private ConditionStatus status;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = KUBERNETES_DATE_FORMAT, timezone = "UTC")
     private Date lastTransitionTime;
     private ConditionReason reason;
     private String message;

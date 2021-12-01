@@ -124,6 +124,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
         try {
+            this.validateHttpResponseBeforeParsing(httpResponse);
             return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
             LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
@@ -141,5 +142,19 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private void processingComplete(Class<?> entity) {
         LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+    }
+
+    /**
+     * Verifies if the HTTP response is valid (Status 2xx).
+     * This avoids the shard-operator spamming error messages in case the manager is out.
+     * A more elaborated use case can be added in the future if needed (like validating if it's a JSON, or if the body doesn't have buffer, or is null).
+     *
+     * @param httpResponse the given response
+     * @throws IllegalStateException in case of an invalid HTTP response
+     */
+    private void validateHttpResponseBeforeParsing(HttpResponse<Buffer> httpResponse) {
+        if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 400) {
+            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
+        }
     }
 }
