@@ -328,7 +328,6 @@ public class ProcessorServiceTest {
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getBridgeId()).isNotNull();
-        assertThat(r.getCustomerId()).isNotNull();
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
         assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);

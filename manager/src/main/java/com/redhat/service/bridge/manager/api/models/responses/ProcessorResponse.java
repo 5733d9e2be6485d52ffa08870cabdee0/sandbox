@@ -20,9 +20,6 @@ public class ProcessorResponse extends BaseResponse {
     @JsonProperty("bridgeId")
     private String bridgeId;
 
-    @JsonProperty("customerId")
-    private String customerId;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
     private ZonedDateTime submittedAt;
@@ -49,14 +46,6 @@ public class ProcessorResponse extends BaseResponse {
 
     public void setBridgeId(String bridgeId) {
         this.bridgeId = bridgeId;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
     }
 
     public ZonedDateTime getSubmittedAt() {
