@@ -9,61 +9,61 @@ spec:
     kind: BridgeIngress
     plural: bridgeingresses
     shortNames:
-    - bi
+      - bi
     singular: bridgeingress
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        properties:
-          spec:
-            properties:
-              id:
-                type: string
-              customerId:
-                type: string
-              bridgeName:
-                type: string
-              image:
-                type: string
-            type: object
-          status:
-            properties:
-              endpoint:
-                type: string
-              conditions:
-                items:
-                  properties:
-                    lastTransitionTime:
-                      type: string
-                    type:
-                      enum:
-                      - Ready
-                      - Augmentation
-                      type: string
-                    reason:
-                      enum:
-                      - DeploymentNotAvailable
-                      - DeploymentFailed
-                      - ServiceNotReady
-                      - DeploymentAvailable
-                      - DeploymentProgressing
-                      - NetworkResourceNotReady
-                      type: string
-                    status:
-                      enum:
-                      - "True"
-                      - Unknown
-                      - "False"
-                      type: string
-                    message:
-                      type: string
-                  type: object
-                type: array
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              properties:
+                id:
+                  type: string
+                customerId:
+                  type: string
+                bridgeName:
+                  type: string
+                image:
+                  type: string
+              type: object
+            status:
+              properties:
+                endpoint:
+                  type: string
+                conditions:
+                  items:
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                      type:
+                        enum:
+                          - Ready
+                          - Augmentation
+                        type: string
+                      reason:
+                        enum:
+                          - DeploymentNotAvailable
+                          - DeploymentFailed
+                          - ServiceNotReady
+                          - DeploymentAvailable
+                          - DeploymentProgressing
+                          - NetworkResourceNotReady
+                        type: string
+                      status:
+                        enum:
+                          - "True"
+                          - Unknown
+                          - "False"
+                        type: string
+                      message:
+                        type: string
+                    type: object
+                  type: array
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
