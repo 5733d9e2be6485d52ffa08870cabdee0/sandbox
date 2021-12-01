@@ -1,13 +1,13 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-
 public class BridgeExecutorSpec {
     private String image;
 
     private String id;
 
-    private BridgeDTO bridgeDTO;
+    private String bridgeId;
+
+    private String customerId;
 
     private String processorName;
 
@@ -29,12 +29,20 @@ public class BridgeExecutorSpec {
         this.id = id;
     }
 
-    public BridgeDTO getBridgeDTO() {
-        return bridgeDTO;
+    public String getBridgeId() {
+        return bridgeId;
     }
 
-    public void setBridgeDTO(BridgeDTO bridgeDTO) {
-        this.bridgeDTO = bridgeDTO;
+    public void setBridgeId(String bridgeId) {
+        this.bridgeId = bridgeId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
     public String getProcessorName() {

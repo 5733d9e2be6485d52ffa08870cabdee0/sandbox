@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
@@ -49,8 +48,9 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         return new Builder()
                 .withNamespace(namespace)
                 .withProcessorId(processorDTO.getId())
+                .withBridgeId(processorDTO.getBridgeId())
+                .withCustomerId(processorDTO.getCustomerId())
                 .withImageName(executorImage)
-                .withbridgeDTO(processorDTO.getBridge())
                 .withDefinition(processorDTO.getDefinition())
                 .withProcessorName(processorDTO.getName())
                 .build();
@@ -60,7 +60,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         ProcessorDTO processorDTO = new ProcessorDTO();
         processorDTO.setId(this.getSpec().getId());
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
-        processorDTO.setBridge(this.getSpec().getBridgeDTO());
+        processorDTO.setBridgeId(this.getSpec().getBridgeId());
+        processorDTO.setCustomerId(this.getSpec().getCustomerId());
         processorDTO.setName(this.getSpec().getProcessorName());
 
         if (this.getSpec().getProcessorDefinition() != null) {
@@ -83,7 +84,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         private String namespace;
         private String imageName;
         private String processorId;
-        private BridgeDTO bridgeDTO;
+        private String bridgeId;
+        private String customerId;
         private String processorName;
         private ProcessorDefinition processorDefinition;
 
@@ -106,8 +108,13 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             return this;
         }
 
-        public BridgeExecutor.Builder withbridgeDTO(final BridgeDTO bridgeDTO) {
-            this.bridgeDTO = bridgeDTO;
+        public BridgeExecutor.Builder withBridgeId(final String bridgeId) {
+            this.bridgeId = bridgeId;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withCustomerId(final String customerId) {
+            this.customerId = customerId;
             return this;
         }
 
@@ -127,7 +134,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
                     .withName(resolveResourceName(this.processorId))
                     .withNamespace(namespace)
                     .withLabels(new LabelsBuilder()
-                            .withCustomerId(bridgeDTO.getCustomerId())
+                            .withCustomerId(customerId)
                             .withComponent(COMPONENT_NAME)
                             .buildWithDefaults())
                     .build();
@@ -135,7 +142,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             BridgeExecutorSpec bridgeExecutorSpec = new BridgeExecutorSpec();
             bridgeExecutorSpec.setImage(imageName);
             bridgeExecutorSpec.setId(processorId);
-            bridgeExecutorSpec.setBridgeDTO(bridgeDTO);
+            bridgeExecutorSpec.setBridgeId(bridgeId);
+            bridgeExecutorSpec.setCustomerId(customerId);
             bridgeExecutorSpec.setProcessorName(processorName);
 
             try {
@@ -156,6 +164,8 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             Objects.requireNonNull(Strings.emptyToNull(this.processorId), "[BridgeExecutor] Processor id can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.processorName), "[BridgeExecutor] Name can't be null");
             Objects.requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeExecutor] Namespace can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeExecutor] CustomerId can't be null");
+            Objects.requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeExecutor] BridgeId can't be null");
             Objects.requireNonNull(this.processorDefinition, "[BridgeExecutor] Definition can't be null");
         }
     }

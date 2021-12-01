@@ -38,8 +38,6 @@ public class TestSupport {
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
-        BridgeDTO bridgeDTO = newAvailableBridgeDTO();
-
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("key", "value"));
 
@@ -55,6 +53,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, bridgeDTO, BridgeStatus.REQUESTED);
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.REQUESTED);
     }
 }

@@ -1,9 +1,6 @@
 package com.redhat.service.bridge.shard.operator;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -17,15 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.wiremock.AbstractWireMockTest;
 
@@ -59,26 +50,6 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
     protected void beforeEach() {
         super.beforeEach();
         kubernetesResourcePatcher.cleanUp();
-    }
-
-    protected ProcessorDTO createProcessor(BridgeDTO bridge, BridgeStatus requestedStatus) {
-
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("key", "value"));
-
-        String transformationTemplate = "{\"test\": {key}}";
-
-        BaseAction a = new BaseAction();
-        a.setType(KafkaTopicAction.TYPE);
-        a.setName("kafkaAction");
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
-        a.setParameters(params);
-
-        ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
-
-        return new ProcessorDTO(TestSupport.PROCESSOR_ID, TestSupport.PROCESSOR_NAME, definition, bridge, requestedStatus);
     }
 
     protected void stubProcessorsToDeployOrDelete(List<ProcessorDTO> processorDTOS) throws JsonProcessingException {

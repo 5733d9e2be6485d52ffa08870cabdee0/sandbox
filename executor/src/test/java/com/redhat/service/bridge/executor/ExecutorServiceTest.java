@@ -47,7 +47,7 @@ public class ExecutorServiceTest {
         when(bridgeDTO.getId()).thenReturn(BRIDGE_ID);
 
         ProcessorDTO processorDTO = mock(ProcessorDTO.class);
-        when(processorDTO.getBridge()).thenReturn(bridgeDTO);
+        when(processorDTO.getBridgeId()).thenReturn(BRIDGE_ID);
 
         when(executor.getProcessor()).thenReturn(processorDTO);
         when(executorsProvider.getExecutor()).thenReturn(executor);

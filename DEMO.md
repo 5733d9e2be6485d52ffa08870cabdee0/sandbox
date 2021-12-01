@@ -127,7 +127,6 @@ and the response is something like
   "kind":"Processor",
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986/processors/cad90605-9836-4378-9250-f9c8d19f4e0c",
   "name":"myProcessor",
-  "bridge":{"kind":"Bridge","id":"87508471-ee0f-4f53-b574-da8a61285986","name":"myBridge","href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986","submitted_at":"2021-09-24T11:29:33.086649+0000","status":"AVAILABLE","endpoint":"/ingress/events/87508471-ee0f-4f53-b574-da8a61285986"},
   "submitted_at":"2021-09-24T11:49:47.170209+0000",
   "status":"REQUESTED",
   "filters": 

@@ -42,13 +42,13 @@ public class ExecutorsService {
             BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
             String bridgeId = bridgeCloudEventExtension.getBridgeId();
             Executor executor = executorsProvider.getExecutor();
-            if (executor.getProcessor().getBridge().getId().equals(bridgeId)) {
+            if (executor.getProcessor().getBridgeId().equals(bridgeId)) {
                 try {
                     executor.onEvent(cloudEvent);
                 } catch (Throwable t) {
                     // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
                     LOG.error("[executor] Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),
-                            executor.getProcessor().getBridge().getId(), t);
+                            executor.getProcessor().getBridgeId(), t);
                 }
             }
         } catch (Throwable t) {

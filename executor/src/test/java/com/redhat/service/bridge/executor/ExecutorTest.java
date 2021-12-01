@@ -19,7 +19,6 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -189,8 +188,6 @@ public class ExecutorTest {
     }
 
     protected ProcessorDTO createProcessor(ProcessorDefinition definition) {
-        BridgeDTO bridgeDTO = new BridgeDTO("bridgeId-1", "bridgeName-1", "test", "jrota", BridgeStatus.AVAILABLE);
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, bridgeDTO, BridgeStatus.AVAILABLE);
+        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", BridgeStatus.AVAILABLE);
     }
-
 }

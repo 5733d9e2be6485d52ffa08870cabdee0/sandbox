@@ -38,6 +38,6 @@ public class KafkaTopicInvoker implements ActionInvoker {
                 .withTopic(topic)
                 .build();
         emitter.send(Message.of(event).addMetadata(metadata));
-        LOG.info("Emitted CloudEvent to target topic '{}' for Action on Processor '{}' on Bridge '{}'", topic, processor.getId(), processor.getBridge().getId());
+        LOG.info("Emitted CloudEvent to target topic '{}' for Action on Processor '{}' on Bridge '{}'", topic, processor.getId(), processor.getBridgeId());
     }
 }

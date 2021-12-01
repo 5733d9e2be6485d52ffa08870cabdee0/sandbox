@@ -54,18 +54,18 @@ public class KafkaTopicAction implements InvokableActionProvider {
         String requiredTopic = baseAction.getParameters().get(TOPIC_PARAM);
         if (requiredTopic == null) {
             throw new ActionProviderException(
-                    String.format("There is no topic specified in the parameters for Action on Processor '%s' on Bridge '%s'", processor.getId(), processor.getBridge().getId()));
+                    String.format("There is no topic specified in the parameters for Action on Processor '%s' on Bridge '%s'", processor.getId(), processor.getBridgeId()));
         }
 
         try {
             Set<String> strings = adminClient.listTopics().names().get(DEFAULT_LIST_TOPICS_TIMEOUT, DEFAULT_LIST_TOPICS_TIMEUNIT);
             if (!strings.contains(requiredTopic)) {
                 throw new ActionProviderException(
-                        String.format("The requested topic '%s' for Action on Processor '%s' for bridge '%s' does not exist", requiredTopic, processor.getId(), processor.getBridge().getId()));
+                        String.format("The requested topic '%s' for Action on Processor '%s' for bridge '%s' does not exist", requiredTopic, processor.getId(), processor.getBridgeId()));
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new ActionProviderException(String.format("Unable to list topics from Kafka to check requested topic '%s' exists for Action on Processor '%s' on bridge '%s'", requiredTopic,
-                    processor.getId(), processor.getBridge().getId()), e);
+                    processor.getId(), processor.getBridgeId()), e);
         }
 
         return new KafkaTopicInvoker(emitter, processor, requiredTopic);

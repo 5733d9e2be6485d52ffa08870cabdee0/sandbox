@@ -125,7 +125,6 @@ public class ProcessorAPITest {
         ProcessorResponse found = TestUtils.getProcessor(bridgeResponse.getId(), pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
-        assertThat(found.getBridge().getId()).isEqualTo(bridgeResponse.getId());
         assertThat(found.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
         assertThat(found.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(found.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
@@ -149,7 +148,6 @@ public class ProcessorAPITest {
         ProcessorResponse found = TestUtils.getProcessor(bridgeId, pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
-        assertThat(found.getBridge().getId()).isEqualTo(bridgeId);
         assertThat(found.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
         assertThat(found.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(found.getAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
@@ -199,12 +197,10 @@ public class ProcessorAPITest {
 
         ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
         assertThat(processorResponse.getName()).isEqualTo("myProcessor");
-        assertThat(processorResponse.getBridge().getId()).isEqualTo(bridgeResponse.getId());
         assertThat(processorResponse.getFilters().size()).isEqualTo(1);
 
         ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
         assertThat(retrieved.getName()).isEqualTo("myProcessor");
-        assertThat(retrieved.getBridge().getId()).isEqualTo(bridgeResponse.getId());
         assertThat(retrieved.getFilters().size()).isEqualTo(1);
         assertThat(retrieved.getTransformationTemplate()).isEqualTo("{}");
         assertRequestedAction(retrieved);
@@ -269,7 +265,6 @@ public class ProcessorAPITest {
 
         ProcessorResponse processorResponse = response.as(ProcessorResponse.class);
         assertThat(processorResponse.getName()).isEqualTo("myProcessor");
-        assertThat(processorResponse.getBridge().getId()).isEqualTo(bridgeResponse.getId());
         assertThat(processorResponse.getFilters()).isNull();
         assertThat(processorResponse.getTransformationTemplate()).isNull();
         assertRequestedAction(processorResponse);
@@ -289,7 +284,6 @@ public class ProcessorAPITest {
 
         ProcessorResponse retrieved = TestUtils.getProcessor(bridgeResponse.getId(), response.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
         assertThat(retrieved.getName()).isEqualTo("myProcessor");
-        assertThat(retrieved.getBridge().getId()).isEqualTo(bridgeResponse.getId());
         assertThat(retrieved.getFilters().size()).isEqualTo(1);
         assertThat(retrieved.getTransformationTemplate()).isNull();
         assertRequestedAction(retrieved);

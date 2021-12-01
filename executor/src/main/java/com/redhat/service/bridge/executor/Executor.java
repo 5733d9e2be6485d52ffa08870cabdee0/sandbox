@@ -57,7 +57,7 @@ public class Executor {
 
     @SuppressWarnings("unchecked")
     private void process(CloudEvent cloudEvent) {
-        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
+        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridgeId());
 
         Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
 
@@ -99,7 +99,7 @@ public class Executor {
 
     private void initMetricFields(ProcessorDTO processor, MeterRegistry registry) {
         List<Tag> tags = Arrays.asList(
-                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridge().getId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
+                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridgeId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
         this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
         this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
         this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);

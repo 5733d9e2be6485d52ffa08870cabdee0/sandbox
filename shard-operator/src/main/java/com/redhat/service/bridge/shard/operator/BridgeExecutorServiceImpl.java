@@ -53,7 +53,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getBridge().getCustomerId());
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
         kubernetesClient
                 .resources(BridgeExecutor.class)
@@ -115,14 +115,14 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void deleteBridgeExecutor(ProcessorDTO processorDTO) {
-        final String namespace = customerNamespaceProvider.resolveName(processorDTO.getBridge().getCustomerId());
+        final String namespace = customerNamespaceProvider.resolveName(processorDTO.getCustomerId());
         final boolean bridgeDeleted =
                 kubernetesClient
                         .resources(BridgeExecutor.class)
                         .inNamespace(namespace)
                         .delete(BridgeExecutor.fromDTO(processorDTO, namespace, executorImage));
         if (bridgeDeleted) {
-            customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(processorDTO.getBridge().getCustomerId());
+            customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(processorDTO.getCustomerId());
         } else {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);

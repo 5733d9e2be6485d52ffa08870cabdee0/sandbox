@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
@@ -33,10 +32,7 @@ public class KafkaTopicActionValidatorTest {
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
         p.setDefinition(new ProcessorDefinition(null, null, b));
-
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId("myBridge");
-        p.setBridge(bridge);
+        p.setBridgeId("myBridge");
 
         return p;
     }
