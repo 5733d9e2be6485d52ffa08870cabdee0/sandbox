@@ -3,7 +3,6 @@ package com.redhat.service.bridge.infra.models.filters;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class ValuesIn extends BaseFilter<List<Object>> {
     public static final String FILTER_TYPE_NAME = "ValuesIn";
@@ -15,14 +14,9 @@ public class ValuesIn extends BaseFilter<List<Object>> {
         super(FILTER_TYPE_NAME);
     }
 
-    @SuppressWarnings("unchecked")
-    public ValuesIn(String key, String values) {
+    public ValuesIn(String key, List<Object> values) {
         super(FILTER_TYPE_NAME, key);
-        try {
-            this.values = ObjectMapperFactory.get().readValue(values, List.class);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("The value is not a list");
-        }
+        this.values = values;
     }
 
     @Override
