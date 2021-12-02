@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionStatus;
+import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -46,6 +49,15 @@ public class BridgeIngressControllerTest {
 
         // Then
         assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        assertThat(bridgeIngress.getStatus()).isNotNull();
+        assertThat(bridgeIngress.getStatus().isReady()).isFalse();
+        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+        });
     }
 
     @Test
