@@ -35,13 +35,15 @@ public class OpenshiftNetworkingService implements NetworkingService {
     // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
-        Route route = client.routes().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        Route expected = buildRoute(bridgeIngress, service);
 
-        if (route == null) {
-            route = buildRoute(bridgeIngress, service);
-            client.routes().inNamespace(service.getMetadata().getNamespace()).create(route);
+        Route existing = client.routes().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+
+        if (existing == null || !expected.getSpec().getTo().getName().equals(existing.getSpec().getTo().getName())) {
+            client.routes().inNamespace(service.getMetadata().getNamespace()).createOrReplace(expected);
+            return buildNetworkingResource(expected);
         }
-        return buildNetworkingResource(route);
+        return buildNetworkingResource(existing);
     }
 
     @Override

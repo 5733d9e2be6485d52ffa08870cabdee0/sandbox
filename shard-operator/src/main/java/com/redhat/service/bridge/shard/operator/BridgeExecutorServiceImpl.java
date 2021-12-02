@@ -55,28 +55,32 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
-        kubernetesClient
+        BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
+
+        BridgeExecutor existing = kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(namespace.getMetadata().getName())
-                .create(BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage));
+                .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
+                .get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            kubernetesClient
+                    .resources(BridgeExecutor.class)
+                    .inNamespace(namespace.getMetadata().getName())
+                    .createOrReplace(expected);
+        }
     }
 
     // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor) {
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
-
-        if (deployment != null) {
-            return deployment;
-        }
-
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
+        Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
 
         // Specs
-        deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
-        deployment.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
+        expected.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
+        expected.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
 
         // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
@@ -91,26 +95,31 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         } catch (JsonProcessingException e) {
             LOGGER.error("Could not serialize Processor Definition while setting executor deployment environment variables", e);
         }
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 
-        return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(deployment);
+        Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
+
+        if (existing == null || !isBridgeIngressDeploymentEqual(expected, existing)) {
+            return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
+        }
+
+        return existing;
     }
 
     // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
-        Service service = kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
+        Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);
+        // Specs
+        expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
-        if (service != null) {
-            return service;
+        Service existing = kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            return kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
         }
 
-        service = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);
-
-        // Specs
-        service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
-
-        return kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(service);
+        return existing;
     }
 
     @Override
@@ -127,5 +136,12 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
         }
+    }
+
+    // returns true if the selector, the image and the env variables are the same
+    private boolean isBridgeIngressDeploymentEqual(Deployment expected, Deployment existing) {
+        return expected.getSpec().getSelector().getMatchLabels().equals(existing.getSpec().getSelector().getMatchLabels())
+                && expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv().equals(existing.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv())
+                && expected.getSpec().getTemplate().getSpec().getContainers().get(0).getImage().equals(existing.getSpec().getTemplate().getSpec().getContainers().get(0).getImage());
     }
 }

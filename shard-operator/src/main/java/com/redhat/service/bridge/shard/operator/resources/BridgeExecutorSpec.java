@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
+import java.util.Objects;
+
 public class BridgeExecutorSpec {
     private String image;
 
@@ -59,5 +61,23 @@ public class BridgeExecutorSpec {
 
     public void setProcessorDefinition(String processorDefinition) {
         this.processorDefinition = processorDefinition;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BridgeExecutorSpec that = (BridgeExecutorSpec) o;
+        return Objects.equals(image, that.image) && Objects.equals(id, that.id) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(customerId, that.customerId)
+                && Objects.equals(processorName, that.processorName) && Objects.equals(processorDefinition, that.processorDefinition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(image, id, bridgeId, customerId, processorName, processorDefinition);
     }
 }

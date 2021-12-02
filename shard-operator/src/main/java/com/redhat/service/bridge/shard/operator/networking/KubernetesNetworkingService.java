@@ -46,14 +46,16 @@ public class KubernetesNetworkingService implements NetworkingService {
     // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress ingress = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        Ingress expected = buildIngress(bridgeIngress, service);
 
-        if (ingress == null) {
-            ingress = buildIngress(bridgeIngress, service);
-            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).create(ingress);
+        Ingress existing = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).createOrReplace(expected);
+            return buildNetworkingResource(expected);
         }
 
-        return buildNetworkingResource(ingress);
+        return buildNetworkingResource(existing);
     }
 
     @Override
