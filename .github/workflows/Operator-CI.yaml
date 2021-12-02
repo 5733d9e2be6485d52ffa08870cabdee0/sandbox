@@ -76,6 +76,12 @@ jobs:
         shell: bash
         working-directory: shard-operator-integration-tests
         run: mvn clean verify -Pcucumber
+      - name: Archive test logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: cucumber-logs
+          path: shard-operator-integration-tests/target/logs/**/*.*
       - name: Print operator log
         if: always()
         run: |
