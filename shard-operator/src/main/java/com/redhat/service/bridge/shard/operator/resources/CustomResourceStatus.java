@@ -24,7 +24,7 @@ public abstract class CustomResourceStatus {
     @JsonCreator
     public CustomResourceStatus(@JsonProperty("conditions") final HashSet<Condition> initialConditions) {
         if (initialConditions == null) {
-            throw new IllegalArgumentException("initialConditions can be null");
+            throw new IllegalArgumentException("initialConditions can't be null");
         }
         this.conditions = initialConditions;
     }
