@@ -17,3 +17,6 @@ spec:
       app.kubernetes.io/instance: ""
   endpoints:
     - port: web
+      interval: 30s
+      path: /q/metrics
+      scheme: http

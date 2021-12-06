@@ -42,12 +42,16 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
         if (serviceMonitor == null) {
             LOGGER.debug("Prometheus ServiceMonitor does not exist. Creating a new instance.");
             serviceMonitor = templateProvider.loadServiceMonitorTemplate(resource);
+            if (serviceMonitor.getSpec().getSelector() == null) {
+                serviceMonitor.getSpec().setSelector(new LabelSelector());
+            }
+            serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
+            serviceMonitor = ServiceMonitorClient
+                    .get(kubernetesClient)
+                    .inNamespace(resource.getMetadata().getNamespace())
+                    .withName(service.getMetadata().getName())
+                    .create(serviceMonitor);
         }
-        // enforce the labels
-        if (serviceMonitor.getSpec().getSelector() == null) {
-            serviceMonitor.getSpec().setSelector(new LabelSelector());
-        }
-        serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
         return Optional.of(serviceMonitor);
     }
 }
