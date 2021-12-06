@@ -36,3 +36,15 @@ spec:
               value: ""
             - name: KAFKA_SECURITY_PROTOCOL
               value: ""
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10

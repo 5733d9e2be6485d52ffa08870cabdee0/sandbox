@@ -47,6 +47,8 @@ public class TemplateProviderTest {
         assertOwnerReference(BRIDGE_INGRESS, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeIngress.COMPONENT_NAME);
         assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getLivenessProbe()).isNotNull();
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getReadinessProbe()).isNotNull();
     }
 
     @Test
@@ -71,6 +73,8 @@ public class TemplateProviderTest {
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
         assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getLivenessProbe()).isNotNull();
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getReadinessProbe()).isNotNull();
     }
 
     @Test
