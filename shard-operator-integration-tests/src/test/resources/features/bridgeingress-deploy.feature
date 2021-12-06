@@ -13,7 +13,7 @@ Feature: BridgeIngress deploy and undeploy
       name: my-bridge-ingress
       app.kubernetes.io/managed-by: bridge-fleet-shard-operator
     spec:
-      image: quay.io/jrota/openbridge-empty-it-image:1.0
+      image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       bridgeName: my-bridge
       customerId: customer
       id: my-bridge-ingress
@@ -35,7 +35,7 @@ Feature: BridgeIngress deploy and undeploy
       name: my-deleted-bridge-ingress
       app.kubernetes.io/managed-by: bridge-fleet-shard-operator
     spec:
-      image: quay.io/jrota/openbridge-empty-it-image:1.0
+      image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       bridgeName: my-bridge
       customerId: customer
       id: my-bridge-ingress
