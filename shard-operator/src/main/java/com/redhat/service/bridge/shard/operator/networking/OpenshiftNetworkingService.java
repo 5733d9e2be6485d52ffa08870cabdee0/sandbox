@@ -32,7 +32,6 @@ public class OpenshiftNetworkingService implements NetworkingService {
         return OpenshiftRouteEventSource.createAndRegisterWatch(client, component);
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Route expected = buildRoute(bridgeIngress, service);

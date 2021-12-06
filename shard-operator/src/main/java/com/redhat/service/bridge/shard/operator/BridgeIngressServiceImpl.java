@@ -67,7 +67,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         }
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
         Deployment expected = templateProvider.loadBridgeIngressDeploymentTemplate(bridgeIngress);
@@ -96,7 +95,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         return existing;
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment) {
         Service expected = templateProvider.loadBridgeIngressServiceTemplate(bridgeIngress);

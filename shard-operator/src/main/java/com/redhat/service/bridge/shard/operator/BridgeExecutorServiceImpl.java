@@ -72,7 +72,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         }
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor) {
         Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
@@ -107,7 +106,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         return existing;
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
         Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);

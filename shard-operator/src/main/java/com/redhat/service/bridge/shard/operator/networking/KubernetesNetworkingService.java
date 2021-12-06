@@ -43,7 +43,6 @@ public class KubernetesNetworkingService implements NetworkingService {
         return KubernetesIngressEventSource.createAndRegisterWatch(client, component);
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Ingress expected = buildIngress(bridgeIngress, service);
