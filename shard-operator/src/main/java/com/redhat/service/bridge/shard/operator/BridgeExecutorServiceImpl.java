@@ -19,6 +19,7 @@ import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProv
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
+import com.redhat.service.bridge.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -99,7 +100,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 
-        if (existing == null || !isBridgeIngressDeploymentEqual(expected, existing)) {
+        if (existing == null || !DeploymentSpecUtils.isDeploymentEqual(expected, existing)) {
             return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
         }
 
@@ -136,12 +137,5 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
         }
-    }
-
-    // returns true if the selector, the image and the env variables are the same
-    private boolean isBridgeIngressDeploymentEqual(Deployment expected, Deployment existing) {
-        return expected.getSpec().getSelector().getMatchLabels().equals(existing.getSpec().getSelector().getMatchLabels())
-                && expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv().equals(existing.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv())
-                && expected.getSpec().getTemplate().getSpec().getContainers().get(0).getImage().equals(existing.getSpec().getTemplate().getSpec().getContainers().get(0).getImage());
     }
 }
