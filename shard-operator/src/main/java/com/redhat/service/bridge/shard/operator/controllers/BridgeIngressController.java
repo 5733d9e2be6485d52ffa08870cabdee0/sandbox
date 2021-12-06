@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.util.Optional;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -10,6 +12,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
+import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.networking.NetworkResource;
 import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
@@ -17,11 +20,13 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.Context;
 import io.javaoperatorsdk.operator.api.Controller;
 import io.javaoperatorsdk.operator.api.DeleteControl;
@@ -51,6 +56,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Inject
     NetworkingService networkingService;
 
+    @Inject
+    ServiceMonitorService monitorService;
+
     @Override
     public void init(EventSourceManager eventSourceManager) {
         DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
@@ -59,6 +67,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
         AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
+        Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
+        serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-ingress-monitoring-event-source", monitorEventSource));
     }
 
     @Override
@@ -100,6 +110,12 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service);
+        if (serviceMonitor.isPresent()) {
+            // this is an optional resource
+            LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        }
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
