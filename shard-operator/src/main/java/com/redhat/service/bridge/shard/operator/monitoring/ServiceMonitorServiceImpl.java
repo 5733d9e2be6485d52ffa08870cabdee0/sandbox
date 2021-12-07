@@ -45,13 +45,25 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
             if (serviceMonitor.getSpec().getSelector() == null) {
                 serviceMonitor.getSpec().setSelector(new LabelSelector());
             }
-            serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
+            this.ensureLabels(serviceMonitor, service);
             serviceMonitor = ServiceMonitorClient
                     .get(kubernetesClient)
                     .inNamespace(resource.getMetadata().getNamespace())
                     .withName(service.getMetadata().getName())
                     .create(serviceMonitor);
+        } else {
+            this.ensureLabels(serviceMonitor, service);
+            serviceMonitor = ServiceMonitorClient
+                    .get(kubernetesClient)
+                    .inNamespace(resource.getMetadata().getNamespace())
+                    .withName(service.getMetadata().getName())
+                    .patch(serviceMonitor);
         }
         return Optional.of(serviceMonitor);
+    }
+
+    private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service) {
+        serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
+        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).buildWithDefaults());
     }
 }

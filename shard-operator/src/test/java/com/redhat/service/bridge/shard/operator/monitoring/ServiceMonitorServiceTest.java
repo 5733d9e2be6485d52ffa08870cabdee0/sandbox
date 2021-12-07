@@ -59,6 +59,10 @@ public class ServiceMonitorServiceTest {
 
         // Then
         assertThat(serviceMonitor).isPresent();
+        // check: https://prometheus-operator.dev/docs/operator/troubleshooting/#overview-of-servicemonitor-tagging-and-related-elements
+        assertThat(serviceMonitor.get().getSpec().getSelector().getMatchLabels()).containsEntry("app.kubernetes.io/instance", deployment.getMetadata().getName());
+        assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry("app.kubernetes.io/instance", deployment.getMetadata().getName());
+        assertThat(service.getMetadata().getLabels()).containsEntry("app.kubernetes.io/instance", deployment.getMetadata().getName());
     }
 
     private void registerServiceMonitor() {
