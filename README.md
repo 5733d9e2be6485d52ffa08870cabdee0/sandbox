@@ -4,11 +4,15 @@
 
 This repository stores the code for the bridge project.
 
-## Development environment
+## Getting Started
+
+Before starting, please add yourself to the #dev Google Chat Room and be sure to read the team onboarding documentation.
+
+## Development Environment
 
 All the instructions to run the platform locally are provided in the [dev](dev) folder.
 
-# DEMO 
+# Running a Demo 
 
 A demonstration of the service is provided [here](DEMO.md).
 
