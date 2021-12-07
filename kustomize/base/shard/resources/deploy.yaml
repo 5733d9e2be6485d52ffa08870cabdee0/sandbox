@@ -21,6 +21,8 @@ spec:
                 name: event-bridge-shard-operator-config
             - secretRef:
                 name: kafka-secrets
+            - secretRef: 
+                name: keycloak-shard-credentials
           livenessProbe:
             httpGet:
               path: /q/health/live

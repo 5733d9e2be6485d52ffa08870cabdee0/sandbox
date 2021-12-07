@@ -1,9 +1,11 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -18,9 +20,11 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
+import io.quarkus.oidc.client.Tokens;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -41,6 +45,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeExecutorService bridgeExecutorService;
 
+    @Inject
+    Tokens tokens;
+
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
         LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
@@ -54,19 +61,22 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
+    @ActivateRequestContext
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO));
     }
 
     @Override
+    @ActivateRequestContext
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors").sendJson(processorDTO);
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO));
     }
 
     @Override
+    @ActivateRequestContext
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
@@ -90,9 +100,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
+    @ActivateRequestContext
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
-                .send().onItem().transform(this::getProcessors)
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
+                .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
                             if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
@@ -156,5 +167,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 400) {
             throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
         }
+    }
+
+    private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
+        request.bearerTokenAuthentication(tokens.getAccessToken());
+        return executor.apply(request);
     }
 }
