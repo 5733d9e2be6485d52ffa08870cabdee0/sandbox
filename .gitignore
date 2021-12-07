@@ -19,3 +19,6 @@ target/
 .factorypath
 .vscode
 .run/
+
+# Ignore BitNami Sealed Secrets Private Key
+mycert.pem
