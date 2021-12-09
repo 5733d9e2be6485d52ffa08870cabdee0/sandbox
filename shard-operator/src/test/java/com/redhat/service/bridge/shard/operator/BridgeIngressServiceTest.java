@@ -55,12 +55,25 @@ public class BridgeIngressServiceTest {
         bridgeIngressService.createBridgeIngress(dto);
 
         // Then
-        BridgeIngress bridgeIngress = kubernetesClient
-                .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeIngress.resolveResourceName(dto.getId()))
-                .get();
+        BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNotNull();
+    }
+
+    @Test
+    public void testBridgeIngressRedeployment() {
+        // Given
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+        String patchedCustomerId = TestSupport.CUSTOMER_ID + "-patched";
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+        dto.setCustomerId(patchedCustomerId);
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Then
+        BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
+        assertThat(bridgeIngress).isNotNull();
+        assertThat(bridgeIngress.getSpec().getCustomerId()).isEqualTo(patchedCustomerId);
     }
 
     @Test
@@ -78,10 +91,7 @@ public class BridgeIngressServiceTest {
                 .untilAsserted(
                         () -> {
                             // The deployment is deployed by the controller
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
-                                    .get();
+                            Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).findFirst().get().getValue().length())
@@ -96,6 +106,38 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
+    public void testFetchOrCreateBridgeIngressDeploymentRedeployment() {
+        // Given
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+        String patchedImage = TestSupport.INGRESS_IMAGE + "-patched";
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Wait until deployment is created by the controller.
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            // The deployment is deployed by the controller
+                            Deployment deployment = fetchBridgeIngressDeployment(dto);
+                            assertThat(deployment).isNotNull();
+                        });
+
+        // Patch the deployment and replace
+        Deployment deployment = fetchBridgeIngressDeployment(dto);
+        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(patchedImage);
+        kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
+        deployment = fetchBridgeIngressDeployment(dto);
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.INGRESS_IMAGE + "-patched");
+
+        // Then
+        deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(fetchBridgeIngress(dto));
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.INGRESS_IMAGE);
+    }
+
+    @Test
     public void testBridgeIngressDeletion() {
         // Given
         BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
@@ -105,11 +147,7 @@ public class BridgeIngressServiceTest {
         bridgeIngressService.deleteBridgeIngress(dto);
 
         // Then
-        BridgeIngress bridgeIngress = kubernetesClient
-                .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeIngress.resolveResourceName(dto.getId()))
-                .get();
+        BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNull();
     }
 
@@ -126,10 +164,7 @@ public class BridgeIngressServiceTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
-                                    .get();
+                            Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNotNull();
                         });
         bridgeIngressService.deleteBridgeIngress(dto);
@@ -140,11 +175,23 @@ public class BridgeIngressServiceTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeIngress.resolveResourceName(dto.getId()))
-                                    .get();
+                            Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNull();
                         });
+    }
+
+    private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {
+        return kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                .get();
+    }
+
+    private Deployment fetchBridgeIngressDeployment(BridgeDTO dto) {
+        return kubernetesClient.apps().deployments()
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                .get();
     }
 }

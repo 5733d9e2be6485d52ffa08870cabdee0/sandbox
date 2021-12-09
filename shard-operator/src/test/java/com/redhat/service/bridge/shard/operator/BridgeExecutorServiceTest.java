@@ -101,6 +101,38 @@ public class BridgeExecutorServiceTest {
     }
 
     @Test
+    public void testFetchOrCreateBridgeExecutorDeploymentRedeployment() {
+        // Given
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        String patchedImage = TestSupport.EXECUTOR_IMAGE + "-patched";
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Wait until deployment is created by the controller.
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            // The deployment is deployed by the controller
+                            Deployment deployment = fetchBridgeExecutorDeployment(dto);
+                            assertThat(deployment).isNotNull();
+                        });
+
+        // Patch the deployment and replace
+        Deployment deployment = fetchBridgeExecutorDeployment(dto);
+        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(patchedImage);
+        kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
+        deployment = fetchBridgeExecutorDeployment(dto);
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.EXECUTOR_IMAGE + "-patched");
+
+        // Then
+        deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(fetchBridgeIngress(dto));
+        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.EXECUTOR_IMAGE);
+    }
+
+    @Test
     public void testBridgeIngressDeletion() {
         // Given
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
@@ -115,5 +147,20 @@ public class BridgeExecutorServiceTest {
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeIngress).isNull();
+    }
+
+    private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {
+        return kubernetesClient
+                .resources(BridgeExecutor.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                .get();
+    }
+
+    private Deployment fetchBridgeExecutorDeployment(ProcessorDTO dto) {
+        return kubernetesClient.apps().deployments()
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
+                .get();
     }
 }
