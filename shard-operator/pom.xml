@@ -51,7 +51,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-oidc-client</artifactId>
+    </dependency>
+    
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>test-utils</artifactId>
@@ -121,6 +125,7 @@
         <version>${surefire-plugin.version}</version>
         <configuration>
           <systemPropertyVariables>
+            <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
             <event-bridge.k8s.platform>${event-bridge.k8s.platform}</event-bridge.k8s.platform>

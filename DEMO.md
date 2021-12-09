@@ -1,11 +1,13 @@
 # DEMO
 
-Requirements to run locally:
-* docker-compose
-* curl
-* [jq](https://stedolan.github.io/jq/)    
+If running this demo against your local machine, please ensure you have completed all steps in the local dev
+setup documentation: [dev/README.md](dev/README.md)
 
-The platform service is running on the endpoint specified in [this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet), but this demo is usable also locally.
+Alternatively, the demo can be run against our "demo cluster". Details are specified in 
+[this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet). If running against our "demo cluster", you
+will need to update the URLs used in the rest of this guide to match.
+
+The following assumes you will be running the demo on your local machine:
 
 First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above.
 
@@ -15,13 +17,34 @@ export MANAGER_URL=http://localhost:8080
 
 # Authentication
 
-Each request will need a [Bearer](https://quarkus.io/guides/security#openid-connect) token passed as an http header. To get the token, run:
+Each request will need a [Bearer](https://quarkus.io/guides/security#openid-connect) token passed as a http header. To get the token, run:
 
 ```shell
 export OB_TOKEN="Bearer $(curl --insecure -X POST http://localhost:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token     --user event-bridge:secret     -H 'content-type: application/x-www-form-urlencoded'     -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
 ```
 
-This token will last 3 minutes. Each time you get a `401 Unauthorized` from OpenBridge, run the command above again.
+This token will last 3 minutes. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+
+## Testing your Setup
+
+This is a good time to test your setup. To do this we will invoke the `/api/v1/bridges` endpoint of EventBridge to the
+currently running Bridge Instances. This _will_ return an empty list, but it will demonstrate that the Fleet Manager is
+working.
+
+Use the following to test the API:
+
+```bash
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges | jq .
+```
+
+You should get a response that looks like this:
+
+```json
+{"kind":"BridgeList","items":[],"page":0,"size":0,"total":0}
+```
+
+If not, please double-check the setup instructions in [dev/README.md](dev/README.md) to ensure everything is running
+as expected.
 
 ## How to create a Bridge instance
 
