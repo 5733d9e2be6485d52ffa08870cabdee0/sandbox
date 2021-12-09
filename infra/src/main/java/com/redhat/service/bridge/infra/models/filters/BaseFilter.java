@@ -1,5 +1,8 @@
 package com.redhat.service.bridge.infra.models.filters;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,6 +27,7 @@ public abstract class BaseFilter<T> {
     protected String type;
 
     @JsonProperty("key")
+    @NotEmpty
     protected String key;
 
     protected BaseFilter(String type) {
@@ -43,6 +47,7 @@ public abstract class BaseFilter<T> {
         return type;
     }
 
+    @NotNull
     @JsonIgnore
     public abstract T getValue();
 }
