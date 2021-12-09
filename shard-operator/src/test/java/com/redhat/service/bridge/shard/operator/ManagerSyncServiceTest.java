@@ -41,6 +41,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Test
+    @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));

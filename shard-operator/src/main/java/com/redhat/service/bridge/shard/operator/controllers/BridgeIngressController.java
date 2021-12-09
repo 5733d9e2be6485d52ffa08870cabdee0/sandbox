@@ -111,10 +111,15 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
+        // TODO: on https://issues.redhat.com/browse/MGDOBR-163 we will make this piece a common algorithm between our controllers
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
             LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        } else {
+            // TODO: the message will be a constant on MGDOBR-163
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable, "ServiceMonitor CRD not available");
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
