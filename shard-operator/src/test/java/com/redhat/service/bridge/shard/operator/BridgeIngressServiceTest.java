@@ -129,8 +129,6 @@ public class BridgeIngressServiceTest {
         Deployment deployment = fetchBridgeIngressDeployment(dto);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(patchedImage);
         kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
-        deployment = fetchBridgeIngressDeployment(dto);
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.INGRESS_IMAGE + "-patched");
 
         // Then
         deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(fetchBridgeIngress(dto));

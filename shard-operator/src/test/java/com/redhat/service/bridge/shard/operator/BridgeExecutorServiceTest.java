@@ -124,8 +124,6 @@ public class BridgeExecutorServiceTest {
         Deployment deployment = fetchBridgeExecutorDeployment(dto);
         deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(patchedImage);
         kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
-        deployment = fetchBridgeExecutorDeployment(dto);
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.EXECUTOR_IMAGE + "-patched");
 
         // Then
         deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(fetchBridgeIngress(dto));
