@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:b826e56d51654c72f96a7692e1e1edcfe914cebe-jvm
-  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:b826e56d51654c72f96a7692e1e1edcfe914cebe-jvm
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:ceae4d47b55219c65cf9e6d1b4c0cc184513f5b3-jvm
+  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:ceae4d47b55219c65cf9e6d1b4c0cc184513f5b3-jvm
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
   EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge-fm
