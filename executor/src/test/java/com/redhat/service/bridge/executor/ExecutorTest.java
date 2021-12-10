@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.infra.api.exceptions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;

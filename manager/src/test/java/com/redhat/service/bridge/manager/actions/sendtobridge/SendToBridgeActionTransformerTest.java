@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.infra.api.exceptions.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.api.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
-import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 
 import io.quarkus.test.junit.QuarkusTest;

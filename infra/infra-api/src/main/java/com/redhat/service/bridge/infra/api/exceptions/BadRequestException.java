@@ -1,8 +1,8 @@
-package com.redhat.service.bridge.ingress.api.exceptions;
+package com.redhat.service.bridge.infra.api.exceptions;
 
 import javax.ws.rs.core.Response;
 
-public class BadRequestException extends IngressException {
+public class BadRequestException extends EventBridgeException {
 
     public BadRequestException(String message) {
         super(message);

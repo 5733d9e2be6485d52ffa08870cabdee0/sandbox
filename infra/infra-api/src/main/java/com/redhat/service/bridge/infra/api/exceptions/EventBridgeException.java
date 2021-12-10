@@ -1,14 +1,16 @@
-package com.redhat.service.bridge.ingress.api.exceptions;
+package com.redhat.service.bridge.infra.api.exceptions;
 
 import javax.ws.rs.core.Response;
 
-public class IngressException extends RuntimeException {
+public class EventBridgeException extends RuntimeException {
 
-    public IngressException(String message) {
+    private static final long serialVersionUID = 1L;
+
+    public EventBridgeException(String message) {
         super(message);
     }
 
-    public IngressException(String message, Throwable cause) {
+    public EventBridgeException(String message, Throwable cause) {
         super(message, cause);
     }
 

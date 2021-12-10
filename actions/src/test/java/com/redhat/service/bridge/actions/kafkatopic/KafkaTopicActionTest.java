@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.infra.api.exceptions.ActionProviderException;
 import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.api.models.processors.ProcessorDefinition;

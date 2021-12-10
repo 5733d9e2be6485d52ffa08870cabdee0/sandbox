@@ -14,8 +14,8 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionParameterValidator;
-import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
+import com.redhat.service.bridge.infra.api.exceptions.ActionProviderException;
 import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 

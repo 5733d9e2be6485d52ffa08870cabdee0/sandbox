@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.api.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.api.exceptions.CloudEventSerializationException;
 import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
+import com.redhat.service.bridge.infra.api.exceptions.BadRequestException;
 import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;

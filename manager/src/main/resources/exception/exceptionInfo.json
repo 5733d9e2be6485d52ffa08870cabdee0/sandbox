@@ -1,37 +1,37 @@
 [
 {
-  "exception":"com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.AlreadyExistingItemException",
   "id": 1,
   "reason": "You tried to create an object which already exist in our repository"
 },
 {
-  "exception":"com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.BridgeLifecycleException",
   "id": 2,
   "reason": "You tried a life cycle transition which is not allowed"
 },
 {
-  "exception":"com.redhat.service.bridge.manager.exceptions.EventBridgeManagerException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.EventBridgeException",
   "id": 3,
   "reason": "The requested item does not exist in out repository"
 },
 {
-  "exception":"com.redhat.service.bridge.manager.exceptions.ItemNotFoundException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.ItemNotFoundException",
   "id": 4,
   "reason": "You tried to create an object which already exist in our repository"
 }
 ,
 {
-  "exception":"com.redhat.service.bridge.infra.api.utils.exceptions.CloudEventSerializationException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.CloudEventSerializationException",
   "id": 5,
   "reason": "You try to serialize a cloud event and something goes wrong, check if format follows specification"
 },
 {
-  "exception":"com.redhat.service.bridge.infra.utils.api.exceptions.CloudEventDeserializationException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.CloudEventDeserializationException",
   "id": 6,
   "reason": "You try to deserialize a cloud event and something goes wrong, check if format follows specification"
 },
 {
-  "exception":"com.redhat.service.bridge.actions.ActionProviderException",
+  "exception":"com.redhat.service.bridge.infra.api.exceptions.ActionProviderException",
   "id": 7,
   "reason": "Something failed related with action execution or resolution"
 }

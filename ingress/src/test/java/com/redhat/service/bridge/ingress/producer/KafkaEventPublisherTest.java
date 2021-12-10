@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.api.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.TestUtils;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
+import com.redhat.service.bridge.infra.api.exceptions.BadRequestException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.ExtensionProvider;

@@ -11,21 +11,21 @@ import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.api.exceptions.EventBridgeException;
 import com.redhat.service.bridge.manager.ErrorsService;
 import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.manager.exceptions.EventBridgeManagerException;
 import com.redhat.service.bridge.manager.models.Error;
 
 @Provider
-public class EventBridgeManagerExceptionMapper implements ExceptionMapper<EventBridgeManagerException> {
+public class EventBridgeExceptionMapper implements ExceptionMapper<EventBridgeException> {
 
     @Inject
     ErrorsService errorsService;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeManagerExceptionMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeExceptionMapper.class);
 
     @Override
-    public Response toResponse(EventBridgeManagerException e) {
+    public Response toResponse(EventBridgeException e) {
         LOGGER.error("Failure", e);
         Optional<Error> error = errorsService.getError(e);
         ResponseBuilder builder = Response.status(e.getStatusCode());

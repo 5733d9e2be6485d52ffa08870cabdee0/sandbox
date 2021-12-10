@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.api.exceptions.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.api.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
@@ -25,8 +27,6 @@ import com.redhat.service.bridge.infra.api.models.processors.ProcessorDefinition
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
-import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
-import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
