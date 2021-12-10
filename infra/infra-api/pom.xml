@@ -3,21 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
+    <artifactId>infra</artifactId>
     <groupId>com.redhat.service.bridge</groupId>
-    <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../build-parent/pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>infra</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>infra-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <modules>
-    <module>infra-api</module>
-    <module>infra-core</module>
-  </modules>
-  <name>Event Bridge :: Infra</name>
+  <name>Event Bridge :: Infra API</name>
 
   <dependencies>
     <dependency>
