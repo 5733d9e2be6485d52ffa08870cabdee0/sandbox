@@ -47,6 +47,7 @@ spec:
                       - DeploymentNotAvailable
                       - DeploymentFailed
                       - ServiceNotReady
+                      - PrometheusUnavailable
                       - DeploymentAvailable
                       - DeploymentProgressing
                       - NetworkResourceNotReady

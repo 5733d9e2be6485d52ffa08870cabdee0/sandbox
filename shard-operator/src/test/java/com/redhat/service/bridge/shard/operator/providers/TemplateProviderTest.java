@@ -117,7 +117,6 @@ public class TemplateProviderTest {
     }
 
     private void assertLabels(ObjectMeta meta, String component) {
-        assertThat(meta.getLabels().size()).isEqualTo(3);
         assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(component);
         assertThat(meta.getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
         assertThat(meta.getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
