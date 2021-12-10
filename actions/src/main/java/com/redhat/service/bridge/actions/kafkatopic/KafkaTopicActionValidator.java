@@ -4,7 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.actions.ActionParameterValidator;
 import com.redhat.service.bridge.actions.ValidationResult;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 
 @ApplicationScoped
 public class KafkaTopicActionValidator implements ActionParameterValidator {

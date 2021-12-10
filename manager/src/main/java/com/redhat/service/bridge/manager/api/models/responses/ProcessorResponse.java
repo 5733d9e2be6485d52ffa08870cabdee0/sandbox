@@ -6,9 +6,9 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.api.models.filters.BaseFilter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessorResponse extends BaseResponse {

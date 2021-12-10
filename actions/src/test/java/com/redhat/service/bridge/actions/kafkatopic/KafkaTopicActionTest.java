@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderException;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.processors.ProcessorDefinition;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

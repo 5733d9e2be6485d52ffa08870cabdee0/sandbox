@@ -2,7 +2,7 @@ package com.redhat.service.bridge.shard.operator.providers;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.infra.api.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.networking.KubernetesNetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;

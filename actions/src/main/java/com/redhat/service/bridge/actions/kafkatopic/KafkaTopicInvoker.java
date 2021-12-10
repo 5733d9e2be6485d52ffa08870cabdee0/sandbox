@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 

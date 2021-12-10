@@ -5,9 +5,9 @@ import java.util.Map;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;

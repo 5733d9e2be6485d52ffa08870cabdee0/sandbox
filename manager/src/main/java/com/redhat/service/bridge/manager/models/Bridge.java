@@ -14,7 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByStatuses",

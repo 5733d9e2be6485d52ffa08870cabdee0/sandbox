@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
 import com.google.common.base.Strings;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;

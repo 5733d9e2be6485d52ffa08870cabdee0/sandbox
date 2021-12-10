@@ -15,9 +15,9 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;

@@ -45,7 +45,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>infra</artifactId>
+      <artifactId>infra-api</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -2,7 +2,7 @@ package com.redhat.service.bridge.shard.operator.resources;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;

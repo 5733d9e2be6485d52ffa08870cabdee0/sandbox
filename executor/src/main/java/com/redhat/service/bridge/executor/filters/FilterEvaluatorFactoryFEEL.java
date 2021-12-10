@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.ObjectMapperFactory;
-import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
-import com.redhat.service.bridge.infra.models.filters.StringContains;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.api.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.api.models.filters.ObjectMapperFactory;
+import com.redhat.service.bridge.infra.api.models.filters.StringBeginsWith;
+import com.redhat.service.bridge.infra.api.models.filters.StringContains;
+import com.redhat.service.bridge.infra.api.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.api.models.filters.ValuesIn;
 
 public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
 

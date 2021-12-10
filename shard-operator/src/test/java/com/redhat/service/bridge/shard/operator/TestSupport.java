@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.Set;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.api.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.api.models.processors.ProcessorDefinition;
 
 public class TestSupport {
 

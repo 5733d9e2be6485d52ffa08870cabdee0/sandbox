@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.actions;
 
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 
 /**
  * Invokable actions can be directly invoked by the executor via their specific {@link ActionInvoker}.

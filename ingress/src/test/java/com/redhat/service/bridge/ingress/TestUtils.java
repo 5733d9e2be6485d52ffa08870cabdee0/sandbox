@@ -4,7 +4,7 @@ import java.net.URI;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;

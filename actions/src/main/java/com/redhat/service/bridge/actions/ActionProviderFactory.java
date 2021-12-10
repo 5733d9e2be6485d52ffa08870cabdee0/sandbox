@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
 
 @ApplicationScoped
 public class ActionProviderFactory {

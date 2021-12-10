@@ -1,6 +1,6 @@
 package com.redhat.service.bridge.shard.operator;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.Service;

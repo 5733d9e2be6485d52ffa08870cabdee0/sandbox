@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.TestUtils;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 

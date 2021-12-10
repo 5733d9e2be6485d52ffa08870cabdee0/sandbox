@@ -6,7 +6,7 @@ import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.api.models.dto.ProcessorDTO;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 

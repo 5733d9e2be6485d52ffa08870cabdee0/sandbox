@@ -21,12 +21,12 @@
 }
 ,
 {
-  "exception":"com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException",
+  "exception":"com.redhat.service.bridge.infra.api.utils.exceptions.CloudEventSerializationException",
   "id": 5,
   "reason": "You try to serialize a cloud event and something goes wrong, check if format follows specification"
 },
 {
-  "exception":"com.redhat.service.bridge.infra.utils.exceptions.CloudEventDeserializationException",
+  "exception":"com.redhat.service.bridge.infra.utils.api.exceptions.CloudEventDeserializationException",
   "id": 6,
   "reason": "You try to deserialize a cloud event and something goes wrong, check if format follows specification"
 },

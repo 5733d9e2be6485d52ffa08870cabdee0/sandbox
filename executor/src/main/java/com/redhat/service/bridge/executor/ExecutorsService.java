@@ -11,8 +11,8 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.infra.api.BridgeCloudEventExtension;
+import com.redhat.service.bridge.infra.api.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.ExtensionProvider;

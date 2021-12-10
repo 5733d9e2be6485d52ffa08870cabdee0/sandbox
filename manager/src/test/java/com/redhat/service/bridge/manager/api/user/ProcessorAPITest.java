@@ -9,12 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.api.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.api.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.api.models.filters.BaseFilter;
+import com.redhat.service.bridge.infra.api.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.api.models.filters.ValuesIn;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;

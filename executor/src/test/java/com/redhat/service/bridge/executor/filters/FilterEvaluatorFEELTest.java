@@ -7,10 +7,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
-import com.redhat.service.bridge.infra.models.filters.StringContains;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.api.models.filters.StringBeginsWith;
+import com.redhat.service.bridge.infra.api.models.filters.StringContains;
+import com.redhat.service.bridge.infra.api.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.api.models.filters.ValuesIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
