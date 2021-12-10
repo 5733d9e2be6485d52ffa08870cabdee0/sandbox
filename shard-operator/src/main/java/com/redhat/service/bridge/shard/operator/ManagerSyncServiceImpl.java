@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -20,6 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
+import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -46,7 +47,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     BridgeExecutorService bridgeExecutorService;
 
     @Inject
-    Tokens tokens;
+    OidcClient client;
+
+    volatile Tokens currentTokens;
+
+    @PostConstruct
+    public void init() {
+        currentTokens = client.getTokens().await().indefinitely();
+    }
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
@@ -61,20 +69,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    @ActivateRequestContext
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO));
     }
 
     @Override
-    @ActivateRequestContext
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO));
     }
 
     @Override
-    @ActivateRequestContext
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().transform(this::getBridges)
@@ -100,7 +105,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    @ActivateRequestContext
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
                 .onItem().transform(this::getProcessors)
@@ -170,7 +174,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        request.bearerTokenAuthentication(tokens.getAccessToken());
+        Tokens tokens = currentTokens;
+        if (tokens.isAccessTokenExpired()) {
+            tokens = client.refreshTokens(tokens.getRefreshToken()).await().indefinitely();
+            currentTokens = tokens;
+        }
+        request.bearerTokenAuthentication(currentTokens.getAccessToken());
         return executor.apply(request);
     }
 }
