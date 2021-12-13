@@ -114,7 +114,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
         Service existing = kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+        if (existing == null || !expected.getSpec().getSelector().equals(existing.getSpec().getSelector())) {
             return kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
         }
 

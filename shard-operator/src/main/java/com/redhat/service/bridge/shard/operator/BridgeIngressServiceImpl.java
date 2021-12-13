@@ -107,10 +107,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             expected.getMetadata().setLabels(new HashMap<>());
         }
         expected.getMetadata().getLabels().putAll(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).buildWithDefaults());
-      
+
         Service existing = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+        if (existing == null
+                || !expected.getSpec().getSelector().equals(existing.getSpec().getSelector())
+                || !expected.getMetadata().getLabels().equals(existing.getMetadata().getLabels())) {
             return kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).createOrReplace(expected);
         }
 
