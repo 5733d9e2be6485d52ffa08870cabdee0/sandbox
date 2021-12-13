@@ -59,6 +59,11 @@
       <groupId>io.fabric8</groupId>
       <artifactId>openshift-model-monitoring</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.13.3</version>
+    </dependency>
 
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
