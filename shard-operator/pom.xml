@@ -55,7 +55,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-oidc-client</artifactId>
     </dependency>
-    
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>openshift-model-monitoring</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>test-utils</artifactId>

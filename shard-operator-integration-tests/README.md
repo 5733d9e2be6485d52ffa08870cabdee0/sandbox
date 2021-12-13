@@ -13,6 +13,8 @@ Tests are implemented using [Cucumber-JVM](https://github.com/cucumber/cucumber-
 
 Every test scenario runs in a dedicated namespace which is deleted after the test execution. If user terminates test execution prematurely (CTRL + C) then namespace is not deleted automatically, needs to be deleted by user.
 
+Logs are stored in `target/logs` directory, contains logs of all containers and events in a namespace used to run the tests.
+
 ## Supported Maven parameters:
 - `tags`: Used to specify a single scenario to be executed. Set the parameter to (for example) `@wip` and annotate a scenario which you want to execute by same tag (`@wip`).
 - `parallel`: User to allow running tests in parallel.

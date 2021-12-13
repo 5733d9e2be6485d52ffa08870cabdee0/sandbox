@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: bridge-fleet-shard-operator
 spec:
   # just a placeholder, at this time the operator won't deploy anything
-  image: my-image:latest
+  image: openbridge/ingress:latest
   bridgeName: my-bridge
   customerId: kermit
   id: my-bridge-ingress

@@ -15,6 +15,7 @@ import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.openshift.api.model.Route;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 
 @ApplicationScoped
 public class TemplateProviderImpl implements TemplateProvider {
@@ -26,6 +27,7 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH = TEMPLATES_DIR + "/bridge-ingress-openshift-route.yaml";
     private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
+    private static final String SERVICE_MONITOR_PATH = TEMPLATES_DIR + "/service-monitor.yaml";
 
     @Override
     public Deployment loadBridgeIngressDeploymentTemplate(BridgeIngress bridgeIngress) {
@@ -67,6 +69,13 @@ public class TemplateProviderImpl implements TemplateProvider {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         return ingress;
+    }
+
+    @Override
+    public ServiceMonitor loadServiceMonitorTemplate(CustomResource resource) {
+        final ServiceMonitor serviceMonitor = loadYaml(ServiceMonitor.class, SERVICE_MONITOR_PATH);
+        updateMetadata(resource, serviceMonitor.getMetadata());
+        return serviceMonitor;
     }
 
     private <T> T loadYaml(Class<T> clazz, String yaml) {

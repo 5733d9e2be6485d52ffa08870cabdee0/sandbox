@@ -3,18 +3,18 @@ kind: Deployment
 metadata:
   name: event-bridge-db
   labels:
-    app: event-bridge-db
+    app-component: event-bridge-db
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: event-bridge-db
+      app-component: event-bridge-db
   template:
     metadata:
       labels:
-        app: postgres
+        app-component: event-bridge-db
     spec:
       containers:
         - name: postgres
@@ -43,4 +43,4 @@ spec:
       protocol: TCP
       port: 5432
   selector:
-    app: event-bridge-db
+    app-component: event-bridge-db

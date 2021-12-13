@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -101,7 +102,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         // Specs
         expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
-
+        // The service must have a label to link with a supposed ServiceMonitor: https://prometheus-operator.dev/docs/operator/troubleshooting/#overview-of-servicemonitor-tagging-and-related-elements
+        if (expected.getMetadata().getLabels() == null) {
+            expected.getMetadata().setLabels(new HashMap<>());
+        }
+        expected.getMetadata().getLabels().putAll(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).buildWithDefaults());
+      
         Service existing = kubernetesClient.services().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {

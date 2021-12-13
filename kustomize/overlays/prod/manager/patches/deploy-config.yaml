@@ -10,4 +10,4 @@ data:
   EVENT_BRIDGE_DB_SCHEMA: "event-bridge"
   EVENT_BRIDGE_MANAGER_URL: "http://event-bridge:8080"
   EVENT_BRIDGE_SSO_URL: "https://keycloak-event-bridge-prod.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm"
-  EVENT_BRIDGE_SSO_CLIENT_ID: "event-bridge-fm"
+  EVENT_BRIDGE_SSO_CLIENT_ID: "event-bridge"

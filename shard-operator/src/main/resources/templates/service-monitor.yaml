@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ""
+  labels:
+    app.kubernetes.io/instance: ""
+  ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
+    - apiVersion: ""
+      kind: ""
+      name: ""
+      uid: ""
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ""
+  endpoints:
+    - port: web
+      interval: 30s
+      path: /q/metrics
+      scheme: http
