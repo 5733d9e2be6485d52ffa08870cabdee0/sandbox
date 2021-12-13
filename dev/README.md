@@ -1,18 +1,30 @@
 # DEV 
 
+## Requirements
+
+You will need the following installed locally on your machine to support local development:
+
+* [Minikube v1.16.0](https://minikube.sigs.k8s.io/docs/start/)
+* [Docker Engine](https://docker.com)
+  * The most recent version should be fine.
+* [Docker Compose v1.29.2](https://github.com/docker/compose)
+* [Maven v3.8.1](https://maven.apache.org/)
+* [Java 11](https://adoptopenjdk.net/)
+* [jq](https://stedolan.github.io/jq/)
+* [curl](https://curl.se/) (or any other HTTP client)
+    * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
+
 ## First time setup
 
 This section contains all the instructions to setup your environment in order to deploy the infrastructure locally. 
 
-First of all, you need to install minikube following [this](https://minikube.sigs.k8s.io/docs/start/) guide. (Tested with minikube v1.16.0 on Redhat 8.4)
-
-Once you have installed minikube, start a new cluster with 
+Configure a new Minikube Cluster with the following: 
 
 ```bash 
-minikube --memory 8192 --cpus 4 start  --kubernetes-version=v1.20.0
+minikube --memory=8192 --cpus=4 --kubernetes-version=v1.20.0 start  
 ```
 
-You can change the memory and cpu settings according to your system. **Other versions of kubernetes have not been tested**.
+You can change the memory and cpu settings according to your system. **Other versions of Kubernetes have not been tested**.
 
 Enable the `ingress` and `ingress-dns` addons with the following commands: 
 
@@ -43,11 +55,13 @@ kubectl wait pod -l app.kubernetes.io/instance=my-cluster --for=condition=Ready 
 
 ## Development environment
 
-Start your minikube cluster with 
+If not already running, start your Minikube cluster with 
 
 ```bash
 minikube start
 ```
+
+### Build All Container Images
 
 When you want deploy the entire platform, you have to point to the internal minikube registry with the following command
 
@@ -63,6 +77,8 @@ So that all the docker images that you build locally will be pushed to the inter
 mvn clean install -DskipTests -Dquarkus.container-image.build=true
 ```
 
+### Start All Supporting Resources
+
 We provide a `docker-compose.yaml` file that you can use to spin up all the resources that the manager needs to run (keycloak, postgres, prometheus and grafana). 
 
 **From another terminal** (otherwise the images will be pulled into your minikube internal registry) and the root of the project, run
@@ -71,17 +87,44 @@ We provide a `docker-compose.yaml` file that you can use to spin up all the reso
 docker-compose -f dev/docker-compose/docker-compose.yml up
 ```
 
-**From the root of the project** run the manager application with 
+The above command will not exit. Instead it will print the boot logs for all supporting services to STDOUT. Ensure that
+the boot sequence for all supporting infrastructure looks clean with no obvious errors.
+
+From another terminal, you can check the status of all containers using `docker ps -a`, which should give you output similar
+to the following:
+
+```bash
+> docker ps -a
+CONTAINER ID   IMAGE                    COMMAND                  CREATED          STATUS          PORTS                                        NAMES
+8e11a5fc333e   grafana/grafana:6.6.1    "/run.sh"                38 minutes ago   Up 38 minutes                                                docker-compose_grafana_1
+bfaea280bff3   prom/prometheus:v2.8.0   "/bin/prometheus --c…"   38 minutes ago   Up 38 minutes                                                docker-compose_prometheus_1
+24af8a014c54   jboss/keycloak:10.0.1    "/opt/jboss/tools/do…"   38 minutes ago   Up 38 minutes   8080/tcp, 8443/tcp, 0.0.0.0:8180->8180/tcp   event-bridge-keycloak
+1d14ea702f92   postgres:13.1            "docker-entrypoint.s…"   38 minutes ago   Up 38 minutes   0.0.0.0:5432->5432/tcp                       event-bridge-postgres
+```
+
+### Start the Fleet Manager
+
+**Open another terminal.**
+
+**From the root of the project** run the Fleet Manager application with 
 
 ```bash
 mvn clean compile -f manager/pom.xml quarkus:dev
 ```
 
-Run the shard operator from the root of the project with 
+### Start the Fleet Shard Operator
+
+**Open another terminal.**
+
+**From the root of the project** run the Fleet Shard Operator with 
 
 ```bash 
 mvn clean compile -f shard-operator/pom.xml -Dquarkus.http.port=1337 -Pminikube quarkus:dev
 ```
+
+### Send Requests
+
+Follow the instructions in our [demo](../DEMO.md) to send requests to your locally running infrastructure.
 
 ## Generate traffic automatically
 

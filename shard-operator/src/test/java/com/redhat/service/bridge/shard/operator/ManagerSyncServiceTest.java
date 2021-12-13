@@ -20,7 +20,9 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.test.resource.KeycloakResource;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -32,12 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
+@QuarkusTestResource(KeycloakResource.class)
 public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Test
+    @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
         bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));

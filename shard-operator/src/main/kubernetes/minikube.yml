@@ -32,6 +32,12 @@ rules:
       - ingresses
     verbs:
       - "*"
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - "*"
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""

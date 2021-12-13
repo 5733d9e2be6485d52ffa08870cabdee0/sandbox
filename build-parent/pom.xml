@@ -15,7 +15,7 @@
 
   <properties>
 
-    <maven.compiler.release>8</maven.compiler.release>
+    <maven.compiler.release>11</maven.compiler.release>
     <version.maven>3.6.2</version.maven>
     <version.jdk>11</version.jdk>
 

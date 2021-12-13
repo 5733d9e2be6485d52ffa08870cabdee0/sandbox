@@ -2,12 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: event-bridge
+  labels:
+    app-component: fleet-manager
 spec:
   selector:
     matchLabels:
-      app: event-bridge
+      app-component: fleet-manager
   replicas: 1
   template:
+    metadata:
+      labels:
+        app-component: fleet-manager
     spec:
       containers:
         - image: event-bridge-manager
@@ -19,7 +24,7 @@ spec:
             - configMapRef:
                 name: event-bridge-manager-config
             - secretRef:
-                name: kafka-secrets
+                name: event-bridge-manager-secrets
           livenessProbe:
             httpGet:
               path: /q/health/live
@@ -44,4 +49,4 @@ spec:
       port: 8080
       targetPort: 8080
   selector:
-    app: event-bridge
+    app-component: fleet-manager

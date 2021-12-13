@@ -31,6 +31,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -86,6 +87,10 @@ public class End2EndTestIT {
 
     @BeforeAll
     public static void beforeAll() {
+        processorRequest = getProcessorRequest(FILTERS);
+    }
+
+    private static ProcessorRequest getProcessorRequest(Set<BaseFilter> filters) {
         BaseAction action = new BaseAction();
         action.setName("myKafkaAction");
         action.setType(KafkaTopicAction.TYPE);
@@ -94,7 +99,7 @@ public class End2EndTestIT {
         params.put(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
         action.setParameters(params);
 
-        processorRequest = new ProcessorRequest(PROCESSOR_NAME, FILTERS, TRANSFORMATION_TEMPLATE, action);
+        return new ProcessorRequest(PROCESSOR_NAME, FILTERS, TRANSFORMATION_TEMPLATE, action);
     }
 
     @Test
@@ -188,6 +193,15 @@ public class End2EndTestIT {
         BaseAction action = response.getAction();
         assertThat(action.getType()).isEqualTo(KafkaTopicAction.TYPE);
         assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
+    }
+
+    @Test
+    public void testAddWrongFilterProcessor() throws Exception {
+        jsonRequestWithAuth()
+                .body(getProcessorRequest(Collections.singleton(new ValuesIn())))
+                .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
+                .then()
+                .statusCode(400);
     }
 
     @Order(5)

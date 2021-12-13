@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.shard.operator.cucumber.common;
 
+import io.cucumber.java.Scenario;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 
@@ -8,6 +9,7 @@ import io.fabric8.openshift.client.OpenShiftClient;
  */
 public class Context {
 
+    private Scenario scenario;
     private String namespace;
     private OpenShiftClient oc;
 
@@ -22,5 +24,13 @@ public class Context {
 
     public OpenShiftClient getClient() {
         return oc;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
     }
 }
