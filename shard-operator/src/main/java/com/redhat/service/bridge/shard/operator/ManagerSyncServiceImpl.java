@@ -23,6 +23,7 @@ import com.redhat.service.bridge.shard.operator.exceptions.DeserializationExcept
 
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
+import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -55,7 +56,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @PostConstruct
     public void init() {
-        currentTokens = client.getTokens().await().indefinitely();
+        try {
+            currentTokens = client.getTokens().await().atMost(SSO_CONNECTION_TIMEOUT);
+        } catch (RuntimeException e) {
+            LOGGER.error("Fatal error: could not fetch initial authentication token from sso server.");
+            Quarkus.asyncExit(1);
+        }
     }
 
     @Scheduled(every = "30s")
