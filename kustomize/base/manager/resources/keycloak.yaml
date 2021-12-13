@@ -8,21 +8,23 @@ spec:
       port: 8180
       targetPort: 8180
   selector:
-    app: keycloak
+    app-component: keycloak
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: keycloak
+  labels:
+    app-component: keycloak
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: keycloak
+      app-component: keycloak
   template:
     metadata:
       labels:
-        app: keycloak
+        app-component: keycloak
     spec:
       containers:
         - name: keycloak

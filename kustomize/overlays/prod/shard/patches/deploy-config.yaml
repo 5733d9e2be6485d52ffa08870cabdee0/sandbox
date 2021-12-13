@@ -4,7 +4,7 @@ data:
   EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:b411fbec267cb1d3e7912c6dc07761f1863abf46-jvm
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
-  EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge-fm
+  EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge
   EVENT_BRIDGE_SSO_SECRET: secret
   EVENT_BRIDGE_SSO_URL: https://keycloak-event-bridge-prod.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm
   KAFKA_SECURITY_PROTOCOL: SASL_SSL
