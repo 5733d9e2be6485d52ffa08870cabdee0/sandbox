@@ -1,3 +1,4 @@
 resources:
+  - keycloak
   - manager
   - shard

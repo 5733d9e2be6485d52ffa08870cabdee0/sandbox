@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: keycloak
-          image: quay.io/keycloak/keycloak:13.0.1
+          image: quay.io/keycloak/keycloak:15.1.0
           args: ["-b 0.0.0.0", "-Djboss.socket.binding.port-offset=100", "-Dkeycloak.import=/keycloak-config/event-bridge-fm-realm-sample.json"]
           volumeMounts:
             - name: config-volume
