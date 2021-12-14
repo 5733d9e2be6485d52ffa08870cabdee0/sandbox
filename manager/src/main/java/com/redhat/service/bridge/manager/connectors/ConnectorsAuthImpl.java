@@ -13,32 +13,37 @@ import javax.enterprise.context.RequestScoped;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
 
 @RequestScoped
-public class ConnectorAuthImpl implements ConnectorAuth {
+public class ConnectorsAuthImpl implements ConnectorsAuth {
 
-    @ConfigProperty(name = "mc.auth.serverUrl")
+    @ConfigProperty(name = "managed-connectors.auth.server-url")
     String authServerUrl;
 
-    @ConfigProperty(name = "mc.auth.clientId")
+    @ConfigProperty(name = "managed-connectors.auth.client-id")
     String clientId;
 
-    @ConfigProperty(name = "mc.auth.tokenPath")
+    @ConfigProperty(name = "managed-connectors.auth.token-path")
     String tokenPath;
 
-    @ConfigProperty(name = "mc.auth.offlineToken")
+    @ConfigProperty(name = "managed-connectors.auth.offline-token")
     String offlineToken;
 
     String bearerToken;
 
-    // TODO-MC this should be cached for five minutes
     @Override
     public String bearerToken() {
         if (bearerToken == null) {
             bearerToken = bearerTokenFromOfflineToken(offlineToken);
         }
-        return null;
+        return bearerToken;
+    }
+
+    @Scheduled(every = "5m")
+    void resetBearerToken() {
+        bearerToken = null;
     }
 
     /**

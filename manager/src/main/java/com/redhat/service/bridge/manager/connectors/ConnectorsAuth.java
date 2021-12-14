@@ -1,6 +1,6 @@
 package com.redhat.service.bridge.manager.connectors;
 
-public interface ConnectorAuth {
+public interface ConnectorsAuth {
 
     String bearerToken();
 }

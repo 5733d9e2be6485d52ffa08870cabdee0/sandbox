@@ -28,10 +28,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ConnectorDAOTest {
+public class ConnectorsDAOTest {
 
     @Inject
-    ConnectorDAO connectorDAO;
+    ConnectorsDAO connectorsDAO;
 
     @Inject
     ProcessorDAO processorDAO;
@@ -93,7 +93,7 @@ public class ConnectorDAOTest {
         c.setPublishedAt(ZonedDateTime.now());
         c.setDefinition(new TextNode("definition"));
 
-        connectorDAO.persist(c);
+        connectorsDAO.persist(c);
         return c;
     }
 
@@ -103,7 +103,7 @@ public class ConnectorDAOTest {
         Processor p = createProcessor(b, "foo");
         ConnectorEntity c = createConnector(p, "connector");
 
-        assertThat(connectorDAO.findByProcessIdName(p.getId(), c.getName())).isEqualTo(c);
+        assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
     }
 
 }

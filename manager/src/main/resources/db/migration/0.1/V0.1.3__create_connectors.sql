@@ -1,4 +1,4 @@
-create table CONNECTOR_ENTITY
+create table CONNECTOR
 (
     id                 varchar(255) NOT NULL PRIMARY KEY,
     processor_id       varchar(255) NOT NULL,

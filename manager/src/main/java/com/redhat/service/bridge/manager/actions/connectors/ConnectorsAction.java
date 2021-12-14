@@ -9,7 +9,7 @@ import com.redhat.service.bridge.actions.ActionTransformer;
 @ApplicationScoped
 public class ConnectorsAction implements ActionProvider {
 
-    public static final String TYPE = "Connectors";
+    public static final String TYPE = "ConnectorsAction";
     public static final String CONNECTOR_PAYLOAD = "connectorPayload";
 
     @Inject

@@ -31,7 +31,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                 query = "from ConnectorEntity c where c.name=:name and c.processor.id=:processorId"),
 })
 @Entity
-@Table(name = "CONNECTOR_ENTITY")
+@Table(name = "CONNECTOR")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 public class ConnectorEntity { // called -Entity to avoid clash with Connector REST API
 

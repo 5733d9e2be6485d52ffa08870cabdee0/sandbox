@@ -14,11 +14,11 @@ import com.openshift.cloud.api.connector.models.Connector;
 @RequestScoped
 public class ConnectorsApiImpl implements ConnectorsApi {
 
-    @ConfigProperty(name = "mc.services.url")
+    @ConfigProperty(name = "managed-connectors.services.url")
     String mcServicesBaseUrl;
 
     @Inject
-    ConnectorAuth connectorAuth;
+    ConnectorsAuth connectorsAuth;
 
     public Connector createConnector(Connector connector) {
         com.openshift.cloud.api.connector.ConnectorsApi connectorsAPI = createConnectorsAPI();
@@ -37,7 +37,7 @@ public class ConnectorsApiImpl implements ConnectorsApi {
         defaultClient.setBasePath(mcServicesBaseUrl);
 
         HttpBearerAuth Bearer = (HttpBearerAuth) defaultClient.getAuthentication("Bearer");
-        Bearer.setBearerToken(connectorAuth.bearerToken());
+        Bearer.setBearerToken(connectorsAuth.bearerToken());
 
         return new com.openshift.cloud.api.connector.ConnectorsApi(defaultClient);
     }

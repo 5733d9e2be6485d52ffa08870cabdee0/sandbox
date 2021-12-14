@@ -2,9 +2,10 @@ package com.redhat.service.bridge.manager.actions.connectors;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.enterprise.context.ApplicationScoped;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
@@ -12,6 +13,9 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @ApplicationScoped
 public class ConnectorsActionTransformer implements ActionTransformer {
+
+    @ConfigProperty(name = "managed-connectors.topic-name")
+    String topicName;
 
     @Override
     public BaseAction transform(BaseAction action, String bridgeId, String customerId, String processorId) {
@@ -28,11 +32,11 @@ public class ConnectorsActionTransformer implements ActionTransformer {
         return resolvedAction;
     }
 
+    // Currently it's just a fixed topic for testing purposes.
+    // When https://issues.redhat.com/browse/MGDOBR-168 is ready, we can generate one for connector
     // once we use a single topic for every connector there will be no need of having a different
     // one per connector https://issues.redhat.com/browse/MGDSTRM-5977
     private String generateKafkaTopicName(String processorId) {
-        String kafkaTopic = UUID.randomUUID().toString();
-
-        return String.format("%s-%s", processorId, kafkaTopic);
+        return topicName;
     }
 }

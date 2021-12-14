@@ -13,11 +13,11 @@ import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 @Transactional
-public class ConnectorDAO implements PanacheRepositoryBase<ConnectorEntity, String> {
+public class ConnectorsDAO implements PanacheRepositoryBase<ConnectorEntity, String> {
 
     private static final String IDS_PARAM = "ids";
 
-    public ConnectorEntity findByProcessIdName(String processorId, String name) {
+    public ConnectorEntity findByProcessorIdAndName(String processorId, String name) {
         Parameters p = Parameters.with(ConnectorEntity.NAME_PARAM, name).and(ConnectorEntity.PROCESSOR_ID_PARAM, processorId);
         return singleResultFromList(find("#CONNECTORENTITY.findByProcessorIdAndName", p));
     }

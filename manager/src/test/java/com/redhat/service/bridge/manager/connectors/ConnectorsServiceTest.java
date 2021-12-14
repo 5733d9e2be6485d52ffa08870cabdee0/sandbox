@@ -20,7 +20,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.actions.connectors.ConnectorsAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
-import com.redhat.service.bridge.manager.dao.ConnectorDAO;
+import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
@@ -48,7 +48,7 @@ class ConnectorsServiceTest {
     ConnectorsApi connectorsApi;
 
     @Inject
-    ConnectorDAO connectorDAO;
+    ConnectorsDAO connectorsDAO;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -123,7 +123,7 @@ class ConnectorsServiceTest {
         assertThat(calledConnector.getKafka().getClientId()).isEqualTo("fake_id");
         assertThat(calledConnector.getKafka().getClientSecret()).isEqualTo("fake_secret");
 
-        ConnectorEntity foundConnector = connectorDAO.findByProcessIdName(processorId, "new-managed-connector");
+        ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processorId, "new-managed-connector");
         JsonNode definition = foundConnector.getDefinition();
         String kafkaTopic = definition.at("/kafka/topic").asText();
         assertThat(kafkaTopic).isEqualTo("generatedTopic");

@@ -27,7 +27,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.actions.connectors.ConnectorsAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.bridge.manager.dao.ConnectorDAO;
+import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -42,12 +42,12 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     ConnectorsApi connectorsApi;
 
     @Inject
-    ConnectorDAO connectorDAO;
+    ConnectorsDAO connectorsDAO;
 
     @Inject
     ProcessorDAO processorDAO;
 
-    @ConfigProperty(name = "mc.cluster.id")
+    @ConfigProperty(name = "managed-connectors.cluster.id")
     String mcClusterId;
 
     @ConfigProperty(name = "kafka.bootstrap.servers")
@@ -112,7 +112,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setDefinition(connectorPayload);
 
-        connectorDAO.persist(newConnectorEntity);
+        connectorsDAO.persist(newConnectorEntity);
     }
 
     private JsonNode parseConnectorPayloadString(Map<String, String> actionParameters) {
