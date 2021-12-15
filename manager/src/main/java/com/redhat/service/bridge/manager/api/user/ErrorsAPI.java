@@ -19,12 +19,12 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
-import com.redhat.service.bridge.manager.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.Error;
+import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.manager.api.models.responses.ErrorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ListResponse;
-import com.redhat.service.bridge.manager.models.Error;
-import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.quarkus.security.Authenticated;
 
@@ -43,7 +43,7 @@ import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PA
 public class ErrorsAPI {
 
     @Inject
-    private ErrorsService service;
+    ErrorsService service;
 
     @GET
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {

@@ -1,16 +1,16 @@
-package com.redhat.service.bridge.manager.exceptions;
+package com.redhat.service.bridge.infra.exceptions.definitions;
 
 import javax.ws.rs.core.Response;
 
-public class EventBridgeManagerException extends RuntimeException {
+public class EventBridgeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public EventBridgeManagerException(String message) {
+    public EventBridgeException(String message) {
         super(message);
     }
 
-    public EventBridgeManagerException(String message, Throwable cause) {
+    public EventBridgeException(String message, Throwable cause) {
         super(message, cause);
     }
 

@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.models;
+package com.redhat.service.bridge.infra.models;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

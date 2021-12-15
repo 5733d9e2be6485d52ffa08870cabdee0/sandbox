@@ -1,16 +1,16 @@
-package com.redhat.service.bridge.manager.exceptions;
+package com.redhat.service.bridge.infra.exceptions.definitions;
 
 import javax.ws.rs.core.Response;
 
-public class AlreadyExistingItemException extends EventBridgeManagerException {
+public class ActionProviderException extends EventBridgeException {
 
     private static final long serialVersionUID = 1L;
 
-    public AlreadyExistingItemException(String message) {
+    public ActionProviderException(String message) {
         super(message);
     }
 
-    public AlreadyExistingItemException(String message, Throwable cause) {
+    public ActionProviderException(String message, Throwable cause) {
         super(message, cause);
     }
 

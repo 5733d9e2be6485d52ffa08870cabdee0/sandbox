@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.infra.exceptions.definitions.ActionProviderException;
 
 import io.quarkus.test.junit.QuarkusTest;
 

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
@@ -18,6 +17,7 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
+import com.redhat.service.bridge.infra.exceptions.definitions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;

@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.dao;
+package com.redhat.service.bridge.infra.exceptions;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,21 +10,20 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.manager.models.Error;
-import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 
 @ApplicationScoped
 public class ErrorInMemoryDAO implements ErrorDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorInMemoryDAO.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static class ErrorInfo {
         private String exception;
@@ -48,9 +47,6 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     private Map<String, Error> errorsFromExc;
     private List<Error> errorList;
 
-    @Inject
-    ObjectMapper objectMapper;
-
     @PostConstruct
     void init() {
         errorList = new ArrayList<>();
@@ -59,7 +55,7 @@ public class ErrorInMemoryDAO implements ErrorDAO {
 
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("exception/exceptionInfo.json")) {
             if (is != null) {
-                objectMapper.readValue(is, new TypeReference<List<ErrorInfo>>() {
+                MAPPER.readValue(is, new TypeReference<List<ErrorInfo>>() {
                 }).forEach(this::populate);
             } else {
                 logger.error("Cannot find file containing errors in classpath");

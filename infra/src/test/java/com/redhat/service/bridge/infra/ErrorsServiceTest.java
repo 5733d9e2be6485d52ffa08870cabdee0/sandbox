@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.infra;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,10 +8,11 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.manager.models.Error;
-import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.QueryInfo;
-import com.redhat.service.bridge.manager.utils.ExceptionHelper;
+import com.redhat.service.bridge.infra.exceptions.Error;
+import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
+import com.redhat.service.bridge.test.exceptions.ExceptionHelper;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -54,6 +55,7 @@ class ErrorsServiceTest {
     }
 
     private void checkException(Class<?> clazz) {
+        System.out.println(clazz.getName());
         try {
             assertThat(service.getError(clazz.asSubclass(Exception.class).getConstructor(String.class).newInstance("Dummy error message")).isPresent()).isTrue()
                     .withFailMessage(String.format("exception %s not found", clazz));

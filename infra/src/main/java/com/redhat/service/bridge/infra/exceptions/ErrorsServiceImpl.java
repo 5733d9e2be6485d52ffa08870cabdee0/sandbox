@@ -1,14 +1,12 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.infra.exceptions;
 
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.manager.dao.ErrorDAO;
-import com.redhat.service.bridge.manager.models.Error;
-import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 
 @ApplicationScoped
 public class ErrorsServiceImpl implements ErrorsService {

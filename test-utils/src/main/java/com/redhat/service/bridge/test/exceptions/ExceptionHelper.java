@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.utils;
+package com.redhat.service.bridge.test.exceptions;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +16,7 @@ public class ExceptionHelper {
     }
 
     public static Collection<Class<?>> getExceptions() {
+        System.out.println(exceptionClasses.size());
         return exceptionClasses;
     }
 

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.bridge.manager.models.ListResult;
+import com.redhat.service.bridge.infra.models.ListResult;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class ListResponse<T> {

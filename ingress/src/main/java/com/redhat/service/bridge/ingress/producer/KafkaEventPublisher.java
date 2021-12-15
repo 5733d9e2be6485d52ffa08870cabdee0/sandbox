@@ -9,10 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
+import com.redhat.service.bridge.infra.exceptions.definitions.BadRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-import com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
-import com.redhat.service.bridge.ingress.api.exceptions.IngressException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventExtension;
@@ -56,11 +54,7 @@ public class KafkaEventPublisher {
 
         cloudEvent = addMetadataToIncomingEvent(bridgeId, cloudEvent);
         String serializedCloudEvent;
-        try {
-            serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
-        } catch (CloudEventSerializationException e) {
-            throw new IngressException("Failed to encode cloud event", e);
-        }
+        serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
         eventSubject.onNext(serializedCloudEvent);
         LOGGER.info("[ingress] Sending cloudEvent with id '{}' for bridge '{}' to event queue - SUCCESS", cloudEvent.getId(), bridgeId);
     }

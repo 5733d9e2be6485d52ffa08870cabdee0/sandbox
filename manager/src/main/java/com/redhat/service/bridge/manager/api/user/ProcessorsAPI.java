@@ -20,6 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -27,7 +28,6 @@ import com.redhat.service.bridge.manager.api.models.responses.ListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.user.validators.actions.ValidActionParams;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.manager.models.QueryInfo;
 
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;

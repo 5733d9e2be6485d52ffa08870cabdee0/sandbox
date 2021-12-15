@@ -9,7 +9,7 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.responses.ErrorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.manager.utils.ExceptionHelper;
+import com.redhat.service.bridge.test.exceptions.ExceptionHelper;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;

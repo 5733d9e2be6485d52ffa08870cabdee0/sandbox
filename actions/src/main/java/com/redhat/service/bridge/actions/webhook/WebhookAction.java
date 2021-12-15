@@ -7,8 +7,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
+import com.redhat.service.bridge.infra.exceptions.definitions.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 

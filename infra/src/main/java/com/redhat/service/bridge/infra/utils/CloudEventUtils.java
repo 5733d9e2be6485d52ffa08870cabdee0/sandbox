@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.infra.utils.exceptions.CloudEventDeserializationException;
-import com.redhat.service.bridge.infra.utils.exceptions.CloudEventSerializationException;
+import com.redhat.service.bridge.infra.exceptions.definitions.CloudEventDeserializationException;
+import com.redhat.service.bridge.infra.exceptions.definitions.CloudEventSerializationException;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;

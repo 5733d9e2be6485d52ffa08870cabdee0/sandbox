@@ -1,14 +1,14 @@
-package com.redhat.service.bridge.ingress.api.exceptions;
+package com.redhat.service.bridge.infra.exceptions.definitions;
 
 import javax.ws.rs.core.Response;
 
-public class IngressException extends RuntimeException {
+public class BadRequestException extends EventBridgeException {
 
-    public IngressException(String message) {
+    public BadRequestException(String message) {
         super(message);
     }
 
-    public IngressException(String message, Throwable cause) {
+    public BadRequestException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -19,6 +19,6 @@ public class IngressException extends RuntimeException {
      * @return - The HTTP Status code to return to the client.
      */
     public int getStatusCode() {
-        return Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+        return Response.Status.BAD_REQUEST.getStatusCode();
     }
 }

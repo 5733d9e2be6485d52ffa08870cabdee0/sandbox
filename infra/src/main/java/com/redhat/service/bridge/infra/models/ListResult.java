@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.models;
+package com.redhat.service.bridge.infra.models;
 
 import java.util.List;
 
