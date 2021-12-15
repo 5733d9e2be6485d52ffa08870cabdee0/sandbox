@@ -22,7 +22,7 @@ import com.redhat.service.bridge.infra.models.QueryInfo;
 @ApplicationScoped
 public class ErrorInMemoryDAO implements ErrorDAO {
 
-    private static final Logger logger = LoggerFactory.getLogger(ErrorInMemoryDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorInMemoryDAO.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static class ErrorInfo {
@@ -58,10 +58,10 @@ public class ErrorInMemoryDAO implements ErrorDAO {
                 MAPPER.readValue(is, new TypeReference<List<ErrorInfo>>() {
                 }).forEach(this::populate);
             } else {
-                logger.error("Cannot find file containing errors in classpath");
+                LOGGER.error("Cannot find file containing errors in classpath");
             }
         } catch (IOException io) {
-            logger.error("Error closing file with exception errors", io);
+            LOGGER.error("Error closing file with exception errors", io);
         }
     }
 
