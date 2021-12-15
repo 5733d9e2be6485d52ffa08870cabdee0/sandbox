@@ -1,9 +1,24 @@
-package com.redhat.service.bridge.rhoas.request;
+package com.redhat.service.bridge.rhoas.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceAccountRequest {
 
     private String name;
     private String description;
+
+    public ServiceAccountRequest() {
+    }
+
+    public ServiceAccountRequest(String name) {
+        this.name = name;
+    }
+
+    public ServiceAccountRequest(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     public String getName() {
         return name;
