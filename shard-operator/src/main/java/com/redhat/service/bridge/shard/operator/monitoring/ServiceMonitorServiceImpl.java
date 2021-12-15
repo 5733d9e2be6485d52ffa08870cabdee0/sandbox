@@ -29,7 +29,7 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
     TemplateProvider templateProvider;
 
     @Override
-    public Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service) {
+    public Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service, final String componentName) {
         if (!ServiceMonitorClient.isServiceMonitorAvailable(kubernetesClient)) {
             LOGGER.debug("Prometheus Operator is not available in this cluster");
             return Optional.empty();
@@ -45,14 +45,14 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
             if (serviceMonitor.getSpec().getSelector() == null) {
                 serviceMonitor.getSpec().setSelector(new LabelSelector());
             }
-            this.ensureLabels(serviceMonitor, service);
+            this.ensureLabels(serviceMonitor, service, componentName);
             serviceMonitor = ServiceMonitorClient
                     .get(kubernetesClient)
                     .inNamespace(resource.getMetadata().getNamespace())
                     .withName(service.getMetadata().getName())
                     .create(serviceMonitor);
         } else {
-            this.ensureLabels(serviceMonitor, service);
+            this.ensureLabels(serviceMonitor, service, componentName);
             serviceMonitor = ServiceMonitorClient
                     .get(kubernetesClient)
                     .inNamespace(resource.getMetadata().getNamespace())
@@ -62,8 +62,8 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
         return Optional.of(serviceMonitor);
     }
 
-    private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service) {
+    private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service, final String component) {
         serviceMonitor.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).build());
-        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).buildWithDefaults());
+        serviceMonitor.getMetadata().setLabels(new LabelsBuilder().withAppInstance(service.getMetadata().getName()).withComponent(component).buildWithDefaults());
     }
 }

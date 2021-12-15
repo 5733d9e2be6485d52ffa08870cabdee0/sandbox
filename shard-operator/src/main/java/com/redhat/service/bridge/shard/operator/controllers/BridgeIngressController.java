@@ -112,12 +112,13 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service);
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
             LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         } else {
-            // TODO: the message will be a constant on MGDOBR-163
+            LOGGER.warn("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable, ConditionMessages.PROMETHEUS_UNVAILABLE);
             notifyManager(bridgeIngress, BridgeStatus.FAILED);
             return UpdateControl.updateStatusSubResource(bridgeIngress);

@@ -87,11 +87,13 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
 
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service);
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
             LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
         } else {
+            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable, ConditionMessages.PROMETHEUS_UNVAILABLE);
             notifyManager(bridgeExecutor, BridgeStatus.FAILED);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
