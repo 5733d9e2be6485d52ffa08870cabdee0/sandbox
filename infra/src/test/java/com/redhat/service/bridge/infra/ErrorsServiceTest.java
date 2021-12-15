@@ -55,7 +55,6 @@ class ErrorsServiceTest {
     }
 
     private void checkException(Class<?> clazz) {
-        System.out.println(clazz.getName());
         try {
             assertThat(service.getError(clazz.asSubclass(Exception.class).getConstructor(String.class).newInstance("Dummy error message")).isPresent()).isTrue()
                     .withFailMessage(String.format("exception %s not found", clazz));

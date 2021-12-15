@@ -16,7 +16,6 @@ public class ExceptionHelper {
     }
 
     public static Collection<Class<?>> getExceptions() {
-        System.out.println(exceptionClasses.size());
         return exceptionClasses;
     }
 
