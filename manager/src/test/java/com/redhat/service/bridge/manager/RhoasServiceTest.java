@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.manager.models.TopicAndServiceAccount;
@@ -12,6 +13,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
 @QuarkusTest
+@Disabled
 class RhoasServiceTest {
 
     @Inject
