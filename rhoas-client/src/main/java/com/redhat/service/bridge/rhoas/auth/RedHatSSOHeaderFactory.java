@@ -13,7 +13,7 @@ import io.quarkus.oidc.client.Tokens;
 
 public class RedHatSSOHeaderFactory implements ClientHeadersFactory {
 
-    @ConfigProperty(name = "RED_HAT_SSO_REFRESH_TOKEN")
+    @ConfigProperty(name = "red-hat-sso.refresh-token")
     String refreshToken;
 
     @Inject
