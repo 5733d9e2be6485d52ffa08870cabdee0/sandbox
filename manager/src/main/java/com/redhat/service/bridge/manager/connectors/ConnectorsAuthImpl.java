@@ -47,6 +47,7 @@ public class ConnectorsAuthImpl implements ConnectorsAuth {
     }
 
     /**
+     * TODO-MC use Quarkus OID library https://issues.redhat.com/browse/MGDOBR-196
      * Copied from https://github.com/redhat-developer/app-services-operator/blob/main/source/rhoas/src/main/java/com/openshift/cloud/beans/AccessTokenSecretTool.java#L117
      * This method exchanges an offline token for a new refresh token
      *

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.openshift.cloud.api.connector.models.Connector;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -24,16 +25,18 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.manager.actions.connectors.ConnectorsAction;
+import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.bridge.manager.connectors.ConnectorsService;
+import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
+import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
 import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
 import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.models.QueryInfo;
@@ -48,9 +51,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.verify;
 
 @QuarkusTest
@@ -66,11 +66,14 @@ public class ProcessorServiceTest {
     @Inject
     ProcessorService processorService;
 
+    @InjectMock
+    ConnectorsApiClient connectorsApiClient;
+
+    @Inject
+    ConnectorsDAO connectorsDAO;
+
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
-
-    @InjectMock
-    ConnectorsService connectorsService;
 
     @BeforeEach
     public void cleanUp() {
@@ -337,21 +340,29 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    public void createProcessor_ManagedConnectorsTransformedToBaseKafka() {
+    @Transactional
+    void createConnector() {
+        Bridge b = Fixtures.createBridge();
+        bridgeDAO.persist(b);
+
         BaseAction mcAction = new BaseAction();
-        mcAction.setType(ConnectorsAction.TYPE);
+        mcAction.setType(SlackAction.TYPE);
+        Map<String, String> parameters = mcAction.getParameters();
+        parameters.put("channel", "channel");
+        parameters.put("webhookUrl", "webhook_url");
 
         ProcessorRequest processorRequest = new ProcessorRequest();
         processorRequest.setName("ManagedConnectorProcessor");
         processorRequest.setAction(mcAction);
 
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
-        processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        ArgumentCaptor<Connector> connectorCaptor = ArgumentCaptor.forClass(Connector.class);
+        verify(connectorsApiClient).createConnector(connectorCaptor.capture());
+        Connector calledConnector = connectorCaptor.getValue();
+        assertThat(calledConnector.getKafka()).isNotNull();
 
-        ArgumentCaptor<BaseAction> resolvedActionCaptor = ArgumentCaptor.forClass(BaseAction.class);
-        verify(connectorsService, atMostOnce()).createConnectorIfNeeded(eq(processorRequest), resolvedActionCaptor.capture(), any());
-
-        assertThat(resolvedActionCaptor.getValue().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));
+        assertThat(foundConnector).isNotNull();
     }
 }

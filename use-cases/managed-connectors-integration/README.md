@@ -13,10 +13,10 @@ An example of how to interact with Managed Connectors. It will create the needed
 ```shell
 # Only if needed
 # If you don't create a service account like this provide a ./service-acct-credentials.json as in `create-service-account.sh`
-./create-service-account.sh
+./scripts/create-service-account.sh
 
 # Then
-./create-kafka-instance.sh
+./scripts/create-kafka-instance.sh
 # Follow the output of the script, it will set the needed variables
 
 export COS_BASE_PATH=https://cos-fleet-manager-cos.rh-fuse-153f1de160110098c1928a6c05e19444-0000.eu-de.containers.appdomain.cloud

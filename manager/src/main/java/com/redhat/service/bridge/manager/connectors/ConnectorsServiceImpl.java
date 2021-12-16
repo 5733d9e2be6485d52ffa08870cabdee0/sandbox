@@ -1,34 +1,24 @@
 package com.redhat.service.bridge.manager.connectors;
 
-import java.io.ByteArrayInputStream;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.openshift.cloud.api.connector.models.AddonClusterTarget;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorAllOfMetadata;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
-import com.redhat.service.bridge.manager.actions.connectors.ConnectorsAction;
-import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
-import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -36,16 +26,10 @@ import com.redhat.service.bridge.manager.models.Processor;
 public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Inject
-    ObjectMapper mapper;
-
-    @Inject
-    ConnectorsApi connectorsApi;
+    ConnectorsApiClient connectorsApiClient;
 
     @Inject
     ConnectorsDAO connectorsDAO;
-
-    @Inject
-    ProcessorDAO processorDAO;
 
     @ConfigProperty(name = "managed-connectors.cluster.id")
     String mcClusterId;
@@ -60,49 +44,33 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     String serviceAccountSecret;
 
     @Override
-    @Transactional(Transactional.TxType.MANDATORY)
-    public Optional<String> createConnectorIfNeeded(ProcessorRequest processorRequest,
-            BaseAction resolvedAction,
-            Processor processor) {
+    @Transactional
+    public Optional<ConnectorEntity> createConnectorIfNeeded(BaseAction resolvedAction,
+            Processor processor,
+            ActionProvider actionProvider) {
 
-        BaseAction action = processorRequest.getAction();
-
-        if (!ConnectorsAction.TYPE.equals(action.getType())) {
+        if (!actionProvider.isConnectorAction()) {
             return Optional.empty();
         }
 
-        Map<String, String> actionParameters = action.getParameters();
-        String connectorType = actionParameters.get("connectorType");
-        String newConnectorName = actionParameters.get("connectorName");
+        ConnectorAction connectorAction = (ConnectorAction) actionProvider;
+        JsonNode connectorPayload = connectorAction.connectorPayload(resolvedAction);
 
-        JsonNode connectorPayload = parseConnectorPayloadString(actionParameters);
+        String connectorType = connectorAction.getConnectorType();
+        String newConnectorName = connectorName(connectorType, processor);
 
-        // Assume connectors actions are transformed to send-to-kafka
-        String kafkaTopicName = resolvedAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
-        if (kafkaTopicName == null) {
-            throw new RuntimeException("Need a kafka topic to create a connector");
-        }
-        updateKafkaTopicInConnectorPayload(connectorPayload, kafkaTopicName);
+        ConnectorEntity newConnectorEntity = persistConnector(processor, newConnectorName, connectorPayload);
 
-        persistConnector(processor, newConnectorName, connectorPayload);
+        Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
 
-        try {
-            Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
-        } catch (Exception e) {
-            throw new RuntimeException(e); // TODO-MC error handling
-        }
-
-        return Optional.of(newConnectorName);
+        return Optional.of(newConnectorEntity);
     }
 
-    private void updateKafkaTopicInConnectorPayload(JsonNode connectorPayload, String kafkaTopicName) {
-        // Assume the Connector action is always transformed to a send-to-kafka Action
-        String kafkaTopic = kafkaTopicName;
-        ObjectNode kafka = connectorPayload.with("kafka");
-        kafka.put("topic", kafkaTopic);
+    private String connectorName(String connectorType, Processor processor) {
+        return String.format("OpenBridge-%s-%s", connectorType, processor.getId());
     }
 
-    private void persistConnector(Processor processor, String newConnectorName, JsonNode connectorPayload) {
+    private ConnectorEntity persistConnector(Processor processor, String newConnectorName, JsonNode connectorPayload) {
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 
         newConnectorEntity.setName(newConnectorName);
@@ -113,24 +81,19 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setDefinition(connectorPayload);
 
         connectorsDAO.persist(newConnectorEntity);
+
+        return newConnectorEntity;
     }
 
-    private JsonNode parseConnectorPayloadString(Map<String, String> actionParameters) {
-        try {
-            String connectorPayloadString = actionParameters.get("connectorPayload");
-            return mapper.readTree(connectorPayloadString);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e); // TODO-MC error handling
-        }
-    }
-
-    private Connector callConnectorService(String connectorType,
+    private Connector callConnectorService(
+            String connectorType,
             JsonNode connectorPayload,
             String newConnectorName) {
         Connector createConnectorRequest = new Connector();
 
         ConnectorAllOfMetadata metadata = new ConnectorAllOfMetadata();
         metadata.setName(newConnectorName);
+        // https://issues.redhat.com/browse/MGDOBR-198
         metadata.setKafkaId("kafkaId-ignored"); // this is currently ignored in the Connectors API
         createConnectorRequest.setMetadata(metadata);
 
@@ -149,28 +112,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         kafka.setClientSecret(serviceAccountSecret);
         createConnectorRequest.setKafka(kafka);
 
-        try {
-            Connector connectorResult = connectorsApi.createConnector(createConnectorRequest);
-            return connectorResult;
-        } catch (WebApplicationException e) {
-            errorLogging(e);
-            throw e;
-        }
-    }
-
-    // TODO-MC better error logging
-    private void errorLogging(WebApplicationException e) {
-        Response response = e.getResponse();
-        System.out.println("Error code: " + response.getStatus());
-
-        ByteArrayInputStream arrayInputStream = (ByteArrayInputStream) response.getEntity();
-
-        Scanner scanner = new Scanner(arrayInputStream);
-        scanner.useDelimiter("\\Z");//To read all scanner content in one String
-        String data = "";
-        if (scanner.hasNext()) {
-            data = scanner.next();
-        }
-        System.out.println(data);
+        return connectorsApiClient.createConnector(createConnectorRequest);
     }
 }

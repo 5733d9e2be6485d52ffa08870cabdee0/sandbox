@@ -5,14 +5,16 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import com.openshift.cloud.api.connector.ConnectorsApi;
 import com.openshift.cloud.api.connector.invoker.ApiClient;
 import com.openshift.cloud.api.connector.invoker.ApiException;
 import com.openshift.cloud.api.connector.invoker.Configuration;
 import com.openshift.cloud.api.connector.invoker.auth.HttpBearerAuth;
 import com.openshift.cloud.api.connector.models.Connector;
+import com.redhat.service.bridge.manager.exceptions.ConnectorCreationException;
 
 @RequestScoped
-public class ConnectorsApiImpl implements ConnectorsApi {
+public class ConnectorsApiClientImpl implements ConnectorsApiClient {
 
     @ConfigProperty(name = "managed-connectors.services.url")
     String mcServicesBaseUrl;
@@ -21,18 +23,16 @@ public class ConnectorsApiImpl implements ConnectorsApi {
     ConnectorsAuth connectorsAuth;
 
     public Connector createConnector(Connector connector) {
-        com.openshift.cloud.api.connector.ConnectorsApi connectorsAPI = createConnectorsAPI();
+        ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
             return connectorsAPI.createConnector(true, connector);
         } catch (ApiException e) {
-            // TODO-MC error handling
-            throw new RuntimeException(e);
+            throw new ConnectorCreationException("Error while calling the connectors SKD", e);
         }
-
     }
 
-    private com.openshift.cloud.api.connector.ConnectorsApi createConnectorsAPI() {
+    private ConnectorsApi createConnectorsAPI() {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath(mcServicesBaseUrl);
 

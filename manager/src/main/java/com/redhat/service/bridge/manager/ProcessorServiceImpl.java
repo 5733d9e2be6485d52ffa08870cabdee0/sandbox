@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -87,6 +88,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
+
         BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
                 bridge.getId(),
                 customerId,
@@ -102,7 +105,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         processorDAO.persist(newProcessor);
 
-        connectorService.createConnectorIfNeeded(processorRequest, resolvedAction, newProcessor);
+        connectorService.createConnectorIfNeeded(resolvedAction, newProcessor, actionProvider);
 
         return newProcessor;
     }
