@@ -55,7 +55,7 @@ public class ServiceMonitorServiceTest {
         final Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
 
         // When
-        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeIngress, service);
+        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, "ingress");
 
         // Then
         assertThat(serviceMonitor).isPresent();
@@ -64,6 +64,7 @@ public class ServiceMonitorServiceTest {
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
+        assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.COMPONENT_LABEL, "ingress");
         assertThat(service.getMetadata().getLabels()).containsEntry(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
     }
 }
