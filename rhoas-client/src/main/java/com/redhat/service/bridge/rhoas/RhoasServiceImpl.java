@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.rhoas;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -8,9 +8,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.manager.models.TopicAndServiceAccount;
-import com.redhat.service.bridge.rhoas.KafkaInstanceAdminClient;
-import com.redhat.service.bridge.rhoas.KafkasMgmtV1Client;
 import com.redhat.service.bridge.rhoas.dto.AclBinding;
 import com.redhat.service.bridge.rhoas.dto.AclOperation;
 import com.redhat.service.bridge.rhoas.dto.AclPatternType;
@@ -19,6 +16,7 @@ import com.redhat.service.bridge.rhoas.dto.AclResourceType;
 import com.redhat.service.bridge.rhoas.dto.ServiceAccount;
 import com.redhat.service.bridge.rhoas.dto.ServiceAccountRequest;
 import com.redhat.service.bridge.rhoas.dto.Topic;
+import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccount;
 import com.redhat.service.bridge.rhoas.dto.TopicRequest;
 
 import io.smallrye.mutiny.Uni;
@@ -37,7 +35,7 @@ public class RhoasServiceImpl implements RhoasService {
     KafkaInstanceAdminClient instanceClient;
 
     @Override
-    public Uni<TopicAndServiceAccount> createTopicAndServiceAccount(String topicName, String serviceAccountName) {
+    public Uni<TopicAndServiceAccount> createTopicAndConsumerServiceAccount(String topicName, String serviceAccountName) {
         LOG.info("Started creation of topic={} and serviceAccount={}...", topicName, serviceAccountName);
         return Uni.createFrom().item(() -> new Context(topicName, serviceAccountName))
                 .onItem().transformToUni(this::createTopic)

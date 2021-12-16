@@ -1,7 +1,4 @@
-package com.redhat.service.bridge.manager.models;
-
-import com.redhat.service.bridge.rhoas.dto.ServiceAccount;
-import com.redhat.service.bridge.rhoas.dto.Topic;
+package com.redhat.service.bridge.rhoas.dto;
 
 public class TopicAndServiceAccount {
 
