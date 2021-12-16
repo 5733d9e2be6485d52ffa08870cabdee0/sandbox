@@ -19,6 +19,7 @@ import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProv
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
+import com.redhat.service.bridge.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -55,28 +56,31 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
-        kubernetesClient
+        BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
+
+        BridgeExecutor existing = kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(namespace.getMetadata().getName())
-                .create(BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage));
+                .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
+                .get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            kubernetesClient
+                    .resources(BridgeExecutor.class)
+                    .inNamespace(namespace.getMetadata().getName())
+                    .createOrReplace(expected);
+        }
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor) {
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
-
-        if (deployment != null) {
-            return deployment;
-        }
-
-        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
+        Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
 
         // Specs
-        deployment.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
-        deployment.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
+        expected.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
+        expected.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
 
         // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
@@ -91,26 +95,30 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         } catch (JsonProcessingException e) {
             LOGGER.error("Could not serialize Processor Definition while setting executor deployment environment variables", e);
         }
-        deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 
-        return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(deployment);
-    }
+        Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
-    @Override
-    public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
-        Service service = kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
-
-        if (service != null) {
-            return service;
+        if (existing == null || !DeploymentSpecUtils.isDeploymentEqual(expected, existing)) {
+            return kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
         }
 
-        service = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);
+        return existing;
+    }
 
+    @Override
+    public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
+        Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);
         // Specs
-        service.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
+        expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
-        return kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).create(service);
+        Service existing = kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
+
+        if (existing == null || !expected.getSpec().getSelector().equals(existing.getSpec().getSelector())) {
+            return kubernetesClient.services().inNamespace(bridgeExecutor.getMetadata().getNamespace()).createOrReplace(expected);
+        }
+
+        return existing;
     }
 
     @Override

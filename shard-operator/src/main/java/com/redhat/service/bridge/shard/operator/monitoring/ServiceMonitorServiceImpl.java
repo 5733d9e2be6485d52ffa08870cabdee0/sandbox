@@ -31,35 +31,31 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
     @Override
     public Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service, final String componentName) {
         if (!ServiceMonitorClient.isServiceMonitorAvailable(kubernetesClient)) {
-            LOGGER.debug("Prometheus Operator is not available in this cluster");
+            LOGGER.warn("Prometheus Operator is not available in this cluster");
             return Optional.empty();
         }
-        ServiceMonitor serviceMonitor = ServiceMonitorClient
+
+        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource);
+        if (expected.getSpec().getSelector() == null) {
+            expected.getSpec().setSelector(new LabelSelector());
+        }
+        this.ensureLabels(expected, service, componentName);
+
+        ServiceMonitor existing = ServiceMonitorClient
                 .get(kubernetesClient)
                 .inNamespace(resource.getMetadata().getNamespace())
                 .withName(service.getMetadata().getName())
                 .get();
-        if (serviceMonitor == null) {
-            LOGGER.debug("Prometheus ServiceMonitor does not exist. Creating a new instance.");
-            serviceMonitor = templateProvider.loadServiceMonitorTemplate(resource);
-            if (serviceMonitor.getSpec().getSelector() == null) {
-                serviceMonitor.getSpec().setSelector(new LabelSelector());
-            }
-            this.ensureLabels(serviceMonitor, service, componentName);
-            serviceMonitor = ServiceMonitorClient
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            return Optional.of(ServiceMonitorClient
                     .get(kubernetesClient)
                     .inNamespace(resource.getMetadata().getNamespace())
                     .withName(service.getMetadata().getName())
-                    .create(serviceMonitor);
-        } else {
-            this.ensureLabels(serviceMonitor, service, componentName);
-            serviceMonitor = ServiceMonitorClient
-                    .get(kubernetesClient)
-                    .inNamespace(resource.getMetadata().getNamespace())
-                    .withName(service.getMetadata().getName())
-                    .patch(serviceMonitor);
+                    .createOrReplace(expected));
         }
-        return Optional.of(serviceMonitor);
+
+        return Optional.of(existing);
     }
 
     private void ensureLabels(final ServiceMonitor serviceMonitor, final Service service, final String component) {
