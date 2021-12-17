@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.test.wiremock;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -22,20 +21,7 @@ public abstract class AbstractWireMockResourceManager implements QuarkusTestReso
     public Map<String, String> start() {
         wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
         wireMockServer.start();
-
-        Map<String, String> variablesMap = new HashMap<>(1);
-        variablesMap.put(variableName, wireMockServer.baseUrl());
-
-        Map<String, String> configureMap = configure(wireMockServer);
-        variablesMap.putAll(configureMap);
-
-        variablesMap.forEach((key, value) -> System.err.printf("%s -> %s%n", key, value));
-
-        return variablesMap;
-    }
-
-    protected Map<String, String> configure(WireMockServer server) {
-        return Collections.emptyMap();
+        return Collections.singletonMap(variableName, wireMockServer.baseUrl());
     }
 
     @Override
