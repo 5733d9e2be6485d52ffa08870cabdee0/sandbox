@@ -50,8 +50,8 @@ class RhoasServiceTest {
 
     @Test
     void testCreateTopicAndConsumerServiceAccountOk() {
-        kafkaMgmtConfigurator.configureWithEmptyTestServiceAccount(wireMockServer);
-        kafkaInstanceConfigurator.configureWithEmptyTestTopic(wireMockServer);
+        kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
+        kafkaInstanceConfigurator.configureWithAllWorking(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
@@ -59,9 +59,29 @@ class RhoasServiceTest {
     }
 
     @Test
-    void testCreateTopicAndConsumerServiceAccountExistingTopic() {
-        kafkaMgmtConfigurator.configureWithEmptyTestServiceAccount(wireMockServer);
-        kafkaInstanceConfigurator.configureWithExistingTestTopic(wireMockServer);
+    void testCreateTopicAndConsumerServiceAccountWithBrokenTopicCreation() {
+        kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
+        kafkaInstanceConfigurator.configureWithBrokenTopicCreation(wireMockServer);
+
+        rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .subscribe().withSubscriber(UniAssertSubscriber.create())
+                .awaitFailure(Duration.ofSeconds(5));
+    }
+
+    @Test
+    void testCreateTopicAndConsumerServiceAccountWithBrokenServiceAccountCreation() {
+        kafkaMgmtConfigurator.configureWithBrokenServiceAccountCreation(wireMockServer);
+        kafkaInstanceConfigurator.configureWithAllWorking(wireMockServer);
+
+        rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .subscribe().withSubscriber(UniAssertSubscriber.create())
+                .awaitFailure(Duration.ofSeconds(5));
+    }
+
+    @Test
+    void testCreateTopicAndConsumerServiceAccountWithBrokenACLCreation() {
+        kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
+        kafkaInstanceConfigurator.configureWithBrokenACLCreation(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())

@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.rhoas.resourcemanager;
 
-import java.util.Collections;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -9,7 +7,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.redhat.service.bridge.rhoas.dto.Topic;
-import com.redhat.service.bridge.rhoas.dto.Topics;
 
 import static com.redhat.service.bridge.rhoas.resourcemanager.MasSSOMockServerConfigurator.TEST_ACCESS_TOKEN;
 
@@ -30,39 +27,28 @@ public class KafkaInstanceAdminMockServerConfigurator extends AbstractApiMockSer
         return basePath;
     }
 
-    public void configureWithEmptyTestTopic(WireMockServer server) {
-        server.stubFor(authGet("/topics").willReturn(responseWithEmptyTopics()));
+    public void configureWithAllWorking(WireMockServer server) {
         server.stubFor(authPost("/topics").willReturn(responseWithCreatedTopic()));
-        server.stubFor(authPost("/acls").willReturn(emptyResponse(200)));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(200)));
+
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithStatus(200)));
     }
 
-    public void configureWithExistingTestTopic(WireMockServer server) {
-        server.stubFor(authGet("/topics").willReturn(responseWithExistingTopic()));
-        server.stubFor(authPost("/topics").willReturn(emptyResponse(409)));
-        server.stubFor(authPost("/acls").willReturn(emptyResponse(200)));
+    public void configureWithBrokenTopicCreation(WireMockServer server) {
+        server.stubFor(authPost("/topics").willReturn(responseWithStatus(500)));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(200)));
+
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithStatus(200)));
     }
 
-    private ResponseDefinitionBuilder responseWithEmptyTopics() {
-        Topics body = new Topics();
-        body.setPage(1);
-        body.setSize(0);
-        body.setTotal(0);
-        body.setItems(Collections.emptyList());
-        return jsonResponse(body);
-    }
+    public void configureWithBrokenACLCreation(WireMockServer server) {
+        server.stubFor(authPost("/topics").willReturn(responseWithCreatedTopic()));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(200)));
 
-    private ResponseDefinitionBuilder responseWithExistingTopic() {
-        Topic testTopic = new Topic();
-        testTopic.setName(TEST_TOPIC_NAME);
-        testTopic.setInternal(false);
-
-        Topics body = new Topics();
-        body.setPage(1);
-        body.setSize(1);
-        body.setTotal(0);
-        body.setItems(Collections.singletonList(testTopic));
-
-        return jsonResponse(body);
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(500)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithStatus(200)));
     }
 
     private ResponseDefinitionBuilder responseWithCreatedTopic() {

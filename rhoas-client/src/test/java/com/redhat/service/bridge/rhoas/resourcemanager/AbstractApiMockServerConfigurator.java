@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.UrlPattern;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 public abstract class AbstractApiMockServerConfigurator {
 
@@ -24,12 +26,12 @@ public abstract class AbstractApiMockServerConfigurator {
 
     protected abstract String getBasePath();
 
-    private MappingBuilder auth(Function<String, MappingBuilder> method, String subPath) {
-        return method.apply(pathOf(subPath)).withHeader("Authorization", matching("Bearer " + expectedAccessToken));
+    private MappingBuilder auth(Function<UrlPattern, MappingBuilder> method, String subPath) {
+        return method.apply(urlMatching(pathOf(subPath))).withHeader("Authorization", matching("Bearer " + expectedAccessToken));
     }
 
-    protected MappingBuilder authGet(String subPath) {
-        return auth(WireMock::get, subPath);
+    protected MappingBuilder authDelete(String subPath) {
+        return auth(WireMock::delete, subPath);
     }
 
     protected MappingBuilder authPost(String subPath) {
@@ -58,7 +60,7 @@ public abstract class AbstractApiMockServerConfigurator {
                 .withBody(bodyString);
     }
 
-    protected ResponseDefinitionBuilder emptyResponse(int status) {
+    protected ResponseDefinitionBuilder responseWithStatus(int status) {
         return WireMock.aResponse().withStatus(status);
     }
 }
