@@ -19,7 +19,12 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
+import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_ID;
 import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_NAME;
 
 @QuarkusTest
@@ -57,6 +62,14 @@ class RhoasServiceTest {
                 .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitItem(Duration.ofSeconds(5));
+
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics"))));
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts"))));
+        wireMockServer.verify(3, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/acls"))));
+
+        wireMockServer.verify(0, deleteRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics/" + TEST_TOPIC_NAME))));
+        wireMockServer.verify(0, deleteRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID))));
+        wireMockServer.verify(0, deleteRequestedFor(urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
 
     @Test
@@ -68,6 +81,14 @@ class RhoasServiceTest {
                 .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
+
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics"))));
+        wireMockServer.verify(0, postRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts"))));
+        wireMockServer.verify(0, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/acls"))));
+
+        wireMockServer.verify(0, deleteRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics/" + TEST_TOPIC_NAME))));
+        wireMockServer.verify(0, deleteRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID))));
+        wireMockServer.verify(0, deleteRequestedFor(urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
 
     @Test
@@ -79,6 +100,14 @@ class RhoasServiceTest {
                 .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
+
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics"))));
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts"))));
+        wireMockServer.verify(0, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/acls"))));
+
+        wireMockServer.verify(1, deleteRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics/" + TEST_TOPIC_NAME))));
+        wireMockServer.verify(0, deleteRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID))));
+        wireMockServer.verify(0, deleteRequestedFor(urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
 
     @Test
@@ -90,5 +119,13 @@ class RhoasServiceTest {
                 .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
+
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics"))));
+        wireMockServer.verify(1, postRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts"))));
+        wireMockServer.verify(3, postRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/acls"))));
+
+        wireMockServer.verify(1, deleteRequestedFor(urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics/" + TEST_TOPIC_NAME))));
+        wireMockServer.verify(1, deleteRequestedFor(urlEqualTo(kafkaMgmtConfigurator.pathOf("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID))));
+        wireMockServer.verify(3, deleteRequestedFor(urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
 }

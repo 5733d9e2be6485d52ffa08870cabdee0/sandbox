@@ -24,6 +24,10 @@ public abstract class AbstractApiMockServerConfigurator {
         this.expectedAccessToken = expectedAccessToken;
     }
 
+    public String pathOf(String subPath) {
+        return getBasePath() + intermediatePath + subPath;
+    }
+
     protected abstract String getBasePath();
 
     private MappingBuilder auth(Function<UrlPattern, MappingBuilder> method, String subPath) {
@@ -36,10 +40,6 @@ public abstract class AbstractApiMockServerConfigurator {
 
     protected MappingBuilder authPost(String subPath) {
         return auth(WireMock::post, subPath);
-    }
-
-    protected String pathOf(String subPath) {
-        return getBasePath() + intermediatePath + subPath;
     }
 
     protected ResponseDefinitionBuilder jsonResponse(Object body) {

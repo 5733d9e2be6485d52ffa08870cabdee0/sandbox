@@ -39,7 +39,7 @@ public class RedHatSSOMockServerConfiguration {
                 .willReturn(response()));
     }
 
-    private String pathOf(String subPath) {
+    public String pathOf(String subPath) {
         return basePath + subPath;
     }
 

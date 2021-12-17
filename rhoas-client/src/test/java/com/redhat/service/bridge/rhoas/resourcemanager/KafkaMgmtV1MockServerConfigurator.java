@@ -4,7 +4,6 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.redhat.service.bridge.rhoas.dto.ServiceAccount;
@@ -16,8 +15,6 @@ public class KafkaMgmtV1MockServerConfigurator extends AbstractApiMockServerConf
 
     public static final String TEST_SERVICE_ACCOUNT_ID = "sa-123";
     public static final String TEST_SERVICE_ACCOUNT_NAME = "test-sa";
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @ConfigProperty(name = "mock-server.mgmt-api.base-path")
     String basePath;

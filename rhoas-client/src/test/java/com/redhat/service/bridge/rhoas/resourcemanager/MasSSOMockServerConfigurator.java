@@ -41,7 +41,7 @@ public class MasSSOMockServerConfigurator {
                         .withBody(TEST_BODY)));
     }
 
-    private String pathOf(String subPath) {
+    public String pathOf(String subPath) {
         return basePath + subPath;
     }
 
