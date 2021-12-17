@@ -54,6 +54,7 @@ class RhoasServiceTest {
         kafkaInstanceConfigurator.configureWithAllWorking(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitItem(Duration.ofSeconds(5));
     }
@@ -64,6 +65,7 @@ class RhoasServiceTest {
         kafkaInstanceConfigurator.configureWithBrokenTopicCreation(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
     }
@@ -74,6 +76,7 @@ class RhoasServiceTest {
         kafkaInstanceConfigurator.configureWithAllWorking(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
     }
@@ -84,6 +87,7 @@ class RhoasServiceTest {
         kafkaInstanceConfigurator.configureWithBrokenACLCreation(wireMockServer);
 
         rhoasService.createTopicAndConsumerServiceAccount(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME)
+                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(5));
     }
