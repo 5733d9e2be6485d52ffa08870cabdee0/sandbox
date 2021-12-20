@@ -1,8 +1,10 @@
-package com.redhat.service.bridge.infra.exceptions.definitions;
+package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class BadRequestException extends EventBridgeException {
+public class BadRequestException extends UserFaultException {
+
+    private static final long serialVersionUID = 1L;
 
     public BadRequestException(String message) {
         super(message);

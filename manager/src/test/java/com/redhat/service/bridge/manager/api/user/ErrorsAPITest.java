@@ -6,9 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
+import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.manager.TestConstants;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorListResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.test.exceptions.ExceptionHelper;
 
 import io.quarkus.test.junit.QuarkusTest;

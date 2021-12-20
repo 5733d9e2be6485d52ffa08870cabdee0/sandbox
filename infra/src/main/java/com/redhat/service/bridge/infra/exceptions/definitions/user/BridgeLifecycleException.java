@@ -1,8 +1,8 @@
-package com.redhat.service.bridge.infra.exceptions.definitions;
+package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class BridgeLifecycleException extends EventBridgeException {
+public class BridgeLifecycleException extends UserFaultException {
 
     private static final long serialVersionUID = 1L;
 

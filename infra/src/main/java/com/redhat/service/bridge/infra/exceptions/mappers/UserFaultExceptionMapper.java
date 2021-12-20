@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.api;
+package com.redhat.service.bridge.infra.exceptions.mappers;
 
 import java.util.Optional;
 
@@ -6,27 +6,25 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.exceptions.Error;
 import com.redhat.service.bridge.infra.exceptions.ErrorsService;
-import com.redhat.service.bridge.infra.exceptions.definitions.EventBridgeException;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException;
 
-@Provider
-public class EventBridgeManagerExceptionMapper implements ExceptionMapper<EventBridgeException> {
+public class UserFaultExceptionMapper implements ExceptionMapper<UserFaultException> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserFaultExceptionMapper.class);
 
     @Inject
     ErrorsService errorsService;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeManagerExceptionMapper.class);
-
     @Override
-    public Response toResponse(EventBridgeException e) {
-        LOGGER.error("Failure", e);
+    public Response toResponse(UserFaultException e) {
+        LOGGER.debug("Failure", e);
         Optional<Error> error = errorsService.getError(e);
         ResponseBuilder builder = Response.status(e.getStatusCode());
         if (error.isPresent()) {

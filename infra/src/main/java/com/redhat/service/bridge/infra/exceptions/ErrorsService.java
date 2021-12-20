@@ -7,9 +7,9 @@ import com.redhat.service.bridge.infra.models.QueryInfo;
 
 public interface ErrorsService {
 
-    ListResult<Error> getErrors(QueryInfo pageInfo);
+    ListResult<Error> getUserErrors(QueryInfo pageInfo);
 
-    Optional<Error> getError(int errorId);
+    Optional<Error> getUserError(int errorId);
 
     Optional<Error> getError(Exception e);
 }

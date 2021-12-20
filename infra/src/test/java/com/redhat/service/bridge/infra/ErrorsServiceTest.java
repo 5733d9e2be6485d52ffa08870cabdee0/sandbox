@@ -38,7 +38,7 @@ class ErrorsServiceTest {
         ListResult<Error> result;
         int page = 0;
         do {
-            result = service.getErrors(new QueryInfo(page++, pageSize));
+            result = service.getUserErrors(new QueryInfo(page++, pageSize));
             errors.addAll(result.getItems());
         } while (result.getSize() == pageSize);
         assertThat(exceptionClasses).hasSize(errors.size()).withFailMessage(String.format("Exception classes: %s Errors: %s", exceptionClasses, errors));
@@ -51,7 +51,7 @@ class ErrorsServiceTest {
     }
 
     private void checkId(Error error) {
-        assertThat(service.getError(error.getId()).isPresent()).isTrue();
+        assertThat(service.getUserError(error.getId()).isPresent()).isTrue();
     }
 
     private void checkException(Class<?> clazz) {

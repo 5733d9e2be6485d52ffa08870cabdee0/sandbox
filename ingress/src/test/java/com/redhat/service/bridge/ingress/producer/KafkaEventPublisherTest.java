@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
-import com.redhat.service.bridge.infra.exceptions.definitions.BadRequestException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.TestUtils;
 

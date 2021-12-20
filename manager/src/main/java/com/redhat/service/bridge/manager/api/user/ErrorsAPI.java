@@ -19,12 +19,12 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
+import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
+import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
+import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
 import com.redhat.service.bridge.infra.exceptions.Error;
 import com.redhat.service.bridge.infra.exceptions.ErrorsService;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorListResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ListResponse;
 
 import io.quarkus.security.Authenticated;
 
@@ -47,13 +47,13 @@ public class ErrorsAPI {
 
     @GET
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {
-        return Response.ok(ListResponse.fill(service.getErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
+        return Response.ok(ListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
     }
 
     @GET
     @Path("{id}")
     public Response getError(@PathParam("id") int id) {
-        Optional<Error> error = service.getError(id);
+        Optional<Error> error = service.getUserError(id);
         return (error.isPresent() ? Response.ok(ErrorResponse.from(error.get())) : Response.status(Status.NOT_FOUND)).build();
     }
 }

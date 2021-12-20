@@ -13,9 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.exceptions.definitions.AlreadyExistingItemException;
-import com.redhat.service.bridge.infra.exceptions.definitions.BridgeLifecycleException;
-import com.redhat.service.bridge.infra.exceptions.definitions.ItemNotFoundException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;

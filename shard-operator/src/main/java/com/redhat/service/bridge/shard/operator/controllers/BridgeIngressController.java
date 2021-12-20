@@ -5,6 +5,10 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +62,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Inject
     ServiceMonitorService monitorService;
+
+    @Inject
+    ErrorsService errorsService;
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
@@ -118,7 +125,12 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         } else {
             // TODO: the message will be a constant on MGDOBR-163
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable, "ServiceMonitor CRD not available");
+            try {
+                bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable,
+                                                             new ObjectMapper().writeValueAsString(errorsService.getError(new PrometheusNotInstalledException("")).get()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 

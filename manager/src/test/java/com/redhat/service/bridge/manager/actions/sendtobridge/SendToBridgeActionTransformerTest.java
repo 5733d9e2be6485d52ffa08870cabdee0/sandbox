@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
-import com.redhat.service.bridge.infra.exceptions.definitions.BridgeLifecycleException;
-import com.redhat.service.bridge.infra.exceptions.definitions.ItemNotFoundException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.BridgesService;

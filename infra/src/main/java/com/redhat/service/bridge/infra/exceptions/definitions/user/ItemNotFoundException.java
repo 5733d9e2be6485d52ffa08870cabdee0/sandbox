@@ -1,8 +1,9 @@
-package com.redhat.service.bridge.infra.exceptions.definitions;
+package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class ItemNotFoundException extends EventBridgeException {
+public class ItemNotFoundException extends UserFaultException {
+
     private static final long serialVersionUID = 1L;
 
     public ItemNotFoundException(String message) {

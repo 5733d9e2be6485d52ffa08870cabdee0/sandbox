@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.api.models.responses;
+package com.redhat.service.bridge.infra.api.models.responses;
 
 import java.util.ArrayList;
 import java.util.List;

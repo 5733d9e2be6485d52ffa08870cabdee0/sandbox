@@ -15,13 +15,13 @@ public class ErrorsServiceImpl implements ErrorsService {
     ErrorDAO repository;
 
     @Override
-    public ListResult<Error> getErrors(QueryInfo queryInfo) {
-        return repository.findAll(queryInfo);
+    public ListResult<Error> getUserErrors(QueryInfo queryInfo) {
+        return repository.findAllUserErrors(queryInfo);
     }
 
     @Override
-    public Optional<Error> getError(int errorId) {
-        return Optional.ofNullable(repository.findById(errorId));
+    public Optional<Error> getUserError(int errorId) {
+        return Optional.ofNullable(repository.findUserErrorById(errorId));
     }
 
     @Override
