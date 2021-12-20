@@ -53,6 +53,12 @@ Wait until all the resources have been deployed (it might take a while for a bra
 kubectl wait pod -l app.kubernetes.io/instance=my-cluster --for=condition=Ready --timeout=600s -n kafka
 ```
 
+Deploy the ServiceMonitor CRD from the Prometheus operator with 
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+```
+
 ## Development environment
 
 If not already running, start your Minikube cluster with 
