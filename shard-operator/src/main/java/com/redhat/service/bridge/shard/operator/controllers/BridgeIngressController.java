@@ -5,13 +5,12 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.exceptions.Error;
+import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
@@ -125,12 +124,12 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         } else {
             // TODO: the message will be a constant on MGDOBR-163
-            try {
-                bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable,
-                                                             new ObjectMapper().writeValueAsString(errorsService.getError(new PrometheusNotInstalledException("")).get()));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            Error prometheusNotAvailableError = errorsService.getError(PrometheusNotInstalledException.class)
+                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
+                    ConditionReason.PrometheusUnavailable,
+                    prometheusNotAvailableError.getReason(),
+                    prometheusNotAvailableError.getCode());
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 

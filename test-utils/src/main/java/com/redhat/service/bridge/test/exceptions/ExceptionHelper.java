@@ -8,22 +8,22 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
 public class ExceptionHelper {
-    private static final String ROOT_PACKAGE_NAME = "com.redhat.service.bridge";
+    private static final String ROOT_USER_PACKAGE_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.user";
     private static Collection<Class<?>> exceptionClasses;
 
     static {
-        loadExceptions();
+        loadUserExceptions();
     }
 
-    public static Collection<Class<?>> getExceptions() {
+    public static Collection<Class<?>> getUserExceptions() {
         return exceptionClasses;
     }
 
-    private static void loadExceptions() {
+    private static void loadUserExceptions() {
         exceptionClasses = new HashSet<>();
         try (ScanResult scanResult =
                 new ClassGraph()
-                        .acceptPackages(ROOT_PACKAGE_NAME)
+                        .acceptPackages(ROOT_USER_PACKAGE_NAME)
                         .scan()) {
             loadClasses(scanResult, RuntimeException.class.getName());
         }

@@ -68,10 +68,11 @@ public abstract class CustomResourceStatus {
         }
     }
 
-    public void markConditionFalse(final ConditionType conditionType, final ConditionReason reason, final String message) {
+    public void markConditionFalse(final ConditionType conditionType, final ConditionReason reason, final String message, final String errorCode) {
         final Optional<Condition> condition = this.getConditionByType(conditionType);
         if (condition.isPresent()) {
             condition.get().setMessage(message);
+            condition.get().setErrorCode(errorCode);
             condition.get().setReason(reason);
             condition.get().setStatus(ConditionStatus.False);
             condition.get().setLastTransitionTime(new Date());
@@ -79,15 +80,12 @@ public abstract class CustomResourceStatus {
         }
     }
 
+    public void markConditionFalse(final ConditionType conditionType, final ConditionReason reason, final String message) {
+        markConditionFalse(conditionType, reason, message, null);
+    }
+
     public void markConditionFalse(final ConditionType conditionType) {
-        final Optional<Condition> condition = this.getConditionByType(conditionType);
-        if (condition.isPresent()) {
-            condition.get().setMessage("");
-            condition.get().setReason(null);
-            condition.get().setStatus(ConditionStatus.False);
-            condition.get().setLastTransitionTime(new Date());
-            this.conditions.add(condition.get());
-        }
+        markConditionFalse(conditionType, null, "", null);
     }
 
     public void markConditionTrue(final ConditionType conditionType, final ConditionReason reason) {
@@ -102,13 +100,6 @@ public abstract class CustomResourceStatus {
     }
 
     public void markConditionTrue(final ConditionType conditionType) {
-        final Optional<Condition> condition = this.getConditionByType(conditionType);
-        if (condition.isPresent()) {
-            condition.get().setMessage("");
-            condition.get().setReason(null);
-            condition.get().setStatus(ConditionStatus.True);
-            condition.get().setLastTransitionTime(new Date());
-            this.conditions.add(condition.get());
-        }
+        markConditionTrue(conditionType, null);
     }
 }

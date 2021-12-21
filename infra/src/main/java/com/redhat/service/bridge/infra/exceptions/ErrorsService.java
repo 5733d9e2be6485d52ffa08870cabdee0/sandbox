@@ -12,4 +12,6 @@ public interface ErrorsService {
     Optional<Error> getUserError(int errorId);
 
     Optional<Error> getError(Exception e);
+
+    Optional<Error> getError(Class clazz);
 }

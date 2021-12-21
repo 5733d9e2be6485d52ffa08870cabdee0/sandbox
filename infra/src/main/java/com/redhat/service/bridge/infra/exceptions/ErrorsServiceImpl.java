@@ -27,6 +27,10 @@ public class ErrorsServiceImpl implements ErrorsService {
     @Override
     public Optional<Error> getError(Exception e) {
         return Optional.ofNullable(repository.findByException(e));
+    }
 
+    @Override
+    public Optional<Error> getError(Class clazz) {
+        return Optional.ofNullable(repository.findByException(clazz));
     }
 }

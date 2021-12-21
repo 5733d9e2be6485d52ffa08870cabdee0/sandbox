@@ -28,11 +28,11 @@ class ErrorsServiceTest {
 
     @BeforeAll
     private static void init() {
-        exceptionClasses = ExceptionHelper.getExceptions();
+        exceptionClasses = ExceptionHelper.getUserExceptions();
     }
 
     @Test
-    void testErrorList() {
+    void testUserErrorList() {
         final int pageSize = 2;
         Collection<Error> errors = new ArrayList<>();
         ListResult<Error> result;

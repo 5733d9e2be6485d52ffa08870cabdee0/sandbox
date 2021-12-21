@@ -10,4 +10,6 @@ public interface ErrorDAO {
     Error findUserErrorById(int errorId);
 
     Error findByException(Exception ex);
+
+    Error findByException(Class clazz);
 }

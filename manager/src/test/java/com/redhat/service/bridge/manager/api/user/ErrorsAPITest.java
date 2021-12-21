@@ -25,7 +25,7 @@ class ErrorsAPITest {
 
     @BeforeAll
     private static void init() {
-        exceptionClasses = ExceptionHelper.getExceptions();
+        exceptionClasses = ExceptionHelper.getUserExceptions();
     }
 
     @Test

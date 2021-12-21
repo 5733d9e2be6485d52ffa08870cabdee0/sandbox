@@ -11,14 +11,16 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 
-import io.quarkus.runtime.Quarkus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
+
+import io.quarkus.runtime.Quarkus;
 
 @ApplicationScoped
 public class ErrorInMemoryDAO implements ErrorDAO {
@@ -27,9 +29,19 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static class ErrorInfo {
+        @JsonProperty("exception")
         private String exception;
+
+        @JsonProperty("id")
         private int id;
+
+        @JsonProperty("code")
+        private String code;
+
+        @JsonProperty("reason")
         private String reason;
+
+        @JsonProperty("isUserException")
         private boolean isUserException;
 
         public String getException() {
@@ -40,12 +52,20 @@ public class ErrorInMemoryDAO implements ErrorDAO {
             return id;
         }
 
+        public String getCode() {
+            return code;
+        }
+
         public String getReason() {
             return reason;
         }
 
         public boolean isUserException() {
             return isUserException;
+        }
+
+        public Error toError() {
+            return new Error(id, code, reason, isUserException);
         }
     }
 
@@ -69,8 +89,8 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     }
 
     private void populate(ErrorInfo errorInfo) {
-        Error error = new Error(errorInfo.getId(), "OpenBridge-" + errorInfo.getId(), errorInfo.getReason(), errorInfo.isUserException());
-        if (errorInfo.isUserException()){
+        Error error = errorInfo.toError();
+        if (errorInfo.isUserException()) {
             userErrorList.add(error);
             userErrorsFromId.put(error.getId(), error);
         }
@@ -80,8 +100,9 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     @Override
     public ListResult<Error> findAllUserErrors(QueryInfo queryInfo) {
         int start = queryInfo.getPageNumber() * queryInfo.getPageSize();
-        return new ListResult<>(start >= userErrorList.size() ? Collections.emptyList() : userErrorList.subList(start, Math.min(start + queryInfo.getPageSize(), userErrorList.size())), queryInfo.getPageNumber(),
-                                userErrorList.size());
+        return new ListResult<>(start >= userErrorList.size() ? Collections.emptyList() : userErrorList.subList(start, Math.min(start + queryInfo.getPageSize(), userErrorList.size())),
+                queryInfo.getPageNumber(),
+                userErrorList.size());
     }
 
     @Override
@@ -92,5 +113,10 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     @Override
     public Error findByException(Exception ex) {
         return errorsFromExc.get(ex.getClass().getName());
+    }
+
+    @Override
+    public Error findByException(Class clazz) {
+        return errorsFromExc.get(clazz.getName());
     }
 }
