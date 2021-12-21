@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -28,6 +29,7 @@ import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.bridge.manager.connectors.ConnectorsService;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -54,6 +56,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ActionProviderFactory actionProviderFactory;
 
+    @Inject
+    ConnectorsService connectorService;
+
     @Transactional
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
@@ -77,22 +82,32 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
+        Processor newProcessor = new Processor();
+
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
-        BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction, bridge.getId(), customerId);
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
+
+        BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
+                bridge.getId(),
+                customerId,
+                newProcessor.getId());
+
+        newProcessor.setName(processorRequest.getName());
+        newProcessor.setSubmittedAt(ZonedDateTime.now());
+        newProcessor.setStatus(BridgeStatus.REQUESTED);
+        newProcessor.setBridge(bridge);
 
         ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
+        newProcessor.setDefinition(definitionToJsonNode(definition));
 
-        Processor p = new Processor();
-        p.setName(processorRequest.getName());
-        p.setDefinition(definitionToJsonNode(definition));
-        p.setSubmittedAt(ZonedDateTime.now());
-        p.setStatus(BridgeStatus.REQUESTED);
-        p.setBridge(bridge);
+        processorDAO.persist(newProcessor);
 
-        processorDAO.persist(p);
-        return p;
+        connectorService.createConnectorIfNeeded(resolvedAction, newProcessor, actionProvider);
+
+        return newProcessor;
     }
 
     @Transactional

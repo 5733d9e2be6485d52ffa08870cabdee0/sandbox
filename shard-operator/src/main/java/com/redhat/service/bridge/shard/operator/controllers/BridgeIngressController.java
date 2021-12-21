@@ -117,19 +117,20 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // TODO: on https://issues.redhat.com/browse/MGDOBR-163 we will make this piece a common algorithm between our controllers
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service);
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
             LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         } else {
-            // TODO: the message will be a constant on MGDOBR-163
+            LOGGER.warn("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
             Error prometheusNotAvailableError = errorsService.getError(PrometheusNotInstalledException.class)
                     .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
                     ConditionReason.PrometheusUnavailable,
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
+            notifyManager(bridgeIngress, BridgeStatus.FAILED);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
 

@@ -75,7 +75,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(secondBridgeName, customerNamespace);
                         });
 
-        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdateProvisioningRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
@@ -98,7 +98,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
-        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
@@ -142,7 +142,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyDeploymentOrFail(sanitizedName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyServiceOrFail(sanitizedName, customerNamespace);
                         });
-        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         processor.setStatus(BridgeStatus.AVAILABLE);
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
@@ -159,7 +159,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         managerSyncService.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
 
-        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));

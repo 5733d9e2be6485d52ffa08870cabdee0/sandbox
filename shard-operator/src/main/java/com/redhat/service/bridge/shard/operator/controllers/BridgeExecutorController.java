@@ -1,25 +1,33 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.util.Optional;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.exceptions.Error;
+import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
+import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.Context;
 import io.javaoperatorsdk.operator.api.Controller;
 import io.javaoperatorsdk.operator.api.DeleteControl;
@@ -42,12 +50,20 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
     @Inject
     BridgeExecutorService bridgeExecutorService;
 
+    @Inject
+    ServiceMonitorService monitorService;
+
+    @Inject
+    ErrorsService errorsService;
+
     @Override
     public void init(EventSourceManager eventSourceManager) {
         DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-processor-deployment-event-source", deploymentEventSource);
         ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-processor-service-event-source", serviceEventSource);
+        Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
+        serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-processor-monitoring-event-source", monitorEventSource));
     }
 
     @Override
@@ -75,6 +91,24 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
+
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
+        if (serviceMonitor.isPresent()) {
+            // this is an optional resource
+            LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        } else {
+            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
+            Error prometheusNotAvailableError = errorsService.getError(PrometheusNotInstalledException.class)
+                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
+                    ConditionReason.PrometheusUnavailable,
+                    prometheusNotAvailableError.getReason(),
+                    prometheusNotAvailableError.getCode());
+            notifyManager(bridgeExecutor, BridgeStatus.FAILED);
+            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+        }
+
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {

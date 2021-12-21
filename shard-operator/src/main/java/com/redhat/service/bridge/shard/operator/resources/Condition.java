@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.fabric8.kubernetes.model.annotation.PrinterColumn;
-
 /**
  * From the Kubernetes API Conventions:
  * <p/>

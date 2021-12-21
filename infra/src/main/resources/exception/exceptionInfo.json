@@ -14,7 +14,7 @@
   "isUserException": true
 },
 {
-  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.EventBridgeException",
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException",
   "id": 3,
   "code": "OPENBRIDGE-USER-3",
   "reason": "The requested item does not exist in out repository",
@@ -67,6 +67,13 @@
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException",
   "id": 1001,
   "code": "OPENBRIDGE-PLATFORM-1",
+  "reason": "Prometheus is not installed on the shard.",
+  "isUserException": false
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException",
+  "id": 1002,
+  "code": "OPENBRIDGE-PLATFORM-2",
   "reason": "Prometheus is not installed on the shard.",
   "isUserException": false
 }

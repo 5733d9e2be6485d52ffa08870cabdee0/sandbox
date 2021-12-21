@@ -59,6 +59,10 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-scheduler</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
@@ -69,6 +73,10 @@
     <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
       <artifactId>quarkus-hibernate-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.cloud</groupId>
+      <artifactId>connector-management-sdk</artifactId>
     </dependency>
 
     <dependency>

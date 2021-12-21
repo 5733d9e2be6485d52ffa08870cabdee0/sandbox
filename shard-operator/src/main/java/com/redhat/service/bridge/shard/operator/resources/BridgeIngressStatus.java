@@ -2,8 +2,6 @@ package com.redhat.service.bridge.shard.operator.resources;
 
 import java.util.HashSet;
 
-import io.fabric8.kubernetes.model.annotation.PrinterColumn;
-
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
  * <p>

@@ -8,7 +8,7 @@ public interface ActionTransformer {
      * This is a helper transformer to be used whenever the action doesn't need
      * to be modified by the transformer (e.g. for invokable actions).
      */
-    ActionTransformer IDENTITY = (action, bridgeId, customerId) -> action;
+    ActionTransformer IDENTITY = (action, bridgeId, customerId, processorId) -> action;
 
-    BaseAction transform(BaseAction action, String bridgeId, String customerId);
+    BaseAction transform(BaseAction action, String bridgeId, String customerId, String processorId);
 }

@@ -12,4 +12,8 @@ public interface ActionProvider {
 
     ActionTransformer getTransformer();
 
+    default boolean isConnectorAction() {
+        return false;
+    }
+
 }

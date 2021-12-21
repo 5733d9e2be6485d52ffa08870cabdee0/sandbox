@@ -27,10 +27,10 @@ public class ActionProviderFactory {
                 .orElseThrow(() -> new ActionProviderException(String.format("There is no InvokableActionProvider recognised for type '%s'", actionType)));
     }
 
-    public BaseAction resolve(BaseAction action, String bridgeId, String customerId) {
+    public BaseAction resolve(BaseAction action, String bridgeId, String customerId, String processorId) {
         return getOptionalActionProvider(action.getType())
                 .map(ActionProvider::getTransformer)
-                .map(t -> t.transform(action, bridgeId, customerId))
+                .map(t -> t.transform(action, bridgeId, customerId, processorId))
                 .orElseThrow(() -> new ActionProviderException(String.format("Can't resolve action of type '%s'", action.getType())));
     }
 

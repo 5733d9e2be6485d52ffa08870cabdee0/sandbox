@@ -9,6 +9,7 @@ import io.github.classgraph.ScanResult;
 
 public class ExceptionHelper {
     private static final String ROOT_USER_PACKAGE_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.user";
+    private static final String INTERNAL_PLATFORM_EXCEPTION_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException";
     private static Collection<Class<?>> exceptionClasses;
 
     static {
@@ -24,6 +25,7 @@ public class ExceptionHelper {
         try (ScanResult scanResult =
                 new ClassGraph()
                         .acceptPackages(ROOT_USER_PACKAGE_NAME)
+                        .acceptClasses(INTERNAL_PLATFORM_EXCEPTION_NAME) // InternalPlatformException only should be visible by the user catalog
                         .scan()) {
             loadClasses(scanResult, RuntimeException.class.getName());
         }

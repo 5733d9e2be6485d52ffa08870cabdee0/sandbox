@@ -16,7 +16,8 @@ public interface ServiceMonitorService {
      *
      * @param service the target Kubernetes {@link Service} to bind the monitoring resource.
      * @param resource the custom resource managed by this operator (e.g. BridgeIngress).
+     * @param componentName the name of the component created by this
      * @return an {@link Optional} {@link ServiceMonitor} if Prometheus Operator is installed in the cluster.
      */
-    Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service);
+    Optional<ServiceMonitor> fetchOrCreateServiceMonitor(final CustomResource resource, final Service service, final String componentName);
 }
