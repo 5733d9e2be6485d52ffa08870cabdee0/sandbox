@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
+import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 
 /**
@@ -25,6 +26,9 @@ public class DatabaseManagerUtils {
     @Inject
     ProcessorDAO processorDAO;
 
+    @Inject
+    ConnectorsDAO connectorsDAO;
+
     /**
      * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dinamically, the processor
      * will cascade the removal of filters that belongs to it.
@@ -36,6 +40,7 @@ public class DatabaseManagerUtils {
      */
     @Transactional
     public void cleanDatabase() {
+        deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
     }
@@ -51,5 +56,10 @@ public class DatabaseManagerUtils {
     private void deleteAllBridges() {
         List<String> ids = bridgeDAO.getEntityManager().createQuery("select b.id from Bridge b", String.class).getResultList();
         ids.forEach(x -> bridgeDAO.deleteById(x));
+    }
+
+    private void deleteAllConnectors() {
+        List<String> ids = connectorsDAO.getEntityManager().createQuery("select c.id from ConnectorEntity c", String.class).getResultList();
+        ids.forEach(x -> connectorsDAO.deleteById(x));
     }
 }

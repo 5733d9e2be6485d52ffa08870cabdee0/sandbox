@@ -34,5 +34,10 @@
   "exception":"com.redhat.service.bridge.actions.ActionProviderException",
   "id": 7,
   "reason": "Something failed related with action execution or resolution"
+},
+{
+  "exception":"com.redhat.service.bridge.manager.exceptions.ConnectorCreationException",
+  "id": 8,
+  "reason": "Something failed during the creation of the Connector"
 }
 ]
