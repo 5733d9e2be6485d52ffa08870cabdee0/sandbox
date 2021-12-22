@@ -9,7 +9,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.shard.operator.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
@@ -100,9 +100,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         return notifyBridgeStatusChange(y)
                                                 .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                                                 .subscribe().with(
-                                                    success -> bridgeIngressService.createBridgeIngress(y),
-                                                    failure -> failedToSendUpdateToManager(y, failure)
-                                                );
+                                                        success -> bridgeIngressService.createBridgeIngress(y),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETED);
@@ -110,9 +109,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         return notifyBridgeStatusChange(y)
                                                 .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                                                 .subscribe().with(
-                                                    success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                    failure -> failedToSendUpdateToManager(y, failure)
-                                                );
+                                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
@@ -130,9 +128,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 return notifyProcessorStatusChange(y)
                                         .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                                         .subscribe().with(
-                                            success -> bridgeExecutorService.createBridgeExecutor(y),
-                                            failure -> failedToSendUpdateToManager(y, failure)
-                                        );
+                                                success -> bridgeExecutorService.createBridgeExecutor(y),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(BridgeStatus.DELETED);
@@ -140,9 +137,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 return notifyProcessorStatusChange(y)
                                         .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                                         .subscribe().with(
-                                            success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                            failure -> failedToSendUpdateToManager(y, failure)
-                                        );
+                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
