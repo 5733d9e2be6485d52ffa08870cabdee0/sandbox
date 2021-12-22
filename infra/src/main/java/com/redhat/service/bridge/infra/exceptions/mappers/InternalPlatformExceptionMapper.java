@@ -30,7 +30,7 @@ public class InternalPlatformExceptionMapper implements ExceptionMapper<Internal
 
     @PostConstruct
     void init() {
-        Optional<Error> error = errorsService.getError(new InternalPlatformException(""));
+        Optional<Error> error = errorsService.getError(InternalPlatformException.class);
         if (error.isPresent()) {
             internalPlatformExceptionError = error.get();
         } else {
