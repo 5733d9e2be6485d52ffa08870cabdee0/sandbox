@@ -14,6 +14,11 @@ You will need the following installed locally on your machine to support local d
 * [curl](https://curl.se/) (or any other HTTP client)
     * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
+### macOS users:
+
+Do not install Minikube via `brew`. 
+Download the specific v.1.16.0 from the [Minikube release page](https://github.com/kubernetes/minikube/releases/tag/v1.16.0).
+
 ## First time setup
 
 This section contains all the instructions to setup your environment in order to deploy the infrastructure locally. 
@@ -22,6 +27,14 @@ Configure a new Minikube Cluster with the following:
 
 ```bash 
 minikube --memory=8192 --cpus=4 --kubernetes-version=v1.20.0 start  
+```
+
+### macOS users:
+
+It's important to set the `hyperkit` driver before starting the Minikube cluster due to [this bug](https://github.com/kubernetes/minikube/issues/7332)
+
+```bash 
+minikube --driver=hyperkit --memory=8192 --cpus=4 --kubernetes-version=v1.20.0 start  
 ```
 
 You can change the memory and cpu settings according to your system. **Other versions of Kubernetes have not been tested**.
