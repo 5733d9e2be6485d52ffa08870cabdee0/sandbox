@@ -191,8 +191,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        Tokens tokens = currentTokens;
-        if (tokens.isAccessTokenExpired() || tokens.isAccessTokenWithinRefreshInterval()) {
+        if (currentTokens.isAccessTokenExpired() || currentTokens.isAccessTokenWithinRefreshInterval()) {
             LOGGER.debug("Shard authentication token has expired");
             refreshTokens();
         }
