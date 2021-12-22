@@ -2,28 +2,24 @@
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException",
   "id": 1,
-  "code": "OPENBRIDGE-USER-1",
   "reason": "You tried to create an object which already exist in our repository",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException",
   "id": 2,
-  "code": "OPENBRIDGE-USER-2",
   "reason": "You tried a life cycle transition which is not allowed",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException",
   "id": 3,
-  "code": "OPENBRIDGE-USER-3",
   "reason": "The requested item does not exist in out repository",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException",
   "id": 4,
-  "code": "OPENBRIDGE-USER-4",
   "reason": "You tried to create an object which already exist in our repository",
   "isUserException": true
 }
@@ -31,49 +27,42 @@
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.CloudEventSerializationException",
   "id": 5,
-  "code": "OPENBRIDGE-USER-5",
   "reason": "You try to serialize a cloud event and something goes wrong, check if format follows specification",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.CloudEventDeserializationException",
   "id": 6,
-  "code": "OPENBRIDGE-USER-6",
   "reason": "You try to deserialize a cloud event and something goes wrong, check if format follows specification",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException",
   "id": 7,
-  "code": "OPENBRIDGE-USER-7",
   "reason": "Something failed related with action execution or resolution",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException",
   "id": 8,
-  "code": "OPENBRIDGE-USER-8",
   "reason": "The request is not valid.",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException",
   "id": 9,
-  "code": "OPENBRIDGE-USER-9",
   "reason": "There was an internal exception. This is supposed not to be fixable by the user, so you should open a bug with all the information you have.",
   "isUserException": true
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException",
-  "id": 1001,
-  "code": "OPENBRIDGE-PLATFORM-1",
+  "id": 10,
   "reason": "Prometheus is not installed on the shard.",
   "isUserException": false
 },
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException",
-  "id": 1002,
-  "code": "OPENBRIDGE-PLATFORM-2",
+  "id": 11,
   "reason": "Prometheus is not installed on the shard.",
   "isUserException": false
 }

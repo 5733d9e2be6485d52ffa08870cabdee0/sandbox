@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
+import com.redhat.service.bridge.infra.utils.Constants;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -35,9 +36,6 @@ public class ErrorInMemoryDAO implements ErrorDAO {
         @JsonProperty("id")
         private int id;
 
-        @JsonProperty("code")
-        private String code;
-
         @JsonProperty("reason")
         private String reason;
 
@@ -52,10 +50,6 @@ public class ErrorInMemoryDAO implements ErrorDAO {
             return id;
         }
 
-        public String getCode() {
-            return code;
-        }
-
         public String getReason() {
             return reason;
         }
@@ -65,7 +59,7 @@ public class ErrorInMemoryDAO implements ErrorDAO {
         }
 
         public Error toError() {
-            return new Error(id, code, reason, isUserException);
+            return new Error(id, Constants.API_IDENTIFIER_PREFIX + id, reason, isUserException);
         }
     }
 
