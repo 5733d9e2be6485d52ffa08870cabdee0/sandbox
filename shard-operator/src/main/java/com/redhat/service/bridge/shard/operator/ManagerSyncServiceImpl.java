@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.context.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
 import io.quarkus.oidc.client.OidcClient;
+import io.quarkus.oidc.client.OidcClientException;
 import io.quarkus.oidc.client.Tokens;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
@@ -51,6 +53,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Inject
     OidcClient client;
+
+    @Inject
+    ThreadContext threadContext;
 
     Tokens currentTokens;
 
@@ -176,6 +181,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
      * @throws IllegalStateException in case of an invalid HTTP response
      */
     private void validateHttpResponseBeforeParsing(HttpResponse<Buffer> httpResponse) {
+        if (httpResponse.statusCode() == 401) {
+            LOGGER.debug("Request to the manager was unauthorized.");
+            threadContext.contextualRunnable(this::refreshTokens);
+        }
         if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 400) {
             throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
         }
@@ -183,17 +192,24 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
         Tokens tokens = currentTokens;
-        if (tokens.isAccessTokenExpired()) {
+        if (tokens.isAccessTokenExpired() || tokens.isAccessTokenWithinRefreshInterval()) {
             LOGGER.debug("Shard authentication token has expired");
-            try {
-                tokens = client.refreshTokens(tokens.getRefreshToken()).await().atMost(SSO_CONNECTION_TIMEOUT);
-            } catch (RuntimeException e) {
-                LOGGER.warn("Shard could not fetch a new authentication token from sso server.");
-                throw e;
-            }
-            currentTokens = tokens;
+            refreshTokens();
         }
         request.bearerTokenAuthentication(currentTokens.getAccessToken());
         return executor.apply(request);
+    }
+
+    private void refreshTokens() {
+        LOGGER.info("Refreshing tokens..");
+        Tokens tokens = currentTokens;
+        try {
+            tokens = client.refreshTokens(tokens.getRefreshToken()).await().atMost(SSO_CONNECTION_TIMEOUT);
+        } catch (OidcClientException e) {
+            LOGGER.warn("Shard could not use refresh token. Trying to get a new fresh token.", e);
+            tokens = client.getTokens().await().atMost(SSO_CONNECTION_TIMEOUT);
+        }
+        LOGGER.info("Tokens have been refreshed.");
+        currentTokens = tokens;
     }
 }
