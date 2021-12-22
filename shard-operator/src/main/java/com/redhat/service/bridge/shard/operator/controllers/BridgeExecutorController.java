@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,8 +126,11 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         ProcessorDTO dto = bridgeExecutor.toDTO();
         dto.setStatus(status);
 
-        managerSyncService.notifyProcessorStatusChange(dto).subscribe().with(
-                success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
-                failure -> LOGGER.warn("[shard] Updating Processor with id '{}' FAILED", dto.getId()));
+        managerSyncService.notifyProcessorStatusChange(dto)
+                .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
+                .subscribe().with(
+                    success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
+                    failure -> LOGGER.warn("[shard] Updating Processor with id '{}' FAILED", dto.getId())
+                );
     }
 }
