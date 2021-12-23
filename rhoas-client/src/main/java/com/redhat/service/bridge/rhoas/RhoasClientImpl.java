@@ -18,6 +18,7 @@ import com.openshift.cloud.api.kas.auth.models.AclPermissionType;
 import com.openshift.cloud.api.kas.auth.models.AclResourceType;
 import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
 import com.openshift.cloud.api.kas.auth.models.Topic;
+import com.openshift.cloud.api.kas.auth.models.TopicSettings;
 import com.openshift.cloud.api.kas.models.ServiceAccount;
 import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
@@ -50,7 +51,7 @@ public class RhoasClientImpl implements RhoasClient {
     }
 
     private Uni<Context> createTopic(final Context ctx) {
-        return instanceClient.createTopic(new NewTopicInput().name(ctx.getTopicName()))
+        return instanceClient.createTopic(new NewTopicInput().name(ctx.getTopicName()).settings(new TopicSettings().numPartitions(1)))
                 .onItem().invoke(t -> LOG.info("Created topic {}", t.getName()))
                 .onItem().transform(ctx::withTopic)
                 .onFailure().recoverWithUni(failure -> {
@@ -151,34 +152,38 @@ public class RhoasClientImpl implements RhoasClient {
                 });
     }
 
-    private static AclBinding newDescribeTopicAcl(String principal, String topicName) {
+    private static AclBinding newDescribeTopicAcl(String userId, String topicName) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)
                 .patternType(AclPatternType.LITERAL)
-                .principal(principal)
+                .principal(toPrincipal(userId))
                 .operation(AclOperation.DESCRIBE)
                 .permission(AclPermissionType.ALLOW);
     }
 
-    private static AclBinding newReadTopicAcl(String principal, String topicName) {
+    private static AclBinding newReadTopicAcl(String userId, String topicName) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)
                 .patternType(AclPatternType.LITERAL)
-                .principal(principal)
+                .principal(toPrincipal(userId))
                 .operation(AclOperation.READ)
                 .permission(AclPermissionType.ALLOW);
     }
 
-    private static AclBinding newReadAllGroupsAcl(String principal) {
+    private static AclBinding newReadAllGroupsAcl(String userId) {
         return new AclBinding()
                 .resourceType(AclResourceType.GROUP)
                 .resourceName("*")
                 .patternType(AclPatternType.LITERAL)
-                .principal(principal)
+                .principal(toPrincipal(userId))
                 .operation(AclOperation.READ)
                 .permission(AclPermissionType.ALLOW);
+    }
+
+    private static String toPrincipal(String userId) {
+        return "User:" + userId;
     }
 
     private static TopicAndServiceAccountResponse toResponse(Context ctx) {
