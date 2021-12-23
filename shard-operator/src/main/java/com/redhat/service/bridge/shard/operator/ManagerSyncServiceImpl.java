@@ -20,6 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
+import com.redhat.service.bridge.shard.operator.utils.WebClientUtils;
 
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
@@ -52,6 +53,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     OidcClient client;
 
+    @Inject
+    NetworkHealthCheck networkHealthCheck;
+
     Tokens currentTokens;
 
     @PostConstruct
@@ -79,12 +83,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO));
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO));
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
@@ -147,7 +153,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
         try {
-            this.validateHttpResponseBeforeParsing(httpResponse);
+            if (!isSuccessfulResponse(httpResponse)) {
+                throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
+            }
             return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
             LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
@@ -167,20 +175,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 
-    /**
-     * Verifies if the HTTP response is valid (Status 2xx).
-     * This avoids the shard-operator spamming error messages in case the manager is out.
-     * A more elaborated use case can be added in the future if needed (like validating if it's a JSON, or if the body doesn't have buffer, or is null).
-     *
-     * @param httpResponse the given response
-     * @throws IllegalStateException in case of an invalid HTTP response
-     */
-    private void validateHttpResponseBeforeParsing(HttpResponse<Buffer> httpResponse) {
-        if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 400) {
-            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
-        }
-    }
-
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
         Tokens tokens = currentTokens;
         if (tokens.isAccessTokenExpired()) {
@@ -194,6 +188,26 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             currentTokens = tokens;
         }
         request.bearerTokenAuthentication(currentTokens.getAccessToken());
-        return executor.apply(request);
+        return executor.apply(request)
+                .onItem().transformToUni(x -> { // check if the response code is 2xx, if not create a Uni failure.
+                    if (isSuccessfulResponse(x)) {
+                        networkHealthCheck.recordSuccess();
+                        return Uni.createFrom().item(x);
+                    } else {
+                        return Uni.createFrom().failure(
+                                new RuntimeException(String.format("Shard failed to communicate with the manager, the request failed with status %s", x.statusCode())));
+                    }
+                })
+                .onFailure().invoke(() -> networkHealthCheck.recordFailure());
+    }
+
+    /**
+     * Verifies if the HTTP response is valid (Status 2xx).
+     * This avoids the shard-operator spamming error messages in case the manager is out.
+     *
+     * @param httpResponse the given response
+     */
+    private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
+        return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
     }
 }
