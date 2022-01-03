@@ -9,28 +9,28 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 
 @ApplicationScoped
-public class ErrorsServiceImpl implements ErrorsService {
+public class BridgeErrorServiceImpl implements BridgeErrorService {
 
     @Inject
-    ErrorDAO repository;
+    BridgeErrorDAO repository;
 
     @Override
-    public ListResult<Error> getUserErrors(QueryInfo queryInfo) {
-        return repository.findAllUserErrors(queryInfo);
+    public ListResult<BridgeError> getUserErrors(QueryInfo queryInfo) {
+        return repository.findAllErrorsByType(queryInfo, BridgeErrorType.USER);
     }
 
     @Override
-    public Optional<Error> getUserError(int errorId) {
-        return Optional.ofNullable(repository.findUserErrorById(errorId));
+    public Optional<BridgeError> getUserError(int errorId) {
+        return Optional.ofNullable(repository.findErrorByIdAndType(errorId, BridgeErrorType.USER));
     }
 
     @Override
-    public Optional<Error> getError(Exception e) {
+    public Optional<BridgeError> getError(Exception e) {
         return Optional.ofNullable(repository.findByException(e));
     }
 
     @Override
-    public Optional<Error> getError(Class clazz) {
+    public Optional<BridgeError> getError(Class clazz) {
         return Optional.ofNullable(repository.findByException(clazz));
     }
 }

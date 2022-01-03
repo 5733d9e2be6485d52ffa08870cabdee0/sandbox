@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.infra.exceptions.Error;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException;
 
 public class UserFaultExceptionMapper implements ExceptionMapper<UserFaultException> {
@@ -20,12 +20,12 @@ public class UserFaultExceptionMapper implements ExceptionMapper<UserFaultExcept
     private static final Logger LOGGER = LoggerFactory.getLogger(UserFaultExceptionMapper.class);
 
     @Inject
-    ErrorsService errorsService;
+    BridgeErrorService bridgeErrorService;
 
     @Override
     public Response toResponse(UserFaultException e) {
         LOGGER.debug("Failure", e);
-        Optional<Error> error = errorsService.getError(e);
+        Optional<BridgeError> error = bridgeErrorService.getError(e);
         ResponseBuilder builder = Response.status(e.getStatusCode());
         if (error.isPresent()) {
             ErrorResponse errorResponse = ErrorResponse.from(error.get());

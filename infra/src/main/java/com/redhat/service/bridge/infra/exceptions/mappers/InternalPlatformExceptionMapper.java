@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.infra.exceptions.Error;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 
 import io.quarkus.runtime.Quarkus;
@@ -23,16 +23,16 @@ public class InternalPlatformExceptionMapper implements ExceptionMapper<Internal
     private static final String MESSAGE_TEMPLATE = "There was an internal exception that is not fixable from the user. Please " +
             "open a bug with all the information you have, including the name of the exception %s and the message %s";
 
-    private Error internalPlatformExceptionError;
+    private BridgeError internalPlatformExceptionBridgeError;
 
     @Inject
-    ErrorsService errorsService;
+    BridgeErrorService bridgeErrorService;
 
     @PostConstruct
     void init() {
-        Optional<Error> error = errorsService.getError(InternalPlatformException.class);
+        Optional<BridgeError> error = bridgeErrorService.getError(InternalPlatformException.class);
         if (error.isPresent()) {
-            internalPlatformExceptionError = error.get();
+            internalPlatformExceptionBridgeError = error.get();
         } else {
             LOGGER.error("InternalPlatformException error is not defined in the ErrorsService.");
             Quarkus.asyncExit(1);
@@ -45,7 +45,7 @@ public class InternalPlatformExceptionMapper implements ExceptionMapper<Internal
 
         // InternalPlatformException is always returned.
         Response.ResponseBuilder builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
-        ErrorResponse errorResponse = ErrorResponse.from(internalPlatformExceptionError);
+        ErrorResponse errorResponse = ErrorResponse.from(internalPlatformExceptionBridgeError);
         errorResponse.setReason(String.format(MESSAGE_TEMPLATE, e.getClass().getName(), e.getMessage()));
         builder.entity(errorResponse);
         return builder.build();

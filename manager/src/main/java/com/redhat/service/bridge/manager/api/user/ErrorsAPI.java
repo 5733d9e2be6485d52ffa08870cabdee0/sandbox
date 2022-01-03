@@ -22,8 +22,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
-import com.redhat.service.bridge.infra.exceptions.Error;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 
 import io.quarkus.security.Authenticated;
@@ -43,7 +43,7 @@ import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PA
 public class ErrorsAPI {
 
     @Inject
-    ErrorsService service;
+    BridgeErrorService service;
 
     @GET
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {
@@ -53,7 +53,7 @@ public class ErrorsAPI {
     @GET
     @Path("{id}")
     public Response getError(@PathParam("id") int id) {
-        Optional<Error> error = service.getUserError(id);
+        Optional<BridgeError> error = service.getUserError(id);
         return (error.isPresent() ? Response.ok(ErrorResponse.from(error.get())) : Response.status(Status.NOT_FOUND)).build();
     }
 }

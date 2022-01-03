@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -24,9 +25,9 @@ import com.redhat.service.bridge.infra.utils.Constants;
 import io.quarkus.runtime.Quarkus;
 
 @ApplicationScoped
-public class ErrorInMemoryDAO implements ErrorDAO {
+public class BridgeErrorInMemoryDAO implements BridgeErrorDAO {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorInMemoryDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeErrorInMemoryDAO.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static class ErrorInfo {
@@ -39,8 +40,8 @@ public class ErrorInMemoryDAO implements ErrorDAO {
         @JsonProperty("reason")
         private String reason;
 
-        @JsonProperty("isUserException")
-        private boolean isUserException;
+        @JsonProperty("type")
+        private BridgeErrorType type;
 
         public String getException() {
             return exception;
@@ -54,18 +55,18 @@ public class ErrorInMemoryDAO implements ErrorDAO {
             return reason;
         }
 
-        public boolean isUserException() {
-            return isUserException;
+        public BridgeErrorType getType() {
+            return type;
         }
 
-        public Error toError() {
-            return new Error(id, Constants.API_IDENTIFIER_PREFIX + id, reason, isUserException);
+        public BridgeError toError() {
+            return new BridgeError(id, Constants.API_IDENTIFIER_PREFIX + id, reason, type);
         }
     }
 
-    private final Map<Integer, Error> userErrorsFromId = new HashMap<>();
-    private final Map<String, Error> errorsFromExc = new HashMap<>();
-    private final List<Error> userErrorList = new ArrayList<>();
+    private final Map<Integer, BridgeError> bridgeErrorsFromId = new HashMap<>();
+    private final Map<String, BridgeError> errorsFromExc = new HashMap<>();
+    private final List<BridgeError> bridgeErrorList = new ArrayList<>();
 
     @PostConstruct
     void init() {
@@ -83,34 +84,40 @@ public class ErrorInMemoryDAO implements ErrorDAO {
     }
 
     private void populate(ErrorInfo errorInfo) {
-        Error error = errorInfo.toError();
-        if (errorInfo.isUserException()) {
-            userErrorList.add(error);
-            userErrorsFromId.put(error.getId(), error);
-        }
-        errorsFromExc.put(errorInfo.getException(), error);
+        BridgeError bridgeError = errorInfo.toError();
+        bridgeErrorList.add(bridgeError);
+        bridgeErrorsFromId.put(bridgeError.getId(), bridgeError);
+        errorsFromExc.put(errorInfo.getException(), bridgeError);
     }
 
     @Override
-    public ListResult<Error> findAllUserErrors(QueryInfo queryInfo) {
+    public ListResult<BridgeError> findAllErrorsByType(QueryInfo queryInfo, BridgeErrorType type) {
         int start = queryInfo.getPageNumber() * queryInfo.getPageSize();
-        return new ListResult<>(start >= userErrorList.size() ? Collections.emptyList() : userErrorList.subList(start, Math.min(start + queryInfo.getPageSize(), userErrorList.size())),
+        List<BridgeError> typedErrors = bridgeErrorList.stream()
+                .filter(x -> x.getType().equals(type))
+                .collect(Collectors.toList());
+        return new ListResult<>(
+                start >= typedErrors.size() ? Collections.emptyList() : typedErrors.subList(start, Math.min(start + queryInfo.getPageSize(), typedErrors.size())),
                 queryInfo.getPageNumber(),
-                userErrorList.size());
+                typedErrors.size());
     }
 
     @Override
-    public Error findUserErrorById(int errorId) {
-        return userErrorsFromId.get(errorId);
+    public BridgeError findErrorByIdAndType(int errorId, BridgeErrorType type) {
+        BridgeError error = bridgeErrorsFromId.get(errorId);
+        if (!error.getType().equals(type)) {
+            throw new RuntimeException(String.format("Error with id %s and type %s not found in the catalog", errorId, type));
+        }
+        return error;
     }
 
     @Override
-    public Error findByException(Exception ex) {
+    public BridgeError findByException(Exception ex) {
         return errorsFromExc.get(ex.getClass().getName());
     }
 
     @Override
-    public Error findByException(Class clazz) {
+    public BridgeError findByException(Class clazz) {
         return errorsFromExc.get(clazz.getName());
     }
 }

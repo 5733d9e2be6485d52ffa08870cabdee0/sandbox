@@ -8,8 +8,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.exceptions.Error;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.test.exceptions.ExceptionHelper;
@@ -19,10 +19,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class ErrorsServiceTest {
+class BridgeErrorServiceTest {
 
     @Inject
-    ErrorsService service;
+    BridgeErrorService service;
 
     private static Collection<Class<?>> userExceptionClasses;
     private static Collection<Class<?>> platformExceptionClasses;
@@ -36,15 +36,15 @@ class ErrorsServiceTest {
     @Test
     void testUserErrorList() {
         final int pageSize = 2;
-        Collection<Error> errors = new ArrayList<>();
-        ListResult<Error> result;
+        Collection<BridgeError> bridgeErrors = new ArrayList<>();
+        ListResult<BridgeError> result;
         int page = 0;
         do {
             result = service.getUserErrors(new QueryInfo(page++, pageSize));
-            errors.addAll(result.getItems());
+            bridgeErrors.addAll(result.getItems());
         } while (result.getSize() == pageSize);
-        assertThat(userExceptionClasses).hasSize(errors.size()).withFailMessage(String.format("Exception classes: %s Errors: %s", userExceptionClasses, errors));
-        errors.forEach(this::checkId);
+        assertThat(userExceptionClasses).hasSize(bridgeErrors.size()).withFailMessage(String.format("Exception classes: %s Errors: %s", userExceptionClasses, bridgeErrors));
+        bridgeErrors.forEach(this::checkId);
     }
 
     @Test
@@ -57,20 +57,20 @@ class ErrorsServiceTest {
         platformExceptionClasses.forEach(this::checkExceptionIsNotInCatalog);
     }
 
-    private void checkId(Error error) {
-        assertThat(service.getUserError(error.getId()).isPresent()).isTrue();
+    private void checkId(BridgeError bridgeError) {
+        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isTrue();
     }
 
     private void checkExceptionIsInCatalog(Class<?> clazz) {
-        Error error = service.getError(clazz).get();
-        assertThat(error).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
-        assertThat(service.getUserError(error.getId()).isPresent()).isTrue().withFailMessage(String.format("exception %s not found in the user errors", clazz));
+        BridgeError bridgeError = service.getError(clazz).get();
+        assertThat(bridgeError).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
+        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isTrue().withFailMessage(String.format("exception %s not found in the user errors", clazz));
     }
 
     private void checkExceptionIsNotInCatalog(Class<?> clazz) {
-        Error error = service.getError(clazz).get();
-        assertThat(error).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
-        assertThat(service.getUserError(error.getId()).isPresent()).isFalse().withFailMessage(String.format("exception %s should not be in the user errors", clazz));
+        BridgeError bridgeError = service.getError(clazz).get();
+        assertThat(bridgeError).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
+        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isFalse().withFailMessage(String.format("exception %s should not be in the user errors", clazz));
     }
 
 }

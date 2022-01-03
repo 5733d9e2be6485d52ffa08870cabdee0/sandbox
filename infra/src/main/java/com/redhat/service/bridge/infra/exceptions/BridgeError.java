@@ -1,18 +1,18 @@
 package com.redhat.service.bridge.infra.exceptions;
 
-public class Error {
+public class BridgeError {
 
     private final int id;
     private final String code;
     private final String reason;
-    private final boolean isUserException;
+    private final BridgeErrorType type;
 
-    public Error(int id, String code, String reason, boolean isUserException) {
+    public BridgeError(int id, String code, String reason, BridgeErrorType type) {
         super();
         this.id = id;
         this.code = code;
         this.reason = reason;
-        this.isUserException = isUserException;
+        this.type = type;
     }
 
     public int getId() {
@@ -27,12 +27,12 @@ public class Error {
         return reason;
     }
 
-    public boolean isUserException() {
-        return isUserException;
+    public BridgeErrorType getType() {
+        return type;
     }
 
     @Override
     public String toString() {
-        return "Error [id=" + id + ", code=" + code + ", reason=" + reason + "]";
+        return "Error [id=" + id + ", code=" + code + ", reason=" + reason + ", type=" + type + "]";
     }
 }

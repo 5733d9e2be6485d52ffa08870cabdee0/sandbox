@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.exceptions.Error;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse extends BaseResponse {
@@ -16,12 +16,12 @@ public class ErrorResponse extends BaseResponse {
     @JsonProperty("reason")
     private String reason;
 
-    public static ErrorResponse from(Error error) {
+    public static ErrorResponse from(BridgeError bridgeError) {
         ErrorResponse response = new ErrorResponse();
-        response.setId(Integer.toString(error.getId()));
-        response.setCode(error.getCode());
-        response.setReason(error.getReason());
-        response.setHref(APIConstants.ERROR_API_BASE_PATH + error.getId());
+        response.setId(Integer.toString(bridgeError.getId()));
+        response.setCode(bridgeError.getCode());
+        response.setReason(bridgeError.getReason());
+        response.setHref(APIConstants.ERROR_API_BASE_PATH + bridgeError.getId());
         return response;
     }
 

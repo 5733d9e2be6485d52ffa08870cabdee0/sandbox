@@ -8,8 +8,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.exceptions.Error;
-import com.redhat.service.bridge.infra.exceptions.ErrorsService;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -54,7 +54,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
     ServiceMonitorService monitorService;
 
     @Inject
-    ErrorsService errorsService;
+    BridgeErrorService bridgeErrorService;
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
@@ -99,7 +99,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            Error prometheusNotAvailableError = errorsService.getError(PrometheusNotInstalledException.class)
+            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
                     .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
                     ConditionReason.PrometheusUnavailable,
