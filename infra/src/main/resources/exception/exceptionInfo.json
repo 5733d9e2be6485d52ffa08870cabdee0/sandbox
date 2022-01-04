@@ -12,7 +12,7 @@
   "type": "USER"
 },
 {
-  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException",
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ExternalUserException",
   "id": 3,
   "reason": "The requested item does not exist in out repository",
   "type": "USER"
@@ -22,8 +22,7 @@
   "id": 4,
   "reason": "You tried to create an object which already exist in our repository",
   "type": "USER"
-}
-,
+},
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.CloudEventSerializationException",
   "id": 5,

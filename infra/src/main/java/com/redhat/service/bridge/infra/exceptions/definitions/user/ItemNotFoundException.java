@@ -2,7 +2,7 @@ package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class ItemNotFoundException extends UserFaultException {
+public class ItemNotFoundException extends ExternalUserException {
 
     private static final long serialVersionUID = 1L;
 

@@ -2,7 +2,7 @@ package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class CloudEventSerializationException extends UserFaultException {
+public class CloudEventSerializationException extends ExternalUserException {
 
     private static final long serialVersionUID = 1L;
 

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.utils.Constants;
@@ -80,6 +81,7 @@ public class BridgeErrorInMemoryDAO implements BridgeErrorDAO {
             }
         } catch (IOException io) {
             LOGGER.error("Error closing file with exception errors", io);
+            Quarkus.asyncExit(1);
         }
     }
 
@@ -106,7 +108,7 @@ public class BridgeErrorInMemoryDAO implements BridgeErrorDAO {
     public BridgeError findErrorByIdAndType(int errorId, BridgeErrorType type) {
         BridgeError error = bridgeErrorsFromId.get(errorId);
         if (!error.getType().equals(type)) {
-            throw new RuntimeException(String.format("Error with id %s and type %s not found in the catalog", errorId, type));
+            throw new ItemNotFoundException(String.format("Error with id %s and type %s not found in the catalog", errorId, type));
         }
         return error;
     }

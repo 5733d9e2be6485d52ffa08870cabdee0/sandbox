@@ -3,20 +3,20 @@ package com.redhat.service.bridge.infra.exceptions.definitions.user;
 import javax.ws.rs.core.Response;
 
 /**
- * This class represents all the exceptions that are caused by the user mistake. For example the user asks for a resource
- * that does not exist, the user sends a wrong configuration etc..
+ * This class represents all the exceptions that are caused by the user interaction. For example the user asks for a resource
+ * that does not exist, the user sends a wrong configuration etc.
  *
  * All the subclasses have to be included in the /resources/exceptionInfo.json because they are directly visible on the catalog.
  */
-public class UserFaultException extends RuntimeException {
+public class ExternalUserException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public UserFaultException(String message) {
+    public ExternalUserException(String message) {
         super(message);
     }
 
-    public UserFaultException(String message, Throwable cause) {
+    public ExternalUserException(String message, Throwable cause) {
         super(message, cause);
     }
 

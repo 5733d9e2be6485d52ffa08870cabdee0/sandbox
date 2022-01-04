@@ -13,17 +13,17 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
-import com.redhat.service.bridge.infra.exceptions.definitions.user.UserFaultException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ExternalUserException;
 
-public class UserFaultExceptionMapper implements ExceptionMapper<UserFaultException> {
+public class ExternalUserExceptionMapper implements ExceptionMapper<ExternalUserException> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserFaultExceptionMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalUserExceptionMapper.class);
 
     @Inject
     BridgeErrorService bridgeErrorService;
 
     @Override
-    public Response toResponse(UserFaultException e) {
+    public Response toResponse(ExternalUserException e) {
         LOGGER.debug("Failure", e);
         Optional<BridgeError> error = bridgeErrorService.getError(e);
         ResponseBuilder builder = Response.status(e.getStatusCode());
