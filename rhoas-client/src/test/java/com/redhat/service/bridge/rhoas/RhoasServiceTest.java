@@ -37,7 +37,6 @@ class RhoasServiceTest extends RhoasTestBase {
         configureMockAPIWithAllWorking();
 
         rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
-                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitItem(Duration.ofSeconds(60));
 
@@ -55,7 +54,6 @@ class RhoasServiceTest extends RhoasTestBase {
         configureMockAPIWithBrokenTopicCreation();
 
         rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
-                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 
@@ -73,7 +71,6 @@ class RhoasServiceTest extends RhoasTestBase {
         configureMockAPIWithBrokenServiceAccountCreation();
 
         rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
-                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 
@@ -91,7 +88,6 @@ class RhoasServiceTest extends RhoasTestBase {
         configureMockAPIWithBrokenACLCreation();
 
         rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
-                .onFailure().invoke(Throwable::printStackTrace)
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 
