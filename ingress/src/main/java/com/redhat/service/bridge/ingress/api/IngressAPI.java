@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-import com.redhat.service.bridge.ingress.api.exceptions.BadRequestException;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
