@@ -47,6 +47,7 @@ public class Condition {
     private Date lastTransitionTime;
     private ConditionReason reason;
     private String message;
+    private String errorCode;
 
     @JsonCreator
     public Condition(@JsonProperty("type") final ConditionType type, @JsonProperty("status") final ConditionStatus status) {
@@ -92,6 +93,14 @@ public class Condition {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 
     // type is our hash key for this object.
