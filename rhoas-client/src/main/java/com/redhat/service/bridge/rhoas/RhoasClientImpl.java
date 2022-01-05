@@ -191,12 +191,7 @@ public class RhoasClientImpl implements RhoasClient {
             throw new RhoasClientException(ctx.getReason(), ctx.getFailures());
         }
         LOG.info("Creation completed of topic='{}' and serviceAccount='{}'", ctx.getTopicName(), ctx.getServiceAccountName());
-        return new TopicAndServiceAccountResponse(
-                ctx.getTopicName(),
-                ctx.getServiceAccountName(),
-                ctx.getServiceAccount().getId(),
-                ctx.getServiceAccount().getClientId(),
-                ctx.getServiceAccount().getClientSecret());
+        return new TopicAndServiceAccountResponse(ctx.getTopic(), ctx.getServiceAccount());
     }
 
     private static class Context {
