@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.shard.operator;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -8,7 +7,6 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +19,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
+import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
@@ -31,7 +30,6 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
-    private static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
 
     @Inject
     ObjectMapper mapper;
@@ -46,7 +44,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     BridgeExecutorService bridgeExecutorService;
 
     @Inject
-    EventBridgeOidcClient eventBridgeOidcClient;
+    EventBridgeOidcClientManager eventBridgeOidcClientManager;
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
@@ -166,7 +164,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
+        request.bearerTokenAuthentication(eventBridgeOidcClientManager.getToken());
         return executor.apply(request);
     }
 }
