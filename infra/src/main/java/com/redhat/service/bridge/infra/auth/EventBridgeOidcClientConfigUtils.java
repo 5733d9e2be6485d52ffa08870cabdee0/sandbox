@@ -1,19 +1,19 @@
 package com.redhat.service.bridge.infra.auth;
 
 import io.quarkus.oidc.client.OidcClientConfig;
+import io.quarkus.oidc.common.runtime.OidcConstants;
 
 public class EventBridgeOidcClientConfigUtils {
 
-    // TODO: review this logic since it should be provided by the quarkus module.
     public static OidcClientConfig.Grant.Type getGrantType(String type) {
         switch (type) {
-            case "password":
+            case OidcConstants.PASSWORD_GRANT:
                 return OidcClientConfig.Grant.Type.PASSWORD;
-            case "authorization_code":
+            case OidcConstants.AUTHORIZATION_CODE:
                 return OidcClientConfig.Grant.Type.CODE;
-            case "urn:ietf:params:oauth:grant-type:token-exchange":
+            case OidcConstants.EXCHANGE_GRANT:
                 return OidcClientConfig.Grant.Type.EXCHANGE;
-            case "refresh_token":
+            case OidcConstants.REFRESH_TOKEN_GRANT:
                 return OidcClientConfig.Grant.Type.REFRESH;
             default:
                 throw new RuntimeException("Unrecognized OIDC grant type " + type);

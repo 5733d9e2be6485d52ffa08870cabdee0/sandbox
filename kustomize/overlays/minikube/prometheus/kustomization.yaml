@@ -1,0 +1,3 @@
+# Creating just CRD so operator can create ServiceMonitor  
+resources:
+  - https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
