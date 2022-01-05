@@ -42,7 +42,7 @@ public class RhoasClientImpl implements RhoasClient {
     public Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
         String topicName = request.getTopicName();
         String serviceAccountName = request.getServiceAccountName();
-        LOG.info("Started creation of topic={} and serviceAccount={}...", topicName, serviceAccountName);
+        LOG.info("Started creation of topic='{}' and serviceAccount='{}'...", topicName, serviceAccountName);
         return Uni.createFrom().item(() -> Context.build(topicName, serviceAccountName))
                 .onItem().transformToUni(this::createTopic)
                 .onItem().transformToUni(this::createServiceAccount)
@@ -52,7 +52,7 @@ public class RhoasClientImpl implements RhoasClient {
 
     private Uni<Context> createTopic(final Context ctx) {
         return instanceClient.createTopic(new NewTopicInput().name(ctx.getTopicName()).settings(new TopicSettings().numPartitions(1)))
-                .onItem().invoke(t -> LOG.info("Created topic {}", t.getName()))
+                .onItem().invoke(t -> LOG.info("Created topic '{}'", t.getName()))
                 .onItem().transform(ctx::withTopic)
                 .onFailure().recoverWithUni(failure -> {
                     String reason = "Error when creating topic " + ctx.getTopicName();
@@ -62,10 +62,10 @@ public class RhoasClientImpl implements RhoasClient {
     }
 
     private Uni<Context> revertTopicCreation(final Context ctx) {
-        LOG.info("Deleting topic {} to restore original state after failure", ctx.getTopicName());
+        LOG.info("Deleting topic '{}' to restore original state after failure", ctx.getTopicName());
         return instanceClient.deleteTopic(ctx.getTopicName())
                 .onItem().transform(v -> {
-                    LOG.info("Deleted topic {}", ctx.getTopicName());
+                    LOG.info("Deleted topic '{}'", ctx.getTopicName());
                     return ctx;
                 })
                 .onFailure().recoverWithUni(failure -> {
@@ -79,7 +79,7 @@ public class RhoasClientImpl implements RhoasClient {
             return Uni.createFrom().item(ctx);
         }
         return mgmtClient.createServiceAccount(new ServiceAccountRequest().name(ctx.getServiceAccountName()))
-                .onItem().invoke(sa -> LOG.info("Created service account id={}, clientId={}, clientSecret={}", sa.getId(), sa.getClientId(), sa.getClientSecret()))
+                .onItem().invoke(sa -> LOG.info("Created service account id='{}', clientId='{}', clientSecret='{}'", sa.getId(), sa.getClientId(), sa.getClientSecret()))
                 .onItem().transform(ctx::withServiceAccount)
                 .onFailure().recoverWithUni(failure -> {
                     String reason = "Error when creating service account " + ctx.getServiceAccountName();
@@ -91,10 +91,10 @@ public class RhoasClientImpl implements RhoasClient {
 
     private Uni<Context> revertServiceAccountCreation(final Context ctx) {
         final String serviceAccountId = ctx.getServiceAccount().getId();
-        LOG.info("Deleting service account {} to restore original state after failure", serviceAccountId);
+        LOG.info("Deleting service account '{}' to restore original state after failure", serviceAccountId);
         return mgmtClient.deleteServiceAccount(serviceAccountId)
                 .onItem().transform(v -> {
-                    LOG.info("Deleted service account {}", serviceAccountId);
+                    LOG.info("Deleted service account '{}'", serviceAccountId);
                     return ctx;
                 })
                 .onFailure().recoverWithUni(failure -> {
@@ -190,7 +190,7 @@ public class RhoasClientImpl implements RhoasClient {
         if (ctx.hasFailures()) {
             throw new RhoasClientException(ctx.getReason(), ctx.getFailures());
         }
-        LOG.info("Creation completed of topic={} and serviceAccount={}", ctx.getTopicName(), ctx.getServiceAccountName());
+        LOG.info("Creation completed of topic='{}' and serviceAccount='{}'", ctx.getTopicName(), ctx.getServiceAccountName());
         return new TopicAndServiceAccountResponse(
                 ctx.getTopicName(),
                 ctx.getServiceAccountName(),
