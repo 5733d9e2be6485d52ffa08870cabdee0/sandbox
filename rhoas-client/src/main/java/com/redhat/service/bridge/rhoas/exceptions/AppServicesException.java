@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.rhoas.exceptions;
 
-public class AppServicesException extends RuntimeException {
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
+
+public class AppServicesException extends InternalPlatformException {
 
     public AppServicesException(String message, com.openshift.cloud.api.kas.auth.invoker.ApiException e) {
         super(String.format("%s (status=%d)", message, e.getCode()), e);

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.openshift.cloud.api.kas.models.ServiceAccount;
 import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 
 import io.quarkus.oidc.client.NamedOidcClient;
 import io.quarkus.oidc.client.OidcClient;
@@ -50,8 +51,9 @@ public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implem
             try {
                 tokens = client.refreshTokens(refreshToken).await().atMost(SSO_CONNECTION_TIMEOUT);
             } catch (RuntimeException e) {
-                LOG.warn("Could not fetch a new authentication token from red-hat-sso server");
-                throw e;
+                String msg = "Could not fetch a new authentication token from red-hat-sso server";
+                LOG.warn(msg);
+                throw new InternalPlatformException(msg, e);
             }
         }
         return tokens.getAccessToken();
