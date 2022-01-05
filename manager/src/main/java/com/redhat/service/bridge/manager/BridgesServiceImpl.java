@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -78,11 +79,13 @@ public class BridgesServiceImpl implements BridgesService {
             try {
                 rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
             } catch (CompletionException e) {
-                LOGGER.warn("[manager] Failed creating topic and service account for bridge " + bridge.getId(), e);
-                throw e;
+                String msg = "Failed creating topic and service account for bridge " + bridge.getId();
+                LOGGER.warn("[manager] " + msg, e);
+                throw new InternalPlatformException(msg, e);
             } catch (TimeoutException e) {
-                LOGGER.warn("[manager] Timeout reached while creating topic and service account for bridge " + bridge.getId(), e);
-                throw e;
+                String msg = "Timeout reached while creating topic and service account for bridge " + bridge.getId();
+                LOGGER.warn("[manager] " + msg, e);
+                throw new InternalPlatformException(msg, e);
             }
         }
 
