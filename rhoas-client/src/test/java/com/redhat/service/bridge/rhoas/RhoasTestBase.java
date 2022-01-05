@@ -3,10 +3,10 @@ package com.redhat.service.bridge.rhoas;
 import javax.inject.Inject;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.redhat.service.bridge.rhoas.resourcemanager.KafkaInstanceAdminMockServerConfigurator;
-import com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator;
-import com.redhat.service.bridge.rhoas.resourcemanager.MasSSOMockServerConfigurator;
-import com.redhat.service.bridge.rhoas.resourcemanager.RedHatSSOMockServerConfiguration;
+import com.redhat.service.bridge.test.rhoas.KafkaInstanceAdminMockServerConfigurator;
+import com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigurator;
+import com.redhat.service.bridge.test.rhoas.MasSSOMockServerConfigurator;
+import com.redhat.service.bridge.test.rhoas.RedHatSSOMockServerConfiguration;
 import com.redhat.service.bridge.test.wiremock.InjectWireMock;
 
 abstract class RhoasTestBase {

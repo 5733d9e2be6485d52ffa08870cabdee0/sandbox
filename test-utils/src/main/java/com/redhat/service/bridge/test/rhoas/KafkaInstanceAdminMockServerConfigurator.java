@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.rhoas.resourcemanager;
+package com.redhat.service.bridge.test.rhoas;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class KafkaInstanceAdminMockServerConfigurator extends AbstractApiMockSer
 
     public static final String TEST_TOPIC_NAME = "test-topic";
 
-    @ConfigProperty(name = "mock-server.instance-api.base-path")
+    @ConfigProperty(name = "rhoas-mock-server.instance-api.base-path")
     String basePath;
 
     public KafkaInstanceAdminMockServerConfigurator() {

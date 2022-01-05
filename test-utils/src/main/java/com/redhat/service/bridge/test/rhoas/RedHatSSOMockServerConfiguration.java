@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.rhoas.resourcemanager;
+package com.redhat.service.bridge.test.rhoas;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -26,10 +26,10 @@ public class RedHatSSOMockServerConfiguration {
             "\"scope\":\"openid offline_access\"" +
             "}";
 
-    @ConfigProperty(name = "mock-server.sso.red-hat.base-path")
+    @ConfigProperty(name = "rhoas-mock-server.sso.red-hat.base-path")
     String basePath;
 
-    @ConfigProperty(name = "mock-server.sso.red-hat.refresh-token")
+    @ConfigProperty(name = "rhoas-mock-server.sso.red-hat.refresh-token")
     String refreshToken;
 
     public void configure(WireMockServer server) {

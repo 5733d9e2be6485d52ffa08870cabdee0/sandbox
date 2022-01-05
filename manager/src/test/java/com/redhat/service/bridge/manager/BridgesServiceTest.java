@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
@@ -16,6 +17,10 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
+import com.redhat.service.bridge.test.rhoas.MasSSOMockServerConfigurator;
+import com.redhat.service.bridge.test.rhoas.RedHatSSOMockServerConfiguration;
+import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
+import com.redhat.service.bridge.test.wiremock.InjectWireMock;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -25,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
+@QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
 public class BridgesServiceTest {
 
     @Inject
@@ -33,9 +39,20 @@ public class BridgesServiceTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @InjectWireMock
+    WireMockServer wireMockServer;
+    @Inject
+    RedHatSSOMockServerConfiguration redHatSSOConfigurator;
+    @Inject
+    MasSSOMockServerConfigurator masSSOConfigurator;
+
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+
+        wireMockServer.resetAll();
+        redHatSSOConfigurator.configure(wireMockServer);
+        masSSOConfigurator.configure(wireMockServer);
     }
 
     @Test

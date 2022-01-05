@@ -4,19 +4,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
-import com.redhat.service.bridge.rhoas.resourcemanager.MockServerResource;
+import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 
-import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
-import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_NAME;
+import static com.redhat.service.bridge.test.rhoas.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
+import static com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_NAME;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-@QuarkusTestResource(value = MockServerResource.class, restrictToAnnotatedClass = true)
+@QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
 class RhoasAPITest extends RhoasTestBase {
 
     @BeforeEach

@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
-import com.redhat.service.bridge.rhoas.resourcemanager.MockServerResource;
+import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
-import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
-import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_ID;
-import static com.redhat.service.bridge.rhoas.resourcemanager.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_NAME;
+import static com.redhat.service.bridge.test.rhoas.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
+import static com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_ID;
+import static com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigurator.TEST_SERVICE_ACCOUNT_NAME;
 
 @QuarkusTest
-@QuarkusTestResource(value = MockServerResource.class, restrictToAnnotatedClass = true)
+@QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
 class RhoasServiceTest extends RhoasTestBase {
 
     @Inject

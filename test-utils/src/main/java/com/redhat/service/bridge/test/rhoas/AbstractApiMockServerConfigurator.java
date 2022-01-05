@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.rhoas.resourcemanager;
+package com.redhat.service.bridge.test.rhoas;
 
 import java.util.function.Function;
 

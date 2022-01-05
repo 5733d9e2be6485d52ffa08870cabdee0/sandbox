@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.rhoas.resourcemanager;
+package com.redhat.service.bridge.test.rhoas;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -24,11 +24,11 @@ public class MasSSOMockServerConfigurator {
             "\"scope\":\"profile email\"" +
             "}";
 
-    @ConfigProperty(name = "mock-server.sso.mas.base-path")
+    @ConfigProperty(name = "rhoas-mock-server.sso.mas.base-path")
     String basePath;
-    @ConfigProperty(name = "mock-server.sso.mas.client-id")
+    @ConfigProperty(name = "rhoas-mock-server.sso.mas.client-id")
     String clientId;
-    @ConfigProperty(name = "mock-server.sso.mas.client-secret")
+    @ConfigProperty(name = "rhoas-mock-server.sso.mas.client-secret")
     String clientSecret;
 
     public void configure(WireMockServer server) {
