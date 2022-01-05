@@ -2,6 +2,8 @@ package com.redhat.service.bridge.rhoas;
 
 import java.util.function.Supplier;
 
+import javax.inject.Inject;
+
 import com.openshift.cloud.api.kas.SecurityApi;
 import com.openshift.cloud.api.kas.auth.AclsApi;
 import com.openshift.cloud.api.kas.auth.TopicsApi;
@@ -12,15 +14,12 @@ import io.vertx.mutiny.core.Vertx;
 
 abstract class AbstractAppServicesClientImpl {
 
-    private Vertx vertx;
+    @Inject
+    protected Vertx vertx;
 
     protected abstract String getAccessToken();
 
     protected abstract String getBasePath();
-
-    protected void init(Vertx vertx) {
-        this.vertx = vertx;
-    }
 
     protected <T> Uni<T> aclsValueCall(ApiValueExecutor<AclsApi, T> executor) {
         return executeBlocking(() -> executeAndHandleException(new AclsApi(defaultInstanceClient()), executor));

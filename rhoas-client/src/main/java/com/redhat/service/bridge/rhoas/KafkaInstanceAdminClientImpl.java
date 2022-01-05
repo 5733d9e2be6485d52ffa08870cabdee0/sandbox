@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.rhoas;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -17,7 +16,6 @@ import com.openshift.cloud.api.kas.auth.models.Topic;
 import io.quarkus.oidc.client.NamedOidcClient;
 import io.quarkus.oidc.client.Tokens;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.core.Vertx;
 
 @ApplicationScoped
 public class KafkaInstanceAdminClientImpl extends AbstractAppServicesClientImpl implements KafkaInstanceAdminClient {
@@ -26,16 +24,8 @@ public class KafkaInstanceAdminClientImpl extends AbstractAppServicesClientImpl 
     String basePath;
 
     @Inject
-    Vertx vertx;
-
-    @Inject
     @NamedOidcClient("mas-sso")
     Tokens tokens;
-
-    @PostConstruct
-    void onPostConstruct() {
-        init(vertx);
-    }
 
     @Override
     public Uni<Void> createAcl(AclBinding aclBinding) {

@@ -2,7 +2,6 @@ package com.redhat.service.bridge.rhoas;
 
 import java.time.Duration;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -17,7 +16,6 @@ import io.quarkus.oidc.client.NamedOidcClient;
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.core.Vertx;
 
 @ApplicationScoped
 public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implements KafkasMgmtV1Client {
@@ -31,18 +29,10 @@ public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implem
     String refreshToken;
 
     @Inject
-    Vertx vertx;
-
-    @Inject
     @NamedOidcClient("red-hat-sso")
     OidcClient client;
 
     Tokens tokens;
-
-    @PostConstruct
-    void onPostConstruct() {
-        init(vertx);
-    }
 
     @Override
     public Uni<ServiceAccount> createServiceAccount(ServiceAccountRequest serviceAccountRequest) {
