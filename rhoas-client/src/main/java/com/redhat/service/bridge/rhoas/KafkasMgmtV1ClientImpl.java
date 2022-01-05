@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.rhoas;
 
+import java.time.Duration;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -21,6 +23,7 @@ import io.vertx.mutiny.core.Vertx;
 public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implements KafkasMgmtV1Client {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkasMgmtV1ClientImpl.class);
+    private static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
 
     @ConfigProperty(name = "event-bridge.rhoas.mgmt-api.host")
     String basePath;
@@ -54,7 +57,12 @@ public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implem
     @Override
     protected String getAccessToken() {
         if (tokens == null || tokens.isAccessTokenExpired()) {
-            tokens = client.refreshTokens(refreshToken).await().indefinitely();
+            try {
+                tokens = client.refreshTokens(refreshToken).await().atMost(SSO_CONNECTION_TIMEOUT);
+            } catch (RuntimeException e) {
+                LOG.warn("Could not fetch a new authentication token from red-hat-sso server");
+                throw e;
+            }
         }
         return tokens.getAccessToken();
     }
