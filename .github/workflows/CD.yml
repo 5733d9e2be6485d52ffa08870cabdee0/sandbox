@@ -18,7 +18,8 @@ jobs:
     env:
       MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
       FLEET_MANAGER_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager:${{ github.sha }}
-      FLEET_SHARD_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:${{ github.sha }}
+      FLEET_SHARD_OPENSHIFT_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:ocp-${{ github.sha }}
+      FLEET_SHARD_MINIKUBE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:k8s-${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:${{ github.sha }}
       INGRESS_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:${{ github.sha }}
     timeout-minutes: 30
@@ -96,13 +97,13 @@ jobs:
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager/
           docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
 
-      # run only if 'ingress' or any 'general' modules have changed
+      # run only if 'shard-operator' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Shard"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm shard-operator/
-          docker push $FLEET_SHARD_CONTAINER_NAME-jvm
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm shard-operator/
+          docker push $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm
 
       # run only if 'executor' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Executor
@@ -119,3 +120,16 @@ jobs:
           echo "Building and pushing docker image for Ingress"
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME-jvm ingress/
           docker push $INGRESS_CONTAINER_NAME-jvm
+
+      # Build shart operator with Minikube profile if 'shard-operator' or any 'general' modules have changed
+      - name: Build Minikube Fleet Shard
+        if: steps.filter.outputs.shard-operator == 'true'
+        shell: bash
+        run: mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
+        working-directory: shard-operator
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        if: steps.filter.outputs.shard-operator == 'true'
+        run: |
+          echo "Building and pushing docker image for Fleet Shard with Minikube profile"
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm shard-operator/
+          docker push $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm
