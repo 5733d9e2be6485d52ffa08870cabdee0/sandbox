@@ -39,12 +39,11 @@ import io.smallrye.mutiny.TimeoutException;
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
-    private static final String DEFAULT_RHOAS_TIMEOUT = "60";
 
-    @ConfigProperty(name = "event-bridge.manager.rhoas.enabled", defaultValue = "false")
+    @ConfigProperty(name = "event-bridge.manager.rhoas.enabled")
     boolean rhoasEnabled;
 
-    @ConfigProperty(name = "event-bridge.manager.rhoas.timeout", defaultValue = DEFAULT_RHOAS_TIMEOUT)
+    @ConfigProperty(name = "event-bridge.manager.rhoas.timeout-seconds")
     int rhoasTimeout;
 
     @Inject
