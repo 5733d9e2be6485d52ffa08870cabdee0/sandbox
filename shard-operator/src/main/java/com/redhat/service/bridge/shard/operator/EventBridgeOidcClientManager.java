@@ -28,6 +28,8 @@ public class EventBridgeOidcClientManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeOidcClientManager.class);
     private static final String NAME = "event-bridge-sso";
 
+    private EventBridgeOidcClient eventBridgeOidcClient;
+
     @ConfigProperty(name = "event-bridge.auth-server-url")
     String serverUrl;
 
@@ -48,8 +50,6 @@ public class EventBridgeOidcClientManager {
 
     @Inject
     OidcClients oidcClients;
-
-    private EventBridgeOidcClient eventBridgeOidcClient;
 
     public EventBridgeOidcClientManager() {
     }
