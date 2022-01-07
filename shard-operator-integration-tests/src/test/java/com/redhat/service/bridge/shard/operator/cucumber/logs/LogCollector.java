@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.openshift.client.OpenShiftClient;
 
 /**
@@ -33,14 +34,18 @@ public class LogCollector {
 
         for (Pod pod : client.pods().inNamespace(namespace).list().getItems()) {
             for (Container container : pod.getSpec().getContainers()) {
-                String log = "";
-                if (Strings.isNullOrEmpty(container.getName())) {
-                    // Retrieve default pod log if container name is not specified
-                    log = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).getLog();
-                } else {
-                    log = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).inContainer(container.getName()).getLog();
+                try {
+                    String log = "";
+                    if (Strings.isNullOrEmpty(container.getName())) {
+                        // Retrieve default pod log if container name is not specified
+                        log = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).getLog();
+                    } else {
+                        log = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).inContainer(container.getName()).getLog();
+                    }
+                    Files.write(getLogFilePath(logParentDirectory, pod, container), log.getBytes());
+                } catch (KubernetesClientException e) {
+                    // When pod is deleted before retrieval of its log then a KubernetesClientException is thrown. Can be ignored.
                 }
-                Files.write(getLogFilePath(logParentDirectory, pod, container), log.getBytes());
             }
         }
     }
