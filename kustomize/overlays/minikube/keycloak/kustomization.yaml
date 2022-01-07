@@ -1,0 +1,13 @@
+namespace: keycloak
+secretGenerator:
+- name: keycloak-secrets
+  literals:
+  - KEYCLOAK_USER=admin
+  - KEYCLOAK_PASSWORD=123
+- name: keycloak-realm
+  files:
+  - event-bridge-fm-realm-sample.json
+resources:
+  - namespace.yaml
+  - ../../../base/keycloak
+  - nodeport.yaml

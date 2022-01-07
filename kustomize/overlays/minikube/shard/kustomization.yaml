@@ -1,0 +1,16 @@
+secretGenerator:
+- name: event-bridge-shard-operator-secrets
+  literals:
+  - KAFKA_BOOTSTRAP_SERVERS=my-cluster-kafka-bootstrap.kafka:9092
+  - KAFKA_CLIENT_ID=client-id
+  - KAFKA_CLIENT_SECRET=secret
+  - KEYCLOAK_USER=admin
+  - KEYCLOAK_PASSWORD=123
+patchesStrategicMerge:
+- patches/deploy-config.yaml
+namespace: event-bridge-operator
+resources:
+- namespace.yaml
+- cluster-role.yaml
+- cluster-role-binding.yaml
+- ../../../base/shard

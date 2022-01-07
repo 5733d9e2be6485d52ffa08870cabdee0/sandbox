@@ -1,0 +1,6 @@
+namespace: kafka
+resources:
+  - namespace.yaml
+  - strimzi.yaml
+  - kafka.yaml
+  - kafka-topics.yaml
