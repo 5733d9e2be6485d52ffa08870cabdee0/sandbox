@@ -96,6 +96,10 @@ public class End2EndTestITStep {
 
         // store bridge endpoint details
         endPoint = getBridgeDetails(bridgeId).then().extract().response().as(BridgeResponse.class).getEndpoint();
+        // If an endpoint contains localhost without port then default port has to be defined, otherwise rest-assured will use port 8080
+        if (endPoint.matches("http://localhost/.*")) {
+            endPoint = endPoint.replace("http://localhost/", "http://localhost:80/");
+        }
     }
 
     @When("^add Processor to the Bridge with access token:$")
