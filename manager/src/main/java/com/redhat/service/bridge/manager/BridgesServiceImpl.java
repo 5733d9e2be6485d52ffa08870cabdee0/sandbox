@@ -40,7 +40,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
-    @ConfigProperty(name = "event-bridge.manager.rhoas.enabled")
+    @ConfigProperty(name = "event-bridge.feature-flags.rhoas-enabled")
     boolean rhoasEnabled;
 
     @ConfigProperty(name = "event-bridge.manager.rhoas.timeout-seconds")
