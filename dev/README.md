@@ -72,6 +72,43 @@ Deploy the ServiceMonitor CRD from the Prometheus operator with
 kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
 ```
 
+## Managed Kafka integration (optional)
+
+Optionally, the manager can be configured to integrate with Managed Kafka.
+
+First of all, you need to [install the rhoas CLI](https://access.redhat.com/documentation/en-us/red_hat_openshift_streams_for_apache_kafka/1/guide/f520e427-cad2-40ce-823d-96234ccbc047)
+and login using a Managed Kafka test account (ask the dev team for credentials) and its **offline token**. From now on a successful login is assumed.
+
+Change the Kafka instance (`my-test-instance`) and service account (`my-test-instance-admin`) names according to your needs.
+
+### Create a test Kafka instance
+
+Create a Kafka test instance. These instances are automatically deleted after 48h and you will need to repeat the process.
+
+```bash
+rhoas kafka create --name my-test-instance
+```
+
+Monitor the creation status with `rhoas status` and wait for it to be `ready`.
+
+### Create a service account
+
+```bash
+rhoas service-account create --output-file=my-test-instance-admin.json --file-format=json --overwrite --short-description=my-test-instance-admin
+```
+
+**Note:** this doesn't get deleted, so no need to repeat this command if your Kafka instance is gone.
+
+### Set permissions (ACLs) to service account
+
+```bash
+service_account_id=$( jq -r '.clientID' 'my-test-instance-admin.json' )
+
+rhoas -v kafka acl grant-admin -y --service-account "${service_account_id}"
+rhoas kafka acl create -y --user "${service_account_id}" --permission allow --operation create --topic all
+rhoas kafka acl create -y --user "${service_account_id}" --permission allow --operation delete --topic all
+```
+
 ## Development environment
 
 If not already running, start your Minikube cluster with 
@@ -124,6 +161,20 @@ bfaea280bff3   prom/prometheus:v2.8.0   "/bin/prometheus --c…"   38 minutes ag
 ### Start the Fleet Manager
 
 **Open another terminal.**
+
+**If you configured Managed Kafka integration as described above, export the following env variables:**
+
+```bash
+export EVENT_BRIDGE_FEATURE_FLAGS_RHOAS_ENABLED=true
+export EVENT_BRIDGE_RHOAS_MGMT_API_HOST=https://api.openshift.com
+export EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=http://admin-server-<kafka_instance_bootstrap_host>
+export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL=https://sso.redhat.com/auth/realms/redhat-external
+export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID=cloud-services
+export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_REFRESH_TOKEN=<test_account_offline_token>
+export EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL=https://identity.api.openshift.com/auth/realms/rhoas
+export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-admin.json' )
+export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=$( jq -r '.clientSecret' 'my-test-instance-admin.json' )
+```
 
 **From the root of the project** run the Fleet Manager application with 
 
