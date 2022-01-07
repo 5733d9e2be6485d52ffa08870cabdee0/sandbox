@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.auth.EventBridgeOidcClient;
 import com.redhat.service.bridge.infra.auth.EventBridgeOidcClientConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.OidcTokensNotInitializedException;
 
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.OidcClientException;
@@ -41,7 +42,7 @@ public class EventBridgeOidcClientTest {
 
     @Test
     public void tokensNotInitialized() {
-        assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> client.getToken());
+        assertThatExceptionOfType(OidcTokensNotInitializedException.class).isThrownBy(() -> client.getToken());
     }
 
     @Test

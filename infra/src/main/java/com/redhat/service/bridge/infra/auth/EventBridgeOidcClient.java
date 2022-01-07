@@ -5,6 +5,8 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.OidcTokensNotInitializedException;
+
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.OidcClientException;
 import io.quarkus.oidc.client.Tokens;
@@ -34,7 +36,7 @@ public class EventBridgeOidcClient {
 
     public String getToken() {
         if (currentTokens == null) {
-            throw new RuntimeException(String.format("Tokens for OIDC client '%s' are not initialized.", name));
+            throw new OidcTokensNotInitializedException(String.format("Tokens for OIDC client '%s' are not initialized.", name));
         }
         return currentTokens.getAccessToken();
     }
