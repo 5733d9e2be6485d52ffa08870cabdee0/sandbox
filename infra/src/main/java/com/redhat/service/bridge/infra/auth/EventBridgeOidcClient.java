@@ -18,7 +18,6 @@ public class EventBridgeOidcClient {
     private String name;
     private OidcClient client;
     private Duration timeout;
-
     private Tokens currentTokens;
 
     public EventBridgeOidcClient(String name, OidcClient oidcClient, Duration timeout) {
