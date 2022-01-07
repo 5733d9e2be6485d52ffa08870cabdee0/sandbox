@@ -1,13 +1,18 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: 4681557f42dd19d1f186bf4735f83cd7b5f13248-jvm
+  newTag: 0c01459020071793c3151c1834ee408e09b5e5d1-jvm
 - name: event-bridge-shard-operator
-  newName: <REPLACE_WITH_OPERATOR_IMAGE_NAME>
-  newTag: <REPLACE_WITH_OPERATOR_IMAGE_TAG>
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
+  newTag: ocp-0c01459020071793c3151c1834ee408e09b5e5d1
+namespace: event-bridge-prod
+patchesStrategicMerge:
+- manager/patches/deploy-config.yaml
+- manager/patches/postgres-config.yaml
+- shard/patches/deploy-config.yaml
 resources:
-- kafka
-- keycloak
-- prometheus
-- shard
+- ../../base
 - manager
+- secrets
+- shard
+- observability
