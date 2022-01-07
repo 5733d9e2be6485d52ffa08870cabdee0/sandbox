@@ -39,6 +39,8 @@ spec:
                   properties:
                     lastTransitionTime:
                       type: string
+                    errorCode:
+                      type: string
                     type:
                       enum:
                       - Ready
