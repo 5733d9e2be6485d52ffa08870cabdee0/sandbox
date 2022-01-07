@@ -22,19 +22,7 @@ jobs:
         with:
           cache-key-prefix: ${{ runner.os }}
       - name: Set up KinD
-        uses: container-tools/kind-action@v1
-        with:
-          config: .github/kind-config.yaml
-          registry: false                  # Registry not needed
-          node_image: kindest/node:v1.22.2 # Newest image
-      - name: Check cluster status
-        run: |
-          kubectl get nodes
-          kubectl cluster-info
-      - name: Install Ingres
-        run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
-          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+        uses: ./.github/actions/kind
         # Tests are executed in different PR check, we just need all artifacts in repository
       - name: Build complete repo
         uses: ./.github/actions/maven

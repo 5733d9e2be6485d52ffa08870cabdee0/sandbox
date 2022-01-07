@@ -15,13 +15,13 @@ public class BridgeUtils {
 
     protected static String token;
     protected static String env_token;
-    protected static String keycloakURL = getSystemProperty("key-cloak.url");
+    protected static String keycloakURL = System.getProperty("key-cloak.url");
 
     public static RequestSpecification jsonRequestWithAuth() {
         env_token = System.getenv("OB_TOKEN");
         if (env_token != null) {
             token = env_token;
-        } else if (keycloakURL != null) {
+        } else if (keycloakURL != null && !keycloakURL.isEmpty()) {
             token = getAccessToken();
         } else {
             throw new RuntimeException("Environment variable token and key-cloak url was not defined for token generation.");
