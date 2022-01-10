@@ -8,26 +8,45 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.OidcTokensNotInitializedException;
 
 import io.quarkus.oidc.client.OidcClient;
+import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClientException;
+import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.oidc.client.Tokens;
 
-public class EventBridgeOidcClient {
+public abstract class AbstractOidcClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeOidcClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
+
+    public static final String SCHEDULER_TIME = "5s";
+    public static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
+    public static final Duration REFRESH_TOKEN_TIME_SKEW = Duration.ofSeconds(30);
 
     private String name;
     private OidcClient client;
+    private OidcClients oidcClients;
     private Duration timeout;
 
     private Tokens currentTokens;
 
-    public EventBridgeOidcClient(String name, OidcClient oidcClient, Duration timeout) {
+    public AbstractOidcClient() {
+    }
+
+    public AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout) {
         this.name = name;
-        this.client = oidcClient;
+        this.oidcClients = oidcClients;
         this.timeout = timeout;
     }
 
-    public void checkAndRefresh() {
+    public AbstractOidcClient(String name, OidcClients oidcClients) {
+        this(name, oidcClients, SSO_CONNECTION_TIMEOUT);
+    }
+
+    protected void init(OidcClientConfig oidcClientConfig) {
+        this.client = oidcClients.newClient(oidcClientConfig).await().atMost(timeout);
+        retrieveTokens();
+    }
+
+    protected void checkAndRefresh() {
         if (currentTokens.isAccessTokenExpired() || currentTokens.isAccessTokenWithinRefreshInterval()) {
             refreshTokens();
             LOGGER.info("Tokens have been refreshed for OIDC client '{}'", name);
@@ -47,11 +66,11 @@ public class EventBridgeOidcClient {
             currentTokens = client.refreshTokens(tokens.getRefreshToken()).await().atMost(timeout);
         } catch (OidcClientException e) {
             LOGGER.warn("Could not use refresh token. Trying to get a new fresh token for OIDC client '{}'", name);
-            init();
+            retrieveTokens();
         }
     }
 
-    public void init() {
+    private void retrieveTokens() {
         currentTokens = client.getTokens().await().atMost(timeout);
         LOGGER.info("New token for OIDC client '{}' has been set", name);
     }

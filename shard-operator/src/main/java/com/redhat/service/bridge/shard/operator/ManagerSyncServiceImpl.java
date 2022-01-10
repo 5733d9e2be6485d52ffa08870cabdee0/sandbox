@@ -44,7 +44,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     BridgeExecutorService bridgeExecutorService;
 
     @Inject
-    EventBridgeOidcClientManager eventBridgeOidcClientManager;
+    EventBridgeOidcClient eventBridgeOidcClient;
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
@@ -164,7 +164,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        request.bearerTokenAuthentication(eventBridgeOidcClientManager.getToken());
+        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
         return executor.apply(request);
     }
 }

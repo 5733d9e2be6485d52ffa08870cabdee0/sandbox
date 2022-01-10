@@ -3,7 +3,7 @@ package com.redhat.service.bridge.infra.auth;
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.common.runtime.OidcConstants;
 
-public class EventBridgeOidcClientConfigUtils {
+public class OidcClientConfigUtils {
 
     public static OidcClientConfig.Grant.Type getGrantType(String type) {
         switch (type) {

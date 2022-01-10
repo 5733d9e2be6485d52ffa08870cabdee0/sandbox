@@ -11,10 +11,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.auth.EventBridgeOidcClient;
-import com.redhat.service.bridge.infra.auth.EventBridgeOidcClientBuilder;
-import com.redhat.service.bridge.infra.auth.EventBridgeOidcClientConfigUtils;
-import com.redhat.service.bridge.infra.auth.EventBridgeOidcClientConstants;
+import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
+import com.redhat.service.bridge.infra.auth.OidcClientConfigUtils;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
@@ -23,9 +21,9 @@ import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
-public class EventBridgeOidcClientManager {
+public class EventBridgeOidcClient extends AbstractOidcClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeOidcClientManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeOidcClient.class);
     private static final String NAME = "event-bridge-sso";
 
     @ConfigProperty(name = "event-bridge.auth-server-url")
@@ -47,11 +45,8 @@ public class EventBridgeOidcClientManager {
     String password;
 
     @Inject
-    OidcClients oidcClients;
-
-    private EventBridgeOidcClient eventBridgeOidcClient;
-
-    public EventBridgeOidcClientManager() {
+    public EventBridgeOidcClient(OidcClients oidcClients) {
+        super(NAME, oidcClients);
     }
 
     @PostConstruct
@@ -66,30 +61,22 @@ public class EventBridgeOidcClientManager {
         oidcClientConfig.setId(NAME);
         oidcClientConfig.setAuthServerUrl(serverUrl);
         oidcClientConfig.setClientId(clientId);
-        oidcClientConfig.grant.setType(EventBridgeOidcClientConfigUtils.getGrantType(type));
+        oidcClientConfig.grant.setType(OidcClientConfigUtils.getGrantType(type));
         oidcClientConfig.setGrantOptions(grantOptions);
         oidcClientConfig.getCredentials().setSecret(secret);
-        oidcClientConfig.setRefreshTokenTimeSkew(EventBridgeOidcClientConstants.REFRESH_TOKEN_TIME_SKEW);
+        oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         try {
-            this.eventBridgeOidcClient = new EventBridgeOidcClientBuilder()
-                    .withOidcClients(oidcClients)
-                    .withName(NAME)
-                    .withOidcClientConfig(oidcClientConfig)
-                    .build();
-            this.eventBridgeOidcClient.init();
+            this.init(oidcClientConfig);
         } catch (RuntimeException e) {
             LOGGER.error(String.format("Could not initialize OIDC client '%s'. The application is going to be stopped.", NAME), e);
             Quarkus.asyncExit(1);
         }
     }
 
-    @Scheduled(every = EventBridgeOidcClientConstants.SCHEDULER_TIME)
-    void refresh() {
-        eventBridgeOidcClient.checkAndRefresh();
-    }
-
-    public String getToken() {
-        return eventBridgeOidcClient.getToken();
+    @Scheduled(every = AbstractOidcClient.SCHEDULER_TIME)
+    @Override
+    protected void checkAndRefresh() {
+        super.checkAndRefresh();
     }
 }
