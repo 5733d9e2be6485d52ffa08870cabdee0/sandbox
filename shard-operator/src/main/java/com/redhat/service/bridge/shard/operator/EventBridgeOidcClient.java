@@ -7,16 +7,18 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.infra.auth.OidcClientConfigUtils;
+
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.oidc.common.runtime.OidcConstants;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class EventBridgeOidcClient extends AbstractOidcClient {
