@@ -41,7 +41,7 @@ public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
         String url = String.format("http://localhost:%s/auth/realms/event-bridge-fm", keycloak.getFirstMappedPort());
         map.put("quarkus.oidc.auth-server-url", url);
 
-        // TODO: since there is a specific property for every sso server, this has to be refactored.
+        // TODO: since there is a specific property for every sso server, this has to be refactored https://issues.redhat.com/browse/MGDOBR-217
         map.put("event-bridge.auth-server-url", url);
         return map;
     }
