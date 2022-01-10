@@ -25,7 +25,6 @@ public abstract class AbstractOidcClient {
     private OidcClient client;
     private OidcClients oidcClients;
     private Duration timeout;
-
     private Tokens currentTokens;
 
     public AbstractOidcClient() {

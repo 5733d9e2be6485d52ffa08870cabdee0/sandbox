@@ -28,6 +28,7 @@ public class AbstractOidcClientTest {
     private static final String NAME = "test-sso";
     private static final String ACCESS_TOKEN = "access";
     private static final String REFRESH_TOKEN = "refresh";
+
     private OidcClient oidcClient;
     private Tokens tokens;
     private TestOidcClient client;
