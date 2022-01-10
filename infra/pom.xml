@@ -71,9 +71,5 @@
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-scheduler</artifactId>
-    </dependency>
   </dependencies>
 </project>
