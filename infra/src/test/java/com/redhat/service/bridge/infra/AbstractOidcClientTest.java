@@ -38,8 +38,8 @@ public class AbstractOidcClientTest {
         }
 
         @Override
-        public void init(OidcClientConfig oidcClientConfig) {
-            super.init(oidcClientConfig);
+        public void init() {
+            super.init();
         }
 
         @Override
@@ -50,6 +50,15 @@ public class AbstractOidcClientTest {
         @Override
         public String getToken() {
             return super.getToken();
+        }
+
+        @Override
+        protected OidcClientConfig getOidcClientConfig() {
+            return new OidcClientConfig();
+        }
+
+        @Override
+        protected void scheduledLoop() {
         }
     }
 
@@ -75,14 +84,14 @@ public class AbstractOidcClientTest {
 
     @Test
     public void tokensAreInizialized() {
-        client.init(new OidcClientConfig());
+        client.init();
         assertThat(client.getToken()).isEqualTo(ACCESS_TOKEN);
     }
 
     @Test
     public void expiredTokenAreRefreshed() {
         // Given
-        client.init(new OidcClientConfig());
+        client.init();
         when(tokens.isAccessTokenExpired()).thenReturn(true);
 
         // When
@@ -95,7 +104,7 @@ public class AbstractOidcClientTest {
     @Test
     public void tokenIsInRefreshInterval() {
         // Given
-        client.init(new OidcClientConfig());
+        client.init();
         when(tokens.isAccessTokenWithinRefreshInterval()).thenReturn(true);
 
         // When
@@ -108,7 +117,7 @@ public class AbstractOidcClientTest {
     @Test
     public void expiredRefreshTokenAreRenewed() {
         // Given
-        client.init(new OidcClientConfig());
+        client.init();
         when(tokens.isAccessTokenExpired()).thenReturn(true);
         when(oidcClient.refreshTokens(any(String.class))).thenThrow(new OidcClientException());
 

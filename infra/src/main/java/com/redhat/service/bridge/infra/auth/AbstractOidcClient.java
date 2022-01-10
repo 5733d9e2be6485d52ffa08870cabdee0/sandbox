@@ -2,6 +2,8 @@ package com.redhat.service.bridge.infra.auth;
 
 import java.time.Duration;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +42,13 @@ public abstract class AbstractOidcClient {
         this(name, oidcClients, SSO_CONNECTION_TIMEOUT);
     }
 
-    protected void init(OidcClientConfig oidcClientConfig) {
-        this.client = oidcClients.newClient(oidcClientConfig).await().atMost(timeout);
+    protected abstract OidcClientConfig getOidcClientConfig();
+
+    protected abstract void scheduledLoop();
+
+    @PostConstruct
+    protected void init() {
+        this.client = oidcClients.newClient(getOidcClientConfig()).await().atMost(timeout);
         retrieveTokens();
     }
 

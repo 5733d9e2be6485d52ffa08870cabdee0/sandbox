@@ -3,13 +3,10 @@ package com.redhat.service.bridge.shard.operator;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.infra.auth.OidcClientConfigUtils;
@@ -17,13 +14,11 @@ import com.redhat.service.bridge.infra.auth.OidcClientConfigUtils;
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.oidc.common.runtime.OidcConstants;
-import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
 public class EventBridgeOidcClient extends AbstractOidcClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventBridgeOidcClient.class);
     private static final String NAME = "event-bridge-sso";
 
     @ConfigProperty(name = "event-bridge.auth-server-url")
@@ -49,8 +44,8 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
         super(NAME, oidcClients);
     }
 
-    @PostConstruct
-    void init() {
+    @Override
+    protected OidcClientConfig getOidcClientConfig() {
         Map<String, Map<String, String>> grantOptions = new HashMap<>();
         Map<String, String> passwordConfig = new HashMap<>();
         passwordConfig.put(OidcConstants.PASSWORD_GRANT_USERNAME, username);
@@ -66,17 +61,12 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
         oidcClientConfig.getCredentials().setSecret(secret);
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
-        try {
-            this.init(oidcClientConfig);
-        } catch (RuntimeException e) {
-            LOGGER.error(String.format("Could not initialize OIDC client '%s'. The application is going to be stopped.", NAME), e);
-            Quarkus.asyncExit(1);
-        }
+        return oidcClientConfig;
     }
 
-    @Scheduled(every = AbstractOidcClient.SCHEDULER_TIME)
     @Override
-    protected void checkAndRefresh() {
+    @Scheduled(every = AbstractOidcClient.SCHEDULER_TIME)
+    protected void scheduledLoop() {
         super.checkAndRefresh();
     }
 }
