@@ -71,6 +71,10 @@
       <artifactId>actions</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>rhoas-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
       <artifactId>quarkus-hibernate-types</artifactId>
     </dependency>
@@ -113,11 +117,6 @@
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
-    </dependency>
-     <dependency>
-    	<groupId>io.github.classgraph</groupId>
-    	<artifactId>classgraph</artifactId>
-    	<scope>test</scope>
     </dependency>
   </dependencies>
 

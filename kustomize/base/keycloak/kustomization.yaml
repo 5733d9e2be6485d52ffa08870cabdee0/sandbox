@@ -1,0 +1,4 @@
+commonLabels:
+  app: event-bridge
+resources:
+  - resources/keycloak.yaml

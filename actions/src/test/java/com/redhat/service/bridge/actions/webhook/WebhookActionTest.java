@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;

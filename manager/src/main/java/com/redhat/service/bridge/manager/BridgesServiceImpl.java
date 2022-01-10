@@ -1,37 +1,50 @@
 package com.redhat.service.bridge.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
-import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
-import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
-import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.rhoas.RhoasClient;
+import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.smallrye.mutiny.TimeoutException;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
+
+    @ConfigProperty(name = "event-bridge.feature-flags.rhoas-enabled")
+    boolean rhoasEnabled;
+
+    @ConfigProperty(name = "event-bridge.manager.rhoas.timeout-seconds")
+    int rhoasTimeout;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -41,6 +54,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     MeterRegistry meterRegistry;
+
+    @Inject
+    RhoasClient rhoasClient;
 
     @Transactional
     @Override
@@ -54,6 +70,24 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridgeDAO.persist(bridge);
+
+        if (rhoasEnabled) {
+            String topicName = String.format("ob-%s", bridge.getId());
+            String serviceAccountName = String.format("ob-%s-consumer", bridge.getId());
+            TopicAndServiceAccountRequest request = new TopicAndServiceAccountRequest(topicName, serviceAccountName);
+            try {
+                rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
+            } catch (CompletionException e) {
+                String msg = "Failed creating topic and service account for bridge " + bridge.getId();
+                LOGGER.warn("[manager] " + msg, e);
+                throw new InternalPlatformException(msg, e);
+            } catch (TimeoutException e) {
+                String msg = "Timeout reached while creating topic and service account for bridge " + bridge.getId();
+                LOGGER.warn("[manager] " + msg, e);
+                throw new InternalPlatformException(msg, e);
+            }
+        }
+
         LOGGER.info("[manager] Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }

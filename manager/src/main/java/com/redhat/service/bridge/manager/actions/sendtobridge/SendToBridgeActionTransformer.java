@@ -8,9 +8,9 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.models.Bridge;

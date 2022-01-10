@@ -8,13 +8,15 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.bridge.shard.operator.resources.ConditionMessages;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
@@ -51,6 +53,9 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
 
     @Inject
     ServiceMonitorService monitorService;
+
+    @Inject
+    BridgeErrorService bridgeErrorService;
 
     @Override
     public void init(EventSourceManager eventSourceManager) {
@@ -95,7 +100,12 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready, ConditionReason.PrometheusUnavailable, ConditionMessages.PROMETHEUS_UNVAILABLE);
+            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
+                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
+                    ConditionReason.PrometheusUnavailable,
+                    prometheusNotAvailableError.getReason(),
+                    prometheusNotAvailableError.getCode());
             notifyManager(bridgeExecutor, BridgeStatus.FAILED);
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }

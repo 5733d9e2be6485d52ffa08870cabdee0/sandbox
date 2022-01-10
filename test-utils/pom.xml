@@ -40,6 +40,11 @@
       <artifactId>postgresql</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>io.github.classgraph</groupId>
+      <artifactId>classgraph</artifactId>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
 </project>

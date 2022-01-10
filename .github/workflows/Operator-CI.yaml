@@ -63,7 +63,7 @@ jobs:
           kubectl create secret generic keycloak-realm --from-file=event-bridge-fm-realm-sample.json=dev/docker-compose/keycloak-config/event-bridge-fm-realm-sample.json -n $NAMESPACE
           kubectl create secret generic keycloak-secrets --from-literal=KEYCLOAK_USER=admin --from-literal=KEYCLOAK_PASSWORD=123 -n $NAMESPACE
           # Not ideal as kustomize is used for different purposes but it is the easiest approach without duplications
-          kubectl create -f kustomize/base/manager/resources/keycloak.yaml -n $NAMESPACE
+          kubectl create -f kustomize/base/keycloak/resources/keycloak.yaml -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml

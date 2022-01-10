@@ -1,0 +1,74 @@
+[
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException",
+  "id": 1,
+  "reason": "You tried to create an object which already exist in our repository",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException",
+  "id": 2,
+  "reason": "You tried a life cycle transition which is not allowed",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ExternalUserException",
+  "id": 3,
+  "reason": "The requested item does not exist in out repository",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException",
+  "id": 4,
+  "reason": "You tried to create an object which already exist in our repository",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.CloudEventSerializationException",
+  "id": 5,
+  "reason": "You try to serialize a cloud event and something goes wrong, check if format follows specification",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.CloudEventDeserializationException",
+  "id": 6,
+  "reason": "You try to deserialize a cloud event and something goes wrong, check if format follows specification",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException",
+  "id": 7,
+  "reason": "Something failed related with action execution or resolution",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException",
+  "id": 8,
+  "reason": "The request is not valid.",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException",
+  "id": 9,
+  "reason": "There was an internal exception. This is supposed not to be fixable by the user, so you should open a bug with all the information you have.",
+  "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException",
+  "id": 10,
+  "reason": "Prometheus is not installed on the shard.",
+  "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException",
+  "id": 11,
+  "reason": "Prometheus is not installed on the shard.",
+  "type": "PLATFORM"
+},
+  {
+    "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.OidcTokensNotInitializedException",
+    "id": 12,
+    "reason": "Oidc Tokens have not been initialized.",
+    "type": "PLATFORM"
+  }
+]

@@ -19,3 +19,12 @@ A demonstration of the service is provided [here](DEMO.md).
 # How to deploy the platform service to a Kubernetes cluster
 
 See the specific documentation [here](kustomize/README.md)
+
+# Feature flags
+
+Feature flags allow partial or experimental features to be enabled at your own risk.
+They can be enabled by setting the corresponding property to `true`.
+
+|Property|Description|
+|--------|-----------|
+|`event-bridge.feature-flags.rhoas-enabled`|Enables integration with Managed Kafka|
