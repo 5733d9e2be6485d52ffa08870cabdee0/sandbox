@@ -64,5 +64,11 @@
   "id": 11,
   "reason": "Prometheus is not installed on the shard.",
   "type": "PLATFORM"
-}
+},
+  {
+    "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.OidcTokensNotInitializedException",
+    "id": 12,
+    "reason": "Oidc Tokens have not been initialized.",
+    "type": "PLATFORM"
+  }
 ]

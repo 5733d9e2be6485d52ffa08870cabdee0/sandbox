@@ -1,11 +1,9 @@
 package com.redhat.service.bridge.shard.operator;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -21,9 +19,6 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 
-import io.quarkus.oidc.client.OidcClient;
-import io.quarkus.oidc.client.Tokens;
-import io.quarkus.runtime.Quarkus;
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -35,7 +30,6 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
-    private static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
 
     @Inject
     ObjectMapper mapper;
@@ -50,19 +44,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     BridgeExecutorService bridgeExecutorService;
 
     @Inject
-    OidcClient client;
-
-    Tokens currentTokens;
-
-    @PostConstruct
-    public void init() {
-        try {
-            currentTokens = client.getTokens().await().atMost(SSO_CONNECTION_TIMEOUT);
-        } catch (RuntimeException e) {
-            LOGGER.error("Fatal error: could not fetch initial authentication token from sso server.");
-            Quarkus.asyncExit(1);
-        }
-    }
+    EventBridgeOidcClient eventBridgeOidcClient;
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
@@ -182,18 +164,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        Tokens tokens = currentTokens;
-        if (tokens.isAccessTokenExpired()) {
-            LOGGER.debug("Shard authentication token has expired");
-            try {
-                tokens = client.refreshTokens(tokens.getRefreshToken()).await().atMost(SSO_CONNECTION_TIMEOUT);
-            } catch (RuntimeException e) {
-                LOGGER.warn("Shard could not fetch a new authentication token from sso server.");
-                throw e;
-            }
-            currentTokens = tokens;
-        }
-        request.bearerTokenAuthentication(currentTokens.getAccessToken());
+        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
         return executor.apply(request);
     }
 }
