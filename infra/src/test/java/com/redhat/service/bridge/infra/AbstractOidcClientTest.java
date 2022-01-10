@@ -33,10 +33,10 @@ public class AbstractOidcClientTest {
     private Tokens tokens;
     private TestOidcClient client;
 
-    private class TestOidcClient extends AbstractOidcClient {
+    private static class TestOidcClient extends AbstractOidcClient {
 
-        public TestOidcClient(String name, OidcClients oidcClients, Duration ssoConnectionTimeout) {
-            super(name, oidcClients, ssoConnectionTimeout);
+        public TestOidcClient(String name, OidcClients oidcClients) {
+            super(name, oidcClients);
         }
 
         @Override
@@ -67,7 +67,7 @@ public class AbstractOidcClientTest {
         when(oidcClient.refreshTokens(any(String.class))).thenReturn(Uni.createFrom().item(tokens));
         when(oidcClients.newClient(any(OidcClientConfig.class))).thenReturn(Uni.createFrom().item(oidcClient));
 
-        client = new TestOidcClient(NAME, oidcClients, AbstractOidcClient.SSO_CONNECTION_TIMEOUT);
+        client = new TestOidcClient(NAME, oidcClients);
     }
 
     @Test

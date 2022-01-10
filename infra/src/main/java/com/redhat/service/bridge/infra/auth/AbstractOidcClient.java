@@ -17,9 +17,9 @@ public abstract class AbstractOidcClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
 
-    public static final String SCHEDULER_TIME = "5s";
-    public static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
-    public static final Duration REFRESH_TOKEN_TIME_SKEW = Duration.ofSeconds(30);
+    protected static final String SCHEDULER_TIME = "5s";
+    protected static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
+    protected static final Duration REFRESH_TOKEN_TIME_SKEW = Duration.ofSeconds(30);
 
     private String name;
     private OidcClient client;
