@@ -130,6 +130,6 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
                 .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                 .subscribe().with(
                         success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
-                        failure -> LOGGER.warn("[shard] Updating Processor with id '{}' FAILED", dto.getId()));
+                        failure -> LOGGER.error("[shard] Updating Processor with id '{}' FAILED", dto.getId()));
     }
 }
