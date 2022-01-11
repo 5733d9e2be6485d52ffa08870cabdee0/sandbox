@@ -126,7 +126,6 @@ jobs:
         if: steps.filter.outputs.shard-operator == 'true'
         shell: bash
         run: mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
-        working-directory: shard-operator
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         run: |
