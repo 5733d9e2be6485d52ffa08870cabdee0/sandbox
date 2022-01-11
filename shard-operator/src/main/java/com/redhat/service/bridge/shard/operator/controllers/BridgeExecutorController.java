@@ -19,7 +19,6 @@ import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
-import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
@@ -137,7 +136,6 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         dto.setStatus(status);
 
         managerSyncService.notifyProcessorStatusChange(dto)
-                .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                 .subscribe().with(
                         success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("[shard] Updating Processor with id '{}' FAILED", dto.getId()));

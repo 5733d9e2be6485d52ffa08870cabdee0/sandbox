@@ -21,7 +21,6 @@ import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
-import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
@@ -161,7 +160,6 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         dto.setStatus(status);
 
         managerSyncService.notifyBridgeStatusChange(dto)
-                .onFailure().retry().atMost(Constants.MAX_HTTP_RETRY)
                 .subscribe().with(
                         success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
