@@ -159,8 +159,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
 
-        managerSyncService.notifyBridgeStatusChange(dto).subscribe().with(
-                success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
-                failure -> LOGGER.warn("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
+        managerSyncService.notifyBridgeStatusChange(dto)
+                .subscribe().with(
+                        success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
     }
 }

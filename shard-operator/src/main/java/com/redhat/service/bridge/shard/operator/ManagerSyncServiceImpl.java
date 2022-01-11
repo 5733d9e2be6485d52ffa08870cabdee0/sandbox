@@ -14,10 +14,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
+import com.redhat.service.bridge.shard.operator.utils.WebClientUtils;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -61,12 +63,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO));
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO));
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
@@ -78,16 +82,18 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 .map(y -> {
                                     if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
                                         y.setStatus(BridgeStatus.PROVISIONING);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> bridgeIngressService.createBridgeIngress(y),
-                                                failure -> failedToSendUpdateToManager(y, failure));
+                                        return notifyBridgeStatusChange(y)
+                                                .subscribe().with(
+                                                        success -> bridgeIngressService.createBridgeIngress(y),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETED);
                                         bridgeIngressService.deleteBridgeIngress(y);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                failure -> failedToSendUpdateToManager(y, failure));
+                                        return notifyBridgeStatusChange(y)
+                                                .subscribe().with(
+                                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
@@ -102,16 +108,18 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         .map(y -> {
                             if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
-                                return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> bridgeExecutorService.createBridgeExecutor(y),
-                                        failure -> failedToSendUpdateToManager(y, failure));
+                                return notifyProcessorStatusChange(y)
+                                        .subscribe().with(
+                                                success -> bridgeExecutorService.createBridgeExecutor(y),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(BridgeStatus.DELETED);
                                 bridgeExecutorService.deleteBridgeExecutor(y);
-                                return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                        failure -> failedToSendUpdateToManager(y, failure));
+                                return notifyProcessorStatusChange(y)
+                                        .subscribe().with(
+                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
@@ -128,8 +136,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
+        if (!isSuccessfulResponse(httpResponse)) {
+            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
+        }
         try {
-            this.validateHttpResponseBeforeParsing(httpResponse);
             return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
             LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
@@ -149,22 +159,26 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 
+    private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
+        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
+        return executor.apply(request)
+                .onItem().transformToUni(x -> {
+                    if (isSuccessfulResponse(x)) {
+                        return Uni.createFrom().item(x);
+                    } else {
+                        return Uni.createFrom().failure(
+                                new HTTPResponseException(String.format("Shard failed to communicate with the manager, the request failed with status %s", x.statusCode())));
+                    }
+                });
+    }
+
     /**
      * Verifies if the HTTP response is valid (Status 2xx).
      * This avoids the shard-operator spamming error messages in case the manager is out.
-     * A more elaborated use case can be added in the future if needed (like validating if it's a JSON, or if the body doesn't have buffer, or is null).
      *
      * @param httpResponse the given response
-     * @throws IllegalStateException in case of an invalid HTTP response
      */
-    private void validateHttpResponseBeforeParsing(HttpResponse<Buffer> httpResponse) {
-        if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 400) {
-            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
-        }
-    }
-
-    private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
-        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
-        return executor.apply(request);
+    private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
+        return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
     }
 }
