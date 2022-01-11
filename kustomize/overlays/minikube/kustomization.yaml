@@ -3,7 +3,7 @@ images:
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
   newTag: ad283bfab9142370cd2350b4925d63bb552c8543-jvm
 - name: event-bridge-shard-operator
-  newName: <REPLACE_WITH_OPERATOR_IMAGE_NAME>
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
   newTag: k8s-ad283bfab9142370cd2350b4925d63bb552c8543
 resources:
 - kafka
