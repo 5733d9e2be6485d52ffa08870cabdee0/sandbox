@@ -1,22 +1,31 @@
 # Filters
 
-When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` it is possible to specify one or more filters to apply to the ingress event. If there is a match, then the `action` of the processor is called. 
+When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` it is possible to specify one or more `Filters` to apply to `Events` sent to your Bridge instance.
+If the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the associated `Processor` are invoked. 
 
-Every filter has 3 properties to specify: 
+If you do not specify a `Filter` definition for your `Processor`, then your `Processor` will match all `Events` sent to your Bridge Instance.
 
-- `type`: the type of the filter. This can be `StringEquals`, `StringBeginsWith`, `StringContains`.
-- `key`: The field in the event data that you're using for filtering. It can be a number, boolean, string. **Arrays are not supported yet**.
-- `values`: The value or values to compare to the key.
+If there are multiple `Filters` defined for a `Processor`, then all `Filters` must match the `Event` for the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) to be invoked.  
 
-For events in **Cloud Events schema**, you can use the values for the key: `eventid`, `source`, `eventtype`, `eventtypeversion`, or event data (like `data.key1`). You can navigate the object with the `.` (dot) notation.
+## Properties of a Filter
 
-## Filter types
+Every `Filter` has 3 properties to specify: 
 
-The available filter types are: 
+- `type`: the type of the `Filter`. This must be one of the supported `Filter` types listed below
+  - Attempting to use an unknown `Filter` type will result in an Error from the Bridge API.
+- `key`: The field in the `Event` that you want to filter on. 
+  - This must be a single field only. Arrays of fields to match on are not yet supported. 
+- `values`: The value or values to compare to the field identified by the key.
+
+All Events sent to the Bridge must be in CloudEvent format. You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `eventid`, `source`, `eventtype`, `eventtypeversion`. `CloudEvent` data (like `data.key1`) is accessed using the dot notation to navigate the `Event` structure.
+
+## Supported Filter Types
+
+The available `Filter` types are: 
 
 ### StringEquals
 
-The `StringEquals` evaluates to `true` if the **key** value is equals to the specified filter **value**. 
+The `StringEquals` evaluates to `true` if the **key** value is equals to the specified `Filter` **value**. 
 
 Assuming that the Filter is the following 
 
@@ -43,13 +52,13 @@ Then an event like
 }
 ```
 
-Would evaluate the Filter to `true`.
+Would evaluate the `Filter` to `true`.
 
 ### StringContains
 
-The `StringContains` evaluates to `true` if the **key** value contains any of the values specified in the filter **values**.
+The `StringContains` evaluates to `true` if the **key** value contains any of the values specified in the `Filter` **values**.
 
-Assuming that the Filter is the following
+Assuming that the `Filter` is the following
 
 ```json
 
@@ -74,13 +83,13 @@ Then an event like
 }
 ```
 
-Would evaluate the Filter to `true`.
+Would evaluate the `Filter` to `true`.
 
 ### StringBeginsWith
 
-The `StringBeginsWith` evaluates to `true` if the **key** value starts with any of the values specified in the filter **values**.
+The `StringBeginsWith` evaluates to `true` if the **key** value starts with any of the values specified in the `Filter` **values**.
 
-Assuming that the Filter is the following
+Assuming that the `Filter` is the following
 
 ```json
 
@@ -105,13 +114,13 @@ Then an event like
 }
 ```
 
-Would evaluate the Filter to `true`.
+Would evaluate the `Filter` to `true`.
 
 ### ValuesIn
 
-The `ValuesIn` evaluates to `true` if the **key** value is equal to any of the values specified in the filter **values**.
+The `ValuesIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
 
-Assuming that the Filter is the following
+Assuming that the `Filter` is the following
 
 ```json
 
@@ -136,6 +145,6 @@ Then an event like
 }
 ```
 
-Would evaluate the Filter to `true`.
+Would evaluate the `Filter` to `true`.
 
 
