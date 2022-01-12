@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
+import com.redhat.service.bridge.rhoas.testprofiles.RhoasEnabledTestProfile;
 import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
 import static com.redhat.service.bridge.test.rhoas.KafkaInstanceAdminMockServerConfigurator.TEST_TOPIC_NAME;
@@ -21,10 +23,11 @@ import static com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigur
 
 @QuarkusTest
 @QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
-class RhoasServiceTest extends RhoasTestBase {
+@TestProfile(RhoasEnabledTestProfile.class)
+class RhoasClientTest extends RhoasTestBase {
 
     @Inject
-    RhoasClient rhoasService;
+    RhoasClient rhoasClient;
 
     @BeforeEach
     protected void beforeEach() {
@@ -36,7 +39,7 @@ class RhoasServiceTest extends RhoasTestBase {
     void testCreateTopicAndConsumerServiceAccountOk() {
         configureMockAPIWithAllWorking();
 
-        rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+        rhoasClient.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitItem(Duration.ofSeconds(60));
 
@@ -53,7 +56,7 @@ class RhoasServiceTest extends RhoasTestBase {
     void testCreateTopicAndConsumerServiceAccountWithBrokenTopicCreation() {
         configureMockAPIWithBrokenTopicCreation();
 
-        rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+        rhoasClient.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 
@@ -70,7 +73,7 @@ class RhoasServiceTest extends RhoasTestBase {
     void testCreateTopicAndConsumerServiceAccountWithBrokenServiceAccountCreation() {
         configureMockAPIWithBrokenServiceAccountCreation();
 
-        rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+        rhoasClient.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 
@@ -87,7 +90,7 @@ class RhoasServiceTest extends RhoasTestBase {
     void testCreateTopicAndConsumerServiceAccountWithBrokenACLCreation() {
         configureMockAPIWithBrokenACLCreation();
 
-        rhoasService.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+        rhoasClient.createTopicAndConsumerServiceAccount(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure(Duration.ofSeconds(60));
 

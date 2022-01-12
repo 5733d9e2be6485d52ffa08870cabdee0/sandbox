@@ -24,12 +24,12 @@ import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountResponse;
 public class RhoasAPI {
 
     @Inject
-    RhoasClient rhoasService;
+    RhoasClient rhoasClient;
 
     @POST
     @Path("topic")
     public TopicAndServiceAccountResponse createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
-        return rhoasService.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(60));
+        return rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(60));
     }
 
 }
