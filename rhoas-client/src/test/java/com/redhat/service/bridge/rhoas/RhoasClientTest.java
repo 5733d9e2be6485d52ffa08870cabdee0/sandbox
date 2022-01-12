@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
-import com.redhat.service.bridge.rhoas.testprofiles.RhoasEnabledTestProfile;
 import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
+import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledTestProfile;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;

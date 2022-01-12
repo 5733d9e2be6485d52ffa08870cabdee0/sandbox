@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.rhoas.testprofiles.RhoasEnabledTestProfile;
+import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledTestProfile;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
