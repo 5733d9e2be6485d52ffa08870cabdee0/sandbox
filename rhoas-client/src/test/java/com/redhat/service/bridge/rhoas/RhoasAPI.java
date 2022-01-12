@@ -2,6 +2,7 @@ package com.redhat.service.bridge.rhoas;
 
 import java.time.Duration;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -24,12 +25,12 @@ import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountResponse;
 public class RhoasAPI {
 
     @Inject
-    RhoasClient rhoasClient;
+    Instance<RhoasClient> rhoasClient;
 
     @POST
     @Path("topic")
     public TopicAndServiceAccountResponse createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
-        return rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(60));
+        return rhoasClient.get().createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(60));
     }
 
 }

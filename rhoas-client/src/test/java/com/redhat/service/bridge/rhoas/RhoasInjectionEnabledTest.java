@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.rhoas;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,12 +21,13 @@ class RhoasInjectionEnabledTest {
     String enabled;
 
     @Inject
-    RhoasClient rhoasClient;
+    Instance<RhoasClient> rhoasClient;
 
     @Test
     void test() {
         assertThat(enabled).isEqualTo("true");
-        assertThat(rhoasClient).isNotNull();
+        assertThat(rhoasClient.isUnsatisfied()).isFalse();
+        assertThat(rhoasClient.isAmbiguous()).isFalse();
     }
 
 }
