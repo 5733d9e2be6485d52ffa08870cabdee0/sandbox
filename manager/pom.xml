@@ -82,6 +82,14 @@
       <groupId>com.redhat.cloud</groupId>
       <artifactId>connector-management-sdk</artifactId>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>secretsmanager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws.secretsmanager</groupId>
+      <artifactId>aws-secretsmanager-caching-java</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -150,6 +158,7 @@
         <configuration>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <container.image.localstack>${container.image.localstack}</container.image.localstack>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
         </configuration>
