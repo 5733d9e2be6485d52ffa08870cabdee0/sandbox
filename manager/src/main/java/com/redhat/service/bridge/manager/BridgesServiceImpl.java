@@ -183,21 +183,22 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     private void createTopicAndServiceAccount(String bridgeId) {
-        if (rhoasEnabled) {
-            String topicName = String.format("ob-%s", bridgeId);
-            String serviceAccountName = String.format("ob-%s-consumer", bridgeId);
-            TopicAndServiceAccountRequest request = new TopicAndServiceAccountRequest(topicName, serviceAccountName);
-            try {
-                getRhoasClient().createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
-            } catch (CompletionException e) {
-                String msg = "Failed creating topic and service account for bridge " + bridgeId;
-                LOGGER.warn("[manager] " + msg, e);
-                throw new InternalPlatformException(msg, e);
-            } catch (TimeoutException e) {
-                String msg = "Timeout reached while creating topic and service account for bridge " + bridgeId;
-                LOGGER.warn("[manager] " + msg, e);
-                throw new InternalPlatformException(msg, e);
-            }
+        if (!rhoasEnabled) {
+            return;
+        }
+        String topicName = String.format("ob-%s", bridgeId);
+        String serviceAccountName = String.format("ob-%s-consumer", bridgeId);
+        TopicAndServiceAccountRequest request = new TopicAndServiceAccountRequest(topicName, serviceAccountName);
+        try {
+            getRhoasClient().createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
+        } catch (CompletionException e) {
+            String msg = "Failed creating topic and service account for bridge " + bridgeId;
+            LOGGER.warn("[manager] " + msg, e);
+            throw new InternalPlatformException(msg, e);
+        } catch (TimeoutException e) {
+            String msg = "Timeout reached while creating topic and service account for bridge " + bridgeId;
+            LOGGER.warn("[manager] " + msg, e);
+            throw new InternalPlatformException(msg, e);
         }
     }
 
