@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -59,7 +58,7 @@ public class BridgesServiceImpl implements BridgesService {
     MeterRegistry meterRegistry;
 
     @Inject
-    Instance<RhoasClient> rhoasClient;
+    RhoasClient rhoasClient;
 
     @Transactional
     @Override
@@ -190,7 +189,7 @@ public class BridgesServiceImpl implements BridgesService {
         String serviceAccountName = String.format("ob-%s-consumer", bridgeId);
         TopicAndServiceAccountRequest request = new TopicAndServiceAccountRequest(topicName, serviceAccountName);
         try {
-            getRhoasClient().createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
+            rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
             String msg = "Failed creating topic and service account for bridge " + bridgeId;
             LOGGER.warn("[manager] " + msg, e);
@@ -198,16 +197,6 @@ public class BridgesServiceImpl implements BridgesService {
         } catch (TimeoutException e) {
             String msg = "Timeout reached while creating topic and service account for bridge " + bridgeId;
             LOGGER.warn("[manager] " + msg, e);
-            throw new InternalPlatformException(msg, e);
-        }
-    }
-
-    private RhoasClient getRhoasClient() {
-        try {
-            return rhoasClient.get();
-        } catch (RuntimeException e) {
-            String msg = "Instantiation of RHOAS client failed";
-            LOGGER.error("[manager] " + msg, e);
             throw new InternalPlatformException(msg, e);
         }
     }
