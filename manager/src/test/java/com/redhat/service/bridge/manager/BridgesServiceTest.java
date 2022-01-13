@@ -16,18 +16,15 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
-import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasDisabledTestProfile;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
-@TestProfile(RhoasDisabledTestProfile.class)
 public class BridgesServiceTest {
 
     @Inject

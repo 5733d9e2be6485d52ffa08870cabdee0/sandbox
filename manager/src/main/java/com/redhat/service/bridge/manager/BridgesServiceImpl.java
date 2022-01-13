@@ -36,12 +36,17 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.smallrye.mutiny.TimeoutException;
 
+import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG;
+import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG_DEFAULT_VALUE;
+
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
-    @ConfigProperty(name = "event-bridge.manager.rhoas.timeout-seconds")
+    @ConfigProperty(name = ENABLED_FLAG, defaultValue = ENABLED_FLAG_DEFAULT_VALUE)
+    boolean rhoasEnabled;
+    @ConfigProperty(name = "rhoas.timeout-seconds")
     int rhoasTimeout;
 
     @Inject
@@ -178,7 +183,7 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     private void createTopicAndServiceAccount(String bridgeId) {
-        if (!rhoasClient.isUnsatisfied()) {
+        if (rhoasEnabled) {
             String topicName = String.format("ob-%s", bridgeId);
             String serviceAccountName = String.format("ob-%s-consumer", bridgeId);
             TopicAndServiceAccountRequest request = new TopicAndServiceAccountRequest(topicName, serviceAccountName);
