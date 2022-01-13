@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.rhoas;
 
+import java.util.NoSuchElementException;
+
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
@@ -11,6 +13,9 @@ import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledWithMissing
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 
+import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG;
+import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG_DEFAULT_VALUE;
+import static com.redhat.service.bridge.rhoas.RhoasProperties.MGMT_API_HOST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -18,18 +23,19 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @TestProfile(RhoasEnabledWithMissingPropsTestProfile.class)
 class RhoasInjectionEnabledWithMissingPropsTest {
 
-    @ConfigProperty(name = "event-bridge.feature-flags.rhoas-enabled")
-    String enabled;
+    @ConfigProperty(name = ENABLED_FLAG, defaultValue = ENABLED_FLAG_DEFAULT_VALUE)
+    boolean rhoasEnabled;
 
     @Inject
     Instance<RhoasClient> rhoasClient;
 
     @Test
     void test() {
-        assertThat(enabled).isEqualTo("true");
+        assertThat(rhoasEnabled).isTrue();
         assertThat(rhoasClient.isUnsatisfied()).isFalse();
         assertThat(rhoasClient.isAmbiguous()).isFalse();
-        assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> rhoasClient.get().toString());
+        assertThatExceptionOfType(NoSuchElementException.class)
+                .isThrownBy(() -> rhoasClient.get().toString())
+                .withMessageContaining(MGMT_API_HOST);
     }
-
 }
