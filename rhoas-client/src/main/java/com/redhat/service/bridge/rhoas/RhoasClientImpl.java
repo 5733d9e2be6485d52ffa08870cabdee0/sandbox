@@ -37,6 +37,17 @@ public class RhoasClientImpl implements RhoasClient {
     }
 
     @Override
+    public Uni<Topic> createTopic(NewTopicInput request) {
+        return instanceClient.createTopic(request)
+                .onItem().invoke(t -> LOG.info("Created topic '{}'", t.getName()))
+                .onFailure().transform(failure -> {
+                    String reason = "Error when creating topic " + request.getName();
+                    LOG.error(reason, failure);
+                    return new RhoasClientException(reason, Collections.singletonList(failure));
+                });
+    }
+
+    @Override
     public Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
         String topicName = request.getTopicName();
         String serviceAccountName = request.getServiceAccountName();
