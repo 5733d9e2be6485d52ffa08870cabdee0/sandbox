@@ -10,19 +10,6 @@ services:
     ports:
       - "5432:5432"
 
-  keycloak:
-    image: jboss/keycloak:10.0.1
-    command: "-b 0.0.0.0 -Djboss.socket.binding.port-offset=100 -Dkeycloak.import=/keycloak-config/event-bridge-fm-realm-sample.json"
-    container_name: event-bridge-keycloak
-    ports:
-      - "8180:8180"
-    volumes:
-      # Adding the "z" flag to get SELinux configured automatically
-      - ./keycloak-config:/keycloak-config:z
-    environment:
-      KEYCLOAK_USER: "admin"
-      KEYCLOAK_PASSWORD: "123"
-
   prometheus:
     network_mode: "host"
     image: prom/prometheus:v2.8.0
