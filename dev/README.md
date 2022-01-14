@@ -53,7 +53,7 @@ Deploy the kafka resources with
 kustomize build kustomize/overlays/minikube/kafka | kubectl apply -f -
 ```
 
-And keycloak 
+And keycloak
 
 ```shell
 kustomize build kustomize/overlays/minikube/keycloak | kubectl apply -f -

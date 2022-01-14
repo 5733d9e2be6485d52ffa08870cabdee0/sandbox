@@ -10,9 +10,11 @@ will need to update the URLs used in the rest of this guide to match.
 The following assumes you will be running the demo on your local machine:
 
 First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above.
+If you deployed the infrastructure with minikube, the keycloak server should be running under `http://192.168.49.2:3007`, but please make sure about it running `minikube ip` (the port is always `30007`).
 
 ```bash
 export MANAGER_URL=http://localhost:8080
+export KEYCLOAK_URL=http://192.168.49.2:30007
 ```
 
 # Authentication
@@ -20,7 +22,7 @@ export MANAGER_URL=http://localhost:8080
 Each request will need a [Bearer](https://quarkus.io/guides/security#openid-connect) token passed as a http header. To get the token, run:
 
 ```shell
-export OB_TOKEN="Bearer $(curl --insecure -X POST http://localhost:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token     --user event-bridge:secret     -H 'content-type: application/x-www-form-urlencoded'     -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
+export OB_TOKEN="Bearer $(curl --insecure -X POST $KEYCLOAK_URL/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
 ```
 
 This token will last 3 minutes. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.

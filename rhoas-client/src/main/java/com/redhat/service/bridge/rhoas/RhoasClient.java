@@ -8,5 +8,4 @@ import io.smallrye.mutiny.Uni;
 public interface RhoasClient {
 
     Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request);
-
 }
