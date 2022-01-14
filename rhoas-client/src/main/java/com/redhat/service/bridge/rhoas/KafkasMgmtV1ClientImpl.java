@@ -2,10 +2,6 @@ package com.redhat.service.bridge.rhoas;
 
 import java.time.Duration;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,27 +9,29 @@ import com.openshift.cloud.api.kas.models.ServiceAccount;
 import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 
-import io.quarkus.oidc.client.NamedOidcClient;
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
 import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.Vertx;
 
-@ApplicationScoped
 public class KafkasMgmtV1ClientImpl extends AbstractAppServicesClientImpl implements KafkasMgmtV1Client {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkasMgmtV1ClientImpl.class);
     private static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
 
-    @ConfigProperty(name = "event-bridge.rhoas.mgmt-api.host")
-    String basePath;
-    @ConfigProperty(name = "event-bridge.rhoas.sso.red-hat.refresh-token")
-    String refreshToken;
+    private final String basePath;
+    private final String refreshToken;
 
-    @Inject
-    @NamedOidcClient("red-hat-sso")
-    OidcClient client;
+    private final OidcClient client;
 
     Tokens tokens;
+
+    public KafkasMgmtV1ClientImpl(Vertx vertx, String basePath, OidcClient client, String refreshToken) {
+        super(vertx);
+        this.basePath = basePath;
+        this.client = client;
+        this.refreshToken = refreshToken;
+    }
 
     @Override
     public Uni<ServiceAccount> createServiceAccount(ServiceAccountRequest serviceAccountRequest) {

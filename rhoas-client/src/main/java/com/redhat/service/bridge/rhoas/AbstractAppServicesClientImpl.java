@@ -2,8 +2,6 @@ package com.redhat.service.bridge.rhoas;
 
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-
 import com.openshift.cloud.api.kas.SecurityApi;
 import com.openshift.cloud.api.kas.auth.AclsApi;
 import com.openshift.cloud.api.kas.auth.TopicsApi;
@@ -20,8 +18,11 @@ import io.vertx.mutiny.core.Vertx;
  */
 abstract class AbstractAppServicesClientImpl {
 
-    @Inject
-    protected Vertx vertx;
+    protected final Vertx vertx;
+
+    protected AbstractAppServicesClientImpl(Vertx vertx) {
+        this.vertx = vertx;
+    }
 
     /**
      * Must be reimplemented by the subclass to return the access token
