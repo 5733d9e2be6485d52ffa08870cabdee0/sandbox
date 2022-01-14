@@ -21,9 +21,9 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
+import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.manager.BridgesService;
-import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.models.Bridge;

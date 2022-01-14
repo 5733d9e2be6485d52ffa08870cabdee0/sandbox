@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.infra.auth;
 
 import java.security.Principal;
 

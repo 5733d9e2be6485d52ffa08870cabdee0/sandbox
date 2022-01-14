@@ -32,9 +32,15 @@ spec:
               value: ""
             - name: KAFKA_CLIENT_SECRET
               value: ""
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: ""
             - name: EVENT_BRIDGE_BRIDGE_ID
               value: ""
-            - name: KAFKA_SECURITY_PROTOCOL
+            - name: EVENT_BRIDGE_CUSTOMER_ID
+              value: ""
+            - name: EVENT_BRIDGE_SSO_URL
+              value: ""
+            - name: EVENT_BRIDGE_SSO_CLIENT_ID
               value: ""
           livenessProbe:
             httpGet:

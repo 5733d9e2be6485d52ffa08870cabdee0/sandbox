@@ -1,10 +1,12 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.infra;
 
 import java.security.Principal;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -18,7 +20,8 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        Principal principal = () -> TestConstants.DEFAULT_CUSTOMER_ID;
-        assertThat(customerIdResolver.resolveCustomerId(principal)).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
+        String name = "kekkobar";
+        Principal principal = () -> name;
+        assertThat(customerIdResolver.resolveCustomerId(principal)).isEqualTo(name);
     }
 }

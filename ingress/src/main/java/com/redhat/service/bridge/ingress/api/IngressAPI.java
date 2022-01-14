@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.ingress.api;
 
 import java.net.URI;
+import java.security.Principal;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -13,24 +14,50 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.UnauthorizedException;
+import io.quarkus.security.identity.SecurityIdentity;
 
+@SecuritySchemes(value = {
+        @SecurityScheme(securitySchemeName = "bearer",
+                type = SecuritySchemeType.HTTP,
+                scheme = "Bearer")
+})
+@SecurityRequirement(name = "bearer")
 @Path("/events")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class IngressAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngressAPI.class);
 
     @ConfigProperty(name = "event-bridge.bridge.id")
     String bridgeId;
+
+    @ConfigProperty(name = "event-bridge.customer.id")
+    String customerId;
+
+    @Inject
+    CustomerIdResolver customerIdResolver;
+
+    @Inject
+    SecurityIdentity identity;
 
     @Inject
     KafkaEventPublisher kafkaEventPublisher;
@@ -39,6 +66,7 @@ public class IngressAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@NotNull CloudEvent event) {
+        failIfNotAuthorized(identity.getPrincipal());
         LOGGER.debug("[ingress] new event has been uploaded to endpoint /events");
         kafkaEventPublisher.sendEvent(bridgeId, event);
         return Response.ok().build();
@@ -55,12 +83,19 @@ public class IngressAPI {
             @HeaderParam("ce-source") @NotNull String cloudEventSource,
             @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
             @NotNull JsonNode event) {
+        failIfNotAuthorized(identity.getPrincipal());
         LOGGER.debug("[ingress] new event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);
         kafkaEventPublisher.sendEvent(bridgeId, cloudEvent);
         return Response.ok().build();
+    }
+
+    private void failIfNotAuthorized(Principal principal) {
+        if (!customerIdResolver.resolveCustomerId(principal).equals(customerId)) {
+            throw new UnauthorizedException("User is not authorized to access this application.");
+        }
     }
 
     private void validateHeaders(String cloudEventSpecVersion, String cloudEventSource) {

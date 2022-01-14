@@ -8,11 +8,12 @@ You will need the following installed locally on your machine to support local d
 * [Docker Engine](https://docker.com)
   * The most recent version should be fine.
 * [Docker Compose v1.29.2](https://github.com/docker/compose)
+* [kustomize](https://kustomize.io/)
 * [Maven v3.8.1](https://maven.apache.org/)
 * [Java 11](https://adoptopenjdk.net/)
 * [jq](https://stedolan.github.io/jq/)
 * [curl](https://curl.se/) (or any other HTTP client)
-    * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
+* Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
 ### macOS users:
 
@@ -46,18 +47,16 @@ minikube addons enable ingress
 minikube addons enable ingress-dns
 ```
 
-Create a namespace for `kafka`
+Deploy the kafka resources with 
 
-```bash
-kubectl create ns kafka
+```shell
+kustomize build kustomize/overlays/minikube/kafka | kubectl apply -f -
 ```
 
-From the root of the project, deploy the kafka infrastructure with 
+And keycloak 
 
-```bash
-kubectl apply -f dev/kubernetes/kafka/00_strimzi.yaml -n kafka
-kubectl apply -f dev/kubernetes/kafka/01_kafka.yaml -n kafka
-kubectl apply -f dev/kubernetes/kafka/02_kafka-topics.yaml -n kafka
+```shell
+kustomize build kustomize/overlays/minikube/keycloak | kubectl apply -f -
 ```
 
 Wait until all the resources have been deployed (it might take a while for a brand new cluster).

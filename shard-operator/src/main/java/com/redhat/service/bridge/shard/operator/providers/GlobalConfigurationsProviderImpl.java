@@ -5,7 +5,7 @@ import javax.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
-public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvider {
+public class GlobalConfigurationsProviderImpl implements GlobalConfigurationsProvider {
 
     @ConfigProperty(name = "event-bridge.default.kafka.bootstrap.servers")
     String kafkaBootstrapServers;
@@ -19,23 +19,39 @@ public class KafkaConfigurationProviderImpl implements KafkaConfigurationProvide
     @ConfigProperty(name = "event-bridge.default.kafka.security.protocol")
     String kafkaSecurityProtocol;
 
+    @ConfigProperty(name = "event-bridge.sso.auth-server-url")
+    String ssoUrl;
+
+    @ConfigProperty(name = "event-bridge.sso.client-id")
+    String ssoClientId;
+
     @Override
-    public String getClient() {
+    public String getKafkaClient() {
         return kafkaClientId;
     }
 
     @Override
-    public String getSecret() {
+    public String getKafkaSecret() {
         return kafkaClientSecret;
     }
 
     @Override
-    public String getBootstrapServers() {
+    public String getKafkaBootstrapServers() {
         return kafkaBootstrapServers;
     }
 
     @Override
-    public String getSecurityProtocol() {
+    public String getKafkaSecurityProtocol() {
         return kafkaSecurityProtocol;
+    }
+
+    @Override
+    public String getSsoUrl() {
+        return ssoUrl;
+    }
+
+    @Override
+    public String getSsoClientId() {
+        return ssoClientId;
     }
 }
