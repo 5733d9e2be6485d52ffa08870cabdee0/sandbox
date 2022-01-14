@@ -2,18 +2,12 @@ package com.redhat.service.bridge.executor.transformations;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 
 public class TransformationEvaluatorQute implements TransformationEvaluator {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TransformationEvaluatorQute.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

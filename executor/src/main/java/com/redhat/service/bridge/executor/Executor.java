@@ -57,13 +57,13 @@ public class Executor {
 
     @SuppressWarnings("unchecked")
     private void process(CloudEvent cloudEvent) {
-        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridgeId());
+        LOG.info("Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridgeId());
 
         Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
 
         // Filter evaluation
         if (Boolean.TRUE.equals(filterTimer.record(() -> filterEvaluator.evaluateFilters(cloudEventData)))) {
-            LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.info("Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
 
             // Transformation
             String eventToSend = transformationTimer.record(() -> transformationEvaluator.render(cloudEventData));
@@ -71,7 +71,7 @@ public class Executor {
             // Action
             actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
         } else {
-            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.debug("Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
         }
     }

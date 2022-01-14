@@ -60,7 +60,7 @@ public class ShardBridgesSyncAPI {
 
     @GET
     public Response getBridges() {
-        LOGGER.info("[Manager] Shard asks for Bridges to deploy or delete");
+        LOGGER.info("Shard asks for Bridges to deploy or delete");
         return Response.ok(bridgesService.getBridgesByStatuses(statuses)
                 .stream()
                 .map(bridgesService::toDTO)
@@ -70,7 +70,7 @@ public class ShardBridgesSyncAPI {
 
     @PUT
     public Response updateBridge(BridgeDTO dto) {
-        LOGGER.info("[manager] shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
+        LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         bridgesService.updateBridge(dto);
         return Response.ok().build();
     }

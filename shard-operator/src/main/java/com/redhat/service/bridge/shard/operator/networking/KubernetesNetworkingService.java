@@ -62,7 +62,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         try {
             return client.network().v1().ingresses().inNamespace(namespace).withName(name).delete();
         } catch (Exception e) {
-            LOGGER.debug("Can't delete ingress with name {} because it does not exist", name);
+            LOGGER.debug("Can't delete ingress with name '{}' because it does not exist", name);
             return false;
         }
     }
@@ -102,7 +102,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         if (ingress.getStatus() == null || ingress.getStatus().getLoadBalancer() == null || ingress.getStatus().getLoadBalancer().getIngress() == null
                 || ingress.getStatus().getLoadBalancer().getIngress().isEmpty()
                 || (ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null && ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname() == null)) {
-            LOGGER.info("Ingress {} not ready yet", ingress.getMetadata().getName());
+            LOGGER.info("Ingress '{}' not ready yet", ingress.getMetadata().getName());
             return new NetworkResource("", false);
         }
         String host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
