@@ -42,7 +42,7 @@ public class KeycloakResource implements QuarkusTestResourceLifecycleManager {
         map.put("quarkus.oidc.auth-server-url", url);
 
         // TODO: since there is a specific property for every sso server, this has to be refactored https://issues.redhat.com/browse/MGDOBR-217
-        map.put("event-bridge.auth-server-url", url);
+        map.put("event-bridge.sso.auth-server-url", url);
         return map;
     }
 
