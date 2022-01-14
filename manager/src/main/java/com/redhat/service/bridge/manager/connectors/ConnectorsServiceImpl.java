@@ -84,7 +84,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             String connectorExternalId = c.getConnectorExternalId();
             String connectorId = c.getId();
             connectorsDAO.delete(c);
-            LOGGER.info("[manager] connector with id '{}' has been deleted", connectorId);
+            LOGGER.info("connector with id '{}' has been deleted", connectorId);
 
             connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
         }

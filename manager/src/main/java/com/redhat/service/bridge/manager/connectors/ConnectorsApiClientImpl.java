@@ -45,10 +45,10 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             Error error = connectorsAPI.deleteConnector(id, kafkaId);
             if (error != null) {
-                LOGGER.error("[manager] Error while deleting connector with id {} and kafkaId {}, Processor will be scheduled for deletion anyway. Error: {}", id, kafkaId, error);
+                LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway. Error: '{}'", id, kafkaId, error);
             }
         } catch (ApiException e) {
-            LOGGER.error("[manager] Error while deleting connector with id {} and kafkaId {}, Processor will be scheduled for deletion anyway", id, kafkaId, e);
+            LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway", id, kafkaId, e);
         }
     }
 
