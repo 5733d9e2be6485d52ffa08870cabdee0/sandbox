@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager.connectors;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -78,16 +77,16 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Override
     public void deleteConnectorIfNeeded(Processor processor) {
 
-        List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
+        Optional<ConnectorEntity> optionalConnector = Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId()));
 
-        for (ConnectorEntity c : connectors) {
+        optionalConnector.ifPresent(c -> {
             String connectorExternalId = c.getConnectorExternalId();
             String connectorId = c.getId();
             connectorsDAO.delete(c);
             LOGGER.info("connector with id '{}' has been deleted", connectorId);
 
             connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
-        }
+        });
     }
 
     private String connectorName(String connectorType, Processor processor) {

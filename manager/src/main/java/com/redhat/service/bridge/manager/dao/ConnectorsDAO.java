@@ -20,9 +20,9 @@ public class ConnectorsDAO implements PanacheRepositoryBase<ConnectorEntity, Str
         return singleResultFromList(find("#CONNECTORENTITY.findByProcessorIdAndName", p));
     }
 
-    public List<ConnectorEntity> findByProcessorId(String processorId) {
+    public ConnectorEntity findByProcessorId(String processorId) {
         Parameters p = Parameters.with(ConnectorEntity.PROCESSOR_ID_PARAM, processorId);
-        return find("#CONNECTORENTITY.findByProcessorId", p).list();
+        return singleResultFromList(find("#CONNECTORENTITY.findByProcessorId", p));
     }
 
     private ConnectorEntity singleResultFromList(PanacheQuery<ConnectorEntity> find) {

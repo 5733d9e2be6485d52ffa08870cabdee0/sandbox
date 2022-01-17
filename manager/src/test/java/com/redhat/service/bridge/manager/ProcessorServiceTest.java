@@ -26,7 +26,6 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -377,10 +376,8 @@ public class ProcessorServiceTest {
 
         verify(connectorsApiClient).deleteConnector("connectorExternalId", ConnectorsServiceImpl.KAFKA_ID_IGNORED);
 
-        List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
-        for (ConnectorEntity ce : connectors) {
-            assertThat(ce.getStatus()).isEqualTo(ConnectorStatus.DELETED);
-        }
+        ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
+        assertThat(connector).isNull();
 
         processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(processor.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
