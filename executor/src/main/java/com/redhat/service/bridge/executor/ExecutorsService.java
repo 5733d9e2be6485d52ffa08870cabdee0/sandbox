@@ -47,12 +47,12 @@ public class ExecutorsService {
                     executor.onEvent(cloudEvent);
                 } catch (Throwable t) {
                     // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
-                    LOG.error("[executor] Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),
+                    LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),
                             executor.getProcessor().getBridgeId(), t);
                 }
             }
         } catch (Throwable t) {
-            LOG.error("[executor] Failed to handle Event received on Bridge. The message is acked anyway.", t);
+            LOG.error("Failed to handle Event received on Bridge. The message is acked anyway.", t);
         }
 
         return message.ack();

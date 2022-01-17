@@ -75,7 +75,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         createTopicAndServiceAccount(bridge.getId());
 
-        LOGGER.info("[manager] Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
+        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
 
@@ -123,7 +123,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
-        LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
     @Transactional
@@ -153,7 +153,7 @@ public class BridgesServiceImpl implements BridgesService {
         meterRegistry.counter("manager.bridge.status.change",
                 Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
-        LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
+        LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
 
@@ -192,11 +192,11 @@ public class BridgesServiceImpl implements BridgesService {
             rhoasClient.createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
             String msg = "Failed creating topic and service account for bridge " + bridgeId;
-            LOGGER.warn("[manager] " + msg, e);
+            LOGGER.warn(msg, e);
             throw new InternalPlatformException(msg, e);
         } catch (TimeoutException e) {
             String msg = "Timeout reached while creating topic and service account for bridge " + bridgeId;
-            LOGGER.warn("[manager] " + msg, e);
+            LOGGER.warn(msg, e);
             throw new InternalPlatformException(msg, e);
         }
     }
