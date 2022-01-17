@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
 import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
+import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledTestProfile;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 
@@ -17,6 +19,7 @@ import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 @QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
+@TestProfile(RhoasEnabledTestProfile.class)
 class RhoasAPITest extends RhoasTestBase {
 
     @BeforeEach

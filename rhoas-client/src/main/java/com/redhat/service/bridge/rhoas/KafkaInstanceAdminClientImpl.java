@@ -1,9 +1,6 @@
 package com.redhat.service.bridge.rhoas;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import java.time.Duration;
 
 import com.openshift.cloud.api.kas.auth.models.AclBinding;
 import com.openshift.cloud.api.kas.auth.models.AclOperationFilter;
@@ -13,19 +10,20 @@ import com.openshift.cloud.api.kas.auth.models.AclResourceTypeFilter;
 import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
 import com.openshift.cloud.api.kas.auth.models.Topic;
 
-import io.quarkus.oidc.client.NamedOidcClient;
-import io.quarkus.oidc.client.Tokens;
+import io.quarkus.oidc.client.OidcClient;
 import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.Vertx;
 
-@ApplicationScoped
 public class KafkaInstanceAdminClientImpl extends AbstractAppServicesClientImpl implements KafkaInstanceAdminClient {
 
-    @ConfigProperty(name = "event-bridge.rhoas.instance-api.host")
-    String basePath;
+    private final String basePath;
+    private final OidcClient oidcClient;
 
-    @Inject
-    @NamedOidcClient("mas-sso")
-    Tokens tokens;
+    public KafkaInstanceAdminClientImpl(Vertx vertx, String basePath, OidcClient oidcClient) {
+        super(vertx);
+        this.basePath = basePath;
+        this.oidcClient = oidcClient;
+    }
 
     @Override
     public Uni<Void> createAcl(AclBinding aclBinding) {
@@ -55,7 +53,7 @@ public class KafkaInstanceAdminClientImpl extends AbstractAppServicesClientImpl 
 
     @Override
     protected String getAccessToken() {
-        return tokens.getAccessToken();
+        return oidcClient.getTokens().await().atMost(Duration.ofSeconds(30)).getAccessToken();
     }
 
     @Override

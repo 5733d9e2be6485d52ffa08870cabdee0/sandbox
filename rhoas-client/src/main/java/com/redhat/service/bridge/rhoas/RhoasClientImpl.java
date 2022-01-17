@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,16 +24,17 @@ import com.redhat.service.bridge.rhoas.exceptions.RhoasClientException;
 
 import io.smallrye.mutiny.Uni;
 
-@ApplicationScoped
 public class RhoasClientImpl implements RhoasClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(RhoasClientImpl.class);
 
-    @Inject
-    KafkasMgmtV1Client mgmtClient;
+    private final KafkasMgmtV1Client mgmtClient;
+    private final KafkaInstanceAdminClient instanceClient;
 
-    @Inject
-    KafkaInstanceAdminClient instanceClient;
+    public RhoasClientImpl(KafkasMgmtV1Client mgmtClient, KafkaInstanceAdminClient instanceClient) {
+        this.mgmtClient = mgmtClient;
+        this.instanceClient = instanceClient;
+    }
 
     @Override
     public Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
