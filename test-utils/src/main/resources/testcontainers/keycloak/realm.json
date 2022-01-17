@@ -5,6 +5,9 @@
   "sslRequired": "external",
   "registrationAllowed": false,
   "requiredCredentials": [ "password" ],
+  "accessTokenLifespan": 86400,
+  "accessTokenLifespanForImplicitFlow": 86400,
+  "ssoSessionIdleTimeout": 86400,
   "users": [
     {
       "username": "admin",
@@ -108,5 +111,5 @@
       "bearerOnly": true
     }
   ],
-  "keycloakVersion": "10.0.1"
+  "keycloakVersion": "15.1.0"
 }
