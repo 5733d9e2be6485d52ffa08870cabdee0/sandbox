@@ -34,6 +34,7 @@ import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
+import com.redhat.service.bridge.manager.connectors.ConnectorsServiceImpl;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
@@ -51,7 +52,9 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
@@ -80,7 +83,7 @@ public class ProcessorServiceTest {
         databaseManagerUtils.cleanDatabase();
     }
 
-    private Bridge createBridge(BridgeStatus status) {
+    private Bridge createPersistBridge(BridgeStatus status) {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
@@ -104,7 +107,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor_bridgeNotActive() {
-        Bridge b = createBridge(BridgeStatus.PROVISIONING);
+        Bridge b = createPersistBridge(BridgeStatus.PROVISIONING);
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), new ProcessorRequest()));
     }
 
@@ -116,7 +119,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor_processorWithSameNameAlreadyExists() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -127,7 +130,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void createProcessor() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -146,7 +149,7 @@ public class ProcessorServiceTest {
     @Test
     @Transactional
     public void getProcessorByStatuses() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -168,7 +171,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void updateProcessorStatus() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -190,7 +193,7 @@ public class ProcessorServiceTest {
     @Test
     public void updateProcessorStatus_processorDoesNotExist() {
         Processor p = new Processor();
-        p.setBridge(createBridge(BridgeStatus.AVAILABLE));
+        p.setBridge(createPersistBridge(BridgeStatus.AVAILABLE));
         p.setId("foo");
 
         ProcessorDTO processor = processorService.toDTO(p);
@@ -200,7 +203,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessor() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -215,7 +218,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessor_bridgeDoesNotExist() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -226,7 +229,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessor_processorDoesNotExist() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -237,7 +240,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessors() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -254,7 +257,7 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessors_noProcessorsOnBridge() {
 
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
@@ -268,7 +271,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void testGetProcessorsCount() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -280,7 +283,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void testDeleteProcessor() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -293,7 +296,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void testMGDOBR_80() {
-        Bridge b = createBridge(BridgeStatus.AVAILABLE);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("name", "myName"));
         filters.add(new StringEquals("surename", "mySurename"));
@@ -340,21 +343,13 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    @Transactional
     void createConnector() {
-        Bridge b = Fixtures.createBridge();
-        bridgeDAO.persist(b);
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
 
-        BaseAction mcAction = new BaseAction();
-        mcAction.setType(SlackAction.TYPE);
-        Map<String, String> parameters = mcAction.getParameters();
-        parameters.put("channel", "channel");
-        parameters.put("webhookUrl", "webhook_url");
+        BaseAction slackAction = createSlackAction();
+        ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
-        ProcessorRequest processorRequest = new ProcessorRequest();
-        processorRequest.setName("ManagedConnectorProcessor");
-        processorRequest.setAction(mcAction);
-
+        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
         ArgumentCaptor<Connector> connectorCaptor = ArgumentCaptor.forClass(Connector.class);
@@ -365,4 +360,42 @@ public class ProcessorServiceTest {
         ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));
         assertThat(foundConnector).isNotNull();
     }
+
+    @Test
+    public void testDeleteProcessorWithConnector() {
+        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
+
+        BaseAction slackAction = createSlackAction();
+        ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
+
+        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        assertThat(processor).isNotNull();
+
+        processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+
+        verify(connectorsApiClient).deleteConnector("connectorExternalId", ConnectorsServiceImpl.KAFKA_ID_IGNORED);
+
+        ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
+        assertThat(connector).isNull();
+
+        processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(processor.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
+    }
+
+    private Connector stubbedExternalConnector(String connectorExternalId) {
+        Connector connector = new Connector();
+        connector.setId(connectorExternalId);
+        return connector;
+    }
+
+    private BaseAction createSlackAction() {
+        BaseAction mcAction = new BaseAction();
+        mcAction.setType(SlackAction.TYPE);
+        Map<String, String> parameters = mcAction.getParameters();
+        parameters.put("channel", "channel");
+        parameters.put("webhookUrl", "webhook_url");
+        return mcAction;
+    }
+
 }

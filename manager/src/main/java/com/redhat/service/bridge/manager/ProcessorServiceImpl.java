@@ -155,6 +155,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
+        connectorService.deleteConnectorIfNeeded(processor);
         processor.setStatus(BridgeStatus.DELETION_REQUESTED);
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
