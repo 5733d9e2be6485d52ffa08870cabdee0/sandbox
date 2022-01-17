@@ -27,9 +27,8 @@ public class AWSVaultServiceImplTest {
     @Test
     public void secretIsStoredAndRetrieved() {
         String id = "secretIsStoredAndRetrieved";
-        vaultService.createOrReplace(new EventBridgeSecret(id)
-                .value(KEY, VALUE));
-        String retrieved = vaultService.get(id).getValues().get(KEY);
+        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
+        String retrieved = vaultService.get(id).await().indefinitely().getValues().get(KEY);
         assertThat(retrieved).isEqualTo(VALUE);
     }
 
@@ -38,26 +37,23 @@ public class AWSVaultServiceImplTest {
         String id = "secretIsReplaced";
         String newKey = "new-key";
         String newValue = "new-value";
-        vaultService.createOrReplace(new EventBridgeSecret(id)
-                .value(KEY, VALUE));
-        vaultService.createOrReplace(new EventBridgeSecret(id)
-                .value(newKey, newValue));
-        String retrieved = vaultService.get(id).getValues().get(newKey);
+        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
+        vaultService.createOrReplace(new EventBridgeSecret(id).value(newKey, newValue)).await().indefinitely();
+        String retrieved = vaultService.get(id).await().indefinitely().getValues().get(newKey);
         assertThat(retrieved).isEqualTo(newValue);
     }
 
     @Test
     public void secretIsDeleted() {
         String id = "secretIsDeleted";
-        vaultService.createOrReplace(new EventBridgeSecret(id)
-                .value(KEY, VALUE));
-        vaultService.delete(id);
-        assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id));
+        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
+        vaultService.delete(id).await().indefinitely();
+        assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id).await().indefinitely());
     }
 
     @Test
     public void unexistingSecretThrowsException() {
         String id = "unexistingSecretThrowsException";
-        assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id));
+        assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id).await().indefinitely());
     }
 }

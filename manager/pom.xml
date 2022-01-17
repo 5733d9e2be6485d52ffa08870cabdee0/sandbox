@@ -83,12 +83,13 @@
       <artifactId>connector-management-sdk</artifactId>
     </dependency>
     <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>secretsmanager</artifactId>
+      <groupId>io.quarkiverse.amazonservices</groupId>
+      <artifactId>quarkus-amazon-secretsmanager</artifactId>
     </dependency>
+    <!-- needed for aws secret manager async client   -->
     <dependency>
-      <groupId>com.amazonaws.secretsmanager</groupId>
-      <artifactId>aws-secretsmanager-caching-java</artifactId>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>netty-nio-client</artifactId>
     </dependency>
 
     <dependency>

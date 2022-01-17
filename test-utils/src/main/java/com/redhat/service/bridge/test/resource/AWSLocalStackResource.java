@@ -19,6 +19,7 @@ public class AWSLocalStackResource implements QuarkusTestResourceLifecycleManage
     public static final String ENABLED_SERVICES = "secretsmanager";
     public static final String ACCESS_KEY_ID = "test-key";
     public static final String SECRET_ACCESS_KEY = "test-secret";
+    public static final String CREDENTIALS_TYPE = "static";
     public static final String REGION = "us-west-1";
 
     public static final int PORT = 4566;
@@ -38,12 +39,13 @@ public class AWSLocalStackResource implements QuarkusTestResourceLifecycleManage
     public Map<String, String> start() {
         localStack.start();
         Map<String, String> map = new HashMap<>();
-        map.put("event-bridge.secrets-manager.aws.region", REGION);
-        map.put("event-bridge.secrets-manager.aws.access-key-id", ACCESS_KEY_ID);
-        map.put("event-bridge.secrets-manager.aws.secret-access-key", SECRET_ACCESS_KEY);
+        map.put("quarkus.secretsmanager.aws.region", REGION);
+        map.put("quarkus.secretsmanager.aws.credentials.static-provider.access-key-id", ACCESS_KEY_ID);
+        map.put("quarkus.secretsmanager.aws.credentials.static-provider.secret-access-key", SECRET_ACCESS_KEY);
+        map.put("quarkus.secretsmanager.aws.credentials.type=static", CREDENTIALS_TYPE);
 
         String url = String.format("http://localhost:%s", localStack.getFirstMappedPort());
-        map.put("event-bridge.secrets-manager.aws.endpoint-override", url);
+        map.put("quarkus.secretsmanager.endpoint-override", url);
         return map;
     }
 
