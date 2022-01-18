@@ -1,0 +1,7 @@
+secretGenerator:
+patchesStrategicMerge:
+- patches/deploy.yaml
+namespace: localstack
+resources:
+- namespace.yaml
+- deploy.yaml
