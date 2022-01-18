@@ -4,7 +4,7 @@ images:
   newTag: b40c274bc88ab2d06d373df42b5b9e9086941285-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: ocp-b40c274bc88ab2d06d373df42b5b9e9086941285-jvm
+  newTag: ocp-a83cca68466653602e4c3617199e980a497fee25-jvm
 namespace: event-bridge-prod
 patchesStrategicMerge:
 - manager/patches/deploy-config.yaml
