@@ -71,11 +71,11 @@ jobs:
         with:
           filters: |
             general: &general
+              - actions/**
               - infra/**
               - bom/**
               - build-parent/**
-              - infra/**
-              - k8s/**
+              - rhoas-client/**
             manager:
               - *general
               - manager/**
