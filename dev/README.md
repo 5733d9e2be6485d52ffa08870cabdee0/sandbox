@@ -178,7 +178,7 @@ export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=$( jq -r '.clientSecret' 'my-tes
 **From the root of the project** run the Fleet Manager application with 
 
 ```bash
-mvn clean compile -f manager/pom.xml quarkus:dev
+mvn clean compile -f manager/pom.xml -Dminikubeip=`minikube ip` quarkus:dev
 ```
 
 ### Start the Fleet Shard Operator
@@ -188,7 +188,7 @@ mvn clean compile -f manager/pom.xml quarkus:dev
 **From the root of the project** run the Fleet Shard Operator with 
 
 ```bash 
-mvn clean compile -f shard-operator/pom.xml -Dquarkus.http.port=1337 -Pminikube quarkus:dev
+mvn clean compile -f shard-operator/pom.xml -Dquarkus.http.port=1337 -Dminikubeip=`minikube ip` -Pminikube quarkus:dev
 ```
 
 ### Send Requests
