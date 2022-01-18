@@ -2,7 +2,6 @@ package com.redhat.service.bridge.manager.vault;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
