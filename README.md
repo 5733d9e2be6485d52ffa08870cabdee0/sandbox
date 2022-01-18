@@ -14,7 +14,7 @@ All the instructions to run the platform locally are provided in the [dev](dev) 
 
 # Running a Demo 
 
-A demonstration of the service is provided [here](DEMO.md).
+A walk-through, demonstration of the service is provided [here](DEMO.md).
 
 # How to deploy the platform service to a Kubernetes cluster
 
