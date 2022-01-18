@@ -1,6 +1,6 @@
 # Actions
 
-In EventBridge, an `Action` the ability to "do something" when an `Event` is matched by a [Filter](FILTERS.md) of a `Processor`
+In EventBridge, an `Action` is the ability to "do something" when an `Event` is matched by a [Filter](FILTERS.md) of a `Processor`
 
 When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` you must specify the `Action` that should be invoked, should the [Filter](FILTERS.md) of the `Processor` match. 
 It is possible to [Transform](TRANSFORMATIONS.md) the original `Event` structure before your `Action` is invoked, otherwise the `Event` will be passed to your `Action` unchanged.

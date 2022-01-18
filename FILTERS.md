@@ -15,7 +15,7 @@ Every `Filter` has 3 properties to specify:
   - Attempting to use an unknown `Filter` type will result in an Error from the Bridge API.
 - `key`: The field in the `Event` that you want to filter on. 
   - This must be a single field only. Arrays of fields to match on are not yet supported. 
-- `values`: The value or values to compare to the field identified by the key.
+- `value(s)`: The value or values to compare to the field identified by the key.
 
 All Events sent to the Bridge must be in CloudEvent format. You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `eventid`, `source`, `eventtype`, `eventtypeversion`. `CloudEvent` data (like `data.key1`) is accessed using the dot notation to navigate the `Event` structure.
 
