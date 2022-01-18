@@ -16,6 +16,7 @@ import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorDeletionException;
 
 @RequestScoped
 public class ConnectorsApiClientImpl implements ConnectorsApiClient {
@@ -35,21 +36,21 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             return connectorsAPI.createConnector(true, connector);
         } catch (ApiException e) {
-            throw new ConnectorCreationException("Error while calling the connectors SKD", e);
+            throw new ConnectorCreationException("Error while creating the connector on MC Fleet Manager", e);
         }
     }
 
     @Override
-    public void deleteConnector(String id, String kafkaId) {
+    public void deleteConnector(String id) {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
             Error error = connectorsAPI.deleteConnector(id);
             if (error != null) {
-                LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway. Error: '{}'", id, kafkaId, error);
+                throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager: " + error);
             }
         } catch (ApiException e) {
-            LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway", id, kafkaId, e);
+            throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager", e);
         }
     }
 

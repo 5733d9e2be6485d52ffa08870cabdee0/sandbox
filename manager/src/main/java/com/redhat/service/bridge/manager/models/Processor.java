@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.manager.models;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.Type;
@@ -28,8 +31,15 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
-        @NamedQuery(name = "PROCESSOR.findByStatusesAndShardId",
-                query = "from Processor p join fetch p.bridge where p.status in (:statuses) and p.bridge.status='AVAILABLE' and p.shardId=:shardId"),
+        @NamedQuery(name = "PROCESSOR.findByStatusesAndShardIdWithReadyDependencies",
+                query = "select p " +
+                        "from Processor p " +
+                        "join fetch p.bridge " +
+                        "left join p.connectorEntities as c " +
+                        "where p.status in (:statuses) " +
+                        "and p.bridge.status='AVAILABLE' " +
+                        "and p.shardId=:shardId " +
+                        "and (c is null or c.status = 'READY')"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
@@ -77,6 +87,9 @@ public class Processor {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
+
+    @OneToMany(mappedBy = "processor")
+    private List<ConnectorEntity> connectorEntities = new ArrayList<>();
 
     @Column(name = "shard_id")
     private String shardId;
@@ -143,6 +156,14 @@ public class Processor {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public List<ConnectorEntity> getConnectorEntities() {
+        return connectorEntities;
+    }
+
+    public void setConnectorEntities(List<ConnectorEntity> connectorEntities) {
+        this.connectorEntities = connectorEntities;
     }
 
     public String getShardId() {

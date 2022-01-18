@@ -29,6 +29,8 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.ShardService;
+import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
 
@@ -69,8 +71,11 @@ public class ShardBridgesSyncAPI {
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
-        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridgeId(),
-                processorDTO.getCustomerId());
+        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}' with status '{}'",
+                processorDTO.getId(),
+                processorDTO.getBridgeId(),
+                processorDTO.getCustomerId(),
+                processorDTO.getStatus());
         processorService.updateProcessorStatus(processorDTO);
         return Response.ok().build();
     }
@@ -81,7 +86,9 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        return Response.ok(processorService.getProcessorByStatusesAndShardId(statuses, shardId)
+        List<Processor> processorToDeployOrDelete = processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(statuses, shardId);
+        LOGGER.info("Found {} processor(s) to deploy or delete", processorToDeployOrDelete.size());
+        return Response.ok(processorToDeployOrDelete
                 .stream()
                 .map(processorService::toDTO)
                 .collect(toList()))
@@ -93,7 +100,9 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
-        return Response.ok(bridgesService.getBridgesByStatusesAndShardId(statuses, shardId)
+        List<Bridge> bridgesToDeployOrDelete = bridgesService.getBridgesByStatusesAndShardId(statuses, shardId);
+        LOGGER.info("Found {} bridge(s) to deploy or delete", bridgesToDeployOrDelete.size());
+        return Response.ok(bridgesToDeployOrDelete
                 .stream()
                 .map(bridgesService::toDTO)
                 .collect(toList()))
