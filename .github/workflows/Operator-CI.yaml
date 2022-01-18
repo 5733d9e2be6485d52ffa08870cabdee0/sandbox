@@ -74,18 +74,19 @@ jobs:
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
 
           # Configure the shard
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_CLIENT_ID=event-bridge -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_SECRET=secret -n $NAMESPACE
-          kubectl set env deployment/shard-operator KEYCLOAK_USER=kermit -n $NAMESPACE
-          kubectl set env deployment/shard-operator KEYCLOAK_PASSWORD=thefrog -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_INGRESS_IMAGE=openbridge/ingress:latest -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=openbridge/executor:latest -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_MANAGER_URL=http://manager:8080 -n $NAMESPACE
-          kubectl set env deployment/shard-operator KAFKA_BOOTSTRAP_SERVERS=http://kafka -n $NAMESPACE
-          kubectl set env deployment/shard-operator KAFKA_CLIENT_ID=http://kafka -n $NAMESPACE
-          kubectl set env deployment/shard-operator KAFKA_CLIENT_SECRET=secret -n $NAMESPACE
-          kubectl set env deployment/shard-operator KAFKA_SECURITY_PROTOCOL=PLAINTEXT -n $NAMESPACE
+          kubectl set env deployment/shard-operator -n $NAMESPACE \
+            EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm \
+            EVENT_BRIDGE_SSO_CLIENT_ID=event-bridge \
+            EVENT_BRIDGE_SSO_SECRET=secret \
+            KEYCLOAK_USER=kermit \
+            KEYCLOAK_PASSWORD=thefrog \
+            EVENT_BRIDGE_INGRESS_IMAGE=openbridge/ingress:latest \
+            EVENT_BRIDGE_EXECUTOR_IMAGE=openbridge/executor:latest \
+            EVENT_BRIDGE_MANAGER_URL=http://manager:8080 \
+            KAFKA_BOOTSTRAP_SERVERS=http://kafka \
+            KAFKA_CLIENT_ID=http://kafka \
+            KAFKA_CLIENT_SECRET=secret \
+            KAFKA_SECURITY_PROTOCOL=PLAINTEXT
 
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
