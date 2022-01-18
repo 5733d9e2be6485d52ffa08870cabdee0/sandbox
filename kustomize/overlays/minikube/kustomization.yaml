@@ -11,3 +11,4 @@ resources:
 - prometheus
 - shard
 - manager
+- localstack
