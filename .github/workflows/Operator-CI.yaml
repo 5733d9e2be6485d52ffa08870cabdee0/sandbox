@@ -59,35 +59,18 @@ jobs:
       - name: Deploy Shard operator
         run: |
           kubectl create namespace $NAMESPACE
-
           # Operator requires Keycloak instance to be available, install it
           kubectl create secret generic keycloak-realm --from-file=event-bridge-fm-realm-sample.json=kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -n $NAMESPACE
           kubectl create secret generic keycloak-secrets --from-literal=KEYCLOAK_USER=admin --from-literal=KEYCLOAK_PASSWORD=123 -n $NAMESPACE
-
           # Not ideal as kustomize is used for different purposes but it is the easiest approach without duplications
           kubectl create -f kustomize/base/keycloak/resources/keycloak.yaml -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
-
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
-
-          # Configure the shard
-          kubectl set env deployment/shard-operator -n $NAMESPACE \
-            EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm \
-            EVENT_BRIDGE_SSO_CLIENT_ID=event-bridge \
-            EVENT_BRIDGE_SSO_SECRET=secret \
-            KEYCLOAK_USER=kermit \
-            KEYCLOAK_PASSWORD=thefrog \
-            EVENT_BRIDGE_INGRESS_IMAGE=openbridge/ingress:latest \
-            EVENT_BRIDGE_EXECUTOR_IMAGE=openbridge/executor:latest \
-            EVENT_BRIDGE_MANAGER_URL=http://manager:8080 \
-            KAFKA_BOOTSTRAP_SERVERS=http://kafka \
-            KAFKA_CLIENT_ID=http://kafka \
-            KAFKA_CLIENT_SECRET=secret \
-            KAFKA_SECURITY_PROTOCOL=PLAINTEXT
-
+          # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
