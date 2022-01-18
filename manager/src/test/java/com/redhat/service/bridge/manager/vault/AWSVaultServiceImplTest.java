@@ -56,4 +56,10 @@ public class AWSVaultServiceImplTest {
         String id = "unexistingSecretThrowsException";
         assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id).await().indefinitely());
     }
+
+    @Test
+    public void deleteUnexistingSecretThrowsException() {
+        String id = "unexistingSecretThrowsException";
+        assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.delete(id).await().indefinitely());
+    }
 }
