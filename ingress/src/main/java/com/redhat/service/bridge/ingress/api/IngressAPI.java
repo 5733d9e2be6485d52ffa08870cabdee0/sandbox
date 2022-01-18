@@ -39,7 +39,7 @@ public class IngressAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@NotNull CloudEvent event) {
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events");
+        LOGGER.debug("New event has been uploaded to endpoint /events");
         kafkaEventPublisher.sendEvent(bridgeId, event);
         return Response.ok().build();
     }
@@ -55,7 +55,7 @@ public class IngressAPI {
             @HeaderParam("ce-source") @NotNull String cloudEventSource,
             @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
             @NotNull JsonNode event) {
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events/plain");
+        LOGGER.debug("New event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);

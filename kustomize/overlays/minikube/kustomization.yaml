@@ -1,10 +1,10 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: ae116a7eb89726e01a0c6594d210eb87989bb89a-jvm
+  newTag: b40c274bc88ab2d06d373df42b5b9e9086941285-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: k8s-ae116a7eb89726e01a0c6594d210eb87989bb89a-jvm
+  newTag: k8s-b40c274bc88ab2d06d373df42b5b9e9086941285-jvm
 resources:
 - kafka
 - keycloak

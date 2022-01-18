@@ -13,4 +13,5 @@ public interface ConnectorsService {
             Processor processor,
             ActionProvider actionProvider);
 
+    void deleteConnectorIfNeeded(Processor processor);
 }
