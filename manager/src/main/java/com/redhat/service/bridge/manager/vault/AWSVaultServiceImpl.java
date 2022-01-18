@@ -95,14 +95,13 @@ public class AWSVaultServiceImpl implements VaultService {
 
     private Uni<Void> replaceSecret(EventBridgeSecret secret) {
         LOGGER.info("Secret '{}' already exists in AWS Vault. Replacing..", secret.getId());
-        AtomicInteger counter = new AtomicInteger(0);
         PutSecretValueRequest putSecretValueRequest = PutSecretValueRequest.builder()
                 .secretId(secret.getId())
                 .secretString(Json.encode(secret.getValues()))
                 .build();
         return Uni.createFrom().future(asyncClient.putSecretValue(putSecretValueRequest))
                 .replaceWithVoid()
-                .onFailure().retry().until(e -> counter.getAndIncrement() <= MAX_RETRIES)
+                .onFailure().retry().withJitter(DEFAULT_JITTER).withBackOff(DEFAULT_BACKOFF).atMost(MAX_RETRIES)
                 .onFailure().transform(e -> new VaultException("Could not replace secret '%s' in AWS Vault", e))
                 .onItem().invoke(() -> LOGGER.info("Secret '{}' replaced", secret.getId()));
     }
