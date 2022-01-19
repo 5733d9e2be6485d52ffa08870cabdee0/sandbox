@@ -91,7 +91,7 @@ public class RhoasClientImpl implements RhoasClient {
 
     @Override
     public Uni<Void> grantAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
-        return createACLs(aclsFor(topicName, userId, accessType))
+        return createACLs(grantAclsFor(topicName, userId, accessType))
                 .onItem().invoke(t -> LOG.info("Created {} ACLs for user='{}' and topic='{}'", accessType.getText(), userId, topicName))
                 .onFailure().transform(f -> logAndWrapFailure(
                         "Error when creating " + accessType.getText() + " ACLs for user='" + userId + "' and topic='" + topicName + "'", f));
@@ -99,7 +99,7 @@ public class RhoasClientImpl implements RhoasClient {
 
     @Override
     public Uni<Void> revokeAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
-        return deleteACLs(aclsFor(topicName, userId, accessType))
+        return deleteACLs(revokeAclsFor(topicName, userId, accessType))
                 .onItem().invoke(t -> LOG.info("Deleted {} ACLs for user='{}' and topic='{}'", accessType.getText(), userId, topicName))
                 .onFailure().transform(f -> logAndWrapFailure(
                         "Error when deleting " + accessType.getText() + " ACLs for user='" + userId + "' and topic='" + topicName + "'", f));
@@ -120,42 +120,67 @@ public class RhoasClientImpl implements RhoasClient {
                 .replaceWithVoid();
     }
 
-    private List<AclBinding> aclsFor(String topicName, String userId, RhoasTopicAccessType accessType) {
+    private List<AclBinding> grantAclsFor(String topicName, String userId, RhoasTopicAccessType accessType) {
         switch (accessType) {
             case CONSUMER:
-                return consumerAclsFor(topicName, userId);
+                return grantConsumerAclsFor(topicName, userId);
             case PRODUCER:
-                return producerAclsFor(topicName, userId);
+                return grantProducerAclsFor(topicName, userId);
             case CONSUMER_AND_PRODUCER:
-                return consumerAndProducerAclsFor(topicName, userId);
+                return joinAcls(grantConsumerAclsFor(topicName, userId), grantProducerAclsFor(topicName, userId));
         }
         throw new IllegalStateException("Can't create ACLs for " + accessType);
     }
 
-    private List<AclBinding> consumerAclsFor(String topicName, String userId) {
+    private List<AclBinding> grantConsumerAclsFor(String topicName, String userId) {
         return List.of(
-                newDescribeTopicAcl(userId, topicName),
-                newReadTopicAcl(userId, topicName),
+                newDescribeTopicAcl(topicName, userId),
+                newReadTopicAcl(topicName, userId),
                 newReadAllGroupsAcl(userId));
     }
 
-    private List<AclBinding> producerAclsFor(String topicName, String userId) {
+    private List<AclBinding> grantProducerAclsFor(String topicName, String userId) {
         return List.of(
-                newDescribeTopicAcl(userId, topicName),
-                newWriteTopicAcl(userId, topicName),
-                newCreateTopicAcl(userId, topicName),
+                newDescribeTopicAcl(topicName, userId),
+                newWriteTopicAcl(topicName, userId),
+                newCreateTopicAcl(topicName, userId),
                 newWriteAllTransactionalIdsAcl(userId),
                 newDescribeAllTransactionalIdsAcl(userId));
     }
 
-    private List<AclBinding> consumerAndProducerAclsFor(String topicName, String userId) {
+    private List<AclBinding> revokeAclsFor(String topicName, String userId, RhoasTopicAccessType accessType) {
+        switch (accessType) {
+            case CONSUMER:
+                return revokeConsumerAclsFor(topicName, userId);
+            case PRODUCER:
+                return revokeProducerAclsFor(topicName, userId);
+            case CONSUMER_AND_PRODUCER:
+                return joinAcls(revokeConsumerAclsFor(topicName, userId), revokeProducerAclsFor(topicName, userId));
+        }
+        throw new IllegalStateException("Can't create ACLs for " + accessType);
+    }
+
+    private List<AclBinding> revokeConsumerAclsFor(String topicName, String userId) {
+        return List.of(
+                newDescribeTopicAcl(topicName, userId),
+                newReadTopicAcl(topicName, userId));
+    }
+
+    private List<AclBinding> revokeProducerAclsFor(String topicName, String userId) {
+        return List.of(
+                newDescribeTopicAcl(topicName, userId),
+                newWriteTopicAcl(topicName, userId),
+                newCreateTopicAcl(topicName, userId));
+    }
+
+    private List<AclBinding> joinAcls(List<AclBinding> acls1, List<AclBinding> acls2) {
         List<AclBinding> permissions = new ArrayList<>();
-        permissions.addAll(consumerAclsFor(topicName, userId));
-        permissions.addAll(producerAclsFor(topicName, userId));
+        permissions.addAll(acls1);
+        permissions.addAll(acls2);
         return permissions;
     }
 
-    private static AclBinding newDescribeTopicAcl(String userId, String topicName) {
+    private static AclBinding newDescribeTopicAcl(String topicName, String userId) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)
@@ -165,7 +190,7 @@ public class RhoasClientImpl implements RhoasClient {
                 .permission(AclPermissionType.ALLOW);
     }
 
-    private static AclBinding newCreateTopicAcl(String userId, String topicName) {
+    private static AclBinding newCreateTopicAcl(String topicName, String userId) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)
@@ -175,7 +200,7 @@ public class RhoasClientImpl implements RhoasClient {
                 .permission(AclPermissionType.ALLOW);
     }
 
-    private static AclBinding newReadTopicAcl(String userId, String topicName) {
+    private static AclBinding newReadTopicAcl(String topicName, String userId) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)
@@ -185,7 +210,7 @@ public class RhoasClientImpl implements RhoasClient {
                 .permission(AclPermissionType.ALLOW);
     }
 
-    private static AclBinding newWriteTopicAcl(String userId, String topicName) {
+    private static AclBinding newWriteTopicAcl(String topicName, String userId) {
         return new AclBinding()
                 .resourceType(AclResourceType.TOPIC)
                 .resourceName(topicName)

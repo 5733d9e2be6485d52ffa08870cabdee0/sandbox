@@ -24,36 +24,36 @@ class RhoasClientWithBrokenACLTest extends RhoasClientTestBase {
     @Test
     void testCreateTopicAndGrantAccessConsumerWithBrokenACLCreation() {
         configureMockAPIWithBrokenACLCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 0, 3);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 0, 2);
     }
 
     @Test
     void testCreateTopicAndGrantAccessProducerWithBrokenACLCreation() {
         configureMockAPIWithBrokenACLCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 0, 5);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 0, 3);
     }
 
     @Test
     void testCreateTopicAndGrantAccessConsumerAndProducerWithBrokenACLCreation() {
         configureMockAPIWithBrokenACLCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 0, 8);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 0, 5);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerWithBrokenACLDeletion() {
         configureMockAPIWithBrokenACLDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 0, 3);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 0, 2);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessProducerWithBrokenACLDeletion() {
         configureMockAPIWithBrokenACLDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 0, 5);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 0, 3);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerAndProducerWithBrokenACLDeletion() {
         configureMockAPIWithBrokenACLDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 0, 8);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 0, 5);
     }
 }

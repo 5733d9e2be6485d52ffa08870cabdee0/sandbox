@@ -42,18 +42,18 @@ class RhoasClientWithBrokenServiceAccountTest extends RhoasClientTestBase {
     @Test
     void testDeleteTopicAndRevokeAccessConsumerWithBrokenServiceAccountDeletion() {
         configureMockAPIWithBrokenServiceAccountDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, false, 0, 0, 1, 3);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, false, 0, 0, 1, 2);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessProducerWithBrokenServiceAccountDeletion() {
         configureMockAPIWithBrokenServiceAccountDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, false, 0, 0, 1, 5);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, false, 0, 0, 1, 3);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerAndProducerWithBrokenServiceAccountDeletion() {
         configureMockAPIWithBrokenServiceAccountDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 8);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 5);
     }
 }

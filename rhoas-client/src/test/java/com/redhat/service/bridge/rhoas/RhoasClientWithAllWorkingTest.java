@@ -41,19 +41,19 @@ class RhoasClientWithAllWorkingTest extends RhoasClientTestBase {
     @Test
     void testDeleteTopicAndRevokeAccessConsumerOk() {
         configureMockAPIWithAllWorking();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, false, 0, 0, 1, 3);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, false, 0, 0, 1, 2);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessProducerOk() {
         configureMockAPIWithAllWorking();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, false, 0, 0, 1, 5);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, false, 0, 0, 1, 3);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerAndProducerOk() {
         configureMockAPIWithAllWorking();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 8);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 5);
     }
 
 }

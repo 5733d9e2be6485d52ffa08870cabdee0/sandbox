@@ -128,8 +128,6 @@ public class BridgesServiceImpl implements BridgesService {
         Bridge bridge = findByIdAndCustomerId(id, customerId);
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
-
-        deleteTopicAndRevokeAccessFor(bridge.getId());
     }
 
     @Transactional
@@ -153,6 +151,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
+            deleteTopicAndRevokeAccessFor(bridge.getId());
         }
 
         // Update metrics

@@ -24,36 +24,36 @@ class RhoasClientWithBrokenTopicTest extends RhoasClientTestBase {
     @Test
     void testCreateTopicAndGrantAccessConsumerWithBrokenTopicCreation() {
         configureMockAPIWithBrokenTopicCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER, true, 1, 3, 0, 3);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER, true, 1, 3, 0, 2);
     }
 
     @Test
     void testCreateTopicAndGrantAccessProducerWithBrokenTopicCreation() {
         configureMockAPIWithBrokenTopicCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.PRODUCER, true, 1, 5, 0, 5);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.PRODUCER, true, 1, 5, 0, 3);
     }
 
     @Test
     void testCreateTopicAndGrantAccessConsumerAndProducerWithBrokenTopicCreation() {
         configureMockAPIWithBrokenTopicCreation();
-        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 1, 8, 0, 8);
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 1, 8, 0, 5);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerWithBrokenTopicDeletion() {
         configureMockAPIWithBrokenTopicDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 1, 3);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 1, 2);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessProducerWithBrokenTopicDeletion() {
         configureMockAPIWithBrokenTopicDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 1, 5);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.PRODUCER, true, 0, 5, 1, 3);
     }
 
     @Test
     void testDeleteTopicAndRevokeAccessConsumerAndProducerWithBrokenTopicDeletion() {
         configureMockAPIWithBrokenTopicDeletion();
-        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 1, 8);
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 1, 5);
     }
 }
