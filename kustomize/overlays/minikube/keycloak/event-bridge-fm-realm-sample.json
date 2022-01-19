@@ -37,36 +37,54 @@
           "value": "thefrog"
         }
       ],
-      "applicationRoles": {
-        "cloud-services": [
-          "user"
-        ],
-        "event-bridge": [
-          "user"
-        ]
-      }
+      "realmRoles": [ "user" ]
+    },
+    {
+      "username": "shard-1",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "theshard"
+        }
+      ],
+      "realmRoles": [ "shard", "offline_access" ]
+    },
+    {
+      "username": "webhook-robot-1",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "therobot"
+        }
+      ],
+      "realmRoles": [ "webhook-robot", "offline_access" ]
     }
   ],
   "roles": {
-    "realm": [],
-    "client": {
-      "event-bridge": [
-        {
-          "name": "user",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "event-bridge-fm"
-        }
-      ],
-      "cloud-services": [
-        {
-          "name": "user",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "cloud-services"
-        }
-      ]
-    }
+    "realm": [
+      {
+        "name": "user",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "shard",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "webhook-robot",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "offline_access",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
   },
   "defaultRoles": [],
   "requiredCredentials": [
@@ -92,23 +110,6 @@
       ],
       "bearerOnly": false,
       "protocol": "openid-connect"
-    },
-    {
-      "id": "e6b8dc94-8dbb-40e8-a32c-fbc352dce8fb",
-      "clientId": "cloud-services",
-      "enabled": true,
-      "alwaysDisplayInConsole": false,
-      "directAccessGrantsEnabled": true,
-      "fullScopeAllowed": true,
-      "clientAuthenticatorType": "client-secret",
-      "publicClient": true,
-      "redirectUris": [
-        "*"
-      ],
-      "webOrigins": [
-        "*"
-      ],
-      "bearerOnly": true
     }
   ],
   "keycloakVersion": "15.1.0"

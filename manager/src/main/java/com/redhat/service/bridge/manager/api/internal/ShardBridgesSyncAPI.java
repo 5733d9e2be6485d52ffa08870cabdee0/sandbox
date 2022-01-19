@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.api.internal;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 @Path(APIConstants.SHARD_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("shard")
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
