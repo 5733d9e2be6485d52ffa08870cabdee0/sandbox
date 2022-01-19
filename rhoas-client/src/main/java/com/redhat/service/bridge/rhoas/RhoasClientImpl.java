@@ -57,13 +57,17 @@ public class RhoasClientImpl implements RhoasClient {
 
     @Override
     public Uni<Topic> createTopicAndGrantAccess(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType) {
-        return createTopic(newTopicInput)
-                .onItem().transformToUni(topic -> grantAccess(topic.getName(), userId, accessType)
-                        .onItem().transform(v -> topic)
-                        .onFailure().recoverWithUni(f1 -> deleteTopic(topic.getName())
-                                .onItem().transform(v -> topic)
-                                .onItem().failWith(() -> f1)
-                                .onFailure().transform(f2 -> logAndWrapFailures("Multiple errors when creating topic and granting access", f1, f2))));
+        return grantAccess(newTopicInput.getName(), userId, accessType)
+                .onItem().transformToUni(v1 -> createTopic(newTopicInput))
+                //                        .onFailure().recoverWithUni(f -> recoverCreateTopicAndGrantAccessFailure(newTopicInput, userId, accessType, f)))
+                .onFailure().recoverWithUni(f -> recoverCreateTopicAndGrantAccessFailure(newTopicInput, userId, accessType, f));
+    }
+
+    private Uni<Topic> recoverCreateTopicAndGrantAccessFailure(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType, Throwable failure) {
+        return revokeAccess(newTopicInput.getName(), userId, accessType)
+                .onItem().transform(v -> new Topic())
+                .onItem().failWith(() -> failure)
+                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when creating topic and granting access", failure, failure2));
     }
 
     @Override
@@ -75,16 +79,21 @@ public class RhoasClientImpl implements RhoasClient {
 
     @Override
     public Uni<Void> deleteTopicAndRevokeAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
-        return deleteTopic(topicName)
-                .onItem().transformToUni(v -> revokeAccess(topicName, userId, accessType)
-                        .onFailure().recoverWithUni(f1 -> deleteTopic(topicName)
-                                .onItem().failWith(() -> f1)
-                                .onFailure().transform(f2 -> logAndWrapFailures("Multiple errors when deleting topic and revoking access", f1, f2))));
+        return revokeAccess(topicName, userId, accessType)
+                .onItem().transformToUni(v -> deleteTopic(topicName))
+                //                        .onFailure().recoverWithUni(f -> recoverDeleteTopicAndRevokeAccess(topicName, userId, accessType, f)))
+                .onFailure().recoverWithUni(f -> recoverDeleteTopicAndRevokeAccess(topicName, userId, accessType, f));
+    }
+
+    private Uni<Void> recoverDeleteTopicAndRevokeAccess(String topicName, String userId, RhoasTopicAccessType accessType, Throwable failure) {
+        return grantAccess(topicName, userId, accessType)
+                .onItem().failWith(() -> failure)
+                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when deleting topic and revoking access", failure, failure2));
     }
 
     @Override
     public Uni<Void> grantAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
-        return createACLs(aclsFor(userId, topicName, accessType))
+        return createACLs(aclsFor(topicName, userId, accessType))
                 .onItem().invoke(t -> LOG.info("Created {} ACLs for user='{}' and topic='{}'", accessType.getText(), userId, topicName))
                 .onFailure().transform(f -> logAndWrapFailure(
                         "Error when creating " + accessType.getText() + " ACLs for user='" + userId + "' and topic='" + topicName + "'", f));
@@ -92,7 +101,7 @@ public class RhoasClientImpl implements RhoasClient {
 
     @Override
     public Uni<Void> revokeAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
-        return deleteACLs(aclsFor(userId, topicName, accessType))
+        return deleteACLs(aclsFor(topicName, userId, accessType))
                 .onItem().invoke(t -> LOG.info("Deleted {} ACLs for user='{}' and topic='{}'", accessType.getText(), userId, topicName))
                 .onFailure().transform(f -> logAndWrapFailure(
                         "Error when deleting " + accessType.getText() + " ACLs for user='" + userId + "' and topic='" + topicName + "'", f));

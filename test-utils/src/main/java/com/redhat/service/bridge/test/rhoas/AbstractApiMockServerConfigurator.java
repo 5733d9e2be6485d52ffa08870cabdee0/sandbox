@@ -2,6 +2,8 @@ package com.redhat.service.bridge.test.rhoas;
 
 import java.util.function.Function;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
@@ -19,7 +21,7 @@ public abstract class AbstractApiMockServerConfigurator {
     private final String intermediatePath;
     private final String expectedAccessToken;
 
-    public AbstractApiMockServerConfigurator(String intermediatePath, String expectedAccessToken) {
+    protected AbstractApiMockServerConfigurator(String intermediatePath, String expectedAccessToken) {
         this.intermediatePath = intermediatePath;
         this.expectedAccessToken = expectedAccessToken;
     }

@@ -38,6 +38,11 @@ public class KafkaMgmtV1MockServerConfigurator extends AbstractApiMockServerConf
         server.stubFor(authDelete("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID).willReturn(responseWithStatus(204)));
     }
 
+    public void configureWithBrokenServiceAccountDeletion(WireMockServer server) {
+        server.stubFor(authPost("/service_accounts").willReturn(responseWithCreatedServiceAccount()));
+        server.stubFor(authDelete("/service_accounts/" + TEST_SERVICE_ACCOUNT_ID).willReturn(responseWithStatus(500)));
+    }
+
     private ResponseDefinitionBuilder responseWithCreatedServiceAccount() {
         Map<String, String> body = new HashMap<>();
         body.put("id", TEST_SERVICE_ACCOUNT_ID);

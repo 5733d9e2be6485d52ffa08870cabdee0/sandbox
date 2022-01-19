@@ -57,7 +57,7 @@ class RhoasAPITest extends RhoasTestBase {
                 .when()
                 .body(new RhoasAPI.Request(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .post("/rhoas/topic")
-                .then().statusCode(500);
+                .then().statusCode(200);
     }
 
     @Test
