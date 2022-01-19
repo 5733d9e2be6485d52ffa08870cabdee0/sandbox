@@ -24,6 +24,4 @@ public interface RhoasClient {
     Uni<Void> grantAccess(String topicName, String userId, RhoasTopicAccessType accessType);
 
     Uni<Void> revokeAccess(String topicName, String userId, RhoasTopicAccessType accessType);
-
-    //    Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request);
 }
