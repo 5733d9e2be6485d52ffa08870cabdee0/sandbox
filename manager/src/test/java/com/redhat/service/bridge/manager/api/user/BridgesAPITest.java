@@ -106,7 +106,7 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, roles = { APIConstants.SHARD_REALM_ROLE })
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE));

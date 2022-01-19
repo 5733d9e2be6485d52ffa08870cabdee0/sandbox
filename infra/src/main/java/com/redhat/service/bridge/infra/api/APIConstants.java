@@ -21,6 +21,11 @@ public class APIConstants {
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
+     * Shard realm role.
+     */
+    public static final String SHARD_REALM_ROLE = "shard";
+
+    /**
      * The page query parameter name
      */
     public static final String PAGE = "page";

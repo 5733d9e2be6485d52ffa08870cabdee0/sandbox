@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toList;
 @Path(APIConstants.SHARD_API_BASE_PATH)
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed("shard")
+@RolesAllowed(APIConstants.SHARD_REALM_ROLE)
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
