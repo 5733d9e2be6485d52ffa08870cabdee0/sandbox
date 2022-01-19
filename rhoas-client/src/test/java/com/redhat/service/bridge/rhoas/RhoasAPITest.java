@@ -3,7 +3,6 @@ package com.redhat.service.bridge.rhoas;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
 import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
 import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledTestProfile;
 
@@ -34,7 +33,7 @@ class RhoasAPITest extends RhoasTestBase {
         given().filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+                .body(new RhoasAPI.Request(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .post("/rhoas/topic")
                 .then().statusCode(200);
     }
@@ -45,7 +44,7 @@ class RhoasAPITest extends RhoasTestBase {
         given().filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+                .body(new RhoasAPI.Request(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .post("/rhoas/topic")
                 .then().statusCode(500);
     }
@@ -56,7 +55,7 @@ class RhoasAPITest extends RhoasTestBase {
         given().filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+                .body(new RhoasAPI.Request(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .post("/rhoas/topic")
                 .then().statusCode(500);
     }
@@ -67,7 +66,7 @@ class RhoasAPITest extends RhoasTestBase {
         given().filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
-                .body(new TopicAndServiceAccountRequest(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
+                .body(new RhoasAPI.Request(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_NAME))
                 .post("/rhoas/topic")
                 .then().statusCode(500);
     }

@@ -10,8 +10,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
-import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountResponse;
+import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
+import com.openshift.cloud.api.kas.auth.models.Topic;
+import com.openshift.cloud.api.kas.auth.models.TopicSettings;
 
 /**
  * This dummy test API simulates a real usage of the {@link RhoasClient} in a real JAX-RS bean.
@@ -29,8 +30,25 @@ public class RhoasAPI {
 
     @POST
     @Path("topic")
-    public TopicAndServiceAccountResponse createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request) {
-        return rhoasClient.get().createTopicAndConsumerServiceAccount(request).await().atMost(Duration.ofSeconds(60));
+    public Topic createTopicAndConsumerServiceAccount(Request request) {
+        return rhoasClient.get()
+                .createTopicAndGrantAccess(
+                        new NewTopicInput().name(request.topicName).settings(new TopicSettings().numPartitions(1)),
+                        request.serviceAccountId,
+                        RhoasTopicAccessType.CONSUMER)
+                .await().atMost(Duration.ofSeconds(60));
     }
 
+    public static class Request {
+        public String topicName;
+        public String serviceAccountId;
+
+        public Request() {
+        }
+
+        public Request(String topicName, String serviceAccountId) {
+            this.topicName = topicName;
+            this.serviceAccountId = serviceAccountId;
+        }
+    }
 }
