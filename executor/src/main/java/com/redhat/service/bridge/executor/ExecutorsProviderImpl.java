@@ -10,6 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.actions.GlobalConfig;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
@@ -34,6 +35,9 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     String processorDefinition;
 
     @Inject
+    GlobalConfig globalConfig;
+
+    @Inject
     ObjectMapper objectMapper;
 
     private Executor executor;
@@ -41,7 +45,7 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     @PostConstruct
     void init() {
         ProcessorDTO dto = readProcessor(processorDefinition);
-        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory, registry);
+        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactory, registry, globalConfig);
     }
 
     @Override

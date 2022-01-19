@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
+import com.redhat.service.bridge.actions.GlobalConfig;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -27,7 +28,7 @@ public class WebhookActionTest {
     @Test
     void testInvokerOk() {
         ProcessorDTO processor = createProcessorWithActionForEndpoint("http://www.example.com/webhook");
-        ActionInvoker actionInvoker = webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction());
+        ActionInvoker actionInvoker = webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction(), new GlobalConfig());
         assertThat(actionInvoker)
                 .isNotNull()
                 .isInstanceOf(WebhookInvoker.class);
@@ -37,7 +38,7 @@ public class WebhookActionTest {
     void testInvokerException() {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
         assertThatExceptionOfType(ActionProviderException.class)
-                .isThrownBy(() -> webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction()));
+                .isThrownBy(() -> webhookAction.getActionInvoker(processor, processor.getDefinition().getResolvedAction(), new GlobalConfig()));
     }
 
     private ProcessorDTO createProcessorWithParameterlessAction() {

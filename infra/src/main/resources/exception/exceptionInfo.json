@@ -76,5 +76,11 @@
   "id": 13,
   "reason": "The HTTP response status code was not 2xx.",
   "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException",
+  "id": 14,
+  "reason": "Technical bearer token was not configured.",
+  "type": "PLATFORM"
 }
 ]

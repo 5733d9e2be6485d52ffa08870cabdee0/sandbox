@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.actions.GlobalConfig;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
@@ -38,7 +39,7 @@ public class Executor {
     private Timer transformationTimer;
 
     public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
-            MeterRegistry registry) {
+            MeterRegistry registry, GlobalConfig globalConfig) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
 
@@ -46,7 +47,7 @@ public class Executor {
 
         BaseAction action = processor.getDefinition().getResolvedAction();
         InvokableActionProvider actionProvider = actionProviderFactory.getInvokableActionProvider(action.getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, action);
+        this.actionInvoker = actionProvider.getActionInvoker(processor, action, globalConfig);
 
         initMetricFields(processor, registry);
     }
