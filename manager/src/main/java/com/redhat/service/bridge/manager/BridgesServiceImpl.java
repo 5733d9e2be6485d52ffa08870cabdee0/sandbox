@@ -198,12 +198,10 @@ public class BridgesServiceImpl implements BridgesService {
             rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
-            String msg = "Failed creating topic and granting access for bridge " + bridgeId;
-            LOGGER.warn(msg, e);
+            String msg = String.format("Failed creating topic and granting access for bridge '%s'", bridgeId);
             throw new InternalPlatformException(msg, e);
         } catch (TimeoutException e) {
-            String msg = "Timeout reached while creating topic and granting access for bridge " + bridgeId;
-            LOGGER.warn(msg, e);
+            String msg = String.format("Timeout reached while creating topic and granting access for bridge '%s'", bridgeId);
             throw new InternalPlatformException(msg, e);
         }
     }
@@ -216,12 +214,10 @@ public class BridgesServiceImpl implements BridgesService {
             rhoasClient.deleteTopicAndRevokeAccess(topicNameFor(bridgeId), rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
-            String msg = "Failed deleting topic and revoking access for bridge " + bridgeId;
-            LOGGER.warn(msg, e);
+            String msg = String.format("Failed deleting topic and revoking access for bridge '%s'", bridgeId);
             throw new InternalPlatformException(msg, e);
         } catch (TimeoutException e) {
-            String msg = "Timeout deleting topic and revoking access for bridge " + bridgeId;
-            LOGGER.warn(msg, e);
+            String msg = String.format("Timeout reached while deleting topic and revoking access for bridge '%s'", bridgeId);
             throw new InternalPlatformException(msg, e);
         }
     }
