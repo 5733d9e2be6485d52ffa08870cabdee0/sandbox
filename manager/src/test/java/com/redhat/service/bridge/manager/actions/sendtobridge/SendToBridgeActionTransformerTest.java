@@ -129,9 +129,6 @@ class SendToBridgeActionTransformerTest {
         assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(transformedAction.getName()).isEqualTo(expectedName);
         assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
-
-        // TODO: Need to disable this, unless we go for a bigger refactoring
-        // assertThat(actionProviderFactory.getActionProvider(transformedAction.getType()).getParameterValidator().isValid(transformedAction).isValid()).isTrue();
     }
 
     private BaseAction actionWithoutBridgeId() {
