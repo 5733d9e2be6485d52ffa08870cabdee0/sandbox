@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack
+  labels:
+    app-component: localstack
+spec:
+  selector:
+    matchLabels:
+      app-component: localstack
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app-component: localstack
+    spec:
+      containers:
+        - image: localstack/localstack:0.13.3
+          imagePullPolicy: IfNotPresent
+          name: localstack
+          ports:
+            - containerPort: 4566
+          env:
+            - name: START_WEB
+              value: "0"
+            - name: SERVICES
+              value: "secretsmanager"
+            - name: AWS_ACCESS_KEY_ID
+              value: "test-key"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "test-secret"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: localstack
+spec:
+  ports:
+    - name: web
+      protocol: TCP
+      port: 4566
+      targetPort: 4566
+  selector:
+    app-component: localstack
