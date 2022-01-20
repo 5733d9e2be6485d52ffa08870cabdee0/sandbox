@@ -8,7 +8,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
  */
 public interface InvokableActionProvider extends ActionProvider {
 
-    ActionInvoker getActionInvoker(ProcessorDTO processor, BaseAction baseAction, GlobalConfig globalConfig);
+    ActionInvoker getActionInvoker(ProcessorDTO processor, BaseAction baseAction);
 
     /**
      * Usually invokable actions don't need to be transformed by the transformer.

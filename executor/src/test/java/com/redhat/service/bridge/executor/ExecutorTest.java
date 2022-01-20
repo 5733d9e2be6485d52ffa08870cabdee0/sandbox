@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
-import com.redhat.service.bridge.actions.GlobalConfig;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
@@ -61,7 +60,7 @@ public class ExecutorTest {
         actionInvokerMock = mock(ActionInvoker.class);
         InvokableActionProvider actionProvider = mock(InvokableActionProvider.class);
 
-        when(actionProvider.getActionInvoker(any(), any(), any())).thenReturn(actionInvokerMock);
+        when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
 
         when(actionProviderFactoryMock.getInvokableActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
         when(actionProviderFactoryMock.getInvokableActionProvider(WebhookAction.TYPE)).thenReturn(actionProvider);
@@ -84,7 +83,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry, new GlobalConfig());
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -109,7 +108,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry, new GlobalConfig());
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -129,7 +128,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry, new GlobalConfig());
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -148,7 +147,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry, new GlobalConfig());
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -170,7 +169,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry, new GlobalConfig());
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 

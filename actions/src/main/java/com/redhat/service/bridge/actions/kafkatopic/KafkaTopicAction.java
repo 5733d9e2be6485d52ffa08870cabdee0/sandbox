@@ -14,7 +14,6 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionParameterValidator;
-import com.redhat.service.bridge.actions.GlobalConfig;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -51,7 +50,7 @@ public class KafkaTopicAction implements InvokableActionProvider {
     }
 
     @Override
-    public ActionInvoker getActionInvoker(ProcessorDTO processor, BaseAction baseAction, GlobalConfig globalConfig) {
+    public ActionInvoker getActionInvoker(ProcessorDTO processor, BaseAction baseAction) {
         String requiredTopic = baseAction.getParameters().get(TOPIC_PARAM);
         if (requiredTopic == null) {
             throw new ActionProviderException(
