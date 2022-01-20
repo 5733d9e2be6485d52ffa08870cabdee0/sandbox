@@ -36,10 +36,10 @@
           "type": "password",
           "value": "thefrog"
         }
-      ],
-      "realmRoles": [ "user" ]
+      ]
     },
     {
+      "id": "150b23e9-0b34-45b7-a91a-5ec388d03a1d",
       "username": "shard-1",
       "enabled": true,
       "credentials": [
@@ -48,9 +48,10 @@
           "value": "theshard"
         }
       ],
-      "realmRoles": [ "shard", "offline_access" ]
+      "realmRoles": [ "offline_access" ]
     },
     {
+      "id": "402cf429-da04-4931-8089-e53ad452192b",
       "username": "webhook-robot-1",
       "enabled": true,
       "credentials": [
@@ -59,26 +60,11 @@
           "value": "therobot"
         }
       ],
-      "realmRoles": [ "webhook-robot", "offline_access" ]
+      "realmRoles": [ "offline_access" ]
     }
   ],
   "roles": {
     "realm": [
-      {
-        "name": "user",
-        "composite": false,
-        "clientRole": false
-      },
-      {
-        "name": "shard",
-        "composite": false,
-        "clientRole": false
-      },
-      {
-        "name": "webhook-robot",
-        "composite": false,
-        "clientRole": false
-      },
       {
         "name": "offline_access",
         "composite": false,

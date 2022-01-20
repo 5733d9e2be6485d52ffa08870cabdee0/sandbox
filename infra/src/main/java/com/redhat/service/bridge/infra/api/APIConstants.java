@@ -21,9 +21,9 @@ public class APIConstants {
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
-     * Shard realm role.
+     * User id attribute claim key.
      */
-    public static final String SHARD_REALM_ROLE = "shard";
+    public static final String USER_ID_ATTRIBUTE_CLAIM = "sub";
 
     /**
      * The page query parameter name

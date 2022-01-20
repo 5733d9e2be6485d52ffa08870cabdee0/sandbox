@@ -76,5 +76,11 @@
   "id": 13,
   "reason": "The HTTP response status code was not 2xx.",
   "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.NotAuthorizedException",
+  "id": 14,
+  "reason": "The user is not authorized to access the resource",
+  "type": "USER"
 }
 ]
