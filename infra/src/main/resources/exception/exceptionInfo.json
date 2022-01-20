@@ -82,5 +82,11 @@
   "id": 14,
   "reason": "An error occurred fetching the secrets from the vault.",
   "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException",
+  "id": 15,
+  "reason": "Technical bearer token was not configured.",
+  "type": "PLATFORM"
 }
 ]

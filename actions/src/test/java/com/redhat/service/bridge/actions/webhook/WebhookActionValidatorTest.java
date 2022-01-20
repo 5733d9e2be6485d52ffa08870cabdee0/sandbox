@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.actions.webhook;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,6 +61,12 @@ class WebhookActionValidatorTest {
         assertIsInvalid("ftp://www.example.com/webhook", WebhookActionValidator.INVALID_PROTOCOL_MESSAGE);
     }
 
+    @Test
+    void isInvalidWithReservedAttributes() {
+        Map<String, String> params = Collections.singletonMap(WebhookAction.USE_TECHNICAL_BEARER_TOKEN, "true");
+        assertIsInvalid("ftp://www.example.com/webhook", WebhookActionValidator.RESERVED_ATTRIBUTES_USAGE_MESSAGE, params);
+    }
+
     private void assertIsValid(String endpoint) {
         BaseAction action = createActionWithEndpoint(endpoint);
         ValidationResult validationResult = validator.isValid(action);
@@ -67,7 +74,12 @@ class WebhookActionValidatorTest {
     }
 
     private void assertIsInvalid(String endpoint, String errorMessage) {
+        assertIsInvalid(endpoint, errorMessage, Collections.emptyMap());
+    }
+
+    private void assertIsInvalid(String endpoint, String errorMessage, Map<String, String> params) {
         BaseAction action = createActionWithEndpoint(endpoint);
+        params.forEach((k, v) -> action.getParameters().put(k, v));
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).startsWith(errorMessage);

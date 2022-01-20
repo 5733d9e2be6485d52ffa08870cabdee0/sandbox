@@ -54,4 +54,23 @@ class WebhookInvokerTest extends AbstractWireMockTest {
                 .withRequestBody(equalToJson(TEST_EVENT, true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
+
+    @Test
+    void testBearerToken() throws InterruptedException {
+        wireMockServer.stubFor(post(urlEqualTo(TEST_WEBHOOK_PATH)).willReturn(aResponse().withStatus(200)));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        addUpdateRequestListener(TEST_WEBHOOK_PATH, RequestMethod.POST, latch);
+
+        String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
+        WebhookInvoker invoker = new WebhookInvoker(testSinkEndpoint, WebClient.create(vertx), "token");
+        invoker.onEvent(TEST_EVENT);
+
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+
+        wireMockServer.verify(postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
+                .withRequestBody(equalToJson(TEST_EVENT, true, true))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withHeader("Authorization", equalTo("Bearer token")));
+    }
 }
