@@ -10,8 +10,7 @@ All supporting services are deployed in dedicated namespaces to provide isolatio
 
 In this deployment scenario developer provides operator image, Kustomize deploy all components required by operator and manager into Minikube. Can be used to run full e2e testing.
 
-As a prerequisite the developer needs to adjust operator image name and tag in `overlays/minikube/kustomization.yaml` to point to tested operator image.
-Also in `overlays/minikube/shard/patches/deploy-config.yaml` and `overlays/minikube/manager/patches/deploy-config.yaml` adjust `EVENT_BRIDGE_SSO_URL` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
+As a prerequisite the developer needs to adjust `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` and `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
 
 Components can be installed using command `kustomize build overlays/minikube | oc apply -f -`.
 

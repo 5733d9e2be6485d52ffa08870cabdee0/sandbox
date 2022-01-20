@@ -1,10 +1,10 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: d001b84a41f81f7ab8b80b5bdfa968e548ce06fb-jvm
+  newTag: b7058ef97bb599a677a62aeae2bdb7a08ed6b80d-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: ocp-d001b84a41f81f7ab8b80b5bdfa968e548ce06fb-jvm
+  newTag: ocp-b7058ef97bb599a677a62aeae2bdb7a08ed6b80d-jvm
 namespace: event-bridge-prod
 patchesStrategicMerge:
 - manager/patches/deploy-config.yaml

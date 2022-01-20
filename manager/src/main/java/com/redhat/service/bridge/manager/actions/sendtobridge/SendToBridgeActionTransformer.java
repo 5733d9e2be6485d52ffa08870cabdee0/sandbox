@@ -30,6 +30,7 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
 
         try {
             parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(destinationBridge.getEndpoint()));
+            parameters.put(WebhookAction.USE_TECHNICAL_BEARER_TOKEN, "true");
         } catch (MalformedURLException e) {
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);
         }
