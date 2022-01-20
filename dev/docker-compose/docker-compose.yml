@@ -10,6 +10,17 @@ services:
     ports:
       - "5432:5432"
 
+  s3:
+    image: localstack/localstack:0.13.3
+    container_name: event-bridge-localstack
+    environment:
+      START_WEB: 0
+      SERVICES: secretsmanager
+      AWS_ACCESS_KEY_ID: test-key
+      AWS_SECRET_ACCESS_KEY: test-secret
+    ports:
+      - "4566:4566"
+
   prometheus:
     network_mode: "host"
     image: prom/prometheus:v2.8.0
