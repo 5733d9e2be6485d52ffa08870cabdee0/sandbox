@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,19 +28,23 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.SecurityAttribute;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static com.redhat.service.bridge.manager.utils.TestUtils.createKafkaAction;
 import static com.redhat.service.bridge.manager.utils.TestUtils.createSendToBridgeAction;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ProcessorAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @InjectMock
+    JsonWebToken jwt;
 
     private BridgeResponse createBridge() {
         BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
@@ -62,8 +67,9 @@ public class ProcessorAPITest {
     }
 
     @BeforeEach
-    public void beforeEach() {
+    public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test
@@ -72,7 +78,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors() {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -89,7 +95,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -112,7 +118,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -134,7 +140,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
         String bridgeId = bridgeResponse.getId();
@@ -164,7 +170,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor_processorDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -176,7 +182,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor_bridgeDoesNotExist() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -187,7 +193,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -209,7 +215,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noActionSpecified() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -222,7 +228,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_unrecognisedActionType() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -238,7 +244,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_missingActionParameters() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -255,7 +261,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorWithNullFiltersToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -272,7 +278,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorWithWrongFilterFiltersToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -283,7 +289,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridgeAndRetrieve() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
@@ -323,7 +329,7 @@ public class ProcessorAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
         ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(
