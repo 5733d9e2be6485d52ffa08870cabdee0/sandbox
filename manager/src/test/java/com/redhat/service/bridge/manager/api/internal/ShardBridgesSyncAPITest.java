@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.security.SecurityAttribute;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -35,6 +36,8 @@ import io.restassured.http.ContentType;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
@@ -45,13 +48,17 @@ public class ShardBridgesSyncAPITest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @InjectMock
+    JsonWebToken jwt;
+
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithKafkaAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
@@ -78,7 +85,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
@@ -107,7 +114,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void updateProcessorStatus() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
@@ -129,7 +136,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void metricsAreProduced() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE);
@@ -158,7 +165,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testGetEmptyBridgesToDeploy() {
         List<BridgeDTO> response = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
         });
@@ -166,7 +173,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDeploy() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
@@ -182,7 +189,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDelete() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
         List<BridgeDTO> bridgesToDeployOrDelete = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
@@ -199,7 +206,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testNotifyDeployment() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
@@ -219,7 +226,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testNotifyDeletion() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
@@ -241,6 +248,8 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testUnouthorizedRole() {
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn("hacker");
         TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
         TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);

@@ -14,4 +14,5 @@ data:
   AWS_ENDPOINT: "http://localstack.localstack:4566"
   AWS_ACCESS_KEY_ID: "test-key"
   AWS_SECRET_ACCESS_KEY: "test-secret"
+  AWS_REGION: "us-west-1"
   SHARD_ID: "150b23e9-0b34-45b7-a91a-5ec388d03a1d"
