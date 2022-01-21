@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
@@ -19,10 +18,9 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,27 +60,10 @@ public class ExecutorServiceTest {
                 .withId("foo")
                 .withSource(URI.create("bar"))
                 .withType("myType")
-                .withExtension(new BridgeCloudEventExtension(BRIDGE_ID)).build();
+                .build();
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
-        verify(executor).onEvent(cap.capture());
-        CloudEvent invokedWith = cap.getValue();
-
-        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo(BRIDGE_ID);
-    }
-
-    @Test
-    public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
-        CloudEvent cloudEvent = CloudEventBuilder
-                .v1()
-                .withId("foo")
-                .withSource(URI.create("bar"))
-                .withType("myType")
-                .withExtension(BridgeCloudEventExtension.BRIDGE_ID, "anotherBridge").build();
-
-        executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
-
-        verify(executor, never()).onEvent(any(CloudEvent.class));
+        verify(executor, times(1)).onEvent(any(CloudEvent.class));
     }
 }

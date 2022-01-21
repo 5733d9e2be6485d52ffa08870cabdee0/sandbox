@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
@@ -84,6 +85,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR).withValue(kafkaConfigurationProvider.getClient()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(kafkaConfigurationProvider.getSecret()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeIngress.getSpec().getId())).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 

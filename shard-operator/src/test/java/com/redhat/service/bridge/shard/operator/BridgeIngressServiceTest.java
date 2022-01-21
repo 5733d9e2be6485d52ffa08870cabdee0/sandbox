@@ -14,6 +14,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
@@ -104,6 +105,10 @@ public class BridgeIngressServiceTest {
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_TOPIC_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                         });
     }

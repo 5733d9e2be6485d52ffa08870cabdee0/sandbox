@@ -26,6 +26,7 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
@@ -192,7 +193,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
         try {
             NewTopicInput newTopicInput = new NewTopicInput()
-                    .name(topicNameFor(bridgeId))
+                    .name(InternalKafkaTopicNameBuilder.build(bridgeId))
                     .settings(new TopicSettings().numPartitions(1));
 
             rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
@@ -211,7 +212,7 @@ public class BridgesServiceImpl implements BridgesService {
             return;
         }
         try {
-            rhoasClient.deleteTopicAndRevokeAccess(topicNameFor(bridgeId), rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
+            rhoasClient.deleteTopicAndRevokeAccess(InternalKafkaTopicNameBuilder.build(bridgeId), rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
             String msg = String.format("Failed deleting topic and revoking access for bridge '%s'", bridgeId);
@@ -220,9 +221,5 @@ public class BridgesServiceImpl implements BridgesService {
             String msg = String.format("Timeout reached while deleting topic and revoking access for bridge '%s'", bridgeId);
             throw new InternalPlatformException(msg, e);
         }
-    }
-
-    private String topicNameFor(String bridgeId) {
-        return String.format("ob-%s", bridgeId);
     }
 }

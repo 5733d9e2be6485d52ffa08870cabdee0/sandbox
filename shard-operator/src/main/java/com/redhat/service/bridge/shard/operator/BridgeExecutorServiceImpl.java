@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
@@ -88,6 +89,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR).withValue(kafkaConfigurationProvider.getClient()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(kafkaConfigurationProvider.getSecret()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeExecutor.getSpec().getBridgeId())).build());
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
 
