@@ -1,11 +1,27 @@
 package com.redhat.service.bridge.rhoas;
 
-import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountRequest;
-import com.redhat.service.bridge.rhoas.dto.TopicAndServiceAccountResponse;
+import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
+import com.openshift.cloud.api.kas.auth.models.Topic;
+import com.openshift.cloud.api.kas.models.ServiceAccount;
+import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
 
 import io.smallrye.mutiny.Uni;
 
 public interface RhoasClient {
 
-    Uni<TopicAndServiceAccountResponse> createTopicAndConsumerServiceAccount(TopicAndServiceAccountRequest request);
+    Uni<ServiceAccount> createServiceAccount(ServiceAccountRequest serviceAccountRequest);
+
+    Uni<Void> deleteServiceAccount(String id);
+
+    Uni<Topic> createTopic(NewTopicInput newTopicInput);
+
+    Uni<Topic> createTopicAndGrantAccess(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType);
+
+    Uni<Void> deleteTopic(String topicName);
+
+    Uni<Void> deleteTopicAndRevokeAccess(String topicName, String userId, RhoasTopicAccessType accessType);
+
+    Uni<Void> grantAccess(String topicName, String userId, RhoasTopicAccessType accessType);
+
+    Uni<Void> revokeAccess(String topicName, String userId, RhoasTopicAccessType accessType);
 }

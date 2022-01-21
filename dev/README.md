@@ -90,7 +90,7 @@ rhoas kafka create --name my-test-instance
 
 Monitor the creation status with `rhoas status` and wait for it to be `ready`.
 
-### Create a service account
+### Create the admin service account
 
 ```bash
 rhoas service-account create --output-file=my-test-instance-admin.json --file-format=json --overwrite --short-description=my-test-instance-admin
@@ -98,7 +98,7 @@ rhoas service-account create --output-file=my-test-instance-admin.json --file-fo
 
 **Note:** this doesn't get deleted, so no need to repeat this command if your Kafka instance is gone.
 
-### Set permissions (ACLs) to service account
+### Set permissions (ACLs) to the admin service account
 
 ```bash
 service_account_id=$( jq -r '.clientID' 'my-test-instance-admin.json' )
@@ -106,6 +106,12 @@ service_account_id=$( jq -r '.clientID' 'my-test-instance-admin.json' )
 rhoas -v kafka acl grant-admin -y --service-account "${service_account_id}"
 rhoas kafka acl create -y --user "${service_account_id}" --permission allow --operation create --topic all
 rhoas kafka acl create -y --user "${service_account_id}" --permission allow --operation delete --topic all
+```
+
+### Create the operational service account
+
+```bash
+rhoas service-account create --output-file=my-test-instance-ops.json --file-format=json --overwrite --short-description=my-test-instance-ops
 ```
 
 ## Development environment
@@ -173,6 +179,7 @@ export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_REFRESH_TOKEN=<test_account_offline_token>
 export EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL=https://identity.api.openshift.com/auth/realms/rhoas
 export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-admin.json' )
 export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=$( jq -r '.clientSecret' 'my-test-instance-admin.json' )
+export RHOAS_OPS_ACCOUNT_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-ops.json' )
 ```
 
 **From the root of the project** run the Fleet Manager application with 
