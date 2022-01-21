@@ -17,12 +17,12 @@ public class KafkaEventPublisher {
 
     private final BroadcastProcessor<String> eventSubject = BroadcastProcessor.create();
 
-    public void sendEvent(String bridgeId, CloudEvent cloudEvent) {
-        LOGGER.info("Sending cloudEvent with id '{}' for bridge '{}' to event queue", cloudEvent.getId(), bridgeId);
+    public void sendEvent(CloudEvent cloudEvent) {
+        LOGGER.info("Sending cloudEvent with id '{}' to event queue", cloudEvent.getId());
 
         String serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
         eventSubject.onNext(serializedCloudEvent);
-        LOGGER.info("Sending cloudEvent with id '{}' for bridge '{}' to event queue - SUCCESS", cloudEvent.getId(), bridgeId);
+        LOGGER.info("Sending cloudEvent with id '{}' to event queue - SUCCESS", cloudEvent.getId());
     }
 
     @Outgoing("events-out")

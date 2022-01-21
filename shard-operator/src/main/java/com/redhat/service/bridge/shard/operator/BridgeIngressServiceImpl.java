@@ -18,7 +18,6 @@ import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCost
 import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 
@@ -86,7 +85,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(kafkaConfigurationProvider.getSecret()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeIngress.getSpec().getId())).build());
-        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();

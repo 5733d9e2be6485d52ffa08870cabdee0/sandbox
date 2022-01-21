@@ -39,54 +39,47 @@ public class IngressAPITest {
     @BeforeAll
     public static void setup() {
         KafkaEventPublisher mock = Mockito.mock(KafkaEventPublisher.class);
-        Mockito.doNothing().when(mock).sendEvent(any(String.class), any(CloudEvent.class));
+        Mockito.doNothing().when(mock).sendEvent(any(CloudEvent.class));
         QuarkusMock.installMockForType(mock, KafkaEventPublisher.class);
     }
 
     @Test
     public void testSendCloudEvent() throws JsonProcessingException {
         doApiCall(TestUtils.buildTestCloudEvent(), 200);
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
-    }
-
-    @Test
-    public void testSendCloudEventWithBadRequestException() throws JsonProcessingException {
-        Mockito.doCallRealMethod().when(kafkaEventPublisher).sendEvent(any(String.class), any(CloudEvent.class));
-        doApiCall(TestUtils.buildTestCloudEventWithReservedAttributes(), 400);
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
     }
 
     @Test
     public void testNonCloudEvent() {
         doApiCall("{\"key\": \"not a cloud event\"}", 400);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }
 
     @Test
     public void testPlainEndpointWithoutHeaders() {
         doPlainApiCall("{\"key\": \"value\"}", new Headers(), 400);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }
 
     @Test
     public void testPlainEndpoint() {
         Headers headers = buildHeaders(HEADER_CE_SPECVERSION, HEADER_CE_TYPE, HEADER_CE_ID, HEADER_CE_SOURCE, HEADER_CE_SUBJECT);
         doPlainApiCall("{\"key\": \"value\"}", headers, 200);
-        verify(kafkaEventPublisher, times(1)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
     }
 
     @Test
     public void testPlainEndpointWithInvalidCloudEventSpecVersion() {
         Headers headers = buildHeaders("not-a-valid-specversion", HEADER_CE_TYPE, HEADER_CE_ID, HEADER_CE_SOURCE, HEADER_CE_SUBJECT);
         doPlainApiCall("{\"key\": \"value\"}", headers, 400);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }
 
     @Test
     public void testPlainEndpointWithInvalidURI() {
         Headers headers = buildHeaders(HEADER_CE_SPECVERSION, HEADER_CE_TYPE, HEADER_CE_ID, "{not-a-valid-source}", HEADER_CE_SUBJECT);
         doPlainApiCall("{\"key\": \"value\"}", headers, 400);
-        verify(kafkaEventPublisher, times(0)).sendEvent(eq(TestUtils.DEFAULT_BRIDGE_ID), any(CloudEvent.class));
+        verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
     }
 
     private void doApiCall(CloudEvent bodyEvent, int expectedStatusCode) {

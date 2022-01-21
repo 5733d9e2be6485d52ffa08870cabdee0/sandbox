@@ -13,13 +13,12 @@ public class KafkaEventPublisherTest {
 
     @Test
     void testEventIsProduced() throws IOException {
-        String bridgeId = "myBridge";
         AssertSubscriber<String> subscriber = AssertSubscriber.create(1);
 
         KafkaEventPublisher producer = new KafkaEventPublisher();
         producer.getEventPublisher().subscribe(subscriber);
 
-        producer.sendEvent(bridgeId, TestUtils.buildTestCloudEvent());
+        producer.sendEvent(TestUtils.buildTestCloudEvent());
         List<String> sentEvents = subscriber.getItems();
         assertThat(sentEvents.size()).isEqualTo(1);
     }
