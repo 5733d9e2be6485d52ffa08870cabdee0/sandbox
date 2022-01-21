@@ -103,7 +103,6 @@ public class ShardBridgesSyncAPI {
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
         String subject = jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
-        LOGGER.info(subject);
         if (!shardId.equals(subject)) {
             throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
         }
