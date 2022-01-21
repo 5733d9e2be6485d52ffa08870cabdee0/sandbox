@@ -2,15 +2,15 @@ package com.redhat.service.bridge.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class NotAuthorizedException extends ExternalUserException {
+public class ForbiddenRequestException extends ExternalUserException {
 
     private static final long serialVersionUID = 1L;
 
-    public NotAuthorizedException(String message) {
+    public ForbiddenRequestException(String message) {
         super(message);
     }
 
-    public NotAuthorizedException(String message, Throwable cause) {
+    public ForbiddenRequestException(String message, Throwable cause) {
         super(message, cause);
     }
 

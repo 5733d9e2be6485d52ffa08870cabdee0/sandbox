@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.exceptions.definitions.user.NotAuthorizedException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -94,7 +94,7 @@ public class ShardBridgesSyncAPI {
     private void failIfNotAuthorized(SecurityIdentity identity) {
         String subject = identity.getAttribute(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
         if (!shardId.equals(subject)) {
-            throw new NotAuthorizedException(String.format("User '%s' is not authorized to access this api.", subject));
+            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
         }
     }
 }
