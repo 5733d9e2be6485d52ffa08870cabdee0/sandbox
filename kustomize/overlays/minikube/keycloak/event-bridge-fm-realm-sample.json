@@ -36,37 +36,41 @@
           "type": "password",
           "value": "thefrog"
         }
+      ]
+    },
+    {
+      "id": "150b23e9-0b34-45b7-a91a-5ec388d03a1d",
+      "username": "shard-1",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "theshard"
+        }
       ],
-      "applicationRoles": {
-        "cloud-services": [
-          "user"
-        ],
-        "event-bridge": [
-          "user"
-        ]
-      }
+      "realmRoles": [ "offline_access" ]
+    },
+    {
+      "id": "402cf429-da04-4931-8089-e53ad452192b",
+      "username": "webhook-robot-1",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "therobot"
+        }
+      ],
+      "realmRoles": [ "offline_access" ]
     }
   ],
   "roles": {
-    "realm": [],
-    "client": {
-      "event-bridge": [
-        {
-          "name": "user",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "event-bridge-fm"
-        }
-      ],
-      "cloud-services": [
-        {
-          "name": "user",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "cloud-services"
-        }
-      ]
-    }
+    "realm": [
+      {
+        "name": "offline_access",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
   },
   "defaultRoles": [],
   "requiredCredentials": [
@@ -92,23 +96,6 @@
       ],
       "bearerOnly": false,
       "protocol": "openid-connect"
-    },
-    {
-      "id": "e6b8dc94-8dbb-40e8-a32c-fbc352dce8fb",
-      "clientId": "cloud-services",
-      "enabled": true,
-      "alwaysDisplayInConsole": false,
-      "directAccessGrantsEnabled": true,
-      "fullScopeAllowed": true,
-      "clientAuthenticatorType": "client-secret",
-      "publicClient": true,
-      "redirectUris": [
-        "*"
-      ],
-      "webOrigins": [
-        "*"
-      ],
-      "bearerOnly": true
     }
   ],
   "keycloakVersion": "15.1.0"

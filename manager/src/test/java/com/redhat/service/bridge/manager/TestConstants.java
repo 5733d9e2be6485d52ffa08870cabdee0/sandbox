@@ -5,6 +5,8 @@ public class TestConstants {
     public static final String DEFAULT_CUSTOMER_ID = "jrota";
     public static final String DEFAULT_BRIDGE_NAME = "myBridge";
 
+    public static final String SHARD_ID = "shard-id";
+
     public static final String DEFAULT_PROCESSOR_NAME = "processMcProcessor";
 
     public static final String DEFAULT_ACTION_NAME = "Send to Kafka";

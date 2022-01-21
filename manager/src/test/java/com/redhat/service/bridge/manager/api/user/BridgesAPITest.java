@@ -18,6 +18,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.SecurityAttribute;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
@@ -106,7 +107,7 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID, attributes = { @SecurityAttribute(key = APIConstants.USER_ID_ATTRIBUTE_CLAIM, value = TestConstants.SHARD_ID) })
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.AVAILABLE));

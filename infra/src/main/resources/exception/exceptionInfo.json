@@ -88,5 +88,11 @@
   "id": 15,
   "reason": "Technical bearer token was not configured.",
   "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException",
+  "id": 16,
+  "reason": "The user is not authorized to access the resource",
+  "type": "USER"
 }
 ]
