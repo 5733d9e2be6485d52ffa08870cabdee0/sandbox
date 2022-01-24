@@ -13,6 +13,7 @@ import com.openshift.cloud.api.connector.invoker.ApiException;
 import com.openshift.cloud.api.connector.invoker.Configuration;
 import com.openshift.cloud.api.connector.invoker.auth.HttpBearerAuth;
 import com.openshift.cloud.api.connector.models.Connector;
+import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 
@@ -28,7 +29,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     ConnectorsAuth connectorsAuth;
 
     @Override
-    public Connector createConnector(Connector connector) {
+    public Connector createConnector(ConnectorRequest connector) {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {

@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
+import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -359,9 +360,9 @@ public class ProcessorServiceTest {
         when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
-        ArgumentCaptor<Connector> connectorCaptor = ArgumentCaptor.forClass(Connector.class);
+        ArgumentCaptor<ConnectorRequest> connectorCaptor = ArgumentCaptor.forClass(ConnectorRequest.class);
         verify(connectorsApiClient).createConnector(connectorCaptor.capture());
-        Connector calledConnector = connectorCaptor.getValue();
+        ConnectorRequest calledConnector = connectorCaptor.getValue();
         assertThat(calledConnector.getKafka()).isNotNull();
 
         ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));

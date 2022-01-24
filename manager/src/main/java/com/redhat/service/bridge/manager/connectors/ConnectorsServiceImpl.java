@@ -12,10 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.openshift.cloud.api.connector.models.AddonClusterTarget;
 import com.openshift.cloud.api.connector.models.Connector;
-import com.openshift.cloud.api.connector.models.ConnectorAllOfMetadata;
+import com.openshift.cloud.api.connector.models.ConnectorRequest;
+import com.openshift.cloud.api.connector.models.DeploymentLocation;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
+import com.openshift.cloud.api.connector.models.ServiceAccount;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
@@ -131,27 +132,31 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             String connectorType,
             JsonNode connectorPayload,
             String newConnectorName) {
-        Connector createConnectorRequest = new Connector();
+        ConnectorRequest createConnectorRequest = new ConnectorRequest();
 
-        ConnectorAllOfMetadata metadata = new ConnectorAllOfMetadata();
-        metadata.setName(newConnectorName);
-        // https://issues.redhat.com/browse/MGDOBR-198
-        metadata.setKafkaId(KAFKA_ID_IGNORED); // this is currently ignored in the Connectors API
-        createConnectorRequest.setMetadata(metadata);
+        createConnectorRequest.setName(newConnectorName);
 
-        AddonClusterTarget deploymentLocation = new AddonClusterTarget();
+        DeploymentLocation deploymentLocation = new DeploymentLocation();
         deploymentLocation.setKind("addon");
         deploymentLocation.setClusterId(mcClusterId);
         createConnectorRequest.setDeploymentLocation(deploymentLocation);
 
         createConnectorRequest.setConnectorTypeId(connectorType);
 
-        createConnectorRequest.setConnectorSpec(connectorPayload);
+        createConnectorRequest.setConnector(connectorPayload);
+
+        ServiceAccount serviceAccount = new ServiceAccount();
+        serviceAccount.setClientId(serviceAccountId);
+        serviceAccount.setClientSecret(serviceAccountSecret);
+        createConnectorRequest.setServiceAccount(serviceAccount);
 
         KafkaConnectionSettings kafka = new KafkaConnectionSettings();
-        kafka.setBootstrapServer(kafkaBootstrapServer);
-        kafka.setClientId(serviceAccountId);
-        kafka.setClientSecret(serviceAccountSecret);
+        kafka.setUrl(kafkaBootstrapServer);
+
+        // https://issues.redhat.com/browse/MGDOBR-198
+        // this is currently ignored in the Connectors API
+        kafka.setId(KAFKA_ID_IGNORED);
+
         createConnectorRequest.setKafka(kafka);
 
         return connectorsApiClient.createConnector(createConnectorRequest);
