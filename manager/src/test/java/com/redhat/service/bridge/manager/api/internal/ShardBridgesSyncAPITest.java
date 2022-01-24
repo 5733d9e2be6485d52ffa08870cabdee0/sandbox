@@ -6,11 +6,13 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -26,6 +28,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -33,6 +36,8 @@ import io.restassured.http.ContentType;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
@@ -43,9 +48,13 @@ public class ShardBridgesSyncAPITest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @InjectMock
+    JsonWebToken jwt;
+
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test
@@ -234,5 +243,16 @@ public class ShardBridgesSyncAPITest {
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
         TestUtils.getBridge(bridge.getId()).then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testUnouthorizedRole() {
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
+        TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
+        TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);
+        TestUtils.updateProcessor(new ProcessorDTO()).then().statusCode(403);
     }
 }

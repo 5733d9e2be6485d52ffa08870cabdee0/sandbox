@@ -2,6 +2,8 @@ package com.redhat.service.bridge.test.rhoas;
 
 import java.util.function.Function;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
@@ -16,10 +18,13 @@ public abstract class AbstractApiMockServerConfigurator {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    @ConfigProperty(name = "rhoas-mock-server.delay", defaultValue = "250")
+    int delay;
+
     private final String intermediatePath;
     private final String expectedAccessToken;
 
-    public AbstractApiMockServerConfigurator(String intermediatePath, String expectedAccessToken) {
+    protected AbstractApiMockServerConfigurator(String intermediatePath, String expectedAccessToken) {
         this.intermediatePath = intermediatePath;
         this.expectedAccessToken = expectedAccessToken;
     }
@@ -58,10 +63,12 @@ public abstract class AbstractApiMockServerConfigurator {
                 .withStatus(status)
                 .withHeader("Content-Type", "application/json")
                 .withBody(bodyString)
-                .withFixedDelay(1000);
+                .withFixedDelay(delay);
     }
 
     protected ResponseDefinitionBuilder responseWithStatus(int status) {
-        return WireMock.aResponse().withStatus(status).withFixedDelay(1000);
+        return WireMock.aResponse()
+                .withStatus(status)
+                .withFixedDelay(delay);
     }
 }

@@ -1,13 +1,13 @@
 apiVersion: v1
+data:
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:124e897f0633058b7a1cf106a05afbe584e78760-jvm
+  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:124e897f0633058b7a1cf106a05afbe584e78760-jvm
+  EVENT_BRIDGE_K8S_PLATFORM: k8s
+  EVENT_BRIDGE_MANAGER_URL: http://event-bridge.event-bridge-manager.svc.cluster.local:8080
+  EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge
+  EVENT_BRIDGE_SSO_SECRET: secret
+  EVENT_BRIDGE_SSO_URL: http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm
+  KAFKA_SECURITY_PROTOCOL: PLAINTEXT
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config
-data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: "quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:ceae4d47b55219c65cf9e6d1b4c0cc184513f5b3-jvm"
-  EVENT_BRIDGE_INGRESS_IMAGE: "quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:b411fbec267cb1d3e7912c6dc07761f1863abf46-jvm"
-  EVENT_BRIDGE_K8S_PLATFORM: "k8s"
-  EVENT_BRIDGE_MANAGER_URL: "http://event-bridge.event-bridge-manager.svc.cluster.local:8080"
-  EVENT_BRIDGE_SSO_CLIENT_ID: "event-bridge"
-  EVENT_BRIDGE_SSO_SECRET: "secret"
-  EVENT_BRIDGE_SSO_URL: "http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm"
-  KAFKA_SECURITY_PROTOCOL: "PLAINTEXT"

@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager.api.user;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +19,12 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class BridgesAPITest {
@@ -29,9 +32,13 @@ public class BridgesAPITest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @InjectMock
+    JsonWebToken jwt;
+
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test

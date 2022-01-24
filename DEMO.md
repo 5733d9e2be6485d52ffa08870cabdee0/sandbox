@@ -1,4 +1,4 @@
-# DEMO
+# Demo of Event Bridge
 
 If running this demo against your local machine, please ensure you have completed all steps in the local dev
 setup documentation: [dev/README.md](dev/README.md)
@@ -108,14 +108,17 @@ The application is now `AVAILABLE` and we also have the information about the en
 
 ## How to add Processors to the Bridge
 
-It is possible to add Processors to the Bridge instance using the endpoint `/api/v1/bridges/{bridgeId}/processors`. 
+It is possible to add `Processors` to the Bridge instance using the endpoint `/api/v1/bridges/{bridgeId}/processors`. 
 There are 3 basic concepts around a Processor:
 
-- **filters**: when one or more filters are specified, only those events that evaluates the filters to `true` will be processed by the specified action. The documentation around the filters can be found [here](FILTERS.md).
-- **actions**: the action to take with the filtered events.
-- **transformations**: an optional transformation logic can be specified for each action definition.
+- `Filters`: when one or more `Filters` are specified, only those events that evaluates the `Filters` to `true` will be processed by the specified `Action`.
+  - Further documentation on the supported `Filters` can be found [here](FILTERS.md).
+- `Actions`: the `Action` to take with the filtered events.
+  - Further documentation on the supported `Actions` can be found [here](ACTIONS.md)
+- `Transformations`: an optional `Transformation` logic can be specified for each action definition.
+  - Further documention on writing `Transformations` can be found [here](TRANSFORMATIONS.md)
 
-Note that an action is always required by a Processor, but the filters and the transformation are not mandatory (i.e. the events will always flow into the action without filtering).
+Note that an `Action` is always required by a `Processor`, but `Filters` and the `Transformation` are optional (i.e. the events will always flow into the action without filtering).
 
 An example payload request is the following: 
 

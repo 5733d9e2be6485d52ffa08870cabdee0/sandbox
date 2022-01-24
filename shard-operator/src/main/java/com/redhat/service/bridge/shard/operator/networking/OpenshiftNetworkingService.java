@@ -50,7 +50,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
         try {
             return client.routes().inNamespace(namespace).withName(name).delete();
         } catch (Exception e) {
-            LOGGER.debug("Can't delete ingress with name {} because it does not exist", name);
+            LOGGER.debug("Can't delete ingress with name '{}' because it does not exist", name);
             return false;
         }
     }
@@ -77,7 +77,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
             return new NetworkResource(endpoint, true);
         }
 
-        LOGGER.info("Route {} not ready yet", route.getMetadata().getName());
+        LOGGER.info("Route '{}' not ready yet", route.getMetadata().getName());
         return new NetworkResource(null, false);
     }
 }

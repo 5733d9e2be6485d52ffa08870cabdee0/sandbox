@@ -5,4 +5,6 @@ import com.openshift.cloud.api.connector.models.Connector;
 public interface ConnectorsApiClient {
 
     Connector createConnector(Connector connector);
+
+    void deleteConnector(String id, String kafkaId);
 }

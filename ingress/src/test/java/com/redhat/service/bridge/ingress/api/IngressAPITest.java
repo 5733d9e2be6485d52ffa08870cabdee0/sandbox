@@ -103,13 +103,13 @@ public class IngressAPITest {
     @TestSecurity(user = "hacker")
     public void testPlainEndpointWithUnauthorizedUser() {
         Headers headers = buildHeaders(HEADER_CE_SPECVERSION, HEADER_CE_TYPE, HEADER_CE_ID, HEADER_CE_SOURCE, HEADER_CE_SUBJECT);
-        doPlainApiCall("{\"key\": \"value\"}", headers, HttpStatus.SC_UNAUTHORIZED);
+        doPlainApiCall("{\"key\": \"value\"}", headers, HttpStatus.SC_FORBIDDEN);
     }
 
     @Test
     @TestSecurity(user = "hacker")
     public void testCloudEventEndpointWithUnauthorizedUser() throws JsonProcessingException {
-        doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_UNAUTHORIZED);
+        doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_FORBIDDEN);
     }
 
     private void doApiCall(CloudEvent bodyEvent, int expectedStatusCode) {

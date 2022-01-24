@@ -5,10 +5,12 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -26,18 +28,23 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static com.redhat.service.bridge.manager.utils.TestUtils.createKafkaAction;
 import static com.redhat.service.bridge.manager.utils.TestUtils.createSendToBridgeAction;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ProcessorAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @InjectMock
+    JsonWebToken jwt;
 
     private BridgeResponse createBridge() {
         BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
@@ -60,8 +67,9 @@ public class ProcessorAPITest {
     }
 
     @BeforeEach
-    public void beforeEach() {
+    public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test
@@ -187,7 +195,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge() {
-
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -256,7 +263,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorWithNullFiltersToBridge() {
-
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(
@@ -274,7 +280,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorWithWrongFilterFiltersToBridge() {
-
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Response response = TestUtils.addProcessorToBridge(
@@ -286,7 +291,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridgeAndRetrieve() {
-
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -305,7 +309,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_bridgeDoesNotExist() {
-
         Response response = TestUtils.addProcessorToBridge("foo", new ProcessorRequest("myProcessor", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(404);
     }
@@ -313,7 +316,6 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_bridgeNotInAvailableStatus() {
-
         BridgeResponse bridgeResponse = createBridge();
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);

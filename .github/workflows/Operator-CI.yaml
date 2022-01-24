@@ -7,7 +7,6 @@ on:
 jobs:
   event-bridge-build:
     env:
-      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
       NAMESPACE: mynamespace
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
@@ -16,18 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Test Operator
     steps:
-      - name: Setup Maven And Java Version
-        uses: s4u/setup-maven-action@v1.2.1
-        with:
-          java-version: 11
-          maven-version: '3.8.1'
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache Maven Packages
-        uses: actions/cache@v2
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          cache-key-prefix: ${{ runner.os }}
       - name: Set up KinD
         uses: container-tools/kind-action@v1
         with:
@@ -44,13 +37,15 @@ jobs:
           kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
         # Tests are executed in different PR check, we just need all artifacts in repository
       - name: Build complete repo
-        shell: bash
-        run: mvn clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
         # Build operator image and generate needed operator resources
       - name: Build Shard operator image and resources
-        shell: bash
-        working-directory: shard-operator
-        run: mvn clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -DskipTests
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -DskipTests
+          working-directory: shard-operator
         # Load built image into KinD
       - name: Load Shard operator image into KinD
         run: |
@@ -75,9 +70,10 @@ jobs:
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
       - name: Run integration tests
-        shell: bash
-        working-directory: shard-operator-integration-tests
-        run: mvn clean verify -Pcucumber
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber
+          working-directory: shard-operator-integration-tests
       - name: Archive test logs
         if: always()
         uses: actions/upload-artifact@v2

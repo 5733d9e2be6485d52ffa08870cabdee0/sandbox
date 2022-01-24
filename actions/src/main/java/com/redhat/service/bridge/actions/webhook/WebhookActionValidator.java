@@ -15,6 +15,7 @@ public class WebhookActionValidator implements ActionParameterValidator {
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
     public static final String INVALID_PROTOCOL_MESSAGE = "The \"endpoint\" protocol must be either \"http\" or \"https\"";
+    public static final String RESERVED_ATTRIBUTES_USAGE_MESSAGE = "Some reserved parameters have been added to the request.";
 
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
@@ -28,6 +29,10 @@ public class WebhookActionValidator implements ActionParameterValidator {
         String endpoint = baseAction.getParameters().get(WebhookAction.ENDPOINT_PARAM);
         if (endpoint == null || endpoint.isEmpty()) {
             return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
+        }
+
+        if (baseAction.getParameters().containsKey(WebhookAction.USE_TECHNICAL_BEARER_TOKEN)) {
+            return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
         }
 
         URL endpointUrl;

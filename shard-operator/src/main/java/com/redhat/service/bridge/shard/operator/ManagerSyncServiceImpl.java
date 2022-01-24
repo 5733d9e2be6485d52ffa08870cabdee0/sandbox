@@ -50,7 +50,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
-        LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
+        LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
@@ -62,7 +62,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
-        LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
+        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
@@ -92,10 +92,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
-                                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                        success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
-                                    LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
+                                    LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
                                 }).collect(Collectors.toList())));
     }
@@ -118,7 +118,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
-                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
@@ -142,7 +142,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         try {
             return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
-            LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
+            LOGGER.warn("Failed to deserialize response from Manager", e);
             throw new DeserializationException("Failed to deserialize response from Manager.", e);
         }
     }
@@ -152,11 +152,11 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void processingFailed(Class<?> entity, Throwable t) {
-        LOGGER.error("[shard] Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
+        LOGGER.error("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
     }
 
     private void processingComplete(Class<?> entity) {
-        LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+        LOGGER.debug("Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 
     private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {

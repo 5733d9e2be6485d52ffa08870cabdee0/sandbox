@@ -51,7 +51,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String expectedJsonUpdateProvisioningRequest =
                 String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestSupport.CUSTOMER_ID);
         String expectedJsonUpdateAvailableRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myId-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myid-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
                         TestSupport.CUSTOMER_ID);
 
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)

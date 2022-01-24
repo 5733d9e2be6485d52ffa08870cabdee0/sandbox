@@ -137,7 +137,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
 
         managerSyncService.notifyProcessorStatusChange(dto)
                 .subscribe().with(
-                        success -> LOGGER.info("[shard] Updating Processor with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("[shard] Updating Processor with id '{}' FAILED", dto.getId()));
+                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId()));
     }
 }

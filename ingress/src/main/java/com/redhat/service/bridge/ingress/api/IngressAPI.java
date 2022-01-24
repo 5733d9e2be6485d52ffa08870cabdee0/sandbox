@@ -24,13 +24,13 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.UnauthorizedException;
 import io.quarkus.security.identity.SecurityIdentity;
 
 @SecuritySchemes(value = {
@@ -67,7 +67,7 @@ public class IngressAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@NotNull CloudEvent event) {
         failIfNotAuthorized(identity.getPrincipal());
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events");
+        LOGGER.debug("New event has been uploaded to endpoint /events");
         kafkaEventPublisher.sendEvent(bridgeId, event);
         return Response.ok().build();
     }
@@ -84,7 +84,7 @@ public class IngressAPI {
             @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
             @NotNull JsonNode event) {
         failIfNotAuthorized(identity.getPrincipal());
-        LOGGER.debug("[ingress] new event has been uploaded to endpoint /events/plain");
+        LOGGER.debug("New event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);
@@ -94,7 +94,7 @@ public class IngressAPI {
 
     private void failIfNotAuthorized(Principal principal) {
         if (!customerIdResolver.resolveCustomerId(principal).equals(customerId)) {
-            throw new UnauthorizedException("User is not authorized to access this application.");
+            throw new ForbiddenRequestException("User is not authorized to access this application.");
         }
     }
 

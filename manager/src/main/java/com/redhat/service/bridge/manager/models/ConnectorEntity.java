@@ -29,6 +29,8 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @NamedQueries({
         @NamedQuery(name = "CONNECTORENTITY.findByProcessorIdAndName",
                 query = "from ConnectorEntity c where c.name=:name and c.processor.id=:processorId"),
+        @NamedQuery(name = "CONNECTORENTITY.findByProcessorId",
+                query = "from ConnectorEntity c where c.processor.id=:processorId"),
 })
 @Entity
 @Table(name = "CONNECTOR")
@@ -43,6 +45,10 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
 
     @Id
     private String id = UUID.randomUUID().toString();
+
+    // ID returned by MC service
+    @Column(name = "connector_external_id")
+    private String connectorExternalId;
 
     @Column(nullable = false, name = "name")
     private String name;
@@ -74,6 +80,14 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getConnectorExternalId() {
+        return connectorExternalId;
+    }
+
+    public void setConnectorExternalId(String connectorExternalId) {
+        this.connectorExternalId = connectorExternalId;
     }
 
     public String getName() {
@@ -152,4 +166,5 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
     public int hashCode() {
         return Objects.hash(id);
     }
+
 }

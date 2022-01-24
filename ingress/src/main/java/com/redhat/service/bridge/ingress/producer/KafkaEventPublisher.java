@@ -50,13 +50,13 @@ public class KafkaEventPublisher {
     }
 
     public void sendEvent(String bridgeId, CloudEvent cloudEvent) {
-        LOGGER.info("[ingress] Sending cloudEvent with id '{}' for bridge '{}' to event queue", cloudEvent.getId(), bridgeId);
+        LOGGER.info("Sending cloudEvent with id '{}' for bridge '{}' to event queue", cloudEvent.getId(), bridgeId);
 
         cloudEvent = addMetadataToIncomingEvent(bridgeId, cloudEvent);
         String serializedCloudEvent;
         serializedCloudEvent = CloudEventUtils.encode(cloudEvent);
         eventSubject.onNext(serializedCloudEvent);
-        LOGGER.info("[ingress] Sending cloudEvent with id '{}' for bridge '{}' to event queue - SUCCESS", cloudEvent.getId(), bridgeId);
+        LOGGER.info("Sending cloudEvent with id '{}' for bridge '{}' to event queue - SUCCESS", cloudEvent.getId(), bridgeId);
     }
 
     @Outgoing("events-out")

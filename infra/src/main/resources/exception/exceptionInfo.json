@@ -78,9 +78,21 @@
   "type": "PLATFORM"
 },
 {
-  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.UnauthorizedException",
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.VaultException",
   "id": 14,
-  "reason": "The user is not authorized to access the application.",
+  "reason": "An error occurred fetching the secrets from the vault.",
+  "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException",
+  "id": 15,
+  "reason": "Technical bearer token was not configured.",
+  "type": "PLATFORM"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException",
+  "id": 16,
+  "reason": "The user is not authorized to access the resource",
   "type": "USER"
 }
 ]

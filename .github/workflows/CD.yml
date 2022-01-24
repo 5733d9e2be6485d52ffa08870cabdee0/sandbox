@@ -16,7 +16,6 @@ on:
 jobs:
   event-bridge-build:
     env:
-      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
       FLEET_MANAGER_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager:${{ github.sha }}
       FLEET_SHARD_OPENSHIFT_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:ocp-${{ github.sha }}
       FLEET_SHARD_MINIKUBE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:k8s-${{ github.sha }}
@@ -27,38 +26,18 @@ jobs:
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     name: Publish JARs and Containers
     steps:
-      - name: Disk space report before modification
-        shell: bash
-        run: |
-          echo "Available storage:"
-          df -h
-      # Inspired to maximize-build-space action https://github.com/easimon/maximize-build-space
-      - name: Free disk space (remove dotnet, android and haskell)
-        shell: bash
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-      - name: Disk space report after modification
-        shell: bash
-        run: |
-          echo "Available storage:"
-          df -h
-      - name: Setup Maven And Java Version
-        uses: s4u/setup-maven-action@v1.2.1
-        with:
-          java-version: 11
-          maven-version: '3.8.1'
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache Maven Packages
-        uses: actions/cache@v2
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          cache-key-prefix: ${{ runner.os }}
       - name: Build JARs
-        shell: bash
-        run: mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip
+        uses: ./.github/actions/maven
+        with:
+          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip
       - name: Login to Container Registry
         shell: bash
         env:
@@ -71,11 +50,11 @@ jobs:
         with:
           filters: |
             general: &general
+              - actions/**
               - infra/**
               - bom/**
               - build-parent/**
-              - infra/**
-              - k8s/**
+              - rhoas-client/**
             manager:
               - *general
               - manager/**
@@ -124,8 +103,9 @@ jobs:
       # Build shart operator with Minikube profile if 'shard-operator' or any 'general' modules have changed
       - name: Build Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
-        shell: bash
-        run: mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
+        uses: ./.github/actions/maven
+        with:
+          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         run: |

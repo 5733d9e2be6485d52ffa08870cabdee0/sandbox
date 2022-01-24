@@ -8,6 +8,8 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.AddonClusterTarget;
@@ -24,6 +26,10 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
+
+    public static final String KAFKA_ID_IGNORED = "kafkaId-ignored";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsServiceImpl.class);
 
     @Inject
     ConnectorsApiClient connectorsApiClient;
@@ -63,7 +69,24 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
 
+        newConnectorEntity.setConnectorExternalId(connector.getId());
+
         return Optional.of(newConnectorEntity);
+    }
+
+    @Override
+    public void deleteConnectorIfNeeded(Processor processor) {
+
+        Optional<ConnectorEntity> optionalConnector = Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId()));
+
+        optionalConnector.ifPresent(c -> {
+            String connectorExternalId = c.getConnectorExternalId();
+            String connectorId = c.getId();
+            connectorsDAO.delete(c);
+            LOGGER.info("connector with id '{}' has been deleted", connectorId);
+
+            connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
+        });
     }
 
     private String connectorName(String connectorType, Processor processor) {
@@ -94,7 +117,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         ConnectorAllOfMetadata metadata = new ConnectorAllOfMetadata();
         metadata.setName(newConnectorName);
         // https://issues.redhat.com/browse/MGDOBR-198
-        metadata.setKafkaId("kafkaId-ignored"); // this is currently ignored in the Connectors API
+        metadata.setKafkaId(KAFKA_ID_IGNORED); // this is currently ignored in the Connectors API
         createConnectorRequest.setMetadata(metadata);
 
         AddonClusterTarget deploymentLocation = new AddonClusterTarget();
