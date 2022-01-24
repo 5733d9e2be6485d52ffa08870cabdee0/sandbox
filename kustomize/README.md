@@ -10,7 +10,13 @@ All supporting services are deployed in dedicated namespaces to provide isolatio
 
 In this deployment scenario developer provides operator image, Kustomize deploy all components required by operator and manager into Minikube. Can be used to run full e2e testing.
 
-As a prerequisite the developer needs to adjust `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` and `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
+As a prerequisite the developer needs to adjust
+- `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` 
+- `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
+- `overlays/minikube/shard/patches/deploy-config.yaml` to contain the offline token for the webhook robot account. It can be retrieved with the command
+```shell
+curl --insecure -X POST http://`minikube ip`:30007/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=webhook-robot-1&password=therobot&grant_type=password&scope=offline_access' | jq --raw-output '.access_token'
+```
 
 Components can be installed using command `kustomize build overlays/minikube | oc apply -f -`.
 

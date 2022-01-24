@@ -185,7 +185,8 @@ export RHOAS_OPS_ACCOUNT_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-ops.js
 **From the root of the project** run the Fleet Manager application with 
 
 ```bash
-mvn clean compile -f manager/pom.xml -Dminikubeip=`minikube ip` quarkus:dev
+chmod +x ./dev/run_manager.sh
+./dev/run_manager.sh
 ```
 
 ### Start the Fleet Shard Operator
@@ -195,7 +196,8 @@ mvn clean compile -f manager/pom.xml -Dminikubeip=`minikube ip` quarkus:dev
 **From the root of the project** run the Fleet Shard Operator with 
 
 ```bash 
-mvn clean compile -f shard-operator/pom.xml -Dquarkus.http.port=1337 -Dminikubeip=`minikube ip` -Pminikube quarkus:dev
+chmod +x ./dev/run_manager.sh
+./dev/run_shard.sh
 ```
 
 ### Send Requests
