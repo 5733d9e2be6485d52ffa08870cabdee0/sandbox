@@ -1,7 +1,10 @@
 package com.redhat.service.bridge.ingress.api;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
 import org.apache.http.HttpStatus;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,8 +27,10 @@ import io.restassured.http.Headers;
 import static io.restassured.RestAssured.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class IngressAPITest {
@@ -38,6 +43,14 @@ public class IngressAPITest {
 
     @InjectMock
     KafkaEventPublisher kafkaEventPublisher;
+
+    @InjectMock
+    JsonWebToken jwt;
+
+    @BeforeEach
+    public void cleanUp() {
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
+    }
 
     @BeforeAll
     public static void setup() {
@@ -102,6 +115,8 @@ public class IngressAPITest {
     @Test
     @TestSecurity(user = "hacker")
     public void testPlainEndpointWithUnauthorizedUser() {
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn("hacker");
         Headers headers = buildHeaders(HEADER_CE_SPECVERSION, HEADER_CE_TYPE, HEADER_CE_ID, HEADER_CE_SOURCE, HEADER_CE_SUBJECT);
         doPlainApiCall("{\"key\": \"value\"}", headers, HttpStatus.SC_FORBIDDEN);
     }
@@ -109,6 +124,8 @@ public class IngressAPITest {
     @Test
     @TestSecurity(user = "hacker")
     public void testCloudEventEndpointWithUnauthorizedUser() throws JsonProcessingException {
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn("hacker");
         doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_FORBIDDEN);
     }
 

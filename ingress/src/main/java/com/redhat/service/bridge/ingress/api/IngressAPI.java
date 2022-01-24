@@ -13,7 +13,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
@@ -54,10 +56,7 @@ public class IngressAPI {
     String customerId;
 
     @Inject
-    CustomerIdResolver customerIdResolver;
-
-    @Inject
-    SecurityIdentity identity;
+    JsonWebToken jwt;
 
     @Inject
     KafkaEventPublisher kafkaEventPublisher;
@@ -66,7 +65,7 @@ public class IngressAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response publishEvent(@NotNull CloudEvent event) {
-        failIfNotAuthorized(identity.getPrincipal());
+        failIfNotAuthorized(jwt);
         LOGGER.debug("New event has been uploaded to endpoint /events");
         kafkaEventPublisher.sendEvent(bridgeId, event);
         return Response.ok().build();
@@ -83,7 +82,7 @@ public class IngressAPI {
             @HeaderParam("ce-source") @NotNull String cloudEventSource,
             @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
             @NotNull JsonNode event) {
-        failIfNotAuthorized(identity.getPrincipal());
+        failIfNotAuthorized(jwt);
         LOGGER.debug("New event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
@@ -92,9 +91,10 @@ public class IngressAPI {
         return Response.ok().build();
     }
 
-    private void failIfNotAuthorized(Principal principal) {
-        if (!customerIdResolver.resolveCustomerId(principal).equals(customerId)) {
-            throw new ForbiddenRequestException("User is not authorized to access this application.");
+    private void failIfNotAuthorized(JsonWebToken jwt) {
+        String subject = jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
+        if (!customerId.equals(subject)) {
+            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
         }
     }
 
