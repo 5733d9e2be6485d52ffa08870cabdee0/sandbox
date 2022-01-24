@@ -1,24 +1,18 @@
 package com.redhat.service.bridge.manager;
 
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletionException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
-import com.openshift.cloud.api.kas.auth.models.TopicSettings;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -30,27 +24,15 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.rhoas.RhoasClient;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import io.smallrye.mutiny.TimeoutException;
-
-import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG;
-import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG_DEFAULT_VALUE;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
-
-    @ConfigProperty(name = ENABLED_FLAG, defaultValue = ENABLED_FLAG_DEFAULT_VALUE)
-    boolean rhoasEnabled;
-    @ConfigProperty(name = "rhoas.timeout-seconds")
-    int rhoasTimeout;
-    @ConfigProperty(name = "rhoas.ops-account.client-id")
-    String rhoasOpsAccountClientId;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -62,7 +44,7 @@ public class BridgesServiceImpl implements BridgesService {
     MeterRegistry meterRegistry;
 
     @Inject
-    RhoasClient rhoasClient;
+    RhoasService rhoasService;
 
     @Transactional
     @Override
@@ -77,7 +59,9 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCustomerId(customerId);
         bridgeDAO.persist(bridge);
 
-        createTopicAndGrantAccessFor(bridge.getId());
+        if (rhoasService.isEnabled()) {
+            rhoasService.createTopicAndGrantAccessForBridge(bridge.getId(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        }
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
@@ -151,7 +135,9 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
-            deleteTopicAndRevokeAccessFor(bridge.getId());
+            if (rhoasService.isEnabled()) {
+                rhoasService.deleteTopicAndRevokeAccessForBridge(bridge.getId(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            }
         }
 
         // Update metrics
@@ -184,45 +170,5 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         return response;
-    }
-
-    private void createTopicAndGrantAccessFor(String bridgeId) {
-        if (!rhoasEnabled) {
-            return;
-        }
-        try {
-            NewTopicInput newTopicInput = new NewTopicInput()
-                    .name(topicNameFor(bridgeId))
-                    .settings(new TopicSettings().numPartitions(1));
-
-            rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
-                    .await().atMost(Duration.ofSeconds(rhoasTimeout));
-        } catch (CompletionException e) {
-            String msg = String.format("Failed creating topic and granting access for bridge '%s'", bridgeId);
-            throw new InternalPlatformException(msg, e);
-        } catch (TimeoutException e) {
-            String msg = String.format("Timeout reached while creating topic and granting access for bridge '%s'", bridgeId);
-            throw new InternalPlatformException(msg, e);
-        }
-    }
-
-    private void deleteTopicAndRevokeAccessFor(String bridgeId) {
-        if (!rhoasEnabled) {
-            return;
-        }
-        try {
-            rhoasClient.deleteTopicAndRevokeAccess(topicNameFor(bridgeId), rhoasOpsAccountClientId, RhoasTopicAccessType.CONSUMER_AND_PRODUCER)
-                    .await().atMost(Duration.ofSeconds(rhoasTimeout));
-        } catch (CompletionException e) {
-            String msg = String.format("Failed deleting topic and revoking access for bridge '%s'", bridgeId);
-            throw new InternalPlatformException(msg, e);
-        } catch (TimeoutException e) {
-            String msg = String.format("Timeout reached while deleting topic and revoking access for bridge '%s'", bridgeId);
-            throw new InternalPlatformException(msg, e);
-        }
-    }
-
-    private String topicNameFor(String bridgeId) {
-        return String.format("ob-%s", bridgeId);
     }
 }
