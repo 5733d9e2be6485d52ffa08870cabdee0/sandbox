@@ -96,6 +96,7 @@ public class IngressAPI {
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
         String subject = customerIdResolver.resolveCustomerId(jwt);
+        LOGGER.info(subject);
         if (!customerId.equals(subject) && !webhookTechnicalAccountId.equals(subject)) {
             throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
         }
