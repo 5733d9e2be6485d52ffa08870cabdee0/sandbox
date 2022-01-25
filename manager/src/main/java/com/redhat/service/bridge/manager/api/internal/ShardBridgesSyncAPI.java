@@ -27,6 +27,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
+import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.ProcessorService;
 
 import io.quarkus.security.Authenticated;
@@ -56,6 +57,9 @@ public class ShardBridgesSyncAPI {
 
     @Inject
     ProcessorService processorService;
+
+    @Inject
+    CustomerIdResolver customerIdResolver;
 
     @Inject
     JsonWebToken jwt;
@@ -102,9 +106,9 @@ public class ShardBridgesSyncAPI {
     }
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
-        String subject = jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
-        if (!shardId.equals(subject)) {
-            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
+        String customerId = customerIdResolver.resolveCustomerId(jwt);
+        if (!shardId.equals(customerId)) {
+            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", customerId));
         }
     }
 }

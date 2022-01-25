@@ -38,7 +38,7 @@ public class BridgesAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
-        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test

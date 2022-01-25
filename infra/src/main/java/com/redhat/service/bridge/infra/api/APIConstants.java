@@ -23,7 +23,7 @@ public class APIConstants {
     /**
      * User id attribute claim key.
      */
-    public static final String USER_ID_ATTRIBUTE_CLAIM = "sub";
+    public static final String SUBJECT_ATTRIBUTE_CLAIM = "sub";
 
     /**
      * The page query parameter name
