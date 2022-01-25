@@ -12,6 +12,9 @@ import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceStatusBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
+import io.fabric8.kubernetes.api.model.apps.DeploymentConditionBuilder;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStatusBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -26,30 +29,56 @@ public class KubernetesResourcePatcher {
     @Inject
     NetworkingTestUtils networkingTestUtils;
 
+    private static final String FAILURE_MESSAGE = "The deployment has failed";
+
+    private static final String FAILURE_REASON = "You were too optimistic";
+
     public void cleanUp() {
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
         kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
     }
 
-    public void patchReadyDeploymentOrFail(String name, String namespace) {
-        // Retrieve the deployment
+    private Deployment getDeployment(String name, String namespace) {
         Deployment deployment = kubernetesClient.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
                 .get();
 
         // Fail if it has not been deployed yet
-        assertThat(deployment).isNotNull();
+        assertThat(deployment).withFailMessage("Deployment with name '%s' in namespace '%s' does not exist.", name, namespace)
+                .isNotNull();
+        return deployment;
+    }
 
-        // Patch the deployment - This is what k8s would do when the resource is deployed and is ready.
-        deployment.setStatus(new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build());
+    private void updateDeploymentStatus(Deployment deployment, DeploymentStatus deploymentStatus) {
+        deployment.setStatus(deploymentStatus);
         kubernetesClient.apps().deployments()
-                .inNamespace(namespace)
-                .withName(name)
+                .inNamespace(deployment.getMetadata().getNamespace())
+                .withName(deployment.getMetadata().getName())
                 .replace(deployment);
     }
 
-    public void patchReadyServiceOrFail(String name, String namespace) {
+    public void patchDeploymentAsFailed(String name, String namespace) {
+        Deployment deployment = getDeployment(name, namespace);
+
+        DeploymentCondition deploymentCondition = new DeploymentConditionBuilder()
+                .withType(DeploymentStatusUtils.REPLICA_FAILURE_CONDITION_TYPE)
+                .withStatus(DeploymentStatusUtils.STATUS_TRUE)
+                .withReason(FAILURE_REASON)
+                .withMessage(FAILURE_MESSAGE)
+                .build();
+
+        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(0).withConditions(deploymentCondition).build();
+        updateDeploymentStatus(deployment, deploymentStatus);
+    }
+
+    public void patchReadyDeploymentAsReady(String name, String namespace) {
+        Deployment deployment = getDeployment(name, namespace);
+        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build();
+        updateDeploymentStatus(deployment, deploymentStatus);
+    }
+
+    public void patchReadyService(String name, String namespace) {
         // Retrieve the service
         Service service = kubernetesClient.services()
                 .inNamespace(namespace)
@@ -67,7 +96,7 @@ public class KubernetesResourcePatcher {
                 .replace(service);
     }
 
-    public void patchReadyNetworkResourceOrFail(String name, String namespace) {
+    public void patchReadyNetworkResource(String name, String namespace) {
         // Retrieve the network resource
         Namespaced resource = networkingTestUtils.getNetworkResource(name, namespace);
 
