@@ -1,10 +1,13 @@
 package com.redhat.service.bridge.manager;
 
-import java.security.Principal;
+import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.Test;
+
+import com.redhat.service.bridge.infra.api.APIConstants;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -18,7 +21,30 @@ public class CustomerIdResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        Principal principal = () -> TestConstants.DEFAULT_CUSTOMER_ID;
-        assertThat(customerIdResolver.resolveCustomerId(principal)).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
+        JsonWebToken jwt = new JsonWebToken() {
+            @Override
+            public String getName() {
+                return null;
+            }
+
+            @Override
+            public Set<String> getClaimNames() {
+                return null;
+            }
+
+            @Override
+            public <T> T getClaim(String s) {
+                if (s.equals(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)) {
+                    return (T) TestConstants.DEFAULT_CUSTOMER_ID;
+                }
+                return null;
+            }
+
+            @Override
+            public String getSubject() {
+                return TestConstants.DEFAULT_CUSTOMER_ID;
+            }
+        };
+        assertThat(customerIdResolver.resolveCustomerId(jwt)).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
     }
 }
