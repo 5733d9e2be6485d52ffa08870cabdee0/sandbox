@@ -5,8 +5,8 @@ dev_dir="$(dirname "$0")"
 . $dev_dir/utils/utils.sh
 
 function run_shard(){
-  local webhook_tech_token=$1
-  local minikube_ip=$2
+  local minikube_ip=$1
+  local webhook_tech_token=$2
 
   mvn clean compile \
     -f $dev_dir/../shard-operator/pom.xml \

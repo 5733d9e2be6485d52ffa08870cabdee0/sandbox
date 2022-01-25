@@ -196,7 +196,7 @@ chmod +x ./dev/run_manager.sh
 **From the root of the project** run the Fleet Shard Operator with 
 
 ```bash 
-chmod +x ./dev/run_manager.sh
+chmod +x ./dev/run_shard.sh
 ./dev/run_shard.sh
 ```
 
