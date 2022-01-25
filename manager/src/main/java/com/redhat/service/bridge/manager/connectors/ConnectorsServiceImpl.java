@@ -19,10 +19,12 @@ import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
+import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -36,6 +38,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Inject
     ConnectorsDAO connectorsDAO;
+
+    @Inject
+    RhoasService rhoasService;
 
     @ConfigProperty(name = "managed-connectors.cluster.id")
     String mcClusterId;
@@ -67,6 +72,10 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         ConnectorEntity newConnectorEntity = persistConnector(processor, newConnectorName, connectorPayload);
 
+        if (rhoasService.isEnabled()) {
+            rhoasService.createTopicAndGrantAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
+        }
+
         Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
 
         newConnectorEntity.setConnectorExternalId(connector.getId());
@@ -75,18 +84,28 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Override
-    public void deleteConnectorIfNeeded(Processor processor) {
+    public void deleteConnectorIfNeeded(BaseAction resolvedAction,
+            Processor processor,
+            ActionProvider actionProvider) {
 
-        Optional<ConnectorEntity> optionalConnector = Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId()));
+        ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
+        if (connector == null) {
+            return;
+        }
 
-        optionalConnector.ifPresent(c -> {
-            String connectorExternalId = c.getConnectorExternalId();
-            String connectorId = c.getId();
-            connectorsDAO.delete(c);
-            LOGGER.info("connector with id '{}' has been deleted", connectorId);
+        String connectorExternalId = connector.getConnectorExternalId();
+        String connectorId = connector.getId();
 
-            connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
-        });
+        connectorsDAO.delete(connector);
+
+        LOGGER.info("connector with id '{}' has been deleted", connectorId);
+
+        connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
+
+        if (rhoasService.isEnabled()) {
+            ConnectorAction connectorAction = (ConnectorAction) actionProvider;
+            rhoasService.deleteTopicAndRevokeAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
+        }
     }
 
     private String connectorName(String connectorType, Processor processor) {

@@ -13,5 +13,7 @@ public interface ConnectorsService {
             Processor processor,
             ActionProvider actionProvider);
 
-    void deleteConnectorIfNeeded(Processor processor);
+    void deleteConnectorIfNeeded(BaseAction resolvedAction,
+            Processor processor,
+            ActionProvider actionProvider);
 }

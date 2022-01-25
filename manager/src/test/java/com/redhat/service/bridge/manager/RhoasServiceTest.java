@@ -2,18 +2,19 @@ package com.redhat.service.bridge.manager;
 
 import java.util.concurrent.CompletionException;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.rhoas.RhoasClient;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.smallrye.mutiny.TimeoutException;
 import io.smallrye.mutiny.Uni;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,14 +50,18 @@ class RhoasServiceTest {
 
         RhoasService testService = buildTestService(false);
 
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+        assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.RHOAS_DISABLED_ERROR_MESSAGE);
+        assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.RHOAS_DISABLED_ERROR_MESSAGE);
+        assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.RHOAS_DISABLED_ERROR_MESSAGE);
+        assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.RHOAS_DISABLED_ERROR_MESSAGE);
     }
 
     @Test
@@ -66,14 +71,14 @@ class RhoasServiceTest {
 
         RhoasService testService = buildTestService(true);
 
-        assertThat(testService.createTopicAndGrantAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
-                .isEqualTo(TEST_BRIDGE_TOPIC_NAME);
         assertThatNoException()
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
-        assertThat(testService.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER))
-                .isEqualTo(TEST_PROCESSOR_TOPIC_NAME);
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
         assertThatNoException()
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
+        assertThatNoException()
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER));
+        assertThatNoException()
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER));
     }
 
     @Test
@@ -84,13 +89,17 @@ class RhoasServiceTest {
         RhoasService testService = buildTestService(true);
 
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.createFailureErrorMessageFor(TEST_BRIDGE_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.deleteFailureErrorMessageFor(TEST_BRIDGE_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.createFailureErrorMessageFor(TEST_PROCESSOR_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.deleteFailureErrorMessageFor(TEST_PROCESSOR_TOPIC_NAME));
     }
 
     @Test
@@ -101,13 +110,17 @@ class RhoasServiceTest {
         RhoasService testService = buildTestService(true);
 
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.createTimeoutErrorMessageFor(TEST_BRIDGE_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForBridge(TEST_BRIDGE_ID, RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_BRIDGE_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
+                .withMessage(RhoasServiceImpl.deleteTimeoutErrorMessageFor(TEST_BRIDGE_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.createTimeoutErrorMessageFor(TEST_PROCESSOR_TOPIC_NAME));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
+                .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(TEST_PROCESSOR_TOPIC_NAME, RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.deleteTimeoutErrorMessageFor(TEST_PROCESSOR_TOPIC_NAME));
     }
 
     private RhoasService buildTestService(boolean rhoasEnabled) {

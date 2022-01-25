@@ -2,23 +2,13 @@ package com.redhat.service.bridge.manager.actions.connectors;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.RhoasService;
-import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
-
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
 
-@QuarkusTest
 class SlackActionTransformerTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
@@ -29,20 +19,9 @@ class SlackActionTransformerTest {
     private static final String TEST_DEFAULT_TOPIC_NAME = "topicName";
     private static final String TEST_RHOAS_TOPIC_NAME = "ob-test-processor-id";
 
-    @InjectMock
-    RhoasService rhoasServiceMock;
-
-    @BeforeEach
-    void beforeEach() {
-        reset(rhoasServiceMock);
-    }
-
     @Test
     void testTransformWithRhoasServiceDisabled() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(false);
-        when(rhoasServiceMock.createTopicAndGrantAccessForProcessor(any(), any())).thenThrow(new IllegalStateException());
-
-        SlackActionTransformer slackActionTransformer = buildTestTransformer();
+        SlackActionTransformer slackActionTransformer = buildTestTransformer(false);
         BaseAction baseAction = buildTestAction();
 
         BaseAction transformedAction = slackActionTransformer.transform(baseAction, TEST_BRIDGE_ID, TEST_CUSTOMER_ID, TEST_PROCESSOR_ID);
@@ -59,10 +38,7 @@ class SlackActionTransformerTest {
 
     @Test
     void testTransformWithRhoasServiceEnabled() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
-        when(rhoasServiceMock.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER)).thenReturn(TEST_RHOAS_TOPIC_NAME);
-
-        SlackActionTransformer slackActionTransformer = buildTestTransformer();
+        SlackActionTransformer slackActionTransformer = buildTestTransformer(true);
         BaseAction baseAction = buildTestAction();
 
         BaseAction transformedAction = slackActionTransformer.transform(baseAction, TEST_BRIDGE_ID, TEST_CUSTOMER_ID, TEST_PROCESSOR_ID);
@@ -87,10 +63,10 @@ class SlackActionTransformerTest {
         return action;
     }
 
-    private SlackActionTransformer buildTestTransformer() {
+    private SlackActionTransformer buildTestTransformer(boolean rhoasEnabled) {
         SlackActionTransformer transformer = new SlackActionTransformer();
         transformer.topicName = TEST_DEFAULT_TOPIC_NAME;
-        transformer.rhoasService = rhoasServiceMock;
+        transformer.rhoasEnabled = rhoasEnabled;
         return transformer;
     }
 }

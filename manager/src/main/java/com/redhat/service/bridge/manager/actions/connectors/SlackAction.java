@@ -45,7 +45,7 @@ public class SlackAction implements ActionProvider,
 
         String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAMETER);
         String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAMETER);
-        String kafkaTopic = actionParameters.get(KafkaTopicAction.TOPIC_PARAM);
+        String kafkaTopic = topicName(action);
 
         ObjectNode objectNode = mapper.createObjectNode();
 
@@ -61,6 +61,11 @@ public class SlackAction implements ActionProvider,
         objectNode.set("kafka", kafkaMap);
 
         return objectNode;
+    }
+
+    @Override
+    public String topicName(BaseAction action) {
+        return action.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
     }
 
     @Override

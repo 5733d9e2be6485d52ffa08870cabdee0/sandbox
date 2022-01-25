@@ -60,7 +60,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridgeDAO.persist(bridge);
 
         if (rhoasService.isEnabled()) {
-            rhoasService.createTopicAndGrantAccessForBridge(bridge.getId(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            rhoasService.createTopicAndGrantAccessFor(topicNameForBridge(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         }
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
@@ -136,7 +136,7 @@ public class BridgesServiceImpl implements BridgesService {
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             if (rhoasService.isEnabled()) {
-                rhoasService.deleteTopicAndRevokeAccessForBridge(bridge.getId(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+                rhoasService.deleteTopicAndRevokeAccessFor(topicNameForBridge(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
             }
         }
 
@@ -170,5 +170,9 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         return response;
+    }
+
+    private String topicNameForBridge(String bridgeId) {
+        return String.format("ob-%s", bridgeId);
     }
 }

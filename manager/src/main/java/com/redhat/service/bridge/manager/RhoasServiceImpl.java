@@ -22,6 +22,8 @@ import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG_DEFAU
 @ApplicationScoped
 public class RhoasServiceImpl implements RhoasService {
 
+    static final String RHOAS_DISABLED_ERROR_MESSAGE = "RHOAS integration is disabled";
+
     @ConfigProperty(name = ENABLED_FLAG, defaultValue = ENABLED_FLAG_DEFAULT_VALUE)
     boolean rhoasEnabled;
     @ConfigProperty(name = "rhoas.timeout-seconds")
@@ -38,65 +40,53 @@ public class RhoasServiceImpl implements RhoasService {
     }
 
     @Override
-    public String createTopicAndGrantAccessForBridge(String bridgeId, RhoasTopicAccessType accessType) {
-        return createTopicAndGrantAccessFor("bridge", bridgeId, accessType);
-    }
-
-    @Override
-    public void deleteTopicAndRevokeAccessForBridge(String bridgeId, RhoasTopicAccessType accessType) {
-        deleteTopicAndRevokeAccessFor("bridge", bridgeId, accessType);
-    }
-
-    @Override
-    public String createTopicAndGrantAccessForProcessor(String processorId, RhoasTopicAccessType accessType) {
-        return createTopicAndGrantAccessFor("processor", processorId, accessType);
-    }
-
-    @Override
-    public void deleteTopicAndRevokeAccessForProcessor(String processorId, RhoasTopicAccessType accessType) {
-        deleteTopicAndRevokeAccessFor("processor", processorId, accessType);
-    }
-
-    private String createTopicAndGrantAccessFor(String entityType, String entityId, RhoasTopicAccessType accessType) {
+    public void createTopicAndGrantAccessFor(String topicName, RhoasTopicAccessType accessType) {
         if (!rhoasEnabled) {
-            throw new IllegalStateException("RHOAS integration is disabled");
+            throw new InternalPlatformException(RHOAS_DISABLED_ERROR_MESSAGE);
         }
         try {
-            String newTopicName = topicNameFor(entityId);
             NewTopicInput newTopicInput = new NewTopicInput()
-                    .name(newTopicName)
+                    .name(topicName)
                     .settings(new TopicSettings().numPartitions(1));
 
             rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
-
-            return newTopicName;
         } catch (CompletionException e) {
-            String msg = String.format("Failed creating topic and granting access for %s '%s'", entityType, entityId);
-            throw new InternalPlatformException(msg, e);
+            throw new InternalPlatformException(createFailureErrorMessageFor(topicName), e);
         } catch (TimeoutException e) {
-            String msg = String.format("Timeout reached while creating topic and granting access for %s '%s'", entityType, entityId);
-            throw new InternalPlatformException(msg, e);
+            throw new InternalPlatformException(createTimeoutErrorMessageFor(topicName), e);
         }
     }
 
-    private void deleteTopicAndRevokeAccessFor(String entityType, String entityId, RhoasTopicAccessType accessType) {
+    @Override
+    public void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
         if (!rhoasEnabled) {
-            throw new IllegalStateException("RHOAS integration is disabled");
+            throw new InternalPlatformException(RHOAS_DISABLED_ERROR_MESSAGE);
         }
         try {
-            rhoasClient.deleteTopicAndRevokeAccess(topicNameFor(entityId), rhoasOpsAccountClientId, accessType)
+            rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
-            String msg = String.format("Failed deleting topic and revoking access for %s '%s'", entityType, entityId);
-            throw new InternalPlatformException(msg, e);
+
+            throw new InternalPlatformException(deleteFailureErrorMessageFor(topicName), e);
         } catch (TimeoutException e) {
-            String msg = String.format("Timeout reached while deleting topic and revoking access for %s '%s'", entityType, entityId);
-            throw new InternalPlatformException(msg, e);
+            throw new InternalPlatformException(deleteTimeoutErrorMessageFor(topicName), e);
         }
     }
 
-    private String topicNameFor(String bridgeId) {
-        return String.format("ob-%s", bridgeId);
+    static String createFailureErrorMessageFor(String topicName) {
+        return String.format("Failed creating and granting access to topic '%s'", topicName);
+    }
+
+    static String createTimeoutErrorMessageFor(String topicName) {
+        return String.format("Timeout reached while creating topic and granting access to topic '%s'", topicName);
+    }
+
+    static String deleteFailureErrorMessageFor(String topicName) {
+        return String.format("Failed deleting topic and revoking access from topic '%s'", topicName);
+    }
+
+    static String deleteTimeoutErrorMessageFor(String topicName) {
+        return String.format("Timeout reached while deleting topic and revoking access from topic '%s'", topicName);
     }
 }
