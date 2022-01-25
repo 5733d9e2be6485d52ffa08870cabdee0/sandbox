@@ -9,14 +9,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @ApplicationScoped
-public class SlackAction implements ActionProvider,
-        ConnectorAction {
+public class SlackAction implements ConnectorAction {
 
     public static final String TYPE = "SlackAction";
 
