@@ -83,10 +83,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         // TODO: All the Ingress applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaClient()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
