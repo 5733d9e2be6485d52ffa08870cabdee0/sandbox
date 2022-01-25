@@ -129,6 +129,14 @@ public class IngressAPITest {
         doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_FORBIDDEN);
     }
 
+    @Test
+    @TestSecurity(user = "robot")
+    public void testSendCloudEventFromRobotAccount() throws JsonProcessingException {
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn("robot");
+        doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_OK);
+    }
+
     private void doApiCall(CloudEvent bodyEvent, int expectedStatusCode) {
         doApiCall(CloudEventUtils.encode(bodyEvent), expectedStatusCode);
     }

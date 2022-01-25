@@ -10,11 +10,11 @@ will need to update the URLs used in the rest of this guide to match.
 The following assumes you will be running the demo on your local machine:
 
 First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above.
-If you deployed the infrastructure with minikube, the keycloak server should be running under `http://192.168.49.2:3007`, but please make sure about it running `minikube ip` (the port is always `30007`).
+If you deployed the infrastructure with minikube, the keycloak server is running under `http://<YOUR_MINIKUBE_IP>:3007`.
 
 ```bash
 export MANAGER_URL=http://localhost:8080
-export KEYCLOAK_URL=http://192.168.49.2:30007
+export KEYCLOAK_URL=http://`minikube ip`:30007
 ```
 
 # Authentication
@@ -104,7 +104,9 @@ the response should look like
 
 Keep track of the `endpoint`, it will be used later when pushing an event to this ingress application.
 
-The application is now `AVAILABLE` and we also have the information about the endpoint to use to push the events: `/ingress/events/87508471-ee0f-4f53-b574-da8a61285986` in this particular case.
+The application is now `AVAILABLE` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
+1. `/events`: it accepts only valid cloud event json payloads.
+2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`. 
 
 ## How to add Processors to the Bridge
 
