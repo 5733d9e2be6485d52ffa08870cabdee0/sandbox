@@ -47,7 +47,7 @@ minikube addons enable ingress
 minikube addons enable ingress-dns
 ```
 
-Deploy the kafka resources with 
+Deploy the kafka resources with
 
 ```shell
 kustomize build kustomize/overlays/minikube/kafka | kubectl apply -f -
