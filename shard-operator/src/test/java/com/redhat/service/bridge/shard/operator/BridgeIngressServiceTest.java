@@ -116,6 +116,8 @@ public class BridgeIngressServiceTest {
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
 
                         });
     }

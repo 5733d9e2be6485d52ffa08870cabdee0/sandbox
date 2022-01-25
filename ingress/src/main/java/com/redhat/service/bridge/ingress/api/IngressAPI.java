@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.ingress.api;
 
 import java.net.URI;
-import java.security.Principal;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -13,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.service.bridge.infra.api.APIConstants;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -33,7 +31,6 @@ import com.redhat.service.bridge.ingress.producer.KafkaEventPublisher;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
 
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
@@ -55,8 +52,14 @@ public class IngressAPI {
     @ConfigProperty(name = "event-bridge.customer.id")
     String customerId;
 
+    @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
+    String webhookTechnicalAccountId;
+
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    CustomerIdResolver customerIdResolver;
 
     @Inject
     KafkaEventPublisher kafkaEventPublisher;
@@ -92,8 +95,8 @@ public class IngressAPI {
     }
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
-        String subject = jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
-        if (!customerId.equals(subject)) {
+        String subject = customerIdResolver.resolveCustomerId(jwt);
+        if (!customerId.equals(subject) && !webhookTechnicalAccountId.equals(subject)) {
             throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
         }
     }

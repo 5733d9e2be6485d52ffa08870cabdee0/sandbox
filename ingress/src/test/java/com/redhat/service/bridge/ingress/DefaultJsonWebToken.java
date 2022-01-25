@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager;
+package com.redhat.service.bridge.ingress;
 
 import java.util.Set;
 
@@ -11,7 +11,7 @@ public class DefaultJsonWebToken implements JsonWebToken {
 
     @Override
     public String getName() {
-        return TestConstants.SHARD_ID;
+        return TestConstants.DEFAULT_CUSTOMER_ID;
     }
 
     @Override

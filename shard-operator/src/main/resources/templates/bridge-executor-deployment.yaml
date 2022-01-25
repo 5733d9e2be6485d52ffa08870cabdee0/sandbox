@@ -36,7 +36,9 @@ spec:
               value: ""
             - name: KAFKA_GROUP_ID
               value: ""
-            - name: PROCESSOR_CONFIGURATION
+            - name: PROCESSOR_DEFINITION
+              value: ""
+            - name: WEBHOOK_TECHNICAL_BEARER_TOKEN
               value: ""
           livenessProbe:
             httpGet:

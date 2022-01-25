@@ -33,6 +33,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
 
+    @ConfigProperty(name = "event-bridge.ingress.image")
+    String ingressImage;
+
+    @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
+    String webhookTechnicalAccountId;
+
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -44,9 +50,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Inject
     GlobalConfigurationsProvider globalConfigurationsProvider;
-
-    @ConfigProperty(name = "event-bridge.ingress.image")
-    String ingressImage;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
@@ -88,6 +91,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsCostants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getCustomerId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID).withValue(webhookTechnicalAccountId).build());
 
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 

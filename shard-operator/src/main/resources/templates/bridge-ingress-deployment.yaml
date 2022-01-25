@@ -42,6 +42,8 @@ spec:
               value: ""
             - name: EVENT_BRIDGE_SSO_CLIENT_ID
               value: ""
+            - name: EVENT_BRIDGE_WEBHOOK_TECHNICAL_ACCOUNT_ID
+              value: ""
           livenessProbe:
             httpGet:
               path: /q/health/live

@@ -54,7 +54,7 @@ public class ShardBridgesSyncAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
-        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class ShardBridgesSyncAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testUnouthorizedRole() {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn("hacker");
         TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
         TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);

@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.infra.auth;
 
-import java.security.Principal;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 public interface CustomerIdResolver {
-    String resolveCustomerId(Principal principal);
+    String resolveCustomerId(JsonWebToken jwt);
 }

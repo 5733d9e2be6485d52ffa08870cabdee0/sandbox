@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -56,6 +57,9 @@ public class ShardBridgesSyncAPI {
 
     @Inject
     ProcessorService processorService;
+
+    @Inject
+    CustomerIdResolver customerIdResolver;
 
     @Inject
     JsonWebToken jwt;
@@ -102,9 +106,9 @@ public class ShardBridgesSyncAPI {
     }
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
-        String subject = jwt.getClaim(APIConstants.USER_ID_ATTRIBUTE_CLAIM);
-        if (!shardId.equals(subject)) {
-            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));
+        String customerId = customerIdResolver.resolveCustomerId(jwt);
+        if (!shardId.equals(customerId)) {
+            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", customerId));
         }
     }
 }
