@@ -108,7 +108,7 @@ class RhoasServiceTest {
                 .isThrownBy(() -> testService.createTopicAndGrantAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
         assertThatExceptionOfType(InternalPlatformException.class)
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessForProcessor(TEST_PROCESSOR_ID, RhoasTopicAccessType.PRODUCER));
-    }U
+    }
 
     private RhoasService buildTestService(boolean rhoasEnabled) {
         RhoasServiceImpl service = new RhoasServiceImpl();
