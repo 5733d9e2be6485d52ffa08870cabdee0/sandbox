@@ -23,7 +23,7 @@ public class WebhookAction implements InvokableActionProvider {
 
     public static final String TYPE = "Webhook";
     public static final String ENDPOINT_PARAM = "endpoint";
-    public static final String USE_TECHNICAL_BEARER_TOKEN = "useTechincalBearerToken";
+    public static final String USE_TECHNICAL_BEARER_TOKEN = "useTechnicalBearerToken";
 
     private WebClient client;
 

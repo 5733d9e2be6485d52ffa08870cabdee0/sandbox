@@ -34,6 +34,12 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceImpl.class);
 
+    @ConfigProperty(name = "event-bridge.executor.image")
+    String executorImage;
+
+    @ConfigProperty(name = "event-bridge.webhook.technical-bearer-token")
+    String webhookTechnicalBearerToken;
+
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -48,9 +54,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Inject
     ObjectMapper objectMapper;
-
-    @ConfigProperty(name = "event-bridge.executor.image")
-    String executorImage;
 
     @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
@@ -91,8 +94,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
 
-        // TODO: read the token from config and inject here https://issues.redhat.com/browse/MGDOBR-241
-        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue("TODO").build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {
             environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {
