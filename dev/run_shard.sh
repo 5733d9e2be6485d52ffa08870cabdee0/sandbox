@@ -22,12 +22,14 @@ function retrieve_webhook_tech_token(){
   KEYCLOAK_RESPONSE=$(curl --insecure -X POST http://$minikube_ip:30007/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=webhook-robot-1&password=therobot&grant_type=password&scope=offline_access')
   if [ ! $? -eq 0 ]; then
     echo "Failed to retrieve token from keycloak. Please make sure that you installed keycloak on minikube and that it is running fine" 1>&2
+    echo "The response from keycloak was: "$KEYCLOAK_RESPONSE 1>&2
     return 1
   fi
 
   EVENT_BRIDGE_WEBHOOK_TECHNICAL_BEARER_TOKEN=$(echo $KEYCLOAK_RESPONSE | jq --raw-output -e '.access_token')
   if [ ! $? -eq 0 ]; then
-    echo "Failed to extract token from keycloak response. Please make sure the credentils this script is using are correct with your keycloak realm configuration." 1>&2
+    echo "Failed to extract token from keycloak response. Please make sure the credentials this script is using are correct with your keycloak realm configuration." 1>&2
+    echo "The response from keycloak was: "$KEYCLOAK_RESPONSE 1>&2
     return 1
   fi
   echo $EVENT_BRIDGE_WEBHOOK_TECHNICAL_BEARER_TOKEN
