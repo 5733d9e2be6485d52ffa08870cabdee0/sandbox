@@ -1,9 +1,9 @@
 secretGenerator:
 - name: event-bridge-manager-secrets
   literals:
-  - KAFKA_BOOTSTRAP_SERVERS=my-cluster-kafka-bootstrap.kafka:9092
-  - KAFKA_CLIENT_ID=client-id
-  - KAFKA_CLIENT_SECRET=secret
+  - MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=my-cluster-kafka-bootstrap.kafka:9092
+  - MANAGED_CONNECTORS_KAFKA_CLIENT_ID=client-id
+  - MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=secret
 patchesStrategicMerge:
 - patches/deploy-config.yaml
 - patches/postgres-config.yaml
