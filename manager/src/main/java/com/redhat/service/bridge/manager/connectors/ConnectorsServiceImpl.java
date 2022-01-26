@@ -45,13 +45,13 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @ConfigProperty(name = "managed-connectors.cluster.id")
     String mcClusterId;
 
-    @ConfigProperty(name = "kafka.bootstrap.servers")
+    @ConfigProperty(name = "managed-connectors.kafka.bootstrap.servers")
     String kafkaBootstrapServer;
 
-    @ConfigProperty(name = "kafka.client.id")
+    @ConfigProperty(name = "managed-connectors.kafka.client.id")
     String serviceAccountId;
 
-    @ConfigProperty(name = "kafka.client.secret")
+    @ConfigProperty(name = "managed-connectors.kafka.client.secret")
     String serviceAccountSecret;
 
     @Override
