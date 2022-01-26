@@ -21,22 +21,22 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
 
     private static final String NAME = "event-bridge-sso";
 
-    @ConfigProperty(name = "event-bridge.auth-server-url")
+    @ConfigProperty(name = "event-bridge.sso.auth-server-url")
     String serverUrl;
 
-    @ConfigProperty(name = "event-bridge.client-id")
+    @ConfigProperty(name = "event-bridge.sso.client-id")
     String clientId;
 
-    @ConfigProperty(name = "event-bridge.credentials.secret")
+    @ConfigProperty(name = "event-bridge.sso.credentials.secret")
     String secret;
 
-    @ConfigProperty(name = "event-bridge.grant.type")
+    @ConfigProperty(name = "event-bridge.sso.grant.type")
     String type;
 
-    @ConfigProperty(name = "event-bridge.grant-options.password.username")
+    @ConfigProperty(name = "event-bridge.sso.grant-options.password.username")
     String username;
 
-    @ConfigProperty(name = "event-bridge.grant-options.password.password")
+    @ConfigProperty(name = "event-bridge.sso.grant-options.password.password")
     String password;
 
     @Inject

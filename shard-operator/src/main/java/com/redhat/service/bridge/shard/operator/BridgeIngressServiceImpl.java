@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
-import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
-import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
@@ -33,6 +33,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
 
+    @ConfigProperty(name = "event-bridge.ingress.image")
+    String ingressImage;
+
+    @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
+    String webhookTechnicalAccountId;
+
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -43,10 +49,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     TemplateProvider templateProvider;
 
     @Inject
-    KafkaConfigurationProvider kafkaConfigurationProvider;
-
-    @ConfigProperty(name = "event-bridge.ingress.image")
-    String ingressImage;
+    GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
@@ -80,11 +83,18 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         // TODO: All the Ingress applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(kafkaConfigurationProvider.getBootstrapServers()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR).withValue(kafkaConfigurationProvider.getClient()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(kafkaConfigurationProvider.getSecret()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaClient()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getCustomerId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID).withValue(webhookTechnicalAccountId).build());
+
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();

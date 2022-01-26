@@ -14,8 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
-import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
-import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationProvider;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
@@ -50,7 +50,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     TemplateProvider templateProvider;
 
     @Inject
-    KafkaConfigurationProvider kafkaConfigurationProvider;
+    GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Inject
     ObjectMapper objectMapper;
@@ -87,12 +87,14 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
         // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(kafkaConfigurationProvider.getBootstrapServers()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR).withValue(kafkaConfigurationProvider.getClient()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(kafkaConfigurationProvider.getSecret()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(kafkaConfigurationProvider.getSecurityProtocol()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaClient()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
-        environmentVariables.add(new EnvVarBuilder().withName(KafkaConfigurationCostants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
 
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {

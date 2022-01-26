@@ -12,8 +12,9 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
-import com.redhat.service.bridge.shard.operator.providers.KafkaConfigurationCostants;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
@@ -97,14 +98,27 @@ public class BridgeIngressServiceTest {
                             Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).findFirst().get().getValue().length())
+                            assertThat(
+                                    environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).findFirst().get().getValue().length())
+                                            .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_CLIENT_ID_ENV_VAR)).findFirst().get().getValue().length())
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue().length())
+                            assertThat(
+                                    environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).findFirst().get().getValue().length())
+                                            .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(KafkaConfigurationCostants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).findFirst().get().getValue().length())
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
+
                         });
     }
 

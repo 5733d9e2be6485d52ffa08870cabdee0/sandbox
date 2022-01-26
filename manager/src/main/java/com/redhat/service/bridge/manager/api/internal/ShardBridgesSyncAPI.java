@@ -22,12 +22,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
-import com.redhat.service.bridge.manager.CustomerIdResolver;
 import com.redhat.service.bridge.manager.ProcessorService;
 
 import io.quarkus.security.Authenticated;
