@@ -7,8 +7,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
@@ -23,7 +21,6 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 @ApplicationScoped
 public class WebhookAction implements InvokableActionProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebhookAction.class);
     public static final String TYPE = "Webhook";
     public static final String ENDPOINT_PARAM = "endpoint";
     public static final String USE_TECHNICAL_BEARER_TOKEN = "useTechnicalBearerToken";
@@ -62,7 +59,6 @@ public class WebhookAction implements InvokableActionProvider {
             if (!webhookTechnicalBearerToken.isPresent()) {
                 throw new TechnicalBearerTokenNotConfiguredException("A webhook action needed the technical bearer token but it was not configured.");
             }
-            LOGGER.info(String.format("building a client for %s %s", endpoint, webhookTechnicalBearerToken.get()));
             return new WebhookInvoker(endpoint, client, webhookTechnicalBearerToken.get());
         }
         return new WebhookInvoker(endpoint, client);
