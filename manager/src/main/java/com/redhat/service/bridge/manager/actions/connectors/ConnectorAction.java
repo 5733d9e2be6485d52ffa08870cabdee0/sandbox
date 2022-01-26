@@ -9,6 +9,8 @@ public interface ConnectorAction extends ActionProvider {
 
     JsonNode connectorPayload(BaseAction action);
 
+    String topicName(BaseAction action);
+
     @Override
     default boolean isConnectorAction() {
         return true;

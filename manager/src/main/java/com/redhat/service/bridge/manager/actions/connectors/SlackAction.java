@@ -9,14 +9,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @ApplicationScoped
-public class SlackAction implements ActionProvider,
-        ConnectorAction {
+public class SlackAction implements ConnectorAction {
 
     public static final String TYPE = "SlackAction";
 
@@ -45,7 +43,7 @@ public class SlackAction implements ActionProvider,
 
         String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAMETER);
         String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAMETER);
-        String kafkaTopic = actionParameters.get(KafkaTopicAction.TOPIC_PARAM);
+        String kafkaTopic = topicName(action);
 
         ObjectNode objectNode = mapper.createObjectNode();
 
@@ -61,6 +59,11 @@ public class SlackAction implements ActionProvider,
         objectNode.set("kafka", kafkaMap);
 
         return objectNode;
+    }
+
+    @Override
+    public String topicName(BaseAction action) {
+        return action.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
     }
 
     @Override
