@@ -13,6 +13,9 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 
 /*
  * Step definitions related to BridgeExecutor
@@ -26,9 +29,22 @@ public class BridgeExecutorSteps {
     }
 
     @When("^deploy BridgeExecutor:$")
-    public void deployBridegeExecutor(String bridgeExecutorYaml) {
+    public BridgeExecutor deployBridegeExecutor(String bridgeExecutorYaml) {
         InputStream resourceStream = new ByteArrayInputStream(bridgeExecutorYaml.getBytes(StandardCharsets.UTF_8));
-        context.getClient().resources(BridgeExecutor.class).inNamespace(context.getNamespace()).load(resourceStream).create();
+        return context.getClient().resources(BridgeExecutor.class).inNamespace(context.getNamespace()).load(resourceStream).create();
+    }
+
+    @When("^deploy BridgeExecutor with default secret:$")
+    public void deployBridgeIngressWithDefaultSecrets(String bridgeExecutorYaml) {
+        BridgeExecutor bridgeExecutor = deployBridegeExecutor(bridgeExecutorYaml);
+        Secret secret = new SecretBuilder()
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withNamespace(bridgeExecutor.getMetadata().getNamespace())
+                                .withName(bridgeExecutor.getMetadata().getName())
+                                .build())
+                .build();
+        context.getClient().secrets().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).createOrReplace(secret);
     }
 
     @When("^delete BridgeExecutor \"([^\"]*)\"$")
