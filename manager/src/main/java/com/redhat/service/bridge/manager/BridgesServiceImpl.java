@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridgeDAO.persist(bridge);
 
         if (rhoasService.isEnabled()) {
-            rhoasService.createTopicAndGrantAccessFor(topicNameForBridge(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            rhoasService.createTopicAndGrantAccessFor(InternalKafkaTopicNameBuilder.build(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         }
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
@@ -136,7 +137,7 @@ public class BridgesServiceImpl implements BridgesService {
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             if (rhoasService.isEnabled()) {
-                rhoasService.deleteTopicAndRevokeAccessFor(topicNameForBridge(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+                rhoasService.deleteTopicAndRevokeAccessFor(InternalKafkaTopicNameBuilder.build(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
             }
         }
 
@@ -170,9 +171,5 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         return response;
-    }
-
-    private String topicNameForBridge(String bridgeId) {
-        return String.format("ob-%s", bridgeId);
     }
 }

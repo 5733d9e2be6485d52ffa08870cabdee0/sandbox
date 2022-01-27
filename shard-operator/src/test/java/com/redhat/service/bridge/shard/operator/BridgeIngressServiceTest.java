@@ -108,6 +108,8 @@ public class BridgeIngressServiceTest {
                             assertThat(
                                     environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).findFirst().get().getValue().length())
                                             .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())

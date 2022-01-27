@@ -100,6 +100,8 @@ public class BridgeExecutorServiceTest {
                                             .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR)).findFirst().get().getValue()

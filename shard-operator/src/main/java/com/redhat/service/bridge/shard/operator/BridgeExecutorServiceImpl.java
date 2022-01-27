@@ -6,6 +6,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
+import io.quarkus.runtime.configuration.ProfileManager;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceImpl.class);
+
+    private boolean isDev = ProfileManager.getActiveProfile().equals("minikube");
 
     @ConfigProperty(name = "event-bridge.executor.image")
     String executorImage;
@@ -95,6 +99,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeExecutor.getSpec().getBridgeId(), isDev)).build());
 
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {
