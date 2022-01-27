@@ -24,6 +24,7 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
@@ -33,6 +34,7 @@ import com.redhat.service.bridge.manager.connectors.ConnectorsService;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -58,6 +60,9 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     ConnectorsService connectorService;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Transactional
     @Override
@@ -170,7 +175,19 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public ProcessorDTO toDTO(Processor processor) {
         ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
-        return new ProcessorDTO(processor.getId(), processor.getName(), definition, processor.getBridge().getId(), processor.getBridge().getCustomerId(), processor.getStatus());
+        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
+                internalKafkaConfigurationProvider.getBootstrapServers(),
+                internalKafkaConfigurationProvider.getClientId(),
+                internalKafkaConfigurationProvider.getClientSecret(),
+                internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.buildTopicName(processor.getBridge().getId()));
+        return new ProcessorDTO(processor.getId(),
+                processor.getName(),
+                definition,
+                processor.getBridge().getId(),
+                processor.getBridge().getCustomerId(),
+                processor.getStatus(),
+                kafkaConnectionDTO);
     }
 
     @Override

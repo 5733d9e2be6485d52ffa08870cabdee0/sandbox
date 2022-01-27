@@ -4,6 +4,10 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +55,8 @@ public class ServiceMonitorServiceTest {
         // Given
         final BridgeDTO bridge = TestSupport.newAvailableBridgeDTO();
         final BridgeIngress bridgeIngress = BridgeIngress.fromDTO(bridge, "default", TestSupport.INGRESS_IMAGE);
-        final Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
+        final Secret secretMock = new SecretBuilder().withMetadata(new ObjectMetaBuilder().withName(bridgeIngress.getMetadata().getName()).build()).build();
+        final Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secretMock);
         final Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
 
         // When

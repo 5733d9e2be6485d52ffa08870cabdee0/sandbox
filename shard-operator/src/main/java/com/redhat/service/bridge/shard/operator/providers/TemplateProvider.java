@@ -3,6 +3,7 @@ package com.redhat.service.bridge.shard.operator.providers;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
@@ -25,4 +26,8 @@ public interface TemplateProvider {
     Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress);
 
     ServiceMonitor loadServiceMonitorTemplate(CustomResource resource);
+
+    Secret loadBridgeIngressSecretTemplate(BridgeIngress bridgeIngress);
+
+    Secret loadBridgeExecutorSecretTemplate(BridgeExecutor bridgeExecutor);
 }

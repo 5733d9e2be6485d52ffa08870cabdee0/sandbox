@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
+import io.fabric8.kubernetes.api.model.Secret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +75,8 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
         AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
+        SecretEventSource secretEventSource = SecretEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
+        eventSourceManager.registerEventSource("bridge-ingress-secret-event-source", secretEventSource);
         Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-ingress-monitoring-event-source", monitorEventSource));
     }
@@ -81,7 +85,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
         LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
+        Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
+
+        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),

@@ -9,6 +9,7 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
@@ -23,10 +24,14 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String TEMPLATES_DIR = "/templates";
     private static final String BRIDGE_INGRESS_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-ingress-deployment.yaml";
     private static final String BRIDGE_INGRESS_SERVICE_PATH = TEMPLATES_DIR + "/bridge-ingress-service.yaml";
-    private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
-    private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH = TEMPLATES_DIR + "/bridge-ingress-openshift-route.yaml";
     private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
+    private static final String BRIDGE_INGRESS_SECRET_PATH = TEMPLATES_DIR + "/bridge-ingress-secret.yaml";
+
+    private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
+    private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
+    private static final String BRIDGE_EXECUTOR_SECRET_PATH = TEMPLATES_DIR + "/bridge-executor-secret.yaml";
+
     private static final String SERVICE_MONITOR_PATH = TEMPLATES_DIR + "/service-monitor.yaml";
 
     @Override
@@ -76,6 +81,20 @@ public class TemplateProviderImpl implements TemplateProvider {
         final ServiceMonitor serviceMonitor = loadYaml(ServiceMonitor.class, SERVICE_MONITOR_PATH);
         updateMetadata(resource, serviceMonitor.getMetadata());
         return serviceMonitor;
+    }
+
+    @Override
+    public Secret loadBridgeIngressSecretTemplate(BridgeIngress bridgeIngress) {
+        final Secret secret = loadYaml(Secret.class, BRIDGE_INGRESS_SECRET_PATH);
+        updateMetadata(bridgeIngress, secret.getMetadata());
+        return secret;
+    }
+
+    @Override
+    public Secret loadBridgeExecutorSecretTemplate(BridgeExecutor bridgeExecutor) {
+        final Secret secret = loadYaml(Secret.class, BRIDGE_EXECUTOR_SECRET_PATH);
+        updateMetadata(bridgeExecutor, secret.getMetadata());
+        return secret;
     }
 
     private <T> T loadYaml(Class<T> clazz, String yaml) {

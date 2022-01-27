@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
+import io.fabric8.kubernetes.api.model.Secret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +72,19 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
     public UpdateControl<BridgeExecutor> createOrUpdateResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
         LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
-        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor);
+        Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
+
+        if (secret == null){
+            BridgeError secretsNotFoundError = bridgeErrorService.getError(SecretsNotFoundException.class)
+                    .orElseThrow(() -> new RuntimeException("SecretsNotFoundException not found in error catalog"));
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
+                                                          ConditionReason.SecretsNotFound,
+                                                          secretsNotFoundError.getReason(),
+                                                          secretsNotFoundError.getCode());
+            notifyManager(bridgeExecutor, BridgeStatus.FAILED);
+        }
+
+        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());

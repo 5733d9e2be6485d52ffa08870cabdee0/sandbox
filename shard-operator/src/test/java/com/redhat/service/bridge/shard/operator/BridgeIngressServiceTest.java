@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -148,7 +149,7 @@ public class BridgeIngressServiceTest {
         kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
 
         // Then
-        deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(fetchBridgeIngress(dto));
+        deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(fetchBridgeIngress(dto), fetchBridgeIngressSecret(dto));
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.INGRESS_IMAGE);
     }
 
@@ -205,6 +206,13 @@ public class BridgeIngressServiceTest {
 
     private Deployment fetchBridgeIngressDeployment(BridgeDTO dto) {
         return kubernetesClient.apps().deployments()
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                .get();
+    }
+
+    private Secret fetchBridgeIngressSecret(BridgeDTO dto) {
+        return kubernetesClient.secrets()
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();

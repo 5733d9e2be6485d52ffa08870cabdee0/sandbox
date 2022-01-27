@@ -6,6 +6,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretEnvSourceBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,15 +70,18 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            kubernetesClient
+            BridgeExecutor bridgeExecutor = kubernetesClient
                     .resources(BridgeExecutor.class)
                     .inNamespace(namespace.getMetadata().getName())
                     .createOrReplace(expected);
+
+            // create or update the secrets for the bridgeExecutor
+            createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         }
     }
 
     @Override
-    public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor) {
+    public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor, Secret secret) {
         Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
 
         // Specs
@@ -87,15 +92,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
         // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables
-                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaClient()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
-        environmentVariables
-                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
-        // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
-
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {
             environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
@@ -103,6 +99,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             LOGGER.error("Could not serialize Processor Definition while setting executor deployment environment variables", e);
         }
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
+
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnvFrom().get(0).setSecretRef(new SecretEnvSourceBuilder().withName(secret.getMetadata().getName()).build());
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 
@@ -142,5 +140,38 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
         }
+    }
+
+    @Override
+    public void createOrUpdateBridgeExecutorSecret(BridgeExecutor bridgeExecutor, ProcessorDTO processorDTO) {
+        Secret expected = templateProvider.loadBridgeExecutorSecretTemplate(bridgeExecutor);
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR, processorDTO.getKafkaConnection().getBootstrapServers());
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR, processorDTO.getKafkaConnection().getClientId());
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, processorDTO.getKafkaConnection().getClientSecret());
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, processorDTO.getKafkaConnection().getSecurityProtocol());
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, processorDTO.getKafkaConnection().getTopic());
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, bridgeExecutor.getSpec().getId());
+
+        Secret existing = kubernetesClient
+                .secrets()
+                .inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                .withName(bridgeExecutor.getMetadata().getName())
+                .get();
+
+        if (existing == null || !expected.getData().equals(existing.getData())) {
+            kubernetesClient
+                    .secrets()
+                    .inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                    .createOrReplace(expected);
+        }
+    }
+
+    @Override
+    public Secret fetchBridgeExecutorSecret(BridgeExecutor bridgeExecutor) {
+        return kubernetesClient
+                .secrets()
+                .inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                .withName(bridgeExecutor.getMetadata().getName())
+                .get();
     }
 }
