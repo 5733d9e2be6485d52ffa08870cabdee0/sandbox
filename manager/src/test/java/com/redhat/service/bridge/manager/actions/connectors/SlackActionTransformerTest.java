@@ -71,7 +71,7 @@ class SlackActionTransformerTest {
         transformer.topicName = TEST_DEFAULT_TOPIC_NAME;
 
         RhoasService rhoasServiceMock = mock(RhoasService.class);
-        when(rhoasServiceMock.isEnabled()).thenReturn(false);
+        when(rhoasServiceMock.isEnabled()).thenReturn(rhoasEnabled);
 
         transformer.rhoasService = rhoasServiceMock;
         return transformer;
