@@ -7,13 +7,12 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
-import io.quarkus.runtime.configuration.ProfileManager;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
@@ -29,6 +28,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.runtime.configuration.ProfileManager;
 
 @ApplicationScoped
 public class BridgeIngressServiceImpl implements BridgeIngressService {
@@ -93,7 +93,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
         environmentVariables
                 .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeIngress.getSpec().getId(), isDev)).build());
+        environmentVariables
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeIngress.getSpec().getId(), isDev)).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());

@@ -6,8 +6,6 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
-import io.quarkus.runtime.configuration.ProfileManager;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
@@ -30,6 +29,7 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.runtime.configuration.ProfileManager;
 
 @ApplicationScoped
 public class BridgeExecutorServiceImpl implements BridgeExecutorService {
@@ -100,7 +100,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         // Every Processor will subscribe with a new GROUP_ID, so that it will consume all the messages on the configured topic
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR).withValue(bridgeExecutor.getSpec().getId()).build());
         environmentVariables
-                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeExecutor.getSpec().getBridgeId(), isDev)).build());
+                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).withValue(InternalKafkaTopicNameBuilder.build(bridgeExecutor.getSpec().getBridgeId(), isDev))
+                        .build());
 
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {

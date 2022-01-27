@@ -9,7 +9,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,7 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.utils.InternalKafkaTopicNameBuilder;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
