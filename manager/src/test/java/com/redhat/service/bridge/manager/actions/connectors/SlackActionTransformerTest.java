@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.manager.RhoasService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SlackActionTransformerTest {
 
@@ -66,7 +69,11 @@ class SlackActionTransformerTest {
     private SlackActionTransformer buildTestTransformer(boolean rhoasEnabled) {
         SlackActionTransformer transformer = new SlackActionTransformer();
         transformer.topicName = TEST_DEFAULT_TOPIC_NAME;
-        transformer.rhoasEnabled = rhoasEnabled;
+
+        RhoasService rhoasServiceMock = mock(RhoasService.class);
+        when(rhoasServiceMock.isEnabled()).thenReturn(rhoasEnabled);
+
+        transformer.rhoasService = rhoasServiceMock;
         return transformer;
     }
 }
