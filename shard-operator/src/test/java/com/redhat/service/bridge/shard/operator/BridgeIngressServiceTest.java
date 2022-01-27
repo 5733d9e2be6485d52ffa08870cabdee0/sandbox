@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.fabric8.kubernetes.api.model.Secret;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -20,6 +19,7 @@ import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
@@ -62,6 +62,10 @@ public class BridgeIngressServiceTest {
         // Then
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNotNull();
+
+        Secret secret = fetchBridgeIngressSecret(dto);
+        assertThat(secret).isNotNull();
+        assertThat(secret.getMetadata().getName()).isEqualTo(bridgeIngress.getMetadata().getName());
     }
 
     @Test
@@ -79,6 +83,10 @@ public class BridgeIngressServiceTest {
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNotNull();
         assertThat(bridgeIngress.getSpec().getCustomerId()).isEqualTo(patchedCustomerId);
+
+        Secret secret = fetchBridgeIngressSecret(dto);
+        assertThat(secret).isNotNull();
+        assertThat(secret.getMetadata().getName()).isEqualTo(bridgeIngress.getMetadata().getName());
     }
 
     @Test
@@ -99,16 +107,6 @@ public class BridgeIngressServiceTest {
                             Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNotNull();
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
-                            assertThat(
-                                    environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).findFirst().get().getValue().length())
-                                            .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR)).findFirst().get().getValue().length())
-                                    .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue().length())
-                                    .isGreaterThan(0);
-                            assertThat(
-                                    environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).findFirst().get().getValue().length())
-                                            .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())

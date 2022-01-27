@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.shard.operator;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 

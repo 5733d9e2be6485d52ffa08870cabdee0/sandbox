@@ -5,14 +5,13 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
-import io.fabric8.kubernetes.api.model.Secret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
@@ -24,9 +23,11 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -86,6 +87,21 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
+
+        if (secret == null) {
+            BridgeError secretsNotFoundError = bridgeErrorService.getError(SecretsNotFoundException.class)
+                    .orElseThrow(() -> new RuntimeException("SecretsNotFoundException not found in error catalog"));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation,
+                    ConditionReason.SecretsNotFound,
+                    secretsNotFoundError.getReason(),
+                    secretsNotFoundError.getCode());
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
+                    ConditionReason.SecretsNotFound,
+                    secretsNotFoundError.getReason(),
+                    secretsNotFoundError.getCode());
+            notifyManager(bridgeIngress, BridgeStatus.FAILED);
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
+        }
 
         Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 

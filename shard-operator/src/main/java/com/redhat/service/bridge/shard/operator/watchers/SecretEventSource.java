@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator.watchers;
 
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;

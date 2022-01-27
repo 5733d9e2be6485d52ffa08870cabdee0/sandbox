@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
@@ -44,8 +45,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, new KafkaConnectionDTO()));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, new KafkaConnectionDTO()));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
@@ -87,8 +88,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, new KafkaConnectionDTO()));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, new KafkaConnectionDTO()));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETED\"}";
@@ -106,7 +107,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING);
+        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING, new KafkaConnectionDTO());
         stubBridgeUpdate();
         String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
@@ -122,6 +123,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
+    @WithPrometheus
     public void testProcessorsAreDeployed() throws Exception {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
 
@@ -144,6 +146,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         });
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         processor.setStatus(BridgeStatus.AVAILABLE);
+        processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));

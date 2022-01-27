@@ -5,14 +5,13 @@ import java.util.Optional;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
-import io.fabric8.kubernetes.api.model.Secret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
@@ -25,6 +24,7 @@ import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -70,23 +70,28 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
 
     @Override
     public UpdateControl<BridgeExecutor> createOrUpdateResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
-        LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 
-        if (secret == null){
+        if (secret == null) {
             BridgeError secretsNotFoundError = bridgeErrorService.getError(SecretsNotFoundException.class)
                     .orElseThrow(() -> new RuntimeException("SecretsNotFoundException not found in error catalog"));
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation,
+                    ConditionReason.SecretsNotFound,
+                    secretsNotFoundError.getReason(),
+                    secretsNotFoundError.getCode());
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
-                                                          ConditionReason.SecretsNotFound,
-                                                          secretsNotFoundError.getReason(),
-                                                          secretsNotFoundError.getCode());
+                    ConditionReason.SecretsNotFound,
+                    secretsNotFoundError.getReason(),
+                    secretsNotFoundError.getCode());
             notifyManager(bridgeExecutor, BridgeStatus.FAILED);
+            return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
             // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
@@ -99,7 +104,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         // Create Service
         Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
         if (service.getStatus() == null) {
-            LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
@@ -109,7 +114,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
-            LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
@@ -123,7 +128,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             return UpdateControl.updateStatusSubResource(bridgeExecutor);
         }
 
-        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);

@@ -13,6 +13,9 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -43,9 +46,31 @@ public class BridgeIngressControllerTest {
     }
 
     @Test
+    void testCreateNewBridgeIngressWithoutSecrets() {
+        // Given
+        BridgeIngress bridgeIngress = buildBridgeIngress();
+
+        // When
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+
+        // Then
+        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        assertThat(bridgeIngress.getStatus()).isNotNull();
+        assertThat(bridgeIngress.getStatus().isReady()).isFalse();
+        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+        });
+    }
+
+    @Test
     void testCreateNewBridgeIngress() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
 
         // When
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
@@ -67,6 +92,7 @@ public class BridgeIngressControllerTest {
     void testBridgeIngressDeployment() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
 
         // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
@@ -80,6 +106,17 @@ public class BridgeIngressControllerTest {
         assertThat(deployment.getSpec().getTemplate().getMetadata().getLabels()).isNotNull();
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isNotNull();
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
+    }
+
+    private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {
+        Secret secret = new SecretBuilder()
+                .withMetadata(new ObjectMetaBuilder().withNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).build())
+                .build();
+        kubernetesClient
+                .secrets()
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .createOrReplace(secret);
     }
 
     private BridgeIngress buildBridgeIngress() {

@@ -6,8 +6,6 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.SecretEnvSourceBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +25,7 @@ import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -100,7 +99,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         }
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
 
-        expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnvFrom().get(0).setSecretRef(new SecretEnvSourceBuilder().withName(secret.getMetadata().getName()).build());
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnvFrom().get(0).getSecretRef().setName(secret.getMetadata().getName());
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
 

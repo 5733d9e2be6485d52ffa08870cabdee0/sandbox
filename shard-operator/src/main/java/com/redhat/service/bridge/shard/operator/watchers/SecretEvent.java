@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.shard.operator.watchers;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.Watcher;
 import io.javaoperatorsdk.operator.processing.event.DefaultEvent;
 
