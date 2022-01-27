@@ -43,6 +43,7 @@ import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
+import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -53,6 +54,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,9 +80,14 @@ public class ProcessorServiceTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @InjectMock
+    RhoasService rhoasServiceMock;
+
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        reset(rhoasServiceMock);
+        when(rhoasServiceMock.isEnabled()).thenReturn(false);
     }
 
     private Bridge createPersistBridge(BridgeStatus status) {
@@ -363,18 +370,25 @@ public class ProcessorServiceTest {
 
     @Test
     public void testDeleteProcessorWithConnector() {
+        final String testConnectorId = "connectorExternalId";
+
+        when(rhoasServiceMock.isEnabled()).thenReturn(true);
+        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector(testConnectorId));
+
         Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
 
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
-        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+
         assertThat(processor).isNotNull();
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor("ob-" + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
 
-        verify(connectorsApiClient).deleteConnector("connectorExternalId", ConnectorsServiceImpl.KAFKA_ID_IGNORED);
+        verify(connectorsApiClient).deleteConnector(testConnectorId, ConnectorsServiceImpl.KAFKA_ID_IGNORED);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor("ob-" + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
         assertThat(connector).isNull();
