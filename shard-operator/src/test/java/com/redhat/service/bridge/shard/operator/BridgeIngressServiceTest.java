@@ -66,6 +66,11 @@ public class BridgeIngressServiceTest {
         Secret secret = fetchBridgeIngressSecret(dto);
         assertThat(secret).isNotNull();
         assertThat(secret.getMetadata().getName()).isEqualTo(bridgeIngress.getMetadata().getName());
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).length()).isGreaterThan(0);
     }
 
     @Test
