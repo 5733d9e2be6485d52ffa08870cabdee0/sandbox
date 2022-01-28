@@ -88,7 +88,7 @@ public class BridgeExecutorServiceTest {
 
         // Then
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -118,7 +118,7 @@ public class BridgeExecutorServiceTest {
 
         // Wait until deployment is created by the controller.
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
