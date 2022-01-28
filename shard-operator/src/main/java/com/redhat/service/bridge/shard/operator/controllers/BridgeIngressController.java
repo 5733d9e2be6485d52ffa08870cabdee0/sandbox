@@ -22,6 +22,7 @@ import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
+import com.redhat.service.bridge.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
@@ -41,9 +42,6 @@ import io.javaoperatorsdk.operator.api.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
 
-/**
- * To be implemented on <a href="https://issues.redhat.com/browse/MGDOBR-93">MGDOBR-93</a>
- */
 @ApplicationScoped
 @Controller
 public class BridgeIngressController implements ResourceController<BridgeIngress> {
@@ -109,9 +107,14 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
-            // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
-
             bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
+            boolean failed = DeploymentStatusUtils.isStatusReplicaFailure(deployment);
+            if (failed) {
+                String failureReason = DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment);
+                LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(),
+                        failureReason);
+                notifyManager(bridgeIngress, BridgeStatus.FAILED);
+            }
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
         LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());

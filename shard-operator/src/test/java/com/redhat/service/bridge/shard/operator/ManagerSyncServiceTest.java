@@ -67,12 +67,12 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyServiceOrFail(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyServiceOrFail(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResourceOrFail(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyService(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyService(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, customerNamespace);
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
@@ -140,8 +140,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentOrFail(sanitizedName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyServiceOrFail(sanitizedName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(sanitizedName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyService(sanitizedName, customerNamespace);
                         });
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         processor.setStatus(BridgeStatus.AVAILABLE);
