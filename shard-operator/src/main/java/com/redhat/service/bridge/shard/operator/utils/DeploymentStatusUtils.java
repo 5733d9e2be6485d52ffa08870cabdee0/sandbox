@@ -12,8 +12,8 @@ public final class DeploymentStatusUtils {
 
     // https://pkg.go.dev/k8s.io/api/apps/v1#DeploymentConditionType
 
-    private static final String REPLICA_FAILURE = "ReplicaFailure";
-    private static final String STATUS_TRUE = "True";
+    public static final String REPLICA_FAILURE_CONDITION_TYPE = "ReplicaFailure";
+    public static final String STATUS_TRUE = "True";
 
     private DeploymentStatusUtils() {
     }
@@ -22,11 +22,11 @@ public final class DeploymentStatusUtils {
         if (!hasValidConditions(d)) {
             return false;
         }
-        return d.getStatus().getConditions().stream().anyMatch(c -> REPLICA_FAILURE.equalsIgnoreCase(c.getType()) && STATUS_TRUE.equalsIgnoreCase(c.getStatus()));
+        return d.getStatus().getConditions().stream().anyMatch(c -> REPLICA_FAILURE_CONDITION_TYPE.equalsIgnoreCase(c.getType()) && STATUS_TRUE.equalsIgnoreCase(c.getStatus()));
     }
 
     public static String getReasonAndMessageForReplicaFailure(final Deployment d) {
-        return getReasonAndMessage(REPLICA_FAILURE, d);
+        return getReasonAndMessage(REPLICA_FAILURE_CONDITION_TYPE, d);
     }
 
     private static String getReasonAndMessage(final String type, final Deployment d) {
