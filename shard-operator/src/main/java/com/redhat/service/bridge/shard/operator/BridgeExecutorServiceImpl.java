@@ -52,9 +52,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     TemplateProvider templateProvider;
 
     @Inject
-    GlobalConfigurationsProvider globalConfigurationsProvider;
-
-    @Inject
     ObjectMapper objectMapper;
 
     @Override

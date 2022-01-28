@@ -26,9 +26,9 @@ public class TestSupport {
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
     public static final String KAFKA_BOOTSTRAP_SERVERS = "mytestkafka:9092";
-    public static final String KAFKA_CLIENT_ID = "mytestkafka:9092";
-    public static final String KAFKA_CLIENT_SECRET = "mytestkafka:9092";
-    public static final String KAFKA_SECURITY_PROTOCOL = "mytestkafka:9092";
+    public static final String KAFKA_CLIENT_ID = "client-id";
+    public static final String KAFKA_CLIENT_SECRET = "testsecret";
+    public static final String KAFKA_SECURITY_PROTOCOL = "PLAINTEXT";
     public static final String KAFKA_TOPIC = "ob-my-id";
     public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
             KAFKA_BOOTSTRAP_SERVERS,
