@@ -73,7 +73,7 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.SecretsNotFound);
         });
     }
 
