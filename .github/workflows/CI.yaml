@@ -20,7 +20,7 @@ jobs:
       - name: Compile and Validate Formating
         uses: ./.github/actions/maven
         with:
-          maven-command: verify -Dvalidate-formatting -nsu -fae -e
+          maven-command: verify -Dvalidate-formatting -nsu -fae -e -Dquarkus.log.category."com.redhat".level=DEBUG
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
