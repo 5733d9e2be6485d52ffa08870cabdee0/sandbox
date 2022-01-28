@@ -74,7 +74,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String firstBridgeName = BridgeIngress.resolveResourceName("myId-1");
         String secondBridgeName = BridgeIngress.resolveResourceName("myId-2");
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -147,7 +147,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
