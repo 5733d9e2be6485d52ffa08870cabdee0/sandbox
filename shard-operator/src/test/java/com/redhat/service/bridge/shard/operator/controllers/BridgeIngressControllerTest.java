@@ -143,7 +143,7 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         BridgeDTO bridgeDTO = updateControl.getCustomResource().toDTO();
         bridgeDTO.setStatus(BridgeStatus.FAILED);
 
-        assertThat(bridgeUpdates.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(bridgeUpdates.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(bridgeDTO)))
                 .withHeader("Content-Type", equalTo("application/json")));
