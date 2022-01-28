@@ -72,7 +72,7 @@ public class KubernetesResourcePatcher {
                 .withMessage(FAILURE_MESSAGE)
                 .build();
 
-        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(0).withConditions(deploymentCondition).build();
+        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(1).withAvailableReplicas(0).withConditions(deploymentCondition).build();
         updateDeploymentStatus(deployment, deploymentStatus);
     }
 

@@ -82,7 +82,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
-        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
@@ -97,6 +97,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
                     ConditionReason.SecretsNotFound,
                     secretsNotFoundError.getReason(),
                     secretsNotFoundError.getCode());
+            LOGGER.info("NO SECRETS FOUND CRASH");
             notifyManager(bridgeIngress, BridgeStatus.FAILED);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
@@ -104,7 +105,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
             bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
@@ -122,19 +123,19 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         // Create Service
         Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
-            LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
         NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
         if (!networkResource.isReady()) {
-            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
