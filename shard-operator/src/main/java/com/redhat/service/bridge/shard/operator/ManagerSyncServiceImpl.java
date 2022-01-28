@@ -63,7 +63,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        bridgeDTO.setKafkaConnection(null);
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
@@ -71,7 +70,6 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
         LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorDTO.getId());
-        processorDTO.setKafkaConnection(null);
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
