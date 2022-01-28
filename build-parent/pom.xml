@@ -53,6 +53,8 @@
     <version.io.github.classgraph>4.8.129</version.io.github.classgraph>
     <version.com.redhat.cloud>0.11.0</version.com.redhat.cloud>
 
+    <cucumber.version>7.0.0</cucumber.version>
+
     <container.image.localstack>localstack/localstack:${version.org.localstack}</container.image.localstack>
     <container.image.keycloak>quay.io/keycloak/keycloak:${version.org.keycloak}</container.image.keycloak>
 
