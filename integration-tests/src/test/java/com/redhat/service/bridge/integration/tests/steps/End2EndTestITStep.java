@@ -1,27 +1,19 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
-import java.net.URI;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.filters.BaseFilter;
-import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-import com.redhat.service.bridge.integration.tests.common.AbstractBridge;
-import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -31,7 +23,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
@@ -43,27 +34,25 @@ import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.de
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeDetails;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeList;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getProcessor;
+import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.managerUrl;
+import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.jsonRequestWithAuth;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class End2EndTestITStep extends AbstractBridge {
+public class End2EndTestITStep {
 
     private static final String TOPIC_NAME = "myKafkaTopic";
-    private static final Set<BaseFilter> FILTERS = Collections.singleton(new StringEquals("source", "StorageService"));
-    private static final String TRANSFORMATION_TEMPLATE = "{\"v1\": \"{data.k1}\"}";
     private static final String PROCESSOR_NAME = "myProcessor";
-    private static String BRIDGE_NAME = "notificationBridge";
 
     private static String bridgeId;
     private static String processorId;
     private static String endPoint;
     private static String ingressMetrics;
-    private static ProcessorRequest processorRequest;
+    private static InputStream cloudEventStream;
 
-    @Given("Manager url is not accessible")
+    @Given("get list of Bridge instances returns HTTP response code 401")
     public void authenticationIsEnabled() {
         given()
-                .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
                 .when()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
@@ -71,20 +60,21 @@ public class End2EndTestITStep extends AbstractBridge {
                 .statusCode(401);
     }
 
-    @Given("Bridge list is empty")
-    public void getEmptyBridges() {
-
+    @Given("^get list of Bridge instances with access token doesn't contain Bridge \"([^\"]*)\"$")
+    public void getEmptyBridges(String bridgeName) {
         BridgeListResponse response = getBridgeList();
         assertThat(response.getKind()).isEqualTo("BridgeList");
-        assertThat(response.getSize()).isZero();
-        assertThat(response.getPage()).isZero();
-        assertThat(response.getTotal()).isZero();
+        if (response.getItems().size() > 0) {
+            for (int i = 0; i < response.getItems().size(); i++) {
+                assertThat(response.getItems().get(i).getName()).isNotEqualTo(bridgeName);
+            }
+        }
     }
 
-    @When("Create a Bridge")
-    public void createBridge() {
-        BridgeResponse response = addBridge(BRIDGE_NAME);
-        assertThat(response.getName()).isEqualTo(BRIDGE_NAME);
+    @When("^create a Bridge with name \"([^\"]*)\" with access token$")
+    public void createBridge(String bridgeName) {
+        BridgeResponse response = addBridge(bridgeName);
+        assertThat(response.getName()).isEqualTo(bridgeName);
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
@@ -94,7 +84,19 @@ public class End2EndTestITStep extends AbstractBridge {
         bridgeId = response.getId();
     }
 
-    @Then("^Bridge is exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    @Given("^get list of Bridge instances with access token contains Bridge \"([^\"]*)\"")
+    public void testBridgeExists(String bridgeName) {
+        BridgeListResponse response = getBridgeList();
+        List<String> bridgeNames = new ArrayList<>();
+        if (response.getItems().size() > 0) {
+            for (int i = 0; i < response.getItems().size(); i++) {
+                bridgeNames.add(response.getItems().get(i).getName());
+            }
+        }
+        assertThat(bridgeNames.contains(bridgeName)).isTrue();
+    }
+
+    @Then("^get Bridge with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
     public void bridgeDeployedWithinMinutes(String status, int timeoutMinutes) {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
@@ -109,12 +111,10 @@ public class End2EndTestITStep extends AbstractBridge {
         endPoint = getBridgeDetails(bridgeId).then().extract().response().as(BridgeResponse.class).getEndpoint();
     }
 
-    @When("Add processor to the bridge")
-    public void addProcessor() {
-
-        processorRequest = getProcessorRequest(FILTERS);
-
-        ProcessorResponse response = createProcessor(bridgeId, processorRequest);
+    @When("^add Processor to the Bridge with access token:$")
+    public void addProcessor(String processorRequestJson) {
+        InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
+        ProcessorResponse response = createProcessor(bridgeId, resourceStream);
 
         processorId = response.getId();
 
@@ -129,16 +129,17 @@ public class End2EndTestITStep extends AbstractBridge {
         assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
     }
 
-    @Then("Add wrong filter processor")
-    public void addWrongFilterProcessor() {
+    @Then("add invalid Processor to the Bridge with access token returns HTTP response code 400:$")
+    public void addWrongFilterProcessor(String processorRequestJson) {
+        InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
         jsonRequestWithAuth()
-                .body(getProcessorRequest(Collections.singleton(new ValuesIn())))
+                .body(resourceStream)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
                 .then()
                 .statusCode(400);
     }
 
-    @Then("^Processor is exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    @Then("^get Processor with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
     public void processorExistsWithinMinutes(String status, int timeoutMinutes) {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
@@ -149,8 +150,10 @@ public class End2EndTestITStep extends AbstractBridge {
                                 .body("status", Matchers.equalTo(status)));
     }
 
-    @Then("Ingress endpoint is accessible")
-    public void testIngressEndpoint() throws JsonProcessingException {
+    @Then("^send cloud events to the ingress at the endpoint with access token:$")
+    public void testIngressEndpoint(String cloudEvent) {
+        cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
+
         Headers headers = new Headers(
                 new Header("ce-specversion", SpecVersion.V1.toString()),
                 new Header("ce-type", "myType"),
@@ -159,14 +162,14 @@ public class End2EndTestITStep extends AbstractBridge {
                 new Header("ce-subject", "mySubject"));
 
         jsonRequestWithAuth()
-                .body(buildTestCloudEvent()).contentType(ContentType.JSON)
+                .body(cloudEventStream).contentType(ContentType.JSON)
                 .headers(headers)
                 .post(endPoint + "/events")
                 .then()
                 .statusCode(200);
 
         jsonRequestWithAuth()
-                .body(buildTestCloudEvent())
+                .body(cloudEventStream)
                 .headers(headers)
                 .post(endPoint + "/ingress/events/not-the-bridge-name")
                 .then()
@@ -189,12 +192,12 @@ public class End2EndTestITStep extends AbstractBridge {
                 .asString();
     }
 
-    @When("Processor is deleted")
+    @When("the Processor is deleted")
     public void testDeleteProcessor() {
         deleteProcessor(bridgeId, processorId);
     }
 
-    @Then("^Processor doesn't exists within (\\d+) (?:minute|minutes)$")
+    @Then("^the Processor doesn't exists within (\\d+) (?:minute|minutes)$")
     public void processorDoesNotExistsWithinMinutes(int timeoutMinutes) {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
@@ -205,12 +208,12 @@ public class End2EndTestITStep extends AbstractBridge {
                                 .statusCode(404));
     }
 
-    @When("Delete a Bridge")
+    @When("delete a Bridge")
     public void testDeleteBridge() {
         deleteBridge(bridgeId);
     }
 
-    @Then("^Bridge doesn't exists within (\\d+) (?:minute|minutes)$")
+    @Then("^the Bridge doesn't exists within (\\d+) (?:minute|minutes)$")
     public void bridgeDoesNotExistWithinMinutes(int timeoutMinutes) {
 
         Awaitility.await()
@@ -222,17 +225,16 @@ public class End2EndTestITStep extends AbstractBridge {
                                 .statusCode(404));
     }
 
-    @And("^Ingress is Undeployed within (\\d+) (?:minute|minutes)$")
+    @And("^the Ingress is Undeployed within (\\d+) (?:minute|minutes)$")
     public void ingressUndeployedWithinMinutes(int timeoutMinutes) {
-
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5)).untilAsserted(() -> jsonRequestWithAuth()
-                .body(buildTestCloudEvent()).contentType(ContentType.JSON)
+                .body(cloudEventStream).contentType(ContentType.JSON)
                 .post(endPoint + "/events")
                 .then()
                 .statusCode(404));
     }
 
-    @Given("Metrics info is exists")
+    @Given("the Metrics info is exists")
     public void testMetrics() {
         String metrics = jsonRequestWithAuth()
                 .delete(managerUrl + "/q/metrics")
@@ -252,21 +254,4 @@ public class End2EndTestITStep extends AbstractBridge {
         assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events/plain\",} 1.0");
     }
 
-    private static ProcessorRequest getProcessorRequest(Set<BaseFilter> filters) {
-        BaseAction action = new BaseAction();
-        action.setName("myKafkaAction");
-        action.setType(KafkaTopicAction.TYPE);
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
-        action.setParameters(params);
-        return new ProcessorRequest(PROCESSOR_NAME, FILTERS, TRANSFORMATION_TEMPLATE, action);
-    }
-
-    private String buildTestCloudEvent() throws JsonProcessingException {
-
-        String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
-        return CloudEventUtils.encode(
-                CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString)));
-    }
 }

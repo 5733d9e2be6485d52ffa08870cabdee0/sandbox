@@ -15,7 +15,6 @@
   <name>Event Bridge :: Integration Tests</name>
 
   <properties>
-    <cucumber.version>7.0.0</cucumber.version>
     <parallel>false</parallel>
   </properties>
 
@@ -96,7 +95,7 @@
 
   <profiles>
     <profile>
-      <id>integration</id>
+      <id>cucumber</id>
       <build>
         <plugins>
           <plugin>
@@ -118,6 +117,16 @@
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                 <cucumber.filter.tags>${tags}</cucumber.filter.tags>
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+
+                <!-- Token authorization configuration-->
+                <bridge.token.username>kermit</bridge.token.username>
+                <bridge.token.password>thefrog</bridge.token.password>
+                <bridge.client.id>event-bridge</bridge.client.id>
+                <bridge.client.secret>secret</bridge.client.secret>
+
+                <!--Manager and key-cloak url-->
+                <event-bridge.manager.url></event-bridge.manager.url>
+                <key-cloak.url></key-cloak.url>
               </systemProperties>
             </configuration>
           </plugin>

@@ -1,15 +1,21 @@
 package com.redhat.service.bridge.integration.tests.common;
 
+import java.io.InputStream;
+
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
-import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.restassured.response.Response;
 
-public class BridgeCommon extends AbstractBridge {
+import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.getSystemProperty;
+import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.jsonRequestWithAuth;
+
+public class BridgeCommon {
+
+    public static String managerUrl = getSystemProperty("event-bridge.manager.url");
 
     public static BridgeResponse addBridge(String bridgeName) {
         return jsonRequestWithAuth()
@@ -42,7 +48,7 @@ public class BridgeCommon extends AbstractBridge {
                 .statusCode(202);
     }
 
-    public static ProcessorResponse createProcessor(String bridgeId, ProcessorRequest processorRequest) {
+    public static ProcessorResponse createProcessor(String bridgeId, InputStream processorRequest) {
         return jsonRequestWithAuth()
                 .body(processorRequest)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
