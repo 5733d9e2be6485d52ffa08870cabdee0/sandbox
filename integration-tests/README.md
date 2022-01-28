@@ -1,6 +1,6 @@
 # integration-tests
 
-Module contains integration tests verifying end to end functionality in real cluster. The tests are executed using command `mvn clean verify -Pcucumber -Devent-bridge.manager.url="" -Dkey-cloak.url=""'.
+Module contains integration tests verifying end to end functionality in real cluster. The tests are executed using command `mvn clean verify -Pcucumber -Devent-bridge.manager.url="http://<minikube IP>/manager" -Dkey-cloak.url="http://<minikube IP>:30007/auth/realms/event-bridge-fm"'.
 
 Prerequisites for running the tests:
     - Cluster is up and running 

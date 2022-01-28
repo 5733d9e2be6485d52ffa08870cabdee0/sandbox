@@ -4,11 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
@@ -26,6 +24,7 @@ import io.cucumber.java.en.When;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import io.vertx.core.json.JsonObject;
 
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.addBridge;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.createProcessor;
@@ -41,34 +40,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class End2EndTestITStep {
 
-    private static final String TOPIC_NAME = "myKafkaTopic";
-    private static final String PROCESSOR_NAME = "myProcessor";
-
     private static String bridgeId;
     private static String processorId;
     private static String endPoint;
     private static String ingressMetrics;
     private static InputStream cloudEventStream;
 
-    @Given("get list of Bridge instances returns HTTP response code 401")
-    public void authenticationIsEnabled() {
+    @Given("get list of Bridge instances returns HTTP response code (\\d+)$")
+    public void authenticationIsEnabled(int responseCode) {
         given()
                 .contentType(ContentType.JSON)
                 .when()
                 .get(managerUrl + APIConstants.USER_API_BASE_PATH)
                 .then()
-                .statusCode(401);
+                .statusCode(responseCode);
     }
 
     @Given("^get list of Bridge instances with access token doesn't contain Bridge \"([^\"]*)\"$")
     public void getEmptyBridges(String bridgeName) {
         BridgeListResponse response = getBridgeList();
         assertThat(response.getKind()).isEqualTo("BridgeList");
-        if (response.getItems().size() > 0) {
-            for (int i = 0; i < response.getItems().size(); i++) {
-                assertThat(response.getItems().get(i).getName()).isNotEqualTo(bridgeName);
-            }
-        }
+        assertThat(response.getItems()).noneMatch(b -> b.getName().equals(bridgeName));
+
     }
 
     @When("^create a Bridge with name \"([^\"]*)\" with access token$")
@@ -87,13 +80,7 @@ public class End2EndTestITStep {
     @Given("^get list of Bridge instances with access token contains Bridge \"([^\"]*)\"")
     public void testBridgeExists(String bridgeName) {
         BridgeListResponse response = getBridgeList();
-        List<String> bridgeNames = new ArrayList<>();
-        if (response.getItems().size() > 0) {
-            for (int i = 0; i < response.getItems().size(); i++) {
-                bridgeNames.add(response.getItems().get(i).getName());
-            }
-        }
-        assertThat(bridgeNames.contains(bridgeName)).isTrue();
+        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(bridgeName));
     }
 
     @Then("^get Bridge with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
@@ -113,30 +100,36 @@ public class End2EndTestITStep {
 
     @When("^add Processor to the Bridge with access token:$")
     public void addProcessor(String processorRequestJson) {
+
+        JsonObject json = new JsonObject(processorRequestJson);
+        String processorName = json.getString("name");
+        String topic = json.getJsonObject("action").getJsonObject("parameters").getString("topic");
+        int filtersSize = json.getJsonArray("filters").size();
+
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
         ProcessorResponse response = createProcessor(bridgeId, resourceStream);
 
         processorId = response.getId();
 
-        assertThat(response.getName()).isEqualTo(PROCESSOR_NAME);
+        assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
-        assertThat(response.getFilters().size()).isEqualTo(1);
+        assertThat(response.getFilters().size()).isEqualTo(filtersSize);
 
         BaseAction action = response.getAction();
         assertThat(action.getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TOPIC_NAME);
+        assertThat(action.getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, topic);
     }
 
-    @Then("add invalid Processor to the Bridge with access token returns HTTP response code 400:$")
-    public void addWrongFilterProcessor(String processorRequestJson) {
+    @Then("add invalid Processor to the Bridge with access token returns HTTP response code (\\d+):$")
+    public void addWrongFilterProcessor(int responseCode, String processorRequestJson) {
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
         jsonRequestWithAuth()
                 .body(resourceStream)
                 .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
                 .then()
-                .statusCode(400);
+                .statusCode(responseCode);
     }
 
     @Then("^get Processor with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
