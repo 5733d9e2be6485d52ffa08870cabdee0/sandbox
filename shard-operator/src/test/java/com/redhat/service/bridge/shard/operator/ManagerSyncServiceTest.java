@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +21,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -39,6 +41,15 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
+
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @BeforeEach
+    public void setup() {
+        // Kubernetes Server must be cleaned up at startup of every test.
+        kubernetesResourcePatcher.cleanUp();
+    }
 
     @Test
     @WithPrometheus

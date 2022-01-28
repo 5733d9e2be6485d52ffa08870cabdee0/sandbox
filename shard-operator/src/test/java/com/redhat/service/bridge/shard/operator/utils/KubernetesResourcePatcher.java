@@ -36,6 +36,10 @@ public class KubernetesResourcePatcher {
     public void cleanUp() {
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
         kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
+        kubernetesClient.secrets().inAnyNamespace().delete();
+        kubernetesClient.apps().deployments().inAnyNamespace().delete();
+        kubernetesClient.services().inAnyNamespace().delete();
+        networkingTestUtils.cleanUp();
     }
 
     private Deployment getDeployment(String name, String namespace) {

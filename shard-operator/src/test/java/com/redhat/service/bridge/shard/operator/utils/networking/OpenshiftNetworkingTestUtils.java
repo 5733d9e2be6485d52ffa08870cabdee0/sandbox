@@ -56,4 +56,9 @@ public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
 
         client.routes().inNamespace(namespace).createOrReplace(route);
     }
+
+    @Override
+    public void cleanUp() {
+        client.routes().inAnyNamespace().delete();
+    }
 }
