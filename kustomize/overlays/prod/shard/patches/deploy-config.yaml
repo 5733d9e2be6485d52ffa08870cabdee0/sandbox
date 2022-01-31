@@ -7,7 +7,6 @@ data:
   EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge
   EVENT_BRIDGE_SSO_SECRET: secret
   EVENT_BRIDGE_SSO_URL: https://keycloak-event-bridge-prod.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm
-  KAFKA_SECURITY_PROTOCOL: SASL_SSL
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config
