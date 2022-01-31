@@ -47,16 +47,9 @@ public class SlackAction implements ConnectorAction {
 
         ObjectNode objectNode = mapper.createObjectNode();
 
-        ObjectNode connectorMap = mapper.createObjectNode();
-        connectorMap.set("channel", new TextNode(slackChannel));
-        connectorMap.set("webhookUrl", new TextNode(webHookURL));
-
-        objectNode.set("connector", connectorMap);
-
-        ObjectNode kafkaMap = mapper.createObjectNode();
-        kafkaMap.set("topic", new TextNode(kafkaTopic));
-
-        objectNode.set("kafka", kafkaMap);
+        objectNode.set("slack_channel", new TextNode(slackChannel));
+        objectNode.set("slack_webhook_url", new TextNode(webHookURL));
+        objectNode.set("kafka_topic", new TextNode(kafkaTopic));
 
         return objectNode;
     }
