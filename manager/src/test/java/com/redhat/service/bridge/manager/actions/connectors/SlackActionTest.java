@@ -32,13 +32,11 @@ class SlackActionTest {
         parameters.put(KafkaTopicAction.TOPIC_PARAM, "topic");
         JsonNode slackConnectorPayload = slackAction.connectorPayload(baseAction);
 
-        JsonNode expected = new ObjectMapper().readTree("    {  \"connector\": {\n" +
-                "         \"channel\": \"channel\",\n" +
-                "         \"webhookUrl\": \"webhook_url\"\n" +
-                "      },\n" +
-                "      \"kafka\": {\n" +
-                "         \"topic\": \"topic\"\n" +
-                "      } }");
+        JsonNode expected = new ObjectMapper().readTree("{" +
+                "    \"slack_channel\":\"channel\"," +
+                "    \"slack_webhook_url\":\"webhook_url\"," +
+                "    \"kafka_topic\":\"topic\"" +
+                "}");
 
         assertThat(slackConnectorPayload).isEqualTo(expected);
     }
