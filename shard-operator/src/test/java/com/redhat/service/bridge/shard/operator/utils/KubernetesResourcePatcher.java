@@ -3,10 +3,6 @@ package com.redhat.service.bridge.shard.operator.utils;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.networking.NetworkingTestUtils;
@@ -27,16 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ApplicationScoped
 public class KubernetesResourcePatcher {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesResourcePatcher.class);
-
     @Inject
     KubernetesClient kubernetesClient;
 
     @Inject
     NetworkingTestUtils networkingTestUtils;
-
-    @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
 
     private static final String FAILURE_MESSAGE = "The deployment has failed";
 
