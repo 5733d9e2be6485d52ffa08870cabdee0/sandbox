@@ -94,11 +94,5 @@
   "id": 16,
   "reason": "The user is not authorized to access the resource",
   "type": "USER"
-},
-{
-  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException",
-  "id": 17,
-  "reason": "The secrets for the resource were not found.",
-  "type": "PLATFORM"
 }
 ]
