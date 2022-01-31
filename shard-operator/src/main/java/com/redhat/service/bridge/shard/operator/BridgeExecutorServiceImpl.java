@@ -86,7 +86,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
 
-        // TODO: All the Executor applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
         try {
