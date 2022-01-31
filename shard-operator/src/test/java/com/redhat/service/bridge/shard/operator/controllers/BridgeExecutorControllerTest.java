@@ -55,16 +55,9 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
-        assertThat(bridgeExecutor.getStatus()).isNotNull();
-        assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-        });
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.SecretsNotFound);
-        });
+        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
+        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
     }
 
     @Test
@@ -111,7 +104,11 @@ public class BridgeExecutorControllerTest {
 
     private void deployBridgeExecutorSecret(BridgeExecutor bridgeExecutor) {
         Secret secret = new SecretBuilder()
-                .withMetadata(new ObjectMetaBuilder().withNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).build())
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withNamespace(bridgeExecutor.getMetadata().getNamespace())
+                                .withName(bridgeExecutor.getMetadata().getName())
+                                .build())
                 .build();
         kubernetesClient
                 .secrets()

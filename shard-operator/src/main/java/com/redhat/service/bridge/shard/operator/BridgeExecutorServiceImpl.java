@@ -158,6 +158,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             kubernetesClient
                     .secrets()
                     .inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                    .withName(bridgeExecutor.getMetadata().getName())
                     .createOrReplace(expected);
         }
     }

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
@@ -82,30 +81,19 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
 
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
-        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
         if (secret == null) {
-            BridgeError secretsNotFoundError = bridgeErrorService.getError(SecretsNotFoundException.class)
-                    .orElseThrow(() -> new RuntimeException("SecretsNotFoundException not found in error catalog"));
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation,
-                    ConditionReason.SecretsNotFound,
-                    secretsNotFoundError.getReason(),
-                    secretsNotFoundError.getCode());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
-                    ConditionReason.SecretsNotFound,
-                    secretsNotFoundError.getReason(),
-                    secretsNotFoundError.getCode());
-            LOGGER.info("NO SECRETS FOUND CRASH");
-            notifyManager(bridgeIngress, BridgeStatus.FAILED);
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            LOGGER.debug("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
+            return UpdateControl.noUpdate();
         }
 
         Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
             bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
@@ -123,19 +111,19 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         // Create Service
         Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
-            LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
         NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
         if (!networkResource.isReady()) {
-            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);

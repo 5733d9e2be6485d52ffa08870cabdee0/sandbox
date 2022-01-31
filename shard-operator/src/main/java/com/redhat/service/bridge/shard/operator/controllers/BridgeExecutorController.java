@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.SecretsNotFoundException;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
@@ -21,6 +20,7 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
@@ -64,6 +64,8 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         eventSourceManager.registerEventSource("bridge-processor-deployment-event-source", deploymentEventSource);
         ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-processor-service-event-source", serviceEventSource);
+        SecretEventSource secretEventSource = SecretEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
+        eventSourceManager.registerEventSource("bridge-processor-secret-event-source", secretEventSource);
         Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
         serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-processor-monitoring-event-source", monitorEventSource));
     }
@@ -75,18 +77,8 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 
         if (secret == null) {
-            BridgeError secretsNotFoundError = bridgeErrorService.getError(SecretsNotFoundException.class)
-                    .orElseThrow(() -> new RuntimeException("SecretsNotFoundException not found in error catalog"));
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation,
-                    ConditionReason.SecretsNotFound,
-                    secretsNotFoundError.getReason(),
-                    secretsNotFoundError.getCode());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
-                    ConditionReason.SecretsNotFound,
-                    secretsNotFoundError.getReason(),
-                    secretsNotFoundError.getCode());
-            notifyManager(bridgeExecutor, BridgeStatus.FAILED);
-            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+            LOGGER.debug("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
+            return UpdateControl.noUpdate();
         }
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);

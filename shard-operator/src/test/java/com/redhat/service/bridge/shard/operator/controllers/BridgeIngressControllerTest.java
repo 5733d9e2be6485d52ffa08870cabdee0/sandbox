@@ -65,16 +65,9 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
-        assertThat(bridgeIngress.getStatus()).isNotNull();
-        assertThat(bridgeIngress.getStatus().isReady()).isFalse();
-        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-        });
-        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.SecretsNotFound);
-        });
+        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
+        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
     }
 
     @Test
@@ -151,7 +144,11 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
 
     private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {
         Secret secret = new SecretBuilder()
-                .withMetadata(new ObjectMetaBuilder().withNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).build())
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withNamespace(bridgeIngress.getMetadata().getNamespace())
+                                .withName(bridgeIngress.getMetadata().getName())
+                                .build())
                 .build();
         kubernetesClient
                 .secrets()

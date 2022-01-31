@@ -88,7 +88,7 @@ public class BridgeExecutorServiceTest {
 
         // Then
         Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
+                .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -118,7 +118,7 @@ public class BridgeExecutorServiceTest {
 
         // Wait until deployment is created by the controller.
         Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
+                .atMost(Duration.ofMinutes(2))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -144,14 +144,15 @@ public class BridgeExecutorServiceTest {
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
+        bridgeExecutorService.deleteBridgeExecutor(dto);
 
         // Then
-        BridgeIngress bridgeIngress = kubernetesClient
-                .resources(BridgeIngress.class)
+        BridgeExecutor bridgeExecutor = kubernetesClient
+                .resources(BridgeExecutor.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
-        assertThat(bridgeIngress).isNull();
+        assertThat(bridgeExecutor).isNull();
     }
 
     private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {

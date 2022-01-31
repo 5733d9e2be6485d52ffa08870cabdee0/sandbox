@@ -70,6 +70,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                     .resources(BridgeIngress.class)
                     .inNamespace(namespace.getMetadata().getName())
                     .createOrReplace(expected);
+
             // create or update the secrets for the bridgeIngress
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         }
@@ -163,6 +164,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             kubernetesClient
                     .secrets()
                     .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
                     .createOrReplace(expected);
         }
     }
