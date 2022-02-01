@@ -49,6 +49,7 @@ spec:
                       - DeploymentNotAvailable
                       - DeploymentFailed
                       - ServiceNotReady
+                      - SecretsNotFound
                       - PrometheusUnavailable
                       - DeploymentAvailable
                       - DeploymentProgressing
