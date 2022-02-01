@@ -26,20 +26,13 @@ spec:
           image: ""
           imagePullPolicy: IfNotPresent
           env:
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: ""
-            - name: KAFKA_CLIENT_ID
-              value: ""
-            - name: KAFKA_CLIENT_SECRET
-              value: ""
-            - name: KAFKA_SECURITY_PROTOCOL
-              value: ""
-            - name: KAFKA_GROUP_ID
-              value: ""
             - name: PROCESSOR_DEFINITION
               value: ""
             - name: WEBHOOK_TECHNICAL_BEARER_TOKEN
               value: ""
+          envFrom:
+            - secretRef:
+                name: ""
           livenessProbe:
             httpGet:
               path: /q/health/live

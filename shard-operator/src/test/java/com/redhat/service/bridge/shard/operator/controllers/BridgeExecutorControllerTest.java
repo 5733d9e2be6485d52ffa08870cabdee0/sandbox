@@ -14,6 +14,9 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -44,9 +47,24 @@ public class BridgeExecutorControllerTest {
     }
 
     @Test
-    void testCreateNewBridgeIngress() {
+    void testCreateNewBridgeExecutorWithoutSecrets() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+
+        // When
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
+
+        // Then
+        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
+        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
+    }
+
+    @Test
+    void testCreateNewBridgeExecutor() {
+        // Given
+        BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
@@ -65,9 +83,10 @@ public class BridgeExecutorControllerTest {
     }
 
     @Test
-    void testBridgeIngressDeployment() {
+    void testBridgeExecutorDeployment() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
         bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
@@ -81,6 +100,21 @@ public class BridgeExecutorControllerTest {
         assertThat(deployment.getSpec().getTemplate().getMetadata().getLabels()).isNotNull();
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isNotNull();
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
+    }
+
+    private void deployBridgeExecutorSecret(BridgeExecutor bridgeExecutor) {
+        Secret secret = new SecretBuilder()
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withNamespace(bridgeExecutor.getMetadata().getNamespace())
+                                .withName(bridgeExecutor.getMetadata().getName())
+                                .build())
+                .build();
+        kubernetesClient
+                .secrets()
+                .inNamespace(bridgeExecutor.getMetadata().getNamespace())
+                .withName(bridgeExecutor.getMetadata().getName())
+                .createOrReplace(secret);
     }
 
     private BridgeExecutor buildBridgeExecutor() {

@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -64,15 +66,18 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            kubernetesClient
+            BridgeIngress bridgeIngress = kubernetesClient
                     .resources(BridgeIngress.class)
                     .inNamespace(namespace.getMetadata().getName())
                     .createOrReplace(expected);
+
+            // create or update the secrets for the bridgeIngress
+            createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         }
     }
 
     @Override
-    public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress) {
+    public Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress, Secret secret) {
         Deployment expected = templateProvider.loadBridgeIngressDeploymentTemplate(bridgeIngress);
 
         // Specs
@@ -81,14 +86,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeIngress.COMPONENT_NAME);
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
 
-        // TODO: All the Ingress applications will push events to the same kafka cluster under the same kafka topic. This configuration will have to be specified by the manager for each Bridge instance: https://issues.redhat.com/browse/MGDOBR-123
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables
-                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaBootstrapServers()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaClient()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecret()).build());
-        environmentVariables
-                .add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).withValue(globalConfigurationsProvider.getKafkaSecurityProtocol()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
@@ -96,6 +94,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID).withValue(webhookTechnicalAccountId).build());
 
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
+        expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnvFrom().get(0).getSecretRef().setName(secret.getMetadata().getName());
 
         Deployment existing = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
 
@@ -143,5 +142,38 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
         }
+    }
+
+    @Override
+    public void createOrUpdateBridgeIngressSecret(BridgeIngress bridgeIngress, BridgeDTO bridgeDTO) {
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress);
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
+
+        Secret existing = kubernetesClient
+                .secrets()
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
+
+        if (existing == null || !expected.getData().equals(existing.getData())) {
+            kubernetesClient
+                    .secrets()
+                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
+                    .createOrReplace(expected);
+        }
+    }
+
+    @Override
+    public Secret fetchBridgeIngressSecret(BridgeIngress bridgeIngress) {
+        return kubernetesClient
+                .secrets()
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
     }
 }
