@@ -28,15 +28,10 @@ public class BridgeExecutorSteps {
         this.context = context;
     }
 
-    @When("^deploy BridgeExecutor:$")
-    public BridgeExecutor deployBridegeExecutor(String bridgeExecutorYaml) {
-        InputStream resourceStream = new ByteArrayInputStream(bridgeExecutorYaml.getBytes(StandardCharsets.UTF_8));
-        return context.getClient().resources(BridgeExecutor.class).inNamespace(context.getNamespace()).load(resourceStream).create();
-    }
-
     @When("^deploy BridgeExecutor with default secret:$")
     public void deployBridgeIngressWithDefaultSecrets(String bridgeExecutorYaml) {
-        BridgeExecutor bridgeExecutor = deployBridegeExecutor(bridgeExecutorYaml);
+        InputStream resourceStream = new ByteArrayInputStream(bridgeExecutorYaml.getBytes(StandardCharsets.UTF_8));
+        BridgeExecutor bridgeExecutor = context.getClient().resources(BridgeExecutor.class).inNamespace(context.getNamespace()).load(resourceStream).create();
         Secret secret = new SecretBuilder()
                 .withMetadata(
                         new ObjectMetaBuilder()
