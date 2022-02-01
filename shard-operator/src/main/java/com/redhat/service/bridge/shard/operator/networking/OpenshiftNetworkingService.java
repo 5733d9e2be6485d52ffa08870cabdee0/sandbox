@@ -16,7 +16,7 @@ import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 public class OpenshiftNetworkingService implements NetworkingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
-    private static final String CLUSTER_DOMAIN_RESOURCE_NAME = "cluster";
+    public static final String CLUSTER_DOMAIN_RESOURCE_NAME = "cluster";
 
     private final OpenShiftClient client;
     private final TemplateProvider templateProvider;
