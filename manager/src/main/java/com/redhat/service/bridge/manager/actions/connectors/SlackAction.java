@@ -22,6 +22,9 @@ public class SlackAction implements ConnectorAction {
     public static final String WEBHOOK_URL_PARAMETER = "webhookUrl";
 
     public static final String CONNECTOR_TYPE = "slack_sink_0.1";
+    public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
+    public static final String CONNECTOR_WEBHOOK_URL_PARAMETER = "slack_webhook_url";
+    public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
     @Inject
     SlackActionValidator validator;
@@ -47,16 +50,9 @@ public class SlackAction implements ConnectorAction {
 
         ObjectNode objectNode = mapper.createObjectNode();
 
-        ObjectNode connectorMap = mapper.createObjectNode();
-        connectorMap.set("channel", new TextNode(slackChannel));
-        connectorMap.set("webhookUrl", new TextNode(webHookURL));
-
-        objectNode.set("connector", connectorMap);
-
-        ObjectNode kafkaMap = mapper.createObjectNode();
-        kafkaMap.set("topic", new TextNode(kafkaTopic));
-
-        objectNode.set("kafka", kafkaMap);
+        objectNode.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
+        objectNode.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
+        objectNode.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(kafkaTopic));
 
         return objectNode;
     }

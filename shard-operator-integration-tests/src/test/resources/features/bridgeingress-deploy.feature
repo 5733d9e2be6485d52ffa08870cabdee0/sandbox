@@ -5,7 +5,7 @@ Feature: BridgeIngress deploy and undeploy
 
   # Using "dummy" image as real BridgeIngress image requires Kafka
   Scenario: BridgeIngress is in condition Ready
-    When deploy BridgeIngress:
+    When deploy BridgeIngress with default secret:
     """
     apiVersion: com.redhat.service.bridge/v1alpha1
     kind: BridgeIngress
@@ -27,7 +27,7 @@ Feature: BridgeIngress deploy and undeploy
 
   # Using "dummy" image as real BridgeIngress image requires Kafka
   Scenario: BridgeIngress gets deleted
-    Given deploy BridgeIngress:
+    Given deploy BridgeIngress with default secret:
     """
     apiVersion: com.redhat.service.bridge/v1alpha1
     kind: BridgeIngress

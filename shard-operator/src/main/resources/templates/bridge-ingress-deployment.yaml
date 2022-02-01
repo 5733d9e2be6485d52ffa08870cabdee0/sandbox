@@ -26,14 +26,6 @@ spec:
           image: ""
           imagePullPolicy: IfNotPresent
           env:
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: ""
-            - name: KAFKA_CLIENT_ID
-              value: ""
-            - name: KAFKA_CLIENT_SECRET
-              value: ""
-            - name: KAFKA_SECURITY_PROTOCOL
-              value: ""
             - name: EVENT_BRIDGE_BRIDGE_ID
               value: ""
             - name: EVENT_BRIDGE_CUSTOMER_ID
@@ -44,6 +36,9 @@ spec:
               value: ""
             - name: EVENT_BRIDGE_WEBHOOK_TECHNICAL_ACCOUNT_ID
               value: ""
+          envFrom:
+            - secretRef:
+                name: ""
           livenessProbe:
             httpGet:
               path: /q/health/live

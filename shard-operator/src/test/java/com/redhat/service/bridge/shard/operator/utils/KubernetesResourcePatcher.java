@@ -36,6 +36,10 @@ public class KubernetesResourcePatcher {
     public void cleanUp() {
         kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
         kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
+        kubernetesClient.secrets().inAnyNamespace().delete();
+        kubernetesClient.apps().deployments().inAnyNamespace().delete();
+        kubernetesClient.services().inAnyNamespace().delete();
+        networkingTestUtils.cleanUp();
     }
 
     private Deployment getDeployment(String name, String namespace) {
@@ -68,7 +72,7 @@ public class KubernetesResourcePatcher {
                 .withMessage(FAILURE_MESSAGE)
                 .build();
 
-        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(0).withConditions(deploymentCondition).build();
+        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(1).withAvailableReplicas(0).withConditions(deploymentCondition).build();
         updateDeploymentStatus(deployment, deploymentStatus);
     }
 

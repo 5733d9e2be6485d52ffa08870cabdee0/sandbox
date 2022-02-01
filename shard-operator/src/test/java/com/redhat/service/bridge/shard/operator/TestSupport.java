@@ -9,6 +9,7 @@ import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -24,17 +25,28 @@ public class TestSupport {
     public static final String BRIDGE_ENDPOINT = "http://localhost:8080";
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
+    public static final String KAFKA_BOOTSTRAP_SERVERS = "mytestkafka:9092";
+    public static final String KAFKA_CLIENT_ID = "client-id";
+    public static final String KAFKA_CLIENT_SECRET = "testsecret";
+    public static final String KAFKA_SECURITY_PROTOCOL = "PLAINTEXT";
+    public static final String KAFKA_TOPIC = "ob-my-id";
+    public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
+            KAFKA_BOOTSTRAP_SERVERS,
+            KAFKA_CLIENT_ID,
+            KAFKA_CLIENT_SECRET,
+            KAFKA_SECURITY_PROTOCOL,
+            KAFKA_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.REQUESTED);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.REQUESTED, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.PROVISIONING);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.PROVISIONING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newAvailableBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.AVAILABLE);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.AVAILABLE, KAFKA_CONNECTION_DTO);
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
@@ -53,6 +65,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.REQUESTED);
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.REQUESTED, KAFKA_CONNECTION_DTO);
     }
 }

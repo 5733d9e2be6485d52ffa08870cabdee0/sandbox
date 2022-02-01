@@ -21,15 +21,19 @@ public class BridgeDTO {
     @JsonProperty("status")
     private BridgeStatus status;
 
+    @JsonProperty("kafkaConnection")
+    private KafkaConnectionDTO kafkaConnection;
+
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String customerId, BridgeStatus status) {
+    public BridgeDTO(String id, String name, String endpoint, String customerId, BridgeStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
         this.customerId = customerId;
         this.status = status;
+        this.kafkaConnection = kafkaConnection;
     }
 
     public void setCustomerId(String customerId) {
@@ -52,6 +56,10 @@ public class BridgeDTO {
         this.name = name;
     }
 
+    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
+        this.kafkaConnection = kafkaConnection;
+    }
+
     public String getId() {
         return id;
     }
@@ -70,6 +78,10 @@ public class BridgeDTO {
 
     public BridgeStatus getStatus() {
         return status;
+    }
+
+    public KafkaConnectionDTO getKafkaConnection() {
+        return kafkaConnection;
     }
 
     @Override
@@ -96,7 +108,8 @@ public class BridgeDTO {
                 ", name='" + name + '\'' +
                 ", endpoint='" + endpoint + '\'' +
                 ", customerId='" + customerId + '\'' +
-                ", status=" + status +
+                ", status=" + status + '\'' +
+                ", kafkaConnection=" + kafkaConnection.toString() +
                 '}';
     }
 }

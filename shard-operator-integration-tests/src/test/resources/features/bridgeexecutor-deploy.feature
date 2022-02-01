@@ -5,7 +5,7 @@ Feature: BridgeExecutor deploy and undeploy
 
   # Using "dummy" image as real BridgeExecutor image requires Kafka
   Scenario: BridgeExecutor is in condition Ready
-    When deploy BridgeExecutor:
+    When deploy BridgeExecutor with default secret:
     """
     apiVersion: com.redhat.service.bridge/v1alpha1
     kind: BridgeExecutor
@@ -28,7 +28,7 @@ Feature: BridgeExecutor deploy and undeploy
 
   # Using "dummy" image as real BridgeExecutor image requires Kafka
   Scenario: BridgeExecutor gets deleted
-    Given deploy BridgeExecutor:
+    Given deploy BridgeExecutor with default secret:
     """
     apiVersion: com.redhat.service.bridge/v1alpha1
     kind: BridgeExecutor

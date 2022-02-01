@@ -25,16 +25,20 @@ public class ProcessorDTO {
     @JsonProperty("status")
     private BridgeStatus status;
 
+    @JsonProperty("kafkaConnection")
+    private KafkaConnectionDTO kafkaConnection;
+
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, BridgeStatus status) {
+    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, BridgeStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.bridgeId = bridgeId;
         this.customerId = customerId;
         this.status = status;
         this.definition = definition;
+        this.kafkaConnection = kafkaConnection;
     }
 
     public String getId() {
@@ -83,6 +87,14 @@ public class ProcessorDTO {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public KafkaConnectionDTO getKafkaConnection() {
+        return kafkaConnection;
+    }
+
+    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
+        this.kafkaConnection = kafkaConnection;
     }
 
     @Override

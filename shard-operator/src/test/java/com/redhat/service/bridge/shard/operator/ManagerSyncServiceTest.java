@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +21,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -40,12 +42,21 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
 
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @BeforeEach
+    public void setup() {
+        // Kubernetes Server must be cleaned up at startup of every test.
+        kubernetesResourcePatcher.cleanUp();
+    }
+
     @Test
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
@@ -63,7 +74,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String firstBridgeName = BridgeIngress.resolveResourceName("myId-1");
         String secondBridgeName = BridgeIngress.resolveResourceName("myId-2");
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -87,8 +98,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETED\"}";
@@ -106,7 +117,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING);
+        BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING, TestSupport.KAFKA_CONNECTION_DTO);
         stubBridgeUpdate();
         String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
 
@@ -122,6 +133,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     @Test
+    @WithPrometheus
     public void testProcessorsAreDeployed() throws Exception {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
 
@@ -135,7 +147,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
+                .atMost(Duration.ofMinutes(3))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
@@ -144,6 +156,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         });
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         processor.setStatus(BridgeStatus.AVAILABLE);
+        processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));

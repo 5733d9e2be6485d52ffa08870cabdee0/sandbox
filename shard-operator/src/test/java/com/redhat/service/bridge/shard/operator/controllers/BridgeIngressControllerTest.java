@@ -20,6 +20,9 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
@@ -54,9 +57,24 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
     }
 
     @Test
+    void testCreateNewBridgeIngressWithoutSecrets() {
+        // Given
+        BridgeIngress bridgeIngress = buildBridgeIngress();
+
+        // When
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+
+        // Then
+        assertThat(updateControl.isUpdateCustomResource()).isFalse();
+        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
+        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
+    }
+
+    @Test
     void testCreateNewBridgeIngress() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
 
         // When
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
@@ -78,6 +96,7 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
     void testBridgeIngressDeployment() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
 
         // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
@@ -93,16 +112,11 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
     }
 
-    private Deployment getDeploymentFor(BridgeIngress bridgeIngress) {
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
-        assertThat(deployment).isNotNull();
-        return deployment;
-    }
-
     @Test
     void testBridgeIngressDeployment_deploymentFails() throws Exception {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
 
         // When
         bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
@@ -122,10 +136,31 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         BridgeDTO bridgeDTO = updateControl.getCustomResource().toDTO();
         bridgeDTO.setStatus(BridgeStatus.FAILED);
 
-        assertThat(bridgeUpdates.await(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(bridgeUpdates.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(bridgeDTO)))
                 .withHeader("Content-Type", equalTo("application/json")));
+    }
+
+    private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {
+        Secret secret = new SecretBuilder()
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withNamespace(bridgeIngress.getMetadata().getNamespace())
+                                .withName(bridgeIngress.getMetadata().getName())
+                                .build())
+                .build();
+        kubernetesClient
+                .secrets()
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .createOrReplace(secret);
+    }
+
+    private Deployment getDeploymentFor(BridgeIngress bridgeIngress) {
+        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
+        assertThat(deployment).isNotNull();
+        return deployment;
     }
 
     private BridgeIngress buildBridgeIngress() {

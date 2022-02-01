@@ -64,6 +64,11 @@ public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
         client.routes().inNamespace(namespace).createOrReplace(route);
     }
 
+    @Override
+    public void cleanUp() {
+        client.routes().inAnyNamespace().delete();
+    }
+
     private void patchOpenshiftIngressDomain() {
         Ingress openshiftIngress = new IngressBuilder()
                 .withMetadata(new ObjectMetaBuilder().withName(OpenshiftNetworkingService.CLUSTER_DOMAIN_RESOURCE_NAME).build())
