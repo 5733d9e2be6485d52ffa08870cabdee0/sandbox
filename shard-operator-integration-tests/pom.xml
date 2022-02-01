@@ -15,7 +15,6 @@
   <name>Event Bridge :: Shard Operator Integration Tests (Cucumber)</name>
 
   <properties>
-    <cucumber.version>7.0.0</cucumber.version>
     <parallel>false</parallel>
   </properties>
 
@@ -40,19 +39,19 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
       <scope>test</scope>
-      <version>${cucumber.version}</version>
+      <version>${version.io.cucumber}</version>
     </dependency>
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit-platform-engine</artifactId>
       <scope>test</scope>
-      <version>${cucumber.version}</version>
+      <version>${version.io.cucumber}</version>
     </dependency>
     <dependency>
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-picocontainer</artifactId>
         <scope>test</scope>
-        <version>${cucumber.version}</version>
+        <version>${version.io.cucumber}</version>
     </dependency>
 
     <dependency>
