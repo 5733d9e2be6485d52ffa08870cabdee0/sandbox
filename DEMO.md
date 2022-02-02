@@ -104,6 +104,10 @@ the response should look like
 
 Keep track of the `endpoint`, it will be used later when pushing an event to this ingress application.
 
+```bash
+export BRIDGE_ENDPOINT="$(curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq --raw-output .endpoint)"
+```
+
 The application is now `AVAILABLE` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
 1. `/events`: it accepts only valid cloud event json payloads.
 2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`. 
@@ -228,7 +232,7 @@ Here's the cloud event we are going to send:
 with the following request (change the url according to your ingress application endpoint)
 
 ```bash
-curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H 'Authorization: $OB_TOKEN' -d '{ "specversion": "1.0", "type": "Microsoft.Storage.BlobCreated", "source": "StorageService", "id": "9aeb0fdf-c01e-0131-0922-9eb54906e209", "time": "2019-11-18T15:13:39.4589254Z", "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}", "dataschema": "#", "data": { "api": "PutBlockList", "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a", "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000", "eTag": "0x8D76C39E4407333", "contentType": "image/png", "contentLength": 30699, "blobType": "BlockBlob", "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}", "sequencer": "000000000000000000000000000099240000000000c41c18", "storageDiagnostics": { "batchId": "681fe319-3006-00a8-0022-9e7cde000000"}}}' http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/events
+curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d '{ "specversion": "1.0", "type": "Microsoft.Storage.BlobCreated", "source": "StorageService", "id": "9aeb0fdf-c01e-0131-0922-9eb54906e209", "time": "2019-11-18T15:13:39.4589254Z", "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}", "dataschema": "#", "data": { "api": "PutBlockList", "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a", "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000", "eTag": "0x8D76C39E4407333", "contentType": "image/png", "contentLength": 30699, "blobType": "BlockBlob", "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}", "sequencer": "000000000000000000000000000099240000000000c41c18", "storageDiagnostics": { "batchId": "681fe319-3006-00a8-0022-9e7cde000000"}}}' "$BRIDGE_ENDPOINT/events"
 ```
 
 if the event is a valid cloud event and everything went well, the server will return a response with status `200`.
