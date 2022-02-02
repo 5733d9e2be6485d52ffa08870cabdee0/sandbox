@@ -9,8 +9,6 @@ import com.redhat.service.bridge.shard.operator.watchers.networking.OpenshiftRou
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.openshift.api.model.Route;
-import io.fabric8.openshift.api.model.RouteSpec;
-import io.fabric8.openshift.api.model.RouteSpecBuilder;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
@@ -18,6 +16,7 @@ import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 public class OpenshiftNetworkingService implements NetworkingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
+    public static final String CLUSTER_DOMAIN_RESOURCE_NAME = "cluster";
 
     private final OpenShiftClient client;
     private final TemplateProvider templateProvider;
@@ -58,16 +57,18 @@ public class OpenshiftNetworkingService implements NetworkingService {
     private Route buildRoute(BridgeIngress bridgeIngress, Service service) {
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress);
 
-        RouteSpec routeSpec = new RouteSpecBuilder()
-                .withTo(new RouteTargetReferenceBuilder()
-                        .withKind("Service")
-                        .withName(service.getMetadata().getName())
-                        .build())
-                .build();
-
-        route.setSpec(routeSpec);
-
+        // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
+        route.getSpec().setHost(String.format("%s.%s", bridgeIngress.getMetadata().getName(), getOpenshiftAppsDomain()));
+        route.getSpec().setTo(new RouteTargetReferenceBuilder()
+                .withKind("Service")
+                .withName(service.getMetadata().getName())
+                .build());
         return route;
+    }
+
+    // https://docs.openshift.com/container-platform/4.6/networking/routes/route-configuration.html
+    private String getOpenshiftAppsDomain() {
+        return client.config().ingresses().withName(CLUSTER_DOMAIN_RESOURCE_NAME).get().getSpec().getDomain();
     }
 
     private NetworkResource buildNetworkingResource(Route route) {

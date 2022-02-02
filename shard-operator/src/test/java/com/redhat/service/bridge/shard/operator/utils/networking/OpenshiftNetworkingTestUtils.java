@@ -1,6 +1,12 @@
 package com.redhat.service.bridge.shard.operator.utils.networking;
 
+import com.redhat.service.bridge.shard.operator.networking.OpenshiftNetworkingService;
+
 import io.fabric8.kubernetes.api.model.Namespaced;
+import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.openshift.api.model.Ingress;
+import io.fabric8.openshift.api.model.IngressBuilder;
+import io.fabric8.openshift.api.model.IngressSpecBuilder;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteIngress;
 import io.fabric8.openshift.api.model.RouteIngressBuilder;
@@ -19,6 +25,7 @@ public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
 
     public OpenshiftNetworkingTestUtils(OpenShiftClient client) {
         this.client = client;
+        patchOpenshiftIngressDomain();
     }
 
     @Override
@@ -60,5 +67,13 @@ public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
     @Override
     public void cleanUp() {
         client.routes().inAnyNamespace().delete();
+    }
+
+    private void patchOpenshiftIngressDomain() {
+        Ingress openshiftIngress = new IngressBuilder()
+                .withMetadata(new ObjectMetaBuilder().withName(OpenshiftNetworkingService.CLUSTER_DOMAIN_RESOURCE_NAME).build())
+                .withSpec(new IngressSpecBuilder().withDomain("apps.openbridge-dev.fdvn.p1.openshiftapps.com").build())
+                .build();
+        this.client.config().ingresses().withName(OpenshiftNetworkingService.CLUSTER_DOMAIN_RESOURCE_NAME).create(openshiftIngress);
     }
 }
