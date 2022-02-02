@@ -102,9 +102,9 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
-        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETED\"}";
+        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETING\"}";
 
-        CountDownLatch latch = new CountDownLatch(3); // Two updates to the manager are expected
+        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
