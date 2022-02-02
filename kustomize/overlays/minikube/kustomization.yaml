@@ -4,7 +4,7 @@ images:
   newTag: 6f760c683a517a6641605ce31b6b9be56f1c3b8b-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: k8s-6f760c683a517a6641605ce31b6b9be56f1c3b8b-jvm
+  newTag: k8s-e689a86db1258aa440af0649d65acece036819cb-jvm
 resources:
 - kafka
 - keycloak
