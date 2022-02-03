@@ -30,8 +30,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static final String COMPONENT_NAME = "executor";
-
-    private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+    public static final String OB_RESOURCE_NAME_PREFIX = "ob-";
 
     /**
      * Don't use this default constructor!

@@ -24,8 +24,7 @@ import static java.util.Objects.requireNonNull;
 public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngressStatus> implements Namespaced {
 
     public static final String COMPONENT_NAME = "ingress";
-
-    private static final String OB_RESOURCE_NAME_PREFIX = "ob-";
+    public static final String OB_RESOURCE_NAME_PREFIX = "ob-";
 
     /**
      * Don't use this default constructor!

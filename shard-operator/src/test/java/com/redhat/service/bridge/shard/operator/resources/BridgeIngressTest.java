@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 
+import static com.redhat.service.bridge.shard.operator.resources.BridgeIngress.OB_RESOURCE_NAME_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeIngressTest {
@@ -15,7 +16,7 @@ public class BridgeIngressTest {
         BridgeIngress bridgeIngress = BridgeIngress.fromDTO(dto, "ns", "image");
 
         assertThat(bridgeIngress.getMetadata().getNamespace()).isEqualTo("ns");
-        assertThat(bridgeIngress.getMetadata().getName()).isEqualTo("ob-" + TestSupport.BRIDGE_ID);
+        assertThat(bridgeIngress.getMetadata().getName()).isEqualTo(OB_RESOURCE_NAME_PREFIX + TestSupport.BRIDGE_ID);
 
         assertThat(bridgeIngress.getSpec().getBridgeName()).isEqualTo(dto.getName());
         assertThat(bridgeIngress.getSpec().getId()).isEqualTo(dto.getId());

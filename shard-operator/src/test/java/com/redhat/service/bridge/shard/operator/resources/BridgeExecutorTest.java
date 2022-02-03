@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 
+import static com.redhat.service.bridge.shard.operator.resources.BridgeExecutor.OB_RESOURCE_NAME_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeExecutorTest {
@@ -15,7 +16,7 @@ public class BridgeExecutorTest {
         BridgeExecutor bridgeExecutor = BridgeExecutor.fromDTO(dto, "ns", "image");
 
         assertThat(bridgeExecutor.getMetadata().getNamespace()).isEqualTo("ns");
-        assertThat(bridgeExecutor.getMetadata().getName()).isEqualTo("ob-" + TestSupport.PROCESSOR_ID);
+        assertThat(bridgeExecutor.getMetadata().getName()).isEqualTo(OB_RESOURCE_NAME_PREFIX + TestSupport.PROCESSOR_ID);
 
         assertThat(bridgeExecutor.getSpec().getProcessorName()).isEqualTo(dto.getName());
         assertThat(bridgeExecutor.getSpec().getId()).isEqualTo(dto.getId());

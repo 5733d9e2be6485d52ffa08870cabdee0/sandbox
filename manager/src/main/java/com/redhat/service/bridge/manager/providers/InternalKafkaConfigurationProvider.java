@@ -8,6 +8,4 @@ public interface InternalKafkaConfigurationProvider {
     String getBootstrapServers();
 
     String getSecurityProtocol();
-
-    String buildTopicName(String bridgeId);
 }

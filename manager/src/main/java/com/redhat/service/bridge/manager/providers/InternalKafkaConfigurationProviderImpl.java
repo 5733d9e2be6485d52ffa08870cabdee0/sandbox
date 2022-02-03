@@ -10,11 +10,6 @@ import com.redhat.service.bridge.manager.RhoasService;
 @ApplicationScoped
 public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConfigurationProvider {
 
-    private static final String TOPIC_PREFIX = "ob-";
-
-    // TODO: remove with MGDOBR-225
-    private static final String LOCAL_DEV_SINGLE_TOPIC_NAME = "events";
-
     @ConfigProperty(name = "event-bridge.kafka.bootstrap.servers")
     String kafkaBootstrapServers;
 
@@ -48,14 +43,5 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
     @Override
     public String getSecurityProtocol() {
         return kafkaSecurityProtocol;
-    }
-
-    @Override
-    public String buildTopicName(String bridgeId) {
-        // TODO: review this logic with MGDOBR-225
-        if (rhoasService.isEnabled()) {
-            return TOPIC_PREFIX + bridgeId;
-        }
-        return LOCAL_DEV_SINGLE_TOPIC_NAME;
     }
 }

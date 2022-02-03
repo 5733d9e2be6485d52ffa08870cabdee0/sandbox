@@ -13,7 +13,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 
 @ApplicationScoped
-public class RedHatSSOMockServerConfiguration {
+public class RedHatSSOMockServerConfigurator {
 
     public static final String TEST_ACCESS_TOKEN = "TESTACCESSTOKEN456";
 
