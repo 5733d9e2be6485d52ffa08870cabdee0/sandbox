@@ -89,7 +89,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
-                                        y.setStatus(BridgeStatus.DELETED);
+                                        y.setStatus(BridgeStatus.DELETING);
                                         bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
@@ -115,7 +115,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
-                                y.setStatus(BridgeStatus.DELETED);
+                                y.setStatus(BridgeStatus.DELETING);
                                 bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(

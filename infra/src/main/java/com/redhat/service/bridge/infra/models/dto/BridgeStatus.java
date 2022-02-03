@@ -5,6 +5,7 @@ public enum BridgeStatus {
     PROVISIONING,
     AVAILABLE,
     DELETION_REQUESTED,
+    DELETING,
     DELETED,
     FAILED
 }
