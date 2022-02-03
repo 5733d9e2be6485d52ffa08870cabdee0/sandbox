@@ -50,6 +50,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.bridge.manager.actions.connectors.SlackActionTransformer.TOPIC_PREFIX;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -87,7 +88,6 @@ public class ProcessorServiceTest {
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
         reset(rhoasServiceMock);
-        when(rhoasServiceMock.isEnabled()).thenReturn(false);
     }
 
     private Bridge createPersistBridge(BridgeStatus status) {
@@ -372,7 +372,6 @@ public class ProcessorServiceTest {
     public void testDeleteProcessorWithConnector() {
         final String testConnectorId = "connectorExternalId";
 
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector(testConnectorId));
 
         Bridge b = createPersistBridge(BridgeStatus.AVAILABLE);
@@ -383,12 +382,12 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
         assertThat(processor).isNotNull();
-        verify(rhoasServiceMock).createTopicAndGrantAccessFor("ob-" + processor.getId(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor(TOPIC_PREFIX + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
 
         verify(connectorsApiClient).deleteConnector(testConnectorId, ConnectorsServiceImpl.KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor("ob-" + processor.getId(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TOPIC_PREFIX + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
         assertThat(connector).isNull();

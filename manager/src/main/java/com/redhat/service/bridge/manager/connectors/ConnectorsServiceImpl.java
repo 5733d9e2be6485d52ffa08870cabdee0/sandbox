@@ -72,9 +72,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         ConnectorEntity newConnectorEntity = persistConnector(processor, newConnectorName, connectorPayload);
 
-        if (rhoasService.isEnabled()) {
-            rhoasService.createTopicAndGrantAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
-        }
+        rhoasService.createTopicAndGrantAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
 
         Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
 
@@ -102,10 +100,8 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
 
-        if (rhoasService.isEnabled()) {
-            ConnectorAction connectorAction = (ConnectorAction) actionProvider;
-            rhoasService.deleteTopicAndRevokeAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
-        }
+        ConnectorAction connectorAction = (ConnectorAction) actionProvider;
+        rhoasService.deleteTopicAndRevokeAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
     }
 
     private String connectorName(String connectorType, Processor processor) {

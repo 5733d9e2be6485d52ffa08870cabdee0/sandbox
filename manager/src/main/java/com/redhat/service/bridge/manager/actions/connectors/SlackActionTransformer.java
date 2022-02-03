@@ -15,6 +15,8 @@ import com.redhat.service.bridge.manager.RhoasService;
 @ApplicationScoped
 public class SlackActionTransformer implements ActionTransformer {
 
+    public static final String TOPIC_PREFIX = "ob-";
+
     @ConfigProperty(name = "managed-connectors.topic-name")
     String topicName;
 
@@ -42,8 +44,6 @@ public class SlackActionTransformer implements ActionTransformer {
     // once we use a single topic for every connector there will be no need of having a different
     // one per connector https://issues.redhat.com/browse/MGDSTRM-5977
     private String generateKafkaTopicName(String processorId) {
-        return rhoasService.isEnabled()
-                ? String.format("ob-%s", processorId)
-                : topicName;
+        return TOPIC_PREFIX + processorId;
     }
 }

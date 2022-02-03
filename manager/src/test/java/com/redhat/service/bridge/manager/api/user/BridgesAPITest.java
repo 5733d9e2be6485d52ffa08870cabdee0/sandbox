@@ -11,6 +11,7 @@ import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -35,6 +36,9 @@ public class BridgesAPITest {
 
     @InjectMock
     JsonWebToken jwt;
+
+    @InjectMock
+    RhoasService rhoasServiceMock;
 
     @BeforeEach
     public void cleanUp() {

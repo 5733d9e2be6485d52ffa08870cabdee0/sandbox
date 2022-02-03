@@ -22,6 +22,7 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.bridge.manager.actions.connectors.SlackActionTransformer.TOPIC_PREFIX;
 import static com.redhat.service.bridge.manager.connectors.ConnectorsServiceImpl.KAFKA_ID_IGNORED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,7 +40,7 @@ class ConnectorsServiceTest {
     private static final String TEST_ACTION_NAME = "TestAction";
     private static final String TEST_ACTION_CHANNEL = "testchannel";
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
-    private static final String TEST_ACTION_TOPIC = "ob-" + TEST_PROCESSOR_ID;
+    private static final String TEST_ACTION_TOPIC = TOPIC_PREFIX + TEST_PROCESSOR_ID;
 
     @Inject
     SlackAction slackAction;
@@ -73,7 +74,6 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsApiClientMock.createConnector(any())).thenReturn(testConnector());
 
         Optional<ConnectorEntity> connector = connectorsService.createConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);
@@ -87,7 +87,6 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotDeleteConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
 
         connectorsService.deleteConnectorIfNeeded(testWebhookAction(), testProcessor(), webhookAction);
@@ -100,7 +99,6 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doDeleteConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity());
 
         connectorsService.deleteConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);

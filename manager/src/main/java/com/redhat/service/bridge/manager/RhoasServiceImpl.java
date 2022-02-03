@@ -16,16 +16,9 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.smallrye.mutiny.TimeoutException;
 
-import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG;
-import static com.redhat.service.bridge.rhoas.RhoasProperties.ENABLED_FLAG_DEFAULT_VALUE;
-
 @ApplicationScoped
 public class RhoasServiceImpl implements RhoasService {
 
-    static final String RHOAS_DISABLED_ERROR_MESSAGE = "RHOAS integration is disabled";
-
-    @ConfigProperty(name = ENABLED_FLAG, defaultValue = ENABLED_FLAG_DEFAULT_VALUE)
-    boolean rhoasEnabled;
     @ConfigProperty(name = "rhoas.timeout-seconds")
     int rhoasTimeout;
     @ConfigProperty(name = "rhoas.ops-account.client-id")
@@ -35,15 +28,7 @@ public class RhoasServiceImpl implements RhoasService {
     RhoasClient rhoasClient;
 
     @Override
-    public boolean isEnabled() {
-        return rhoasEnabled;
-    }
-
-    @Override
     public void createTopicAndGrantAccessFor(String topicName, RhoasTopicAccessType accessType) {
-        if (!rhoasEnabled) {
-            throw new InternalPlatformException(RHOAS_DISABLED_ERROR_MESSAGE);
-        }
         try {
             NewTopicInput newTopicInput = new NewTopicInput()
                     .name(topicName)
@@ -60,9 +45,6 @@ public class RhoasServiceImpl implements RhoasService {
 
     @Override
     public void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
-        if (!rhoasEnabled) {
-            throw new InternalPlatformException(RHOAS_DISABLED_ERROR_MESSAGE);
-        }
         try {
             rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
