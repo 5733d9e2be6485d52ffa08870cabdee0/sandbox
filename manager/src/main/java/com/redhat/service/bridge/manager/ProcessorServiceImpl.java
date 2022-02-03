@@ -132,13 +132,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
         p.setStatus(processorDTO.getStatus());
 
-        // Update metrics
-        meterRegistry.counter("manager.processor.status.change",
-                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
-
         if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());
         }
+
+        // Update metrics
+        meterRegistry.counter("manager.processor.status.change",
+                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         return p;
     }
