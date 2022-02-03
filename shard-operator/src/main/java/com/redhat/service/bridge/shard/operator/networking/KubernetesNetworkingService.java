@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.watchers.networking.KubernetesIngressEventSource;
+import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;
@@ -21,7 +21,7 @@ import io.fabric8.kubernetes.api.model.networking.v1.IngressSpec;
 import io.fabric8.kubernetes.api.model.networking.v1.IngressSpecBuilder;
 import io.fabric8.kubernetes.api.model.networking.v1.ServiceBackendPortBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public class KubernetesNetworkingService implements NetworkingService {
 
@@ -39,8 +39,8 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public AbstractEventSource createAndRegisterWatchNetworkResource(String component) {
-        return KubernetesIngressEventSource.createAndRegisterWatch(client, component);
+    public EventSource buildInformerEventSource(String component) {
+        return EventSourceFactory.buildIngressesInformer(client, component);
     }
 
     @Override

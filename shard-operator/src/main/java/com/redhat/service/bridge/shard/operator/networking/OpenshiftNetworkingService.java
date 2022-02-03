@@ -5,13 +5,13 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.watchers.networking.OpenshiftRouteEventSource;
+import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
-import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public class OpenshiftNetworkingService implements NetworkingService {
 
@@ -27,8 +27,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     @Override
-    public AbstractEventSource createAndRegisterWatchNetworkResource(String component) {
-        return OpenshiftRouteEventSource.createAndRegisterWatch(client, component);
+    public EventSource buildInformerEventSource(String component) {
+        return EventSourceFactory.buildRoutesInformer(client, component);
     }
 
     @Override
