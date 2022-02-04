@@ -29,6 +29,12 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: print secrets
+        env:
+          CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+        run: printenv
       - name: Set up KinD
         uses: ./.github/actions/kind
       - uses: imranismail/setup-kustomize@v1
