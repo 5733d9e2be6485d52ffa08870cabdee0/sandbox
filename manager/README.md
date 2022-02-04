@@ -1,4 +1,3 @@
 # manager Project
 
-WIPfdsafdas
-fdsfas
+WIP
