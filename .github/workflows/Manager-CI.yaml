@@ -2,6 +2,16 @@ name: Manager - CI
 on:
   pull_request_target:
     types: [labeled]
+    branches:    
+      - 'main'
+    paths:
+      - 'actions/**'
+      - 'executor/**'
+      - 'infra/**'
+      - 'ingress/**'
+      - 'manager/**'
+      - 'integration-tests/**'
+      - 'shard-operator/**'
 jobs:
   event-bridge-build:
     env:
@@ -14,6 +24,7 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     name: Build all images and run E2E tests
     steps:
       - name: Checkout
@@ -24,12 +35,6 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
-      - name: print secrets
-        env:
-          CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
-          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
-          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
-        run: printenv
       - name: Set up KinD
         uses: ./.github/actions/kind
       - uses: imranismail/setup-kustomize@v1
