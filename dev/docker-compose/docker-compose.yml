@@ -1,0 +1,37 @@
+version: '3.2'
+services:
+  db:
+    image: library/postgres:13.1
+    container_name: event-bridge-postgres
+    environment:
+      POSTGRES_USER: event-bridge
+      POSTGRES_PASSWORD: event-bridge
+      POSTGRES_DB: event-bridge
+    ports:
+      - "5432:5432"
+
+  s3:
+    image: localstack/localstack:0.13.3
+    container_name: event-bridge-localstack
+    environment:
+      START_WEB: 0
+      SERVICES: secretsmanager
+      AWS_ACCESS_KEY_ID: test-key
+      AWS_SECRET_ACCESS_KEY: test-secret
+    ports:
+      - "4566:4566"
+
+  prometheus:
+    network_mode: "host"
+    image: prom/prometheus:v2.8.0
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    network_mode: "host"
+    image: grafana/grafana:6.6.1
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini

@@ -19,12 +19,12 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
-import com.redhat.service.bridge.manager.ErrorsService;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorListResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ErrorResponse;
-import com.redhat.service.bridge.manager.api.models.responses.ListResponse;
-import com.redhat.service.bridge.manager.models.Error;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
+import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
+import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 
 import io.quarkus.security.Authenticated;
 
@@ -43,17 +43,17 @@ import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PA
 public class ErrorsAPI {
 
     @Inject
-    private ErrorsService service;
+    BridgeErrorService service;
 
     @GET
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {
-        return Response.ok(ListResponse.fill(service.getErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
+        return Response.ok(ListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
     }
 
     @GET
     @Path("{id}")
     public Response getError(@PathParam("id") int id) {
-        Optional<Error> error = service.getError(id);
+        Optional<BridgeError> error = service.getUserError(id);
         return (error.isPresent() ? Response.ok(ErrorResponse.from(error.get())) : Response.status(Status.NOT_FOUND)).build();
     }
 }

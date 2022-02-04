@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.executor;
 
 import java.net.URI;
-import java.util.Collections;
 
 import javax.inject.Inject;
 
@@ -11,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.bridge.infra.BridgeCloudEventExtension;
+import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
@@ -20,7 +21,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ExecutorServiceTest {
+
+    private static final String BRIDGE_ID = "bridgeId";
 
     @Inject
     ExecutorsService executorsService;
@@ -40,35 +42,38 @@ public class ExecutorServiceTest {
     @BeforeEach
     public void before() {
         executor = mock(Executor.class);
+
+        BridgeDTO bridgeDTO = mock(BridgeDTO.class);
+        when(bridgeDTO.getId()).thenReturn(BRIDGE_ID);
+
+        ProcessorDTO processorDTO = mock(ProcessorDTO.class);
+        when(processorDTO.getBridgeId()).thenReturn(BRIDGE_ID);
+
+        when(executor.getProcessor()).thenReturn(processorDTO);
+        when(executorsProvider.getExecutor()).thenReturn(executor);
     }
 
     @Test
     public void handleEvent() {
-
-        String bridgeId = "myBridge";
         ArgumentCaptor<CloudEvent> cap = ArgumentCaptor.forClass(CloudEvent.class);
-        when(executorsProvider.getExecutors(any(String.class))).thenReturn(Collections.singleton(executor));
 
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
                 .withId("foo")
                 .withSource(URI.create("bar"))
                 .withType("myType")
-                .withExtension(new BridgeCloudEventExtension(bridgeId)).build();
+                .withExtension(new BridgeCloudEventExtension(BRIDGE_ID)).build();
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
         verify(executor).onEvent(cap.capture());
         CloudEvent invokedWith = cap.getValue();
 
-        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo("myBridge");
+        assertThat(invokedWith.getExtension(BridgeCloudEventExtension.BRIDGE_ID)).isEqualTo(BRIDGE_ID);
     }
 
     @Test
     public void handleEvent_processorNotInvokedIfEventForDifferentBridgeInstance() {
-        String bridgeId = "myBridge";
-        when(executorsProvider.getExecutors(eq(bridgeId))).thenReturn(null);
-
         CloudEvent cloudEvent = CloudEventBuilder
                 .v1()
                 .withId("foo")

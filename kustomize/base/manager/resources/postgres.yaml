@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-bridge-db
+  labels:
+    app-component: event-bridge-db
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app-component: event-bridge-db
+  template:
+    metadata:
+      labels:
+        app-component: event-bridge-db
+    spec:
+      containers:
+        - name: postgres
+          image: library/postgres:13.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: event-bridge-db-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: event-bridge-db
+      volumes:
+        - name: event-bridge-db
+          persistentVolumeClaim:
+            claimName: event-bridge-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-bridge-db
+spec:
+  ports:
+    - name: mytcp
+      protocol: TCP
+      port: 5432
+  selector:
+    app-component: event-bridge-db

@@ -13,17 +13,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
-import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
-import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
-import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.ListResult;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -42,6 +45,12 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MeterRegistry meterRegistry;
 
+    @Inject
+    RhoasService rhoasService;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
     @Transactional
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
@@ -54,7 +63,12 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridgeDAO.persist(bridge);
-        LOGGER.info("[manager] Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
+
+        if (rhoasService.isEnabled()) {
+            rhoasService.createTopicAndGrantAccessFor(internalKafkaConfigurationProvider.buildTopicName(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        }
+
+        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
 
@@ -66,6 +80,15 @@ public class BridgesServiceImpl implements BridgesService {
             throw new ItemNotFoundException(String.format("Bridge with id '%s' does not exist", id));
         }
         return b;
+    }
+
+    @Transactional
+    public Bridge getAvailableBridge(String bridgeId, String customerId) {
+        Bridge bridge = getBridge(bridgeId, customerId);
+        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.AVAILABLE));
+        }
+        return bridge;
     }
 
     private Bridge findByIdAndCustomerId(String id, String customerId) {
@@ -93,7 +116,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
         bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
-        LOGGER.info("[manager] Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
     @Transactional
@@ -117,24 +140,34 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
+            if (rhoasService.isEnabled()) {
+                rhoasService.deleteTopicAndRevokeAccessFor(internalKafkaConfigurationProvider.buildTopicName(bridge.getId()), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            }
         }
 
         // Update metrics
         meterRegistry.counter("manager.bridge.status.change",
                 Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
-        LOGGER.info("[manager] Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
+        LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
 
     @Override
     public BridgeDTO toDTO(Bridge bridge) {
+        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
+                internalKafkaConfigurationProvider.getBootstrapServers(),
+                internalKafkaConfigurationProvider.getClientId(),
+                internalKafkaConfigurationProvider.getClientSecret(),
+                internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.buildTopicName(bridge.getId()));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
         dto.setEndpoint(bridge.getEndpoint());
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
+        dto.setKafkaConnection(kafkaConnectionDTO);
         return dto;
     }
 

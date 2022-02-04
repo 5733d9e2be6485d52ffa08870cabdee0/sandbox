@@ -16,21 +16,29 @@ public class ProcessorDTO {
     @JsonProperty("definition")
     private ProcessorDefinition definition;
 
-    @JsonProperty("bridge")
-    private BridgeDTO bridge;
+    @JsonProperty("bridgeId")
+    private String bridgeId;
+
+    @JsonProperty("customerId")
+    private String customerId;
 
     @JsonProperty("status")
     private BridgeStatus status;
 
+    @JsonProperty("kafkaConnection")
+    private KafkaConnectionDTO kafkaConnection;
+
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, ProcessorDefinition definition, BridgeDTO bridge, BridgeStatus status) {
+    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, BridgeStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
-        this.bridge = bridge;
+        this.bridgeId = bridgeId;
+        this.customerId = customerId;
         this.status = status;
         this.definition = definition;
+        this.kafkaConnection = kafkaConnection;
     }
 
     public String getId() {
@@ -57,12 +65,20 @@ public class ProcessorDTO {
         this.definition = definition;
     }
 
-    public BridgeDTO getBridge() {
-        return bridge;
+    public String getBridgeId() {
+        return bridgeId;
     }
 
-    public void setBridge(BridgeDTO bridge) {
-        this.bridge = bridge;
+    public void setBridgeId(String bridgeId) {
+        this.bridgeId = bridgeId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
     }
 
     public BridgeStatus getStatus() {
@@ -71,6 +87,14 @@ public class ProcessorDTO {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public KafkaConnectionDTO getKafkaConnection() {
+        return kafkaConnection;
+    }
+
+    public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
+        this.kafkaConnection = kafkaConnection;
     }
 
     @Override

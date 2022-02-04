@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -13,14 +14,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
+import com.redhat.service.bridge.shard.operator.utils.WebClientUtils;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -38,85 +42,88 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     BridgeIngressService bridgeIngressService;
 
+    @Inject
+    BridgeExecutorService bridgeExecutorService;
+
+    @Inject
+    EventBridgeOidcClient eventBridgeOidcClient;
+
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
-        LOGGER.debug("[Shard] Fetching updates from Manager for Bridges and Processors to deploy and delete");
+        LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
 
-        // TODO: When processor controller is implemented, uncomment the following lines
-        //        fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
-        //                success -> processingComplete(ProcessorDTO.class),
-        //                failure -> processingFailed(ProcessorDTO.class, failure));
+        fetchAndProcessProcessorsToDeployOrDelete().subscribe().with(
+                success -> processingComplete(ProcessorDTO.class),
+                failure -> processingFailed(ProcessorDTO.class, failure));
     }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
-        LOGGER.debug("[shard] Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH).sendJson(bridgeDTO);
+        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        return webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors").sendJson(processorDTO);
+        LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorDTO.getId());
+        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH).send()
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
                                     if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
                                         y.setStatus(BridgeStatus.PROVISIONING);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> bridgeIngressService.createBridgeIngress(y),
-                                                failure -> failedToSendUpdateToManager(y, failure));
+                                        return notifyBridgeStatusChange(y)
+                                                .subscribe().with(
+                                                        success -> bridgeIngressService.createBridgeIngress(y),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
-                                        y.setStatus(BridgeStatus.DELETED);
+                                        y.setStatus(BridgeStatus.DELETING);
                                         bridgeIngressService.deleteBridgeIngress(y);
-                                        return notifyBridgeStatusChange(y).subscribe().with(
-                                                success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                failure -> failedToSendUpdateToManager(y, failure));
+                                        return notifyBridgeStatusChange(y)
+                                                .subscribe().with(
+                                                        success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
-                                    LOGGER.warn("[shard] Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
+                                    LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
                                 }).collect(Collectors.toList())));
     }
 
     @Override
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
-        return webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors")
-                .send().onItem().transform(this::getProcessors)
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
+                .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
                             if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
-                                return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> deployProcessorCustomResource(y),
-                                        failure -> failedToSendUpdateToManager(y, failure));
+                                return notifyProcessorStatusChange(y)
+                                        .subscribe().with(
+                                                success -> bridgeExecutorService.createBridgeExecutor(y),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
-                                y.setStatus(BridgeStatus.DELETED);
-                                deleteProcessorCustomResource(y);
-                                return notifyProcessorStatusChange(y).subscribe().with(
-                                        success -> LOGGER.debug("[shard] Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                        failure -> failedToSendUpdateToManager(y, failure));
+                                y.setStatus(BridgeStatus.DELETING);
+                                bridgeExecutorService.deleteBridgeExecutor(y);
+                                return notifyProcessorStatusChange(y)
+                                        .subscribe().with(
+                                                success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
-    }
-
-    // Create the custom resource, and let the controller create what it needs
-    protected void deployProcessorCustomResource(ProcessorDTO processorDTO) {
-        //        kubernetesClient.createOrUpdateCustomResource(processorDTO.getId(), ProcessorCustomResource.fromDTO(processorDTO), K8SBridgeConstants.PROCESSOR_TYPE);
-    }
-
-    protected void deleteProcessorCustomResource(ProcessorDTO processorDTO) {
-        //        kubernetesClient.deleteCustomResource(processorDTO.getId(), K8SBridgeConstants.PROCESSOR_TYPE);
     }
 
     private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
@@ -130,10 +137,13 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
+        if (!isSuccessfulResponse(httpResponse)) {
+            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
+        }
         try {
             return mapper.readValue(httpResponse.bodyAsString(), typeReference);
         } catch (JsonProcessingException e) {
-            LOGGER.warn("[shard] Failed to deserialize response from Manager", e);
+            LOGGER.warn("Failed to deserialize response from Manager", e);
             throw new DeserializationException("Failed to deserialize response from Manager.", e);
         }
     }
@@ -143,10 +153,33 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void processingFailed(Class<?> entity, Throwable t) {
-        LOGGER.error("[shard] Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
+        LOGGER.error("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
     }
 
     private void processingComplete(Class<?> entity) {
-        LOGGER.debug("[shard] Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+        LOGGER.debug("Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+    }
+
+    private Uni<HttpResponse<Buffer>> getAuthenticatedRequest(HttpRequest<Buffer> request, Function<HttpRequest<Buffer>, Uni<HttpResponse<Buffer>>> executor) {
+        request.bearerTokenAuthentication(eventBridgeOidcClient.getToken());
+        return executor.apply(request)
+                .onItem().transformToUni(x -> {
+                    if (isSuccessfulResponse(x)) {
+                        return Uni.createFrom().item(x);
+                    } else {
+                        return Uni.createFrom().failure(
+                                new HTTPResponseException(String.format("Shard failed to communicate with the manager, the request failed with status %s", x.statusCode())));
+                    }
+                });
+    }
+
+    /**
+     * Verifies if the HTTP response is valid (Status 2xx).
+     * This avoids the shard-operator spamming error messages in case the manager is out.
+     *
+     * @param httpResponse the given response
+     */
+    private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
+        return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
     }
 }

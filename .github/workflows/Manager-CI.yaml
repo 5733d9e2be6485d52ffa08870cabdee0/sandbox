@@ -1,0 +1,114 @@
+name: Manager - CI
+on:
+  pull_request_target:
+    types: [labeled]
+    branches:    
+      - 'main'
+    paths:
+      - 'actions/**'
+      - 'executor/**'
+      - 'infra/**'
+      - 'ingress/**'
+      - 'manager/**'
+      - 'integration-tests/**'
+      - 'shard-operator/**'
+jobs:
+  event-bridge-build:
+    env:
+      FLEET_MANAGER_CONTAINER_NAME: openbridge/fleet-manager:${{ github.sha }}
+      FLEET_SHARD_MINIKUBE_CONTAINER_NAME: openbridge/fleet-shard:${{ github.sha }}
+      EXECUTOR_CONTAINER_NAME: openbridge/executor:${{ github.sha }}
+      INGRESS_CONTAINER_NAME: openbridge/ingress:${{ github.sha }}
+    concurrency:
+      group: event-bridge-manager-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    name: Build all images and run E2E tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and test
+        if: contains(github.event.pull_request.labels.*.name, 'safe to test')
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Set up KinD
+        uses: ./.github/actions/kind
+      - uses: imranismail/setup-kustomize@v1
+      - name: Use built Fleet manager and operator images
+        run: |
+          kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
+          kustomize edit set image event-bridge-shard-operator=$FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+        working-directory: kustomize/overlays/minikube
+      - name: Use built Ingress and Executor images
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_INGRESS_IMAGE:).*|\1 $INGRESS_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Configure correct Keycloak endpoints for Fleet manager and operator
+        run: |
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Build all images and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Pminikube -DskipTests
+      - name: Build and Publish JVM Container - Fleet Manager
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
+          kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Executor
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
+          kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Ingress
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME ingress/
+          kind load docker-image $INGRESS_CONTAINER_NAME
+      - name: Install all resources
+        run: kustomize build overlays/minikube | oc apply -f -
+        working-directory: kustomize
+        continue-on-error: true
+      - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
+        run: kustomize build overlays/minikube | oc apply -f -
+        working-directory: kustomize
+      - name: Wait for Keycloak to start
+        run: |
+          kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
+          timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
+      - name: Configure shard operator technical bearer token
+        run: |
+          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=webhook-robot-1&password=therobot&grant_type=password&scope=offline_access' | jq --raw-output '.access_token')
+          sed -i -E "s|(.*EVENT_BRIDGE_WEBHOOK_TECHNICAL_BEARER_TOKEN:).*|\1 $TOKEN|" overlays/minikube/shard/patches/deploy-config.yaml
+          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
+        working-directory: kustomize
+      - name: Update all resources and delete current operator pod(to refresh operator config)
+        run: |
+          kustomize build overlays/minikube | oc apply -f -
+          oc delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
+        working-directory: kustomize
+      - name: Wait for operator and manager to start
+        run: |
+          kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
+      - name: Run integration tests
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=http://localhost:80/manager
+          working-directory: integration-tests
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Print manager log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge -n event-bridge-manager

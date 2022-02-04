@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.executor;
 
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -42,23 +41,18 @@ public class ExecutorsService {
             CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
             BridgeCloudEventExtension bridgeCloudEventExtension = ExtensionProvider.getInstance().parseExtension(BridgeCloudEventExtension.class, cloudEvent);
             String bridgeId = bridgeCloudEventExtension.getBridgeId();
-            Set<Executor> executors = executorsProvider.getExecutors(bridgeId);
-            if (executors == null) {
-                LOG.info("[executor] A message for BridgeID '{}' has been received, but no executors were found.", bridgeId);
-            }
-            if (executors != null) {
-                for (Executor e : executors) {
-                    try {
-                        e.onEvent(cloudEvent);
-                    } catch (Throwable t) {
-                        // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
-                        LOG.error("[executor] Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", e.getProcessor().getId(),
-                                e.getProcessor().getBridge().getId(), t);
-                    }
+            Executor executor = executorsProvider.getExecutor();
+            if (executor.getProcessor().getBridgeId().equals(bridgeId)) {
+                try {
+                    executor.onEvent(cloudEvent);
+                } catch (Throwable t) {
+                    // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
+                    LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),
+                            executor.getProcessor().getBridgeId(), t);
                 }
             }
         } catch (Throwable t) {
-            LOG.error("[executor] Failed to handle Event received on Bridge. The message is acked anyway.", t);
+            LOG.error("Failed to handle Event received on Bridge. The message is acked anyway.", t);
         }
 
         return message.ack();

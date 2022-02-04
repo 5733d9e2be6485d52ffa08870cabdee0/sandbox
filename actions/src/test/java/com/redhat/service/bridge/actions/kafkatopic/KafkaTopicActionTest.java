@@ -14,9 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
@@ -61,10 +60,7 @@ public class KafkaTopicActionTest {
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
         p.setDefinition(new ProcessorDefinition(null, null, b));
-
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId("myBridge");
-        p.setBridge(bridge);
+        p.setBridgeId("myBridge");
 
         return p;
     }
@@ -87,7 +83,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker() {
         ProcessorDTO p = createProcessorWithActionForTopic(TOPIC_NAME);
-        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction());
+        ActionInvoker actionInvoker = kafkaTopicAction.getActionInvoker(p, p.getDefinition().getResolvedAction());
         assertThat(actionInvoker).isNotNull();
 
         verify(kafkaAdmin).listTopics();
@@ -96,7 +92,7 @@ public class KafkaTopicActionTest {
     @Test
     public void getActionInvoker_requestedTopicDoesNotExist() {
         ProcessorDTO p = createProcessorWithActionForTopic("thisTopicDoesNotExist");
-        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getDefinition().getAction()));
+        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> kafkaTopicAction.getActionInvoker(p, p.getDefinition().getResolvedAction()));
         verify(kafkaAdmin).listTopics();
     }
 }

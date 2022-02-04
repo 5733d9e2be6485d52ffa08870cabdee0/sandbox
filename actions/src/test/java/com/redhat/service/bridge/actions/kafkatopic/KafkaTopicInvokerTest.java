@@ -6,7 +6,6 @@ import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
@@ -20,10 +19,7 @@ public class KafkaTopicInvokerTest {
     private ProcessorDTO createProcessor() {
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
-
-        BridgeDTO b = new BridgeDTO();
-        b.setId("myBridge");
-        p.setBridge(b);
+        p.setBridgeId("myBridge");
         return p;
     }
 

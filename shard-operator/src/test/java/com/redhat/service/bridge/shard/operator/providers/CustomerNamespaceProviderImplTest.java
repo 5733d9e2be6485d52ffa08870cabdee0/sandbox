@@ -8,12 +8,14 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
-import com.redhat.service.bridge.shard.operator.TestConstants;
+import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.bridge.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
@@ -21,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
+@QuarkusTestResource(KeycloakResource.class)
 class CustomerNamespaceProviderImplTest {
 
     @Inject
@@ -75,7 +78,7 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceNotDeletedWithBridges() {
-        final BridgeDTO dto = TestConstants.newRequestedBridgeDTO();
+        final BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
         dto.setCustomerId("cooper");
         bridgeIngressService.createBridgeIngress(dto);
         // try to delete the namespace...
@@ -86,7 +89,7 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceDeletedWhenEmpty() {
-        final BridgeDTO dto = TestConstants.newRequestedBridgeDTO();
+        final BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
         dto.setCustomerId("hofstadter");
         bridgeIngressService.createBridgeIngress(dto);
         // there's only one bridge there

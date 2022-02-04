@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager.api.models.requests;
 
 import java.util.Set;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +17,7 @@ public class ProcessorRequest {
     private String name;
 
     @JsonProperty("filters")
-    private Set<BaseFilter> filters;
+    private Set<@Valid BaseFilter> filters;
 
     @JsonProperty("transformationTemplate")
     private String transformationTemplate;

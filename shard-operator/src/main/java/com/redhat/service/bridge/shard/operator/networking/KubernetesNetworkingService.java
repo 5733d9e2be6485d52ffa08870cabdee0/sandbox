@@ -43,17 +43,18 @@ public class KubernetesNetworkingService implements NetworkingService {
         return KubernetesIngressEventSource.createAndRegisterWatch(client, component);
     }
 
-    // TODO: if the retrieved resource spec is not equal to the expected one, we should redeploy https://issues.redhat.com/browse/MGDOBR-140
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress ingress = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        Ingress expected = buildIngress(bridgeIngress, service);
 
-        if (ingress == null) {
-            ingress = buildIngress(bridgeIngress, service);
-            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).create(ingress);
+        Ingress existing = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).createOrReplace(expected);
+            return buildNetworkingResource(expected);
         }
 
-        return buildNetworkingResource(ingress);
+        return buildNetworkingResource(existing);
     }
 
     @Override
@@ -61,13 +62,13 @@ public class KubernetesNetworkingService implements NetworkingService {
         try {
             return client.network().v1().ingresses().inNamespace(namespace).withName(name).delete();
         } catch (Exception e) {
-            LOGGER.debug("Can't delete ingress with name {} because it does not exist", name);
+            LOGGER.debug("Can't delete ingress with name '{}' because it does not exist", name);
             return false;
         }
     }
 
     private Ingress buildIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress ingress = templateProvider.loadBridgeKubernetesIngressTemplate(bridgeIngress);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
@@ -99,11 +100,15 @@ public class KubernetesNetworkingService implements NetworkingService {
 
     private NetworkResource buildNetworkingResource(Ingress ingress) {
         if (ingress.getStatus() == null || ingress.getStatus().getLoadBalancer() == null || ingress.getStatus().getLoadBalancer().getIngress() == null
-                || ingress.getStatus().getLoadBalancer().getIngress().isEmpty() || ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null) {
-            LOGGER.info("Ingress {} not ready yet", ingress.getMetadata().getName());
+                || ingress.getStatus().getLoadBalancer().getIngress().isEmpty()
+                || (ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp() == null && ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname() == null)) {
+            LOGGER.info("Ingress '{}' not ready yet", ingress.getMetadata().getName());
             return new NetworkResource("", false);
         }
         String host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
+        if (host == null) {
+            host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname();
+        }
         String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath().replace(PATH_REGEX, "");
         return new NetworkResource(endpoint, true);
     }

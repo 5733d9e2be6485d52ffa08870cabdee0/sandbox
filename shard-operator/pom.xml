@@ -51,7 +51,20 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-oidc-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>openshift-model-monitoring</artifactId>
+    </dependency>
 
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>test-utils</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -69,11 +82,6 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -121,8 +129,10 @@
         <version>${surefire-plugin.version}</version>
         <configuration>
           <systemPropertyVariables>
+            <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
+            <event-bridge.k8s.platform>${event-bridge.k8s.platform}</event-bridge.k8s.platform>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -137,6 +147,7 @@
         <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
         <quarkus.profile>minikube</quarkus.profile>
+        <event-bridge.k8s.platform>k8s</event-bridge.k8s.platform>
       </properties>
       <dependencies>
         <dependency>
@@ -145,6 +156,19 @@
           <optional>true</optional>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <id>openshift</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <namespace>default</namespace>
+        <quarkus.openshift.namespace>${namespace}</quarkus.openshift.namespace>
+        <quarkus.openshift.deploy>false</quarkus.openshift.deploy>
+        <quarkus.profile>openshift</quarkus.profile>
+        <event-bridge.k8s.platform>openshift</event-bridge.k8s.platform>
+      </properties>
     </profile>
   </profiles>
 

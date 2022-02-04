@@ -1,0 +1,22 @@
+name: 'Set up KinD'
+description: 'Step to start and configure KinD cluster'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up KinD
+      uses: container-tools/kind-action@v1
+      with:
+        config: .github/kind-config.yaml
+        registry: false                  # Registry not needed
+        node_image: kindest/node:v1.22.2 # Newest image
+    - name: Check cluster status
+      shell: bash
+      run: |
+        kubectl get nodes
+        kubectl cluster-info
+    - name: Install Ingres
+      shell: bash
+      run: |
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
+        kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s

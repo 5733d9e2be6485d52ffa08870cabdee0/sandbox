@@ -9,12 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
+import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
@@ -43,8 +44,9 @@ public class Executor {
 
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processor.getDefinition().getAction().getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, processor.getDefinition().getAction());
+        BaseAction action = processor.getDefinition().getResolvedAction();
+        InvokableActionProvider actionProvider = actionProviderFactory.getInvokableActionProvider(action.getType());
+        this.actionInvoker = actionProvider.getActionInvoker(processor, action);
 
         initMetricFields(processor, registry);
     }
@@ -55,13 +57,13 @@ public class Executor {
 
     @SuppressWarnings("unchecked")
     private void process(CloudEvent cloudEvent) {
-        LOG.info("[executor] Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridge().getId());
+        LOG.info("Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridgeId());
 
         Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
 
         // Filter evaluation
         if (Boolean.TRUE.equals(filterTimer.record(() -> filterEvaluator.evaluateFilters(cloudEventData)))) {
-            LOG.info("[executor] Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.info("Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
 
             // Transformation
             String eventToSend = transformationTimer.record(() -> transformationEvaluator.render(cloudEventData));
@@ -69,7 +71,7 @@ public class Executor {
             // Action
             actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
         } else {
-            LOG.debug("[executor] Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
+            LOG.debug("Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
             // DO NOTHING;
         }
     }
@@ -97,7 +99,7 @@ public class Executor {
 
     private void initMetricFields(ProcessorDTO processor, MeterRegistry registry) {
         List<Tag> tags = Arrays.asList(
-                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridge().getId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
+                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridgeId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
         this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
         this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
         this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);

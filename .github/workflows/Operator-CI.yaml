@@ -1,0 +1,78 @@
+name: Shard Operator - CI
+on:
+  pull_request:
+    paths:
+      - 'shard-operator/**'
+      - 'shard-operator-integration-tests/**'
+jobs:
+  event-bridge-build:
+    env:
+      NAMESPACE: mynamespace
+    concurrency:
+      group: event-bridge-operator-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    name: Build and Test Operator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Set up KinD
+        uses: ./.github/actions/kind
+        # Tests are executed in different PR check, we just need all artifacts in repository
+      - name: Build complete repo
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
+        # Build operator image and generate needed operator resources
+      - name: Build Shard operator image and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -DskipTests
+          working-directory: shard-operator
+        # Load built image into KinD
+      - name: Load Shard operator image into KinD
+        run: |
+          # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
+          kind load docker-image openbridge/shard-operator:$GITHUB_SHA
+      - name: Deploy Shard operator
+        run: |
+          kubectl create namespace $NAMESPACE
+          # Operator requires Keycloak instance to be available, install it
+          kubectl create secret generic keycloak-realm --from-file=event-bridge-fm-realm-sample.json=kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -n $NAMESPACE
+          kubectl create secret generic keycloak-secrets --from-literal=KEYCLOAK_USER=admin --from-literal=KEYCLOAK_PASSWORD=123 -n $NAMESPACE
+          # Not ideal as kustomize is used for different purposes but it is the easiest approach without duplications
+          kubectl create -f kustomize/base/keycloak/resources/keycloak.yaml -n $NAMESPACE
+          kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
+          # Deploy operator
+          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/minikube.yml
+          # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
+          kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
+          # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+      - name: Run integration tests
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber
+          working-directory: shard-operator-integration-tests
+      - name: Archive test logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: cucumber-logs
+          path: shard-operator-integration-tests/target/logs/**/*.*
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/shard-operator -n $NAMESPACE
+      - name: Print Keycloak log
+        if: always()
+        run: |
+          kubectl logs deployment/keycloak -n $NAMESPACE

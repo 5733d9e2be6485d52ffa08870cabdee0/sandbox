@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: event-bridge
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /manager(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: event-bridge
+            port:
+              number: 8080

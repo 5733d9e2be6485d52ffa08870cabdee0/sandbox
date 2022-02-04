@@ -1,28 +1,38 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.util.Optional;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
+import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.networking.NetworkResource;
 import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.resources.BridgeIngressStatus;
-import com.redhat.service.bridge.shard.operator.resources.PhaseType;
-import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
+import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionType;
+import com.redhat.service.bridge.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
 import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
+import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.Context;
 import io.javaoperatorsdk.operator.api.Controller;
 import io.javaoperatorsdk.operator.api.DeleteControl;
@@ -31,9 +41,6 @@ import io.javaoperatorsdk.operator.api.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
 
-/**
- * To be implemented on <a href="https://issues.redhat.com/browse/MGDOBR-93">MGDOBR-93</a>
- */
 @ApplicationScoped
 @Controller
 public class BridgeIngressController implements ResourceController<BridgeIngress> {
@@ -52,58 +59,99 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     @Inject
     NetworkingService networkingService;
 
+    @Inject
+    ServiceMonitorService monitorService;
+
+    @Inject
+    BridgeErrorService bridgeErrorService;
+
     @Override
     public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
-        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
-        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(LabelsBuilder.BRIDGE_INGRESS_COMPONENT);
+        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
         eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
+        SecretEventSource secretEventSource = SecretEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
+        eventSourceManager.registerEventSource("bridge-ingress-secret-event-source", secretEventSource);
+        Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
+        serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-ingress-monitoring-event-source", monitorEventSource));
     }
 
     @Override
     public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
-        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress);
+        Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
+
+        if (secret == null) {
+            LOGGER.debug("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
+            return UpdateControl.noUpdate();
+        }
+
+        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
 
-            // TODO: Check if the deployment is in an error state, update the CRD and notify the manager!
-
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
+            boolean failed = DeploymentStatusUtils.isStatusReplicaFailure(deployment);
+            if (failed) {
+                String failureReason = DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment);
+                LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(),
+                        failureReason);
+                notifyManager(bridgeIngress, BridgeStatus.FAILED);
+            }
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
         if (service.getStatus() == null) {
-            LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Create Route
         NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
         if (!networkResource.isReady()) {
-            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.setStatus(new BridgeIngressStatus(PhaseType.AUGMENTATION));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
-        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        if (!PhaseType.AVAILABLE.equals(bridgeIngress.getStatus().getPhase()) || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
-            BridgeIngressStatus bridgeIngressStatus = new BridgeIngressStatus(PhaseType.AVAILABLE);
-            bridgeIngressStatus.setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.setStatus(bridgeIngressStatus);
+        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
+        if (serviceMonitor.isPresent()) {
+            // this is an optional resource
+            LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        } else {
+            LOGGER.warn("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
+                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
+                    ConditionReason.PrometheusUnavailable,
+                    prometheusNotAvailableError.getReason(),
+                    prometheusNotAvailableError.getCode());
+            notifyManager(bridgeIngress, BridgeStatus.FAILED);
+            return UpdateControl.updateStatusSubResource(bridgeIngress);
+        }
+
+        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
+            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
             return UpdateControl.updateStatusSubResource(bridgeIngress);
         }
@@ -125,8 +173,9 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
 
-        managerSyncService.notifyBridgeStatusChange(dto).subscribe().with(
-                success -> LOGGER.info("[shard] Updating Bridge with id '{}' done", dto.getId()),
-                failure -> LOGGER.warn("[shard] Updating Bridge with id '{}' FAILED", dto.getId()));
+        managerSyncService.notifyBridgeStatusChange(dto)
+                .subscribe().with(
+                        success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId()));
     }
 }

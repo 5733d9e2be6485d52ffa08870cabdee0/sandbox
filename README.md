@@ -4,39 +4,27 @@
 
 This repository stores the code for the bridge project.
 
-## Running the all-in-one application locally
+## Getting Started
 
-In the current status, the Manager, the Shard, the Ingress and the Executors are packaged in one single application that we call `all-in-one`.
+Before starting, please add yourself to the #dev Google Chat Room and be sure to read the team onboarding documentation.
 
-Pre-requisites
-Local development is supported on Unix or Mac environments. Windows is not supported.
+## Development Environment
 
-You will need the following installed:
+All the instructions to run the platform locally are provided in the [dev](dev) folder.
 
-- Docker
-- Docker-Compose
-- Maven
+# Running a Demo 
 
-The latest versions of these dependencies are fine.
-
-Start `docker-compose` by running from the root directory of this repository
-
-```bash
-docker-compose -f dev/docker-compose.yml up
-```
-
-and then 
-
-```bash
-mvn clean install -DskipTests && mvn clean compile quarkus:dev -f runner/pom.xml
-```
-
-You can then access the Swagger-ui at `http://localhost:8080/q/swagger-ui`
-
-# DEMO 
-
-A demonstration of the service is provided [here](DEMO.md).
+A walk-through, demonstration of the service is provided [here](DEMO.md).
 
 # How to deploy the platform service to a Kubernetes cluster
 
 See the specific documentation [here](kustomize/README.md)
+
+# Feature flags
+
+Feature flags allow partial or experimental features to be enabled at your own risk.
+They can be enabled by setting the corresponding property to `true`.
+
+|Property|Description|
+|--------|-----------|
+|`event-bridge.feature-flags.rhoas-enabled`|Enables integration with Managed Kafka|

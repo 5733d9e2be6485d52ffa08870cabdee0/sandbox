@@ -16,10 +16,9 @@ on:
 jobs:
   event-bridge-build:
     env:
-      MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
-      ALL_IN_ONE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/event-bridge-all-in-one:${{ github.sha }}
       FLEET_MANAGER_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager:${{ github.sha }}
-      FLEET_SHARD_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:${{ github.sha }}
+      FLEET_SHARD_OPENSHIFT_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:ocp-${{ github.sha }}
+      FLEET_SHARD_MINIKUBE_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard:k8s-${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:${{ github.sha }}
       INGRESS_CONTAINER_NAME: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:${{ github.sha }}
     timeout-minutes: 30
@@ -27,67 +26,41 @@ jobs:
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     name: Publish JARs and Containers
     steps:
-      - name: Disk space report before modification
-        shell: bash
-        run: |
-          echo "Available storage:"
-          df -h
-      # Inspired to maximize-build-space action https://github.com/easimon/maximize-build-space
-      - name: Free disk space (remove dotnet, android and haskell)
-        shell: bash
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-      - name: Disk space report after modification
-        shell: bash
-        run: |
-          echo "Available storage:"
-          df -h
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache Maven Packages
-        uses: actions/cache@v2
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          cache-key-prefix: ${{ runner.os }}
       - name: Build JARs
-        shell: bash
-        run: mvn --batch-mode package -Dmaven.test.skip=true -Dcheckstyle.skip
+        uses: ./.github/actions/maven
+        with:
+          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip
       - name: Login to Container Registry
         shell: bash
         env:
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
         run: docker login quay.io --username $CONTAINER_REGISTRY_USER --password $CONTAINER_REGISTRY_PASSWORD
-      - name: Build and Publish JVM Container - All in One
-        shell: bash
-        run: |
-          echo "Building and pushing docker image for All-in-One"
-          docker build -f docker/Dockerfile.jvm -t $ALL_IN_ONE_CONTAINER_NAME-jvm runner/
-          docker push $ALL_IN_ONE_CONTAINER_NAME-jvm
 
       - uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
             general: &general
+              - actions/**
               - infra/**
               - bom/**
               - build-parent/**
-              - infra/**
-              - k8s/**
+              - rhoas-client/**
             manager:
               - *general
               - manager/**
-            shard:
+            shard-operator:
               - *general
-              - shard/**
+              - shard-operator/**
             ingress:
               - *general
               - ingress/**
@@ -103,13 +76,13 @@ jobs:
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME-jvm manager/
           docker push $FLEET_MANAGER_CONTAINER_NAME-jvm
 
-      # run only if 'ingress' or any 'general' modules have changed
+      # run only if 'shard-operator' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Fleet Shard
-        if: steps.filter.outputs.shard == 'true'
+        if: steps.filter.outputs.shard-operator == 'true'
         run: |
           echo "Building and pushing docker image for Fleet Shard"
-          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_CONTAINER_NAME-jvm shard/
-          docker push $FLEET_SHARD_CONTAINER_NAME-jvm
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm shard-operator/
+          docker push $FLEET_SHARD_OPENSHIFT_CONTAINER_NAME-jvm
 
       # run only if 'executor' or any 'general' modules have changed
       - name: Build and Publish JVM Container - Executor
@@ -126,3 +99,16 @@ jobs:
           echo "Building and pushing docker image for Ingress"
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME-jvm ingress/
           docker push $INGRESS_CONTAINER_NAME-jvm
+
+      # Build shart operator with Minikube profile if 'shard-operator' or any 'general' modules have changed
+      - name: Build Minikube Fleet Shard
+        if: steps.filter.outputs.shard-operator == 'true'
+        uses: ./.github/actions/maven
+        with:
+          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        if: steps.filter.outputs.shard-operator == 'true'
+        run: |
+          echo "Building and pushing docker image for Fleet Shard with Minikube profile"
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm shard-operator/
+          docker push $FLEET_SHARD_MINIKUBE_CONTAINER_NAME-jvm

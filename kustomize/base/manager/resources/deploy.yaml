@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-bridge
+  labels:
+    app-component: fleet-manager
+spec:
+  selector:
+    matchLabels:
+      app-component: fleet-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app-component: fleet-manager
+    spec:
+      containers:
+        - image: event-bridge-manager
+          imagePullPolicy: IfNotPresent
+          name: event-bridge-manager
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: event-bridge-manager-config
+            - secretRef:
+                name: event-bridge-manager-secrets
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-bridge
+spec:
+  ports:
+    - name: web
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app-component: fleet-manager

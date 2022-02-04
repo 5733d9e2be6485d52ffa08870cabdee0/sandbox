@@ -1,0 +1,15 @@
+secretGenerator:
+- name: event-bridge-shard-operator-secrets
+  literals:
+  - KEYCLOAK_USER=shard-1
+  - KEYCLOAK_PASSWORD=theshard
+  - WEBHOOK_TECHNICAL_ACCOUNT_ID=402cf429-da04-4931-8089-e53ad452192b
+  - WEBHOOK_TECHNICAL_BEARER_TOKEN=<REPLACE_WITH_OFFLINE_TOKEN_FOR_THE_USER_WEBHOOK_ROBOT_1>
+patchesStrategicMerge:
+- patches/deploy-config.yaml
+namespace: event-bridge-operator
+resources:
+- namespace.yaml
+- cluster-role.yaml
+- cluster-role-binding.yaml
+- ../../../base/shard

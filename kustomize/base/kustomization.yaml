@@ -1,2 +1,4 @@
 resources:
-  - all-in-one
+  - keycloak
+  - manager
+  - shard

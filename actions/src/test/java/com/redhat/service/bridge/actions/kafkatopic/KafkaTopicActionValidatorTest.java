@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 
@@ -33,10 +32,7 @@ public class KafkaTopicActionValidatorTest {
         ProcessorDTO p = new ProcessorDTO();
         p.setId("myProcessor");
         p.setDefinition(new ProcessorDefinition(null, null, b));
-
-        BridgeDTO bridge = new BridgeDTO();
-        bridge.setId("myBridge");
-        p.setBridge(bridge);
+        p.setBridgeId("myBridge");
 
         return p;
     }
@@ -44,14 +40,14 @@ public class KafkaTopicActionValidatorTest {
     @Test
     public void isValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        assertThat(validator.isValid(processor.getDefinition().getAction()).isValid()).isTrue();
+        assertThat(validator.isValid(processor.getDefinition().getResolvedAction()).isValid()).isTrue();
     }
 
     @Test
     public void isValid_noTopicIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getDefinition().getAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
-        ValidationResult validationResult = validator.isValid(processor.getDefinition().getAction());
+        processor.getDefinition().getResolvedAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
+        ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
 
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
@@ -60,8 +56,8 @@ public class KafkaTopicActionValidatorTest {
     @Test
     public void isValid_emptyTopicStringIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getDefinition().getAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
-        ValidationResult validationResult = validator.isValid(processor.getDefinition().getAction());
+        processor.getDefinition().getResolvedAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
+        ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
 
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);

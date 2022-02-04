@@ -35,14 +35,14 @@
     <module>test-utils</module>
     <module>manager</module>
     <module>executor</module>
-    <module>shard</module>
     <module>shard-operator</module>
-    <module>runner</module>
+    <module>shard-operator-integration-tests</module>
+    <module>integration-tests</module>
     <module>ingress</module>
     <module>infra</module>
-    <module>k8s</module>
     <module>actions</module>
     <module>use-cases</module>
+    <module>rhoas-client</module>
   </modules>
 
 </project>

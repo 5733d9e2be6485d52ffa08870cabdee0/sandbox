@@ -37,4 +37,9 @@ public class KubernetesNetworkingTestUtils implements NetworkingTestUtils {
 
         client.network().v1().ingresses().inNamespace(namespace).createOrReplace(i);
     }
+
+    @Override
+    public void cleanUp() {
+        client.network().v1().ingresses().inAnyNamespace().delete();
+    }
 }

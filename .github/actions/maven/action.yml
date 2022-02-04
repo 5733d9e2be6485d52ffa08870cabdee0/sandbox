@@ -1,0 +1,25 @@
+name: 'Run Maven command'
+description: 'Step to run Maven command using predefined configuration'
+inputs:
+  maven-command:
+    description: "Command to be executed by Maven"
+    required: true
+  maven-opts:
+    description: "Content of MAVEN_OPTS env variable"
+    default: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120"
+    required: false
+  working-directory:
+    description: "Directory where Maven build is executed"
+    default: ""
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Run Maven command"
+      shell: bash
+      run: mvn ${{ inputs.maven-command }}
+      env:
+        MAVEN_OPTS: ${{ inputs.maven-opts }}
+      working-directory: ${{ inputs.working-directory }}
+

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.fabric8.kubernetes.client.utils.Utils;
 
 /**
  * Helper to build labels for a given Kubernetes resource. Managed and Created By labels are always added with {@link #OPERATOR_NAME} value.
@@ -17,8 +16,6 @@ public final class LabelsBuilder {
 
     public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
 
-    // Keep in sync with resources/templates kubernetes templates
-    public static final String BRIDGE_INGRESS_COMPONENT = "bridge-ingress";
     /**
      * The tool being used to manage the operation of an application
      */
@@ -113,8 +110,7 @@ public final class LabelsBuilder {
      */
     private String sanitizeAndCheckLabelValue(final String labelValue) {
         final String sanitized = KubernetesResourceUtil.sanitizeName(labelValue);
-        if (Utils.isNotNullOrEmpty(labelValue) &&
-                labelValue.length() <= KubernetesResourceUtil.KUBERNETES_DNS1123_LABEL_MAX_LENGTH) {
+        if (KubernetesResourceUtil.isValidName(sanitized)) {
             return sanitized;
         }
         throw new IllegalArgumentException(String

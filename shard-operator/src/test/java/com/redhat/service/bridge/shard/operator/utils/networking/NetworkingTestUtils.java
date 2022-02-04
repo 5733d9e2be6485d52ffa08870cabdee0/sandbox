@@ -6,4 +6,6 @@ public interface NetworkingTestUtils {
     Namespaced getNetworkResource(String name, String namespace);
 
     void patchNetworkResource(String name, String namespace);
+
+    void cleanUp();
 }

@@ -6,9 +6,9 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.bridge.actions.ActionProvider;
-import com.redhat.service.bridge.actions.ActionProviderException;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.ValidationResult;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
@@ -34,7 +34,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        if (baseAction.getParameters() == null || baseAction.getParameters().isEmpty()) {
+        if (baseAction.getParameters() == null) {
             return false;
         }
 

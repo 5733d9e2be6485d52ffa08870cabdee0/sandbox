@@ -1,3 +1,0 @@
-# manager Project
-
-WIP

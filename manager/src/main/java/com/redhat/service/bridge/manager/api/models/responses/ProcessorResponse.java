@@ -6,6 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.bridge.infra.api.models.responses.BaseResponse;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -16,9 +17,6 @@ public class ProcessorResponse extends BaseResponse {
     public ProcessorResponse() {
         super("Processor");
     }
-
-    @JsonProperty("bridge")
-    private BridgeResponse bridge;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -39,14 +37,6 @@ public class ProcessorResponse extends BaseResponse {
 
     @JsonProperty("action")
     private BaseAction action;
-
-    public BridgeResponse getBridge() {
-        return bridge;
-    }
-
-    public void setBridge(BridgeResponse bridge) {
-        this.bridge = bridge;
-    }
 
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;

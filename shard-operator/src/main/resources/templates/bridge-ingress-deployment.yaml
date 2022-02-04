@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
     app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
-    app.kubernetes.io/component: bridge-ingress # used to specify the component
+    app.kubernetes.io/component: ingress # used to specify the component
   ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
     - apiVersion: ""
       kind: ""
@@ -24,10 +24,30 @@ spec:
       containers:
         - name: ""
           image: ""
+          imagePullPolicy: IfNotPresent
           env:
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: EVENT_BRIDGE_BRIDGE_ID
               value: ""
-            - name: KAFKA_CLIENT_ID
+            - name: EVENT_BRIDGE_CUSTOMER_ID
               value: ""
-            - name: KAFKA_CLIENT_SECRET
+            - name: EVENT_BRIDGE_SSO_URL
               value: ""
+            - name: EVENT_BRIDGE_SSO_CLIENT_ID
+              value: ""
+            - name: EVENT_BRIDGE_WEBHOOK_TECHNICAL_ACCOUNT_ID
+              value: ""
+          envFrom:
+            - secretRef:
+                name: ""
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10

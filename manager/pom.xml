@@ -59,6 +59,10 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-scheduler</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>infra</artifactId>
     </dependency>
@@ -67,8 +71,25 @@
       <artifactId>actions</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>rhoas-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
       <artifactId>quarkus-hibernate-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.cloud</groupId>
+      <artifactId>connector-management-sdk</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.amazonservices</groupId>
+      <artifactId>quarkus-amazon-secretsmanager</artifactId>
+    </dependency>
+    <!-- needed for aws secret manager async client   -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>netty-nio-client</artifactId>
     </dependency>
 
     <dependency>
@@ -106,11 +127,6 @@
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>
-     <dependency>
-    	<groupId>io.github.classgraph</groupId>
-    	<artifactId>classgraph</artifactId>
-    	<scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -143,6 +159,7 @@
         <configuration>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <container.image.localstack>${container.image.localstack}</container.image.localstack>
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
         </configuration>

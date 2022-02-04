@@ -54,24 +54,6 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>shard</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>shard</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>shard</artifactId>
-        <version>${project.version}</version>
-        <classifier>javadoc</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>shard-operator</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -90,18 +72,18 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>runner</artifactId>
+        <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>runner</artifactId>
+        <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>runner</artifactId>
+        <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
@@ -144,36 +126,36 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>k8s</artifactId>
+        <artifactId>actions</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>k8s</artifactId>
+        <artifactId>actions</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>k8s</artifactId>
+        <artifactId>actions</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
+        <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
+        <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
+        <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

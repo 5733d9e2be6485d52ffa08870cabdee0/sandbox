@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,21 +15,26 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.models.ListResult;
+import com.redhat.service.bridge.infra.models.QueryInfo;
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.bridge.manager.connectors.ConnectorsService;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
-import com.redhat.service.bridge.manager.exceptions.AlreadyExistingItemException;
-import com.redhat.service.bridge.manager.exceptions.BridgeLifecycleException;
-import com.redhat.service.bridge.manager.exceptions.ItemNotFoundException;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.ListResult;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.manager.models.QueryInfo;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -49,6 +55,15 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ObjectMapper mapper;
 
+    @Inject
+    ActionProviderFactory actionProviderFactory;
+
+    @Inject
+    ConnectorsService connectorService;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
     @Transactional
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
@@ -65,23 +80,39 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
-        Bridge bridge = getAvailableBridge(bridgeId, customerId);
+        /* We cannot deploy Processors to a Bridge that is not Available */
+        Bridge bridge = bridgesService.getAvailableBridge(bridgeId, customerId);
+
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), processorRequest.getAction());
+        Processor newProcessor = new Processor();
 
-        Processor p = new Processor();
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
 
-        p.setName(processorRequest.getName());
-        p.setDefinition(definitionToJsonNode(definition));
-        p.setSubmittedAt(ZonedDateTime.now());
-        p.setStatus(BridgeStatus.REQUESTED);
-        p.setBridge(bridge);
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+        BaseAction requestedAction = processorRequest.getAction();
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
 
-        processorDAO.persist(p);
-        return p;
+        BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
+                bridge.getId(),
+                customerId,
+                newProcessor.getId());
+
+        newProcessor.setName(processorRequest.getName());
+        newProcessor.setSubmittedAt(ZonedDateTime.now());
+        newProcessor.setStatus(BridgeStatus.REQUESTED);
+        newProcessor.setBridge(bridge);
+
+        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
+        newProcessor.setDefinition(definitionToJsonNode(definition));
+
+        processorDAO.persist(newProcessor);
+
+        connectorService.createConnectorIfNeeded(resolvedAction, newProcessor, actionProvider);
+
+        return newProcessor;
     }
 
     @Transactional
@@ -93,21 +124,21 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
-        Bridge bridge = bridgesService.getBridge(processorDTO.getBridge().getId());
+        Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getBridge().getCustomerId()));
+                    processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
-
-        // Update metrics
-        meterRegistry.counter("manager.processor.status.change",
-                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());
         }
+
+        // Update metrics
+        meterRegistry.counter("manager.processor.status.change",
+                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         return p;
     }
@@ -121,7 +152,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo) {
-        Bridge bridge = getAvailableBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getAvailableBridge(bridgeId, customerId);
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 
@@ -129,16 +160,33 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
+
+        ProcessorDefinition processorDefinition = jsonNodeToDefinition(processor.getDefinition());
+        ActionProvider actionProvider = actionProviderFactory.getActionProvider(processorDefinition.getRequestedAction().getType());
+
+        connectorService.deleteConnectorIfNeeded(processorDefinition.getResolvedAction(), processor, actionProvider);
+
         processor.setStatus(BridgeStatus.DELETION_REQUESTED);
-        LOGGER.info("[manager] Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
     }
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        BridgeDTO bridgeDTO = processor.getBridge() != null ? bridgesService.toDTO(processor.getBridge()) : null;
         ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
-        return new ProcessorDTO(processor.getId(), processor.getName(), definition, bridgeDTO, processor.getStatus());
+        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
+                internalKafkaConfigurationProvider.getBootstrapServers(),
+                internalKafkaConfigurationProvider.getClientId(),
+                internalKafkaConfigurationProvider.getClientSecret(),
+                internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.buildTopicName(processor.getBridge().getId()));
+        return new ProcessorDTO(processor.getId(),
+                processor.getName(),
+                definition,
+                processor.getBridge().getId(),
+                processor.getBridge().getCustomerId(),
+                processor.getStatus(),
+                kafkaConnectionDTO);
     }
 
     @Override
@@ -155,12 +203,11 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            processorResponse.setAction(definition.getAction());
+            processorResponse.setAction(definition.getRequestedAction());
         }
 
         if (processor.getBridge() != null) {
             processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
-            processorResponse.setBridge(bridgesService.toResponse(processor.getBridge()));
         }
 
         return processorResponse;
@@ -176,15 +223,5 @@ public class ProcessorServiceImpl implements ProcessorService {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Can't convert JsonNode to ProcessorDefinition", e);
         }
-    }
-
-    private Bridge getAvailableBridge(String bridgeId, String customerId) {
-        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
-            /* We cannot deploy Processors to a Bridge that is not Available */
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.AVAILABLE));
-        }
-
-        return bridge;
     }
 }
