@@ -71,9 +71,9 @@ Deploy the ServiceMonitor CRD from the Prometheus operator with
 kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
 ```
 
-## Managed Kafka integration (optional)
+## Managed Kafka integration
 
-Optionally, the manager can be configured to integrate with Managed Kafka.
+The manager must be configured to integrate with Managed Kafka.
 
 First of all, you need to [install the rhoas CLI](https://access.redhat.com/documentation/en-us/red_hat_openshift_streams_for_apache_kafka/1/guide/f520e427-cad2-40ce-823d-96234ccbc047)
 and login using a Managed Kafka test account (ask the dev team for credentials) and its **offline token**. From now on a successful login is assumed.
@@ -167,15 +167,14 @@ bfaea280bff3   prom/prometheus:v2.8.0   "/bin/prometheus --c…"   38 minutes ag
 
 **Open another terminal.**
 
-**If you configured Managed Kafka integration as described above, export the following env variables:**
+Export the following env variables to configure the Fleet Manager with the Managed Kafka instance created above:
 
 ```bash
-export EVENT_BRIDGE_FEATURE_FLAGS_RHOAS_ENABLED=true
-export EVENT_BRIDGE_RHOAS_MGMT_API_HOST=https://api.openshift.com
+export EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=<kafka_instance_bootstrap_host>
+export EVENT_BRIDGE_KAFKA_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-ops.json' )
+export EVENT_BRIDGE_KAFKA_CLIENT_SECRET=$( jq -r '.clientSecret' 'my-test-instance-admin.json' )
+export EVENT_BRIDGE_KAFKA_SECURITY_PROTOCOL=SASL_SSL
 export EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=http://admin-server-<kafka_instance_bootstrap_host>
-export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL=https://sso.redhat.com/auth/realms/redhat-external
-export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID=cloud-services
-export EVENT_BRIDGE_RHOAS_SSO_RED_HAT_REFRESH_TOKEN=<test_account_offline_token>
 export EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL=https://identity.api.openshift.com/auth/realms/rhoas
 export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=$( jq -r '.clientID' 'my-test-instance-admin.json' )
 export EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=$( jq -r '.clientSecret' 'my-test-instance-admin.json' )
