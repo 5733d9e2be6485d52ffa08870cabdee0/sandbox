@@ -16,6 +16,7 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.manager.config.ConfigUtils;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByStatuses",
@@ -32,7 +33,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 public class Bridge {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
-    public static final String TOPIC_PREFIX = "ob-";
+    public static final String TOPIC_PREFIX = ConfigUtils.topicPrefix();
 
     @Id
     private String id = UUID.randomUUID().toString();

@@ -11,11 +11,12 @@ import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.RhoasService;
+import com.redhat.service.bridge.manager.config.ConfigUtils;
 
 @ApplicationScoped
 public class SlackActionTransformer implements ActionTransformer {
 
-    public static final String TOPIC_PREFIX = "ob-";
+    public static final String TOPIC_PREFIX = ConfigUtils.topicPrefix();
 
     @ConfigProperty(name = "managed-connectors.topic-name")
     String topicName;
