@@ -1,4 +1,0 @@
-# manager Project
-
-WIPfdsafdas
-fdsfas
