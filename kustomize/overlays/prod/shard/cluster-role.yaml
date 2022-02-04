@@ -34,8 +34,20 @@ rules:
     verbs:
       - '*'
   - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes/custom-host
+    verbs:
+      - create
+  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
     verbs:
       - "*"
+  - apiGroups:
+      - config.openshift.io
+    resources:
+      - ingresses
+    verbs:
+      - get
