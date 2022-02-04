@@ -1,14 +1,7 @@
 name: Manager - CI
 on:
   pull_request_target:
-    paths:
-      - 'actions/**'
-      - 'executor/**'
-      - 'infra/**'
-      - 'ingress/**'
-      - 'manager/**'
-      - 'integration-tests/**'
-      - 'shard-operator/**'
+    types: [labeled]
 jobs:
   event-bridge-build:
     env:
@@ -25,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Build and test
+        if: contains(github.event.pull_request.labels.*.name, 'safe to test')
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
