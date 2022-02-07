@@ -51,7 +51,7 @@
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
     <version.io.quarkiverse.operatorsdk>3.0.2</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.129</version.io.github.classgraph>
-    <version.com.redhat.cloud>0.15.2</version.com.redhat.cloud>
+    <version.com.redhat.cloud>0.15.3</version.com.redhat.cloud>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
