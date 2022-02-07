@@ -44,7 +44,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            Error error = connectorsAPI.deleteConnector(id, kafkaId);
+            Error error = connectorsAPI.deleteConnector(id);
             if (error != null) {
                 LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway. Error: '{}'", id, kafkaId, error);
             }
