@@ -13,6 +13,7 @@ import com.openshift.cloud.api.connector.invoker.ApiException;
 import com.openshift.cloud.api.connector.invoker.Configuration;
 import com.openshift.cloud.api.connector.invoker.auth.HttpBearerAuth;
 import com.openshift.cloud.api.connector.models.Connector;
+import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 
@@ -28,7 +29,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     ConnectorsAuth connectorsAuth;
 
     @Override
-    public Connector createConnector(Connector connector) {
+    public Connector createConnector(ConnectorRequest connector) {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
@@ -43,7 +44,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            Error error = connectorsAPI.deleteConnector(id, kafkaId);
+            Error error = connectorsAPI.deleteConnector(id);
             if (error != null) {
                 LOGGER.error("Error while deleting connector with id '{}' and kafkaId '{}', Processor will be scheduled for deletion anyway. Error: '{}'", id, kafkaId, error);
             }
