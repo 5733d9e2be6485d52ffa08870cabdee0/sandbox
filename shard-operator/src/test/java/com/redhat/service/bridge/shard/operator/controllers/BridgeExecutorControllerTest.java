@@ -20,7 +20,7 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.javaoperatorsdk.operator.api.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
@@ -52,12 +52,10 @@ public class BridgeExecutorControllerTest {
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
 
         // When
-        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
 
         // Then
-        assertThat(updateControl.isUpdateCustomResource()).isFalse();
-        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
-        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
+        assertThat(updateControl.isNoUpdate()).isTrue();
     }
 
     @Test
@@ -67,10 +65,10 @@ public class BridgeExecutorControllerTest {
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
-        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeExecutor.getStatus()).isNotNull();
         assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
         assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
@@ -89,7 +87,7 @@ public class BridgeExecutorControllerTest {
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
-        bridgeExecutorController.createOrUpdateResource(bridgeExecutor, null);
+        bridgeExecutorController.reconcile(bridgeExecutor, null);
 
         // Then
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();

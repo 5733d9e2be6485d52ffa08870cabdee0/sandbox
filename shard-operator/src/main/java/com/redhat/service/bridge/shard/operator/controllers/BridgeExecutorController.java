@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -19,10 +21,7 @@ import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
-import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
+import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -30,16 +29,19 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
-import io.javaoperatorsdk.operator.api.Context;
-import io.javaoperatorsdk.operator.api.Controller;
-import io.javaoperatorsdk.operator.api.DeleteControl;
-import io.javaoperatorsdk.operator.api.ResourceController;
-import io.javaoperatorsdk.operator.api.UpdateControl;
-import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
+import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
-@Controller
-public class BridgeExecutorController implements ResourceController<BridgeExecutor> {
+@ControllerConfiguration
+public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
+        EventSourceInitializer<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
 
@@ -59,19 +61,19 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
     BridgeErrorService bridgeErrorService;
 
     @Override
-    public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-processor-deployment-event-source", deploymentEventSource);
-        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-processor-service-event-source", serviceEventSource);
-        SecretEventSource secretEventSource = SecretEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-processor-secret-event-source", secretEventSource);
-        Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeExecutor.COMPONENT_NAME);
-        serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-processor-monitoring-event-source", monitorEventSource));
+    public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
+
+        List<EventSource> eventSources = new ArrayList<>();
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+
+        return eventSources;
     }
 
     @Override
-    public UpdateControl<BridgeExecutor> createOrUpdateResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
+    public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context context) {
         LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
@@ -89,7 +91,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
 
             bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
-            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
         LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
@@ -100,7 +102,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
                     bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
-            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
 
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
@@ -117,7 +119,7 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
             notifyManager(bridgeExecutor, BridgeStatus.FAILED);
-            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
 
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
@@ -126,20 +128,20 @@ public class BridgeExecutorController implements ResourceController<BridgeExecut
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeExecutor, BridgeStatus.AVAILABLE);
-            return UpdateControl.updateStatusSubResource(bridgeExecutor);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
         return UpdateControl.noUpdate();
     }
 
     @Override
-    public DeleteControl deleteResource(BridgeExecutor bridgeExecutor, Context<BridgeExecutor> context) {
+    public DeleteControl cleanup(BridgeExecutor bridgeExecutor, Context context) {
         LOGGER.info("Deleted BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
 
         notifyManager(bridgeExecutor, BridgeStatus.DELETED);
 
-        return DeleteControl.DEFAULT_DELETE;
+        return DeleteControl.defaultDelete();
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, BridgeStatus status) {

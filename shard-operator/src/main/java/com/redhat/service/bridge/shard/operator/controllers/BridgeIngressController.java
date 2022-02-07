@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -22,10 +24,7 @@ import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.DeploymentStatusUtils;
-import com.redhat.service.bridge.shard.operator.watchers.DeploymentEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.SecretEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.ServiceEventSource;
-import com.redhat.service.bridge.shard.operator.watchers.monitoring.ServiceMonitorEventSource;
+import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -33,17 +32,19 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
-import io.javaoperatorsdk.operator.api.Context;
-import io.javaoperatorsdk.operator.api.Controller;
-import io.javaoperatorsdk.operator.api.DeleteControl;
-import io.javaoperatorsdk.operator.api.ResourceController;
-import io.javaoperatorsdk.operator.api.UpdateControl;
-import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
-import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
+import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
+import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
-@Controller
-public class BridgeIngressController implements ResourceController<BridgeIngress> {
+@ControllerConfiguration
+public class BridgeIngressController implements Reconciler<BridgeIngress>,
+        EventSourceInitializer<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -66,21 +67,20 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
     BridgeErrorService bridgeErrorService;
 
     @Override
-    public void init(EventSourceManager eventSourceManager) {
-        DeploymentEventSource deploymentEventSource = DeploymentEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-ingress-deployment-event-source", deploymentEventSource);
-        ServiceEventSource serviceEventSource = ServiceEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-ingress-service-event-source", serviceEventSource);
-        AbstractEventSource networkingEventSource = networkingService.createAndRegisterWatchNetworkResource(BridgeIngress.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-ingress-networking-event-source", networkingEventSource);
-        SecretEventSource secretEventSource = SecretEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
-        eventSourceManager.registerEventSource("bridge-ingress-secret-event-source", secretEventSource);
-        Optional<ServiceMonitorEventSource> serviceMonitorEventSource = ServiceMonitorEventSource.createAndRegisterWatch(kubernetesClient, BridgeIngress.COMPONENT_NAME);
-        serviceMonitorEventSource.ifPresent(monitorEventSource -> eventSourceManager.registerEventSource("bridge-ingress-monitoring-event-source", monitorEventSource));
+    public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
+
+        List<EventSource> eventSources = new ArrayList<>();
+        eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
+
+        return eventSources;
     }
 
     @Override
-    public UpdateControl<BridgeIngress> createOrUpdateResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
+    public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
         LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
@@ -104,7 +104,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
                         failureReason);
                 notifyManager(bridgeIngress, BridgeStatus.FAILED);
             }
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
         LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
@@ -115,7 +115,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
         LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
@@ -127,7 +127,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
         LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
@@ -145,7 +145,7 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
             notifyManager(bridgeIngress, BridgeStatus.FAILED);
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
@@ -153,20 +153,20 @@ public class BridgeIngressController implements ResourceController<BridgeIngress
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
-            return UpdateControl.updateStatusSubResource(bridgeIngress);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
         return UpdateControl.noUpdate();
     }
 
     @Override
-    public DeleteControl deleteResource(BridgeIngress bridgeIngress, Context<BridgeIngress> context) {
+    public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         // Linked resources are automatically deleted
 
         notifyManager(bridgeIngress, BridgeStatus.DELETED);
 
-        return DeleteControl.DEFAULT_DELETE;
+        return DeleteControl.defaultDelete();
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, BridgeStatus status) {

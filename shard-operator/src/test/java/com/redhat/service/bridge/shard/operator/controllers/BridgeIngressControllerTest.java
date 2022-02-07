@@ -26,7 +26,7 @@ import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.javaoperatorsdk.operator.api.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
@@ -62,12 +62,10 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         BridgeIngress bridgeIngress = buildBridgeIngress();
 
         // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isUpdateCustomResource()).isFalse();
-        assertThat(updateControl.isUpdateStatusSubResource()).isFalse();
-        assertThat(updateControl.isUpdateCustomResourceAndStatusSubResource()).isFalse();
+        assertThat(updateControl.isNoUpdate()).isTrue();
     }
 
     @Test
@@ -77,10 +75,10 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         deployBridgeIngressSecret(bridgeIngress);
 
         // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeIngress.getStatus()).isNotNull();
         assertThat(bridgeIngress.getStatus().isReady()).isFalse();
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
@@ -99,7 +97,7 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         deployBridgeIngressSecret(bridgeIngress);
 
         // When
-        bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
         Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
@@ -119,7 +117,7 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         deployBridgeIngressSecret(bridgeIngress);
 
         // When
-        bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
+        bridgeIngressController.reconcile(bridgeIngress, null);
         Deployment deployment = getDeploymentFor(bridgeIngress);
 
         // Then
@@ -130,10 +128,10 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         CountDownLatch bridgeUpdates = new CountDownLatch(1);
         addBridgeUpdateRequestListener(bridgeUpdates);
 
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.createOrUpdateResource(bridgeIngress, null);
-        assertThat(updateControl.isUpdateStatusSubResource()).isTrue();
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
+        assertThat(updateControl.isUpdateStatus()).isTrue();
 
-        BridgeDTO bridgeDTO = updateControl.getCustomResource().toDTO();
+        BridgeDTO bridgeDTO = updateControl.getResource().toDTO();
         bridgeDTO.setStatus(BridgeStatus.FAILED);
 
         assertThat(bridgeUpdates.await(60, TimeUnit.SECONDS)).isTrue();
