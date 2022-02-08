@@ -62,6 +62,7 @@ kustomize build kustomize/overlays/minikube/keycloak | kubectl apply -f -
 Wait until all the resources have been deployed (it might take a while for a brand new cluster).
 
 ```bash
+kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
 kubectl wait pod -l app.kubernetes.io/instance=my-cluster --for=condition=Ready --timeout=600s -n kafka
 ```
 
@@ -156,11 +157,11 @@ to the following:
 
 ```bash
 > docker ps -a
-CONTAINER ID   IMAGE                    COMMAND                  CREATED          STATUS          PORTS                                        NAMES
-8e11a5fc333e   grafana/grafana:6.6.1    "/run.sh"                38 minutes ago   Up 38 minutes                                                docker-compose_grafana_1
-bfaea280bff3   prom/prometheus:v2.8.0   "/bin/prometheus --c…"   38 minutes ago   Up 38 minutes                                                docker-compose_prometheus_1
-24af8a014c54   jboss/keycloak:10.0.1    "/opt/jboss/tools/do…"   38 minutes ago   Up 38 minutes   8080/tcp, 8443/tcp, 0.0.0.0:8180->8180/tcp   event-bridge-keycloak
-1d14ea702f92   postgres:13.1            "docker-entrypoint.s…"   38 minutes ago   Up 38 minutes   0.0.0.0:5432->5432/tcp                       event-bridge-postgres
+CONTAINER ID   IMAGE                           COMMAND                  CREATED          STATUS          PORTS                    NAMES
+8e11a5fc333e   grafana/grafana:6.6.1           "/run.sh"                38 minutes ago   Up 38 minutes                            docker-compose_grafana_1
+bfaea280bff3   prom/prometheus:v2.8.0          "/bin/prometheus --c…"   38 minutes ago   Up 38 minutes                            docker-compose_prometheus_1
+d299d9924f8c   localstack/localstack:0.13.3    "docker-entrypoint.sh"   38 minutes ago   Up 38 minutes   0.0.0.0:4566->4566/tcp   event-bridge-localstack
+1d14ea702f92   postgres:13.1                   "docker-entrypoint.s…"   38 minutes ago   Up 38 minutes   0.0.0.0:5432->5432/tcp   event-bridge-postgres
 ```
 
 ### Start the Fleet Manager
