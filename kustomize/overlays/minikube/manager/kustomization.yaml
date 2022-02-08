@@ -8,12 +8,12 @@ secretGenerator:
   - EVENT_BRIDGE_KAFKA_CLIENT_ID=client-id
   - EVENT_BRIDGE_KAFKA_CLIENT_SECRET=secret
   - EVENT_BRIDGE_KAFKA_SECURITY_PROTOCOL=SASL_SSL
+  - EVENT_BRIDGE_KAFKA_TOPIC_PREFIX=ob-
   - EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=instance-api-host
   - EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL=https://identity.api.openshift.com/auth/realms/rhoas
   - EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=client-id
   - EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=secret
   - RHOAS_OPS_ACCOUNT_CLIENT_ID=client-id
-  - RHOAS_TOPIC_PREFIX=ob-
 patchesStrategicMerge:
 - patches/deploy-config.yaml
 - patches/postgres-config.yaml
