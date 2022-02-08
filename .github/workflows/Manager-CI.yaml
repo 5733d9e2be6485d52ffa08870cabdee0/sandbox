@@ -24,13 +24,11 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox' && contains(github.event.pull_request.labels.*.name, 'safe to test')
     name: Build all images and run E2E tests
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build and test
-        if: contains(github.event.pull_request.labels.*.name, 'safe to test')
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
