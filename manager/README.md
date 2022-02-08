@@ -1,3 +1,3 @@
 # manager Project
 
-WIP
+TRIGGER PIPELINE
