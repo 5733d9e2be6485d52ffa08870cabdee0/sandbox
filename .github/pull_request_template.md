@@ -10,3 +10,4 @@ Please make sure that your PR meets the following requirements:
 - [ ] Pull Request contains link to any dependent or related Pull Request
 - [ ] Pull Request contains description of the issue
 - [ ] Pull Request does not include fixes for issues other than the main ticket
+- [ ] Annotate your PR with the label `safe to test` in order to run the end to end CI pipeline
