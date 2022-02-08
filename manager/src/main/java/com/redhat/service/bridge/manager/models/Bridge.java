@@ -12,11 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.manager.config.ConfigUtils;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByStatuses",
@@ -33,7 +31,6 @@ import com.redhat.service.bridge.manager.config.ConfigUtils;
 public class Bridge {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
-    public static final String TOPIC_PREFIX = ConfigUtils.topicPrefix();
 
     @Id
     private String id = UUID.randomUUID().toString();
@@ -90,11 +87,6 @@ public class Bridge {
 
     public BridgeStatus getStatus() {
         return status;
-    }
-
-    @Transient
-    public String getTopicName() {
-        return TOPIC_PREFIX + getId();
     }
 
     public void setId(String id) {

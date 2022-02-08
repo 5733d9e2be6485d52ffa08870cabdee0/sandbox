@@ -2,16 +2,19 @@ package com.redhat.service.bridge.manager.actions.connectors;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.RhoasService;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 
-import static com.redhat.service.bridge.manager.actions.connectors.SlackActionTransformer.TOPIC_PREFIX;
+import io.quarkus.test.junit.QuarkusTest;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
+@QuarkusTest
 class SlackActionTransformerTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
@@ -19,12 +22,15 @@ class SlackActionTransformerTest {
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_CHANNEL_PARAM = "myChannel";
     private static final String TEST_WEBHOOK_PARAM = "myWebhook";
-    private static final String TEST_DEFAULT_TOPIC_NAME = "topicName";
-    private static final String TEST_RHOAS_TOPIC_NAME = TOPIC_PREFIX + "test-processor-id";
+
+    @Inject
+    SlackActionTransformer slackActionTransformer;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Test
     void testTransform() {
-        SlackActionTransformer slackActionTransformer = buildTestTransformer();
         BaseAction baseAction = buildTestAction();
 
         BaseAction transformedAction = slackActionTransformer.transform(baseAction, TEST_BRIDGE_ID, TEST_CUSTOMER_ID, TEST_PROCESSOR_ID);
@@ -36,7 +42,7 @@ class SlackActionTransformerTest {
         assertThat(transformedActionParameter)
                 .containsEntry(SlackAction.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM)
                 .containsEntry(SlackAction.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicAction.TOPIC_PARAM, TEST_RHOAS_TOPIC_NAME);
+                .containsEntry(KafkaTopicAction.TOPIC_PARAM, internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID);
     }
 
     private BaseAction buildTestAction() {
@@ -47,13 +53,5 @@ class SlackActionTransformerTest {
         BaseAction action = new BaseAction();
         action.setParameters(parameters);
         return action;
-    }
-
-    private SlackActionTransformer buildTestTransformer() {
-        SlackActionTransformer transformer = new SlackActionTransformer();
-        transformer.topicName = TEST_DEFAULT_TOPIC_NAME;
-
-        transformer.rhoasService = mock(RhoasService.class);
-        return transformer;
     }
 }

@@ -5,24 +5,16 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.RhoasService;
-import com.redhat.service.bridge.manager.config.ConfigUtils;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 
 @ApplicationScoped
 public class SlackActionTransformer implements ActionTransformer {
 
-    public static final String TOPIC_PREFIX = ConfigUtils.topicPrefix();
-
-    @ConfigProperty(name = "managed-connectors.topic-name")
-    String topicName;
-
     @Inject
-    RhoasService rhoasService;
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Override
     public BaseAction transform(BaseAction action, String bridgeId, String customerId, String processorId) {
@@ -45,6 +37,6 @@ public class SlackActionTransformer implements ActionTransformer {
     // once we use a single topic for every connector there will be no need of having a different
     // one per connector https://issues.redhat.com/browse/MGDSTRM-5977
     private String generateKafkaTopicName(String processorId) {
-        return TOPIC_PREFIX + processorId;
+        return internalKafkaConfigurationProvider.getTopicPrefix() + processorId;
     }
 }

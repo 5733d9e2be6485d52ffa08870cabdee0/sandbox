@@ -42,6 +42,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
@@ -51,7 +52,6 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.bridge.manager.actions.connectors.SlackActionTransformer.TOPIC_PREFIX;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -84,6 +84,9 @@ public class ProcessorServiceTest {
 
     @InjectMock
     RhoasService rhoasServiceMock;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @BeforeEach
     public void cleanUp() {
@@ -383,12 +386,12 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
         assertThat(processor).isNotNull();
-        verify(rhoasServiceMock).createTopicAndGrantAccessFor(TOPIC_PREFIX + processor.getId(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor(internalKafkaConfigurationProvider.getTopicPrefix() + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
 
         verify(connectorsApiClient).deleteConnector(testConnectorId, ConnectorsServiceImpl.KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TOPIC_PREFIX + processor.getId(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(internalKafkaConfigurationProvider.getTopicPrefix() + processor.getId(), RhoasTopicAccessType.PRODUCER);
 
         ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
         assertThat(connector).isNull();

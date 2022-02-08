@@ -8,4 +8,6 @@ public interface InternalKafkaConfigurationProvider {
     String getBootstrapServers();
 
     String getSecurityProtocol();
+
+    String getTopicPrefix();
 }
