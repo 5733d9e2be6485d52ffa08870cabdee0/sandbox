@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.stream.IntStream;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -256,11 +255,10 @@ public class End2EndTestITStep {
 
     @After
     public void cleanUp() {
-        if (IntStream.range(0, getBridgeList().getItems().size()).anyMatch(b -> getBridgeList().getItems().get(b).getId().equals(bridgeId))) {
+        if (getBridgeList().getItems().stream().anyMatch(b -> b.getId().equals(bridgeId))) {
             if (listProcessors(bridgeId).getSize() > 0) {
-                IntStream.range(0, listProcessors(bridgeId).getItems().size()).forEach(p -> deleteProcessor(bridgeId, listProcessors(bridgeId).getItems().get(p).getId()));
+                listProcessors(bridgeId).getItems().stream().forEach(p -> deleteProcessor(bridgeId, p.getId()));
                 Awaitility.await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(5)).until(() -> listProcessors(bridgeId).getSize() == 0);
-                deleteBridge(bridgeId);
             }
             deleteBridge(bridgeId);
         }
