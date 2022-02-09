@@ -103,6 +103,6 @@ function wait_kafka_ready {
 }
 
 rhoas_login
-create_service_accounts
 create_kafka_instance
 wait_kafka_ready
+create_service_accounts
