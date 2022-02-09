@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.stream.IntStream;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -17,6 +18,7 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.cloudevents.SpecVersion;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -33,6 +35,7 @@ import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.de
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeDetails;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeList;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getProcessor;
+import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.listProcessors;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.managerUrl;
 import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.jsonRequestWithAuth;
 import static io.restassured.RestAssured.given;
@@ -249,6 +252,18 @@ public class End2EndTestITStep {
 
         assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events\",} 1.0");
         assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events/plain\",} 1.0");
+    }
+
+    @After
+    public void cleanUp() {
+        if (IntStream.range(0, getBridgeList().getItems().size()).anyMatch(b -> getBridgeList().getItems().get(b).getId().equals(bridgeId))) {
+            if (listProcessors(bridgeId).getSize() > 0) {
+                deleteProcessor(bridgeId, processorId);
+                Awaitility.await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(5)).until(() -> listProcessors(bridgeId).getSize() == 0);
+                deleteBridge(bridgeId);
+            }
+            deleteBridge(bridgeId);
+        }
     }
 
 }
