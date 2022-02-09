@@ -1,34 +1,32 @@
 package com.redhat.service.bridge.manager.providers;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import com.redhat.service.bridge.manager.RhoasService;
 
 @ApplicationScoped
 public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConfigurationProvider {
 
-    private static final String TOPIC_PREFIX = "ob-";
+    public static final String KAFKA_BOOTSTRAP_SERVERS_PROPERTY = "event-bridge.kafka.bootstrap.servers";
+    public static final String KAFKA_CLIENT_ID_PROPERTY = "event-bridge.kafka.client.id";
+    public static final String KAFKA_CLIENT_SECRET_PROPERTY = "event-bridge.kafka.client.secret";
+    public static final String KAFKA_SECURITY_PROTOCOL_PROPERTY = "event-bridge.kafka.security.protocol";
+    public static final String KAFKA_TOPIC_PREFIX_PROPERTY = "event-bridge.kafka.topic-prefix";
 
-    // TODO: remove with MGDOBR-225
-    private static final String LOCAL_DEV_SINGLE_TOPIC_NAME = "events";
-
-    @ConfigProperty(name = "event-bridge.kafka.bootstrap.servers")
+    @ConfigProperty(name = KAFKA_BOOTSTRAP_SERVERS_PROPERTY)
     String kafkaBootstrapServers;
 
-    @ConfigProperty(name = "event-bridge.kafka.client.id")
+    @ConfigProperty(name = KAFKA_CLIENT_ID_PROPERTY)
     String kafkaClientId;
 
-    @ConfigProperty(name = "event-bridge.kafka.client.secret")
+    @ConfigProperty(name = KAFKA_CLIENT_SECRET_PROPERTY)
     String kafkaClientSecret;
 
-    @ConfigProperty(name = "event-bridge.kafka.security.protocol")
+    @ConfigProperty(name = KAFKA_SECURITY_PROTOCOL_PROPERTY)
     String kafkaSecurityProtocol;
 
-    @Inject
-    RhoasService rhoasService;
+    @ConfigProperty(name = KAFKA_TOPIC_PREFIX_PROPERTY)
+    String kafkaTopicPrefix;
 
     @Override
     public String getClientId() {
@@ -51,11 +49,7 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
     }
 
     @Override
-    public String buildTopicName(String bridgeId) {
-        // TODO: review this logic with MGDOBR-225
-        if (rhoasService.isEnabled()) {
-            return TOPIC_PREFIX + bridgeId;
-        }
-        return LOCAL_DEV_SINGLE_TOPIC_NAME;
+    public String getTopicPrefix() {
+        return kafkaTopicPrefix;
     }
 }

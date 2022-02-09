@@ -20,6 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
@@ -51,6 +52,9 @@ public class ShardBridgesSyncAPITest {
 
     @InjectMock
     JsonWebToken jwt;
+
+    @InjectMock
+    RhoasService rhoasServiceMock;
 
     @BeforeEach
     public void cleanUp() {

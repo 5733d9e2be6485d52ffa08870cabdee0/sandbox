@@ -9,5 +9,5 @@ public interface InternalKafkaConfigurationProvider {
 
     String getSecurityProtocol();
 
-    String buildTopicName(String bridgeId);
+    String getTopicPrefix();
 }

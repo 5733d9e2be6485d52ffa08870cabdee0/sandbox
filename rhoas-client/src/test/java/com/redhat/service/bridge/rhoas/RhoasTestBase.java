@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.redhat.service.bridge.test.rhoas.KafkaInstanceAdminMockServerConfigurator;
 import com.redhat.service.bridge.test.rhoas.KafkaMgmtV1MockServerConfigurator;
 import com.redhat.service.bridge.test.rhoas.MasSSOMockServerConfigurator;
-import com.redhat.service.bridge.test.rhoas.RedHatSSOMockServerConfiguration;
+import com.redhat.service.bridge.test.rhoas.RedHatSSOMockServerConfigurator;
 import com.redhat.service.bridge.test.wiremock.InjectWireMock;
 
 abstract class RhoasTestBase {
@@ -15,7 +15,7 @@ abstract class RhoasTestBase {
     protected WireMockServer wireMockServer;
 
     @Inject
-    protected RedHatSSOMockServerConfiguration redHatSSOConfigurator;
+    protected RedHatSSOMockServerConfigurator redHatSSOConfigurator;
     @Inject
     protected MasSSOMockServerConfigurator masSSOConfigurator;
     @Inject

@@ -5,13 +5,17 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasTestProfile;
+
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 @QuarkusTest
-class RhoasInjectionDefaultTest {
+@TestProfile(RhoasTestProfile.class)
+class RhoasInjectionTest {
 
     @Inject
     Instance<RhoasClient> rhoasClient;

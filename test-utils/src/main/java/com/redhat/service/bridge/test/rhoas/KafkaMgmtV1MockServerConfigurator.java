@@ -20,7 +20,7 @@ public class KafkaMgmtV1MockServerConfigurator extends AbstractApiMockServerConf
     String basePath;
 
     public KafkaMgmtV1MockServerConfigurator() {
-        super("/api/kafkas_mgmt/v1", RedHatSSOMockServerConfiguration.TEST_ACCESS_TOKEN);
+        super("/api/kafkas_mgmt/v1", RedHatSSOMockServerConfigurator.TEST_ACCESS_TOKEN);
     }
 
     @Override

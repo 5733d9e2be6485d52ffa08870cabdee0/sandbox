@@ -19,6 +19,7 @@ import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -32,6 +33,9 @@ public class BridgesServiceTest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @InjectMock
+    RhoasService rhoasServiceMock;
 
     @BeforeEach
     public void cleanUp() {

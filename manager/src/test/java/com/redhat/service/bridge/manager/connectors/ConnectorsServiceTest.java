@@ -17,6 +17,7 @@ import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -39,7 +40,6 @@ class ConnectorsServiceTest {
     private static final String TEST_ACTION_NAME = "TestAction";
     private static final String TEST_ACTION_CHANNEL = "testchannel";
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
-    private static final String TEST_ACTION_TOPIC = "ob-" + TEST_PROCESSOR_ID;
 
     @Inject
     SlackAction slackAction;
@@ -49,6 +49,9 @@ class ConnectorsServiceTest {
 
     @Inject
     ConnectorsService connectorsService;
+
+    @Inject
+    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @InjectMock
     ConnectorsApiClient connectorsApiClientMock;
@@ -73,7 +76,6 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsApiClientMock.createConnector(any())).thenReturn(testConnector());
 
         Optional<ConnectorEntity> connector = connectorsService.createConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);
@@ -81,33 +83,31 @@ class ConnectorsServiceTest {
 
         verify(connectorsApiClientMock).createConnector(any());
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
-        verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_ACTION_TOPIC, RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
     }
 
     @Test
     @Transactional
     void doNotDeleteConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
 
         connectorsService.deleteConnectorIfNeeded(testWebhookAction(), testProcessor(), webhookAction);
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
         verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID, KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(TEST_ACTION_TOPIC, RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
     }
 
     @Test
     @Transactional
     void doDeleteConnector() {
-        when(rhoasServiceMock.isEnabled()).thenReturn(true);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity());
 
         connectorsService.deleteConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);
 
         verify(connectorsDAOMock).delete(any(ConnectorEntity.class));
         verify(connectorsApiClientMock).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID, KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_ACTION_TOPIC, RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
     }
 
     private Connector testConnector() {
@@ -138,7 +138,7 @@ class ConnectorsServiceTest {
         action.setParameters(Map.of(
                 SlackAction.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
-                KafkaTopicAction.TOPIC_PARAM, TEST_ACTION_TOPIC));
+                KafkaTopicAction.TOPIC_PARAM, testActionTopic()));
         return action;
     }
 
@@ -149,6 +149,10 @@ class ConnectorsServiceTest {
         action.setParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;
+    }
+
+    private String testActionTopic() {
+        return internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID;
     }
 
 }

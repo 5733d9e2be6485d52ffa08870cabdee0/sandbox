@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.test.rhoas.RhoasMockServerResource;
-import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasEnabledTestProfile;
+import com.redhat.service.bridge.test.rhoas.testprofiles.RhoasTestProfile;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -12,7 +12,7 @@ import io.quarkus.test.junit.TestProfile;
 
 @QuarkusTest
 @QuarkusTestResource(value = RhoasMockServerResource.class, restrictToAnnotatedClass = true)
-@TestProfile(RhoasEnabledTestProfile.class)
+@TestProfile(RhoasTestProfile.class)
 class RhoasClientWithBrokenServiceAccountTest extends RhoasClientTestBase {
 
     @BeforeEach
