@@ -5,7 +5,7 @@ configuration_profile="$1"
 # helper functions
 function check_required_variable {
   var_name="$1"
-  [ -z "$( eval "echo -n \$${var_name}")" ] && die "ERROR: required environment variable \"${var_name}\" is missing or empty"
+  [ -z "$( eval "echo -n \$${var_name}")" ] && die "ERROR: required environment variable \"${var_name}\" is missing or empty" || true
 }
 
 function die {
