@@ -258,7 +258,7 @@ public class End2EndTestITStep {
     public void cleanUp() {
         if (IntStream.range(0, getBridgeList().getItems().size()).anyMatch(b -> getBridgeList().getItems().get(b).getId().equals(bridgeId))) {
             if (listProcessors(bridgeId).getSize() > 0) {
-                deleteProcessor(bridgeId, processorId);
+                IntStream.range(0, listProcessors(bridgeId).getItems().size()).forEach(p -> deleteProcessor(bridgeId, listProcessors(bridgeId).getItems().get(p).getId()));
                 Awaitility.await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(5)).until(() -> listProcessors(bridgeId).getSize() == 0);
                 deleteBridge(bridgeId);
             }
