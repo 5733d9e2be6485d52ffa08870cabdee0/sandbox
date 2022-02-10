@@ -1,24 +1,16 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.shard.operator.AbstractShardWireMockTest;
 import com.redhat.service.bridge.shard.operator.TestSupport;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionStatus;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.utils.KubernetesResourcePatcher;
-import com.redhat.service.bridge.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -27,20 +19,14 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-@QuarkusTestResource(KeycloakResource.class)
-public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
+public class BridgeIngressControllerTest {
 
     @Inject
     BridgeIngressController bridgeIngressController;
@@ -123,21 +109,10 @@ public class BridgeIngressControllerTest extends AbstractShardWireMockTest {
         // Then
         kubernetesResourcePatcher.patchDeploymentAsFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
 
-        // We expect a single update to Fleet Manager to inform of the Deployment Failure
-        stubBridgeUpdate();
-        CountDownLatch bridgeUpdates = new CountDownLatch(1);
-        addBridgeUpdateRequestListener(bridgeUpdates);
-
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
-
-        BridgeDTO bridgeDTO = updateControl.getResource().toDTO();
-        bridgeDTO.setStatus(BridgeStatus.FAILED);
-
-        assertThat(bridgeUpdates.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(bridgeDTO)))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
     }
 
     private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {

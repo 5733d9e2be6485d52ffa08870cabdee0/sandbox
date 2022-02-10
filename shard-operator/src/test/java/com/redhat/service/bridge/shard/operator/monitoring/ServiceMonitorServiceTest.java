@@ -28,7 +28,7 @@ import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@WithKubernetesTestServer()
+@WithKubernetesTestServer
 public class ServiceMonitorServiceTest {
 
     @Inject
