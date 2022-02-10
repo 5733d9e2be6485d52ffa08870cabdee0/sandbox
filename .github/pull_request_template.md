@@ -10,4 +10,16 @@ Please make sure that your PR meets the following requirements:
 - [ ] Pull Request contains link to any dependent or related Pull Request
 - [ ] Pull Request contains description of the issue
 - [ ] Pull Request does not include fixes for issues other than the main ticket
-- [ ] Annotate your PR with the label `safe to test` in order to run the end to end CI pipeline
+
+<details>
+<summary>
+How to trigger pipelines and use the bots:
+</summary>
+
+* <b>Run the end to end pipeline</b>  
+  Annotate the pull request with the label: `safe to test`.
+
+* <b>Rebase the pull request</b>  
+  Comment with: `/rebase`.
+
+</details>
