@@ -11,8 +11,6 @@
 
 . "$( dirname "$0" )/configure.sh" kafka minikube-started managed-connectors
 
-docker-compose -f "$( dirname "$0" )/../docker-compose/docker-compose.yml" up -d
-
 instance_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
 admin_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-admin.json"
 ops_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-ops.json"
