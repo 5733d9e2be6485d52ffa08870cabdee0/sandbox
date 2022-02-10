@@ -33,6 +33,10 @@ for tool in $required_tools; do
   which "$tool" &> /dev/null || die "ERROR: required tool \"$tool\" is missing"
 done
 
+# export credentials folder path
+export CREDENTIALS_FOLDER="$( dirname "$0" )/credentials"
+mkdir -p "${CREDENTIALS_FOLDER}"
+
 # configure profiles
 function configure {
   profile=$1
