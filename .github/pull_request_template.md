@@ -17,7 +17,7 @@ How to trigger pipelines and use the bots:
 </summary>
 
 * <b>Run the end to end pipeline</b>  
-  Annotate the pull request with the label: `safe to test`.
+  Annotate the pull request with the label: `safe to test`. If you want to run the pipeline again, remove and add it again.
 
 * <b>Rebase the pull request</b>  
   Comment with: `/rebase`.
