@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -17,6 +18,7 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.cloudevents.SpecVersion;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -33,6 +35,7 @@ import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.de
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeDetails;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getBridgeList;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.getProcessor;
+import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.listProcessors;
 import static com.redhat.service.bridge.integration.tests.common.BridgeCommon.managerUrl;
 import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.jsonRequestWithAuth;
 import static io.restassured.RestAssured.given;
@@ -40,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class End2EndTestITStep {
 
+    private static String randomBridgeName;
     private static String bridgeId;
     private static String processorId;
     private static String endPoint;
@@ -56,18 +60,18 @@ public class End2EndTestITStep {
                 .statusCode(responseCode);
     }
 
-    @Given("^get list of Bridge instances with access token doesn't contain Bridge \"([^\"]*)\"$")
-    public void getEmptyBridges(String bridgeName) {
+    @Given("get list of Bridge instances with access token doesn't contain randomly generated Bridge")
+    public void generateRandomBridgeName() {
+        End2EndTestITStep.randomBridgeName = "bridge-" + UUID.randomUUID().toString().substring(0, 4);
         BridgeListResponse response = getBridgeList();
         assertThat(response.getKind()).isEqualTo("BridgeList");
-        assertThat(response.getItems()).noneMatch(b -> b.getName().equals(bridgeName));
-
+        assertThat(response.getItems()).noneMatch(b -> b.getName().equals(End2EndTestITStep.randomBridgeName));
     }
 
-    @When("^create a Bridge with name \"([^\"]*)\" with access token$")
-    public void createBridge(String bridgeName) {
-        BridgeResponse response = addBridge(bridgeName);
-        assertThat(response.getName()).isEqualTo(bridgeName);
+    @When("create a Bridge with randomly generated name with access token")
+    public void createRandomBridge() {
+        BridgeResponse response = addBridge(End2EndTestITStep.randomBridgeName);
+        assertThat(response.getName()).isEqualTo(End2EndTestITStep.randomBridgeName);
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
@@ -77,10 +81,10 @@ public class End2EndTestITStep {
         bridgeId = response.getId();
     }
 
-    @Given("^get list of Bridge instances with access token contains Bridge \"([^\"]*)\"")
-    public void testBridgeExists(String bridgeName) {
+    @Then("get list of Bridge instances with access token contains Bridge with randomly generated name")
+    public void testRandomBridgeExists() {
         BridgeListResponse response = getBridgeList();
-        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(bridgeName));
+        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(End2EndTestITStep.randomBridgeName));
     }
 
     @Then("^get Bridge with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
@@ -224,6 +228,7 @@ public class End2EndTestITStep {
 
     @And("^the Ingress is Undeployed within (\\d+) (?:minute|minutes)$")
     public void ingressUndeployedWithinMinutes(int timeoutMinutes) {
+        cloudEventStream = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8));
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5)).untilAsserted(() -> jsonRequestWithAuth()
                 .body(cloudEventStream).contentType(ContentType.JSON)
                 .post(endPoint + "/events")
@@ -249,6 +254,17 @@ public class End2EndTestITStep {
 
         assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events\",} 1.0");
         assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events/plain\",} 1.0");
+    }
+
+    @After
+    public void cleanUp() {
+        if (getBridgeList().getItems().stream().anyMatch(b -> b.getId().equals(bridgeId))) {
+            if (listProcessors(bridgeId).getSize() > 0) {
+                listProcessors(bridgeId).getItems().stream().forEach(p -> deleteProcessor(bridgeId, p.getId()));
+                Awaitility.await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(5)).until(() -> listProcessors(bridgeId).getSize() == 0);
+            }
+            deleteBridge(bridgeId);
+        }
     }
 
 }

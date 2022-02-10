@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:

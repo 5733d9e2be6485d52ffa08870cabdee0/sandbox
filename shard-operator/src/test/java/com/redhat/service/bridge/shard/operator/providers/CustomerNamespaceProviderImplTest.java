@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-@QuarkusTestResource(KeycloakResource.class)
+@QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
 class CustomerNamespaceProviderImplTest {
 
     @Inject
