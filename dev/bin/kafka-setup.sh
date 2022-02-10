@@ -12,12 +12,12 @@
 
 # rhoas login
 function rhoas_login {
-  rhoas_logged_in=$( rhoas status kafka -o json &> /dev/null && echo -n "yes" || echo -n "no" )
+  rhoas_logged_in=$( rhoas kafka describe -o json &> /dev/null && echo -n "yes" || echo -n "no" )
   if [ "${rhoas_logged_in}" == "no" ]; then
     echo "rhoas not logged in. Please log in with your Red Hat account."
     rhoas login --print-sso-url
   fi
-  rhoas_logged_in=$( rhoas status kafka -o json &> /dev/null && echo -n "yes" || echo -n "no" )
+  rhoas_logged_in=$( rhoas kafka describe -o json &> /dev/null && echo -n "yes" || echo -n "no" )
   if [ "${rhoas_logged_in}" == "no" ]; then
     die "rhoas login failure"
   else
@@ -106,11 +106,11 @@ function create_kafka_instance_and_wait_ready {
   rhoas kafka use --id "${instance_id}"
 
   # wait for instance to be ready
-  kafka_status=$( rhoas status kafka -o json | jq -rc '.kafka.status' )
+  kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   while [ "${kafka_status}" != "ready" ]; do
     echo "Waiting for Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" to become ready (current status \"${kafka_status}\")..."
     sleep 20s
-    kafka_status=$( rhoas status kafka -o json | jq -rc '.kafka.status' )
+    kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   done
   echo "Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" is ${kafka_status}"
 
