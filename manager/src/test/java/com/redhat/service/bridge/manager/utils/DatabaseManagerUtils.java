@@ -6,9 +6,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
+import com.redhat.service.bridge.manager.dao.ShardDAO;
+import com.redhat.service.bridge.manager.models.Shard;
+import com.redhat.service.bridge.manager.models.ShardType;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -29,6 +33,9 @@ public class DatabaseManagerUtils {
     @Inject
     ConnectorsDAO connectorsDAO;
 
+    @Inject
+    ShardDAO shardDAO;
+
     /**
      * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dinamically, the processor
      * will cascade the removal of filters that belongs to it.
@@ -43,6 +50,15 @@ public class DatabaseManagerUtils {
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
+        deleteAllShards();
+    }
+
+    @Transactional
+    public void registerDefaultShard() {
+        Shard traditional = new Shard();
+        traditional.setId(TestConstants.SHARD_ID);
+        traditional.setType(ShardType.TRADITIONAL);
+        shardDAO.persist(traditional);
     }
 
     /**
@@ -61,5 +77,10 @@ public class DatabaseManagerUtils {
     private void deleteAllConnectors() {
         List<String> ids = connectorsDAO.getEntityManager().createQuery("select c.id from ConnectorEntity c", String.class).getResultList();
         ids.forEach(x -> connectorsDAO.deleteById(x));
+    }
+
+    private void deleteAllShards() {
+        List<String> ids = shardDAO.getEntityManager().createQuery("select s.id from Shard s", String.class).getResultList();
+        ids.forEach(x -> shardDAO.deleteById(x));
     }
 }
