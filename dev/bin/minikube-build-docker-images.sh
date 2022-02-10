@@ -8,6 +8,7 @@
 ########
 
 . "$( dirname "$0" )/configure.sh" minikube
+cd "$( dirname "$0" )/../.." || die "Can't cd to repository root"
 
 eval $( minikube -p "${MINIKUBE_PROFILE}" docker-env )
 mvn clean install -DskipTests -Dquarkus.container-image.build=true

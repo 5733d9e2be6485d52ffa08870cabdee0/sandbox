@@ -29,7 +29,7 @@ function rhoas_login {
 function create_service_accounts {
   admin_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-admin"
   create_service_account "${admin_sa_name}"
-  admin_sa_credentials_file="${CREDENTIALS_FOLDER}/${admin_sa_name}.json"
+  admin_sa_credentials_file="${credentials_folder}/${admin_sa_name}.json"
   admin_sa_id=$( jq -r '.clientID' "${admin_sa_credentials_file}" )
   if [ "${sa_updated}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
@@ -40,7 +40,7 @@ function create_service_accounts {
 
   ops_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-ops"
   create_service_account "${ops_sa_name}"
-  ops_sa_credentials_file="${CREDENTIALS_FOLDER}/${ops_sa_name}.json"
+  ops_sa_credentials_file="${credentials_folder}/${ops_sa_name}.json"
   ops_sa_id=$( jq -r '.clientID' "${ops_sa_credentials_file}" )
   if [ "${sa_updated}" == "yes" ]; then
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
@@ -51,7 +51,7 @@ function create_service_accounts {
 
   mc_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
   create_service_account "${mc_sa_name}"
-  mc_sa_credentials_file="${CREDENTIALS_FOLDER}/${mc_sa_name}.json"
+  mc_sa_credentials_file="${credentials_folder}/${mc_sa_name}.json"
   mc_sa_id=$( jq -r '.clientID' "${mc_sa_credentials_file}" )
   if [ "${sa_updated}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
@@ -65,11 +65,11 @@ function create_service_accounts {
 function create_service_account {
   sa_name="$1"
   sa_count=$( rhoas service-account list -o json | jq -rc ".items[] | select( .name == \"${sa_name}\" )" | wc -l )
-  sa_credentials_file="${CREDENTIALS_FOLDER}/${sa_name}.json"
+  sa_credentials_file="${credentials_folder}/${sa_name}.json"
   sa_updated="no"
 
   if [ $sa_count -gt 1 ]; then
-    die "ERROR: there are ${sa_count} service accounts named \"${sa_name}\""
+    die "there are ${sa_count} service accounts named \"${sa_name}\""
   elif [ $sa_count -eq 0 ]; then
     echo "Creating service account named \"${sa_name}\"..."
     rhoas service-account create --output-file="${sa_credentials_file}" --file-format=json --overwrite --short-description="${sa_name}"
@@ -92,7 +92,7 @@ function create_kafka_instance_and_wait_ready {
   # create instance if not already existing
   instance_count=$( rhoas kafka list --search "${MANAGED_KAFKA_INSTANCE_NAME}" -o json | jq -rc ".items[] | select( .name == \"${MANAGED_KAFKA_INSTANCE_NAME}\" )" | wc -l )
   if [ $instance_count -gt 1 ]; then
-    die "ERROR: there are ${instance_count} instances named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
+    die "there are ${instance_count} instances named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
   elif [ $instance_count -eq 0 ]; then
     echo "Creating Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\"..."
     rhoas kafka create --name "${MANAGED_KAFKA_INSTANCE_NAME}"
@@ -115,7 +115,7 @@ function create_kafka_instance_and_wait_ready {
   echo "Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" is ${kafka_status}"
 
   # export information
-  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
+  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
 }
 
 rhoas_login
