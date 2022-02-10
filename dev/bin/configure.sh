@@ -21,6 +21,7 @@ set -e
 
 # list of required tools
 required_tools="
+docker-compose
 jq
 kubectl
 kustomize
