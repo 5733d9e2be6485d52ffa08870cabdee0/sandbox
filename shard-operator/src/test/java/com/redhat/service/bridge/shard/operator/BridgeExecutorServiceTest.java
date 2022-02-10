@@ -30,7 +30,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
-@QuarkusTestResource(KeycloakResource.class)
+@QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
 public class BridgeExecutorServiceTest {
 
     @Inject
