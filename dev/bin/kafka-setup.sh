@@ -31,29 +31,35 @@ function create_service_accounts {
   create_service_account "${admin_sa_name}"
   admin_sa_credentials_file="$( dirname "$0" )/credentials/${admin_sa_name}.json"
   admin_sa_id=$( jq -r '.clientID' "${admin_sa_credentials_file}" )
-  rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
-  rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
-  rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation delete --topic all
-  echo "Admin account: ACLs created"
+  if [ "${sa_updated}" == "yes" ]; then
+    rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
+    rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
+    rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation delete --topic all
+    echo "Admin account: ACLs created"
+  fi
 
   ops_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-ops"
   create_service_account "${ops_sa_name}"
   ops_sa_credentials_file="$( dirname "$0" )/credentials/${ops_sa_name}.json"
   ops_sa_id=$( jq -r '.clientID' "${ops_sa_credentials_file}" )
-  rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
-  rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
-  rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation delete --topic all
-  echo "Operational account: ACLs created"
+  if [ "${sa_updated}" == "yes" ]; then
+    rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
+    rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
+    rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation delete --topic all
+    echo "Operational account: ACLs created"
+  fi
 
   mc_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
   create_service_account "${mc_sa_name}"
   mc_sa_credentials_file="$( dirname "$0" )/credentials/${mc_sa_name}.json"
   mc_sa_id=$( jq -r '.clientID' "${mc_sa_credentials_file}" )
-  rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
-  rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all
-  rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --topic all
-  rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --transactional-id all
-  echo "Managed Connector account: ACLs created"
+  if [ "${sa_updated}" == "yes" ]; then
+    rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
+    rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all
+    rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --topic all
+    rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --transactional-id all
+    echo "Managed Connector account: ACLs created"
+  fi
 }
 
 function create_service_account {
@@ -62,6 +68,7 @@ function create_service_account {
   sa_name="$1"
   sa_count=$( rhoas service-account list -o json | jq -rc ".items[] | select( .name == \"${sa_name}\" )" | wc -l )
   sa_credentials_file="$( dirname "$0" )/credentials/${sa_name}.json"
+  sa_updated="no"
 
   if [ $sa_count -gt 1 ]; then
     die "ERROR: there are ${sa_count} service accounts named \"${sa_name}\""
@@ -69,12 +76,17 @@ function create_service_account {
     echo "Creating service account named \"${sa_name}\"..."
     rhoas service-account create --output-file="${sa_credentials_file}" --file-format=json --overwrite --short-description="${sa_name}"
     echo "Created service account named \"${sa_name}\""
+    sa_updated="yes"
   else
     echo "Service account named \"${sa_name}\" found"
   fi
 
   sa_id=$( rhoas service-account list -o json | jq -rc ".items[] | select( .name == \"${sa_name}\" ) | .id" )
-  [ -f "${sa_credentials_file}" ] || rhoas service-account reset-credentials --id "${sa_id}" --output-file="${sa_credentials_file}" -y
+  if ! [ -f "${sa_credentials_file}" ]; then
+    echo "No credentials file found for service account named \"${sa_name}\". Resetting credentials..."
+    rhoas service-account reset-credentials --id "${sa_id}" --output-file="${sa_credentials_file}" --file-format=json -y
+    sa_updated="yes"
+  fi
 }
 
 # create kafka instance
