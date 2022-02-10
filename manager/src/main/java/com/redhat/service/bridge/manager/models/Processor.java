@@ -78,6 +78,9 @@ public class Processor {
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
 
+    @Column(name = "shard_id")
+    private String shardId;
+
     public String getId() {
         return id;
     }
@@ -140,6 +143,14 @@ public class Processor {
 
     public void setStatus(BridgeStatus status) {
         this.status = status;
+    }
+
+    public String getShardId() {
+        return shardId;
+    }
+
+    public void setShardId(String shardId) {
+        this.shardId = shardId;
     }
 
     /*

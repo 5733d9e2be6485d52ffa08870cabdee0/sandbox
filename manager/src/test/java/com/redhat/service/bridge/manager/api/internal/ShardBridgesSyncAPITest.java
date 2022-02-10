@@ -59,6 +59,7 @@ public class ShardBridgesSyncAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        databaseManagerUtils.registerDefaultShard();
         when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 

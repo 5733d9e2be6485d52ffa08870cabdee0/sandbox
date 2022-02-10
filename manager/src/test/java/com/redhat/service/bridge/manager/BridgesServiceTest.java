@@ -40,6 +40,7 @@ public class BridgesServiceTest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanDatabase();
+        databaseManagerUtils.registerDefaultShard();
     }
 
     @Test
@@ -83,6 +84,7 @@ public class BridgesServiceTest {
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getCustomerId()).isEqualTo(bridge.getCustomerId());
         assertThat(retrievedBridge.getStatus()).isEqualTo(bridge.getStatus());
+        assertThat(retrievedBridge.getShardId()).isEqualTo(TestConstants.SHARD_ID);
     }
 
     @Test

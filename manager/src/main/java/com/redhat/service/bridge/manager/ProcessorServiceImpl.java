@@ -64,6 +64,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
+    @Inject
+    ShardAssignService shardAssignService;
+
     @Transactional
     @Override
     public Processor getProcessor(String processorId, String bridgeId, String customerId) {
@@ -104,6 +107,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(BridgeStatus.REQUESTED);
         newProcessor.setBridge(bridge);
+        newProcessor.setShardId(shardAssignService.getAssignedShardId(newProcessor.getId()));
 
         ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
         newProcessor.setDefinition(definitionToJsonNode(definition));
