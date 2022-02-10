@@ -12,12 +12,12 @@
 
 # rhoas login
 function rhoas_login {
-  rhoas_logged_in=$( rhoas kafka describe -o json &> /dev/null && echo -n "yes" || echo -n "no" )
+  rhoas_logged_in=$( rhoas kafka list &> /dev/null && echo -n "yes" || echo -n "no" )
   if [ "${rhoas_logged_in}" == "no" ]; then
     echo "rhoas not logged in. Please log in with your Red Hat account."
     rhoas login --print-sso-url
   fi
-  rhoas_logged_in=$( rhoas kafka describe -o json &> /dev/null && echo -n "yes" || echo -n "no" )
+  rhoas_logged_in=$( rhoas kafka list &> /dev/null && echo -n "yes" || echo -n "no" )
   if [ "${rhoas_logged_in}" == "no" ]; then
     die "rhoas login failure"
   else
