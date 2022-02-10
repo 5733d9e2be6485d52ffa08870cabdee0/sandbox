@@ -52,7 +52,9 @@ function configure_kafka {
 
 function configure_minikube {
   MINIKUBE_PROFILE="${MINIKUBE_PROFILE:-minikube}"
-  echo "MINIKUBE_PROFILE: $MINIKUBE_PROFILE"
+  MINIKUBE_CPUS="${MINIKUBE_CPUS:-4}"
+  MINIKUBE_MEMORY="${MINIKUBE_MEMORY:-8192}"
+  MINIKUBE_KUBERNETES_VERSION="${MINIKUBE_KUBERNETES_VERSION:-v1.20.0}"
 }
 
 for configuration_profile in "$@"; do configure "$configuration_profile"; done
