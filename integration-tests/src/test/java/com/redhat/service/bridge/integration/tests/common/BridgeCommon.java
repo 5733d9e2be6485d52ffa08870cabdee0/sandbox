@@ -6,6 +6,7 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.restassured.response.Response;
@@ -68,5 +69,10 @@ public class BridgeCommon {
                 .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
                 .then()
                 .statusCode(202);
+    }
+
+    public static ProcessorListResponse listProcessors(String bridgeId) {
+        return jsonRequestWithAuth()
+                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/").then().extract().as(ProcessorListResponse.class);
     }
 }
