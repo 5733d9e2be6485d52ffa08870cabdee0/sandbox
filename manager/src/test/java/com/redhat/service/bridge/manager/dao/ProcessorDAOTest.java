@@ -47,6 +47,7 @@ public class ProcessorDAOTest {
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanDatabase();
+        databaseManagerUtils.registerDefaultShard();
     }
 
     private Processor createProcessor(Bridge bridge, String name) {
@@ -56,6 +57,7 @@ public class ProcessorDAOTest {
         p.setStatus(BridgeStatus.REQUESTED);
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
+        p.setShardId(TestConstants.SHARD_ID);
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
@@ -79,6 +81,8 @@ public class ProcessorDAOTest {
         b.setStatus(BridgeStatus.AVAILABLE);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
+        b.setShardId(TestConstants.SHARD_ID);
+
         bridgeDAO.persist(b);
         return b;
     }
