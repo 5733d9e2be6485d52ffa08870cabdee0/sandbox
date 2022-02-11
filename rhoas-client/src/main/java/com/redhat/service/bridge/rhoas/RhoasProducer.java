@@ -5,9 +5,10 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import io.quarkus.oidc.client.OidcClients;
 import io.vertx.mutiny.core.Vertx;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import static com.redhat.service.bridge.rhoas.RhoasProperties.INSTANCE_API_HOST;
 import static com.redhat.service.bridge.rhoas.RhoasProperties.MGMT_API_HOST;
