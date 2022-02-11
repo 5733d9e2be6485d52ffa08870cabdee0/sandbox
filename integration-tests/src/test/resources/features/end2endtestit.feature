@@ -3,16 +3,21 @@ Feature: End to End Bridge integration tests
   Scenario:By default Manager url should not be accessible without authentication
     Given get list of Bridge instances returns HTTP response code 401
 
+
   Scenario: Bridge is created and in available state
     Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
+
     When create a Bridge with randomly generated name with access token
-    Then get list of Bridge instances with access token contains Bridge with randomly generated name
-    Then get Bridge with access token exists in status "AVAILABLE" within 2 minutes
+    And get list of Bridge instances with access token contains Bridge with randomly generated name
+    And get Bridge with access token exists in status "AVAILABLE" within 2 minutes
+    And delete a Bridge
 
-    When delete a Bridge
     Then the Bridge doesn't exists within 2 minutes
-
     And the Ingress is Undeployed within 1 minute
+    And the Manager Metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="AVAILABLE",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
+
 
   Scenario: Processor gets created to the bridge and deployed
     Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
@@ -81,9 +86,11 @@ Feature: End to End Bridge integration tests
       }
     }
     """
+    And the Ingress Metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
+    And the Ingress Metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1
 
     When the Processor is deleted
     Then the Processor doesn't exists within 2 minutes
-
-  Scenario: Verify Metrics details exist
-    Given the Metrics info is exists
+    And the Manager Metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="AVAILABLE",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1

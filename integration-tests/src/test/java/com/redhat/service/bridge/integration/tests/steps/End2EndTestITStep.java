@@ -47,7 +47,6 @@ public class End2EndTestITStep {
     private static String bridgeId;
     private static String processorId;
     private static String endPoint;
-    private static String ingressMetrics;
     private static InputStream cloudEventStream;
 
     @Given("get list of Bridge instances returns HTTP response code (\\d+)$")
@@ -183,14 +182,6 @@ public class End2EndTestITStep {
                 .post(endPoint + "/events/plain")
                 .then()
                 .statusCode(200);
-
-        // store ingress metrics
-        ingressMetrics = jsonRequestWithAuth()
-                .delete(endPoint + "/q/metrics")
-                .then()
-                .extract()
-                .body()
-                .asString();
     }
 
     @When("the Processor is deleted")
@@ -236,24 +227,30 @@ public class End2EndTestITStep {
                 .statusCode(404));
     }
 
-    @Given("the Metrics info is exists")
-    public void testMetrics() {
+    @Given("^the Manager Metric \'([^\']*)\' count is at least (\\d+)$")
+    public void managerMetricCount(String metricName, int minimalValue) {
+        testMetricAndCount(managerUrl + "/q/metrics", metricName, minimalValue);
+    }
+
+    @Given("^the Ingress Metric \'([^\']*)\' count is at least (\\d+)$")
+    public void ingressMetricCount(String metricName, int minimalValue) {
+        testMetricAndCount(endPoint + "/q/metrics", metricName, minimalValue);
+    }
+
+    private void testMetricAndCount(String metricEndpoint, String metricName, int minimalValue) {
         String metrics = jsonRequestWithAuth()
-                .delete(managerUrl + "/q/metrics")
+                .get(metricEndpoint)
                 .then()
                 .extract()
                 .body()
                 .asString();
 
-        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"AVAILABLE\",} 1.0");
-        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"PROVISIONING\",} 1.0");
-        assertThat(metrics).contains("manager_bridge_status_change_total{status=\"DELETED\",} 1.0");
-        assertThat(metrics).contains("manager_processor_status_change_total{status=\"AVAILABLE\",} 1.0");
-        assertThat(metrics).contains("manager_processor_status_change_total{status=\"PROVISIONING\",} 1.0");
-        assertThat(metrics).contains("manager_processor_status_change_total{status=\"DELETED\",} 1.0");
-
-        assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events\",} 1.0");
-        assertThat(ingressMetrics).contains("http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"200\",uri=\"/events/plain\",} 1.0");
+        assertThat(metrics).contains(metricName);
+        metrics.lines()
+                .filter(l -> l.contains(metricName))
+                .map(m -> m.replace(metricName + " ", ""))
+                .mapToDouble(m -> Double.parseDouble(m))
+                .forEach(d -> assertThat(d).as("Checking %s value", metricName).isGreaterThanOrEqualTo(minimalValue));
     }
 
     @After
