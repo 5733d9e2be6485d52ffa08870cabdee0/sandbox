@@ -22,9 +22,4 @@ runs:
       with:
         java-version: ${{ inputs.java-version }}
         maven-version: ${{ inputs.maven-version }}
-    - name: Cache Maven packages
-      uses: actions/cache@v2
-      with:
-        path:  ~/.m2
-        key: ${{ inputs.cache-key-prefix }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys:  ${{ inputs.cache-key-prefix }}-m2
+
