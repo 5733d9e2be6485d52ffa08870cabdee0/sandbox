@@ -30,7 +30,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: "refs/pull/${{ github.event.number }}/merge"
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
