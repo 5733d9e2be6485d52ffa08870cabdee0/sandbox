@@ -1,0 +1,8 @@
+# This is an example local configuration file.
+# It can be used to configure required variables for your local environment
+# without the need of exporting them every time, like offline tokens etc.
+# If you want to use it, make a copy of this named "localconfig" in this same folder.
+
+MANAGED_CONNECTORS_CLUSTER_ID=mc-cluster-id
+MANAGED_KAFKA_INSTANCE_NAME=mk-local
+OPENSHIFT_OFFLINE_TOKEN=my-offline-token
