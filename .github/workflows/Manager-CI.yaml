@@ -35,7 +35,7 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
-      - name: Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
         uses: actions/checkout@v2
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
