@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 public class ActionParamValidatorContainerTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
-    public static String TEST_ACTION_NAME= "TestActionName";
+    public static String TEST_ACTION_NAME = "TestActionName";
     public static String TEST_PARAM_NAME = "test-param-name";
     public static String TEST_PARAM_VALUE = "test-param-value";
 
@@ -152,10 +152,30 @@ public class ActionParamValidatorContainerTest {
 
         verify(validatorContext).disableDefaultConstraintViolation();
         verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
+        verify(builderMock).addConstraintViolation();
+
+        assertThat(messageCap.getValue()).isEqualTo(testErrorMessage);
+    }
+
+    @Test
+    public void isValid_noMessageFromValidatorGenericMessageAdded() {
+
+        when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(null));
+
+        ProcessorRequest p = buildTestRequest();
+
+        assertThat(container.isValid(p, validatorContext)).isFalse();
+        verify(actionProviderFactoryMock).getActionProvider(TEST_ACTION_TYPE);
+        verify(actionValidatorMock).isValid(any());
+
+        ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
+
+        verify(validatorContext).disableDefaultConstraintViolation();
+        verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
         verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, TEST_ACTION_TYPE);
         verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.NAME_PARAM, TEST_ACTION_NAME);
         verify(builderMock).addConstraintViolation();
 
-        assertThat(messageCap.getValue()).isEqualTo(testErrorMessage);
+        assertThat(messageCap.getValue()).isEqualTo(ActionParamValidatorContainer.ACTION_PARAMETERS_NOT_VALID_ERROR);
     }
 }
