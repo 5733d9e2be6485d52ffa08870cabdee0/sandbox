@@ -175,7 +175,7 @@ public class ProcessorServiceTest {
         processor.setStatus(BridgeStatus.DELETION_REQUESTED);
         processorDAO.getEntityManager().merge(processor);
 
-        List<Processor> processors = processorService.getProcessorByStatuses(asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED));
+        List<Processor> processors = processorService.getProcessorByStatusesAndShardId(asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED), TestConstants.SHARD_ID);
         assertThat(processors.size()).isEqualTo(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("My Processor", "My Processor 3"));
     }

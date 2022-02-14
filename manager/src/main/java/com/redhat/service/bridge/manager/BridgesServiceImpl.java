@@ -52,7 +52,7 @@ public class BridgesServiceImpl implements BridgesService {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
-    ShardAssignService shardAssignService;
+    ShardService shardService;
 
     @Transactional
     @Override
@@ -65,7 +65,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(BridgeStatus.REQUESTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
-        bridge.setShardId(shardAssignService.getAssignedShardId(bridge.getId()));
+        bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridgeDAO.persist(bridge);
 
         rhoasService.createTopicAndGrantAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
@@ -129,8 +129,8 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses) {
-        return bridgeDAO.findByStatuses(statuses);
+    public List<Bridge> getBridgesByStatusesAndShardId(List<BridgeStatus> statuses, String shardId) {
+        return bridgeDAO.findByStatusesAndShardId(statuses, shardId);
     }
 
     @Transactional

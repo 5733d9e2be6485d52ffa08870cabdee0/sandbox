@@ -24,7 +24,7 @@ public interface BridgesService {
 
     ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo);
 
-    List<Bridge> getBridgesByStatuses(List<BridgeStatus> statuses);
+    List<Bridge> getBridgesByStatusesAndShardId(List<BridgeStatus> statuses, String shardId);
 
     Bridge updateBridge(BridgeDTO bridgeDTO);
 

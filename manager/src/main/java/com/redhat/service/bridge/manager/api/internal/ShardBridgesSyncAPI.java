@@ -12,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -29,6 +28,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.ProcessorService;
+import com.redhat.service.bridge.manager.ShardService;
 
 import io.quarkus.security.Authenticated;
 
@@ -49,14 +49,14 @@ public class ShardBridgesSyncAPI {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
     private static final List<BridgeStatus> statuses = Arrays.asList(BridgeStatus.REQUESTED, BridgeStatus.DELETION_REQUESTED);
 
-    @ConfigProperty(name = "event-bridge.shard.id")
-    String shardId;
-
     @Inject
     BridgesService bridgesService;
 
     @Inject
     ProcessorService processorService;
+
+    @Inject
+    ShardService shardService;
 
     @Inject
     CustomerIdResolver customerIdResolver;
@@ -67,7 +67,8 @@ public class ShardBridgesSyncAPI {
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
-        failIfNotAuthorized(jwt);
+        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        failIfNotAuthorized(shardId);
         LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridgeId(),
                 processorDTO.getCustomerId());
         processorService.updateProcessorStatus(processorDTO);
@@ -77,9 +78,10 @@ public class ShardBridgesSyncAPI {
     @GET
     @Path("processors")
     public Response getProcessors() {
-        failIfNotAuthorized(jwt);
+        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        return Response.ok(processorService.getProcessorByStatuses(statuses)
+        return Response.ok(processorService.getProcessorByStatusesAndShardId(statuses, shardId)
                 .stream()
                 .map(processorService::toDTO)
                 .collect(toList()))
@@ -88,9 +90,10 @@ public class ShardBridgesSyncAPI {
 
     @GET
     public Response getBridges() {
-        failIfNotAuthorized(jwt);
+        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
-        return Response.ok(bridgesService.getBridgesByStatuses(statuses)
+        return Response.ok(bridgesService.getBridgesByStatusesAndShardId(statuses, shardId)
                 .stream()
                 .map(bridgesService::toDTO)
                 .collect(toList()))
@@ -99,16 +102,16 @@ public class ShardBridgesSyncAPI {
 
     @PUT
     public Response updateBridge(BridgeDTO dto) {
-        failIfNotAuthorized(jwt);
+        String subject = customerIdResolver.resolveCustomerId(jwt);
+        failIfNotAuthorized(subject);
         LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         bridgesService.updateBridge(dto);
         return Response.ok().build();
     }
 
-    private void failIfNotAuthorized(JsonWebToken jwt) {
-        String customerId = customerIdResolver.resolveCustomerId(jwt);
-        if (!shardId.equals(customerId)) {
-            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", customerId));
+    private void failIfNotAuthorized(String shardId) {
+        if (!shardService.isAuthorizedShard(shardId)) {
+            throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", shardId));
         }
     }
 }

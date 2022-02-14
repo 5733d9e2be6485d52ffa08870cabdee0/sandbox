@@ -1,7 +1,10 @@
 package com.redhat.service.bridge.manager;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -13,12 +16,23 @@ import com.redhat.service.bridge.manager.models.Shard;
 import com.redhat.service.bridge.manager.models.ShardType;
 
 @ApplicationScoped
-public class ShardAssignServiceImpl implements ShardAssignService {
+public class ShardServiceImpl implements ShardService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShardAssignServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShardServiceImpl.class);
+
+    private Set<String> shards;
 
     @Inject
     ShardDAO shardDAO;
+
+    @PostConstruct
+    public void init() {
+        /*
+         * Fetch the list of authorized shards at startup.
+         * This needs to be changed when admin api will include the CRUD of a shard at runtime.
+         */
+        shards = shardDAO.listAll().stream().map(Shard::getId).collect(Collectors.toSet());
+    }
 
     @Override
     public String getAssignedShardId(String id) {
@@ -30,5 +44,10 @@ public class ShardAssignServiceImpl implements ShardAssignService {
         }
 
         return shards.get(0).getId();
+    }
+
+    @Override
+    public boolean isAuthorizedShard(String shardId) {
+        return shards.contains(shardId);
     }
 }
