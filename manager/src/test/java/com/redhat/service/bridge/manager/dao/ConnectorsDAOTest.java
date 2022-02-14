@@ -47,7 +47,7 @@ public class ConnectorsDAOTest {
 
     @BeforeEach
     public void before() {
-        databaseManagerUtils.init();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     private Processor createProcessor(Bridge bridge, String name) {

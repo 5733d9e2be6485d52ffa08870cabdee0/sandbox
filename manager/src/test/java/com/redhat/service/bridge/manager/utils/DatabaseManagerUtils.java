@@ -43,18 +43,27 @@ public class DatabaseManagerUtils {
      */
 
     /**
-     * Clean everything from the DB. Processors must be deleted before bridges.
+     * Clean everything from the DB and init with default shard.
      */
     @Transactional
-    public void init() {
+    public void cleanUpAndInitWithDefaultShard() {
+        // Clean up
+        cleanUp();
+
+        // Register defaults
+        registerDefaultShard();
+    }
+
+    /**
+     * Clean everything from the DB.
+     */
+    @Transactional
+    public void cleanUp() {
         // Clean up
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
         deleteAllShards();
-
-        // Register defaults
-        registerDefaultShard();
     }
 
     /**
