@@ -11,9 +11,14 @@ import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {
+
+    static final String TYPE_PARAM = "type";
+
+    static final String NAME_PARAM = "name";
 
     @Inject
     ActionProviderFactory actionProviderFactory;
@@ -42,8 +47,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
         try {
             actionProvider = actionProviderFactory.getActionProvider(baseAction.getType());
         } catch (ActionProviderException e) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Action of type '" + baseAction.getType() + "' is not recognised.").addConstraintViolation();
+            HibernateConstraintValidatorContext hibernateContext = unwrap(context);
+            hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+            hibernateContext.buildConstraintViolationWithTemplate("Action of type '{type}' is not recognised.").addConstraintViolation();
             return false;
         }
 
@@ -52,12 +58,20 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
         if (!v.isValid()) {
             String message = v.getMessage();
             if (message == null) {
-                message = "Parameters for Action '" + baseAction.getName() + "' of Type '" + baseAction.getType() + "' are not valid.";
+                message = "Parameters for Action '{name}' of Type '{type}' are not valid.";
             }
-            context.disableDefaultConstraintViolation();
+            HibernateConstraintValidatorContext hibernateContext = unwrap(context);
+            hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+            hibernateContext.addMessageParameter(NAME_PARAM, baseAction.getName());
             context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
         }
 
         return v.isValid();
+    }
+
+    private HibernateConstraintValidatorContext unwrap(ConstraintValidatorContext context) {
+        HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
+        hibernateContext.disableDefaultConstraintViolation();
+        return hibernateContext;
     }
 }
