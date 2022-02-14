@@ -26,7 +26,7 @@ public class ShardDAOTest {
 
     @BeforeEach
     public void before() {
-        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
+        databaseManagerUtils.cleanUp();
     }
 
     @Test
