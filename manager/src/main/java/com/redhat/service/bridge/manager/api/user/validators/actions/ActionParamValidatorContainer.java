@@ -5,14 +5,15 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
+
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
-import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {

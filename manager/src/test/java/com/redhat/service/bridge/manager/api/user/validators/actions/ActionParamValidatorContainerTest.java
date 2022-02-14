@@ -5,6 +5,12 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 import com.redhat.service.bridge.actions.ActionParameterValidator;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
@@ -12,13 +18,9 @@ import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.not;
