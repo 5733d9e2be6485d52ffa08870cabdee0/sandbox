@@ -54,6 +54,9 @@ public class Bridge {
     @Enumerated(EnumType.STRING)
     private BridgeStatus status;
 
+    @Column(name = "shard_id")
+    private String shardId;
+
     public Bridge() {
     }
 
@@ -89,6 +92,10 @@ public class Bridge {
         return status;
     }
 
+    public String getShardId() {
+        return shardId;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -115,6 +122,10 @@ public class Bridge {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public void setShardId(String shardId) {
+        this.shardId = shardId;
     }
 
     /*
