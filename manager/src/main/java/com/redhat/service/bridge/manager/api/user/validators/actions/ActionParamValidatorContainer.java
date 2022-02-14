@@ -5,6 +5,9 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
+
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.ValidationResult;
@@ -14,6 +17,14 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {
+
+    static final String ACTION_TYPE_NOT_RECOGNISED_ERROR = "Action of type '{type}' is not recognised.";
+
+    static final String ACTION_PARAMETERS_NOT_VALID_ERROR = "Parameters for Action '{name}' of Type '{type}' are not valid.";
+
+    static final String TYPE_PARAM = "type";
+
+    static final String NAME_PARAM = "name";
 
     @Inject
     ActionProviderFactory actionProviderFactory;
@@ -43,7 +54,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             actionProvider = actionProviderFactory.getActionProvider(baseAction.getType());
         } catch (ActionProviderException e) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Action of type '" + baseAction.getType() + "' is not recognised.").addConstraintViolation();
+            HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
+            hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+            hibernateContext.buildConstraintViolationWithTemplate(ACTION_TYPE_NOT_RECOGNISED_ERROR).addConstraintViolation();
             return false;
         }
 
@@ -51,10 +64,16 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
 
         if (!v.isValid()) {
             String message = v.getMessage();
-            if (message == null) {
-                message = "Parameters for Action '" + baseAction.getName() + "' of Type '" + baseAction.getType() + "' are not valid.";
-            }
             context.disableDefaultConstraintViolation();
+            if (message == null) {
+                message = ACTION_PARAMETERS_NOT_VALID_ERROR;
+                HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
+                hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+                hibernateContext.addMessageParameter(NAME_PARAM, baseAction.getName());
+            } else {
+                message = InterpolationHelper.escapeMessageParameter(message);
+            }
+
             context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
         }
 
