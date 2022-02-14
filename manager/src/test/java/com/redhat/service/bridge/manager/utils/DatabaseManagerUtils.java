@@ -46,19 +46,15 @@ public class DatabaseManagerUtils {
      * Clean everything from the DB. Processors must be deleted before bridges.
      */
     @Transactional
-    public void cleanDatabase() {
+    public void init() {
+        // Clean up
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
         deleteAllShards();
-    }
 
-    @Transactional
-    public void registerDefaultShard() {
-        Shard traditional = new Shard();
-        traditional.setId(TestConstants.SHARD_ID);
-        traditional.setType(ShardType.TRADITIONAL);
-        shardDAO.persist(traditional);
+        // Register defaults
+        registerDefaultShard();
     }
 
     /**
@@ -82,5 +78,12 @@ public class DatabaseManagerUtils {
     private void deleteAllShards() {
         List<String> ids = shardDAO.getEntityManager().createQuery("select s.id from Shard s", String.class).getResultList();
         ids.forEach(x -> shardDAO.deleteById(x));
+    }
+
+    private void registerDefaultShard() {
+        Shard traditional = new Shard();
+        traditional.setId(TestConstants.SHARD_ID);
+        traditional.setType(ShardType.TRADITIONAL);
+        shardDAO.persist(traditional);
     }
 }

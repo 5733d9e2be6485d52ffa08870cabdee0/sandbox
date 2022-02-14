@@ -28,7 +28,7 @@ public class ShardAssignServiceTest {
 
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.cleanDatabase();
+        databaseManagerUtils.init();
     }
 
     @Test

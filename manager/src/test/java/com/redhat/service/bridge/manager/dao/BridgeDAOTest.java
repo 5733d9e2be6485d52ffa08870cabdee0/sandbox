@@ -31,8 +31,7 @@ public class BridgeDAOTest {
 
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.cleanDatabase();
-        databaseManagerUtils.registerDefaultShard();
+        databaseManagerUtils.init();
     }
 
     @Test

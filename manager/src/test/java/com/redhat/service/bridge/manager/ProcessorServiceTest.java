@@ -90,8 +90,7 @@ public class ProcessorServiceTest {
 
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.cleanDatabase();
-        databaseManagerUtils.registerDefaultShard();
+        databaseManagerUtils.init();
         reset(rhoasServiceMock);
     }
 
