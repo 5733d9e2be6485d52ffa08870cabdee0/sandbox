@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.validation.ConstraintValidatorContext;
 
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.when;
 public class ActionParamValidatorContainerTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
+    public static String TEST_ACTION_NAME = "TestActionName";
     public static String TEST_PARAM_NAME = "test-param-name";
     public static String TEST_PARAM_VALUE = "test-param-value";
 
@@ -47,14 +49,15 @@ public class ActionParamValidatorContainerTest {
 
     ActionParameterValidator actionValidatorMock;
 
-    ConstraintValidatorContext contextMock;
+    HibernateConstraintValidatorContext validatorContext;
 
-    ConstraintValidatorContext.ConstraintViolationBuilder builderMock;
+    HibernateConstraintViolationBuilder builderMock;
 
     private ProcessorRequest buildTestRequest() {
         ProcessorRequest p = new ProcessorRequest();
         BaseAction b = new BaseAction();
         b.setType(TEST_ACTION_TYPE);
+        b.setName(TEST_ACTION_NAME);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
         b.setParameters(params);
@@ -74,16 +77,17 @@ public class ActionParamValidatorContainerTest {
         when(actionProviderFactoryMock.getActionProvider(TEST_ACTION_TYPE)).thenReturn(actionProviderMock);
         when(actionProviderFactoryMock.getActionProvider(not(eq(TEST_ACTION_TYPE)))).thenThrow(new ActionProviderException("No action provider found"));
 
-        contextMock = mock(ConstraintValidatorContext.class);
-        builderMock = mock(ConstraintValidatorContext.ConstraintViolationBuilder.class);
-        when(contextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
+        validatorContext = mock(HibernateConstraintValidatorContext.class);
+        builderMock = mock(HibernateConstraintViolationBuilder.class);
+        when(validatorContext.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
+        when(validatorContext.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContext);
     }
 
     @Test
     public void isValid() {
         ProcessorRequest p = buildTestRequest();
 
-        assertThat(container.isValid(p, contextMock)).isTrue();
+        assertThat(container.isValid(p, validatorContext)).isTrue();
         verify(actionProviderFactoryMock).getActionProvider(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
@@ -93,7 +97,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
         p.setAction(null);
 
-        assertThat(container.isValid(p, contextMock)).isFalse();
+        assertThat(container.isValid(p, validatorContext)).isFalse();
         verify(actionProviderFactoryMock, never()).getActionProvider(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
@@ -103,7 +107,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
         p.getAction().setParameters(null);
 
-        assertThat(container.isValid(p, contextMock)).isFalse();
+        assertThat(container.isValid(p, validatorContext)).isFalse();
         verify(actionProviderFactoryMock, never()).getActionProvider(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
@@ -113,7 +117,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
         p.getAction().getParameters().clear();
 
-        assertThat(container.isValid(p, contextMock)).isTrue();
+        assertThat(container.isValid(p, validatorContext)).isTrue();
         verify(actionProviderFactoryMock).getActionProvider(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
@@ -125,12 +129,13 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
         p.getAction().setType(doesNotExistType);
 
-        assertThat(container.isValid(p, contextMock)).isFalse();
+        assertThat(container.isValid(p, validatorContext)).isFalse();
         verify(actionProviderFactoryMock).getActionProvider(doesNotExistType);
         verify(actionValidatorMock, never()).isValid(any());
 
-        verify(contextMock).disableDefaultConstraintViolation();
-        verify(contextMock).buildConstraintViolationWithTemplate(anyString());
+        verify(validatorContext).disableDefaultConstraintViolation();
+        verify(validatorContext).buildConstraintViolationWithTemplate(anyString());
+        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, doesNotExistType);
         verify(builderMock).addConstraintViolation();
     }
 
@@ -141,16 +146,38 @@ public class ActionParamValidatorContainerTest {
 
         ProcessorRequest p = buildTestRequest();
 
-        assertThat(container.isValid(p, contextMock)).isFalse();
+        assertThat(container.isValid(p, validatorContext)).isFalse();
         verify(actionProviderFactoryMock).getActionProvider(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
 
-        verify(contextMock).disableDefaultConstraintViolation();
-        verify(contextMock).buildConstraintViolationWithTemplate(messageCap.capture());
+        verify(validatorContext).disableDefaultConstraintViolation();
+        verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
         verify(builderMock).addConstraintViolation();
 
         assertThat(messageCap.getValue()).isEqualTo(testErrorMessage);
+    }
+
+    @Test
+    public void isValid_noMessageFromValidatorGenericMessageAdded() {
+
+        when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(null));
+
+        ProcessorRequest p = buildTestRequest();
+
+        assertThat(container.isValid(p, validatorContext)).isFalse();
+        verify(actionProviderFactoryMock).getActionProvider(TEST_ACTION_TYPE);
+        verify(actionValidatorMock).isValid(any());
+
+        ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
+
+        verify(validatorContext).disableDefaultConstraintViolation();
+        verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
+        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, TEST_ACTION_TYPE);
+        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.NAME_PARAM, TEST_ACTION_NAME);
+        verify(builderMock).addConstraintViolation();
+
+        assertThat(messageCap.getValue()).isEqualTo(ActionParamValidatorContainer.ACTION_PARAMETERS_NOT_VALID_ERROR);
     }
 }
