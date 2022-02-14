@@ -2,7 +2,6 @@ package com.redhat.service.bridge.manager;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.manager.dao.ShardDAO;
@@ -26,13 +25,9 @@ public class ShardAssignServiceTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    @BeforeEach
-    public void cleanUp() {
-        databaseManagerUtils.init();
-    }
-
     @Test
     public void testGetAssignedShardId() {
+        databaseManagerUtils.cleanUp();
         Shard traditional = new Shard();
         traditional.setType(ShardType.TRADITIONAL);
         shardDAO.persist(traditional);
@@ -40,5 +35,14 @@ public class ShardAssignServiceTest {
         String id = shardAssignService.getAssignedShardId("myId");
 
         assertThat(id).isEqualTo(traditional.getId());
+    }
+
+    @Test
+    public void testGetDefaultAssignedShardId() {
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
+
+        String id = shardAssignService.getAssignedShardId("myId");
+
+        assertThat(id).isEqualTo(TestConstants.SHARD_ID);
     }
 }

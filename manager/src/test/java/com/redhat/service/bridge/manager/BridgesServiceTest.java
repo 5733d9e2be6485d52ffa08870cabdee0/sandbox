@@ -39,7 +39,7 @@ public class BridgesServiceTest {
 
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.init();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     @Test

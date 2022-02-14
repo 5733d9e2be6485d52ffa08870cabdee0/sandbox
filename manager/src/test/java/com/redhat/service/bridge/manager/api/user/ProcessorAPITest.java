@@ -52,7 +52,7 @@ public class ProcessorAPITest {
 
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.init();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
