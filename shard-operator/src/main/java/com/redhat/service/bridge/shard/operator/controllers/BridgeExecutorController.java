@@ -151,7 +151,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     private void notifyDeploymentFailure(BridgeExecutor bridgeExecutor, String failureReason) {
-        LOGGER.warn("Processor deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+        LOGGER.warn("Processor deployment BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), failureReason);
         notifyManager(bridgeExecutor, BridgeStatus.FAILED);
     }
