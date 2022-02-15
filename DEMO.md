@@ -71,7 +71,7 @@ The response should look like something like
   "name":"myBridge",
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
-  "status":"ACCEPTED"
+  "status":"accepted"
 }
 ```
 
@@ -164,7 +164,7 @@ and the response is something like
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986/processors/cad90605-9836-4378-9250-f9c8d19f4e0c",
   "name":"myProcessor",
   "submitted_at":"2021-09-24T11:49:47.170209+0000",
-  "status":"ACCEPTED",
+  "status":"accepted",
   "filters": 
     [
       {

@@ -136,7 +136,7 @@ The response should look like:
     "name": "ansible-gw_bridge",
     "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
     "submitted_at": "2021-10-21T09:53:31.623948+0000",
-    "status": "ACCEPTED"
+    "status": "accepted"
 }
 ```
 
@@ -209,7 +209,7 @@ The response should look like:
       "endpoint": "/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911"
    },
    "submitted_at": "2021-10-21T12:06:19.512847+0200",
-   "status": "ACCEPTED",
+   "status": "accepted",
    "filters": [
       {
          "type": "StringEquals",
