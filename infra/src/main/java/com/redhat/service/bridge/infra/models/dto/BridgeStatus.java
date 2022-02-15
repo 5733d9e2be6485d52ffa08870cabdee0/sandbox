@@ -1,10 +1,11 @@
 package com.redhat.service.bridge.infra.models.dto;
 
 public enum BridgeStatus {
-    REQUESTED,
+    ACCEPTED,
+    PREPARING,
     PROVISIONING,
-    AVAILABLE,
-    DELETION_REQUESTED,
+    READY,
+    DEPROVISION,
     DELETING,
     DELETED,
     FAILED

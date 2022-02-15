@@ -27,7 +27,7 @@ public class Fixtures {
     public static Processor createProcessor(Bridge b, String name) {
         Processor p = new Processor();
         p.setName(name);
-        p.setStatus(BridgeStatus.AVAILABLE);
+        p.setStatus(BridgeStatus.READY);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
@@ -39,7 +39,7 @@ public class Fixtures {
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.AVAILABLE);
+        b.setStatus(BridgeStatus.READY);
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setEndpoint("https://bridge.redhat.com");

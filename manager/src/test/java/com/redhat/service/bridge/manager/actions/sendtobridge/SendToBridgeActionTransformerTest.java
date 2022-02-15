@@ -59,14 +59,14 @@ class SendToBridgeActionTransformerTest {
         bridge.setId(BRIDGE_ID);
         bridge.setName("bridge01");
         bridge.setCustomerId(TEST_CUSTOMER_ID);
-        bridge.setStatus(BridgeStatus.AVAILABLE);
+        bridge.setStatus(BridgeStatus.READY);
         bridge.setEndpoint(BRIDGE_ENDPOINT);
 
         otherBridge = new Bridge();
         otherBridge.setId(OTHER_BRIDGE_ID);
         otherBridge.setName("bridge02");
         otherBridge.setCustomerId(TEST_CUSTOMER_ID);
-        otherBridge.setStatus(BridgeStatus.AVAILABLE);
+        otherBridge.setStatus(BridgeStatus.READY);
         otherBridge.setEndpoint(OTHER_BRIDGE_ENDPOINT);
     }
 
@@ -74,12 +74,12 @@ class SendToBridgeActionTransformerTest {
     void beforeEach() {
         reset(bridgesServiceMock);
 
-        when(bridgesServiceMock.getAvailableBridge(BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(bridge);
-        when(bridgesServiceMock.getAvailableBridge(OTHER_BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(otherBridge);
-        when(bridgesServiceMock.getAvailableBridge(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
-        when(bridgesServiceMock.getAvailableBridge(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
+        when(bridgesServiceMock.getReadyBridge(BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(bridge);
+        when(bridgesServiceMock.getReadyBridge(OTHER_BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(otherBridge);
+        when(bridgesServiceMock.getReadyBridge(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
+        when(bridgesServiceMock.getReadyBridge(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
                 .thenThrow(new ItemNotFoundException("Bridge not found"));
-        when(bridgesServiceMock.getAvailableBridge(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
+        when(bridgesServiceMock.getReadyBridge(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
     }
 
     @Test

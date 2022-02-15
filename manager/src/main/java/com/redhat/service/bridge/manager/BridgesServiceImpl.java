@@ -62,7 +62,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = bridgeRequest.toEntity();
-        bridge.setStatus(BridgeStatus.REQUESTED);
+        bridge.setStatus(BridgeStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardAssignService.getAssignedShardId(bridge.getId()));
@@ -85,10 +85,10 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Transactional
-    public Bridge getAvailableBridge(String bridgeId, String customerId) {
+    public Bridge getReadyBridge(String bridgeId, String customerId) {
         Bridge bridge = getBridge(bridgeId, customerId);
-        if (BridgeStatus.AVAILABLE != bridge.getStatus()) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.AVAILABLE));
+        if (BridgeStatus.READY != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
         }
         return bridge;
     }
@@ -117,7 +117,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
-        bridge.setStatus(BridgeStatus.DELETION_REQUESTED);
+        bridge.setStatus(BridgeStatus.DEPROVISION);
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 

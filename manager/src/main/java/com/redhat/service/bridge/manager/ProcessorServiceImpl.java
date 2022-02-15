@@ -84,7 +84,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         /* We cannot deploy Processors to a Bridge that is not Available */
-        Bridge bridge = bridgesService.getAvailableBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
@@ -105,7 +105,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
-        newProcessor.setStatus(BridgeStatus.REQUESTED);
+        newProcessor.setStatus(BridgeStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardAssignService.getAssignedShardId(newProcessor.getId()));
 
@@ -156,7 +156,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo) {
-        Bridge bridge = bridgesService.getAvailableBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 
@@ -170,7 +170,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorIfNeeded(processorDefinition.getResolvedAction(), processor, actionProvider);
 
-        processor.setStatus(BridgeStatus.DELETION_REQUESTED);
+        processor.setStatus(BridgeStatus.DEPROVISION);
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
     }
