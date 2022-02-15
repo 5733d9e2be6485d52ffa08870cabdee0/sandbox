@@ -22,7 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
-import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
+import com.redhat.service.bridge.infra.auth.IdentityResolver;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
@@ -44,7 +44,7 @@ import io.quarkus.security.Authenticated;
 public class BridgesAPI {
 
     @Inject
-    CustomerIdResolver customerIdResolver;
+    IdentityResolver identityResolver;
 
     @Inject
     BridgesService bridgesService;
@@ -56,26 +56,26 @@ public class BridgesAPI {
     public Response getBridges(@Valid @BeanParam QueryInfo queryInfo) {
         System.out.println(jwt.getSubject());
         return Response.ok(ListResponse.fill(bridgesService
-                .getBridges(customerIdResolver.resolveCustomerId(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
+                .getBridges(identityResolver.resolve(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
     }
 
     @POST
     public Response createBridge(BridgeRequest bridgeRequest) {
-        Bridge bridge = bridgesService.createBridge(customerIdResolver.resolveCustomerId(jwt), bridgeRequest);
+        Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
         return Response.status(Response.Status.CREATED).entity(bridgesService.toResponse(bridge)).build();
     }
 
     @GET
     @Path("{id}")
     public Response getBridge(@PathParam("id") @NotEmpty String id) {
-        Bridge bridge = bridgesService.getBridge(id, customerIdResolver.resolveCustomerId(jwt));
+        Bridge bridge = bridgesService.getBridge(id, identityResolver.resolve(jwt));
         return Response.ok(bridgesService.toResponse(bridge)).build();
     }
 
     @DELETE
     @Path("{id}")
     public Response deleteBridge(@PathParam("id") String id) {
-        bridgesService.deleteBridge(id, customerIdResolver.resolveCustomerId(jwt));
+        bridgesService.deleteBridge(id, identityResolver.resolve(jwt));
         return Response.accepted().build();
     }
 }

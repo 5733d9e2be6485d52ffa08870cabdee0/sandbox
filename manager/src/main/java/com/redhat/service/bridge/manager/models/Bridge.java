@@ -17,8 +17,8 @@ import javax.persistence.UniqueConstraint;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByStatuses",
-                query = "from Bridge where status IN :statuses"),
+        @NamedQuery(name = "BRIDGE.findByStatusesAndShardId",
+                query = "from Bridge where status IN :statuses and shard_id=:shardId"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",

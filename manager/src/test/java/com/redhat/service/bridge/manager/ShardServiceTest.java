@@ -14,13 +14,13 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class ShardAssignServiceTest {
+public class ShardServiceTest {
 
     @Inject
     ShardDAO shardDAO;
 
     @Inject
-    ShardAssignService shardAssignService;
+    ShardService shardService;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
@@ -32,7 +32,7 @@ public class ShardAssignServiceTest {
         traditional.setType(ShardType.TRADITIONAL);
         shardDAO.persist(traditional);
 
-        String id = shardAssignService.getAssignedShardId("myId");
+        String id = shardService.getAssignedShardId("myId");
 
         assertThat(id).isEqualTo(traditional.getId());
     }
@@ -41,7 +41,7 @@ public class ShardAssignServiceTest {
     public void testGetDefaultAssignedShardId() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
 
-        String id = shardAssignService.getAssignedShardId("myId");
+        String id = shardService.getAssignedShardId("myId");
 
         assertThat(id).isEqualTo(TestConstants.SHARD_ID);
     }
