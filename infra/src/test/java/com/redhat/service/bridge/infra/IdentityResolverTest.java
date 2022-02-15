@@ -8,19 +8,19 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
+import com.redhat.service.bridge.infra.auth.IdentityResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class CustomerIdResolverTest {
+public class IdentityResolverTest {
 
     private static final String CUSTOMER_ID = "kekkobar";
 
     @Inject
-    CustomerIdResolver customerIdResolver;
+    IdentityResolver identityResolver;
 
     @Test
     public void testCustomerIdResolver() {
@@ -43,6 +43,6 @@ public class CustomerIdResolverTest {
                 return null;
             }
         };
-        assertThat(customerIdResolver.resolveCustomerId(jwt)).isEqualTo(CUSTOMER_ID);
+        assertThat(identityResolver.resolve(jwt)).isEqualTo(CUSTOMER_ID);
     }
 }

@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
-import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
+import com.redhat.service.bridge.infra.auth.IdentityResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -59,7 +59,7 @@ public class ShardBridgesSyncAPI {
     ShardService shardService;
 
     @Inject
-    CustomerIdResolver customerIdResolver;
+    IdentityResolver identityResolver;
 
     @Inject
     JsonWebToken jwt;
@@ -67,7 +67,7 @@ public class ShardBridgesSyncAPI {
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
-        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}'", processorDTO.getId(), processorDTO.getBridgeId(),
                 processorDTO.getCustomerId());
@@ -78,7 +78,7 @@ public class ShardBridgesSyncAPI {
     @GET
     @Path("processors")
     public Response getProcessors() {
-        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
         return Response.ok(processorService.getProcessorByStatusesAndShardId(statuses, shardId)
@@ -90,7 +90,7 @@ public class ShardBridgesSyncAPI {
 
     @GET
     public Response getBridges() {
-        String shardId = customerIdResolver.resolveCustomerId(jwt);
+        String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
         return Response.ok(bridgesService.getBridgesByStatusesAndShardId(statuses, shardId)
@@ -102,7 +102,7 @@ public class ShardBridgesSyncAPI {
 
     @PUT
     public Response updateBridge(BridgeDTO dto) {
-        String subject = customerIdResolver.resolveCustomerId(jwt);
+        String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
         LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         bridgesService.updateBridge(dto);
