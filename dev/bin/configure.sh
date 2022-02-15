@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
 configuration_profile="$1"
 
 # helper functions
@@ -36,14 +38,14 @@ for tool in $required_tools; do
 done
 
 # load local config if found
-if [ -f "$( dirname "$0" )/localconfig" ]; then
-  . "$( dirname "$0" )/localconfig"
+if [ -f "${CONFIGURE_SCRIPT_DIR_PATH}/localconfig" ]; then
+  . "${CONFIGURE_SCRIPT_DIR_PATH}/localconfig"
   echo "Loaded local config file"
 fi
 
 # export credentials folder path
-export credentials_folder="$( dirname "$0" )/credentials"
-mkdir -p "${credentials_folder}"
+export CREDENTIALS_FOLDER=`realpath ${CONFIGURE_SCRIPT_DIR_PATH}/credentials`
+mkdir -p "${CREDENTIALS_FOLDER}"
 
 # configure profiles
 function configure {
@@ -66,6 +68,9 @@ function configure {
 
 function configure_kafka {
   check_required_variable "MANAGED_KAFKA_INSTANCE_NAME"
+  ADMIN_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-admin"
+  OPS_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-ops"
+  MC_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
 }
 
 function configure_managed_connectors {

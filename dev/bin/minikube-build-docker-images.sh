@@ -7,8 +7,9 @@
 # - MINIKUBE_PROFILE: set the current minikube profile (optional, default="minikube")
 ########
 
-. "$( dirname "$0" )/configure.sh" minikube
-cd "$( dirname "$0" )/../.." || die "Can't cd to repository root"
+. "${SCRIPT_DIR_PATH}/configure.sh" minikube
+
+cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
 
 eval $( minikube -p "${MINIKUBE_PROFILE}" docker-env )
-mvn clean install -DskipTests -Dquarkus.container-image.build=true
+mvn clean install -Dquickly -Dquarkus.container-image.build=true

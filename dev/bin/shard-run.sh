@@ -7,7 +7,9 @@
 # - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 ########
 
-. "$( dirname "$0" )/configure.sh" kafka minikube-started
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
+. "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started
 
 echo "Retrieving webhook technical bearer token..."
 
@@ -29,5 +31,5 @@ mvn \
   -Dminikubeip=${minikube_ip} \
   -Dquarkus.http.port=1337 \
   -Pminikube \
-  -f "$( dirname "$0" )/../../shard-operator/pom.xml" \
+  -f "${SCRIPT_DIR_PATH}/../../shard-operator/pom.xml" \
   clean compile quarkus:dev $@

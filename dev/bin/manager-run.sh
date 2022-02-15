@@ -9,12 +9,14 @@
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
 
-. "$( dirname "$0" )/configure.sh" kafka minikube-started managed-connectors
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
-instance_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
-admin_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-admin.json"
-ops_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-ops.json"
-mc_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-mc.json"
+. "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started managed-connectors
+
+instance_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
+admin_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-admin.json"
+ops_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-ops.json"
+mc_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-mc.json"
 
 bootstrap_server_host=$( jq -r '.bootstrap_server_host' "${instance_json}" ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
 admin_client_id=$( jq -r '.clientID' "${admin_json}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."

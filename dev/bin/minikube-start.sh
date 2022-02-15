@@ -11,14 +11,21 @@
 # - MINIKUBE_KUBERNETES_VERSION: Kubernetes version to use (optional, default="v1.20.0")
 ########
 
-. "$( dirname "$0" )/configure.sh" minikube
-cd "$( dirname "$0" )/../.." || die "Can't cd to repository root"
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
+KUSTOMIZE_DIR="${SCRIPT_DIR_PATH}/../kustomize"
+
+disable_extra_components=$1
+
+. "${SCRIPT_DIR_PATH}/configure.sh" minikube
+cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
 
 minikube_driver_flag=""
 if [ -n "${MINIKUBE_DRIVER}" ]; then
   minikube_driver_flag="--driver=${MINIKUBE_DRIVER}"
 fi
 
+set -x
 minikube -p "${MINIKUBE_PROFILE}" "${minikube_driver_flag}" \
   --memory "${MINIKUBE_MEMORY}" \
   --cpus "${MINIKUBE_CPUS}" \
@@ -29,8 +36,13 @@ minikube -p "${MINIKUBE_PROFILE}" addons enable ingress
 sleep 5s
 minikube -p "${MINIKUBE_PROFILE}" addons enable ingress-dns
 sleep 5s
-kustomize build kustomize/overlays/minikube/keycloak | kubectl apply -f -
-sleep 5s
-kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
-sleep 5s
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+
+if [ "${disable_extra_components}" != 'true' ]; then
+  kustomize build ${KUSTOMIZE_DIR}/overlays/minikube/keycloak | kubectl apply -f -
+  sleep 5s
+  kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
+  sleep 5s
+  kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+fi
+
+set +x
