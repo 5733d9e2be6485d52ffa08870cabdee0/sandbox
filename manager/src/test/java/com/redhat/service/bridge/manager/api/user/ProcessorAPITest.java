@@ -50,29 +50,9 @@ public class ProcessorAPITest {
     @InjectMock
     RhoasService rhoasServiceMock;
 
-    private BridgeResponse createBridge() {
-        BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);
-        return bridgeResponse;
-    }
-
-    private BridgeResponse createAndDeployBridge() {
-        BridgeResponse bridgeResponse = createBridge();
-
-        BridgeDTO dto = new BridgeDTO();
-        dto.setId(bridgeResponse.getId());
-        dto.setStatus(BridgeStatus.AVAILABLE);
-        dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        dto.setEndpoint("https://foo.bridges.redhat.com");
-
-        Response deployment = TestUtils.updateBridge(dto);
-        assertThat(deployment.getStatusCode()).isEqualTo(200);
-        return bridgeResponse;
-    }
-
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.cleanDatabase();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
     }
 
@@ -344,5 +324,25 @@ public class ProcessorAPITest {
         processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
 
         assertThat(processorResponse.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
+    }
+
+    private BridgeResponse createBridge() {
+        BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);
+        return bridgeResponse;
+    }
+
+    private BridgeResponse createAndDeployBridge() {
+        BridgeResponse bridgeResponse = createBridge();
+
+        BridgeDTO dto = new BridgeDTO();
+        dto.setId(bridgeResponse.getId());
+        dto.setStatus(BridgeStatus.AVAILABLE);
+        dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        dto.setEndpoint("https://foo.bridges.redhat.com");
+
+        Response deployment = TestUtils.updateBridge(dto);
+        assertThat(deployment.getStatusCode()).isEqualTo(200);
+        return bridgeResponse;
     }
 }
