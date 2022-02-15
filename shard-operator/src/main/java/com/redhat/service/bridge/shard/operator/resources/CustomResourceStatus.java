@@ -58,7 +58,10 @@ public abstract class CustomResourceStatus {
             this.markConditionTrue(ConditionType.Ready, ConditionReason.DeploymentAvailable);
             this.markConditionFalse(ConditionType.Augmentation);
         } else {
-            if (DeploymentStatusUtils.isStatusReplicaFailure(d)) {
+            if (DeploymentStatusUtils.isTimeoutFailure(d)) {
+                this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentFailed, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(d));
+                this.markConditionFalse(ConditionType.Augmentation);
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(d)) {
                 this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentFailed, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(d));
                 this.markConditionFalse(ConditionType.Augmentation);
             } else {
