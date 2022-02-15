@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
+import com.redhat.service.bridge.infra.auth.IdentityResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
@@ -59,7 +59,7 @@ public class IngressAPI {
     JsonWebToken jwt;
 
     @Inject
-    CustomerIdResolver customerIdResolver;
+    IdentityResolver identityResolver;
 
     @Inject
     KafkaEventPublisher kafkaEventPublisher;
@@ -95,7 +95,7 @@ public class IngressAPI {
     }
 
     private void failIfNotAuthorized(JsonWebToken jwt) {
-        String subject = customerIdResolver.resolveCustomerId(jwt);
+        String subject = identityResolver.resolve(jwt);
         LOGGER.info(subject);
         if (!customerId.equals(subject) && !webhookTechnicalAccountId.equals(subject)) {
             throw new ForbiddenRequestException(String.format("User '%s' is not authorized to access this api.", subject));

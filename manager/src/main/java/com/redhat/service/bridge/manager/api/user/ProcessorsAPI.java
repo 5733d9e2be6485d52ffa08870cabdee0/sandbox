@@ -22,7 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
-import com.redhat.service.bridge.infra.auth.CustomerIdResolver;
+import com.redhat.service.bridge.infra.auth.IdentityResolver;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -48,7 +48,7 @@ public class ProcessorsAPI {
     ProcessorService processorService;
 
     @Inject
-    CustomerIdResolver customerIdResolver;
+    IdentityResolver identityResolver;
 
     @Inject
     JsonWebToken jwt;
@@ -56,7 +56,7 @@ public class ProcessorsAPI {
     @GET
     @Path("{bridgeId}/processors/{processorId}")
     public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
-        String customerId = customerIdResolver.resolveCustomerId(jwt);
+        String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.getProcessor(processorId, bridgeId, customerId);
         return Response.ok(processorService.toResponse(processor)).build();
     }
@@ -64,14 +64,14 @@ public class ProcessorsAPI {
     @GET
     @Path("{bridgeId}/processors")
     public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryInfo queryInfo) {
-        return Response.ok(ListResponse.fill(processorService.getProcessors(bridgeId, customerIdResolver.resolveCustomerId(jwt), queryInfo), new ProcessorListResponse(),
+        return Response.ok(ListResponse.fill(processorService.getProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
                 processorService::toResponse)).build();
     }
 
     @POST
     @Path("{bridgeId}/processors")
     public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
-        String customerId = customerIdResolver.resolveCustomerId(jwt);
+        String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
         return Response.status(Response.Status.CREATED).entity(processorService.toResponse(processor)).build();
     }
@@ -79,7 +79,7 @@ public class ProcessorsAPI {
     @DELETE
     @Path("{bridgeId}/processors/{processorId}")
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
-        processorService.deleteProcessor(bridgeId, processorId, customerIdResolver.resolveCustomerId(jwt));
+        processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
         return Response.accepted().build();
     }
 }

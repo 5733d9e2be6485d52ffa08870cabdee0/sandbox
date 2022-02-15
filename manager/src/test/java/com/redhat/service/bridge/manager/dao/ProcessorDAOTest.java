@@ -127,7 +127,7 @@ public class ProcessorDAOTest {
         r.setStatus(BridgeStatus.DELETION_REQUESTED);
         processorDAO.getEntityManager().merge(r);
 
-        List<Processor> processors = processorDAO.findByStatuses(asList(BridgeStatus.AVAILABLE, BridgeStatus.DELETION_REQUESTED));
+        List<Processor> processors = processorDAO.findByStatusesAndShardId(asList(BridgeStatus.AVAILABLE, BridgeStatus.DELETION_REQUESTED), TestConstants.SHARD_ID);
         assertThat(processors.size()).isEqualTo(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("bob", "frank"));
     }
