@@ -140,7 +140,7 @@ The response should look like:
 }
 ```
 
-The bridge must be `READY` in order to proceed. Run this request:
+The bridge must be `ready` in order to proceed. Run this request:
 
 ```bash
 curl --request GET 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911' \
@@ -156,7 +156,7 @@ until the response looks like:
     "name": "ansible-gw_bridge",
     "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
     "submitted_at": "2021-10-21T11:53:31.623948+0200",
-    "status": "READY",
+    "status": "ready",
     "endpoint": "/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911"
 }
 ```
@@ -205,7 +205,7 @@ The response should look like:
       "name": "ansible-gw_bridge",
       "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
       "submitted_at": "2021-10-21T11:53:31.623948+0200",
-      "status": "READY",
+      "status": "ready",
       "endpoint": "/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911"
    },
    "submitted_at": "2021-10-21T12:06:19.512847+0200",
@@ -229,7 +229,7 @@ The response should look like:
 }
 ```
 
-The processor must be `READY` in order to proceed. Run this request:
+The processor must be `ready` in order to proceed. Run this request:
 
 ```bash
 curl --request GET 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f' \
@@ -245,7 +245,7 @@ until the response looks like:
    "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f",
    "name": "ansible-gw_process-status",
    ...
-   "status": "READY",
+   "status": "ready",
    ...
 }
 ```
