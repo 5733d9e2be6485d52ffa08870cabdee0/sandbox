@@ -299,7 +299,7 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void addProcessorToBridge_bridgeNotInAvailableStatus() {
+    public void addProcessorToBridge_bridgeNotInReadyStatus() {
         BridgeResponse bridgeResponse = createBridge();
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
