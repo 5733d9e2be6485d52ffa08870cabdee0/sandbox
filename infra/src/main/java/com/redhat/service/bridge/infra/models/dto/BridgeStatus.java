@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.infra.models.dto;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum BridgeStatus {
     ACCEPTED("accepted"),
     PROVISIONING("provisioning"),
@@ -9,7 +11,8 @@ public enum BridgeStatus {
     DELETED("deleted"),
     FAILED("failed");
 
-    private String status;
+    @JsonValue
+    String status;
 
     BridgeStatus(String status) {
         this.status = status;
