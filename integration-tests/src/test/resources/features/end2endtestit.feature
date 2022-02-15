@@ -14,9 +14,9 @@ Feature: End to End Bridge integration tests
 
     Then the Bridge doesn't exists within 2 minutes
     And the Ingress is Undeployed within 1 minute
-    And the Manager Metric 'manager_bridge_status_change_total{status="provisioning",}' count is at least 1
-    And the Manager Metric 'manager_bridge_status_change_total{status="ready",}' count is at least 1
-    And the Manager Metric 'manager_bridge_status_change_total{status="deleted",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
 
 
   Scenario: Processor gets created to the bridge and deployed
@@ -91,6 +91,6 @@ Feature: End to End Bridge integration tests
 
     When the Processor is deleted
     Then the Processor doesn't exists within 2 minutes
-    And the Manager Metric 'manager_processor_status_change_total{status="provisioning",}' count is at least 1
-    And the Manager Metric 'manager_processor_status_change_total{status="ready",}' count is at least 1
-    And the Manager Metric 'manager_processor_status_change_total{status="deleted",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1
