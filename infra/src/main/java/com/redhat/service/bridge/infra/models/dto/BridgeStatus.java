@@ -9,6 +9,9 @@ public enum BridgeStatus {
     DELETED("deleted"),
     FAILED("failed");
 
-    BridgeStatus(String accepted) {
+    private String status;
+
+    BridgeStatus(String status) {
+        this.status = status;
     }
 }
