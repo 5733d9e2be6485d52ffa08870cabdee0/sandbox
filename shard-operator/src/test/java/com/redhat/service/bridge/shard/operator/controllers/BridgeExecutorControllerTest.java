@@ -100,6 +100,25 @@ public class BridgeExecutorControllerTest {
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
     }
 
+    @Test
+    void testBridgeExecutorDeployment_deploymentTimeoutFailure() throws Exception {
+        // Given
+        BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        deployBridgeExecutorSecret(bridgeExecutor);
+
+        // When
+        bridgeExecutorController.reconcile(bridgeExecutor, null);
+        Deployment deployment = getDeploymentFor(bridgeExecutor);
+
+        // Then
+        kubernetesResourcePatcher.patchDeploymentAsTimeoutFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
+
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
+        assertThat(updateControl.isUpdateStatus()).isTrue();
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+    }
+
     private void deployBridgeExecutorSecret(BridgeExecutor bridgeExecutor) {
         Secret secret = new SecretBuilder()
                 .withMetadata(
@@ -113,6 +132,12 @@ public class BridgeExecutorControllerTest {
                 .inNamespace(bridgeExecutor.getMetadata().getNamespace())
                 .withName(bridgeExecutor.getMetadata().getName())
                 .createOrReplace(secret);
+    }
+
+    private Deployment getDeploymentFor(BridgeExecutor bridgeExecutor) {
+        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeExecutor.getMetadata().getNamespace()).withName(bridgeExecutor.getMetadata().getName()).get();
+        assertThat(deployment).isNotNull();
+        return deployment;
     }
 
     private BridgeExecutor buildBridgeExecutor() {

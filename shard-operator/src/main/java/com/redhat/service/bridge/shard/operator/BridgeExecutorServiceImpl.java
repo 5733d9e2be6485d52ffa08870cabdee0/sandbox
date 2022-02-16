@@ -38,6 +38,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @ConfigProperty(name = "event-bridge.executor.image")
     String executorImage;
 
+    @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
+    int deploymentTimeout;
+
     @ConfigProperty(name = "event-bridge.webhook.technical-bearer-token")
     String webhookTechnicalBearerToken;
 
@@ -85,6 +88,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeExecutor.COMPONENT_NAME);
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeExecutor.getSpec().getImage());
+        expected.getSpec().setProgressDeadlineSeconds(deploymentTimeout);
 
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());

@@ -111,6 +111,7 @@ public class BridgeIngressServiceTest {
                             // The deployment is deployed by the controller
                             Deployment deployment = fetchBridgeIngressDeployment(dto);
                             assertThat(deployment).isNotNull();
+                            assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(60);
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);

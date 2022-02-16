@@ -12,10 +12,29 @@ public final class DeploymentStatusUtils {
 
     // https://pkg.go.dev/k8s.io/api/apps/v1#DeploymentConditionType
 
+    public static final String PROGRESSING_CONDITION_TYPE = "Progressing";
     public static final String REPLICA_FAILURE_CONDITION_TYPE = "ReplicaFailure";
+
+    public static final String PROGRESS_DEADLINE_EXCEEDED_CONDITION_REASON = "ProgressDeadlineExceeded";
+
     public static final String STATUS_TRUE = "True";
+    public static final String STATUS_FALSE = "False";
 
     private DeploymentStatusUtils() {
+    }
+
+    public static boolean isTimeoutFailure(final Deployment d) {
+        if (!hasValidConditions(d)) {
+            return false;
+        }
+        return d.getStatus().getConditions().stream()
+                .anyMatch(c -> PROGRESSING_CONDITION_TYPE.equalsIgnoreCase(c.getType())
+                        && STATUS_FALSE.equalsIgnoreCase(c.getStatus())
+                        && PROGRESS_DEADLINE_EXCEEDED_CONDITION_REASON.equalsIgnoreCase(c.getReason()));
+    }
+
+    public static String getReasonAndMessageForTimeoutFailure(final Deployment d) {
+        return getReasonAndMessage(PROGRESSING_CONDITION_TYPE, d);
     }
 
     public static boolean isStatusReplicaFailure(final Deployment d) {
