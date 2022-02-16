@@ -38,7 +38,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @ConfigProperty(name = "event-bridge.executor.image")
     String executorImage;
 
-    @ConfigProperty(name = "event-bridge.executor.deployment.timeout")
+    @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
     int deploymentTimeout;
 
     @ConfigProperty(name = "event-bridge.webhook.technical-bearer-token")

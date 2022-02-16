@@ -38,7 +38,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @ConfigProperty(name = "event-bridge.ingress.image")
     String ingressImage;
 
-    @ConfigProperty(name = "event-bridge.ingress.deployment.timeout")
+    @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
     int deploymentTimeout;
 
     @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
