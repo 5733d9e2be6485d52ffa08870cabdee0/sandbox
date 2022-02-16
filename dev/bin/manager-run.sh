@@ -13,18 +13,13 @@ SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
 . "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started managed-connectors
 
-instance_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
-admin_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-admin.json"
-ops_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-ops.json"
-mc_json="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}-mc.json"
-
-bootstrap_server_host=$( jq -r '.bootstrap_server_host' "${instance_json}" ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
-admin_client_id=$( jq -r '.clientID' "${admin_json}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-admin_client_secret=$( jq -r '.clientSecret' "${admin_json}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-ops_client_id=$( jq -r '.clientID' "${ops_json}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-ops_client_secret=$( jq -r '.clientSecret' "${ops_json}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-mc_client_id=$( jq -r '.clientID' "${mc_json}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
-mc_client_secret=$( jq -r '.clientSecret' "${mc_json}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
+bootstrap_server_host=$( jq -r '.bootstrap_server_host' "${MANAGED_KAFKA_CREDENTIALS_FILE}" ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
+admin_client_id=$( jq -r '.clientID' "${ADMIN_SA_CREDENTIALS_FILE}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
+admin_client_secret=$( jq -r '.clientSecret' "${ADMIN_SA_CREDENTIALS_FILE}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
+ops_client_id=$( jq -r '.clientID' "${OPS_SA_CREDENTIALS_FILE}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
+ops_client_secret=$( jq -r '.clientSecret' "${OPS_SA_CREDENTIALS_FILE}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
+mc_client_id=$( jq -r '.clientID' "${MC_SA_CREDENTIALS_FILE}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
+mc_client_secret=$( jq -r '.clientSecret' "${MC_SA_CREDENTIALS_FILE}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
 
 export KAFKA_CLIENT_ID=${ops_client_id}
 export KAFKA_CLIENT_SECRET=${ops_client_secret}

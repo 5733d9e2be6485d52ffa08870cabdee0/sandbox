@@ -29,9 +29,8 @@ function rhoas_login {
 
 # create service accounts
 function create_service_accounts {
-  create_service_account "${ADMIN_SA_NAME}"
-  admin_sa_credentials_file="${CREDENTIALS_FOLDER}/${ADMIN_SA_NAME}.json"
-  admin_sa_id=$( jq -r '.clientID' "${admin_sa_credentials_file}" )
+  create_service_account "${ADMIN_SA_NAME}" "${ADMIN_SA_CREDENTIALS_FILE}"
+  admin_sa_id=$( jq -r '.clientID' "${ADMIN_SA_CREDENTIALS_FILE}" )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
@@ -39,9 +38,8 @@ function create_service_accounts {
     echo "Admin account: ACLs created"
   fi
 
-  create_service_account "${OPS_SA_NAME}"
-  ops_sa_credentials_file="${CREDENTIALS_FOLDER}/${OPS_SA_NAME}.json"
-  ops_sa_id=$( jq -r '.clientID' "${ops_sa_credentials_file}" )
+  create_service_account "${OPS_SA_NAME}" "${OPS_SA_CREDENTIALS_FILE}"
+  ops_sa_id=$( jq -r '.clientID' "${OPS_SA_CREDENTIALS_FILE}" )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
@@ -49,9 +47,8 @@ function create_service_accounts {
     echo "Operational account: ACLs created"
   fi
 
-  create_service_account "${MC_SA_NAME}"
-  mc_sa_credentials_file="${CREDENTIALS_FOLDER}/${MC_SA_NAME}.json"
-  mc_sa_id=$( jq -r '.clientID' "${mc_sa_credentials_file}" )
+  create_service_account "${MC_SA_NAME}" "${MC_SA_CREDENTIALS_FILE}"
+  mc_sa_id=$( jq -r '.clientID' "${MC_SA_CREDENTIALS_FILE}" )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all
@@ -63,8 +60,8 @@ function create_service_accounts {
 
 function create_service_account {
   sa_name="$1"
+  sa_credentials_file="$2"
   sa_count=$( rhoas service-account list -o json | jq -rc ".items[] | select( .name == \"${sa_name}\" )" | wc -l )
-  sa_credentials_file="${CREDENTIALS_FOLDER}/${sa_name}.json"
   sa_updated="no"
 
   if [ $sa_count -gt 1 ]; then
@@ -117,7 +114,7 @@ function create_kafka_instance_and_wait_ready {
   echo "Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" is ${kafka_status}"
 
   # export information
-  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
+  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${MANAGED_KAFKA_CREDENTIALS_FILE}"
 }
 
 rhoas_login
