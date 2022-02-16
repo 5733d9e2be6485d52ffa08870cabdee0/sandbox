@@ -62,13 +62,27 @@ public class KubernetesResourcePatcher {
                 .replace(deployment);
     }
 
-    public void patchDeploymentAsFailed(String name, String namespace) {
+    public void patchDeploymentAsReplicaFailed(String name, String namespace) {
         Deployment deployment = getDeployment(name, namespace);
 
         DeploymentCondition deploymentCondition = new DeploymentConditionBuilder()
                 .withType(DeploymentStatusUtils.REPLICA_FAILURE_CONDITION_TYPE)
                 .withStatus(DeploymentStatusUtils.STATUS_TRUE)
                 .withReason(FAILURE_REASON)
+                .withMessage(FAILURE_MESSAGE)
+                .build();
+
+        DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withReplicas(1).withUnavailableReplicas(1).withAvailableReplicas(0).withConditions(deploymentCondition).build();
+        updateDeploymentStatus(deployment, deploymentStatus);
+    }
+
+    public void patchDeploymentAsTimeoutFailed(String name, String namespace) {
+        Deployment deployment = getDeployment(name, namespace);
+
+        DeploymentCondition deploymentCondition = new DeploymentConditionBuilder()
+                .withType(DeploymentStatusUtils.PROGRESSING_CONDITION_TYPE)
+                .withStatus(DeploymentStatusUtils.STATUS_FALSE)
+                .withReason(DeploymentStatusUtils.PROGRESS_DEADLINE_EXCEEDED_CONDITION_REASON)
                 .withMessage(FAILURE_MESSAGE)
                 .build();
 
