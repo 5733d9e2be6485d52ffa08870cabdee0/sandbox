@@ -104,6 +104,19 @@ Either export this env variable or add this to `localconfig` file (the latter me
 MINIKUBE_DRIVER=hyperkit
 ```
 
+### Setup podman and cri-o container runtime
+
+With Fedora 34, there is an issue in spotting the coredns pod due to a cgroup issue with docker/podman.
+
+One workaround is to use the `cri-o` container runtime with `podman` driver.
+
+Either export this env variable or add this to `localconfig` file (the latter method is suggested):
+
+```bash 
+MINIKUBE_DRIVER=podman
+MINIKUBE_CONTAINER_RUNTIME=cri-o
+```
+
 ## Build container images for Minikube
 
 The [minikube-build-docker-images.sh](bin/minikube-build-docker-images.sh) script takes care of building the Docker images

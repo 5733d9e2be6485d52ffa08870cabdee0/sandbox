@@ -13,20 +13,24 @@
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
-KUSTOMIZE_DIR="${SCRIPT_DIR_PATH}/../kustomize"
+KUSTOMIZE_DIR="${SCRIPT_DIR_PATH}/../../kustomize"
 
 disable_extra_components=$1
 
 . "${SCRIPT_DIR_PATH}/configure.sh" minikube
 cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
 
-minikube_driver_flag=""
+minikube_opts=""
 if [ -n "${MINIKUBE_DRIVER}" ]; then
-  minikube_driver_flag="--driver=${MINIKUBE_DRIVER}"
+  minikube_opts="${minikube_opts} --driver=${MINIKUBE_DRIVER}"
+fi
+
+if [ -n "${MINIKUBE_CONTAINER_RUNTIME}" ]; then
+  minikube_opts="${minikube_opts} --container-runtime=${MINIKUBE_CONTAINER_RUNTIME}"
 fi
 
 set -x
-minikube -p "${MINIKUBE_PROFILE}" "${minikube_driver_flag}" \
+minikube -p "${MINIKUBE_PROFILE}" ${minikube_opts} \
   --memory "${MINIKUBE_MEMORY}" \
   --cpus "${MINIKUBE_CPUS}" \
   "--kubernetes-version=${MINIKUBE_KUBERNETES_VERSION}" \
