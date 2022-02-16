@@ -1,7 +1,7 @@
 name: Check development cluster
-on:
-  schedule:
-    - cron: '* 0/2 * * *'
+on: [pull_request]
+#  schedule:
+#    - cron: '* 0/2 * * *'
 jobs:
   run-integration-tests:
     timeout-minutes: 30
