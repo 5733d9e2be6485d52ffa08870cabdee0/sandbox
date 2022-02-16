@@ -97,7 +97,7 @@ the response should look like
   "name":"myBridge",
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
-  "status":"READY",
+  "status":"ready",
   "endpoint":"http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/"
 }
 ```
@@ -108,7 +108,7 @@ Keep track of the `endpoint`, it will be used later when pushing an event to thi
 export BRIDGE_ENDPOINT="$(curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq --raw-output .endpoint)"
 ```
 
-The application is now `READY` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
+The application is now `ready` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
 1. `/events`: it accepts only valid cloud event json payloads.
 2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`. 
 
