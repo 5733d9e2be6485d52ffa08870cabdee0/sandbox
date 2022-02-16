@@ -31,17 +31,17 @@ minikube -p "${MINIKUBE_PROFILE}" "${minikube_driver_flag}" \
   --cpus "${MINIKUBE_CPUS}" \
   "--kubernetes-version=${MINIKUBE_KUBERNETES_VERSION}" \
   start
-sleep 30s
+sleep 30
 minikube -p "${MINIKUBE_PROFILE}" addons enable ingress
-sleep 5s
+sleep 5
 minikube -p "${MINIKUBE_PROFILE}" addons enable ingress-dns
-sleep 5s
+sleep 5
 
 if [ "${disable_extra_components}" != 'true' ]; then
   kustomize build ${KUSTOMIZE_DIR}/overlays/minikube/keycloak | kubectl apply -f -
-  sleep 5s
+  sleep 5
   kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
-  sleep 5s
+  sleep 5
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
 fi
 

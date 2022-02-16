@@ -23,7 +23,7 @@ ${BIN_DIR}/minikube-start.sh true
 echo "Applying IP replacements"
 sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/patches/deploy-config.yaml
 sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/patches/deploy-config.yaml
-sleep 10s
+sleep 10
 
 echo "Deploying all resources"
 kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
@@ -31,7 +31,7 @@ kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
 status=$?
 if [ $status -ne 0 ]; then
   echo "Some resources fail to deploy (concurrency issues), redeploying"
-  sleep 5s
+  sleep 5
   kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
 fi
 
