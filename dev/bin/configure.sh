@@ -91,8 +91,52 @@ function configure_minikube {
 
 function configure_minikube_started {
   configure_minikube
-  minikube_ip=$( minikube -p "${MINIKUBE_PROFILE}" ip ) || die "can't find minikube ip. Is it started?"
-  ping -c 1 "${minikube_ip}" || die "minikube is not responding to ping. Is it started?"
+  MINIKUBE_IP=$( minikube -p "${MINIKUBE_PROFILE}" ip ) || die "can't find minikube ip. Is it started?"
+  ping -c 1 "${MINIKUBE_IP}" || die "minikube is not responding to ping. Is it started?"
+}
+
+function getKeycloakAccessToken {
+  echo "$(curl --insecure -X POST http://$MINIKUBE_IP:30007/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=webhook-robot-1&password=therobot&grant_type=password&scope=offline_access' | jq --raw-output '.access_token')"
+}
+
+function getJsonValue {
+  echo "$( jq -r "$1" "$2" )"
+}
+
+function getSAClientId {
+  echo "$( getJsonValue '.clientID' "$1" )"
+}
+
+function getSAClientSecret {
+  echo "$( getJsonValue '.clientSecret' "$1" )"
+}
+
+function getManagedKafkaBootstrapServerHost {
+  echo "$( getJsonValue '.bootstrap_server_host' "${MANAGED_KAFKA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaAdminSAClientId {
+  echo "$( getSAClientId "${ADMIN_SA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaAdminSAClientSecret {
+  echo "$( getSAClientSecret "${ADMIN_SA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaOpsSAClientId {
+  echo "$( getSAClientId "${OPS_SA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaOpsSAClientSecret {
+  echo "$( getSAClientSecret "${OPS_SA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaMcSAClientId {
+  echo "$( getSAClientId "${MC_SA_CREDENTIALS_FILE}" )"
+}
+
+function getManagedKafkaMcSAClientSecret {
+  echo "$( getSAClientSecret "${MC_SA_CREDENTIALS_FILE}" )"
 }
 
 for configuration_profile in "$@"; do configure "$configuration_profile"; done

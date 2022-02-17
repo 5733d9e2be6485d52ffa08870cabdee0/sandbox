@@ -30,7 +30,7 @@ function rhoas_login {
 # create service accounts
 function create_service_accounts {
   create_service_account "${ADMIN_SA_NAME}" "${ADMIN_SA_CREDENTIALS_FILE}"
-  admin_sa_id=$( jq -r '.clientID' "${ADMIN_SA_CREDENTIALS_FILE}" )
+  admin_sa_id=$( getManagedKafkaAdminSAClientId )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
@@ -39,7 +39,7 @@ function create_service_accounts {
   fi
 
   create_service_account "${OPS_SA_NAME}" "${OPS_SA_CREDENTIALS_FILE}"
-  ops_sa_id=$( jq -r '.clientID' "${OPS_SA_CREDENTIALS_FILE}" )
+  ops_sa_id=$( getManagedKafkaOpsSAClientId )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
@@ -48,7 +48,7 @@ function create_service_accounts {
   fi
 
   create_service_account "${MC_SA_NAME}" "${MC_SA_CREDENTIALS_FILE}"
-  mc_sa_id=$( jq -r '.clientID' "${MC_SA_CREDENTIALS_FILE}" )
+  mc_sa_id=$( getManagedKafkaMcSAClientId )
   if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all

@@ -7,28 +7,10 @@ BIN_DIR="${SCRIPT_DIR_PATH}/../dev/bin"
 DEPLOY_DIR="${KUSTOMIZE_DIR}/_deploy"
 KUSTOMIZE_DEPLOY_DIR="${DEPLOY_DIR}/kustomize"
 
-echo "Prepare deploy dir"
-rm -rf ${DEPLOY_DIR}
-mkdir -p ${KUSTOMIZE_DEPLOY_DIR}/overlays
-cp -r ${KUSTOMIZE_DIR}/base ${KUSTOMIZE_DEPLOY_DIR}
-cp -r ${KUSTOMIZE_DIR}/overlays/minikube ${KUSTOMIZE_DEPLOY_DIR}/overlays
+. ${BIN_DIR}/configure.sh minikube-started kafka managed-connectors
 
-echo "Setup Managed Kafka and Managed Connectors"
-. ${BIN_DIR}/configure.sh kafka managed-connectors
-${BIN_DIR}/kafka-setup.sh
-
-echo "Starting Minikube"
-${BIN_DIR}/minikube-start.sh true
-
-. ${BIN_DIR}/configure.sh minikube-started
-
-echo "Applying IP replacements"
-sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/patches/deploy-config.yaml
-sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/patches/deploy-config.yaml
-sleep 10
-
-echo "Deploying all resources"
-kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
+echo "Removing all resources"
+kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl delete -f -
 
 status=$?
 if [ $status -ne 0 ]; then
@@ -56,7 +38,7 @@ kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n key
 timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://'${MINIKUBE_IP}':30007/auth)" != "303" ]]; do sleep 5; done'
 
 echo "Configure shard operator technical bearer token"
-TOKEN="$( getKeycloakAccessToken )"
+TOKEN=$( getKeycloakAccessToken )
 sed -i -E "s|(.*WEBHOOK_TECHNICAL_BEARER_TOKEN=).*|\1${TOKEN}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/kustomization.yaml
 
 echo "Redeploy resources to apply token"
