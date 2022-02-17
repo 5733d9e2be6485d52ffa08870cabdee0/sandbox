@@ -7,6 +7,7 @@ images:
   newTag: ocp-88ca20efce9009cb22cef2b57301b9a359b0e99d-jvm
 namespace: event-bridge-prod
 patchesStrategicMerge:
+- manager/patches/deploy.yaml
 - manager/patches/deploy-config.yaml
 - manager/patches/postgres-config.yaml
 - shard/patches/deploy-config.yaml
