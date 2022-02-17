@@ -31,7 +31,7 @@ function create_service_accounts {
   create_service_account "${admin_sa_name}"
   admin_sa_credentials_file="${credentials_folder}/${admin_sa_name}.json"
   admin_sa_id=$( jq -r '.clientID' "${admin_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation delete --topic all
@@ -42,7 +42,7 @@ function create_service_accounts {
   create_service_account "${ops_sa_name}"
   ops_sa_credentials_file="${credentials_folder}/${ops_sa_name}.json"
   ops_sa_id=$( jq -r '.clientID' "${ops_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation delete --topic all
@@ -53,7 +53,7 @@ function create_service_accounts {
   create_service_account "${mc_sa_name}"
   mc_sa_credentials_file="${credentials_folder}/${mc_sa_name}.json"
   mc_sa_id=$( jq -r '.clientID' "${mc_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --topic all
@@ -91,12 +91,15 @@ function create_service_account {
 function create_kafka_instance_and_wait_ready {
   # create instance if not already existing
   instance_count=$( rhoas kafka list --search "${MANAGED_KAFKA_INSTANCE_NAME}" -o json | jq -rc ".items[] | select( .name == \"${MANAGED_KAFKA_INSTANCE_NAME}\" )" | wc -l )
+  kafka_created="no"
+
   if [ $instance_count -gt 1 ]; then
     die "there are ${instance_count} instances named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
   elif [ $instance_count -eq 0 ]; then
     echo "Creating Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\"..."
     rhoas kafka create --name "${MANAGED_KAFKA_INSTANCE_NAME}"
     echo "Created Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
+    kafka_created="yes"
   else
     echo "Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\" found"
   fi
