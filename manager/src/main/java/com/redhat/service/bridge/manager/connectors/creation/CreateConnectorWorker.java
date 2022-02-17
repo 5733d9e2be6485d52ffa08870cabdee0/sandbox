@@ -29,7 +29,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @ConfigProperty(name = "managed-connectors.cluster.id")
     String mcClusterId;
 
-    @ConfigProperty(name = "kafka.bootstrap.servers")
+    @ConfigProperty(name = "managed-connectors.kafka.bootstrap.servers")
     String kafkaBootstrapServer;
 
     @ConfigProperty(name = "managed-connectors.kafka.client.id")
