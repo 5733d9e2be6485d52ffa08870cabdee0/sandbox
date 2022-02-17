@@ -31,6 +31,8 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                 query = "from ConnectorEntity c where c.name=:name and c.processor.id=:processorId"),
         @NamedQuery(name = "CONNECTORENTITY.findByProcessorId",
                 query = "from ConnectorEntity c where c.processor.id=:processorId"),
+        @NamedQuery(name = "CONNECTORENTITY.findUnprocessed",
+                query = "from ConnectorEntity c where c.status != c.desiredStatus and c.workerId is null"),
 })
 @Entity
 @Table(name = "CONNECTOR")
@@ -49,6 +51,9 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
     // ID returned by MC service
     @Column(name = "connector_external_id")
     private String connectorExternalId;
+
+    @Column(name = "worker_id")
+    private String workerId;
 
     @Column(nullable = false, name = "name")
     private String name;
@@ -70,9 +75,25 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
     @Column(name = "published_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime publishedAt;
 
+    @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
+    private ZonedDateTime modifiedAt;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private ConnectorStatus status;
+
+    @Column(name = "desired_state")
+    @Enumerated(EnumType.STRING)
+    private ConnectorStatus desiredStatus;
+
+    @Column(name = "connector_type")
+    private String connectorType;
+
+    @Column(name = "topic_name")
+    private String topicName;
+
+    @Column(name = "error")
+    private String error;
 
     public String getId() {
         return id;
@@ -90,12 +111,28 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
         this.connectorExternalId = connectorExternalId;
     }
 
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getConnectorType() {
+        return connectorType;
+    }
+
+    public void setConnectorType(String connectorType) {
+        this.connectorType = connectorType;
     }
 
     public JsonNode getDefinition() {
@@ -138,12 +175,44 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
         this.publishedAt = publishedAt;
     }
 
+    public ZonedDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(ZonedDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
     public ConnectorStatus getStatus() {
         return status;
     }
 
     public void setStatus(ConnectorStatus status) {
         this.status = status;
+    }
+
+    public ConnectorStatus getDesiredStatus() {
+        return desiredStatus;
+    }
+
+    public void setDesiredStatus(ConnectorStatus desiredStatus) {
+        this.desiredStatus = desiredStatus;
+    }
+
+    public String getTopicName() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
     /*
@@ -167,4 +236,23 @@ public class ConnectorEntity { // called -Entity to avoid clash with Connector R
         return Objects.hash(id);
     }
 
+    @Override
+    public String toString() {
+        return "ConnectorEntity{" +
+                "id='" + id + '\'' +
+                ", status=" + status +
+                ", desiredStatus=" + desiredStatus +
+                ", connectorExternalId='" + connectorExternalId + '\'' +
+                ", workerId='" + workerId + '\'' +
+                ", name='" + name + '\'' +
+                ", definition=" + definition +
+                ", processor=" + processor +
+                ", version=" + version +
+                ", submittedAt=" + submittedAt +
+                ", publishedAt=" + publishedAt +
+                ", connectorType='" + connectorType + '\'' +
+                ", topicName='" + topicName + '\'' +
+                ", error='" + error + '\'' +
+                '}';
+    }
 }

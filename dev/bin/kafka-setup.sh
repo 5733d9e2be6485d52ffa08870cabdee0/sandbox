@@ -112,7 +112,7 @@ function create_kafka_instance_and_wait_ready {
   kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   while [ "${kafka_status}" != "ready" ]; do
     echo "Waiting for Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" to become ready (current status \"${kafka_status}\")..."
-    sleep 20s
+    sleep 20
     kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   done
   echo "Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" is ${kafka_status}"
