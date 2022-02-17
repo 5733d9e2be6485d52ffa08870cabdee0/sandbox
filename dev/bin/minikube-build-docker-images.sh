@@ -13,5 +13,12 @@ SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
 cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
 
-eval $( minikube -p "${MINIKUBE_PROFILE}" docker-env )
-mvn clean install -Dquickly -Dquarkus.container-image.build=true
+env_command='docker-env'
+container_engine='docker'
+if [ "${MINIKUBE_CONTAINER_RUNTIME}" != "docker" ]; then
+  env_command='podman-env'
+  container_engine='podman'
+fi
+
+eval $( minikube -p "${MINIKUBE_PROFILE}" ${env_command} )
+mvn clean install -Dquickly -Dquarkus.container-image.build=true -Dquarkus.jib.docker-executable-name=${container_engine}

@@ -104,7 +104,7 @@ Either export this env variable or add this to `localconfig` file (the latter me
 MINIKUBE_DRIVER=hyperkit
 ```
 
-### Setup podman and cri-o container runtime
+### Fedora users
 
 With Fedora 34, there is an issue in spotting the coredns pod due to a cgroup issue with docker/podman.
 

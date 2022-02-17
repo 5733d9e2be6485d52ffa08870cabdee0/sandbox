@@ -92,8 +92,12 @@ function create_kafka_instance_and_wait_ready {
   if [ $instance_count -gt 1 ]; then
     die "there are ${instance_count} instances named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
   elif [ $instance_count -eq 0 ]; then
+    local kafka_region=
+    if [ ! -z "${MANAGED_KAFKA_REGION}" ]; then
+      kafka_region="--region ${MANAGED_KAFKA_REGION}"
+    fi
     echo "Creating Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\"..."
-    rhoas kafka create --name "${MANAGED_KAFKA_INSTANCE_NAME}"
+    rhoas kafka create -v ${kafka_region} --name "${MANAGED_KAFKA_INSTANCE_NAME}"
     echo "Created Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
     kafka_created="yes"
   else
