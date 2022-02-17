@@ -101,6 +101,25 @@ public class BridgeExecutorControllerTest {
     }
 
     @Test
+    void testBridgeExecutorDeployment_deploymentReplicaFailure() throws Exception {
+        // Given
+        BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        deployBridgeExecutorSecret(bridgeExecutor);
+
+        // When
+        bridgeExecutorController.reconcile(bridgeExecutor, null);
+        Deployment deployment = getDeploymentFor(bridgeExecutor);
+
+        // Then
+        kubernetesResourcePatcher.patchDeploymentAsReplicaFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
+
+        UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
+        assertThat(updateControl.isUpdateStatus()).isTrue();
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+    }
+
+    @Test
     void testBridgeExecutorDeployment_deploymentTimeoutFailure() throws Exception {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();

@@ -89,12 +89,12 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
-
             bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
 
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
                 notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
             }
 
             return UpdateControl.updateStatus(bridgeExecutor);
