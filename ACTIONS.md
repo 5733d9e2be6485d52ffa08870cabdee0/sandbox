@@ -69,7 +69,7 @@ To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 
 ### SendToBridge
 
-Allows you to forward an Event to another EventBridge Instance in your account. Sending events to an EventBridge instance not in your
+Allows you to forward an Event to any EventBridge Instance in your account. Sending events to an EventBridge instance not in your
 account is not currently supported.
 
 #### Configuration Properties
