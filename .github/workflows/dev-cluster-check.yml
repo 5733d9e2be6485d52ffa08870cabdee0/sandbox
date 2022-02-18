@@ -24,7 +24,7 @@ jobs:
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install -DskipTests
+          maven-command: clean install -Dquickly
       - name: Run integration tests
         uses: ./.github/actions/maven
         with:

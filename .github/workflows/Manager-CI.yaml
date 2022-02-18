@@ -88,7 +88,7 @@ jobs:
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Pminikube -DskipTests
+          maven-command: clean install --errors --quiet -Pminikube -Dquickly
       - name: Build and Publish JVM Container - Fleet Manager
         run: |
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
