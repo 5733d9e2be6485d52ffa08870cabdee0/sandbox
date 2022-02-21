@@ -63,18 +63,24 @@ public abstract class AbstractConnectorWorker<R> {
         }
 
         try {
-            R serviceResponse = callExternalService(connectorEntity);
+            R serviceResponse = externalServiceInteraction(connectorEntity);
 
             if (shouldDeleteAfterSuccess()) { // Used only for workers that physically delete entities
                 deleteEntity(connectorEntity);
             } else { // Success path, most common
-                ConnectorEntity successConnectorEntity = successfullyCalledService(connectorEntity, serviceResponse);
+                ConnectorEntity successConnectorEntity = updateEntityAfterServiceSuccess(connectorEntity, serviceResponse);
                 afterSuccessfullyUpdated(successConnectorEntity);
             }
         } catch (Exception e) {
 
             errorWhileCalling(e, connectorEntity);
         }
+    }
+
+    private R externalServiceInteraction(ConnectorEntity connectorEntity) {
+        R serviceResponse = callExternalService(connectorEntity);
+        LOGGER.info("Worker {} successfully called service with response : {} on entity: {} ", workerName(), serviceResponse, connectorEntity);
+        return serviceResponse;
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
@@ -89,14 +95,15 @@ public abstract class AbstractConnectorWorker<R> {
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public ConnectorEntity successfullyCalledService(ConnectorEntity connectorEntity, R serviceResponse) {
+    public ConnectorEntity updateEntityAfterServiceSuccess(ConnectorEntity connectorEntity, R serviceResponse) {
         ConnectorEntity updatedEntity = updateEntityForSuccess(connectorEntity, serviceResponse);
         connectorEntity.setWorkerId(null);
         connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        LOGGER.info("Worker {} successfully called service with response : {} on entity: {} ", workerName(), serviceResponse, updatedEntity);
         // It's important to return the updated entity as successful worker calls will need the entity with the version field updated
-        return entityManager.merge(updatedEntity);
+        ConnectorEntity merge = entityManager.merge(updatedEntity);
+        LOGGER.info("Worker {} successfully updated entity: {} ", workerName(), merge);
+        return merge;
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
@@ -108,7 +115,6 @@ public abstract class AbstractConnectorWorker<R> {
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public void errorWhileCalling(Exception error, ConnectorEntity connectorEntity) {
-        LOGGER.error("Worker {} failed on Entity: {} with error: {} ", workerName(), connectorEntity, error);
 
         // By reloading the entity it bypasses the Optimistic Locking
         // We assume that this is called only by one worker as it's after the claim
@@ -119,6 +125,8 @@ public abstract class AbstractConnectorWorker<R> {
         ConnectorEntity updatedConnectorForError = updateEntityForError(reloadConnectorEntity, error);
         updatedConnectorForError.setWorkerId(null);
         updatedConnectorForError.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        LOGGER.error("Worker {} failed on Entity: {} with error: {} ", workerName(), connectorEntity, error);
     }
 
     private String workerName() {
