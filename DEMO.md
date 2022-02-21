@@ -81,7 +81,7 @@ Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 export BRIDGE_ID=87508471-ee0f-4f53-b574-da8a61285986 # same id as before
 ```
 
-Until the Bridge is not in the `AVAILABLE` state, it is not possible to create Processors and to push events to the Ingress. 
+Until the Bridge is not in the `ready` state, it is not possible to create Processors and to push events to the Ingress. 
 Check the status of the deployment with a GET request to the `/api/v1/bridges/{id}` endpoint: 
 
 ```bash
