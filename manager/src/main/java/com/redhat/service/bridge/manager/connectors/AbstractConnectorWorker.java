@@ -102,7 +102,7 @@ public abstract class AbstractConnectorWorker<R> {
 
         // It's important to return the updated entity as successful worker calls will need the entity with the version field updated
         ConnectorEntity merge = entityManager.merge(updatedEntity);
-        LOGGER.info("Worker {} successfully updated entity: {} ", workerName(), connectorEntity);
+        LOGGER.info("Worker {} successfully updated entity: {} ", workerName(), merge);
         return merge;
     }
 
