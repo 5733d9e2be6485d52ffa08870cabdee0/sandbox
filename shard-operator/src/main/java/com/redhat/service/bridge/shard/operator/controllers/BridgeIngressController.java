@@ -97,13 +97,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                     bridgeIngress.getMetadata().getNamespace());
 
             bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
-            boolean failed = DeploymentStatusUtils.isStatusReplicaFailure(deployment);
-            if (failed) {
-                String failureReason = DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment);
-                LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(),
-                        failureReason);
-                notifyManager(bridgeIngress, BridgeStatus.FAILED);
+
+            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
+                notifyDeploymentFailure(bridgeIngress, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                notifyDeploymentFailure(bridgeIngress, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
             }
+
             return UpdateControl.updateStatus(bridgeIngress);
         }
         LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
@@ -167,6 +167,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         notifyManager(bridgeIngress, BridgeStatus.DELETED);
 
         return DeleteControl.defaultDelete();
+    }
+
+    private void notifyDeploymentFailure(BridgeIngress bridgeIngress, String failureReason) {
+        LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), failureReason);
+        notifyManager(bridgeIngress, BridgeStatus.FAILED);
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, BridgeStatus status) {

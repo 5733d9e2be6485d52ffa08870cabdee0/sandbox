@@ -8,7 +8,9 @@
 # - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 ########
 
-. "$( dirname "$0" )/configure.sh" kafka
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
+. "${SCRIPT_DIR_PATH}/configure.sh" kafka
 
 # rhoas login
 function rhoas_login {
@@ -27,33 +29,27 @@ function rhoas_login {
 
 # create service accounts
 function create_service_accounts {
-  admin_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-admin"
-  create_service_account "${admin_sa_name}"
-  admin_sa_credentials_file="${credentials_folder}/${admin_sa_name}.json"
-  admin_sa_id=$( jq -r '.clientID' "${admin_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  create_service_account "${ADMIN_SA_NAME}" "${ADMIN_SA_CREDENTIALS_FILE}"
+  admin_sa_id=$( getManagedKafkaAdminSAClientId )
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${admin_sa_id}"
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation create --topic all
     rhoas kafka acl create -y --user "${admin_sa_id}" --permission allow --operation delete --topic all
     echo "Admin account: ACLs created"
   fi
 
-  ops_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-ops"
-  create_service_account "${ops_sa_name}"
-  ops_sa_credentials_file="${credentials_folder}/${ops_sa_name}.json"
-  ops_sa_id=$( jq -r '.clientID' "${ops_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  create_service_account "${OPS_SA_NAME}" "${OPS_SA_CREDENTIALS_FILE}"
+  ops_sa_id=$( getManagedKafkaOpsSAClientId )
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation alter --cluster
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation create --topic all
     rhoas kafka acl create -y --user "${ops_sa_id}" --permission deny --operation delete --topic all
     echo "Operational account: ACLs created"
   fi
 
-  mc_sa_name="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
-  create_service_account "${mc_sa_name}"
-  mc_sa_credentials_file="${credentials_folder}/${mc_sa_name}.json"
-  mc_sa_id=$( jq -r '.clientID' "${mc_sa_credentials_file}" )
-  if [ "${sa_updated}" == "yes" ]; then
+  create_service_account "${MC_SA_NAME}" "${MC_SA_CREDENTIALS_FILE}"
+  mc_sa_id=$( getManagedKafkaMcSAClientId )
+  if [ "${sa_updated}" == "yes" ] || [ "${kafka_created}" == "yes" ]; then
     rhoas kafka acl grant-admin -y --service-account "${mc_sa_id}"
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --group all
     rhoas kafka acl create -y --user "${mc_sa_id}" --permission allow --operation all --topic all
@@ -64,8 +60,8 @@ function create_service_accounts {
 
 function create_service_account {
   sa_name="$1"
+  sa_credentials_file="$2"
   sa_count=$( rhoas service-account list -o json | jq -rc ".items[] | select( .name == \"${sa_name}\" )" | wc -l )
-  sa_credentials_file="${credentials_folder}/${sa_name}.json"
   sa_updated="no"
 
   if [ $sa_count -gt 1 ]; then
@@ -91,12 +87,19 @@ function create_service_account {
 function create_kafka_instance_and_wait_ready {
   # create instance if not already existing
   instance_count=$( rhoas kafka list --search "${MANAGED_KAFKA_INSTANCE_NAME}" -o json | jq -rc ".items[] | select( .name == \"${MANAGED_KAFKA_INSTANCE_NAME}\" )" | wc -l )
+  kafka_created="no"
+
   if [ $instance_count -gt 1 ]; then
     die "there are ${instance_count} instances named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
   elif [ $instance_count -eq 0 ]; then
+    local kafka_region=
+    if [ ! -z "${MANAGED_KAFKA_REGION}" ]; then
+      kafka_region="--region ${MANAGED_KAFKA_REGION}"
+    fi
     echo "Creating Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\"..."
-    rhoas kafka create --name "${MANAGED_KAFKA_INSTANCE_NAME}"
+    rhoas kafka create -v ${kafka_region} --name "${MANAGED_KAFKA_INSTANCE_NAME}"
     echo "Created Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\""
+    kafka_created="yes"
   else
     echo "Managed Kafka instance named \"${MANAGED_KAFKA_INSTANCE_NAME}\" found"
   fi
@@ -109,13 +112,13 @@ function create_kafka_instance_and_wait_ready {
   kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   while [ "${kafka_status}" != "ready" ]; do
     echo "Waiting for Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" to become ready (current status \"${kafka_status}\")..."
-    sleep 20s
+    sleep 20
     kafka_status=$( rhoas kafka describe -o json | jq -rc '.status' )
   done
   echo "Managed Kafka instance \"${MANAGED_KAFKA_INSTANCE_NAME}\" is ${kafka_status}"
 
   # export information
-  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
+  rhoas kafka describe --id "${instance_id}" -o json | jq -r > "${MANAGED_KAFKA_CREDENTIALS_FILE}"
 }
 
 rhoas_login

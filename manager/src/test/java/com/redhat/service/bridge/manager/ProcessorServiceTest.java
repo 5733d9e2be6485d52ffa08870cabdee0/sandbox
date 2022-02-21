@@ -11,15 +11,13 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
+import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -27,6 +25,7 @@ import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -35,27 +34,34 @@ import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
-import com.redhat.service.bridge.manager.connectors.ConnectorsServiceImpl;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import com.redhat.service.bridge.test.resource.PostgresResource;
-
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import static com.redhat.service.bridge.infra.models.dto.BridgeStatus.DEPROVISION;
+import static com.redhat.service.bridge.manager.RhoasServiceImpl.createFailureErrorMessageFor;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,9 +79,6 @@ public class ProcessorServiceTest {
     @Inject
     ProcessorService processorService;
 
-    @InjectMock
-    ConnectorsApiClient connectorsApiClient;
-
     @Inject
     ConnectorsDAO connectorsDAO;
 
@@ -83,15 +86,15 @@ public class ProcessorServiceTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @InjectMock
-    RhoasService rhoasServiceMock;
+    RhoasService rhoasService;
 
-    @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+    @InjectMock
+    ConnectorsApiClient connectorsApiClient;
 
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        reset(rhoasServiceMock);
+        reset(rhoasService);
     }
 
     private Bridge createPersistBridge(BridgeStatus status) {
@@ -172,10 +175,10 @@ public class ProcessorServiceTest {
 
         r.setName("My Processor 3");
         processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        processor.setStatus(BridgeStatus.DEPROVISION);
+        processor.setStatus(DEPROVISION);
         processorDAO.getEntityManager().merge(processor);
 
-        List<Processor> processors = processorService.getProcessorByStatusesAndShardId(asList(BridgeStatus.ACCEPTED, BridgeStatus.DEPROVISION), TestConstants.SHARD_ID);
+        List<Processor> processors = processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(asList(BridgeStatus.ACCEPTED, DEPROVISION), TestConstants.SHARD_ID);
         assertThat(processors.size()).isEqualTo(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("My Processor", "My Processor 3"));
     }
@@ -302,7 +305,7 @@ public class ProcessorServiceTest {
 
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(processor.getStatus()).isEqualTo(BridgeStatus.DEPROVISION);
+        assertThat(processor.getStatus()).isEqualTo(DEPROVISION);
     }
 
     @Test
@@ -360,50 +363,86 @@ public class ProcessorServiceTest {
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
-        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
+        when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
+        when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
+
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
+                    String.format("OpenBridge-slack_sink_0.1-%s",
+                            processor.getId()));
+
+            assertThat(connector).isNotNull();
+            assertThat(connector.getError()).isNullOrEmpty();
+            assertThat(connector.getDesiredStatus()).isEqualTo(ConnectorStatus.READY);
+            assertThat(connector.getStatus()).isEqualTo(ConnectorStatus.READY);
+        });
+
+        verify(rhoasService).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
+
+        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         ArgumentCaptor<ConnectorRequest> connectorCaptor = ArgumentCaptor.forClass(ConnectorRequest.class);
         verify(connectorsApiClient).createConnector(connectorCaptor.capture());
         ConnectorRequest calledConnector = connectorCaptor.getValue();
         assertThat(calledConnector.getKafka()).isNotNull();
-
-        ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));
-        assertThat(foundConnector).isNotNull();
     }
 
     @Test
-    public void testDeleteProcessorWithConnector() {
-        final String testConnectorId = "connectorExternalId";
-
-        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector(testConnectorId));
-
+    public void createConnectorFailure() {
         Bridge b = createPersistBridge(BridgeStatus.READY);
 
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
+        when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenThrow(
+                new InternalPlatformException(createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")));
+        when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
+
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
-        assertThat(processor).isNotNull();
-        verify(rhoasServiceMock).createTopicAndGrantAccessFor(internalKafkaConfigurationProvider.getTopicPrefix() + processor.getId(), RhoasTopicAccessType.PRODUCER);
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
+                    String.format("OpenBridge-slack_sink_0.1-%s",
+                            processor.getId()));
 
-        processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+            assertThat(connector).isNotNull();
+            assertThat(connector.getError()).contains("Failed creating and granting access to topic 'errorTopic");
+            assertThat(connector.getDesiredStatus()).isEqualTo(ConnectorStatus.READY);
+            assertThat(connector.getStatus()).isEqualTo(ConnectorStatus.FAILED);
+        });
 
-        verify(connectorsApiClient).deleteConnector(testConnectorId, ConnectorsServiceImpl.KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(internalKafkaConfigurationProvider.getTopicPrefix() + processor.getId(), RhoasTopicAccessType.PRODUCER);
-
-        ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
-        assertThat(connector).isNull();
-
-        processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(processor.getStatus()).isEqualTo(BridgeStatus.DEPROVISION);
+        verify(rhoasService).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
+        verify(connectorsApiClient, never()).createConnector(any());
     }
 
-    private Connector stubbedExternalConnector(String connectorExternalId) {
-        Connector connector = new Connector();
-        connector.setId(connectorExternalId);
-        return connector;
+    @Test
+    public void testDeleteRequestedConnector() {
+        Bridge bridge = createPersistBridge(BridgeStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete");
+        ConnectorEntity connector = Fixtures.createConnector(processor,
+                "connectorToBeDeleted",
+                ConnectorStatus.READY,
+                ConnectorStatus.READY,
+                "topicName");
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connector);
+
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+
+        Processor deletionRequestedProcessor = processorDAO.findById(processor.getId());
+        assertThat(deletionRequestedProcessor.getStatus()).isEqualTo(DEPROVISION);
+
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), "connectorToBeDeleted");
+            assertThat(foundConnector).isNull();
+
+            final Processor processorDeleted = processorService.getProcessor(processor.getId(), bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+            assertThat(processorDeleted.getStatus()).isEqualTo(DEPROVISION);
+        });
+
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(eq("topicName"), eq(RhoasTopicAccessType.PRODUCER));
+        verify(connectorsApiClient).deleteConnector("connectorExternalId");
     }
 
     private BaseAction createSlackAction() {
@@ -415,4 +454,9 @@ public class ProcessorServiceTest {
         return mcAction;
     }
 
+    private Connector stubbedExternalConnector(String connectorExternalId) {
+        Connector connector = new Connector();
+        connector.setId(connectorExternalId);
+        return connector;
+    }
 }

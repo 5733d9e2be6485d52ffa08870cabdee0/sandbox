@@ -388,5 +388,18 @@
         <impsort.goal>check</impsort.goal>
       </properties>
     </profile>
+    <profile>
+      <id>quickly</id>
+      <activation>
+        <property>
+          <name>quickly</name>
+        </property>
+      </activation>
+      <properties>
+        <formatter.skip>true</formatter.skip>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
   </profiles>
 </project>

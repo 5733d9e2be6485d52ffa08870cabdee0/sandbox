@@ -224,7 +224,7 @@ public class End2EndTestITStep {
                 .body(cloudEventStream).contentType(ContentType.JSON)
                 .post(endPoint + "/events")
                 .then()
-                .statusCode(404));
+                .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
     }
 
     @Given("^the Manager Metric \'([^\']*)\' count is at least (\\d+)$")

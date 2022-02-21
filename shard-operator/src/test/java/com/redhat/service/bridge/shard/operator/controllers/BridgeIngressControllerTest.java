@@ -100,7 +100,7 @@ public class BridgeIngressControllerTest {
     }
 
     @Test
-    void testBridgeIngressDeployment_deploymentFails() throws Exception {
+    void testBridgeIngressDeployment_deploymentReplicaFailure() throws Exception {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -110,7 +110,26 @@ public class BridgeIngressControllerTest {
         Deployment deployment = getDeploymentFor(bridgeIngress);
 
         // Then
-        kubernetesResourcePatcher.patchDeploymentAsFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
+        kubernetesResourcePatcher.patchDeploymentAsReplicaFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
+
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
+        assertThat(updateControl.isUpdateStatus()).isTrue();
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+    }
+
+    @Test
+    void testBridgeIngressDeployment_deploymentTimeoutFailure() throws Exception {
+        // Given
+        BridgeIngress bridgeIngress = buildBridgeIngress();
+        deployBridgeIngressSecret(bridgeIngress);
+
+        // When
+        bridgeIngressController.reconcile(bridgeIngress, null);
+        Deployment deployment = getDeploymentFor(bridgeIngress);
+
+        // Then
+        kubernetesResourcePatcher.patchDeploymentAsTimeoutFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
 
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();

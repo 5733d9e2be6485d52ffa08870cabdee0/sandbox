@@ -9,20 +9,17 @@
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
 
-. "$( dirname "$0" )/configure.sh" kafka minikube-started managed-connectors
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
-instance_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
-admin_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-admin.json"
-ops_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-ops.json"
-mc_json="${credentials_folder}/${MANAGED_KAFKA_INSTANCE_NAME}-mc.json"
+. "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started managed-connectors
 
-bootstrap_server_host=$( jq -r '.bootstrap_server_host' "${instance_json}" ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
-admin_client_id=$( jq -r '.clientID' "${admin_json}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-admin_client_secret=$( jq -r '.clientSecret' "${admin_json}" ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-ops_client_id=$( jq -r '.clientID' "${ops_json}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-ops_client_secret=$( jq -r '.clientSecret' "${ops_json}" ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-mc_client_id=$( jq -r '.clientID' "${mc_json}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
-mc_client_secret=$( jq -r '.clientSecret' "${mc_json}" ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
+bootstrap_server_host=$( getManagedKafkaBootstrapServerHost ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
+admin_client_id=$( getManagedKafkaAdminSAClientId ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
+admin_client_secret=$( getManagedKafkaAdminSAClientSecret ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
+ops_client_id=$( getManagedKafkaOpsSAClientId ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
+ops_client_secret=$( getManagedKafkaOpsSAClientSecret ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
+mc_client_id=$( getManagedKafkaMcSAClientId ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
+mc_client_secret=$( getManagedKafkaMcSAClientSecret ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
 
 export KAFKA_CLIENT_ID=${ops_client_id}
 export KAFKA_CLIENT_SECRET=${ops_client_secret}
@@ -40,7 +37,7 @@ mvn \
   -Devent-bridge.rhoas.sso.mas.auth-server-url=https://identity.api.openshift.com/auth/realms/rhoas \
   -Devent-bridge.rhoas.sso.mas.client-id=${admin_client_id} \
   -Devent-bridge.rhoas.sso.mas.client-secret=${admin_client_secret} \
-  -Dminikubeip=${minikube_ip} \
+  -Dminikubeip=${MINIKUBE_IP} \
   -Drhoas.ops-account.client-id=${ops_client_id} \
   -Dmanaged-connectors.cluster.id=${MANAGED_CONNECTORS_CLUSTER_ID} \
   -Dmanaged-connectors.kafka.bootstrap.servers=${bootstrap_server_host} \
