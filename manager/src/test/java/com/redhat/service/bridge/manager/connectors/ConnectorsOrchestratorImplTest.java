@@ -125,9 +125,9 @@ class ConnectorsOrchestratorImplTest {
         });
     }
 
-    private Connector stubbedExternalConnector(String connectorExternalId) {
+    private Connector stubbedExternalConnector(String connectorId) {
         Connector connector = new Connector();
-        connector.setId(connectorExternalId);
+        connector.setId(connectorId);
         return connector;
     }
 }
