@@ -6,6 +6,7 @@ jobs:
   run-integration-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
