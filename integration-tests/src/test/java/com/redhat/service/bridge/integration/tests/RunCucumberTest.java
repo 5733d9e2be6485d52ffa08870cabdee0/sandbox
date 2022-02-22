@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.integration.tests.steps;
+package com.redhat.service.bridge.integration.tests;
 
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;

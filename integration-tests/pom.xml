@@ -49,19 +49,16 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
       <scope>test</scope>
-      <version>${version.io.cucumber}</version>
     </dependency>
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit-platform-engine</artifactId>
       <scope>test</scope>
-      <version>${version.io.cucumber}</version>
     </dependency>
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-picocontainer</artifactId>
       <scope>test</scope>
-      <version>${version.io.cucumber}</version>
     </dependency>
 
     <dependency>
@@ -121,7 +118,7 @@
 
                 <!--Manager and key-cloak url-->
                 <event-bridge.manager.url></event-bridge.manager.url>
-                <key-cloak.url></key-cloak.url>
+                <keycloak.realm.url></keycloak.realm.url>
               </systemProperties>
             </configuration>
           </plugin>

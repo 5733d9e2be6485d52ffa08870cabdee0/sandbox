@@ -29,7 +29,7 @@ jobs:
       - name: Run integration tests
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=${{ secrets.DEV_CLUSTER_MANAGER_URL }} -Dkey-cloak.url=${{ secrets.DEV_CLUSTER_KEY_CLOAK_URL }} -Dbridge.token.username=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_USERNAME }} -Dbridge.token.password=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_PASSWORD }}
+          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=${{ secrets.DEV_CLUSTER_MANAGER_URL }} -Dkeycloak.realm.url=${{ secrets.DEV_CLUSTER_KEY_CLOAK_URL }} -Dbridge.token.username=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_USERNAME }} -Dbridge.token.password=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_PASSWORD }}
           working-directory: integration-tests
       - name: Publish Test Report
         if: ${{ always() }}
