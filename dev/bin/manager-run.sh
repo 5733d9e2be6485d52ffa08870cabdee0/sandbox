@@ -50,7 +50,6 @@ mvn \
   -Dmanaged-connectors.auth.client-id=cloud-services \
   -Dmanaged-connectors.auth.offline-token=${OPENSHIFT_OFFLINE_TOKEN} \
   \
-  -Dkafka.bootstrap.servers=${bootstrap_server_host} \
   -Dkafka.client.id=${mc_client_id} \
   -Dkafka.client.secret=${mc_client_secret} \
   -Dkafka.security.protocol=SASL_SSL \
