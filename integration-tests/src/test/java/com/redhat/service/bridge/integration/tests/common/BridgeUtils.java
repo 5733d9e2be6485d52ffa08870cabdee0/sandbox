@@ -2,20 +2,26 @@ package com.redhat.service.bridge.integration.tests.common;
 
 import org.keycloak.representations.AccessTokenResponse;
 
+import com.redhat.service.bridge.integration.tests.context.TestContext;
+import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
+
+import io.restassured.http.ContentType;
+
 import static io.restassured.RestAssured.given;
 
 public class BridgeUtils {
-    public static final String MANAGER_URL = getSystemProperty("event-bridge.manager.url");
 
-    protected static final String USER_NAME = getSystemProperty("bridge.token.username");
-    protected static final String PASSWORD = getSystemProperty("bridge.token.password");
-    protected static final String CLIENT_ID = getSystemProperty("bridge.client.id");
-    protected static final String CLIENT_SECRET = getSystemProperty("bridge.client.secret");
+    public static final String MANAGER_URL = Utils.getSystemProperty("event-bridge.manager.url");
+
+    protected static final String USER_NAME = Utils.getSystemProperty("bridge.token.username");
+    protected static final String PASSWORD = Utils.getSystemProperty("bridge.token.password");
+    protected static final String CLIENT_ID = Utils.getSystemProperty("bridge.client.id");
+    protected static final String CLIENT_SECRET = Utils.getSystemProperty("bridge.client.secret");
 
     protected static String token;
     protected static String keycloakURL = System.getProperty("keycloak.realm.url");
 
-    public static String retrieveAccessToken() {
+    public static String retrieveBridgeToken() {
         if (token == null) {
             String env_token = System.getenv("OB_TOKEN");
             if (env_token != null) {
@@ -36,16 +42,27 @@ public class BridgeUtils {
                 .param("password", PASSWORD)
                 .param("client_id", CLIENT_ID)
                 .param("client_secret", CLIENT_SECRET)
+                .contentType("application/x-www-form-urlencoded")
+                .accept(ContentType.JSON)
                 .when()
                 .post(keycloakURL + "/protocol/openid-connect/token")
                 .as(AccessTokenResponse.class)
                 .getToken();
     }
 
-    public static String getSystemProperty(String parameters) {
-        if (System.getProperty(parameters).isEmpty()) {
-            throw new RuntimeException("Property " + parameters + " was not defined.");
+    public static String getOrRetrieveBridgeEndpoint(TestContext context) {
+        if (context.getEndPoint() == null) {
+            // store bridge endpoint details
+            String endPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), context.getBridgeId())
+                    .getEndpoint();
+            // If an endpoint contains localhost without port then default port has to be
+            // defined, otherwise rest-assured will use port 8080
+            if (endPoint.matches("http://localhost/.*")) {
+                endPoint = endPoint.replace("http://localhost/", "http://localhost:80/");
+            }
+            context.setEndPoint(endPoint);
         }
-        return System.getProperty(parameters);
+
+        return context.getEndPoint();
     }
 }
