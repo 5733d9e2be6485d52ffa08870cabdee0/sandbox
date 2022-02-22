@@ -47,6 +47,8 @@ fi
 export CREDENTIALS_FOLDER=`realpath ${CONFIGURE_SCRIPT_DIR_PATH}/credentials`
 mkdir -p "${CREDENTIALS_FOLDER}"
 
+export LOCAL_ENV_FILE="${CREDENTIALS_FOLDER}/local_env"
+
 # configure profiles
 function configure {
   profile=$1

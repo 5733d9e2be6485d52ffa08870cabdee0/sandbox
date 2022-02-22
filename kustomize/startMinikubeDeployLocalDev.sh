@@ -66,3 +66,7 @@ kubectl delete pod --selector=app=event-bridge-shard-operator -n event-bridge-op
 echo "Wait for manager and operator to start"
 kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
 kubectl wait --for=condition=available --timeout=240s deployment/event-bridge -n event-bridge-manager
+
+rm -rf ${LOCAL_ENV_FILE}
+echo "MANAGER_URL=http://$(minikube ip):80/manager" >> ${LOCAL_ENV_FILE}
+echo "KEYCLOAK_URL=http://$(minikube ip):30007" >> ${LOCAL_ENV_FILE}

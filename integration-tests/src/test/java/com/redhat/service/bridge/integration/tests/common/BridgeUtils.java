@@ -15,7 +15,7 @@ public class BridgeUtils {
 
     protected static String token;
     protected static String env_token;
-    protected static String keycloakURL = System.getProperty("key-cloak.url");
+    protected static String keycloakURL = System.getProperty("keycloak.realm.url");
 
     public static RequestSpecification jsonRequestWithAuth() {
         env_token = System.getenv("OB_TOKEN");

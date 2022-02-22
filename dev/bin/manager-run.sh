@@ -26,6 +26,10 @@ export KAFKA_CLIENT_SECRET=${ops_client_secret}
 export MANAGED_CONNECTORS_KAFKA_CLIENT_ID=${mc_client_id}
 export MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=${mc_client_secret}
 
+rm -rf ${LOCAL_ENV_FILE}
+echo "MANAGER_URL=http://localhost:8080" >> ${LOCAL_ENV_FILE}
+echo "KEYCLOAK_URL=http://$(minikube ip):30007" >> ${LOCAL_ENV_FILE}
+
 # Note: '-Dkafka.*' properties are not required but setting them prevents annoying warning messages in the console
 mvn \
   -Devent-bridge.kafka.bootstrap.servers=${bootstrap_server_host} \
