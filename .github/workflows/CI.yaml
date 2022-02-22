@@ -29,3 +29,6 @@ jobs:
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
+      - name: Validate openapi spec
+        if: ${{ always() }}
+        run: diff openapi/openapi.yaml manager/target/generated/openapi.yaml
