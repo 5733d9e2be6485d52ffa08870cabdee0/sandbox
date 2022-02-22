@@ -6,29 +6,23 @@ import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.integration.tests.common.BridgeCommon;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.http.ContentType;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeSteps {
 
-    @Given("get list of Bridge instances returns HTTP response code (\\d+)$")
+    @Given("get list of Bridge instances fails with HTTP response code (\\d+)$")
     public void authenticationIsEnabled(int responseCode) {
-        given()
-                .contentType(ContentType.JSON)
-                .when()
-                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH)
+        BridgeResource.getBridgeListResponse(null)
                 .then()
                 .statusCode(responseCode);
     }
@@ -36,14 +30,15 @@ public class BridgeSteps {
     @Given("get list of Bridge instances with access token doesn't contain randomly generated Bridge")
     public void generateRandomBridgeName() {
         StepsContext.randomBridgeName = "bridge-" + UUID.randomUUID().toString().substring(0, 4);
-        BridgeListResponse response = BridgeCommon.getBridgeList();
+        BridgeListResponse response = BridgeResource.getBridgeList(BridgeUtils.retrieveAccessToken());
         assertThat(response.getKind()).isEqualTo("BridgeList");
         assertThat(response.getItems()).noneMatch(b -> b.getName().equals(StepsContext.randomBridgeName));
     }
 
     @When("create a Bridge with randomly generated name with access token")
     public void createRandomBridge() {
-        BridgeResponse response = BridgeCommon.addBridge(StepsContext.randomBridgeName);
+        BridgeResponse response = BridgeResource.addBridge(BridgeUtils.retrieveAccessToken(),
+                StepsContext.randomBridgeName);
         assertThat(response.getName()).isEqualTo(StepsContext.randomBridgeName);
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
@@ -56,7 +51,7 @@ public class BridgeSteps {
 
     @Then("get list of Bridge instances with access token contains Bridge with randomly generated name")
     public void testRandomBridgeExists() {
-        BridgeListResponse response = BridgeCommon.getBridgeList();
+        BridgeListResponse response = BridgeResource.getBridgeList(BridgeUtils.retrieveAccessToken());
         assertThat(response.getItems()).anyMatch(b -> b.getName().equals(StepsContext.randomBridgeName));
     }
 
@@ -66,13 +61,16 @@ public class BridgeSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> BridgeCommon.getBridgeDetails(StepsContext.bridgeId)
+                        () -> BridgeResource
+                                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId)
                                 .then()
                                 .body("status", Matchers.equalTo(status))
                                 .body("endpoint", Matchers.containsString(StepsContext.bridgeId)));
 
         // store bridge endpoint details
-        StepsContext.endPoint = BridgeCommon.getBridgeDetails(StepsContext.bridgeId).then().extract().response()
+        StepsContext.endPoint = BridgeResource
+                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId).then().extract()
+                .response()
                 .as(BridgeResponse.class).getEndpoint();
         // If an endpoint contains localhost without port then default port has to be
         // defined, otherwise rest-assured will use port 8080
@@ -83,7 +81,7 @@ public class BridgeSteps {
 
     @When("delete a Bridge")
     public void testDeleteBridge() {
-        BridgeCommon.deleteBridge(StepsContext.bridgeId);
+        BridgeResource.deleteBridge(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId);
     }
 
     @Then("^the Bridge doesn't exists within (\\d+) (?:minute|minutes)$")
@@ -93,7 +91,8 @@ public class BridgeSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> BridgeCommon.getBridgeDetails(StepsContext.bridgeId)
+                        () -> BridgeResource
+                                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId)
                                 .then()
                                 .statusCode(404));
     }
