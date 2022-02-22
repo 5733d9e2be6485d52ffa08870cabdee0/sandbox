@@ -2,7 +2,7 @@
 openapi: 3.0.3
 info:
   title: manager API
-  version: 0.0.1-SNAPSHOT
+  version: 0.0.1-SNAPSHOTfail
 paths:
   /api/v1/bridges:
     get:
