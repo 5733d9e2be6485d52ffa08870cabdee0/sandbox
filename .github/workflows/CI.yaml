@@ -33,4 +33,4 @@ jobs:
         if: ${{ always() }}
         run: |
           differences=$(diff openapi/openapi.yaml manager/target/generated/openapi.yaml)
-          if [ $? -ne 0 ]; then echo "Please move the manager/target/generated/openapi.yaml into openapi/openapi.yaml"; false ; fi
+          if [ $? -ne 0 ]; then echo "openapi/openapi.yaml is out of sync. Please move the manager/target/generated/openapi.yaml into openapi/openapi.yaml"; false ; fi
