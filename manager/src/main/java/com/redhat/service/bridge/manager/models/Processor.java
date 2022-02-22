@@ -39,7 +39,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "where p.status in (:statuses) " +
                         "and p.bridge.status='AVAILABLE' " +
                         "and p.shardId=:shardId " +
-                        "and (c is null or c.status = 'READY')"),
+                        "and (c is null or c.status = 'READY' or c.status = 'FAILED')"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",

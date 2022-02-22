@@ -18,6 +18,11 @@ public class RemoveTopicWorker extends AbstractConnectorWorker<ConnectorEntity> 
     @Inject
     RhoasService rhoasService;
 
+    @Override
+    protected boolean shouldDeleteAfterFailure() {
+        return true;
+    }
+
     @ConsumeEvent(value = Events.CONNECTOR_DELETED_EVENT, blocking = true)
     public void consume(ConnectorEntity connectorEntity) {
         execute(connectorEntity);

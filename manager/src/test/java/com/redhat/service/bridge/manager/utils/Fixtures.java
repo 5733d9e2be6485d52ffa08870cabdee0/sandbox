@@ -28,13 +28,14 @@ public class Fixtures {
         return action;
     }
 
-    public static Processor createProcessor(Bridge b, String name) {
+    public static Processor createProcessor(Bridge b, String name, BridgeStatus status) {
         Processor p = new Processor();
         p.setName(name);
-        p.setStatus(BridgeStatus.AVAILABLE);
+        p.setStatus(status);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
+        p.setShardId(TestConstants.SHARD_ID);
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();

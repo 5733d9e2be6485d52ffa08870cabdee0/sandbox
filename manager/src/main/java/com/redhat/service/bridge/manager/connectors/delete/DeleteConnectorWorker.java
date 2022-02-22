@@ -28,6 +28,11 @@ public class DeleteConnectorWorker extends AbstractConnectorWorker<ConnectorEnti
     }
 
     @Override
+    protected boolean shouldDeleteAfterFailure() {
+        return true;
+    }
+
+    @Override
     protected ConnectorEntity callExternalService(ConnectorEntity connectorEntity) {
         connectorsApiClient
                 .deleteConnector(connectorEntity.getConnectorExternalId());

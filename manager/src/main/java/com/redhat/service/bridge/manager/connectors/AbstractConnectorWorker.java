@@ -8,12 +8,10 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import com.redhat.service.bridge.manager.models.ConnectorEntity;
+import io.vertx.mutiny.core.eventbus.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.redhat.service.bridge.manager.models.ConnectorEntity;
-
-import io.vertx.mutiny.core.eventbus.EventBus;
 
 // R is the type returned by the external service
 public abstract class AbstractConnectorWorker<R> {
@@ -41,6 +39,11 @@ public abstract class AbstractConnectorWorker<R> {
     // Used for workers that should delete the entity after successfully calling the service.
     // By default, after the service call updateEntityForSuccess is called, with this physical deletion will occur
     protected boolean shouldDeleteAfterSuccess() {
+        return false;
+    }
+
+    // If for whatever reasons, the interaction fails, physically delete the row.
+    protected boolean shouldDeleteAfterFailure() {
         return false;
     }
 
@@ -72,8 +75,11 @@ public abstract class AbstractConnectorWorker<R> {
                 afterSuccessfullyUpdated(successConnectorEntity);
             }
         } catch (Exception e) {
-
-            errorWhileCalling(e, connectorEntity);
+            if (shouldDeleteAfterFailure()) {
+                deleteEntity(connectorEntity);
+            } else {
+                errorWhileCalling(e, connectorEntity);
+            }
         }
     }
 
