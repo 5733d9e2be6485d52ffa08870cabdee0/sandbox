@@ -14,10 +14,11 @@ SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
 
 env_command='docker-env'
-container_engine='docker'
-if [ "${MINIKUBE_CONTAINER_RUNTIME}" != "docker" ]; then
+container_engine_option=
+if [ ! -z "${MINIKUBE_CONTAINER_RUNTIME}" ] && [ "${MINIKUBE_CONTAINER_RUNTIME}" != "docker" ]; then
+  echo 'Use podman env'
   env_command='podman-env'
-  container_engine='podman'
+  container_engine_option='-Dquarkus.jib.docker-executable-name=podman'
 fi
 
 eval $( minikube -p "${MINIKUBE_PROFILE}" ${env_command} )
