@@ -22,4 +22,4 @@ if [ ! -z "${MINIKUBE_CONTAINER_RUNTIME}" ] && [ "${MINIKUBE_CONTAINER_RUNTIME}"
 fi
 
 eval $( minikube -p "${MINIKUBE_PROFILE}" ${env_command} )
-mvn clean install -Dquickly -Dquarkus.container-image.build=true -Dquarkus.jib.docker-executable-name=${container_engine}
+mvn clean install -Dquickly -Dquarkus.container-image.build=true ${container_engine_option}
