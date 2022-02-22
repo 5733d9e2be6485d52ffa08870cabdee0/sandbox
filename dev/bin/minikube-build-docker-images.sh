@@ -11,7 +11,7 @@ SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
 . "${SCRIPT_DIR_PATH}/configure.sh" minikube
 
-cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
+stat "${SCRIPT_DIR_PATH}/../.." &> /dev/null || die "Can't cd to repository root"
 
 env_command='docker-env'
 container_engine_option=

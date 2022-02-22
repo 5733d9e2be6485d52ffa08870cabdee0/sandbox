@@ -18,7 +18,7 @@ KUSTOMIZE_DIR="${SCRIPT_DIR_PATH}/../../kustomize"
 disable_extra_components=$1
 
 . "${SCRIPT_DIR_PATH}/configure.sh" minikube
-cd "${SCRIPT_DIR_PATH}/../.." || die "Can't cd to repository root"
+stat "${SCRIPT_DIR_PATH}/../.." &> /dev/null || die "Can't cd to repository root"
 
 minikube_opts=""
 if [ -n "${MINIKUBE_DRIVER}" ]; then

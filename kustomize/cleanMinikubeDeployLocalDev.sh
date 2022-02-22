@@ -9,7 +9,7 @@ KUSTOMIZE_DEPLOY_DIR="${DEPLOY_DIR}/kustomize"
 
 . ${BIN_DIR}/configure.sh minikube-started
 
-cd "${KUSTOMIZE_DEPLOY_DIR}" || die "Can't access deployed dir. Did you start the minikube with `startMinikubeDeployLocalDev.sh` script ?"
+stat "${KUSTOMIZE_DEPLOY_DIR}"  &> /dev/null || die "Can't access deployed dir. Did you start the minikube with `startMinikubeDeployLocalDev.sh` script ?"
 
 echo "Remove all Openbridge namespaces"
 # This could be replaced by a read in manager of all OB instances running and wait for all of them to be deleted
