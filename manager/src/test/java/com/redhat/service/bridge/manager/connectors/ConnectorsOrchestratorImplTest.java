@@ -100,7 +100,9 @@ class ConnectorsOrchestratorImplTest {
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
-        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
+        Connector connector = stubbedExternalConnector("connectorExternalId");
+        when(connectorsApiClient.getConnector(any())).thenReturn(connector);
+        when(connectorsApiClient.createConnector(any())).thenReturn(connector);
         when(shardService.getAssignedShardId(anyString())).thenReturn("myId");
 
         connectorsOrchestrator.updatePendingConnectors();

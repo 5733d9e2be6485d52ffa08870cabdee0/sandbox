@@ -100,5 +100,11 @@
   "id": 17,
   "reason": "Error while deleting the connector on MC Fleet Manager",
   "type": "PLATFORM"
-}
+},
+  {
+    "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorNotFoundException",
+    "id": 18,
+    "reason": "Connector not found on MC Fleet Manager.",
+    "type": "PLATFORM"
+  }
 ]

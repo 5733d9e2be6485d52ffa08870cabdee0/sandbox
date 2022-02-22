@@ -20,6 +20,7 @@ import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREA
 import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_DELETED_EVENT;
 import static com.redhat.service.bridge.manager.connectors.Events.KAFKA_TOPIC_CREATED_EVENT;
 import static com.redhat.service.bridge.manager.connectors.Events.KAFKA_TOPIC_DELETED_EVENT;
+import static com.redhat.service.bridge.manager.connectors.Events.MANAGED_CONNECTOR_CREATED_EVENT;
 
 // Currently disabled (not scheduled).
 // Part of https://issues.redhat.com/browse/MGDOBR-155
@@ -54,6 +55,8 @@ public class ConnectorsOrchestratorImpl implements ConnectorsOrchestrator {
             return eventBus.request(CONNECTOR_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.TOPIC_CREATED) {
             return eventBus.request(KAFKA_TOPIC_CREATED_EVENT, c);
+        } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.MANAGED_CONNECTOR_CREATED) {
+            return eventBus.request(MANAGED_CONNECTOR_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.DELETED) && c.getStatus() == ConnectorStatus.READY) {
             return eventBus.request(CONNECTOR_DELETED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.DELETED) && c.getStatus() == ConnectorStatus.TOPIC_DELETED) {

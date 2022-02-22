@@ -365,20 +365,23 @@ public class ProcessorServiceTest {
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
-        when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
+        Connector connector = new Connector();
+
+        when(connectorsApiClient.getConnector(any())).thenReturn(connector);
+        when(connectorsApiClient.createConnector(any())).thenReturn(connector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
-            ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
+            ConnectorEntity connectorEntity = connectorsDAO.findByProcessorIdAndName(processor.getId(),
                     String.format("OpenBridge-slack_sink_0.1-%s",
                             processor.getId()));
 
-            assertThat(connector).isNotNull();
-            assertThat(connector.getError()).isNullOrEmpty();
-            assertThat(connector.getDesiredStatus()).isEqualTo(ConnectorStatus.READY);
-            assertThat(connector.getStatus()).isEqualTo(ConnectorStatus.READY);
+            assertThat(connectorEntity).isNotNull();
+            assertThat(connectorEntity.getError()).isNullOrEmpty();
+            assertThat(connectorEntity.getDesiredStatus()).isEqualTo(ConnectorStatus.READY);
+            assertThat(connectorEntity.getStatus()).isEqualTo(ConnectorStatus.READY);
         });
 
         verify(rhoasService).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));

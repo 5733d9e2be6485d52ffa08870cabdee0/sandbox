@@ -5,6 +5,7 @@ package com.redhat.service.bridge.infra.models.dto;
 public enum ConnectorStatus {
     ACCEPTED("accepted"),
     TOPIC_CREATED("topic_created"),
+    MANAGED_CONNECTOR_CREATED("managed_connector_created"),
     READY("ready"), // connector and topic have been created
     TOPIC_DELETED("topic_deleted"),
     DELETED("deleted"), // connector and topic have been created, used only as Desired status as it's physically deleted eventually

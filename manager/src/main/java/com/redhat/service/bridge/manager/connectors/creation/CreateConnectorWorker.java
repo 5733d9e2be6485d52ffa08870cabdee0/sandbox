@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager.connectors.creation;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.Duration;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,6 +13,9 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.DeploymentLocation;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
+import com.redhat.service.bridge.infra.exceptions.BridgeError;
+import com.redhat.service.bridge.infra.exceptions.BridgeErrorDAO;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.connectors.AbstractConnectorWorker;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
@@ -24,6 +26,11 @@ import io.quarkus.vertx.ConsumeEvent;
 
 @ApplicationScoped
 public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
+
+    public static final Duration DEFAULT_BACKOFF = Duration.ofSeconds(1);
+    public static final double DEFAULT_JITTER = 0.2;
+    public static final int MAX_RETRIES = 10;
+
     public static final String KAFKA_ID_IGNORED = "kafkaId-ignored";
 
     @ConfigProperty(name = "managed-connectors.cluster.id")
@@ -40,6 +47,9 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
 
     @Inject
     ConnectorsApiClient connectorsApiClient;
+
+    @Inject
+    BridgeErrorDAO bridgeErrors;
 
     @ConsumeEvent(value = Events.KAFKA_TOPIC_CREATED_EVENT, blocking = true)
     public void consume(ConnectorEntity connectorEntity) {
@@ -85,8 +95,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Override
     protected ConnectorEntity updateEntityForSuccess(ConnectorEntity connectorEntity, Connector connector) {
         connectorEntity.setConnectorExternalId(connector.getId());
-        connectorEntity.setStatus(ConnectorStatus.READY);
-        connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        connectorEntity.setStatus(ConnectorStatus.MANAGED_CONNECTOR_CREATED);
         return connectorEntity;
     }
 
@@ -95,4 +104,23 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
         connectorEntity.setStatus(ConnectorStatus.FAILED);
         return connectorEntity;
     }
+
+    @Override
+    protected void afterSuccessfullyUpdated(ConnectorEntity c) {
+        //Check that the Managed Connector has been created
+        eventBus.request(Events.MANAGED_CONNECTOR_CREATED_EVENT, c)
+                .onFailure()
+                .retry()
+                .withBackOff(DEFAULT_BACKOFF)
+                .withJitter(DEFAULT_JITTER)
+                .atMost(MAX_RETRIES)
+                .subscribe().with(
+                        success -> {
+                            /* NOOP */},
+                        failure -> {
+                            BridgeError error = bridgeErrors.findByException(ConnectorCreationException.class);
+                            CreateConnectorWorker.this.errorWhileCalling(new ConnectorCreationException(error.getReason()), c);
+                        });
+    }
+
 }
