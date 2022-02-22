@@ -66,16 +66,16 @@ public class BridgesAPI {
     }
 
     @GET
-    @Path("{id}")
-    public Response getBridge(@PathParam("id") @NotEmpty String id) {
-        Bridge bridge = bridgesService.getBridge(id, identityResolver.resolve(jwt));
+    @Path("{bridgeId}")
+    public Response getBridge(@PathParam("bridgeId") @NotEmpty String bridgeId) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.ok(bridgesService.toResponse(bridge)).build();
     }
 
     @DELETE
-    @Path("{id}")
-    public Response deleteBridge(@PathParam("id") String id) {
-        bridgesService.deleteBridge(id, identityResolver.resolve(jwt));
+    @Path("{bridgeId}")
+    public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
+        bridgesService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.accepted().build();
     }
 }
