@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
@@ -26,9 +25,32 @@ public class IngressSteps {
         this.context = context;
     }
 
-    @Then("^send cloud events to the ingress at the endpoint with access token:$")
-    public void testIngressEndpoint(String cloudEvent) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context);
+    @And("^the Ingress of Bridge \"([^\"]*)\" is deployed within (\\d+) (?:minute|minutes)$")
+    public void ingressOfBridgeIsDeployedWithinMinutes(String testBridgeName, int timeoutMinutes) {
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+
+        Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
+                        .then()
+                        .statusCode(200));
+    }
+
+    @And("^the Ingress of Bridge \"([^\"]*)\" is undeployed within (\\d+) (?:minute|minutes)$")
+    public void ingressOfBridgeIsUndeployedWithinMinutes(String testBridgeName, int timeoutMinutes) {
+        System.out.println("hello");
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName, true);
+
+        Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
+                        .then()
+                        .statusCode(404));
+    }
+
+    @Then("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")
+    public void sendCloudEventToIngressOfBridge(String testBridgeName, String cloudEvent) {
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+
         InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
 
         Headers headers = new Headers(
@@ -39,33 +61,23 @@ public class IngressSteps {
                 new Header("ce-subject", "mySubject"));
 
         String token = context.getManagerToken();
-
         IngressResource.postJsonEventResponse(token, endpoint, cloudEventStream, headers)
                 .then()
                 .statusCode(200);
 
-        cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
-        IngressResource
-                .postJsonEventResponse(token, endpoint + "/ingress/not-the-bridge-name/",
-                        cloudEventStream, headers)
-                .then()
-                .statusCode(404);
+        // TODO 
+        // cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
+        // IngressResource
+        //         .postJsonEventResponse(token, endpoint + "/ingress/not-the-bridge-name/",
+        //                 cloudEventStream, headers)
+        //         .then()
+        //         .statusCode(404);
 
-        // Plain endpoint for non cloud events payloads
-        IngressResource
-                .postPlainEventResponse(token, endpoint, "{\"data\": \"test\"}", headers)
-                .then()
-                .statusCode(200);
-    }
-
-    @And("^the Ingress is Undeployed within (\\d+) (?:minute|minutes)$")
-    public void ingressUndeployedWithinMinutes(int timeoutMinutes) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context);
-
-        Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(() -> IngressResource
-                        .optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
-                        .then()
-                        .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
+        // // Plain endpoint for non cloud events payloads
+        // // Plain endpoint for non cloud events payloads
+        // IngressResource
+        // .postPlainEventResponse(token, endpoint, "{\"data\": \"test\"}", headers)
+        // .then()
+        // .statusCode(200);
     }
 }

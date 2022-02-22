@@ -16,19 +16,19 @@ public class MetricsSteps {
         this.context = context;
     }
 
-    @Given("^the Manager Metric \'([^\']*)\' count is at least (\\d+)$")
-    public void managerMetricCount(String metricName, int minimalValue) {
+    @Given("^the Manager metric \'([^\']*)\' count is at least (\\d+)$")
+    public void managerMetricCountIsAtLeast(String metricName, int minimalValue) {
         testMetricAndCount(BridgeUtils.MANAGER_URL + "/q/metrics", metricName, minimalValue);
     }
 
-    @Given("^the Ingress Metric \'([^\']*)\' count is at least (\\d+)$")
-    public void ingressMetricCount(String metricName, int minimalValue) {
-        testMetricAndCount(BridgeUtils.getOrRetrieveBridgeEndpoint(context) + "/q/metrics", metricName, minimalValue);
+    @Given("^the Ingress of the Bridge \"([^\"]*)\" metric \'([^\']*)\' count is at least (\\d+)$")
+    public void ingressOfBridgeMetricCountIsAtLeast(String testBridgeName, String metricName, int minimalValue) {
+        testMetricAndCount(BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName) + "/q/metrics", metricName, minimalValue);
     }
 
-    private void testMetricAndCount(String metricEndpoint, String metricName, int minimalValue) {
+    private void testMetricAndCount(String metricsEndpoint, String metricName, int minimalValue) {
         String metrics = ResourceUtils.jsonRequest(context.getManagerToken())
-                .get(metricEndpoint)
+                .get(metricsEndpoint)
                 .then()
                 .extract()
                 .body()

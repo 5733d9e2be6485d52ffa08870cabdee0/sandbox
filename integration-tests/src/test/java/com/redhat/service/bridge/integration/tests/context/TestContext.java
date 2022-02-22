@@ -1,5 +1,10 @@
 package com.redhat.service.bridge.integration.tests.context;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import io.cucumber.java.Scenario;
 
 /**
@@ -9,10 +14,8 @@ public class TestContext {
 
     private String managerToken;
 
-    private String randomBridgeName;
-    private String bridgeId;
-    private String processorId;
-    private String endPoint;
+    private Map<String, BridgeContext> bridges = new HashMap<>();
+    private Map<String, BridgeContext> removedBridges = new HashMap<>();
 
     private Scenario scenario;
 
@@ -20,47 +23,47 @@ public class TestContext {
     }
 
     public String getManagerToken() {
-        return managerToken;
+        return this.managerToken;
     }
 
     public void setManagerToken(String managerToken) {
         this.managerToken = managerToken;
     }
 
-    public String getRandomBridgeName() {
-        return randomBridgeName;
+    public BridgeContext newBridge(String testBridgeName, String systemBridgeName) {
+        if (this.bridges.containsKey(testBridgeName)) {
+            throw new RuntimeException("Bridge with name " + testBridgeName + " is already created in context.");
+        } else {
+            this.bridges.put(testBridgeName, new BridgeContext(systemBridgeName));
+        }
+        return getBridge(testBridgeName);
     }
 
-    public void setRandomBridgeName(String randomBridgeName) {
-        this.randomBridgeName = randomBridgeName;
+    public void removeBridge(String testBridgeName) {
+        BridgeContext bridgeContext = this.bridges.remove(testBridgeName);
+        this.removedBridges.put(testBridgeName, bridgeContext);
     }
 
-    public String getBridgeId() {
-        return bridgeId;
+    public BridgeContext getBridge(String testBridgeName) {
+        return getBridge(testBridgeName, false);
     }
 
-    public void setBridgeId(String bridgeId) {
-        this.bridgeId = bridgeId;
+    public BridgeContext getBridge(String testBridgeName, boolean includeRemovedBridges) {
+        if (!this.bridges.containsKey(testBridgeName)) {
+            if (includeRemovedBridges && this.removedBridges.containsKey(testBridgeName)) {
+                return this.removedBridges.get(testBridgeName);
+            }
+            throw new RuntimeException("Bridge with name " + testBridgeName + " does not exist in context.");
+        }
+        return this.bridges.get(testBridgeName);
     }
 
-    public String getProcessorId() {
-        return processorId;
-    }
-
-    public void setProcessorId(String processorId) {
-        this.processorId = processorId;
-    }
-
-    public String getEndPoint() {
-        return endPoint;
-    }
-
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
+    public List<String> getAllBridgeNames() {
+        return this.bridges.keySet().stream().collect(Collectors.toList());
     }
 
     public Scenario getScenario() {
-        return scenario;
+        return this.scenario;
     }
 
     public void setScenario(Scenario scenario) {

@@ -2,6 +2,7 @@ package com.redhat.service.bridge.integration.tests.common;
 
 import org.keycloak.representations.AccessTokenResponse;
 
+import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 
@@ -50,19 +51,26 @@ public class BridgeUtils {
                 .getToken();
     }
 
-    public static String getOrRetrieveBridgeEndpoint(TestContext context) {
-        if (context.getEndPoint() == null) {
+    public static String getOrRetrieveBridgeEndpoint(TestContext context, String testBridgeName) {
+        return getOrRetrieveBridgeEndpoint(context, testBridgeName, false);
+    }
+
+    public static String getOrRetrieveBridgeEndpoint(TestContext context, String testBridgeName,
+            boolean includeRemovedBridges) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName, includeRemovedBridges);
+
+        if (bridgeContext.getEndPoint() == null) {
             // store bridge endpoint details
-            String endPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), context.getBridgeId())
+            String endPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeContext.getBridgeId())
                     .getEndpoint();
             // If an endpoint contains localhost without port then default port has to be
             // defined, otherwise rest-assured will use port 8080
             if (endPoint.matches("http://localhost/.*")) {
                 endPoint = endPoint.replace("http://localhost/", "http://localhost:80/");
             }
-            context.setEndPoint(endPoint);
+            bridgeContext.setEndPoint(endPoint);
         }
 
-        return context.getEndPoint();
+        return bridgeContext.getEndPoint();
     }
 }

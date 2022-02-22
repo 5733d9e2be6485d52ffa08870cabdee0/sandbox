@@ -8,11 +8,13 @@ import org.hamcrest.Matchers;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.common.Utils;
+import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -29,73 +31,83 @@ public class BridgeSteps {
         this.context = context;
     }
 
-    @Given("get list of Bridge instances fails with HTTP response code (\\d+)$")
-    public void authenticationIsEnabled(int responseCode) {
+    @Given("^the list of Bridge instances fails with HTTP response code (\\d+)$")
+    public void listOfBridgeInstancesReturnsHTTPResponseCode(int responseCode) {
         BridgeResource.getBridgeListResponse(context.getManagerToken())
                 .then()
                 .statusCode(responseCode);
     }
 
-    @When("create a Bridge with randomly generated name with access token")
-    public void createRandomBridge() {
-        String bridgeName = Utils.generateId("bridge");
+    @When("^a new Bridge \"([^\"]*)\" is created$")
+    public void newBridgeIsCreated(String testBridgeName) {
+        String systemBridgeName = Utils.generateId("bridge");
         int creationRetry = 1;
-        while (creationRetry <= BRIDGE_NAME_CREATE_RETRY && isBridgeExisting(bridgeName)) {
+        while (creationRetry <= BRIDGE_NAME_CREATE_RETRY && isBridgeExisting(systemBridgeName)) {
             creationRetry++;
-            bridgeName = Utils.generateId("bridge");
+            systemBridgeName = Utils.generateId("bridge");
         }
-        if (isBridgeExisting(bridgeName)) {
+        if (isBridgeExisting(systemBridgeName)) {
             throw new RuntimeException("Cannot create a initiate a random bridge name correctly. Please cleanup the environment...");
         }
 
-        BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(),
-                bridgeName);
-        assertThat(response.getName()).isEqualTo(bridgeName);
+        BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(), systemBridgeName);
+        assertThat(response.getName()).isEqualTo(systemBridgeName);
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getSubmittedAt()).isNotNull();
 
-        context.setRandomBridgeName(bridgeName);
-        context.setBridgeId(response.getId());
+        BridgeContext bridgeContext = context.newBridge(testBridgeName, systemBridgeName);
+        bridgeContext.setBridgeId(response.getId());
+        bridgeContext.setBridgeName(response.getName());
     }
 
-    @Then("get list of Bridge instances with access token contains Bridge with randomly generated name")
-    public void testRandomBridgeExists() {
+    @And("^the list of Bridge instances contains the Bridge \"([^\"]*)\"+$")
+    public void listOfBridgeInstancesContainsBridge(String testBridgeName) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+
         BridgeListResponse response = BridgeResource.getBridgeList(context.getManagerToken());
-        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(context.getRandomBridgeName()));
+
+        assertThat(response.getItems()).anyMatch(b -> b.getId().equals(bridgeContext.getBridgeId()));
+        BridgeResponse bridge = response.getItems().stream().filter(b -> b.getId().equals(bridgeContext.getBridgeId()))
+                .findFirst().orElseThrow();
+        assertThat(bridge.getName()).isEqualTo(bridgeContext.getBridgeName());
     }
 
-    @Then("^get Bridge with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void bridgeDeployedWithinMinutes(String status, int timeoutMinutes) {
+    @And("^the Bridge \"([^\"]*)\" exists with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void bridgeExistsWithStatusWithinMinutes(String testBridgeName, String status, int timeoutMinutes) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> BridgeResource
-                                .getBridgeDetailsResponse(context.getManagerToken(), context.getBridgeId())
+                                .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getBridgeId())
                                 .then()
                                 .body("status", Matchers.equalTo(status))
-                                .body("endpoint", Matchers.containsString(context.getBridgeId())));
+                                .body("endpoint", Matchers.containsString(bridgeContext.getBridgeId())));
 
-        BridgeUtils.getOrRetrieveBridgeEndpoint(context);
+        BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
     }
 
-    @When("delete a Bridge")
-    public void testDeleteBridge() {
-        BridgeResource.deleteBridge(context.getManagerToken(), context.getBridgeId());
+    @When("^the Bridge \"([^\"]*)\" is deleted$")
+    public void bridgeIsDeleted(String testBridgeName) {
+        BridgeResource.deleteBridge(context.getManagerToken(), context.getBridge(testBridgeName).getBridgeId());
+        context.removeBridge(testBridgeName);
     }
 
-    @Then("^the Bridge doesn't exists within (\\d+) (?:minute|minutes)$")
-    public void bridgeDoesNotExistWithinMinutes(int timeoutMinutes) {
+    @Then("^the Bridge \"([^\"]*)\" does not exist within (\\d+) (?:minute|minutes)$")
+    public void bridgeDoesNotExistWithinMinutes(String testBridgeName, int timeoutMinutes) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName, true);
 
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> BridgeResource
-                                .getBridgeDetailsResponse(context.getManagerToken(), context.getBridgeId())
+                                .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getBridgeId())
                                 .then()
                                 .statusCode(404));
     }
