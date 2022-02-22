@@ -152,7 +152,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeIngress, BridgeStatus.AVAILABLE);
+            notifyManager(bridgeIngress, BridgeStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
         return UpdateControl.noUpdate();

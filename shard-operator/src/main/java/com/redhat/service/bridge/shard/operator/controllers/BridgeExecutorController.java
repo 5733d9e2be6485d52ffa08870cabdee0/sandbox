@@ -133,7 +133,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeExecutor, BridgeStatus.AVAILABLE);
+            notifyManager(bridgeExecutor, BridgeStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
         return UpdateControl.noUpdate();

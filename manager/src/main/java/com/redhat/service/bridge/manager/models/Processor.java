@@ -37,7 +37,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "join fetch p.bridge " +
                         "left join p.connectorEntities as c " +
                         "where p.status in (:statuses) " +
-                        "and p.bridge.status='AVAILABLE' " +
+                        "and p.bridge.status='READY' " +
                         "and p.shardId=:shardId " +
                         "and (c is null or c.status = 'READY')"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",

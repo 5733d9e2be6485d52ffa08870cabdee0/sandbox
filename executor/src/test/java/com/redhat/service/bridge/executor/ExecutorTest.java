@@ -195,6 +195,6 @@ public class ExecutorTest {
                 "test",
                 "PLAINTEXT",
                 "ob-bridgeid-1");
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", BridgeStatus.AVAILABLE, kafkaConnectionDTO);
+        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", BridgeStatus.READY, kafkaConnectionDTO);
     }
 }

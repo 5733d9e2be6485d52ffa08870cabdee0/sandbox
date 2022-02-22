@@ -71,7 +71,7 @@ The response should look like something like
   "name":"myBridge",
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
-  "status":"REQUESTED"
+  "status":"accepted"
 }
 ```
 
@@ -81,7 +81,7 @@ Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 export BRIDGE_ID=87508471-ee0f-4f53-b574-da8a61285986 # same id as before
 ```
 
-Until the Bridge is not in the `AVAILABLE` state, it is not possible to create Processors and to push events to the Ingress. 
+Until the Bridge is not in the `ready` state, it is not possible to create Processors and to push events to the Ingress. 
 Check the status of the deployment with a GET request to the `/api/v1/bridges/{id}` endpoint: 
 
 ```bash
@@ -97,7 +97,7 @@ the response should look like
   "name":"myBridge",
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
-  "status":"AVAILABLE",
+  "status":"ready",
   "endpoint":"http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/"
 }
 ```
@@ -108,7 +108,7 @@ Keep track of the `endpoint`, it will be used later when pushing an event to thi
 export BRIDGE_ENDPOINT="$(curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq --raw-output .endpoint)"
 ```
 
-The application is now `AVAILABLE` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
+The application is now `ready` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
 1. `/events`: it accepts only valid cloud event json payloads.
 2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`. 
 
@@ -164,7 +164,7 @@ and the response is something like
   "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986/processors/cad90605-9836-4378-9250-f9c8d19f4e0c",
   "name":"myProcessor",
   "submitted_at":"2021-09-24T11:49:47.170209+0000",
-  "status":"REQUESTED",
+  "status":"accepted",
   "filters": 
     [
       {

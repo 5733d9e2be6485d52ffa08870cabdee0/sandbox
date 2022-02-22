@@ -81,14 +81,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
-                                    if (y.getStatus().equals(BridgeStatus.REQUESTED)) { // Bridges to deploy
+                                    if (y.getStatus().equals(BridgeStatus.ACCEPTED)) { // Bridges to deploy
                                         y.setStatus(BridgeStatus.PROVISIONING);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
                                                         success -> bridgeIngressService.createBridgeIngress(y),
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
-                                    if (y.getStatus().equals(BridgeStatus.DELETION_REQUESTED)) { // Bridges to delete
+                                    if (y.getStatus().equals(BridgeStatus.DEPROVISION)) { // Bridges to delete
                                         y.setStatus(BridgeStatus.DELETING);
                                         bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y)
@@ -107,14 +107,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
-                            if (BridgeStatus.REQUESTED.equals(y.getStatus())) {
+                            if (BridgeStatus.ACCEPTED.equals(y.getStatus())) {
                                 y.setStatus(BridgeStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
                                                 success -> bridgeExecutorService.createBridgeExecutor(y),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
-                            if (BridgeStatus.DELETION_REQUESTED.equals(y.getStatus())) { // Processor to delete
+                            if (BridgeStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(BridgeStatus.DELETING);
                                 bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y)

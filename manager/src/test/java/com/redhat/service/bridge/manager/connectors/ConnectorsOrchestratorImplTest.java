@@ -93,7 +93,7 @@ class ConnectorsOrchestratorImplTest {
 
     @Test
     public void testAvoidDoubleUpdate() {
-        Bridge b = createPersistBridge(BridgeStatus.AVAILABLE, "bridgeDoubleUpdate");
+        Bridge b = createPersistBridge(BridgeStatus.READY, "bridgeDoubleUpdate");
 
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessorDoubleUpdate", slackAction);

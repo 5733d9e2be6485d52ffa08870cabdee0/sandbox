@@ -71,7 +71,7 @@ public class End2EndTestITStep {
     public void createRandomBridge() {
         BridgeResponse response = addBridge(End2EndTestITStep.randomBridgeName);
         assertThat(response.getName()).isEqualTo(End2EndTestITStep.randomBridgeName);
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
@@ -121,7 +121,7 @@ public class End2EndTestITStep {
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(response.getFilters().size()).isEqualTo(filtersSize);
 
         BaseAction action = response.getAction();
