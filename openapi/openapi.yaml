@@ -1,0 +1,393 @@
+---
+openapi: 3.0.3
+
+info:
+  title: manager API
+  version: 0.0.1-SNAPSHOT
+paths:
+  /api/v1/bridges:
+    get:
+      tags:
+      - Bridges API
+      parameters:
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    post:
+      tags:
+      - Bridges API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/bridges/{bridgeId}/processors:
+    get:
+      tags:
+      - Processors API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    post:
+      tags:
+      - Processors API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessorRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/bridges/{bridgeId}/processors/{processorId}:
+    get:
+      tags:
+      - Processors API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      - name: processorId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    delete:
+      tags:
+      - Processors API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: processorId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/bridges/{id}:
+    get:
+      tags:
+      - Bridges API
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    delete:
+      tags:
+      - Bridges API
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/errors:
+    get:
+      tags:
+      - Errors API
+      parameters:
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/errors/{id}:
+    get:
+      tags:
+      - Errors API
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int32
+          type: integer
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/shard/bridges:
+    get:
+      tags:
+      - Shard Bridges Sync API
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    put:
+      tags:
+      - Shard Bridges Sync API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeDTO'
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/shard/bridges/processors:
+    get:
+      tags:
+      - Shard Bridges Sync API
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    put:
+      tags:
+      - Shard Bridges Sync API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessorDTO'
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+components:
+  schemas:
+    BaseAction:
+      required:
+      - name
+      - type
+      - parameters
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: false
+        type:
+          type: string
+          nullable: false
+        parameters:
+          minProperties: 1
+          type: object
+          additionalProperties:
+            type: string
+    BaseFilter:
+      required:
+      - key
+      type: object
+      properties:
+        type:
+          type: string
+        key:
+          minLength: 1
+          type: string
+          nullable: false
+    BridgeDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        endpoint:
+          type: string
+        customerId:
+          type: string
+        status:
+          $ref: '#/components/schemas/BridgeStatus'
+        kafkaConnection:
+          $ref: '#/components/schemas/KafkaConnectionDTO'
+    BridgeRequest:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          nullable: false
+    BridgeStatus:
+      enum:
+      - ACCEPTED
+      - DELETED
+      - DELETING
+      - DEPROVISION
+      - FAILED
+      - PROVISIONING
+      - READY
+      type: string
+    KafkaConnectionDTO:
+      type: object
+      properties:
+        bootstrapServers:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+        securityProtocol:
+          type: string
+        topic:
+          type: string
+    ProcessorDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        definition:
+          $ref: '#/components/schemas/ProcessorDefinition'
+        bridgeId:
+          type: string
+        customerId:
+          type: string
+        status:
+          $ref: '#/components/schemas/BridgeStatus'
+        kafkaConnection:
+          $ref: '#/components/schemas/KafkaConnectionDTO'
+    ProcessorDefinition:
+      type: object
+      properties:
+        filters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseFilter'
+        transformationTemplate:
+          type: string
+        requestedAction:
+          $ref: '#/components/schemas/BaseAction'
+        resolvedAction:
+          $ref: '#/components/schemas/BaseAction'
+    ProcessorRequest:
+      required:
+      - name
+      - action
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          nullable: false
+        filters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseFilter'
+        transformationTemplate:
+          type: string
+        action:
+          allOf:
+          - $ref: '#/components/schemas/BaseAction'
+          - allOf:
+            - $ref: '#/components/schemas/BaseAction'
+            - nullable: false
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: Bearer
