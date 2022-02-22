@@ -1,6 +1,5 @@
 ---
 openapi: 3.0.3
-
 info:
   title: manager API
   version: 0.0.1-SNAPSHOT
@@ -38,6 +37,37 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BridgeRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/bridges/{bridgeId}:
+    get:
+      tags:
+      - Bridges API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    delete:
+      tags:
+      - Bridges API
+      parameters:
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -130,37 +160,6 @@ paths:
         schema:
           type: string
       - name: processorId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-      security:
-      - bearer: []
-  /api/v1/bridges/{id}:
-    get:
-      tags:
-      - Bridges API
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          minLength: 1
-          type: string
-          nullable: false
-      responses:
-        "200":
-          description: OK
-      security:
-      - bearer: []
-    delete:
-      tags:
-      - Bridges API
-      parameters:
-      - name: id
         in: path
         required: true
         schema:

@@ -32,5 +32,5 @@ jobs:
       - name: Validate openapi spec
         if: ${{ always() }}
         run: |
-          diff openapi/openapi.yaml manager/target/generated/openapi.yaml
+          differences=$(diff openapi/openapi.yaml manager/target/generated/openapi.yaml)
           if [ $? -ne 0 ]; then echo "Please move the manager/target/generated/openapi.yaml into openapi/openapi.yaml"; false ; fi
