@@ -55,6 +55,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.bridge.infra.models.dto.BridgeStatus.DEPROVISION;
 import static com.redhat.service.bridge.manager.RhoasServiceImpl.createFailureErrorMessageFor;
+import static com.redhat.service.bridge.manager.api.internal.ShardBridgesSyncAPI.SHARD_REQUESTED_STATUS;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +64,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -313,6 +315,8 @@ public class ProcessorServiceTest {
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(processor.getStatus()).isEqualTo(DEPROVISION);
+
+        assertShardAsksForProcessorToBeDeletedIncludes(processor);
     }
 
     @Test
@@ -332,7 +336,7 @@ public class ProcessorServiceTest {
     @Test
     public void toResponse() {
         Bridge b = Fixtures.createBridge();
-        Processor p = Fixtures.createProcessor(b, "foo");
+        Processor p = Fixtures.createProcessor(b, "foo", BridgeStatus.READY);
         BaseAction action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
@@ -425,7 +429,7 @@ public class ProcessorServiceTest {
     @Test
     public void testDeleteRequestedConnector() {
         Bridge bridge = createPersistBridge(BridgeStatus.READY);
-        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete");
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", BridgeStatus.READY);
         ConnectorEntity connector = Fixtures.createConnector(processor,
                 "connectorToBeDeleted",
                 ConnectorStatus.READY,
@@ -436,19 +440,83 @@ public class ProcessorServiceTest {
 
         processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
 
-        Processor deletionRequestedProcessor = processorDAO.findById(processor.getId());
-        assertThat(deletionRequestedProcessor.getStatus()).isEqualTo(DEPROVISION);
+        reloadAssertProcessorIsInStatus(processor, DEPROVISION);
 
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), "connectorToBeDeleted");
-            assertThat(foundConnector).isNull();
-
-            final Processor processorDeleted = processorService.getProcessor(processor.getId(), bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-            assertThat(processorDeleted.getStatus()).isEqualTo(DEPROVISION);
-        });
+        waitForConnectorToBeDeleted(connector);
 
         verify(rhoasService).deleteTopicAndRevokeAccessFor(eq("topicName"), eq(RhoasTopicAccessType.PRODUCER));
         verify(connectorsApiClient).deleteConnector("connectorExternalId");
+
+        assertShardAsksForProcessorToBeDeletedIncludes(processor);
+    }
+
+    @Test
+    public void testDeleteConnectorFailingTopic() {
+        Bridge bridge = createPersistBridge(BridgeStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", BridgeStatus.READY);
+        ConnectorEntity connector = Fixtures.createConnector(processor,
+                "connectorToBeDeleted",
+                ConnectorStatus.READY,
+                ConnectorStatus.READY,
+                "topicName");
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connector);
+
+        doThrow(new InternalPlatformException(createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")))
+                .when(rhoasService).deleteTopicAndRevokeAccessFor(anyString(), any());
+
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+
+        reloadAssertProcessorIsInStatus(processor, DEPROVISION);
+
+        waitForProcessorAndConnectorToFail(connector);
+
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(eq("topicName"), eq(RhoasTopicAccessType.PRODUCER));
+        verify(connectorsApiClient, never()).deleteConnector(anyString());
+
+        assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
+    }
+
+    @Test
+    public void testDeleteConnectorFailingConnector() {
+        Bridge bridge = createPersistBridge(BridgeStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", BridgeStatus.READY);
+        ConnectorEntity connector = Fixtures.createConnector(processor,
+                "connectorToBeDeleted",
+                ConnectorStatus.READY,
+                ConnectorStatus.READY,
+                "topicName");
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connector);
+
+        doThrow(new InternalPlatformException(createFailureErrorMessageFor("errorDeletingConnector"), new RuntimeException("error")))
+                .when(connectorsApiClient).deleteConnector(anyString());
+
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+
+        reloadAssertProcessorIsInStatus(processor, DEPROVISION);
+
+        waitForProcessorAndConnectorToFail(connector);
+
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(eq("topicName"), eq(RhoasTopicAccessType.PRODUCER));
+        verify(connectorsApiClient).deleteConnector(anyString());
+
+        assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
+    }
+
+    @Test
+    public void testDeleteFailedRequestedConnector() {
+        Bridge bridge = createPersistBridge(BridgeStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", DEPROVISION);
+        ConnectorEntity connector = Fixtures.createConnector(processor,
+                "connectorToBeDeleted",
+                ConnectorStatus.FAILED,
+                ConnectorStatus.DELETED,
+                "topicName");
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connector);
+
+        assertShardAsksForProcessorToBeDeletedIncludes(processor);
     }
 
     private BaseAction createSlackAction() {
@@ -464,5 +532,37 @@ public class ProcessorServiceTest {
         Connector connector = new Connector();
         connector.setId(connectorExternalId);
         return connector;
+    }
+
+    private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {
+        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(SHARD_REQUESTED_STATUS, TestConstants.SHARD_ID);
+        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).contains(processor.getId());
+    }
+
+    private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
+        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(SHARD_REQUESTED_STATUS, TestConstants.SHARD_ID);
+        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
+    }
+
+    private void waitForProcessorAndConnectorToFail(ConnectorEntity connector) {
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(connector.getProcessor().getId(), "connectorToBeDeleted");
+            assertThat(foundConnector.getStatus()).isEqualTo(ConnectorStatus.FAILED);
+            assertThat(foundConnector.getDesiredStatus()).isEqualTo(ConnectorStatus.DELETED);
+
+            reloadAssertProcessorIsInStatus(connector.getProcessor(), BridgeStatus.FAILED);
+        });
+    }
+
+    private void waitForConnectorToBeDeleted(ConnectorEntity connector) {
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(connector.getProcessor().getId(), "connectorToBeDeleted");
+            assertThat(foundConnector).isNull();
+        });
+    }
+
+    private void reloadAssertProcessorIsInStatus(Processor processor, BridgeStatus status) {
+        Processor foundProcessor = processorDAO.findById(processor.getId());
+        assertThat(foundProcessor.getStatus()).isEqualTo(status);
     }
 }

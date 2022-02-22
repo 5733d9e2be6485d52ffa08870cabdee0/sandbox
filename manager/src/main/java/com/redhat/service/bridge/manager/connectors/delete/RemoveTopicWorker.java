@@ -3,10 +3,12 @@ package com.redhat.service.bridge.manager.connectors.delete;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.connectors.AbstractConnectorWorker;
 import com.redhat.service.bridge.manager.connectors.Events;
+import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
@@ -39,6 +41,7 @@ public class RemoveTopicWorker extends AbstractConnectorWorker<ConnectorEntity> 
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
         connectorEntity.setStatus(ConnectorStatus.FAILED);
+        connectorEntity.getProcessor().setStatus(BridgeStatus.FAILED);
         return connectorEntity;
     }
 
