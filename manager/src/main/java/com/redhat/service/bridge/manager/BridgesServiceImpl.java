@@ -55,7 +55,7 @@ public class BridgesServiceImpl implements BridgesService {
     ShardService shardService;
 
     @Inject
-    BridgePreparingWorker bridgePreparingWorker;
+    BridgeWorker bridgePreparingWorker;
 
     @Transactional
     @Override
@@ -118,7 +118,9 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
-        bridge.setStatus(ManagedEntityStatus.DEPROVISION);
+
+        bridgePreparingWorker.deprovision(bridge);
+
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 

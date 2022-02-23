@@ -7,6 +7,7 @@ public enum ManagedEntityStatus {
     PREPARING("preparing"),
     PROVISIONING("provisioning"),
     READY("ready"),
+    DEPROVISION_ACCEPTED("deprovision_accepted"),
     DEPROVISION("deprovision"),
     DELETING("deleting"),
     DELETED("deleted"),

@@ -15,7 +15,7 @@ import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.PreparingWorkerDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.BridgePreparingSubStatus;
+import com.redhat.service.bridge.manager.models.BridgeWorkerStatus;
 import com.redhat.service.bridge.manager.models.PreparingWorker;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.providers.WorkerIdProvider;
@@ -30,11 +30,12 @@ import io.vertx.mutiny.core.eventbus.EventBus;
  */
 
 @ApplicationScoped
-public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
+public class BridgeWorker implements AbstractWorker<Bridge> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BridgePreparingWorker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeWorker.class);
 
-    private static final String CREATE_KAFKA_TOPIC = "bridge-accepted";
+    private static final String CREATE_KAFKA_TOPIC = "bridge-create-topic";
+    private static final String DELETE_KAFKA_TOPIC = "bridge-delete-topic";
 
     @Inject
     EventBus eventBus;
@@ -69,13 +70,35 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
         PreparingWorker preparingWorker = new PreparingWorker();
         preparingWorker.setEntityId(b.getId());
         preparingWorker.setStatus(null);
-        preparingWorker.setDesiredStatus(BridgePreparingSubStatus.TOPIC_CREATED.toString()); // where you want to go. i.e. step 1
+        preparingWorker.setDesiredStatus(BridgeWorkerStatus.TOPIC_CREATED.toString()); // where you want to go. i.e. step 1
         preparingWorker.setWorkerId(workerIdProvider.getWorkerId());
         preparingWorker.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         preparingWorker.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         transact(preparingWorker);
 
         eventBus.requestAndForget(CREATE_KAFKA_TOPIC, b);
+    }
+
+    @Override
+    public void deprovision(Bridge b) {
+        LOGGER.info("Deprovision entity " + b.getId());
+
+        b.setStatus(ManagedEntityStatus.DEPROVISION_ACCEPTED);
+        b.setDesiredStatus(ManagedEntityStatus.DEPROVISION);
+
+        // Persist and fire
+        transact(b);
+
+        PreparingWorker preparingWorker = new PreparingWorker();
+        preparingWorker.setEntityId(b.getId());
+        preparingWorker.setStatus(null);
+        preparingWorker.setDesiredStatus(BridgeWorkerStatus.TOPIC_DELETED.toString()); // where you want to go. i.e. step 1
+        preparingWorker.setWorkerId(workerIdProvider.getWorkerId());
+        preparingWorker.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        preparingWorker.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        transact(preparingWorker);
+
+        eventBus.requestAndForget(DELETE_KAFKA_TOPIC, b);
     }
 
     @Transactional
@@ -87,7 +110,7 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
             LOGGER.error("Failed to create the topic. The retry will be performed by the reschedule loop.", e);
             PreparingWorker preparingWorker = preparingWorkerDAO.findByEntityId(bridge.getId()).get(0);
             preparingWorker.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
-            preparingWorker.setStatus(BridgePreparingSubStatus.FAILURE.toString()); // where you are. The rescheduler will fire the event according to the desiredStatus
+            preparingWorker.setStatus(BridgeWorkerStatus.FAILURE.toString()); // where you are. The rescheduler will fire the event according to the desiredStatus
             transact(preparingWorker);
             return;
         }
@@ -101,17 +124,45 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
         transact(bridge);
     }
 
+    @Transactional
+    @ConsumeEvent(value = DELETE_KAFKA_TOPIC, blocking = true)
+    public void step1_deleteKafkaTopic(Bridge bridge) {
+        try {
+            rhoasService.deleteTopicAndRevokeAccessFor(internalKafkaConfigurationProvider.getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to create the topic. The retry will be performed by the reschedule loop.", e);
+            PreparingWorker preparingWorker = preparingWorkerDAO.findByEntityId(bridge.getId()).get(0);
+            preparingWorker.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+            preparingWorker.setStatus(BridgeWorkerStatus.FAILURE.toString()); // where you are. The rescheduler will fire the event according to the desiredStatus
+            transact(preparingWorker);
+            return;
+        }
+
+        PreparingWorker preparingWorker = preparingWorkerDAO.findByEntityId(bridge.getId()).get(0);
+        preparingWorkerDAO.deleteById(preparingWorker.getId());
+
+        // The bridge is ready to be provisioned by the shard.
+        bridge.setStatus(ManagedEntityStatus.DEPROVISION);
+        bridge.setDesiredStatus(ManagedEntityStatus.DELETING);
+        transact(bridge);
+    }
+
     @Override
     @Scheduled(every = "30s")
     public void reschedule() {
         LOGGER.info("resched");
-        List<PreparingWorker> preparingWorkers = preparingWorkerDAO.findByWorkerIdAndStatusAndType(workerIdProvider.getWorkerId(), BridgePreparingSubStatus.FAILURE.toString(), "BRIDGE");
+        List<PreparingWorker> preparingWorkers = preparingWorkerDAO.findByWorkerIdAndStatusAndType(workerIdProvider.getWorkerId(), BridgeWorkerStatus.FAILURE.toString(), "BRIDGE");
         for (PreparingWorker preparingWorker : preparingWorkers) {
             Bridge bridge = bridgeDAO.findById(preparingWorker.getEntityId());
-            if (BridgePreparingSubStatus.TOPIC_REQUESTED.equals(BridgePreparingSubStatus.valueOf(preparingWorker.getDesiredStatus()))) {
-                eventBus.requestAndForget(CREATE_KAFKA_TOPIC, bridge);
-            } else {
-                LOGGER.error("BridgePreparingWorker can't process failed worker with desired status " + preparingWorker.getDesiredStatus());
+            switch (BridgeWorkerStatus.valueOf(preparingWorker.getDesiredStatus())) {
+                case CREATE_TOPIC_REQUESTED:
+                    eventBus.requestAndForget(CREATE_KAFKA_TOPIC, bridge);
+                    break;
+                case DELETE_TOPIC_REQUESTED:
+                    eventBus.requestAndForget(DELETE_KAFKA_TOPIC, bridge);
+                    break;
+                default:
+                    LOGGER.error("BridgePreparingWorker can't process failed worker with desired status " + preparingWorker.getDesiredStatus());
             }
         }
     }
@@ -121,18 +172,24 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
     public void discoverOrphanWorkers() {
         LOGGER.info("discovering orphan");
         ZonedDateTime orphans = ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(30); // entities older than 30 minutes will be processed with an override of the worker_id.
-        List<PreparingWorker> preparingWorkers = preparingWorkerDAO.findByAgeAndStatusAndType(orphans, BridgePreparingSubStatus.FAILURE.toString(), "BRIDGE");
+        List<PreparingWorker> preparingWorkers = preparingWorkerDAO.findByAgeAndStatusAndType(orphans, BridgeWorkerStatus.FAILURE.toString(), "BRIDGE");
         for (PreparingWorker preparingWorker : preparingWorkers) {
 
             preparingWorker.setWorkerId(workerIdProvider.getWorkerId());
             transact(preparingWorker);
 
             Bridge bridge = bridgeDAO.findById(preparingWorker.getEntityId());
-            if (BridgePreparingSubStatus.TOPIC_REQUESTED.equals(BridgePreparingSubStatus.valueOf(preparingWorker.getDesiredStatus()))) {
-                eventBus.requestAndForget(CREATE_KAFKA_TOPIC, bridge);
-            } else {
-                LOGGER.error("BridgePreparingWorker can't process failed worker with desired status " + preparingWorker.getDesiredStatus());
+            switch (BridgeWorkerStatus.valueOf(preparingWorker.getDesiredStatus())) {
+                case CREATE_TOPIC_REQUESTED:
+                    eventBus.requestAndForget(CREATE_KAFKA_TOPIC, bridge);
+                    break;
+                case DELETE_TOPIC_REQUESTED:
+                    eventBus.requestAndForget(DELETE_KAFKA_TOPIC, bridge);
+                    break;
+                default:
+                    LOGGER.error("BridgePreparingWorker can't process failed worker with desired status " + preparingWorker.getDesiredStatus());
             }
+
         }
     }
 
