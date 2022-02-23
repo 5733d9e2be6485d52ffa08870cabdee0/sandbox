@@ -70,6 +70,7 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
         preparingWorker.setEntityId(b.getId());
         preparingWorker.setStatus(null);
         preparingWorker.setDesiredStatus(BridgePreparingSubStatus.TOPIC_CREATED.toString()); // where you want to go. i.e. step 1
+        preparingWorker.setWorkerId(workerIdProvider.getWorkerId());
         preparingWorker.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         preparingWorker.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         transact(preparingWorker);
@@ -122,6 +123,10 @@ public class BridgePreparingWorker implements AbstractPreparingWorker<Bridge> {
         ZonedDateTime orphans = ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(30); // entities older than 30 minutes will be processed with an override of the worker_id.
         List<PreparingWorker> preparingWorkers = preparingWorkerDAO.findByAgeAndStatusAndType(orphans, BridgePreparingSubStatus.FAILURE.toString(), "BRIDGE");
         for (PreparingWorker preparingWorker : preparingWorkers) {
+
+            preparingWorker.setWorkerId(workerIdProvider.getWorkerId());
+            transact(preparingWorker);
+
             Bridge bridge = bridgeDAO.findById(preparingWorker.getEntityId());
             if (BridgePreparingSubStatus.TOPIC_REQUESTED.equals(BridgePreparingSubStatus.valueOf(preparingWorker.getDesiredStatus()))) {
                 eventBus.requestAndForget(CREATE_KAFKA_TOPIC, bridge);
