@@ -19,7 +19,7 @@ public class CreateTopicWorker extends AbstractConnectorWorker<Topic> {
     @Inject
     RhoasService rhoasService;
 
-    @ConsumeEvent(value = Events.CONNECTOR_CREATED_EVENT, blocking = true)
+    @ConsumeEvent(value = Events.CONNECTOR_ACCEPTED_EVENT, blocking = true)
     public void consume(ConnectorEntity connectorEntity) {
         execute(connectorEntity);
     }
@@ -44,6 +44,6 @@ public class CreateTopicWorker extends AbstractConnectorWorker<Topic> {
 
     @Override
     protected void afterSuccessfullyUpdated(ConnectorEntity c) {
-        eventBus.requestAndForget(Events.KAFKA_TOPIC_CREATED_EVENT, c);
+        eventBus.requestAndForget(Events.CONNECTOR_KAFKA_TOPIC_CREATED_EVENT, c);
     }
 }

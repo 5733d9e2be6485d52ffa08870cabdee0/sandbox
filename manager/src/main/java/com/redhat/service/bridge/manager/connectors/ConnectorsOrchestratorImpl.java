@@ -16,11 +16,11 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import io.vertx.mutiny.core.eventbus.Message;
 
-import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREATED_EVENT;
+import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_ACCEPTED_EVENT;
 import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_DELETED_EVENT;
-import static com.redhat.service.bridge.manager.connectors.Events.KAFKA_TOPIC_CREATED_EVENT;
+import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_KAFKA_TOPIC_CREATED_EVENT;
+import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT;
 import static com.redhat.service.bridge.manager.connectors.Events.KAFKA_TOPIC_DELETED_EVENT;
-import static com.redhat.service.bridge.manager.connectors.Events.MANAGED_CONNECTOR_CREATED_EVENT;
 
 // Currently disabled (not scheduled).
 // Part of https://issues.redhat.com/browse/MGDOBR-155
@@ -52,11 +52,11 @@ public class ConnectorsOrchestratorImpl implements ConnectorsOrchestrator {
 
     private Uni<Message<ConnectorEntity>> process(ConnectorEntity c) {
         if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.ACCEPTED) {
-            return eventBus.request(CONNECTOR_CREATED_EVENT, c);
+            return eventBus.request(CONNECTOR_ACCEPTED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.TOPIC_CREATED) {
-            return eventBus.request(KAFKA_TOPIC_CREATED_EVENT, c);
+            return eventBus.request(CONNECTOR_KAFKA_TOPIC_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.MANAGED_CONNECTOR_CREATED) {
-            return eventBus.request(MANAGED_CONNECTOR_CREATED_EVENT, c);
+            return eventBus.request(CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.DELETED) && c.getStatus() == ConnectorStatus.READY) {
             return eventBus.request(CONNECTOR_DELETED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.DELETED) && c.getStatus() == ConnectorStatus.TOPIC_DELETED) {

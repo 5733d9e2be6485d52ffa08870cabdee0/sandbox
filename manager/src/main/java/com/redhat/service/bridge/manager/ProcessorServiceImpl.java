@@ -43,7 +43,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.vertx.mutiny.core.eventbus.EventBus;
 
-import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREATED_EVENT;
+import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_ACCEPTED_EVENT;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -122,7 +122,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         Optional<ConnectorEntity> persist = createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
 
-        persist.ifPresent(c -> eventBus.requestAndForget(CONNECTOR_CREATED_EVENT, c));
+        persist.ifPresent(c -> eventBus.requestAndForget(CONNECTOR_ACCEPTED_EVENT, c));
 
         return newProcessor;
     }

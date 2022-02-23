@@ -27,7 +27,7 @@ public class CheckConnectorAvailableWorker extends AbstractConnectorWorker<Conne
     @Inject
     BridgeErrorDAO bridgeErrors;
 
-    @ConsumeEvent(value = Events.MANAGED_CONNECTOR_CREATED_EVENT, blocking = true)
+    @ConsumeEvent(value = Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, blocking = true)
     public void consume(ConnectorEntity connectorEntity) {
         execute(connectorEntity);
     }

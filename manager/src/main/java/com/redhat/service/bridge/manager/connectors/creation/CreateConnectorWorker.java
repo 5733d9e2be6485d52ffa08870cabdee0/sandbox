@@ -51,7 +51,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Inject
     BridgeErrorDAO bridgeErrors;
 
-    @ConsumeEvent(value = Events.KAFKA_TOPIC_CREATED_EVENT, blocking = true)
+    @ConsumeEvent(value = Events.CONNECTOR_KAFKA_TOPIC_CREATED_EVENT, blocking = true)
     public void consume(ConnectorEntity connectorEntity) {
         execute(connectorEntity);
     }
@@ -108,7 +108,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Override
     protected void afterSuccessfullyUpdated(ConnectorEntity c) {
         //Check that the Managed Connector has been created
-        eventBus.request(Events.MANAGED_CONNECTOR_CREATED_EVENT, c)
+        eventBus.request(Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c)
                 .onFailure()
                 .retry()
                 .withBackOff(DEFAULT_BACKOFF)
