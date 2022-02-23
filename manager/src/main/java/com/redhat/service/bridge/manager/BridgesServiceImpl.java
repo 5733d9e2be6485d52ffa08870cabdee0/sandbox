@@ -55,7 +55,7 @@ public class BridgesServiceImpl implements BridgesService {
     ShardService shardService;
 
     @Inject
-    BridgeWorker bridgePreparingWorker;
+    BridgeWorker bridgeWorker;
 
     @Transactional
     @Override
@@ -69,7 +69,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
 
-        bridgePreparingWorker.accept(bridge);
+        bridgeWorker.accept(bridge);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
@@ -119,7 +119,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
 
-        bridgePreparingWorker.deprovision(bridge);
+        bridgeWorker.deprovision(bridge);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
