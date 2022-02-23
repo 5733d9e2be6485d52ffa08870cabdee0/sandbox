@@ -19,7 +19,7 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
@@ -62,7 +62,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = bridgeRequest.toEntity();
-        bridge.setStatus(BridgeStatus.ACCEPTED);
+        bridge.setStatus(ManagedEntityStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
@@ -87,8 +87,8 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public Bridge getReadyBridge(String bridgeId, String customerId) {
         Bridge bridge = getBridge(bridgeId, customerId);
-        if (BridgeStatus.READY != bridge.getStatus()) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
+        if (ManagedEntityStatus.READY != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedEntityStatus.READY));
         }
         return bridge;
     }
@@ -117,7 +117,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
-        bridge.setStatus(BridgeStatus.DEPROVISION);
+        bridge.setStatus(ManagedEntityStatus.DEPROVISION);
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
@@ -129,7 +129,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public List<Bridge> getBridgesByStatusesAndShardId(List<BridgeStatus> statuses, String shardId) {
+    public List<Bridge> getBridgesByStatusesAndShardId(List<ManagedEntityStatus> statuses, String shardId) {
         return bridgeDAO.findByStatusesAndShardId(statuses, shardId);
     }
 
@@ -140,7 +140,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
 
-        if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
+        if (bridgeDTO.getStatus().equals(ManagedEntityStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             rhoasService.deleteTopicAndRevokeAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         }

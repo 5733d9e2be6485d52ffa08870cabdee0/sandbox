@@ -14,7 +14,7 @@ import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
@@ -144,7 +144,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                     ConditionReason.PrometheusUnavailable,
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
-            notifyManager(bridgeIngress, BridgeStatus.FAILED);
+            notifyManager(bridgeIngress, ManagedEntityStatus.FAILED);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -152,7 +152,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeIngress, BridgeStatus.READY);
+            notifyManager(bridgeIngress, ManagedEntityStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
         return UpdateControl.noUpdate();
@@ -164,7 +164,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Linked resources are automatically deleted
 
-        notifyManager(bridgeIngress, BridgeStatus.DELETED);
+        notifyManager(bridgeIngress, ManagedEntityStatus.DELETED);
 
         return DeleteControl.defaultDelete();
     }
@@ -172,10 +172,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     private void notifyDeploymentFailure(BridgeIngress bridgeIngress, String failureReason) {
         LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeIngress, BridgeStatus.FAILED);
+        notifyManager(bridgeIngress, ManagedEntityStatus.FAILED);
     }
 
-    private void notifyManager(BridgeIngress bridgeIngress, BridgeStatus status) {
+    private void notifyManager(BridgeIngress bridgeIngress, ManagedEntityStatus status) {
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
 

@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.exceptions.DeserializationException;
 import com.redhat.service.bridge.shard.operator.utils.WebClientUtils;
@@ -81,15 +81,15 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
-                                    if (y.getStatus().equals(BridgeStatus.ACCEPTED)) { // Bridges to deploy
-                                        y.setStatus(BridgeStatus.PROVISIONING);
+                                    if (y.getStatus().equals(ManagedEntityStatus.ACCEPTED)) { // Bridges to deploy
+                                        y.setStatus(ManagedEntityStatus.PROVISIONING);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
                                                         success -> bridgeIngressService.createBridgeIngress(y),
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
-                                    if (y.getStatus().equals(BridgeStatus.DEPROVISION)) { // Bridges to delete
-                                        y.setStatus(BridgeStatus.DELETING);
+                                    if (y.getStatus().equals(ManagedEntityStatus.DEPROVISION)) { // Bridges to delete
+                                        y.setStatus(ManagedEntityStatus.DELETING);
                                         bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
@@ -107,15 +107,15 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
-                            if (BridgeStatus.ACCEPTED.equals(y.getStatus())) {
-                                y.setStatus(BridgeStatus.PROVISIONING);
+                            if (ManagedEntityStatus.ACCEPTED.equals(y.getStatus())) {
+                                y.setStatus(ManagedEntityStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
                                                 success -> bridgeExecutorService.createBridgeExecutor(y),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
-                            if (BridgeStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
-                                y.setStatus(BridgeStatus.DELETING);
+                            if (ManagedEntityStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
+                                y.setStatus(ManagedEntityStatus.DELETING);
                                 bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(

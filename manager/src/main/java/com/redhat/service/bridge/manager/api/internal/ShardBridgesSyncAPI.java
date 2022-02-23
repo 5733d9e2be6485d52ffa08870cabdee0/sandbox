@@ -24,7 +24,7 @@ import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.auth.IdentityResolver;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.ProcessorService;
@@ -49,7 +49,7 @@ import static java.util.stream.Collectors.toList;
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
-    private static final List<BridgeStatus> statuses = Arrays.asList(BridgeStatus.ACCEPTED, BridgeStatus.DEPROVISION);
+    private static final List<ManagedEntityStatus> statuses = Arrays.asList(ManagedEntityStatus.ACCEPTED, ManagedEntityStatus.DEPROVISION);
 
     @Inject
     BridgesService bridgesService;

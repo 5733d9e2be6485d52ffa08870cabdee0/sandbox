@@ -7,7 +7,7 @@ import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -15,9 +15,9 @@ import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 @Transactional
-public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
+public class BridgeDAO implements ManagedEntityDAO<Bridge> {
 
-    public List<Bridge> findByStatusesAndShardId(List<BridgeStatus> statuses, String shardId) {
+    public List<Bridge> findByStatusesAndShardId(List<ManagedEntityStatus> statuses, String shardId) {
         Parameters params = Parameters
                 .with("statuses", statuses)
                 .and("shardId", shardId);

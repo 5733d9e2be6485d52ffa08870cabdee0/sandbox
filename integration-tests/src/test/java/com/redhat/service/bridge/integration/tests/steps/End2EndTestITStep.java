@@ -12,7 +12,7 @@ import org.hamcrest.Matchers;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -71,7 +71,7 @@ public class End2EndTestITStep {
     public void createRandomBridge() {
         BridgeResponse response = addBridge(End2EndTestITStep.randomBridgeName);
         assertThat(response.getName()).isEqualTo(End2EndTestITStep.randomBridgeName);
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedEntityStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
@@ -121,7 +121,7 @@ public class End2EndTestITStep {
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedEntityStatus.ACCEPTED);
         assertThat(response.getFilters().size()).isEqualTo(filtersSize);
 
         BaseAction action = response.getAction();

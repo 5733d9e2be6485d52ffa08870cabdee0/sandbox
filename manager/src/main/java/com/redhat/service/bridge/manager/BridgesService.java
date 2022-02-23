@@ -5,7 +5,7 @@ import java.util.List;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.models.Bridge;
@@ -24,7 +24,7 @@ public interface BridgesService {
 
     ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo);
 
-    List<Bridge> getBridgesByStatusesAndShardId(List<BridgeStatus> statuses, String shardId);
+    List<Bridge> getBridgesByStatusesAndShardId(List<ManagedEntityStatus> statuses, String shardId);
 
     Bridge updateBridge(BridgeDTO bridgeDTO);
 

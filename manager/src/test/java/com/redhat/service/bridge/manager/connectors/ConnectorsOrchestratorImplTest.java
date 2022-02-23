@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.openshift.cloud.api.connector.models.Connector;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.RhoasService;
@@ -71,7 +71,7 @@ class ConnectorsOrchestratorImplTest {
         databaseManagerUtils.cleanUp();
     }
 
-    private Bridge createPersistBridge(BridgeStatus status, String bridgeName) {
+    private Bridge createPersistBridge(ManagedEntityStatus status, String bridgeName) {
         Bridge b = new Bridge();
         b.setName(bridgeName);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
@@ -93,7 +93,7 @@ class ConnectorsOrchestratorImplTest {
 
     @Test
     public void testAvoidDoubleUpdate() {
-        Bridge b = createPersistBridge(BridgeStatus.READY, "bridgeDoubleUpdate");
+        Bridge b = createPersistBridge(ManagedEntityStatus.READY, "bridgeDoubleUpdate");
 
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessorDoubleUpdate", slackAction);

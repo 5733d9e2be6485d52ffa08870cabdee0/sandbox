@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.TestConstants;
@@ -55,7 +55,7 @@ public class ConnectorsDAOTest {
         Processor p = new Processor();
         p.setBridge(bridge);
         p.setName(name);
-        p.setStatus(BridgeStatus.ACCEPTED);
+        p.setStatus(ManagedEntityStatus.ACCEPTED);
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
 
@@ -78,7 +78,7 @@ public class ConnectorsDAOTest {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.READY);
+        b.setStatus(ManagedEntityStatus.READY);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
         bridgeDAO.persist(b);

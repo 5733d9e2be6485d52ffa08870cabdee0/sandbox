@@ -24,7 +24,7 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
@@ -113,7 +113,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
-        newProcessor.setStatus(BridgeStatus.ACCEPTED);
+        newProcessor.setStatus(ManagedEntityStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
 
@@ -135,7 +135,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(List<BridgeStatus> statuses, String shardId) {
+    public List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(List<ManagedEntityStatus> statuses, String shardId) {
         return processorDAO.findByStatusesAndShardIdWithReadyDependencies(statuses, shardId);
     }
 
@@ -150,7 +150,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
         p.setStatus(processorDTO.getStatus());
 
-        if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
+        if (processorDTO.getStatus().equals(ManagedEntityStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());
         }
 
@@ -186,7 +186,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     public List<ConnectorEntity> updateProcessorConnectorForDeletionOnDB(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
-        processor.setStatus(BridgeStatus.DEPROVISION);
+        processor.setStatus(ManagedEntityStatus.DEPROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());

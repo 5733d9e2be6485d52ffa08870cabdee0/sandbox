@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -16,7 +16,7 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest);
 
-    List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(List<BridgeStatus> statuses, String shardId);
+    List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(List<ManagedEntityStatus> statuses, String shardId);
 
     Processor updateProcessorStatus(ProcessorDTO processorDTO);
 

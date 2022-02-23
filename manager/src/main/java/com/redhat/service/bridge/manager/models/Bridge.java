@@ -14,7 +14,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
+import org.hibernate.engine.spi.Managed;
 
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByStatusesAndShardId",
@@ -28,104 +29,26 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 })
 @Entity
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge {
+public class Bridge extends ManagedEntity {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 
-    @Id
-    private String id = UUID.randomUUID().toString();
-
-    @Column(name = "name", nullable = false, updatable = false)
-    private String name;
-
     @Column(name = "endpoint")
     private String endpoint;
-
-    @Column(name = "customer_id", nullable = false, updatable = false)
-    private String customerId;
-
-    @Column(name = "submitted_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
-    private ZonedDateTime submittedAt;
-
-    @Column(name = "published_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime publishedAt;
-
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private BridgeStatus status;
-
-    @Column(name = "shard_id")
-    private String shardId;
 
     public Bridge() {
     }
 
     public Bridge(String name) {
-        this.name = name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public ZonedDateTime getPublishedAt() {
-        return publishedAt;
-    }
-
-    public ZonedDateTime getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public BridgeStatus getStatus() {
-        return status;
-    }
-
-    public String getShardId() {
-        return shardId;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        super(name);
     }
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    public void setPublishedAt(ZonedDateTime publishedAt) {
-        this.publishedAt = publishedAt;
-    }
-
-    public void setSubmittedAt(ZonedDateTime submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
-    public void setStatus(BridgeStatus status) {
-        this.status = status;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public void setShardId(String shardId) {
-        this.shardId = shardId;
+    public String getEndpoint() {
+        return endpoint;
     }
 
     /*
@@ -141,11 +64,11 @@ public class Bridge {
             return false;
         }
         Bridge bridge = (Bridge) o;
-        return id.equals(bridge.id);
+        return getId().equals(bridge.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(getId());
     }
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
@@ -100,7 +100,7 @@ public class BridgesAPITest {
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
         assertThat(bridgeResponse.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
-        assertThat(bridgeResponse.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(bridgeResponse.getStatus()).isEqualTo(ManagedEntityStatus.ACCEPTED);
         assertThat(bridgeResponse.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
 
@@ -114,7 +114,7 @@ public class BridgesAPITest {
         TestUtils.deleteBridge(response.getId()).then().statusCode(202);
         response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
 
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.DEPROVISION);
+        assertThat(response.getStatus()).isEqualTo(ManagedEntityStatus.DEPROVISION);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class BridgesAPITest {
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, BridgeStatus.READY, new KafkaConnectionDTO()));
+                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, ManagedEntityStatus.READY, new KafkaConnectionDTO()));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(201);
 

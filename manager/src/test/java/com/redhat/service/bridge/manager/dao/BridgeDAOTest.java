@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
@@ -39,13 +39,13 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.PROVISIONING), TestConstants.SHARD_ID);
+        List<Bridge> retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.PROVISIONING), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.READY), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.READY), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 
@@ -127,7 +127,7 @@ public class BridgeDAOTest {
         bridge.setId(id);
         bridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         bridge.setName(name);
-        bridge.setStatus(BridgeStatus.ACCEPTED);
+        bridge.setStatus(ManagedEntityStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now());
         bridge.setShardId(TestConstants.SHARD_ID);
 

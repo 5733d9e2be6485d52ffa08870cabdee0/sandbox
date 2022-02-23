@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
@@ -31,7 +31,7 @@ public class Fixtures {
     public static Processor createProcessor(Bridge b, String name) {
         Processor p = new Processor();
         p.setName(name);
-        p.setStatus(BridgeStatus.READY);
+        p.setStatus(ManagedEntityStatus.READY);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
@@ -48,7 +48,7 @@ public class Fixtures {
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.READY);
+        b.setStatus(ManagedEntityStatus.READY);
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setEndpoint("https://bridge.redhat.com");

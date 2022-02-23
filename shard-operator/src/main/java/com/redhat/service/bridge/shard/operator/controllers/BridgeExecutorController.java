@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.BridgeExecutorService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
@@ -124,7 +124,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                     ConditionReason.PrometheusUnavailable,
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
-            notifyManager(bridgeExecutor, BridgeStatus.FAILED);
+            notifyManager(bridgeExecutor, ManagedEntityStatus.FAILED);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -133,7 +133,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeExecutor, BridgeStatus.READY);
+            notifyManager(bridgeExecutor, ManagedEntityStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
         return UpdateControl.noUpdate();
@@ -145,7 +145,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         // Linked resources are automatically deleted
 
-        notifyManager(bridgeExecutor, BridgeStatus.DELETED);
+        notifyManager(bridgeExecutor, ManagedEntityStatus.DELETED);
 
         return DeleteControl.defaultDelete();
     }
@@ -153,10 +153,10 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     private void notifyDeploymentFailure(BridgeExecutor bridgeExecutor, String failureReason) {
         LOGGER.warn("Processor deployment BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeExecutor, BridgeStatus.FAILED);
+        notifyManager(bridgeExecutor, ManagedEntityStatus.FAILED);
     }
 
-    private void notifyManager(BridgeExecutor bridgeExecutor, BridgeStatus status) {
+    private void notifyManager(BridgeExecutor bridgeExecutor, ManagedEntityStatus status) {
         ProcessorDTO dto = bridgeExecutor.toDTO();
         dto.setStatus(status);
 
