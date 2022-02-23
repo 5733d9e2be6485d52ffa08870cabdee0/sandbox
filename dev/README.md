@@ -192,3 +192,13 @@ The script runs forever, on linux machines press `CTRL+C` to stop it (or just se
 With the parameters `--manager`, `--keycloak`, `--username` and `--password` you can configure the script so to target any environment (for example the demo environment).
 
 The grafana dashboards in the `grafana` folder are just for development purposes, but it's good to keep them in sync with the dashboards deployed in the demo environment (those dashboards are located at `kustomize/overlays/prod/observability/grafana`).
+
+## Knative
+
+The [knative-installer.sh](bin/knative-installer.sh) script applies Knative Eventing and Knative Eventing Kafka components on the Kubernetes cluster.
+
+Just run it without arguments:
+
+```bash
+./dev/bin/knative-installer.sh
+```
