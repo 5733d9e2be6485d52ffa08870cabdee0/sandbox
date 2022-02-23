@@ -8,6 +8,8 @@
 # - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 ########
 
+set -x 
+
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
 . "${SCRIPT_DIR_PATH}/configure.sh" kafka

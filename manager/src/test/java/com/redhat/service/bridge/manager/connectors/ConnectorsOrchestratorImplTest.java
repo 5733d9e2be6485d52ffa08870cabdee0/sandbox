@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import com.openshift.cloud.api.connector.models.Connector;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.ShardService;

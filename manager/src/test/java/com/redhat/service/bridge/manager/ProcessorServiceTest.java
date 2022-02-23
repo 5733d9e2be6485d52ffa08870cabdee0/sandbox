@@ -28,8 +28,8 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;

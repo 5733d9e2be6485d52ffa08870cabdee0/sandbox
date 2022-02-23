@@ -24,8 +24,8 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.infra.models.dto.ManagedEntityStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
@@ -202,7 +202,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                bridgesService.getBridgeTopicName(processor.getBridge()));
+                internalKafkaConfigurationProvider.getBridgeTopicName(processor.getBridge()));
         return new ProcessorDTO(processor.getId(),
                 processor.getName(),
                 definition,

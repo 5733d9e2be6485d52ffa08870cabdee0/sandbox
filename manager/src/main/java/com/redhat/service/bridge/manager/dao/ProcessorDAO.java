@@ -20,7 +20,7 @@ import static java.util.Collections.emptyList;
 
 @ApplicationScoped
 @Transactional
-public class ProcessorDAO implements ManagedEntityDAO<Processor> {
+public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
     /*
      * NOTE: the Processor queries that use a left join on the filters **MUST** be wrapped by the method `removeDuplicates`!

@@ -15,7 +15,7 @@ import io.quarkus.panache.common.Parameters;
 
 @ApplicationScoped
 @Transactional
-public class BridgeDAO implements ManagedEntityDAO<Bridge> {
+public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
     public List<Bridge> findByStatusesAndShardId(List<ManagedEntityStatus> statuses, String shardId) {
         Parameters params = Parameters

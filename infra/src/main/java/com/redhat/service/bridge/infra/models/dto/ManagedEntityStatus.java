@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ManagedEntityStatus {
     ACCEPTED("accepted"),
+    PREPARING("preparing"),
     PROVISIONING("provisioning"),
     READY("ready"),
     DEPROVISION("deprovision"),

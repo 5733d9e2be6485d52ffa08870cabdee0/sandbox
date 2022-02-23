@@ -37,6 +37,10 @@ public class ManagedEntity {
     @Enumerated(EnumType.STRING)
     private ManagedEntityStatus status;
 
+    @Column(name = "desired_status")
+    @Enumerated(EnumType.STRING)
+    private ManagedEntityStatus desiredStatus;
+
     @Column(name = "shard_id")
     private String shardId;
 
@@ -93,6 +97,14 @@ public class ManagedEntity {
 
     public void setStatus(ManagedEntityStatus status) {
         this.status = status;
+    }
+
+    public ManagedEntityStatus getDesiredStatus() {
+        return desiredStatus;
+    }
+
+    public void setDesiredStatus(ManagedEntityStatus desiredStatus) {
+        this.desiredStatus = desiredStatus;
     }
 
     public String getShardId() {
