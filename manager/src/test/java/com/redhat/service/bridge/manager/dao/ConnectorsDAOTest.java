@@ -61,7 +61,6 @@ public class ConnectorsDAOTest {
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
-        a.setName(TestConstants.DEFAULT_ACTION_NAME);
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);

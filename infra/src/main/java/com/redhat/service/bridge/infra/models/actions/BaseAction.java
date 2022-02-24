@@ -13,10 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseAction {
 
-    @NotNull(message = "An Action must have a name")
-    @JsonProperty("name")
-    private String name;
-
     @NotNull(message = "An Action Type must be specified")
     @JsonProperty("type")
     private String type;
@@ -24,14 +20,6 @@ public class BaseAction {
     @NotEmpty(message = "Action parameters must be supplied")
     @JsonProperty("parameters")
     private Map<String, String> parameters = new HashMap<>();
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getType() {
         return type;
@@ -58,11 +46,11 @@ public class BaseAction {
             return false;
         }
         BaseAction that = (BaseAction) o;
-        return Objects.equals(name, that.name) && Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
+        return Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, parameters);
+        return Objects.hash(type, parameters);
     }
 }

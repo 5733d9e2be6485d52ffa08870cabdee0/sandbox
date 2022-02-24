@@ -37,7 +37,6 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
 
         BaseAction transformedAction = new BaseAction();
         transformedAction.setType(WebhookAction.TYPE);
-        transformedAction.setName(action.getName());
         transformedAction.setParameters(parameters);
 
         return transformedAction;

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -43,9 +42,6 @@ class SendToBridgeActionTransformerTest {
 
     static Bridge bridge;
     static Bridge otherBridge;
-
-    @Inject
-    ActionProviderFactory actionProviderFactory;
 
     @Inject
     SendToBridgeActionTransformer transformer;
@@ -86,28 +82,28 @@ class SendToBridgeActionTransformerTest {
     void testActionWithoutBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID, "");
-        assertValid(transformedAction, inputAction.getName(), BRIDGE_WEBHOOK);
+        assertValid(transformedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
         BaseAction inputAction = actionWithoutBridgeId();
         BaseAction transformedAction = transformer.transform(inputAction, otherBridge.getId(), TEST_CUSTOMER_ID, "");
-        assertValid(transformedAction, inputAction.getName(), OTHER_BRIDGE_WEBHOOK);
+        assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithSameBridgeId() {
         BaseAction inputAction = actionWithBridgeId(bridge.getId());
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID, "");
-        assertValid(transformedAction, inputAction.getName(), BRIDGE_WEBHOOK);
+        assertValid(transformedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithOtherBridgeId() {
         BaseAction inputAction = actionWithBridgeId(otherBridge.getId());
         BaseAction transformedAction = transformer.transform(inputAction, bridge.getId(), TEST_CUSTOMER_ID, "");
-        assertValid(transformedAction, inputAction.getName(), OTHER_BRIDGE_WEBHOOK);
+        assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
@@ -124,17 +120,15 @@ class SendToBridgeActionTransformerTest {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> transformer.transform(inputRequest.getAction(), bridge.getId(), TEST_CUSTOMER_ID, ""));
     }
 
-    private void assertValid(BaseAction transformedAction, String expectedName, String expectedEndpoint) {
+    private void assertValid(BaseAction transformedAction, String expectedEndpoint) {
         assertThat(transformedAction).isNotNull();
         assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(transformedAction.getName()).isEqualTo(expectedName);
         assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
     }
 
     private BaseAction actionWithoutBridgeId() {
         BaseAction action = new BaseAction();
         action.setType(SendToBridgeAction.TYPE);
-        action.setName("testAction");
         return action;
     }
 
