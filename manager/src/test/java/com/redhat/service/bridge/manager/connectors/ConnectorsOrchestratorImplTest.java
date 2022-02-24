@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.connectors;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -28,6 +29,9 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.smallrye.mutiny.subscription.UniSubscriber;
+import io.smallrye.mutiny.vertx.UniHelper;
+import io.vertx.mutiny.core.eventbus.Message;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -116,12 +120,58 @@ class ConnectorsOrchestratorImplTest {
         verify(connectorsApiClient, times(1)).createConnector(any());
     }
 
+    @Test
+    public void testEventPropagation() {
+        Bridge b = createPersistBridge(BridgeStatus.READY, "bridge");
+
+        BaseAction slackAction = createSlackAction();
+        ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+
+        Connector connector = stubbedExternalConnector("connectorExternalId");
+        //The first two attempts to lookup the MC Connector will fail; but the third is successful
+        when(connectorsApiClient.getConnector(any())).thenReturn(null, null, connector);
+        when(connectorsApiClient.createConnector(any())).thenReturn(connector);
+        when(shardService.getAssignedShardId(anyString())).thenReturn("myId");
+
+        UniSubscriber<List<Message<ConnectorEntity>>> subscriber = UniHelper.toSubscriber(asyncResult -> {
+            /* NOP */});
+
+        //Check status following first lookup
+        connectorsOrchestrator.updatePendingConnectors().subscribe().withSubscriber(subscriber);
+        assertConnectorIsInStatus(processor, ConnectorStatus.MANAGED_CONNECTOR_LOOKUP_FAILED, ConnectorStatus.READY, "Connector not found on MC Fleet Manager");
+
+        //Check status following second lookup
+        connectorsOrchestrator.updatePendingConnectors().subscribe().withSubscriber(subscriber);
+        assertConnectorIsInStatus(processor, ConnectorStatus.MANAGED_CONNECTOR_LOOKUP_FAILED, ConnectorStatus.READY, "Connector not found on MC Fleet Manager");
+
+        //Check status following third and final lookup
+        connectorsOrchestrator.updatePendingConnectors().subscribe().withSubscriber(subscriber);
+        assertConnectorIsInStatus(processor, ConnectorStatus.READY, ConnectorStatus.READY);
+
+        verify(rhoasService, times(1)).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
+        verify(connectorsApiClient, times(1)).createConnector(any());
+    }
+
     private void assertConnectorIsInStatus(Processor processor, ConnectorStatus status, ConnectorStatus desiredStatus) {
-        await().atMost(5, SECONDS).untilAsserted(() -> {
+        await().atMost(500, SECONDS).untilAsserted(() -> {
             ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));
 
             assertThat(foundConnector).isNotNull();
             assertThat(foundConnector.getError()).isNullOrEmpty();
+            assertThat(foundConnector.getDesiredStatus()).isEqualTo(desiredStatus);
+            assertThat(foundConnector.getStatus()).isEqualTo(status);
+        });
+    }
+
+    private void assertConnectorIsInStatus(Processor processor, ConnectorStatus status, ConnectorStatus desiredStatus, String errorMessage) {
+        await().atMost(500, SECONDS).untilAsserted(() -> {
+            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
+                    String.format("OpenBridge-slack_sink_0.1-%s", processor.getId()));
+
+            assertThat(foundConnector).isNotNull();
+            assertThat(foundConnector.getError()).containsIgnoringCase(errorMessage);
             assertThat(foundConnector.getDesiredStatus()).isEqualTo(desiredStatus);
             assertThat(foundConnector.getStatus()).isEqualTo(status);
         });

@@ -13,9 +13,7 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.DeploymentLocation;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
-import com.redhat.service.bridge.infra.exceptions.BridgeError;
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorDAO;
-import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.connectors.AbstractConnectorWorker;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
@@ -107,20 +105,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
 
     @Override
     protected void afterSuccessfullyUpdated(ConnectorEntity c) {
-        //Check that the Managed Connector has been created
-        eventBus.request(Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c)
-                .onFailure()
-                .retry()
-                .withBackOff(DEFAULT_BACKOFF)
-                .withJitter(DEFAULT_JITTER)
-                .atMost(MAX_RETRIES)
-                .subscribe().with(
-                        success -> {
-                            /* NOOP */},
-                        failure -> {
-                            BridgeError error = bridgeErrors.findByException(ConnectorCreationException.class);
-                            CreateConnectorWorker.this.errorWhileCalling(new ConnectorCreationException(error.getReason()), c);
-                        });
+        eventBus.requestAndForget(Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c);
     }
 
 }

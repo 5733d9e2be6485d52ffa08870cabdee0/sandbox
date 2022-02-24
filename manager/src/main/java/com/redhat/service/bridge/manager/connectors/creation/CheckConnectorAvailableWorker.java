@@ -35,9 +35,11 @@ public class CheckConnectorAvailableWorker extends AbstractConnectorWorker<Conne
     @Override
     protected Connector callExternalService(ConnectorEntity connectorEntity) {
         Connector connector = connectorsApiClient.getConnector(connectorEntity);
+
         if (Objects.isNull(connector)) {
             throw new ConnectorNotFoundException(bridgeErrors.findByException(ConnectorNotFoundException.class).getReason());
         }
+
         return connector;
     }
 
@@ -49,20 +51,9 @@ public class CheckConnectorAvailableWorker extends AbstractConnectorWorker<Conne
     }
 
     @Override
-    public void errorWhileCalling(Exception error, ConnectorEntity connectorEntity) {
-        super.errorWhileCalling(error, connectorEntity);
-
-        // If the Connector could not be found propagate the exception so VertX can re-try for us.
-        // The usual operation of AbstractConnectorWorker is to swallow Exceptions, so we need to
-        // re-throw it here to force it to be propagated upwards.
-        if (error instanceof ConnectorNotFoundException) {
-            throw (ConnectorNotFoundException) error;
-        }
-    }
-
-    @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
-        // Failure to create a Connector is handled by the calling CreateConnectorWorker, if applicable.
+        //The Managed Connector may not have been provisioned so don't fail the lookup operation.
+        connectorEntity.setStatus(ConnectorStatus.MANAGED_CONNECTOR_LOOKUP_FAILED);
         return connectorEntity;
     }
 

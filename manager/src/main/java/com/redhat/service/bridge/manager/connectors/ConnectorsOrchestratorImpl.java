@@ -8,10 +8,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 
+import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import io.vertx.mutiny.core.eventbus.Message;
@@ -22,16 +26,22 @@ import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_KAFK
 import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT;
 import static com.redhat.service.bridge.manager.connectors.Events.KAFKA_TOPIC_DELETED_EVENT;
 
-// Currently disabled (not scheduled).
-// Part of https://issues.redhat.com/browse/MGDOBR-155
 @ApplicationScoped
 public class ConnectorsOrchestratorImpl implements ConnectorsOrchestrator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsOrchestratorImpl.class);
 
     @Inject
     ConnectorsDAO connectorsDAO;
 
     @Inject
     EventBus eventBus;
+
+    @Scheduled(every = "30s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    void schedule() {
+        updatePendingConnectors().subscribe().with(messages -> {
+            /* NOP */}, throwable -> LOGGER.error(throwable.getMessage()));
+    }
 
     @Override
     @Transactional(Transactional.TxType.NEVER)
@@ -56,6 +66,8 @@ public class ConnectorsOrchestratorImpl implements ConnectorsOrchestrator {
         } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.TOPIC_CREATED) {
             return eventBus.request(CONNECTOR_KAFKA_TOPIC_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.MANAGED_CONNECTOR_CREATED) {
+            return eventBus.request(CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c);
+        } else if (c.getDesiredStatus().equals(ConnectorStatus.READY) && c.getStatus() == ConnectorStatus.MANAGED_CONNECTOR_LOOKUP_FAILED) {
             return eventBus.request(CONNECTOR_MANAGED_CONNECTOR_CREATED_EVENT, c);
         } else if (c.getDesiredStatus().equals(ConnectorStatus.DELETED) && c.getStatus() == ConnectorStatus.READY) {
             return eventBus.request(CONNECTOR_DELETED_EVENT, c);

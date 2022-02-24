@@ -97,8 +97,9 @@ public abstract class AbstractConnectorWorker<R> {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public ConnectorEntity updateEntityAfterServiceSuccess(ConnectorEntity connectorEntity, R serviceResponse) {
         ConnectorEntity updatedEntity = updateEntityForSuccess(connectorEntity, serviceResponse);
-        connectorEntity.setWorkerId(null);
-        connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        updatedEntity.setError(null);
+        updatedEntity.setWorkerId(null);
+        updatedEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         // It's important to return the updated entity as successful worker calls will need the entity with the version field updated
         ConnectorEntity merge = entityManager.merge(updatedEntity);
