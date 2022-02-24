@@ -10,8 +10,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByStatusesAndShardId",
-                query = "from Bridge where status IN :statuses and shard_id=:shardId"),
+        @NamedQuery(name = "BRIDGE.findByDesiredStatusesAndShardId",
+                query = "from Bridge where desiredStatus IN :desiredStatuses and shard_id=:shardId"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",

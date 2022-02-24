@@ -49,6 +49,7 @@ import static java.util.stream.Collectors.toList;
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
+    private static final List<ManagedEntityStatus> bridgeDesiredStatuses = Arrays.asList(ManagedEntityStatus.PROVISIONING, ManagedEntityStatus.DELETING);
     private static final List<ManagedEntityStatus> statuses = Arrays.asList(ManagedEntityStatus.ACCEPTED, ManagedEntityStatus.DEPROVISION);
 
     @Inject
@@ -100,7 +101,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
-        List<Bridge> bridgesToDeployOrDelete = bridgesService.getBridgesByStatusesAndShardId(statuses, shardId);
+        List<Bridge> bridgesToDeployOrDelete = bridgesService.getBridgesByDesiredStatusesAndShardId(bridgeDesiredStatuses, shardId);
         LOGGER.info("Found {} bridge(s) to deploy or delete", bridgesToDeployOrDelete.size());
         return Response.ok(bridgesToDeployOrDelete
                 .stream()

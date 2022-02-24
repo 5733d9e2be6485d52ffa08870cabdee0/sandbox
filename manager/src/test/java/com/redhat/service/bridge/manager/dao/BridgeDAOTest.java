@@ -39,13 +39,13 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.PROVISIONING), TestConstants.SHARD_ID);
+        List<Bridge> retrievedBridges = bridgeDAO.findByDesiredStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.PROVISIONING), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.READY), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByDesiredStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.READY), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.ACCEPTED), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByDesiredStatusesAndShardId(Collections.singletonList(ManagedEntityStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 

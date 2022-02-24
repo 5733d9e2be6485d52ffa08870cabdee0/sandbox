@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
 @NamedQueries({
         @NamedQuery(name = "PREPARINGWORKER.findByEntityId",
@@ -44,6 +45,9 @@ public class PreparingWorker {
 
     @Column(name = "desired_status")
     private String desiredStatus;
+
+    @Version
+    private long version;
 
     public String getId() {
         return id;
