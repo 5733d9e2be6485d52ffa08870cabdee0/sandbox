@@ -17,6 +17,12 @@ export MANAGER_URL=http://localhost:8080
 export KEYCLOAK_URL=http://`minikube ip`:30007
 ```
 
+Or, if you are using the [dev/README.md](dev/README.md) environment, you can also simply run:
+
+```bash
+.  dev/bin/credentials/local_env
+```
+
 # Authentication
 
 Each request will need a [Bearer](https://quarkus.io/guides/security#openid-connect) token passed as a http header. To get the token, run:
