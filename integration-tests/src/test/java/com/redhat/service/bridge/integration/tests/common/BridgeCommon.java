@@ -11,17 +11,14 @@ import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.restassured.response.Response;
 
-import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.getSystemProperty;
 import static com.redhat.service.bridge.integration.tests.common.BridgeUtils.jsonRequestWithAuth;
 
 public class BridgeCommon {
 
-    public static String managerUrl = getSystemProperty("event-bridge.manager.url");
-
     public static BridgeResponse addBridge(String bridgeName) {
         return jsonRequestWithAuth()
                 .body(new BridgeRequest(bridgeName))
-                .post(managerUrl + APIConstants.USER_API_BASE_PATH)
+                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH)
                 .then()
                 .statusCode(201)
                 .extract()
@@ -30,12 +27,12 @@ public class BridgeCommon {
 
     public static Response getBridgeDetails(String bridgeId) {
         return jsonRequestWithAuth()
-                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId);
+                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 
     public static BridgeListResponse getBridgeList() {
         return jsonRequestWithAuth()
-                .get(managerUrl + APIConstants.USER_API_BASE_PATH)
+                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH)
                 .then()
                 .statusCode(200)
                 .extract()
@@ -44,7 +41,7 @@ public class BridgeCommon {
 
     public static void deleteBridge(String bridgeId) {
         jsonRequestWithAuth()
-                .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId)
+                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId)
                 .then()
                 .statusCode(202);
     }
@@ -52,7 +49,7 @@ public class BridgeCommon {
     public static ProcessorResponse createProcessor(String bridgeId, InputStream processorRequest) {
         return jsonRequestWithAuth()
                 .body(processorRequest)
-                .post(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
+                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors")
                 .then()
                 .statusCode(201)
                 .extract()
@@ -61,18 +58,21 @@ public class BridgeCommon {
 
     public static Response getProcessor(String bridgeId, String processorId) {
         return jsonRequestWithAuth()
-                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/"
+                        + processorId);
     }
 
     public static void deleteProcessor(String bridgeId, String processorId) {
         jsonRequestWithAuth()
-                .delete(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId)
+                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/"
+                        + processorId)
                 .then()
                 .statusCode(202);
     }
 
     public static ProcessorListResponse listProcessors(String bridgeId) {
         return jsonRequestWithAuth()
-                .get(managerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/").then().extract().as(ProcessorListResponse.class);
+                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/").then()
+                .extract().as(ProcessorListResponse.class);
     }
 }

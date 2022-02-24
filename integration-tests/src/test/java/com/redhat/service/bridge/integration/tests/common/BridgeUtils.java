@@ -8,6 +8,8 @@ import io.restassured.specification.RequestSpecification;
 import static io.restassured.RestAssured.given;
 
 public class BridgeUtils {
+    public static final String MANAGER_URL = getSystemProperty("event-bridge.manager.url");
+
     protected static final String USER_NAME = getSystemProperty("bridge.token.username");
     protected static final String PASSWORD = getSystemProperty("bridge.token.password");
     protected static final String CLIENT_ID = getSystemProperty("bridge.client.id");
