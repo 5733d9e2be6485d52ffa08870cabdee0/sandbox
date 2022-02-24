@@ -1,10 +1,10 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: 28bfcb123f8c15a29e88fc02e768715a31c46a7a-jvm
+  newTag: 0ffa5184af72e5afec1ea3a164a32743c51ba22a-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: k8s-4bcefc954c82118997676fc6e6c4b676ca7e5b54-jvm
+  newTag: k8s-0ffa5184af72e5afec1ea3a164a32743c51ba22a-jvm
 resources:
 - keycloak
 - prometheus
