@@ -48,7 +48,7 @@ def create_processor():
         else: #create a valid request
             print('[processor] Creating a valid request')
             body = {'name': str(uuid.uuid4()), 
-                'action': {'name': 'myAction', 'parameters': {'topic': 'demoTopic'}, 'type': 'KafkaTopicAction'},
+                'action': {'name': 'myAction', 'parameters': {'topic': 'demoTopic'}, 'type': 'KafkaTopic'},
                 'filters': [{'key': 'data.api', 'type': 'StringEquals', 'value': 'PutBlockList'}],
                 'transformationTemplate': '{\'api\': \'{data.api}\''
                 }
