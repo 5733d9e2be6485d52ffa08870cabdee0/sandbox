@@ -32,13 +32,13 @@ public class CreateTopicWorker extends AbstractConnectorWorker<Topic> {
 
     @Override
     protected ConnectorEntity updateEntityForSuccess(ConnectorEntity connectorEntity, Topic serviceResponse) {
-        connectorEntity.setStatus(ConnectorStatus.TOPIC_CREATED);
+//        connectorEntity.setStatus(ConnectorStatus.TOPIC_CREATED);
         return connectorEntity;
     }
 
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
-        connectorEntity.setStatus(ConnectorStatus.FAILED);
+//        connectorEntity.setStatus(ConnectorStatus.FAILED);
         return connectorEntity;
     }
 

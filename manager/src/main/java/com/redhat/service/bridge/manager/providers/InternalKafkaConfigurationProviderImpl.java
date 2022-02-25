@@ -2,6 +2,8 @@ package com.redhat.service.bridge.manager.providers;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.ManagedEntity;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -51,5 +53,10 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
     @Override
     public String getTopicPrefix() {
         return kafkaTopicPrefix;
+    }
+
+    @Override
+    public String getTopicName(Bridge bridge) {
+        return getTopicPrefix() + bridge.getId();
     }
 }

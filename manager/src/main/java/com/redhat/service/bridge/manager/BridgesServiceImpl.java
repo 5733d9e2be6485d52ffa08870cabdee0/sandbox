@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.bridge.manager.workers.WorkManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,6 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -46,13 +46,13 @@ public class BridgesServiceImpl implements BridgesService {
     MeterRegistry meterRegistry;
 
     @Inject
-    RhoasService rhoasService;
-
-    @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
     ShardService shardService;
+
+    @Inject
+    WorkManager workManager;
 
     @Transactional
     @Override
@@ -67,9 +67,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridgeDAO.persist(bridge);
-
-        rhoasService.createTopicAndGrantAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-
+        workManager.scheduleWork(bridge);
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
@@ -141,13 +139,12 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setEndpoint(bridgeDTO.getEndpoint());
 
         if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
-            bridgeDAO.deleteById(bridge.getId());
-            rhoasService.deleteTopicAndRevokeAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            workManager.scheduleWork(bridge);
         }
 
         // Update metrics
         meterRegistry.counter("manager.bridge.status.change",
-                Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
+                              Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
         LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
@@ -160,7 +157,7 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                getBridgeTopicName(bridge));
+                internalKafkaConfigurationProvider.getTopicName(bridge));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
@@ -182,10 +179,5 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         return response;
-    }
-
-    @Override
-    public String getBridgeTopicName(Bridge bridge) {
-        return internalKafkaConfigurationProvider.getTopicPrefix() + bridge.getId();
     }
 }

@@ -85,14 +85,14 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Override
     protected ConnectorEntity updateEntityForSuccess(ConnectorEntity connectorEntity, Connector connector) {
         connectorEntity.setConnectorExternalId(connector.getId());
-        connectorEntity.setStatus(ConnectorStatus.READY);
+//        connectorEntity.setStatus(ConnectorStatus.READY);
         connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         return connectorEntity;
     }
 
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
-        connectorEntity.setStatus(ConnectorStatus.FAILED);
+//        connectorEntity.setStatus(ConnectorStatus.FAILED);
         return connectorEntity;
     }
 }

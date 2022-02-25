@@ -2,7 +2,9 @@ package com.redhat.service.bridge.manager.connectors;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 
+import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,24 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         } catch (ApiException e) {
             throw new ConnectorCreationException("Error while creating the connector on MC Fleet Manager", e);
         }
+    }
+
+    @Override
+    public Connector getConnector(ConnectorEntity connectorEntity) {
+        ConnectorsApi connectorsAPI = createConnectorsAPI();
+
+        try {
+            String connectorExternalId = connectorEntity.getConnectorExternalId();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Retrieving Connector with ID '%s'", connectorExternalId));
+            }
+            return connectorsAPI.getConnector(connectorExternalId);
+        } catch (ApiException e) {
+            if (e.getCode() != Response.Status.NOT_FOUND.getStatusCode()) {
+                throw new ConnectorCreationException("Error while retrieving the connector on MC Fleet Manager", e);
+            }
+        }
+        return null;
     }
 
     @Override

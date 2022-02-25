@@ -53,16 +53,13 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 })
 @Entity
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class Processor {
+public class Processor extends ManagedEntity {
 
     public static final String ID_PARAM = "id";
 
     public static final String NAME_PARAM = "name";
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
-
-    @Id
-    private String id = UUID.randomUUID().toString();
 
     @Column(nullable = false, name = "name")
     private String name;
@@ -75,32 +72,11 @@ public class Processor {
     @JoinColumn(name = "bridge_id")
     private Bridge bridge;
 
-    @Version
-    private long version;
-
-    @Column(name = "submitted_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
-    private ZonedDateTime submittedAt;
-
-    @Column(name = "published_at", columnDefinition = "TIMESTAMP")
-    private ZonedDateTime publishedAt;
-
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private BridgeStatus status;
-
     @OneToMany(mappedBy = "processor")
     private List<ConnectorEntity> connectorEntities = new ArrayList<>();
 
     @Column(name = "shard_id")
     private String shardId;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -118,44 +94,12 @@ public class Processor {
         this.definition = definition;
     }
 
-    public void setVersion(long version) {
-        this.version = version;
-    }
-
     public Bridge getBridge() {
         return bridge;
     }
 
     public void setBridge(Bridge bridge) {
         this.bridge = bridge;
-    }
-
-    public long getVersion() {
-        return version;
-    }
-
-    public ZonedDateTime getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public void setSubmittedAt(ZonedDateTime submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
-    public ZonedDateTime getPublishedAt() {
-        return publishedAt;
-    }
-
-    public void setPublishedAt(ZonedDateTime publishedAt) {
-        this.publishedAt = publishedAt;
-    }
-
-    public BridgeStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BridgeStatus status) {
-        this.status = status;
     }
 
     public List<ConnectorEntity> getConnectorEntities() {

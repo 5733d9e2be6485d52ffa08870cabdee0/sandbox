@@ -31,6 +31,4 @@ public interface BridgesService {
     BridgeDTO toDTO(Bridge bridge);
 
     BridgeResponse toResponse(Bridge bridge);
-
-    String getBridgeTopicName(Bridge bridge);
 }

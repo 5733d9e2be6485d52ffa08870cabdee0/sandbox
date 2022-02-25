@@ -89,7 +89,7 @@ public abstract class AbstractConnectorWorker<R> {
         // entity is in detached (non managed) state
         // we need to merge it to flush the edit
         ConnectorEntity mergedCE = entityManager.merge(currentEntity);
-        mergedCE.setWorkerId(workerId);
+//        mergedCE.setWorkerId(workerId);
 
         return mergedCE;
     }
@@ -97,7 +97,7 @@ public abstract class AbstractConnectorWorker<R> {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public ConnectorEntity updateEntityAfterServiceSuccess(ConnectorEntity connectorEntity, R serviceResponse) {
         ConnectorEntity updatedEntity = updateEntityForSuccess(connectorEntity, serviceResponse);
-        connectorEntity.setWorkerId(null);
+//        connectorEntity.setWorkerId(null);
         connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         // It's important to return the updated entity as successful worker calls will need the entity with the version field updated
@@ -123,7 +123,7 @@ public abstract class AbstractConnectorWorker<R> {
         String errorMessage = error.toString();
         reloadConnectorEntity.setError(String.format("%s: %s", workerName(), errorMessage));
         ConnectorEntity updatedConnectorForError = updateEntityForError(reloadConnectorEntity, error);
-        updatedConnectorForError.setWorkerId(null);
+//        updatedConnectorForError.setWorkerId(null);
         updatedConnectorForError.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         LOGGER.error("Worker {} failed on Entity: {} with error: {} ", workerName(), connectorEntity, error);

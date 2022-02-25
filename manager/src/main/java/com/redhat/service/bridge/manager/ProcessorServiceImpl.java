@@ -10,9 +10,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,15 +35,16 @@ import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
-
+import com.redhat.service.bridge.manager.workers.WorkManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.vertx.mutiny.core.eventbus.EventBus;
-
-import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREATED_EVENT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
@@ -75,6 +73,9 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     ShardService shardService;
+
+    @Inject
+    WorkManager workManager;
 
     @Transactional
     @Override
@@ -107,9 +108,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
 
         BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
-                bridge.getId(),
-                customerId,
-                newProcessor.getId());
+                                                                  bridge.getId(),
+                                                                  customerId,
+                                                                  newProcessor.getId());
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
@@ -120,10 +121,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
         newProcessor.setDefinition(definitionToJsonNode(definition));
 
-        Optional<ConnectorEntity> persist = createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
-
-        persist.ifPresent(c -> eventBus.requestAndForget(CONNECTOR_CREATED_EVENT, c));
-
+        createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
+        workManager.scheduleWork(newProcessor);
         return newProcessor;
     }
 
@@ -146,17 +145,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getCustomerId()));
+                                                          processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
 
         if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
-            processorDAO.deleteById(processorDTO.getId());
+            workManager.scheduleWork(p);
         }
 
         // Update metrics
         meterRegistry.counter("manager.processor.status.change",
-                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
+                              Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         return p;
     }
@@ -189,7 +188,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processor.setStatus(BridgeStatus.DEPROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
-                processor.getBridge().getId());
+                    processor.getBridge().getId());
 
         return connectorService.deleteConnectorIfNeeded(processor);
     }
@@ -202,14 +201,14 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                bridgesService.getBridgeTopicName(processor.getBridge()));
+                internalKafkaConfigurationProvider.getTopicName(processor.getBridge()));
         return new ProcessorDTO(processor.getId(),
-                processor.getName(),
-                definition,
-                processor.getBridge().getId(),
-                processor.getBridge().getCustomerId(),
-                processor.getStatus(),
-                kafkaConnectionDTO);
+                                processor.getName(),
+                                definition,
+                                processor.getBridge().getId(),
+                                processor.getBridge().getCustomerId(),
+                                processor.getStatus(),
+                                kafkaConnectionDTO);
     }
 
     @Override

@@ -28,7 +28,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 })
 @Entity
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge {
+public class Bridge extends ManagedEntity {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 
