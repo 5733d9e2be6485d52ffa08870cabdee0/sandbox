@@ -86,8 +86,8 @@ class ConnectorsOrchestratorImplTest {
         BaseAction mcAction = new BaseAction();
         mcAction.setType(SlackAction.TYPE);
         Map<String, String> parameters = mcAction.getParameters();
-        parameters.put("channel", "channel");
-        parameters.put("webhookUrl", "webhook_url");
+        parameters.put(SlackAction.CHANNEL_PARAMETER, "channel");
+        parameters.put(SlackAction.WEBHOOK_URL_PARAMETER, "webhook_url");
         return mcAction;
     }
 
