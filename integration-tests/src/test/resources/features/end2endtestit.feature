@@ -29,7 +29,6 @@ Feature: End to End Bridge integration tests
     {
       "name": "myProcessor",
       "action": {
-        "name": "myKafkaAction",
         "parameters": {
             "topic":  "myKafkaTopic"
             },
