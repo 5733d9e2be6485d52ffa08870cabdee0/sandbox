@@ -1,7 +1,7 @@
 Feature: End to End Bridge integration tests
 
   Scenario:By default Manager url should not be accessible without authentication
-    Given get list of Bridge instances returns HTTP response code 401
+    Given get list of Bridge instances fails with HTTP response code 401
 
 
   Scenario: Bridge is created and in ready state

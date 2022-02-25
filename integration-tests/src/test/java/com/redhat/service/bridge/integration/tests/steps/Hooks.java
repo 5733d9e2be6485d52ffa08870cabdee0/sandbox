@@ -4,20 +4,25 @@ import java.time.Duration;
 
 import org.awaitility.Awaitility;
 
-import com.redhat.service.bridge.integration.tests.common.BridgeCommon;
+import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
+import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
 
 import io.cucumber.java.After;
 
 public class Hooks {
     @After
     public void cleanUp() {
-        if (BridgeCommon.getBridgeList().getItems().stream().anyMatch(b -> b.getId().equals(StepsContext.bridgeId))) {
-            if (BridgeCommon.listProcessors(StepsContext.bridgeId).getSize() > 0) {
-                BridgeCommon.listProcessors(StepsContext.bridgeId).getItems().stream().forEach(p -> BridgeCommon.deleteProcessor(StepsContext.bridgeId, p.getId()));
+        String token = BridgeUtils.retrieveAccessToken();
+        if (BridgeResource.getBridgeList(token).getItems().stream()
+                .anyMatch(b -> b.getId().equals(StepsContext.bridgeId))) {
+            if (ProcessorResource.getProcessorList(token, StepsContext.bridgeId).getSize() > 0) {
+                ProcessorResource.getProcessorList(token, StepsContext.bridgeId).getItems().stream()
+                        .forEach(p -> ProcessorResource.deleteProcessor(token, StepsContext.bridgeId, p.getId()));
                 Awaitility.await().atMost(Duration.ofMinutes(2)).pollInterval(Duration.ofSeconds(5))
-                        .until(() -> BridgeCommon.listProcessors(StepsContext.bridgeId).getSize() == 0);
+                        .until(() -> ProcessorResource.getProcessorList(token, StepsContext.bridgeId).getSize() == 0);
             }
-            BridgeCommon.deleteBridge(StepsContext.bridgeId);
+            BridgeResource.deleteBridge(token, StepsContext.bridgeId);
         }
     }
 }
