@@ -11,17 +11,13 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
-@ApplicationScoped
 @Transactional
+@ApplicationScoped
 public class ConnectorsDAO implements PanacheRepositoryBase<ConnectorEntity, String> {
 
     public ConnectorEntity findByProcessorIdAndName(String processorId, String name) {
         Parameters p = Parameters.with(ConnectorEntity.NAME_PARAM, name).and(ConnectorEntity.PROCESSOR_ID_PARAM, processorId);
         return singleResultFromList(find("#CONNECTORENTITY.findByProcessorIdAndName", p));
-    }
-
-    public List<ConnectorEntity> findUnprocessed() {
-        return find("#CONNECTORENTITY.findUnprocessed").list();
     }
 
     public List<ConnectorEntity> findByProcessorId(String processorId) {

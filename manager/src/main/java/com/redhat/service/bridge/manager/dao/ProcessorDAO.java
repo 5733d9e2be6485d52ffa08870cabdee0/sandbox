@@ -8,7 +8,7 @@ import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -63,7 +63,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return singleResultFromList(find("#PROCESSOR.findByIdBridgeIdAndCustomerId", p));
     }
 
-    public List<Processor> findByStatusesAndShardIdWithReadyDependencies(List<BridgeStatus> statuses, String shardId) {
+    public List<Processor> findByStatusesAndShardIdWithReadyDependencies(List<ManagedResourceStatus> statuses, String shardId) {
         Parameters p = Parameters
                 .with("statuses", statuses)
                 .and("shardId", shardId);

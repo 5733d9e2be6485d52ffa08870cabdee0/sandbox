@@ -11,6 +11,7 @@ import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.dao.ShardDAO;
+import com.redhat.service.bridge.manager.dao.WorkDAO;
 import com.redhat.service.bridge.manager.models.Shard;
 import com.redhat.service.bridge.manager.models.ShardType;
 
@@ -36,8 +37,11 @@ public class DatabaseManagerUtils {
     @Inject
     ShardDAO shardDAO;
 
+    @Inject
+    WorkDAO workDAO;
+
     /**
-     * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dinamically, the processor
+     * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dynamically, the processor
      * will cascade the removal of filters that belongs to it.
      * This is why it is not needed to inject the FilterDAO atm.
      */
@@ -60,6 +64,7 @@ public class DatabaseManagerUtils {
     @Transactional
     public void cleanUp() {
         // Clean up
+        deleteAllWork();
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
@@ -77,6 +82,11 @@ public class DatabaseManagerUtils {
     private void deleteAllBridges() {
         List<String> ids = bridgeDAO.getEntityManager().createQuery("select b.id from Bridge b", String.class).getResultList();
         ids.forEach(x -> bridgeDAO.deleteById(x));
+    }
+
+    private void deleteAllWork() {
+        List<String> ids = workDAO.getEntityManager().createQuery("select w.id from Work w", String.class).getResultList();
+        ids.forEach(x -> workDAO.deleteById(x));
     }
 
     private void deleteAllConnectors() {

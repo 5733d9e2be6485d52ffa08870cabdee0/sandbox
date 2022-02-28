@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.awaitility.Awaitility;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
@@ -53,7 +53,7 @@ public class Hooks {
                 .forEach(bridgeContext -> {
                     final String bridgeId = bridgeContext.getId();
                     BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
-                    if (bridge.getStatus() == BridgeStatus.READY) {
+                    if (bridge.getStatus() == ManagedResourceStatus.READY) {
                         ProcessorListResponse processorList = ProcessorResource.getProcessorList(
                                 token,
                                 bridgeId);

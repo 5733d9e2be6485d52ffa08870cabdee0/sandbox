@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.connectors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -25,7 +24,6 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,8 +65,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        Optional<ConnectorEntity> connector = connectorsService.createConnectorEntity(testWebhookAction(), testProcessor(), webhookAction);
-        assertThat(connector).isEmpty();
+        connectorsService.createConnectorEntity(testWebhookAction(), testProcessor(), webhookAction);
 
         verify(connectorsApiClientMock, never()).createConnector(any());
         verify(connectorsDAOMock, never()).persist(any(ConnectorEntity.class));
@@ -80,8 +77,7 @@ class ConnectorsServiceTest {
     void doCreateConnector() {
         when(connectorsApiClientMock.createConnector(any())).thenReturn(testConnector());
 
-        Optional<ConnectorEntity> connector = connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
-        assertThat(connector).isPresent();
+        connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
 
         verify(connectorsApiClientMock, never()).createConnector(any());
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
@@ -94,7 +90,7 @@ class ConnectorsServiceTest {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(new ArrayList<>());
 
-        connectorsService.deleteConnectorIfNeeded(testProcessor());
+        connectorsService.deleteConnectorEntity(testProcessor());
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
         verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID);
@@ -106,7 +102,7 @@ class ConnectorsServiceTest {
     void doDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(List.of(testConnectorEntity()));
 
-        connectorsService.deleteConnectorIfNeeded(testProcessor());
+        connectorsService.deleteConnectorEntity(testProcessor());
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
         verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID);

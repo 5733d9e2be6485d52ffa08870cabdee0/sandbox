@@ -19,8 +19,8 @@ import com.redhat.service.bridge.executor.transformations.TransformationEvaluato
 import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -195,6 +195,6 @@ public class ExecutorTest {
                 "test",
                 "PLAINTEXT",
                 "ob-bridgeid-1");
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", BridgeStatus.READY, kafkaConnectionDTO);
+        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", ManagedResourceStatus.READY, kafkaConnectionDTO);
     }
 }

@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager.connectors;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorDeletionException;
+import com.redhat.service.bridge.manager.models.ConnectorEntity;
 
 @RequestScoped
 public class ConnectorsApiClientImpl implements ConnectorsApiClient {
@@ -28,6 +30,24 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
 
     @Inject
     ConnectorsAuth connectorsAuth;
+
+    @Override
+    public Connector getConnector(ConnectorEntity connectorEntity) {
+        ConnectorsApi connectorsAPI = createConnectorsAPI();
+
+        try {
+            String connectorExternalId = connectorEntity.getConnectorExternalId();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Retrieving Connector with ID '%s'", connectorExternalId));
+            }
+            return connectorsAPI.getConnector(connectorExternalId);
+        } catch (ApiException e) {
+            if (e.getCode() != Response.Status.NOT_FOUND.getStatusCode()) {
+                throw new ConnectorCreationException("Error while retrieving the connector on MC Fleet Manager", e);
+            }
+        }
+        return null;
+    }
 
     @Override
     public Connector createConnector(ConnectorRequest connector) {

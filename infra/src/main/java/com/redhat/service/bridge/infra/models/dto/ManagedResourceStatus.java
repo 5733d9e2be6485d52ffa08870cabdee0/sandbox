@@ -2,7 +2,7 @@ package com.redhat.service.bridge.infra.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum BridgeStatus {
+public enum ManagedResourceStatus {
     ACCEPTED("accepted"),
     PROVISIONING("provisioning"),
     READY("ready"),
@@ -14,7 +14,7 @@ public enum BridgeStatus {
     @JsonValue
     String status;
 
-    BridgeStatus(String status) {
+    ManagedResourceStatus(String status) {
         this.status = status;
     }
 }
