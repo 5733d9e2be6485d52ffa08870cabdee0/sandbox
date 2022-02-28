@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.ResourceUtils;
 
 import io.cucumber.java.en.Given;
@@ -9,6 +10,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MetricsSteps {
 
+    private TestContext context;
+
+    public MetricsSteps(TestContext context) {
+        this.context = context;
+    }
+
     @Given("^the Manager Metric \'([^\']*)\' count is at least (\\d+)$")
     public void managerMetricCount(String metricName, int minimalValue) {
         testMetricAndCount(BridgeUtils.MANAGER_URL + "/q/metrics", metricName, minimalValue);
@@ -16,11 +23,11 @@ public class MetricsSteps {
 
     @Given("^the Ingress Metric \'([^\']*)\' count is at least (\\d+)$")
     public void ingressMetricCount(String metricName, int minimalValue) {
-        testMetricAndCount(StepsContext.endPoint + "/q/metrics", metricName, minimalValue);
+        testMetricAndCount(BridgeUtils.getOrRetrieveBridgeEndpoint(context) + "/q/metrics", metricName, minimalValue);
     }
 
     private void testMetricAndCount(String metricEndpoint, String metricName, int minimalValue) {
-        String metrics = ResourceUtils.jsonRequest(BridgeUtils.retrieveAccessToken())
+        String metrics = ResourceUtils.jsonRequest(context.getManagerToken())
                 .get(metricEndpoint)
                 .then()
                 .extract()

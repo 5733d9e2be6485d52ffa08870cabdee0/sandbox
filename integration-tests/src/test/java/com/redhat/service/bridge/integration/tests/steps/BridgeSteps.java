@@ -1,13 +1,14 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.common.Utils;
+import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
@@ -20,39 +21,50 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeSteps {
 
+    private static final int BRIDGE_NAME_CREATE_RETRY = 20;
+
+    private TestContext context;
+
+    public BridgeSteps(TestContext context) {
+        this.context = context;
+    }
+
     @Given("get list of Bridge instances fails with HTTP response code (\\d+)$")
     public void authenticationIsEnabled(int responseCode) {
-        BridgeResource.getBridgeListResponse(null)
+        BridgeResource.getBridgeListResponse(context.getManagerToken())
                 .then()
                 .statusCode(responseCode);
     }
 
-    @Given("get list of Bridge instances with access token doesn't contain randomly generated Bridge")
-    public void generateRandomBridgeName() {
-        StepsContext.randomBridgeName = "bridge-" + UUID.randomUUID().toString().substring(0, 4);
-        BridgeListResponse response = BridgeResource.getBridgeList(BridgeUtils.retrieveAccessToken());
-        assertThat(response.getKind()).isEqualTo("BridgeList");
-        assertThat(response.getItems()).noneMatch(b -> b.getName().equals(StepsContext.randomBridgeName));
-    }
-
     @When("create a Bridge with randomly generated name with access token")
     public void createRandomBridge() {
-        BridgeResponse response = BridgeResource.addBridge(BridgeUtils.retrieveAccessToken(),
-                StepsContext.randomBridgeName);
-        assertThat(response.getName()).isEqualTo(StepsContext.randomBridgeName);
+        String bridgeName = Utils.generateId("bridge");
+        int creationRetry = 1;
+        while (creationRetry <= BRIDGE_NAME_CREATE_RETRY && isBridgeExisting(bridgeName)) {
+            creationRetry++;
+            bridgeName = Utils.generateId("bridge");
+        }
+        if (isBridgeExisting(bridgeName)) {
+            throw new RuntimeException("Cannot create a initiate a random bridge name correctly. Please cleanup the environment...");
+        }
+
+        BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(),
+                bridgeName);
+        assertThat(response.getName()).isEqualTo(bridgeName);
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getSubmittedAt()).isNotNull();
 
-        StepsContext.bridgeId = response.getId();
+        context.setRandomBridgeName(bridgeName);
+        context.setBridgeId(response.getId());
     }
 
     @Then("get list of Bridge instances with access token contains Bridge with randomly generated name")
     public void testRandomBridgeExists() {
-        BridgeListResponse response = BridgeResource.getBridgeList(BridgeUtils.retrieveAccessToken());
-        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(StepsContext.randomBridgeName));
+        BridgeListResponse response = BridgeResource.getBridgeList(context.getManagerToken());
+        assertThat(response.getItems()).anyMatch(b -> b.getName().equals(context.getRandomBridgeName()));
     }
 
     @Then("^get Bridge with access token exists in status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
@@ -62,26 +74,17 @@ public class BridgeSteps {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> BridgeResource
-                                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId)
+                                .getBridgeDetailsResponse(context.getManagerToken(), context.getBridgeId())
                                 .then()
                                 .body("status", Matchers.equalTo(status))
-                                .body("endpoint", Matchers.containsString(StepsContext.bridgeId)));
+                                .body("endpoint", Matchers.containsString(context.getBridgeId())));
 
-        // store bridge endpoint details
-        StepsContext.endPoint = BridgeResource
-                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId).then().extract()
-                .response()
-                .as(BridgeResponse.class).getEndpoint();
-        // If an endpoint contains localhost without port then default port has to be
-        // defined, otherwise rest-assured will use port 8080
-        if (StepsContext.endPoint.matches("http://localhost/.*")) {
-            StepsContext.endPoint = StepsContext.endPoint.replace("http://localhost/", "http://localhost:80/");
-        }
+        BridgeUtils.getOrRetrieveBridgeEndpoint(context);
     }
 
     @When("delete a Bridge")
     public void testDeleteBridge() {
-        BridgeResource.deleteBridge(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId);
+        BridgeResource.deleteBridge(context.getManagerToken(), context.getBridgeId());
     }
 
     @Then("^the Bridge doesn't exists within (\\d+) (?:minute|minutes)$")
@@ -92,9 +95,13 @@ public class BridgeSteps {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> BridgeResource
-                                .getBridgeDetailsResponse(BridgeUtils.retrieveAccessToken(), StepsContext.bridgeId)
+                                .getBridgeDetailsResponse(context.getManagerToken(), context.getBridgeId())
                                 .then()
                                 .statusCode(404));
     }
 
+    private boolean isBridgeExisting(String bridgeName) {
+        return BridgeResource.getBridgeList(context.getManagerToken()).getItems().stream()
+                .anyMatch(b -> b.getName().equals(bridgeName));
+    }
 }
