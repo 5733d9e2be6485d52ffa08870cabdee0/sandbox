@@ -1,20 +1,20 @@
 Feature: End to End Bridge integration tests
 
   Scenario: Manager is not accessible without authentication
-    Given the list of Bridge instances fails with HTTP response code 401
+    Given the list of Bridge instances is failing with HTTP response code 401
 
   Scenario: Bridge is created and correctly deleted
-    Given authentication is done against Manager
+    Given authenticate against Manager
 
-    When a new Bridge "mybridge" is created
-    And the list of Bridge instances contains the Bridge "mybridge"
-    And the Bridge "mybridge" exists with status "ready" within 2 minutes
-    And the Ingress of Bridge "mybridge" is deployed within 2 minutes
+    When create a new Bridge "mybridge"
+    And the list of Bridge instances is containing the Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
     
-    When the Bridge "mybridge" is deleted
+    When delete the Bridge "mybridge"
 
-    Then the Bridge "mybridge" does not exist within 2 minutes
-    And the Ingress of Bridge "mybridge" is undeployed within 1 minute
+    Then the Bridge "mybridge" is not existing within 2 minutes
+    And the Ingress of Bridge "mybridge" is not available within 1 minute
 
     And the Manager metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
     And the Manager metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
@@ -22,13 +22,13 @@ Feature: End to End Bridge integration tests
 
 
   Scenario: Processor is created, deployed and correctly deleted
-    Given authentication is done against Manager
+    Given authenticate against Manager
     
-    When a new Bridge "mybridge" is created
-    And the Bridge "mybridge" exists with status "ready" within 2 minutes
-    And the Ingress of Bridge "mybridge" is deployed within 2 minutes
+    When create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
 
-    And a new Processor is added to the Bridge "mybridge" with body:
+    And add a Processor to the Bridge "mybridge" with body:
     """
     {
       "name": "myProcessor",
@@ -47,7 +47,7 @@ Feature: End to End Bridge integration tests
       ]
     }
     """
-    And the Processor "myProcessor" of the Bridge "mybridge" exists with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
     And the Processor "myProcessor" of the Bridge "mybridge" has action of type "KafkaTopicAction" and parameters:
       | topic | myKafkaTopic |
 
@@ -80,22 +80,21 @@ Feature: End to End Bridge integration tests
     And the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
     # TODO
     # And the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1
-    And the Processor "myProcessor" of the Bridge "mybridge" is deleted
-    
-    Then the Processor "myProcessor" of the Bridge "mybridge" does not exists within 2 minutes
+    And delete the Processor "myProcessor" of the Bridge "mybridge"
+    Then the Processor "myProcessor" of the Bridge "mybridge" is not existing within 2 minutes
 
     And the Manager metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
     And the Manager metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
     And the Manager metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1
 
   Scenario: Processor payload is malformed
-    Given authentication is done against Manager
+    Given authenticate against Manager
     
-    When a new Bridge "mybridge" is created
-    And the Bridge "mybridge" exists with status "ready" within 2 minutes
-    And the Ingress of Bridge "mybridge" is deployed within 2 minutes
+    When create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
     
-    Then a new Processor is added to the Bridge "mybridge" and returns HTTP response code 400 with body:
+    Then add a Processor to the Bridge "mybridge" and returns HTTP response code 400 with body:
     """
     {
       "name": "processorInvalid"

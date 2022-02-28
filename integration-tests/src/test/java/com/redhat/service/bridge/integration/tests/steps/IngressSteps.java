@@ -25,8 +25,8 @@ public class IngressSteps {
         this.context = context;
     }
 
-    @And("^the Ingress of Bridge \"([^\"]*)\" is deployed within (\\d+) (?:minute|minutes)$")
-    public void ingressOfBridgeIsDeployedWithinMinutes(String testBridgeName, int timeoutMinutes) {
+    @And("^the Ingress of Bridge \"([^\"]*)\" is available within (\\d+) (?:minute|minutes)$")
+    public void ingressOfBridgeIsAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes))
@@ -36,10 +36,10 @@ public class IngressSteps {
                         .statusCode(200));
     }
 
-    @And("^the Ingress of Bridge \"([^\"]*)\" is undeployed within (\\d+) (?:minute|minutes)$")
-    public void ingressOfBridgeIsUndeployedWithinMinutes(String testBridgeName, int timeoutMinutes) {
+    @And("^the Ingress of Bridge \"([^\"]*)\" is not available within (\\d+) (?:minute|minutes)$")
+    public void ingressOfBridgeIsNotAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
         System.out.println("hello");
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName, true);
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
@@ -65,19 +65,18 @@ public class IngressSteps {
                 .then()
                 .statusCode(200);
 
-        // TODO 
-        // cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
-        // IngressResource
-        //         .postJsonEventResponse(token, endpoint + "/ingress/not-the-bridge-name/",
-        //                 cloudEventStream, headers)
-        //         .then()
-        //         .statusCode(404);
+        // TODO Split into different scenarios will be done in https://issues.redhat.com/browse/MGDOBR-361
+        cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
+        IngressResource
+                .postJsonEventResponse(token, endpoint + "/ingress/not-the-bridge-name/",
+                        cloudEventStream, headers)
+                .then()
+                .statusCode(404);
 
-        // // Plain endpoint for non cloud events payloads
-        // // Plain endpoint for non cloud events payloads
-        // IngressResource
-        // .postPlainEventResponse(token, endpoint, "{\"data\": \"test\"}", headers)
-        // .then()
-        // .statusCode(200);
+        // Plain endpoint for non cloud events payloads
+        IngressResource
+                .postPlainEventResponse(token, endpoint, "{\"data\": \"test\"}", headers)
+                .then()
+                .statusCode(200);
     }
 }

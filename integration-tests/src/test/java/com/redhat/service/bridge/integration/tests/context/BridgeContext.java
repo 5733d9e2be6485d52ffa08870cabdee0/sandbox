@@ -8,31 +8,26 @@ import java.util.Map;
  */
 public class BridgeContext {
 
-    private String bridgeName;
-    private String bridgeId;
+    private String name;
+    private String id;
 
-    private Map<String, String> processors = new HashMap<>();
-    private Map<String, String> removedProcessors = new HashMap<>();
+    private Map<String, ProcessorContext> processors = new HashMap<>();
 
     private String endPoint;
 
-    public BridgeContext(String bridgeName) {
+    private boolean deleted;
+
+    public BridgeContext(String id, String systemBridgeName) {
+        this.id = id;
+        this.name = systemBridgeName;
     }
 
-    public String getBridgeName() {
-        return this.bridgeName;
+    public String getName() {
+        return this.name;
     }
 
-    public void setBridgeName(String bridgeName) {
-        this.bridgeName = bridgeName;
-    }
-
-    public String getBridgeId() {
-        return bridgeId;
-    }
-
-    public void setBridgeId(String bridgeId) {
-        this.bridgeId = bridgeId;
+    public String getId() {
+        return id;
     }
 
     public String getEndPoint() {
@@ -43,30 +38,28 @@ public class BridgeContext {
         this.endPoint = endPoint;
     }
 
-    public void newProcessor(String processorName, String processorId) {
-        this.processors.put(processorName, processorId);
+    public ProcessorContext newProcessor(String processorName, String processorId) {
+        ProcessorContext processorContext = new ProcessorContext(processorId);
+        this.processors.put(processorName, processorContext);
+        return processorContext;
     }
 
     public void removeProcessor(String processorName) {
-        String processorId = this.processors.remove(processorName);
-        this.removedProcessors.put(processorName, processorId);
+        this.processors.get(processorName).setDeleted(true);
     }
 
-    public String getProcessorId(String processorName) {
-        return getProcessorId(processorName, false);
-    }
-
-    public String getProcessorId(String processorName, boolean includeRemovedProcessors) {
+    public ProcessorContext getProcessor(String processorName) {
         if (!this.processors.containsKey(processorName)) {
-            if (includeRemovedProcessors && this.removedProcessors.containsKey(processorName)) {
-                return this.removedProcessors.get(processorName);
-            }
-            throw new RuntimeException("Processor with name " + removedProcessors + " does not exist in bridge context.");
+            throw new RuntimeException("Processor with name " + processorName + " does not exist in bridge context.");
         }
         return this.processors.get(processorName);
     }
 
-    public String getRemovedProcessorId(String processorName) {
-        return this.removedProcessors.get(processorName);
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

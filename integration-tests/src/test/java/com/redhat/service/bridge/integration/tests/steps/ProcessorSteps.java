@@ -31,8 +31,8 @@ public class ProcessorSteps {
         this.context = context;
     }
 
-    @When("^a new Processor is added to the Bridge \"([^\"]*)\" with body:$")
-    public void newProcesorIsAddedToBridgeWithBody(String testBridgeName, String processorRequestJson) {
+    @When("^add a Processor to the Bridge \"([^\"]*)\" with body:$")
+    public void addProcessorToBridgeWithBody(String testBridgeName, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         JsonObject json = new JsonObject(processorRequestJson);
@@ -41,7 +41,7 @@ public class ProcessorSteps {
 
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
         ProcessorResponse response = ProcessorResource.createProcessor(context.getManagerToken(),
-                bridgeContext.getBridgeId(), resourceStream);
+                bridgeContext.getId(), resourceStream);
 
         bridgeContext.newProcessor(processorName, response.getId());
 
@@ -52,18 +52,18 @@ public class ProcessorSteps {
         assertThat(response.getFilters().size()).isEqualTo(filtersSize);
     }
 
-    @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" exists with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void processorOfBridgeExistsWithStatusWithinMinutes(String processorName, String testBridgeName,
+    @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is existing with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void processorOfBridgeIsExistingWithStatusWithinMinutes(String processorName, String testBridgeName,
             String status, int timeoutMinutes) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessorId(processorName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> ProcessorResource
-                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getBridgeId(),
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
                                         processorId)
                                 .then()
                                 .body("status", Matchers.equalTo(status)));
@@ -73,10 +73,10 @@ public class ProcessorSteps {
     public void processorOfBridgeHasActionOfTypeAndParameters(String processorName, String testBridgeName,
             String actionType, DataTable parametersDatatable) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessorId(processorName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
 
         ProcessorResponse response = ProcessorResource.getProcessor(context.getManagerToken(),
-                bridgeContext.getBridgeId(), processorId);
+                bridgeContext.getId(), processorId);
 
         BaseAction action = response.getAction();
         assertThat(action.getType()).isEqualTo(actionType);
@@ -85,39 +85,39 @@ public class ProcessorSteps {
         });
     }
 
-    @When("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is deleted$")
-    public void processorOfBridgeIsDeleted(String processorName, String testBridgeName) {
+    @When("^delete the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\"$")
+    public void deleteProcessorOfBridge(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessorId(processorName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
 
-        ProcessorResource.deleteProcessor(context.getManagerToken(), bridgeContext.getBridgeId(), processorId);
+        ProcessorResource.deleteProcessor(context.getManagerToken(), bridgeContext.getId(), processorId);
         bridgeContext.removeProcessor(processorName);
     }
 
-    @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" does not exists within (\\d+) (?:minute|minutes)$")
-    public void processorOfBridgeDoesNotExistsWithinMinutes(String processorName, String testBridgeName,
+    @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is not existing within (\\d+) (?:minute|minutes)$")
+    public void processorOfBridgeIsNotExistingWithinMinutes(String processorName, String testBridgeName,
             int timeoutMinutes) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessorId(processorName, true);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> ProcessorResource
-                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getBridgeId(),
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
                                         processorId)
                                 .then()
                                 .statusCode(404));
     }
 
-    @Then("a new Processor is added to the Bridge \"([^\"]*)\" and returns HTTP response code (\\d+) with body:$")
+    @Then("add a Processor to the Bridge \"([^\"]*)\" and returns HTTP response code (\\d+) with body:$")
     public void newProcessorIsAddedToBridgeAndReturnsHTTPResponseCodeWithBody(String testBridgeName, int responseCode, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
 
         ProcessorResource
-                .createProcessorResponse(context.getManagerToken(), bridgeContext.getBridgeId(), resourceStream)
+                .createProcessorResponse(context.getManagerToken(), bridgeContext.getId(), resourceStream)
                 .then()
                 .statusCode(responseCode);
     }

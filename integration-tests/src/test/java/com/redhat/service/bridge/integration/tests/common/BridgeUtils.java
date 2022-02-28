@@ -52,16 +52,11 @@ public class BridgeUtils {
     }
 
     public static String getOrRetrieveBridgeEndpoint(TestContext context, String testBridgeName) {
-        return getOrRetrieveBridgeEndpoint(context, testBridgeName, false);
-    }
-
-    public static String getOrRetrieveBridgeEndpoint(TestContext context, String testBridgeName,
-            boolean includeRemovedBridges) {
-        BridgeContext bridgeContext = context.getBridge(testBridgeName, includeRemovedBridges);
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         if (bridgeContext.getEndPoint() == null) {
             // store bridge endpoint details
-            String endPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeContext.getBridgeId())
+            String endPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeContext.getId())
                     .getEndpoint();
             // If an endpoint contains localhost without port then default port has to be
             // defined, otherwise rest-assured will use port 8080
