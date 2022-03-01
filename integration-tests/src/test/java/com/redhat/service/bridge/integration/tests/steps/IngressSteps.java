@@ -38,7 +38,6 @@ public class IngressSteps {
 
     @And("^the Ingress of Bridge \"([^\"]*)\" is not available within (\\d+) (?:minute|minutes)$")
     public void ingressOfBridgeIsNotAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
-        System.out.println("hello");
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))

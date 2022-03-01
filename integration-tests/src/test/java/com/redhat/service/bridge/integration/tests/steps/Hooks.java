@@ -69,6 +69,7 @@ public class Hooks {
                         case ACCEPTED:
                         case PROVISIONING:
                         case READY:
+                        case FAILED:
                             try {
                                 BridgeResource.deleteBridge(context.getManagerToken(), bridgeId);
                             } catch (Exception e) {
