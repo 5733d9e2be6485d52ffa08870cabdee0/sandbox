@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.manager;
 
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -18,11 +20,14 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.smallrye.mutiny.TimeoutException;
 import io.smallrye.mutiny.Uni;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -31,9 +36,6 @@ class RhoasServiceTest {
     private static final String TEST_OPS_CLIENT_ID = "test-ops-client-id";
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
-
-    private static final CompletionException COMPLETION_EXCEPTION = new CompletionException("Mock exception", new RuntimeException());
-    private static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException();
 
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
@@ -56,17 +58,22 @@ class RhoasServiceTest {
         assertThatNoException()
                 .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
         assertThatNoException()
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER));
+        verify(rhoasClientMock, times(2)).createTopicAndGrantAccess(any(), eq(TEST_OPS_CLIENT_ID), any());
+
+        assertThatNoException()
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER));
         assertThatNoException()
-                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER));
-        assertThatNoException()
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER));
+        verify(rhoasClientMock, times(2)).deleteTopicAndRevokeAccess(any(), eq(TEST_OPS_CLIENT_ID), any());
     }
 
     @Test
-    void testWithCompletionException() {
-        when(rhoasClientMock.createTopicAndGrantAccess(any(), any(), any())).thenThrow(COMPLETION_EXCEPTION);
-        when(rhoasClientMock.deleteTopicAndRevokeAccess(any(), any(), any())).thenThrow(COMPLETION_EXCEPTION);
+    void testWithCompletionException() throws InterruptedException {
+        CountDownLatch createTopicAndGrantAccessLatch = new CountDownLatch(4);
+        when(rhoasClientMock.createTopicAndGrantAccess(any(), any(), any())).thenReturn(mockCompletionExceptionWithLatch(createTopicAndGrantAccessLatch, Topic.class));
+        CountDownLatch deleteTopicAndRevokeAccessLatch = new CountDownLatch(4);
+        when(rhoasClientMock.deleteTopicAndRevokeAccess(any(), any(), any())).thenReturn(mockCompletionExceptionWithLatch(deleteTopicAndRevokeAccessLatch, Void.class));
 
         RhoasService testService = buildTestService();
 
@@ -74,20 +81,25 @@ class RhoasServiceTest {
                 .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
                 .withMessage(RhoasServiceImpl.createFailureErrorMessageFor(testBridgeTopicName()));
         assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.createFailureErrorMessageFor(testProcessorTopicName()));
+        assertThat(createTopicAndGrantAccessLatch.await(60, TimeUnit.SECONDS)).isTrue();
+
+        assertThatExceptionOfType(InternalPlatformException.class)
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
                 .withMessage(RhoasServiceImpl.deleteFailureErrorMessageFor(testBridgeTopicName()));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
-                .withMessage(RhoasServiceImpl.createFailureErrorMessageFor(testProcessorTopicName()));
-        assertThatExceptionOfType(InternalPlatformException.class)
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
                 .withMessage(RhoasServiceImpl.deleteFailureErrorMessageFor(testProcessorTopicName()));
+        assertThat(deleteTopicAndRevokeAccessLatch.await(60, TimeUnit.SECONDS)).isTrue();
     }
 
     @Test
-    void testWithTimeoutException() {
-        when(rhoasClientMock.createTopicAndGrantAccess(any(), any(), any())).thenThrow(TIMEOUT_EXCEPTION);
-        when(rhoasClientMock.deleteTopicAndRevokeAccess(any(), any(), any())).thenThrow(TIMEOUT_EXCEPTION);
+    void testWithTimeoutException() throws InterruptedException {
+        CountDownLatch createTopicAndGrantAccessLatch = new CountDownLatch(4);
+        when(rhoasClientMock.createTopicAndGrantAccess(any(), any(), any())).thenReturn(mockTimeoutExceptionWithLatch(createTopicAndGrantAccessLatch, Topic.class));
+        CountDownLatch deleteTopicAndRevokeAccessLatch = new CountDownLatch(4);
+        when(rhoasClientMock.deleteTopicAndRevokeAccess(any(), any(), any())).thenReturn(mockTimeoutExceptionWithLatch(deleteTopicAndRevokeAccessLatch, Void.class));
 
         RhoasService testService = buildTestService();
 
@@ -95,19 +107,25 @@ class RhoasServiceTest {
                 .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
                 .withMessage(RhoasServiceImpl.createTimeoutErrorMessageFor(testBridgeTopicName()));
         assertThatExceptionOfType(InternalPlatformException.class)
+                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
+                .withMessage(RhoasServiceImpl.createTimeoutErrorMessageFor(testProcessorTopicName()));
+        assertThat(createTopicAndGrantAccessLatch.await(60, TimeUnit.SECONDS)).isTrue();
+
+        assertThatExceptionOfType(InternalPlatformException.class)
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testBridgeTopicName(), RhoasTopicAccessType.CONSUMER_AND_PRODUCER))
                 .withMessage(RhoasServiceImpl.deleteTimeoutErrorMessageFor(testBridgeTopicName()));
         assertThatExceptionOfType(InternalPlatformException.class)
-                .isThrownBy(() -> testService.createTopicAndGrantAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
-                .withMessage(RhoasServiceImpl.createTimeoutErrorMessageFor(testProcessorTopicName()));
-        assertThatExceptionOfType(InternalPlatformException.class)
                 .isThrownBy(() -> testService.deleteTopicAndRevokeAccessFor(testProcessorTopicName(), RhoasTopicAccessType.PRODUCER))
                 .withMessage(RhoasServiceImpl.deleteTimeoutErrorMessageFor(testProcessorTopicName()));
+        assertThat(deleteTopicAndRevokeAccessLatch.await(60, TimeUnit.SECONDS)).isTrue();
     }
 
     private RhoasService buildTestService() {
         RhoasServiceImpl service = new RhoasServiceImpl();
         service.rhoasTimeout = 10;
+        service.rhoasMaxRetries = 2;
+        service.rhoasBackoff = "PT1S";
+        service.rhoasJitter = 0.1;
         service.rhoasOpsAccountClientId = TEST_OPS_CLIENT_ID;
         service.rhoasClient = rhoasClientMock;
         return service;
@@ -119,5 +137,20 @@ class RhoasServiceTest {
 
     private String testProcessorTopicName() {
         return internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID;
+    }
+
+    // verify(rhoasClientMock, times(4)).createTopicAndGrantAccess(any(), any(), any()); does not take into account the retries. So this is a workaround.
+    private <T> Uni<T> mockCompletionExceptionWithLatch(CountDownLatch latch, Class<T> clazz) {
+        return Uni.createFrom().item(() -> {
+            latch.countDown();
+            throw new CompletionException("Mock exception", new RuntimeException());
+        });
+    }
+
+    private <T> Uni<T> mockTimeoutExceptionWithLatch(CountDownLatch latch, Class<T> clazz) {
+        return Uni.createFrom().item(() -> {
+            latch.countDown();
+            throw new TimeoutException();
+        });
     }
 }
