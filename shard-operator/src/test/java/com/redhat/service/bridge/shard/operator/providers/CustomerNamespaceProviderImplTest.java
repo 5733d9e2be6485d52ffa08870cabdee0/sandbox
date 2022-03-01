@@ -84,6 +84,14 @@ class CustomerNamespaceProviderImplTest {
         final BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
         dto.setCustomerId("cooper");
         bridgeIngressService.createBridgeIngress(dto);
+        // Wait until BridgeIngress is really created, can take some time due to client caching
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> kubernetesClient
+                        .resources(BridgeIngress.class)
+                        .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                        .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                        .get() != null);
         // try to delete the namespace...
         customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(dto.getCustomerId());
         final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
