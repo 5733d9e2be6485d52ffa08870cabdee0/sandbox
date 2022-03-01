@@ -17,7 +17,10 @@ Every `Filter` has 3 properties to specify:
   - This must be a single field only. Arrays of fields to match on are not yet supported. 
 - `value(s)`: The value or values to compare to the field identified by the key.
 
-All Events sent to the Bridge must be in CloudEvent format. You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `eventid`, `source`, `eventtype`, `eventtypeversion`. `CloudEvent` data (like `data.key1`) is accessed using the dot notation to navigate the `Event` structure.
+All Events sent to the Bridge must be in CloudEvent format. 
+You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `id`, `source`, `type`, `version`,
+as well as custom attributes you have defined. 
+It is also possible to access `CloudEvent` data (like `data.key1`) which is accessed using the dot notation to navigate the `Event` structure.
 
 ## Supported Filter Types
 
@@ -148,3 +151,40 @@ Then an event like
 Would evaluate the `Filter` to `true`.
 
 
+## Combining filters
+
+When a `Filter` array contain more than one entry, the entries are additive. 
+Assume a `Filter` of:
+
+```json
+
+{
+  "filters": [
+    {
+      "type": "ValuesIn",
+      "key": "data.any",
+      "values": ["Jac", 2]
+    },
+    {
+      "type": "StringEquals",
+      "key": "type",
+      "values": "myType" 
+    }
+  ]
+}
+```
+
+In this case a CloudEvent like:
+
+
+```json
+{
+  ...
+  "type": "myType",
+  "data": {
+    "any": 2
+  }
+}
+```
+
+would make the `Filter` evaluate to `true`.
