@@ -48,7 +48,7 @@ mvn \
   -Dmanaged-connectors.kafka.client.id=${mc_client_id} \
   -Dmanaged-connectors.kafka.client.secret=${mc_client_secret} \
   -Dmanaged-connectors.kafka.security.protocol=SASL_SSL \
-  -Dmanaged-connectors.services.url=https://cos-fleet-manager-cos.rh-fuse-153f1de160110098c1928a6c05e19444-0000.eu-de.containers.appdomain.cloud \
+  -Dmanaged-connectors.services.url=https://wxn4aqqc8bqvxcy6unfe.api.stage.openshift.com \
   -Dmanaged-connectors.auth.server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Dmanaged-connectors.auth.token-path=protocol/openid-connect/token \
   -Dmanaged-connectors.auth.client-id=cloud-services \
