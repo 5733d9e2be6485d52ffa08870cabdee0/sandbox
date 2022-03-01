@@ -95,7 +95,6 @@ public class TestUtils {
 
     public static BaseAction createKafkaAction() {
         BaseAction r = new BaseAction();
-        r.setName(TestConstants.DEFAULT_ACTION_NAME);
         r.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -106,7 +105,6 @@ public class TestUtils {
 
     public static BaseAction createSendToBridgeAction(String bridgeId) {
         BaseAction r = new BaseAction();
-        r.setName(TestConstants.DEFAULT_ACTION_NAME);
         r.setType(SendToBridgeAction.TYPE);
 
         Map<String, String> params = new HashMap<>();

@@ -57,7 +57,6 @@ public class TestSupport {
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
-        a.setName("kafkaAction");
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");

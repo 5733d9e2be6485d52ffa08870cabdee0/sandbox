@@ -25,7 +25,6 @@ public class SlackActionTransformer implements ActionTransformer {
         newParameters.putAll(action.getParameters());
 
         resolvedAction.setType(KafkaTopicAction.TYPE);
-        resolvedAction.setName(action.getName());
 
         newParameters.put(KafkaTopicAction.TOPIC_PARAM, generateKafkaTopicName(processorId));
 

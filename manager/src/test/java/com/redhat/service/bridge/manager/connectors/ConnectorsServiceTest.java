@@ -38,7 +38,6 @@ class ConnectorsServiceTest {
     private static final String TEST_CONNECTOR_EXTERNAL_ID = "test-connector-ext-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
-    private static final String TEST_ACTION_NAME = "TestAction";
     private static final String TEST_ACTION_CHANNEL = "testchannel";
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
 
@@ -138,7 +137,6 @@ class ConnectorsServiceTest {
     private BaseAction testKafkaAction() {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
-        action.setName(TEST_ACTION_NAME);
         action.setParameters(Map.of(
                 SlackAction.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
@@ -149,7 +147,6 @@ class ConnectorsServiceTest {
     private BaseAction testWebhookAction() {
         BaseAction action = new BaseAction();
         action.setType(WebhookAction.TYPE);
-        action.setName(TEST_ACTION_NAME);
         action.setParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;

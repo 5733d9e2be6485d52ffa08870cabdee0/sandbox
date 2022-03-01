@@ -258,14 +258,10 @@ components:
   schemas:
     BaseAction:
       required:
-      - name
       - type
       - parameters
       type: object
       properties:
-        name:
-          type: string
-          nullable: false
         type:
           type: string
           nullable: false

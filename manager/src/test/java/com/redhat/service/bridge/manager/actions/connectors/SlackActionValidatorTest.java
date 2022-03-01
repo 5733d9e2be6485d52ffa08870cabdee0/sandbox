@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.manager.actions.connectors;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,9 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 class SlackActionValidatorTest {
-
-    private static final Map<String, String> NULL_PARAMS = null;
-    private static final Map<String, String> EMPTY_PARAMS = Collections.emptyMap();
 
     @Inject
     SlackActionValidator validator;
@@ -76,7 +72,6 @@ class SlackActionValidatorTest {
     private BaseAction actionWith(Map<String, String> params) {
         BaseAction b = new BaseAction();
         b.setType(SlackAction.TYPE);
-        b.setName("testAction");
         b.setParameters(params);
         return b;
     }

@@ -112,7 +112,6 @@ public class ProcessorServiceTest {
 
     private BaseAction createKafkaAction() {
         BaseAction a = new BaseAction();
-        a.setName(TestConstants.DEFAULT_ACTION_NAME);
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -345,7 +344,6 @@ public class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(r.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
     }
 
     private JsonNode definitionToJsonNode(ProcessorDefinition definition) {
