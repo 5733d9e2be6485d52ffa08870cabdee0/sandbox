@@ -22,6 +22,16 @@ public class RhoasServiceImpl implements RhoasService {
 
     @ConfigProperty(name = "rhoas.timeout-seconds")
     int rhoasTimeout;
+
+    @ConfigProperty(name = "rhoas.max_retries")
+    int rhoasMaxRetries;
+
+    @ConfigProperty(name = "rhoas.jitter")
+    double rhoasJitter;
+
+    @ConfigProperty(name = "rhoas.backoff")
+    String rhoasBackoff;
+
     @ConfigProperty(name = "rhoas.ops-account.client-id")
     String rhoasOpsAccountClientId;
 
@@ -34,8 +44,9 @@ public class RhoasServiceImpl implements RhoasService {
             NewTopicInput newTopicInput = new NewTopicInput()
                     .name(topicName)
                     .settings(new TopicSettings().numPartitions(1));
-
-            return rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType).await().atMost(Duration.ofSeconds(rhoasTimeout));
+            return rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
+                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
+                    .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
             throw new InternalPlatformException(createFailureErrorMessageFor(topicName), e);
         } catch (TimeoutException e) {
@@ -47,6 +58,7 @@ public class RhoasServiceImpl implements RhoasService {
     public void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
         try {
             rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
+                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
 

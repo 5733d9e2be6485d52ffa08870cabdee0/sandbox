@@ -28,12 +28,12 @@ abstract class RhoasClientTestBase extends RhoasTestBase {
         configureMockSSO();
     }
 
-    protected void testCreateTopicAndGrantAccess(RhoasTopicAccessType accessType, boolean expectFalure, int expectedPostTopics, int expectedPostACLs, int expectedDeleteTopics,
+    protected void testCreateTopicAndGrantAccess(RhoasTopicAccessType accessType, boolean expectFailure, int expectedPostTopics, int expectedPostACLs, int expectedDeleteTopics,
             int expectedDeleteACLs) {
         UniAssertSubscriber<?> subscriber = rhoasClient.createTopicAndGrantAccess(TEST_TOPIC_INPUT, TEST_SERVICE_ACCOUNT_ID, accessType)
                 .subscribe().withSubscriber(UniAssertSubscriber.create());
 
-        if (expectFalure) {
+        if (expectFailure) {
             subscriber.awaitFailure(Duration.ofSeconds(TIMEOUT_SECONDS));
         } else {
             subscriber.awaitItem(Duration.ofSeconds(TIMEOUT_SECONDS));
@@ -63,5 +63,4 @@ abstract class RhoasClientTestBase extends RhoasTestBase {
         wireMockServer.verify(expectedDeleteTopics, WireMock.deleteRequestedFor(WireMock.urlEqualTo(kafkaInstanceConfigurator.pathOf("/topics/" + TEST_TOPIC_NAME))));
         wireMockServer.verify(expectedDeleteACLs, WireMock.deleteRequestedFor(WireMock.urlMatching(kafkaInstanceConfigurator.pathOf("/acls?.*"))));
     }
-
 }

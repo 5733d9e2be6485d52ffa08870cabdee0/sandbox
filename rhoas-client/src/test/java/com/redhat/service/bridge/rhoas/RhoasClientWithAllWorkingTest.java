@@ -55,5 +55,4 @@ class RhoasClientWithAllWorkingTest extends RhoasClientTestBase {
         configureMockAPIWithAllWorking();
         testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 5);
     }
-
 }
