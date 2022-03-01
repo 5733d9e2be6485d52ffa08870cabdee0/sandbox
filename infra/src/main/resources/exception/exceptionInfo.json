@@ -62,7 +62,7 @@
 {
   "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException",
   "id": 11,
-  "reason": "Prometheus is not installed on the shard.",
+  "reason": "Error while creating the connector on MC Fleet Manager.",
   "type": "PLATFORM"
 },
 {
@@ -94,5 +94,11 @@
   "id": 16,
   "reason": "The user is not authorized to access the resource",
   "type": "USER"
+},
+{
+  "exception":"com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorDeletionException",
+  "id": 17,
+  "reason": "Error while deleting the connector on MC Fleet Manager",
+  "type": "PLATFORM"
 }
 ]

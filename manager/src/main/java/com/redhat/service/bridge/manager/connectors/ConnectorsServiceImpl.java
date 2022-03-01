@@ -1,63 +1,37 @@
 package com.redhat.service.bridge.manager.connectors;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.openshift.cloud.api.connector.models.Connector;
-import com.openshift.cloud.api.connector.models.ConnectorRequest;
-import com.openshift.cloud.api.connector.models.DeploymentLocation;
-import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
-import com.openshift.cloud.api.connector.models.ServiceAccount;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
-import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
 
-    public static final String KAFKA_ID_IGNORED = "kafkaId-ignored";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsServiceImpl.class);
-
-    @Inject
-    ConnectorsApiClient connectorsApiClient;
 
     @Inject
     ConnectorsDAO connectorsDAO;
 
-    @Inject
-    RhoasService rhoasService;
-
-    @ConfigProperty(name = "managed-connectors.cluster.id")
-    String mcClusterId;
-
-    @ConfigProperty(name = "managed-connectors.kafka.bootstrap.servers")
-    String kafkaBootstrapServer;
-
-    @ConfigProperty(name = "managed-connectors.kafka.client.id")
-    String serviceAccountId;
-
-    @ConfigProperty(name = "managed-connectors.kafka.client.secret")
-    String serviceAccountSecret;
-
     @Override
-    @Transactional
-    public Optional<ConnectorEntity> createConnectorIfNeeded(BaseAction resolvedAction,
+    @Transactional(Transactional.TxType.MANDATORY) // Connector should always be created in the same transaction of a Processor
+    public Optional<ConnectorEntity> createConnectorEntity(BaseAction resolvedAction,
             Processor processor,
             ActionProvider actionProvider) {
 
@@ -70,91 +44,38 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
         String connectorType = connectorAction.getConnectorType();
         String newConnectorName = connectorName(connectorType, processor);
+        String topicName = connectorAction.topicName(resolvedAction);
 
-        ConnectorEntity newConnectorEntity = persistConnector(processor, newConnectorName, connectorPayload);
+        ConnectorEntity newConnectorEntity = new ConnectorEntity();
 
-        rhoasService.createTopicAndGrantAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
+        newConnectorEntity.setName(newConnectorName);
+        newConnectorEntity.setStatus(ConnectorStatus.ACCEPTED);
+        newConnectorEntity.setDesiredStatus(ConnectorStatus.READY);
+        newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
+        newConnectorEntity.setProcessor(processor);
+        newConnectorEntity.setDefinition(connectorPayload);
+        newConnectorEntity.setConnectorType(connectorType);
+        newConnectorEntity.setTopicName(topicName);
 
-        Connector connector = callConnectorService(connectorType, connectorPayload, newConnectorName);
-
-        newConnectorEntity.setConnectorExternalId(connector.getId());
+        connectorsDAO.persist(newConnectorEntity);
 
         return Optional.of(newConnectorEntity);
     }
 
     @Override
-    public void deleteConnectorIfNeeded(BaseAction resolvedAction,
-            Processor processor,
-            ActionProvider actionProvider) {
+    @Transactional
+    public List<ConnectorEntity> deleteConnectorIfNeeded(Processor processor) {
 
-        ConnectorEntity connector = connectorsDAO.findByProcessorId(processor.getId());
-        if (connector == null) {
-            return;
-        }
+        List<ConnectorEntity> optionalConnector = connectorsDAO.findByProcessorId(processor.getId());
 
-        String connectorExternalId = connector.getConnectorExternalId();
-        String connectorId = connector.getId();
-
-        connectorsDAO.delete(connector);
-
-        LOGGER.info("connector with id '{}' has been deleted", connectorId);
-
-        connectorsApiClient.deleteConnector(connectorExternalId, KAFKA_ID_IGNORED);
-
-        ConnectorAction connectorAction = (ConnectorAction) actionProvider;
-        rhoasService.deleteTopicAndRevokeAccessFor(connectorAction.topicName(resolvedAction), RhoasTopicAccessType.PRODUCER);
+        return optionalConnector.stream().peek(c -> {
+            String connectorId = c.getId();
+            c.setDesiredStatus(ConnectorStatus.DELETED);
+            LOGGER.info("connector with id '{}' has been marked for deletion", connectorId);
+        }).collect(Collectors.toList());
     }
 
     private String connectorName(String connectorType, Processor processor) {
         return String.format("OpenBridge-%s-%s", connectorType, processor.getId());
-    }
-
-    private ConnectorEntity persistConnector(Processor processor, String newConnectorName, JsonNode connectorPayload) {
-        ConnectorEntity newConnectorEntity = new ConnectorEntity();
-
-        newConnectorEntity.setName(newConnectorName);
-        newConnectorEntity.setStatus(ConnectorStatus.REQUESTED);
-        newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
-        newConnectorEntity.setPublishedAt(ZonedDateTime.now());
-        newConnectorEntity.setProcessor(processor);
-        newConnectorEntity.setDefinition(connectorPayload);
-
-        connectorsDAO.persist(newConnectorEntity);
-
-        return newConnectorEntity;
-    }
-
-    private Connector callConnectorService(
-            String connectorType,
-            JsonNode connectorPayload,
-            String newConnectorName) {
-        ConnectorRequest createConnectorRequest = new ConnectorRequest();
-
-        createConnectorRequest.setName(newConnectorName);
-
-        DeploymentLocation deploymentLocation = new DeploymentLocation();
-        deploymentLocation.setKind("addon");
-        deploymentLocation.setClusterId(mcClusterId);
-        createConnectorRequest.setDeploymentLocation(deploymentLocation);
-
-        createConnectorRequest.setConnectorTypeId(connectorType);
-
-        createConnectorRequest.setConnector(connectorPayload);
-
-        ServiceAccount serviceAccount = new ServiceAccount();
-        serviceAccount.setClientId(serviceAccountId);
-        serviceAccount.setClientSecret(serviceAccountSecret);
-        createConnectorRequest.setServiceAccount(serviceAccount);
-
-        KafkaConnectionSettings kafka = new KafkaConnectionSettings();
-        kafka.setUrl(kafkaBootstrapServer);
-
-        // https://issues.redhat.com/browse/MGDOBR-198
-        // this is currently ignored in the Connectors API
-        kafka.setId(KAFKA_ID_IGNORED);
-
-        createConnectorRequest.setKafka(kafka);
-
-        return connectorsApiClient.createConnector(createConnectorRequest);
     }
 }

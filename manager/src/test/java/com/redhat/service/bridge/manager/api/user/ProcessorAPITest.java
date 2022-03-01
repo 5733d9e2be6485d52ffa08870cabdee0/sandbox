@@ -48,6 +48,8 @@ public class ProcessorAPITest {
     JsonWebToken jwt;
 
     @InjectMock
+    @SuppressWarnings("unused")
+    //Although this is unused, we need to inject it to set-up RHOAS
     RhoasService rhoasServiceMock;
 
     @BeforeEach
@@ -83,7 +85,7 @@ public class ProcessorAPITest {
     public void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction())).as(ProcessorResponse.class);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction())).as(ProcessorResponse.class);
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", createKafkaAction())).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 1, 1).as(ProcessorListResponse.class);
@@ -112,14 +114,12 @@ public class ProcessorAPITest {
         ProcessorResponse pr = response.as(ProcessorResponse.class);
 
         assertThat(pr.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(pr.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(pr.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
 
         ProcessorResponse found = TestUtils.getProcessor(bridgeResponse.getId(), pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
         assertThat(found.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(found.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(found.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
@@ -135,14 +135,12 @@ public class ProcessorAPITest {
         ProcessorResponse pr = response.as(ProcessorResponse.class);
 
         assertThat(pr.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
-        assertThat(pr.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(pr.getAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         ProcessorResponse found = TestUtils.getProcessor(bridgeId, pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
         assertThat(found.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
-        assertThat(found.getAction().getName()).isEqualTo(TestConstants.DEFAULT_ACTION_NAME);
         assertThat(found.getAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
     }
 
@@ -299,7 +297,7 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void addProcessorToBridge_bridgeNotInAvailableStatus() {
+    public void addProcessorToBridge_bridgeNotInReadyStatus() {
         BridgeResponse bridgeResponse = createBridge();
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
@@ -323,7 +321,7 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor(bridgeResponse.getId(), processorResponse.getId()).then().statusCode(202);
         processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
 
-        assertThat(processorResponse.getStatus()).isEqualTo(BridgeStatus.DELETION_REQUESTED);
+        assertThat(processorResponse.getStatus()).isEqualTo(BridgeStatus.DEPROVISION);
     }
 
     private BridgeResponse createBridge() {
@@ -337,7 +335,7 @@ public class ProcessorAPITest {
 
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridgeResponse.getId());
-        dto.setStatus(BridgeStatus.AVAILABLE);
+        dto.setStatus(BridgeStatus.READY);
         dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         dto.setEndpoint("https://foo.bridges.redhat.com");
 

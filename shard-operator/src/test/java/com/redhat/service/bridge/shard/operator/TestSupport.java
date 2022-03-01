@@ -38,7 +38,7 @@ public class TestSupport {
             KAFKA_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.REQUESTED, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
@@ -46,7 +46,7 @@ public class TestSupport {
     }
 
     public static BridgeDTO newAvailableBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.AVAILABLE, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.READY, KAFKA_CONNECTION_DTO);
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
@@ -57,7 +57,6 @@ public class TestSupport {
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
-        a.setName("kafkaAction");
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
@@ -65,6 +64,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.REQUESTED, KAFKA_CONNECTION_DTO);
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 }

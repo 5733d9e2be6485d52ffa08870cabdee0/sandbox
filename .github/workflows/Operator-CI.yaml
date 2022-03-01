@@ -27,12 +27,12 @@ jobs:
       - name: Build complete repo
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --no-snapshot-updates --fail-at-end --errors --quiet -DskipTests
+          maven-command: clean install --no-snapshot-updates --fail-at-end --errors --quiet -Dquickly
         # Build operator image and generate needed operator resources
       - name: Build Shard operator image and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -DskipTests
+          maven-command: clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -Dquickly
           working-directory: shard-operator
         # Load built image into KinD
       - name: Load Shard operator image into KinD

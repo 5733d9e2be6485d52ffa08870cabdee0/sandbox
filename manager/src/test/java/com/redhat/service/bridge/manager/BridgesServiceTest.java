@@ -44,7 +44,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.REQUESTED), TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
     }
 
@@ -104,9 +104,9 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.REQUESTED), TestConstants.SHARD_ID);
+        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridgesToDeploy.size()).isEqualTo(1);
-        assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
         assertThat(bridgesToDeploy.get(0).getEndpoint()).isNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
@@ -118,14 +118,14 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.REQUESTED), TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isEqualTo(1);
-        assertThat(bridges.get(0).getStatus()).isEqualTo(BridgeStatus.REQUESTED);
+        assertThat(bridges.get(0).getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
 
         bridge.setStatus(BridgeStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.REQUESTED), TestConstants.SHARD_ID);
+        bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);

@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.manager.connectors;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,7 +25,6 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.bridge.manager.connectors.ConnectorsServiceImpl.KAFKA_ID_IGNORED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -37,9 +38,10 @@ class ConnectorsServiceTest {
     private static final String TEST_CONNECTOR_EXTERNAL_ID = "test-connector-ext-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
-    private static final String TEST_ACTION_NAME = "TestAction";
     private static final String TEST_ACTION_CHANNEL = "testchannel";
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
+
+    private static final String TEST_ACTION_TOPIC = "ob-" + TEST_PROCESSOR_ID;
 
     @Inject
     SlackAction slackAction;
@@ -65,7 +67,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        Optional<ConnectorEntity> connector = connectorsService.createConnectorIfNeeded(testWebhookAction(), testProcessor(), webhookAction);
+        Optional<ConnectorEntity> connector = connectorsService.createConnectorEntity(testWebhookAction(), testProcessor(), webhookAction);
         assertThat(connector).isEmpty();
 
         verify(connectorsApiClientMock, never()).createConnector(any());
@@ -78,36 +80,37 @@ class ConnectorsServiceTest {
     void doCreateConnector() {
         when(connectorsApiClientMock.createConnector(any())).thenReturn(testConnector());
 
-        Optional<ConnectorEntity> connector = connectorsService.createConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);
+        Optional<ConnectorEntity> connector = connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
         assertThat(connector).isPresent();
 
-        verify(connectorsApiClientMock).createConnector(any());
+        verify(connectorsApiClientMock, never()).createConnector(any());
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
-        verify(rhoasServiceMock).createTopicAndGrantAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasServiceMock, never()).createTopicAndGrantAccessFor(TEST_ACTION_TOPIC, RhoasTopicAccessType.PRODUCER);
     }
 
     @Test
     @Transactional
     void doNotDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(new ArrayList<>());
 
-        connectorsService.deleteConnectorIfNeeded(testWebhookAction(), testProcessor(), webhookAction);
+        connectorsService.deleteConnectorIfNeeded(testProcessor());
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
-        verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID, KAFKA_ID_IGNORED);
+        verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID);
         verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
     }
 
     @Test
     @Transactional
     void doDeleteConnector() {
-        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity());
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(List.of(testConnectorEntity()));
 
-        connectorsService.deleteConnectorIfNeeded(testKafkaAction(), testProcessor(), slackAction);
+        connectorsService.deleteConnectorIfNeeded(testProcessor());
 
-        verify(connectorsDAOMock).delete(any(ConnectorEntity.class));
-        verify(connectorsApiClientMock).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID, KAFKA_ID_IGNORED);
-        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(testActionTopic(), RhoasTopicAccessType.PRODUCER);
+        verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
+        verify(connectorsApiClientMock, never()).deleteConnector(TEST_CONNECTOR_EXTERNAL_ID);
+        verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(TEST_ACTION_TOPIC, RhoasTopicAccessType.PRODUCER);
     }
 
     private Connector testConnector() {
@@ -134,7 +137,6 @@ class ConnectorsServiceTest {
     private BaseAction testKafkaAction() {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
-        action.setName(TEST_ACTION_NAME);
         action.setParameters(Map.of(
                 SlackAction.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
@@ -145,7 +147,6 @@ class ConnectorsServiceTest {
     private BaseAction testWebhookAction() {
         BaseAction action = new BaseAction();
         action.setType(WebhookAction.TYPE);
-        action.setName(TEST_ACTION_NAME);
         action.setParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;

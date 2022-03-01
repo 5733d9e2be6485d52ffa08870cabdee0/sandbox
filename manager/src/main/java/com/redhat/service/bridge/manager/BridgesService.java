@@ -18,7 +18,7 @@ public interface BridgesService {
 
     Bridge getBridge(String id, String customerId);
 
-    Bridge getAvailableBridge(String bridgeId, String customerId);
+    Bridge getReadyBridge(String bridgeId, String customerId);
 
     void deleteBridge(String id, String customerId);
 

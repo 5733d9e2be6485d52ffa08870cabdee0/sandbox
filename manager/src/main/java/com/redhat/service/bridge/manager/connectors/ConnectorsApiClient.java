@@ -7,5 +7,5 @@ public interface ConnectorsApiClient {
 
     Connector createConnector(ConnectorRequest connector);
 
-    void deleteConnector(String id, String kafkaId);
+    void deleteConnector(String id);
 }

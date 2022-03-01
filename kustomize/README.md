@@ -3,7 +3,9 @@
 This directory contains the GitOps project used for the deployment of the platform.
 
 ## Local Minikube deployment
+
 Requirements:
+
 - Running Minikube instance with enabled Ingress
 
 All supporting services are deployed in dedicated namespaces to provide isolation between components.
@@ -11,6 +13,7 @@ All supporting services are deployed in dedicated namespaces to provide isolatio
 In this deployment scenario developer provides operator image, Kustomize deploy all components required by operator and manager into Minikube (apart from Managed Kafka - that needs to be provisioned externally). Can be used to run full e2e testing.
 
 As a prerequisite the developer needs to adjust
+
 - `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` 
 - `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
 - `overlays/minikube/shard/patches/deploy-config.yaml` to contain the offline token for the webhook robot account. It can be retrieved with the command below
@@ -24,11 +27,18 @@ Components can be installed using command `kustomize build overlays/minikube | o
 
 Note: Some components may not be created fast enough while being required by following resources (for example Strimzi CRD). If you see some error in the command output then rerun the command again.
 
-Manager is available on URL `http://<minikube IP>/manager`, keycloak on `http://<minikube IP>:30007`
+Manager is available on URL `http://<minikube IP>/manager`, keycloak on `http://<minikube IP>:30007`.
+
+You can run this command to setup `MANAGER_URL` and `KEYCLOAK_URL` variables to your shell:
+
+```bash
+.  dev/bin/credentials/local_env
+```
 
 Environment can take a significant time to start completely, check status of all components in minikube.
 
 The Minikube startup and provisioning of all required services is scripted in `startMinikubeDeployLocalDev.sh`. The script has following requirements:
+
 - `minikube` binary available on path
 - `kustomize` tool installed
 - `jq` tool installed
@@ -37,13 +47,14 @@ The Minikube startup and provisioning of all required services is scripted in `s
 
 ## Demo cluster deployment
 
-### Cluster prereqs
+### Cluster prerequisites
+
 Required Operators:
 
 - Cluster Monitoring
 - Bitnami sealed secrets (via controller deployment below)
 
-# Sealed Secrets
+## Sealed Secrets
 
 We make use of the BitNami Sealed Secrets Operator to store sensitive information, encrypted in this Git repository.
 Things are encrypted using the public key and then decrypted in our demo cluster using the private key.
@@ -51,8 +62,8 @@ The private key is only known to the Sealed Secrets Operator in our demo cluster
 demo cluster setup.
 
 ### kubeseal install required once per cluster
-https://learnk8s.io/kubernetes-secrets-in-git
 
+https://learnk8s.io/kubernetes-secrets-in-git
 
 ### kubeseal create Sealed Secrets using the Bridge Public Key
 
@@ -82,7 +93,7 @@ oc create secret generic grafana-secrets --from-literal='BEARER_TOKEN=$BEARER_TO
 kubeseal --cert mycert.pem --scope cluster-wide -o yaml -f secret.yaml > grafana-secrets.yaml
 ```
 
-# Deploying Changes to our Demo Cluster
+## Deploying Changes to our Demo Cluster
 
 Deployments are managed by ArgoCD (look for the url in the onboarding document).
 
@@ -94,7 +105,7 @@ When a pull request is merged into master, the CD pipeline is triggered and a ne
 
 You can of course create the resources under another namespace or another cluster instead.
 
-Before you start the deployment process, ensure that your `oc` CLI is authenticated to our demo cluster. 
+Before you start the deployment process, ensure that your `oc` CLI is authenticated to our demo cluster.
 
 To do a deployment, use the following from your authenticated `oc` CLI (remember to change the `namespace` in the overlay):
 

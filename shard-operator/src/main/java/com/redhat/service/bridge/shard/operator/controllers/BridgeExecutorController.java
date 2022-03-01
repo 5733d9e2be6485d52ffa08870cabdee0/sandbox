@@ -21,6 +21,7 @@ import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
+import com.redhat.service.bridge.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.Secret;
@@ -88,9 +89,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            // TODO: notify the manager if in FailureState: .status.Type = Ready and .status.Reason = DeploymentFailed
-
             bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
+
+            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
+                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+            }
+
             return UpdateControl.updateStatus(bridgeExecutor);
         }
         LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
@@ -127,7 +133,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeExecutor, BridgeStatus.AVAILABLE);
+            notifyManager(bridgeExecutor, BridgeStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
         return UpdateControl.noUpdate();
@@ -142,6 +148,12 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         notifyManager(bridgeExecutor, BridgeStatus.DELETED);
 
         return DeleteControl.defaultDelete();
+    }
+
+    private void notifyDeploymentFailure(BridgeExecutor bridgeExecutor, String failureReason) {
+        LOGGER.warn("Processor deployment BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), failureReason);
+        notifyManager(bridgeExecutor, BridgeStatus.FAILED);
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, BridgeStatus status) {

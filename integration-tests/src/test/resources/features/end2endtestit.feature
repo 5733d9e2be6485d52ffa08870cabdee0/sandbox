@@ -1,35 +1,34 @@
 Feature: End to End Bridge integration tests
 
   Scenario:By default Manager url should not be accessible without authentication
-    Given get list of Bridge instances returns HTTP response code 401
+    Given get list of Bridge instances fails with HTTP response code 401
 
-
-  Scenario: Bridge is created and in available state
-    Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
+  Scenario: Bridge is created and in ready state
+    Given authentication is done against Manager
 
     When create a Bridge with randomly generated name with access token
     And get list of Bridge instances with access token contains Bridge with randomly generated name
-    And get Bridge with access token exists in status "AVAILABLE" within 2 minutes
+    And get Bridge with access token exists in status "ready" within 2 minutes
     And delete a Bridge
 
     Then the Bridge doesn't exists within 2 minutes
     And the Ingress is Undeployed within 1 minute
     And the Manager Metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
-    And the Manager Metric 'manager_bridge_status_change_total{status="AVAILABLE",}' count is at least 1
+    And the Manager Metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
     And the Manager Metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
 
 
   Scenario: Processor gets created to the bridge and deployed
-    Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
+    Given authentication is done against Manager
+
     When create a Bridge with randomly generated name with access token
     Then get list of Bridge instances with access token contains Bridge with randomly generated name
-    Then get Bridge with access token exists in status "AVAILABLE" within 2 minutes
+    Then get Bridge with access token exists in status "ready" within 2 minutes
     When add Processor to the Bridge with access token:
     """
     {
       "name": "myProcessor",
       "action": {
-        "name": "myKafkaAction",
         "parameters": {
             "topic":  "myKafkaTopic"
             },
@@ -58,7 +57,7 @@ Feature: End to End Bridge integration tests
       ]
     }
     """
-    And get Processor with access token exists in status "AVAILABLE" within 3 minutes
+    And get Processor with access token exists in status "ready" within 3 minutes
 
     And send cloud events to the ingress at the endpoint with access token:
     """
@@ -92,5 +91,5 @@ Feature: End to End Bridge integration tests
     When the Processor is deleted
     Then the Processor doesn't exists within 2 minutes
     And the Manager Metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
-    And the Manager Metric 'manager_processor_status_change_total{status="AVAILABLE",}' count is at least 1
+    And the Manager Metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
     And the Manager Metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1

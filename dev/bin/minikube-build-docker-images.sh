@@ -7,8 +7,19 @@
 # - MINIKUBE_PROFILE: set the current minikube profile (optional, default="minikube")
 ########
 
-. "$( dirname "$0" )/configure.sh" minikube
-cd "$( dirname "$0" )/../.." || die "Can't cd to repository root"
+SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
-eval $( minikube -p "${MINIKUBE_PROFILE}" docker-env )
-mvn clean install -DskipTests -Dquarkus.container-image.build=true
+. "${SCRIPT_DIR_PATH}/configure.sh" minikube
+
+stat "${SCRIPT_DIR_PATH}/../.." &> /dev/null || die "Can't cd to repository root"
+
+env_command='docker-env'
+container_engine_option=
+if [ ! -z "${MINIKUBE_CONTAINER_RUNTIME}" ] && [ "${MINIKUBE_CONTAINER_RUNTIME}" != "docker" ]; then
+  echo 'Use podman env'
+  env_command='podman-env'
+  container_engine_option='-Dquarkus.jib.docker-executable-name=podman'
+fi
+
+eval $( minikube -p "${MINIKUBE_PROFILE}" ${env_command} )
+mvn clean install -Dquickly -Dquarkus.container-image.build=true ${container_engine_option}

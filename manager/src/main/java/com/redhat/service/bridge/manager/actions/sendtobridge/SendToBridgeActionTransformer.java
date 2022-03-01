@@ -24,7 +24,7 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
     @Override
     public BaseAction transform(BaseAction action, String bridgeId, String customerId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
-        Bridge destinationBridge = bridgesService.getAvailableBridge(destinationBridgeId, customerId);
+        Bridge destinationBridge = bridgesService.getReadyBridge(destinationBridgeId, customerId);
 
         Map<String, String> parameters = new HashMap<>();
 
@@ -37,7 +37,6 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
 
         BaseAction transformedAction = new BaseAction();
         transformedAction.setType(WebhookAction.TYPE);
-        transformedAction.setName(action.getName());
         transformedAction.setParameters(parameters);
 
         return transformedAction;

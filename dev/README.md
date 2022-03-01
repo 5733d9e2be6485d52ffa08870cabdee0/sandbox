@@ -15,7 +15,7 @@ You will need the following installed locally on your machine to support local d
 * [Java 11](https://adoptopenjdk.net/)
 * [jq](https://stedolan.github.io/jq/)
 * [curl](https://curl.se/) (or any other HTTP client)
-* [rhoas CLI](https://access.redhat.com/documentation/en-us/red_hat_openshift_streams_for_apache_kafka/1/guide/f520e427-cad2-40ce-823d-96234ccbc047)
+* [rhoas CLI](https://access.redhat.com/documentation/en-us/red_hat_openshift_streams_for_apache_kafka/1/guide/fa4bad02-10f2-4ef3-be34-7edc1337e7ee)
 * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
 ### macOS users:
@@ -102,6 +102,19 @@ Either export this env variable or add this to `localconfig` file (the latter me
 
 ```bash 
 MINIKUBE_DRIVER=hyperkit
+```
+
+### Fedora users
+
+With Fedora 34, there is an issue in spotting the coredns pod due to a cgroup issue with docker/podman.
+
+One workaround is to use the `cri-o` container runtime with `podman` driver.
+
+Either export this env variable or add this to `localconfig` file (the latter method is suggested):
+
+```bash 
+MINIKUBE_DRIVER=podman
+MINIKUBE_CONTAINER_RUNTIME=cri-o
 ```
 
 ## Build container images for Minikube

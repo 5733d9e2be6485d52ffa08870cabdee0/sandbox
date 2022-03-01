@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 public class SendToBridgeActionValidatorTest {
 
-    private static Map<String, String> NULL_PARAMS = null;
-    private static Map<String, String> EMPTY_PARAMS = Collections.emptyMap();
+    private final static Map<String, String> NULL_PARAMS = null;
+    private final static Map<String, String> EMPTY_PARAMS = Collections.emptyMap();
 
     @Inject
     SendToBridgeActionValidator validator;
@@ -62,7 +62,6 @@ public class SendToBridgeActionValidatorTest {
     private BaseAction actionWith(Map<String, String> params) {
         BaseAction b = new BaseAction();
         b.setType(SendToBridgeAction.TYPE);
-        b.setName("testAction");
         b.setParameters(params);
         return b;
     }

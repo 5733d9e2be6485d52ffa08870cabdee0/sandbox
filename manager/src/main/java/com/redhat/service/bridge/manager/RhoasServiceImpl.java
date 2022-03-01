@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
+import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.openshift.cloud.api.kas.auth.models.TopicSettings;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.rhoas.RhoasClient;
@@ -38,13 +39,13 @@ public class RhoasServiceImpl implements RhoasService {
     RhoasClient rhoasClient;
 
     @Override
-    public void createTopicAndGrantAccessFor(String topicName, RhoasTopicAccessType accessType) {
+    public Topic createTopicAndGrantAccessFor(String topicName, RhoasTopicAccessType accessType) {
         try {
             NewTopicInput newTopicInput = new NewTopicInput()
                     .name(topicName)
                     .settings(new TopicSettings().numPartitions(1));
-            rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
-                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries).log()
+            return rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
+                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
             throw new InternalPlatformException(createFailureErrorMessageFor(topicName), e);
@@ -57,7 +58,7 @@ public class RhoasServiceImpl implements RhoasService {
     public void deleteTopicAndRevokeAccessFor(String topicName, RhoasTopicAccessType accessType) {
         try {
             rhoasClient.deleteTopicAndRevokeAccess(topicName, rhoasOpsAccountClientId, accessType)
-                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries).log()
+                    .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
 
@@ -67,7 +68,7 @@ public class RhoasServiceImpl implements RhoasService {
         }
     }
 
-    static String createFailureErrorMessageFor(String topicName) {
+    public static String createFailureErrorMessageFor(String topicName) {
         return String.format("Failed creating and granting access to topic '%s'", topicName);
     }
 

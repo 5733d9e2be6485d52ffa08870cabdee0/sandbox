@@ -55,17 +55,17 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.ACCEPTED, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", TestSupport.CUSTOMER_ID, BridgeStatus.ACCEPTED, TestSupport.KAFKA_CONNECTION_DTO));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"PROVISIONING\"}", TestSupport.CUSTOMER_ID);
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"%s\", \"status\": \"provisioning\"}", TestSupport.CUSTOMER_ID);
         String expectedJsonUpdateAvailableRequest =
-                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myid-1\", \"customerId\": \"%s\", \"status\": \"AVAILABLE\"}",
+                String.format("{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"http://192.168.2.49/ob-myid-1\", \"customerId\": \"%s\", \"status\": \"ready\"}",
                         TestSupport.CUSTOMER_ID);
 
-        CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 AVAILABLE)
+        CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 READY)
         addBridgeUpdateRequestListener(latch);
 
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
@@ -98,11 +98,11 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Test
     public void testBridgesAreDeleted() throws JsonProcessingException, InterruptedException {
         List<BridgeDTO> bridgeDTOS = new ArrayList<>();
-        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
-        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DELETION_REQUESTED, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.DEPROVISION, TestSupport.KAFKA_CONNECTION_DTO));
+        bridgeDTOS.add(new BridgeDTO("myId-2", "myName-2", "myEndpoint", "myCustomerId", BridgeStatus.DEPROVISION, TestSupport.KAFKA_CONNECTION_DTO));
         stubBridgesToDeployOrDelete(bridgeDTOS);
         stubBridgeUpdate();
-        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"DELETING\"}";
+        String expectedJsonUpdateRequest = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"deleting\"}";
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected
         addBridgeUpdateRequestListener(latch);
@@ -119,7 +119,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     public void testNotifyBridgeStatusChange() throws InterruptedException {
         BridgeDTO dto = new BridgeDTO("myId-1", "myName-1", "myEndpoint", "myCustomerId", BridgeStatus.PROVISIONING, TestSupport.KAFKA_CONNECTION_DTO);
         stubBridgeUpdate();
-        String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"PROVISIONING\"}";
+        String expectedJsonUpdate = "{\"id\": \"myId-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
@@ -140,7 +140,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
         stubProcessorUpdate();
 
-        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 AVAILABLE)
+        CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 provisioning + 1 ready)
         addProcessorUpdateRequestListener(latch);
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
@@ -155,7 +155,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                             kubernetesResourcePatcher.patchReadyService(sanitizedName, customerNamespace);
                         });
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        processor.setStatus(BridgeStatus.AVAILABLE);
+        processor.setStatus(BridgeStatus.READY);
         processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
                 .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))

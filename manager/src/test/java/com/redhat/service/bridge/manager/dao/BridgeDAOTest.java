@@ -42,10 +42,10 @@ public class BridgeDAOTest {
         List<Bridge> retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.PROVISIONING), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.AVAILABLE), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.READY), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isZero();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.REQUESTED), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 
@@ -127,7 +127,7 @@ public class BridgeDAOTest {
         bridge.setId(id);
         bridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         bridge.setName(name);
-        bridge.setStatus(BridgeStatus.REQUESTED);
+        bridge.setStatus(BridgeStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now());
         bridge.setShardId(TestConstants.SHARD_ID);
 

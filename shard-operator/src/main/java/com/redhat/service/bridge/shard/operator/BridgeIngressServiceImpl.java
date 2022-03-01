@@ -38,6 +38,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @ConfigProperty(name = "event-bridge.ingress.image")
     String ingressImage;
 
+    @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
+    int deploymentTimeout;
+
     @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
     String webhookTechnicalAccountId;
 
@@ -85,6 +88,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getSpec().getTemplate().getMetadata().setLabels(new LabelsBuilder().withAppInstance(bridgeIngress.getMetadata().getName()).build());
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setName(BridgeIngress.COMPONENT_NAME);
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(bridgeIngress.getSpec().getImage());
+        expected.getSpec().setProgressDeadlineSeconds(deploymentTimeout);
 
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
