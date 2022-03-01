@@ -153,7 +153,7 @@ Would evaluate the `Filter` to `true`.
 
 ## Combining filters
 
-When a `Filter` array contain more than one entry, the entries are additive. 
+When a `Filter` array contain more than one entry, the entries are ANDed, meaning all entries must match for the `Filter` to be true.
 Assume a `Filter` of:
 
 ```json
