@@ -16,6 +16,6 @@ echo "Remove all Openbridge namespaces"
 kubectl get ns | grep "Active" | awk -F " " '{print $1}' | grep "^ob-" | xargs kubectl delete ns || echo "nothing to delete"
 
 echo "Removing all resources"
-kustomize build overlays/minikube | kubectl delete -f -
+kustomize build ${KUSTOMIZE_DIR}/overlays/minikube | kubectl delete -f -
 
 sleep 30
