@@ -48,7 +48,7 @@ Feature: End to End Bridge integration tests
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
-    And the Processor "myProcessor" of the Bridge "mybridge" has action of type "KafkaTopicAction" and parameters:
+    And the Processor "myProcessor" of the Bridge "mybridge" has action of type "KafkaTopic" and parameters:
       | topic | myKafkaTopic |
 
     And send a cloud event to the Ingress of the Bridge "mybridge":
