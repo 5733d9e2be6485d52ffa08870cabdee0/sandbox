@@ -139,7 +139,7 @@ An example payload request is the following:
   "name": "myProcessor",
   "action": {
     "parameters": {"topic":  "demoTopic"},
-    "type": "KafkaTopicAction"
+    "type": "KafkaTopic"
   },
   "filters": [
     {
@@ -152,12 +152,12 @@ An example payload request is the following:
 ```
 
 So only the events with `source` equals to `StorageService` will be sent to the 
-the action `KafkaTopicAction`, which will push the event to the kafka instance under the topic `demoTopic`.
+the action `KafkaTopic`, which will push the event to the kafka instance under the topic `demoTopic`.
 
 Run 
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "KafkaTopicAction"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "KafkaTopic"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -180,7 +180,7 @@ and the response is something like
     ],
   "action":
     {
-      "type":"KafkaTopicAction",
+      "type":"KafkaTopic",
       "parameters":
       {
         "topic":"demoTopic"

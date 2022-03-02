@@ -32,7 +32,7 @@ Feature: End to End Bridge integration tests
         "parameters": {
             "topic":  "myKafkaTopic"
             },
-        "type": "KafkaTopicAction"
+        "type": "KafkaTopic"
       },
       "filters": [
         {
