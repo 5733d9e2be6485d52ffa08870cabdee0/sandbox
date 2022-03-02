@@ -1,11 +1,10 @@
 Feature: End to End Bridge integration tests
 
   Scenario:By default Manager url should not be accessible without authentication
-    Given get list of Bridge instances returns HTTP response code 401
-
+    Given get list of Bridge instances fails with HTTP response code 401
 
   Scenario: Bridge is created and in ready state
-    Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
+    Given authentication is done against Manager
 
     When create a Bridge with randomly generated name with access token
     And get list of Bridge instances with access token contains Bridge with randomly generated name
@@ -20,7 +19,8 @@ Feature: End to End Bridge integration tests
 
 
   Scenario: Processor gets created to the bridge and deployed
-    Given get list of Bridge instances with access token doesn't contain randomly generated Bridge
+    Given authentication is done against Manager
+
     When create a Bridge with randomly generated name with access token
     Then get list of Bridge instances with access token contains Bridge with randomly generated name
     Then get Bridge with access token exists in status "ready" within 2 minutes
@@ -29,7 +29,6 @@ Feature: End to End Bridge integration tests
     {
       "name": "myProcessor",
       "action": {
-        "name": "myKafkaAction",
         "parameters": {
             "topic":  "myKafkaTopic"
             },

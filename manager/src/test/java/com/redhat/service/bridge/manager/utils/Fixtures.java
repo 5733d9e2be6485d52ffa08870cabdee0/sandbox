@@ -21,7 +21,6 @@ public class Fixtures {
     public static BaseAction createKafkaAction() {
         BaseAction action = new BaseAction();
         action.setType(KafkaTopicAction.TYPE);
-        action.setName(TestConstants.DEFAULT_ACTION_NAME);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         action.setParameters(params);

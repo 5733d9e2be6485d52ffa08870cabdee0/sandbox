@@ -138,7 +138,6 @@ An example payload request is the following:
 {
   "name": "myProcessor",
   "action": {
-    "name": "myKafkaAction",
     "parameters": {"topic":  "demoTopic"},
     "type": "KafkaTopic"
   },
@@ -158,7 +157,7 @@ the action `KafkaTopic`, which will push the event to the kafka instance under t
 Run 
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"name": "myKafkaAction", "parameters": {"topic":  "demoTopic"}, "type": "KafkaTopic"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "KafkaTopic"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -181,7 +180,6 @@ and the response is something like
     ],
   "action":
     {
-      "name":"myKafkaAction",
       "type":"KafkaTopic",
       "parameters":
       {

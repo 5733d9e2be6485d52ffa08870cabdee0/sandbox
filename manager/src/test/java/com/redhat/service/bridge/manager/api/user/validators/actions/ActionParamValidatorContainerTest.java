@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 public class ActionParamValidatorContainerTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
-    public static String TEST_ACTION_NAME = "TestActionName";
     public static String TEST_PARAM_NAME = "test-param-name";
     public static String TEST_PARAM_VALUE = "test-param-value";
 
@@ -57,7 +56,6 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = new ProcessorRequest();
         BaseAction b = new BaseAction();
         b.setType(TEST_ACTION_TYPE);
-        b.setName(TEST_ACTION_NAME);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
         b.setParameters(params);
@@ -175,7 +173,6 @@ public class ActionParamValidatorContainerTest {
         verify(validatorContext).disableDefaultConstraintViolation();
         verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
         verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, TEST_ACTION_TYPE);
-        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.NAME_PARAM, TEST_ACTION_NAME);
         verify(builderMock).addConstraintViolation();
 
         assertThat(messageCap.getValue()).isEqualTo(ActionParamValidatorContainer.ACTION_PARAMETERS_NOT_VALID_ERROR);

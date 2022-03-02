@@ -9,11 +9,10 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.integration.tests.common.BridgeCommon;
-import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.context.TestContext;
+import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
 import io.cucumber.java.en.Then;
@@ -24,6 +23,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessorSteps {
 
+    private TestContext context;
+
+    public ProcessorSteps(TestContext context) {
+        this.context = context;
+    }
+
     @When("^add Processor to the Bridge with access token:$")
     public void addProcessor(String processorRequestJson) {
 
@@ -33,9 +38,10 @@ public class ProcessorSteps {
         int filtersSize = json.getJsonArray("filters").size();
 
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
-        ProcessorResponse response = BridgeCommon.createProcessor(StepsContext.bridgeId, resourceStream);
+        ProcessorResponse response = ProcessorResource.createProcessor(context.getManagerToken(),
+                context.getBridgeId(), resourceStream);
 
-        StepsContext.processorId = response.getId();
+        context.setProcessorId(response.getId());
 
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
@@ -51,9 +57,8 @@ public class ProcessorSteps {
     @Then("add invalid Processor to the Bridge with access token returns HTTP response code (\\d+):$")
     public void addWrongFilterProcessor(int responseCode, String processorRequestJson) {
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
-        BridgeUtils.jsonRequestWithAuth()
-                .body(resourceStream)
-                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + StepsContext.bridgeId + "/processors")
+        ProcessorResource
+                .createProcessorResponse(context.getManagerToken(), context.getBridgeId(), resourceStream)
                 .then()
                 .statusCode(responseCode);
     }
@@ -64,14 +69,17 @@ public class ProcessorSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> BridgeCommon.getProcessor(StepsContext.bridgeId, StepsContext.processorId)
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), context.getBridgeId(),
+                                        context.getProcessorId())
                                 .then()
                                 .body("status", Matchers.equalTo(status)));
     }
 
     @When("the Processor is deleted")
     public void testDeleteProcessor() {
-        BridgeCommon.deleteProcessor(StepsContext.bridgeId, StepsContext.processorId);
+        ProcessorResource.deleteProcessor(context.getManagerToken(), context.getBridgeId(),
+                context.getProcessorId());
     }
 
     @Then("^the Processor doesn't exists within (\\d+) (?:minute|minutes)$")
@@ -80,7 +88,9 @@ public class ProcessorSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> BridgeCommon.getProcessor(StepsContext.bridgeId, StepsContext.processorId)
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), context.getBridgeId(),
+                                        context.getProcessorId())
                                 .then()
                                 .statusCode(404));
     }

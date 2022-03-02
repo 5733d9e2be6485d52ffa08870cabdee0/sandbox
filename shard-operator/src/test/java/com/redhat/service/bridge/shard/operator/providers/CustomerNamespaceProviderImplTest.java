@@ -1,14 +1,17 @@
 package com.redhat.service.bridge.shard.operator.providers;
 
+import java.time.Duration;
 import java.util.Collections;
 
 import javax.inject.Inject;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.TestSupport;
+import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.bridge.test.resource.KeycloakResource;
 
@@ -81,6 +84,14 @@ class CustomerNamespaceProviderImplTest {
         final BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
         dto.setCustomerId("cooper");
         bridgeIngressService.createBridgeIngress(dto);
+        // Wait until BridgeIngress is really created, can take some time due to client caching
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> kubernetesClient
+                        .resources(BridgeIngress.class)
+                        .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                        .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                        .get() != null);
         // try to delete the namespace...
         customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(dto.getCustomerId());
         final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
@@ -92,9 +103,18 @@ class CustomerNamespaceProviderImplTest {
         final BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
         dto.setCustomerId("hofstadter");
         bridgeIngressService.createBridgeIngress(dto);
+        // Wait until BridgeIngress is really created, can take some time due to client caching - https://issues.redhat.com/browse/MGDOBR-308
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> kubernetesClient
+                        .resources(BridgeIngress.class)
+                        .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                        .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                        .get() != null);
         // there's only one bridge there
         bridgeIngressService.deleteBridgeIngress(dto);
-        final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
-        assertThat(namespace).isNull();
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get() == null);
     }
 }
