@@ -19,7 +19,7 @@ An example of how to interact with Managed Connectors. It will create the needed
 ./scripts/create-kafka-instance.sh
 # Follow the output of the script, it will set the needed variables
 
-export COS_BASE_PATH=https://wxn4aqqc8bqvxcy6unfe.api.stage.openshift.com
+export COS_BASE_PATH=https://cos-fleet-manager-cos.rh-fuse-153f1de160110098c1928a6c05e19444-0000.eu-de.containers.appdomain.cloud
 export KAS_BASE_PATH=https://api.openshift.com
 
 export SERVICEACCOUNT_ID=$(cat ./service-acct-credentials.json | jq -r '.clientID')
