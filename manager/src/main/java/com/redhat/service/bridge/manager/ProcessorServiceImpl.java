@@ -188,7 +188,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     public List<ConnectorEntity> commitDeletionRequest(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
         if (processor == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s", processorId, bridgeId, customerId));
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
         processor.setStatus(BridgeStatus.DEPROVISION);
 
