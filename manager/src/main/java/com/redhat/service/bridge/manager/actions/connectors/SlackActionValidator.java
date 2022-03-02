@@ -12,7 +12,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 public class SlackActionValidator implements ActionParameterValidator {
 
     public static final String EMPTY_PARAMETERS_MESSAGE =
-            String.format("Needed parameters: %s,%s", SlackAction.CHANNEL_PARAMETER, SlackAction.WEBHOOK_URL_PARAMETER);
+            String.format("Missing 'parameter' field with the following parameters: %s,%s", SlackAction.CHANNEL_PARAMETER, SlackAction.WEBHOOK_URL_PARAMETER);
 
     public static final String INVALID_CHANNEL_MESSAGE =
             "The supplied " + SlackAction.CHANNEL_PARAMETER + " parameter is not valid";
