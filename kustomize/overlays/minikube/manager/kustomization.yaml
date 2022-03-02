@@ -6,7 +6,7 @@ secretGenerator:
   - MANAGED_CONNECTORS_KAFKA_CLIENT_ID=<REPLACE_WITH_KAFKA_MC_CLIENT_ID>
   - MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=<REPLACE_WITH_KAFKA_MC_CLIENT_SECRET>
   - MANAGED_CONNECTORS_KAFKA_SECURITY_PROTOCOL=SASL_SSL
-  - MANAGED_CONNECTORS_SERVICES_URL=https://wxn4aqqc8bqvxcy6unfe.api.stage.openshift.com
+  - MANAGED_CONNECTORS_SERVICES_URL=https://cos-fleet-manager-cos.rh-fuse-153f1de160110098c1928a6c05e19444-0000.eu-de.containers.appdomain.cloud
   - MANAGED_CONNECTORS_AUTH_SERVER_URL=https://sso.redhat.com/auth/realms/redhat-external
   - MANAGED_CONNECTORS_AUTH_TOKEN_PATH=protocol/openid-connect/token
   - MANAGED_CONNECTORS_AUTH_CLIENT_ID=cloud-services
