@@ -87,7 +87,7 @@ public class ProcessorSteps {
     }
 
     @And("^get Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
-    public void getProcessorOfBridgeIsFailingWithHTTPResponseCode(String testBridgeName, String processorName,
+    public void getProcessorOfBridgeIsFailingWithHTTPResponseCode(String processorName, String testBridgeName,
             int responseCode) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();

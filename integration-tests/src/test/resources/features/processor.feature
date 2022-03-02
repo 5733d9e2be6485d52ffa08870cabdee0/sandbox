@@ -77,7 +77,25 @@ Feature: Processor tests
 
     When logout of Manager
     
-    Then add a Processor to the Bridge "mybridge" is failing with HTTP response code 401
+    Then add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 401:
+    """
+    {
+      "name": "myProcessor",
+      "action": {
+        "parameters": {
+            "topic":  "myKafkaTopic"
+        },
+        "type": "KafkaTopic"
+      },
+      "filters": [
+        {
+        "key": "source",
+        "type": "StringEquals",
+        "value": "StorageService"
+        }
+      ]
+    }
+    """
 
   Scenario: Cannot access processor details without authentication
     Given authenticate against Manager
@@ -108,4 +126,4 @@ Feature: Processor tests
 
     When logout of Manager
 
-    Then get Processor "myprocessor" of the Bridge "mybridge" is failing with HTTP response code 401
+    Then get Processor "myProcessor" of the Bridge "mybridge" is failing with HTTP response code 401
