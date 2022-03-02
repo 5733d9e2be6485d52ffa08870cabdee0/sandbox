@@ -1,0 +1,11 @@
+# This is an example local environment file.
+# It can be used to configure required variables for your local environment
+# without the need of exporting them every time, like offline tokens etc.
+# If you want to use it, make a copy of this named "environment" in this same folder.
+
+MINIKUBE_IP=$(minikube ip)
+KEYCLOAK_URL=http://$MINIKUBE_IP:30007
+MANAGER_URL=http://localhost:8080
+KEYCLOAK_USERNAME=username
+KEYCLOAK_PASSWORD=password
+SLACK_WEBHOOK_URL=webhook_url
