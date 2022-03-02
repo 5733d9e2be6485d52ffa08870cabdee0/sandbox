@@ -11,13 +11,17 @@ import io.restassured.response.Response;
 public class BridgeResource {
 
     public static BridgeResponse addBridge(String token, String bridgeName) {
-        return ResourceUtils.jsonRequest(token)
-                .body(new BridgeRequest(bridgeName))
-                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH)
+        return addBridgeResponse(token, bridgeName)
                 .then()
                 .statusCode(201)
                 .extract()
                 .as(BridgeResponse.class);
+    }
+
+    public static Response addBridgeResponse(String token, String bridgeName) {
+        return ResourceUtils.jsonRequest(token)
+                .body(new BridgeRequest(bridgeName))
+                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {

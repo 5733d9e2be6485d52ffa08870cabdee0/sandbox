@@ -18,19 +18,11 @@ public class IngressResource {
                 .options(endpoint + "/events");
     }
 
-    public static Response postJsonEventResponse(String token, String endpoint, InputStream cloudEventStream, Headers headers) {
+    public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream, Headers headers) {
         return ResourceUtils.jsonRequest(token)
                 .headers(headers)
                 .body(cloudEventStream)
                 .contentType(ContentType.JSON)
-                .post(endpoint + "/events");
-    }
-
-    public static Response postPlainEventResponse(String token, String endpoint, String plainText, Headers headers) {
-        return ResourceUtils.jsonRequest(token)
-                .headers(headers)
-                .body(plainText)
-                .contentType(ContentType.JSON)
-                .post(endpoint + "/events/plain");
+                .post(endpoint);
     }
 }

@@ -48,9 +48,14 @@ public class ProcessorResource {
     }
 
     public static ProcessorListResponse getProcessorList(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token)
-                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/").then()
+        return getProcessorListResponse(token, bridgeId)
+                .then()
                 .extract()
                 .as(ProcessorListResponse.class);
+    }
+
+    public static Response getProcessorListResponse(String token, String bridgeId) {
+        return ResourceUtils.jsonRequest(token)
+                .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/");
     }
 }
