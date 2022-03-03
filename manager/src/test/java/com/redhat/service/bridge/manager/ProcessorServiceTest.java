@@ -504,21 +504,6 @@ public class ProcessorServiceTest {
         assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
     }
 
-    @Test
-    public void testDeleteFailedRequestedConnector() {
-        Bridge bridge = createPersistBridge(BridgeStatus.READY);
-        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", DEPROVISION);
-        ConnectorEntity connector = Fixtures.createConnector(processor,
-                "connectorToBeDeleted",
-                ConnectorStatus.FAILED,
-                ConnectorStatus.DELETED,
-                "topicName");
-        processorDAO.persist(processor);
-        connectorsDAO.persist(connector);
-
-        assertShardAsksForProcessorToBeDeletedIncludes(processor);
-    }
-
     private BaseAction createSlackAction() {
         BaseAction mcAction = new BaseAction();
         mcAction.setType(SlackAction.TYPE);
