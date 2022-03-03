@@ -47,6 +47,7 @@ import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREA
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
@@ -176,7 +177,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
-        List<ConnectorEntity> connectorEntitiesToBeDeleted = updateProcessorConnectorForDeletionOnDB(bridgeId, processorId, customerId);
+        List<ConnectorEntity> connectorEntitiesToBeDeleted = commitDeletionRequest(bridgeId, processorId, customerId);
         connectorEntitiesToBeDeleted.forEach(c -> {
             LOGGER.info("Firing deletion event for entity: " + c);
             eventBus.requestAndForget(Events.CONNECTOR_DELETED_EVENT, c);
@@ -184,8 +185,11 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Transactional
-    public List<ConnectorEntity> updateProcessorConnectorForDeletionOnDB(String bridgeId, String processorId, String customerId) {
+    public List<ConnectorEntity> commitDeletionRequest(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
+        if (processor == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+        }
         processor.setStatus(BridgeStatus.DEPROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),

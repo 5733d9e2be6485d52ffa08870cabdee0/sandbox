@@ -285,6 +285,12 @@ public class ProcessorServiceTest {
     }
 
     @Test
+    public void deleteProcessor_processorDoesNotExist() {
+        Bridge b = createPersistBridge(BridgeStatus.READY);
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.deleteProcessor(b.getId(), "doesNotExist", b.getCustomerId()));
+    }
+
+    @Test
     public void testGetProcessorsCount() {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
