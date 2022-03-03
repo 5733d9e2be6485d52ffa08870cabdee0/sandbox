@@ -220,7 +220,7 @@ Here's an example of the payload for the `Slack` action. Notice that we need to 
 }
 ```
 
-Here's the example payload of the `Webhook` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
+Here's the example payload of the `Webhook` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
 
 ```json
 {"text":"Hello, World!"}
