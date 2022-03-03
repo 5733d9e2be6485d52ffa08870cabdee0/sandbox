@@ -201,6 +201,46 @@ Like for the Bridge instance, it is needed to wait until the Processor has been 
 curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID  | jq .
 ```
 
+## Sending messages to Slack using processors
+
+To send messages to Slack using a processor we have two different ways: either use the `Slack` or the `Webhook` action.
+
+Here's an example of the payload for the `Slack` action. Notice that we need to specify both the channel and the webhookUrl.
+
+```json
+{
+  "name": "SlackActionProcessor",
+  "action": {
+    "type": "Slack",
+    "parameters": {
+      "channel": "channel",
+      "webhookUrl": "webhookURL"
+    }
+  }
+}
+```
+
+Here's the example payload of the `Webhook` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
+
+```json
+{"text":"Hello, World!"}
+```
+
+```json
+
+{
+  "name": "SlackWithWebhookAction",
+  "action": {
+    "type": "Webhook",
+    "parameters": {
+      "endpoint": "webhookUrl"
+    }
+  },
+  "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
+}
+
+```
+
 ## Send events to the Ingress
 
 Everything is now set up to accept events and process them. Let's send the following cloud event to the ingress at the endpoint you extracted from the Bridge response: in this example `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/events`. 
