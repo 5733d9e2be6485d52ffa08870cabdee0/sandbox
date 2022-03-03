@@ -20,14 +20,14 @@ public class ExecutorsService {
     /**
      * Kafka Topic that we expect to have configured for receiving events.
      */
-    public static final String EVENTS_IN_TOPIC = "events-in";
+    public static final String EVENTS_IN_CHANNEL = "events-in";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorsService.class);
 
     @Inject
     ExecutorsProvider executorsProvider;
 
-    @Incoming(EVENTS_IN_TOPIC)
+    @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
         try {
             CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
