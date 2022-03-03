@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
@@ -43,7 +44,7 @@ public class IngressSteps {
         Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                         .then()
-                        .statusCode(404));
+                        .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
     }
 
     @Then("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")
