@@ -2,4 +2,4 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-http -v $MANAGER_URL/api/v1/bridges/$BRIDGE_ID Authorization:"$OB_TOKEN"
+curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/v1/bridges/$BRIDGE_ID" | jq .

@@ -4,6 +4,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 BRIDGE_NAME=${1:-$TODAY_BRIDGE_NAME}
 
+MESSAGE="'$(date +%H:%M:%S)'-my new message"
+
 export CLOUD_EVENT='{
     "specversion": "1.0",
     "type": "Microsoft.Storage.BlobCreated",
@@ -13,11 +15,13 @@ export CLOUD_EVENT='{
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "myMessage" : "'$(date +%H:%M:%S)'-my new message"
+        "myMessage" : '"\"$MESSAGE\""'
     }
 }'
 
 
-BRIDGE_ENDPOINT=$(http $MANAGER_URL/api/v1/bridges/$BRIDGE_ID Authorization:"$OB_TOKEN" | jq -r .endpoint)
+BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
 
-curl -v -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d "$CLOUD_EVENT" "$BRIDGE_ENDPOINT/events"
+echo "Sending cloud event to $BRIDGE_ENDPOINT"
+curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d "$CLOUD_EVENT" "$BRIDGE_ENDPOINT/events"
+echo "- Message $MESSAGE sent"
