@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source "bin/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 PROCESSOR_NAME=${1:-$TODAY_PROCESSOR_NAME}
 

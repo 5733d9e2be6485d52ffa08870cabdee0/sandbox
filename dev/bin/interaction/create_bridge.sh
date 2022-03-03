@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source "bin/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 BRIDGE_NAME=${1:-$TODAY_BRIDGE_NAME}
 
