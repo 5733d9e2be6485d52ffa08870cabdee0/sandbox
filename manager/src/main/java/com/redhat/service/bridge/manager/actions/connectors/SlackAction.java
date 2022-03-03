@@ -16,7 +16,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 @ApplicationScoped
 public class SlackAction implements ConnectorAction {
 
-    public static final String TYPE = "SlackAction";
+    public static final String TYPE = "Slack";
 
     public static final String CHANNEL_PARAMETER = "channel";
     public static final String WEBHOOK_URL_PARAMETER = "webhookUrl";

@@ -22,7 +22,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 @ApplicationScoped
 public class KafkaTopicAction implements InvokableActionProvider {
 
-    public static final String TYPE = "KafkaTopicAction";
+    public static final String TYPE = "KafkaTopic";
 
     public static final String TOPIC_PARAM = "topic";
 

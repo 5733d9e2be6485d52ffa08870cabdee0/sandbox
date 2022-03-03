@@ -1,30 +1,34 @@
 Feature: End to End Bridge integration tests
 
-  Scenario:By default Manager url should not be accessible without authentication
-    Given get list of Bridge instances fails with HTTP response code 401
+  Scenario: Manager is not accessible without authentication
+    Given the list of Bridge instances is failing with HTTP response code 401
 
-  Scenario: Bridge is created and in ready state
-    Given authentication is done against Manager
+  Scenario: Bridge is created and correctly deleted
+    Given authenticate against Manager
 
-    When create a Bridge with randomly generated name with access token
-    And get list of Bridge instances with access token contains Bridge with randomly generated name
-    And get Bridge with access token exists in status "ready" within 2 minutes
-    And delete a Bridge
+    When create a new Bridge "mybridge"
+    And the list of Bridge instances is containing the Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    
+    When delete the Bridge "mybridge"
 
-    Then the Bridge doesn't exists within 2 minutes
-    And the Ingress is Undeployed within 1 minute
-    And the Manager Metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
-    And the Manager Metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
-    And the Manager Metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
+    Then the Bridge "mybridge" is not existing within 2 minutes
+    And the Ingress of Bridge "mybridge" is not available within 1 minute
+
+    And the Manager metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
+    And the Manager metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
 
 
-  Scenario: Processor gets created to the bridge and deployed
-    Given authentication is done against Manager
+  Scenario: Processor is created, deployed and correctly deleted
+    Given authenticate against Manager
+    
+    When create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
 
-    When create a Bridge with randomly generated name with access token
-    Then get list of Bridge instances with access token contains Bridge with randomly generated name
-    Then get Bridge with access token exists in status "ready" within 2 minutes
-    When add Processor to the Bridge with access token:
+    And add a Processor to the Bridge "mybridge" with body:
     """
     {
       "name": "myProcessor",
@@ -32,7 +36,7 @@ Feature: End to End Bridge integration tests
         "parameters": {
             "topic":  "myKafkaTopic"
             },
-        "type": "KafkaTopicAction"
+        "type": "KafkaTopic"
       },
       "filters": [
         {
@@ -43,23 +47,11 @@ Feature: End to End Bridge integration tests
       ]
     }
     """
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" has action of type "KafkaTopic" and parameters:
+      | topic | myKafkaTopic |
 
-    When add invalid Processor to the Bridge with access token returns HTTP response code 400:
-    """
-    {
-      "name": "processorInvalid"
-       "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
-    }
-    """
-    And get Processor with access token exists in status "ready" within 3 minutes
-
-    And send cloud events to the ingress at the endpoint with access token:
+    And send a cloud event to the Ingress of the Bridge "mybridge":
     """
     {
     "specversion": "1.0",
@@ -85,11 +77,33 @@ Feature: End to End Bridge integration tests
       }
     }
     """
-    And the Ingress Metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
-    And the Ingress Metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1
+    And the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
+    # TODO
+    # And the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1
+    And delete the Processor "myProcessor" of the Bridge "mybridge"
+    Then the Processor "myProcessor" of the Bridge "mybridge" is not existing within 2 minutes
 
-    When the Processor is deleted
-    Then the Processor doesn't exists within 2 minutes
-    And the Manager Metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
-    And the Manager Metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
-    And the Manager Metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1
+    And the Manager metric 'manager_processor_status_change_total{status="PROVISIONING",}' count is at least 1
+    And the Manager metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
+    And the Manager metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1
+
+  Scenario: Processor payload is malformed
+    Given authenticate against Manager
+    
+    When create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    
+    Then add a Processor to the Bridge "mybridge" and returns HTTP response code 400 with body:
+    """
+    {
+      "name": "processorInvalid"
+       "filters": [
+        {
+        "key": "source",
+        "type": "StringEquals",
+        "value": "StorageService"
+        }
+      ]
+    }
+    """

@@ -19,7 +19,7 @@ Each `Action` has 2 parameters to specify:
 
 The following `Actions` are currently supported by Event Bridge:
 
-### SendToKafka
+### KafkaTopic
 
 Allows you to send an `Event` to a Kafka Topic on a hard-coded Kafka Cluster made available via the Event Bridge deployment
 
@@ -34,7 +34,7 @@ To send an Event to the topic `myRequestedTopic`:
 ```json
 {
   "action": {
-    "type": "SendToKafka",
+    "type": "KafkaTopic",
     "parameters": {
       "topic": "myRequestedTopic"
     }
@@ -89,7 +89,7 @@ To send an event to bridge with id `foo` in my account:
 }
 ```
 
-### SlackAction
+### Slack
 
 Allows you to send a message to a Slack Channel of your choice
 
@@ -105,7 +105,7 @@ To send an Event to channel `foo` with webhook URL `https://example.com`:
 ```json
 {
   "action": {
-    "type": "SlackAction",
+    "type": "Slack",
     "parameters": {
       "channel": "foo",
       "webhookUrl": "https://example.com"

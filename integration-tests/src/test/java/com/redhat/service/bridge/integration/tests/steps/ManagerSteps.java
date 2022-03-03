@@ -13,8 +13,8 @@ public class ManagerSteps {
         this.context = context;
     }
 
-    @Given("^authentication is done against Manager$")
-    public void authenticationIsDoneAgainstManager() {
+    @Given("^authenticate against Manager$")
+    public void authenticateAgainstManager() {
         context.setManagerToken(BridgeUtils.retrieveBridgeToken());
     }
 }
