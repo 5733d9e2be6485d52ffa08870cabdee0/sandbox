@@ -59,7 +59,6 @@ public class ProcessorSteps {
 
         JsonObject json = new JsonObject(processorRequestJson);
         String processorName = json.getString("name");
-        int filtersSize = json.getJsonArray("filters").size();
 
         InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
         ProcessorResponse response = ProcessorResource.createProcessor(context.getManagerToken(),
@@ -71,7 +70,6 @@ public class ProcessorSteps {
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
-        assertThat(response.getFilters().size()).isEqualTo(filtersSize);
     }
 
     @Then("add a Processor to the Bridge \"([^\"]*)\" with body is failing with HTTP response code (\\d+):$")

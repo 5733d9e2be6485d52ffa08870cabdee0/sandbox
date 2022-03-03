@@ -1,3 +1,4 @@
+@test
 Feature: Ingress tests
 
   Background:
@@ -14,14 +15,7 @@ Feature: Ingress tests
             "topic":  "myKafkaTopic"
         },
         "type": "KafkaTopic"
-      },
-      "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
+      }
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
@@ -38,18 +32,7 @@ Feature: Ingress tests
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "api": "PutBlockList",
-        "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a",
-        "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000",
-        "eTag": "0x8D76C39E4407333",
-        "contentType": "image/png",
-        "contentLength": 30699,
-        "blobType": "BlockBlob",
-        "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}",
-        "sequencer": "000000000000000000000000000099240000000000c41c18",
-        "storageDiagnostics": {
-            "batchId": "681fe319-3006-00a8-0022-9e7cde000000"
-        }
+        "api": "PutBlockList"
       }
     }
     """
@@ -74,18 +57,7 @@ Feature: Ingress tests
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "api": "PutBlockList",
-        "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a",
-        "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000",
-        "eTag": "0x8D76C39E4407333",
-        "contentType": "image/png",
-        "contentLength": 30699,
-        "blobType": "BlockBlob",
-        "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}",
-        "sequencer": "000000000000000000000000000099240000000000c41c18",
-        "storageDiagnostics": {
-            "batchId": "681fe319-3006-00a8-0022-9e7cde000000"
-        }
+        "api": "PutBlockList"
       }
     }
     """
@@ -104,18 +76,7 @@ Feature: Ingress tests
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "api": "PutBlockList",
-        "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a",
-        "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000",
-        "eTag": "0x8D76C39E4407333",
-        "contentType": "image/png",
-        "contentLength": 30699,
-        "blobType": "BlockBlob",
-        "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}",
-        "sequencer": "000000000000000000000000000099240000000000c41c18",
-        "storageDiagnostics": {
-            "batchId": "681fe319-3006-00a8-0022-9e7cde000000"
-        }
+        "api": "PutBlockList"
       }
     }
     """

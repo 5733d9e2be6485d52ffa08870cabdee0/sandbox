@@ -112,6 +112,8 @@
                     See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
                 -->
                 <!--cucumber.filter.tags>${tags}</cucumber.filter.tags--> 
+                
+                <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
 
                 <!-- Token authorization configuration-->

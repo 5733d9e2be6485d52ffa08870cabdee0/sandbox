@@ -1,5 +1,7 @@
+@test
 Feature: Processor tests
 
+  @test2
   Scenario: Processor is created, deployed and correctly deleted
     Given authenticate against Manager
     And create a new Bridge "mybridge"
@@ -15,14 +17,7 @@ Feature: Processor tests
             "topic":  "myKafkaTopic"
         },
         "type": "KafkaTopic"
-      },
-      "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
+      }
     }
     """
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "myProcessor"
@@ -38,6 +33,20 @@ Feature: Processor tests
     And the Manager metric 'manager_processor_status_change_total{status="READY",}' count is at least 1
     And the Manager metric 'manager_processor_status_change_total{status="DELETED",}' count is at least 1
 
+  Scenario: Add a Processor with no action
+    Given authenticate against Manager
+    
+    When create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    
+    Then add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
+    """
+    {
+      "name": "noActionProcessor"
+    }
+    """
+
   Scenario: Processor payload is malformed
     Given authenticate against Manager
     
@@ -49,13 +58,7 @@ Feature: Processor tests
     """
     {
       "name": "processorInvalid"
-       "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
+      "filters": []
     }
     """
 
@@ -86,14 +89,7 @@ Feature: Processor tests
             "topic":  "myKafkaTopic"
         },
         "type": "KafkaTopic"
-      },
-      "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
+      }
     }
     """
 
@@ -112,14 +108,7 @@ Feature: Processor tests
             "topic":  "myKafkaTopic"
         },
         "type": "KafkaTopic"
-      },
-      "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-      ]
+      }
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
