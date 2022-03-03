@@ -46,9 +46,6 @@ public class IngressAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngressAPI.class);
 
-    @ConfigProperty(name = "event-bridge.bridge.id")
-    String bridgeId;
-
     @ConfigProperty(name = "event-bridge.customer.id")
     String customerId;
 
@@ -70,7 +67,7 @@ public class IngressAPI {
     public Response publishEvent(@NotNull CloudEvent event) {
         failIfNotAuthorized(jwt);
         LOGGER.debug("New event has been uploaded to endpoint /events");
-        kafkaEventPublisher.sendEvent(bridgeId, event);
+        kafkaEventPublisher.sendEvent(event);
         return Response.ok().build();
     }
 
@@ -90,7 +87,7 @@ public class IngressAPI {
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
                 URI.create(cloudEventSource), cloudEventSubject, event);
-        kafkaEventPublisher.sendEvent(bridgeId, cloudEvent);
+        kafkaEventPublisher.sendEvent(cloudEvent);
         return Response.ok().build();
     }
 
