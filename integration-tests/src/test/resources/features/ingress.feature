@@ -20,7 +20,7 @@ Feature: Ingress tests
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
 
-  Scenario: Send json Cloud Event
+  Scenario: Send Cloud Event
     When send a cloud event to the Ingress of the Bridge "mybridge" with path "events":
     """
     {
@@ -39,11 +39,17 @@ Feature: Ingress tests
     Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
 
   Scenario: Send plain Cloud Event
-    When send a cloud event to the Ingress of the Bridge "mybridge" with path "events/plain":
+    When send a cloud event to the Ingress of the Bridge "mybridge" with path "events/plain" and default headers:
     """
     { "data" : "test" }
     """
     Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1
+
+  Scenario: Send plain Cloud Event without headers
+    Then send a cloud event to the Ingress of the Bridge "mybridge" with path "events/plain" is failing with HTTP response code 400:
+    """
+    { "data" : "test" }
+    """
 
   Scenario: Send Cloud Event to wrong path    
     Then send a cloud event to the Ingress of the Bridge "mybridge" with path "ingress/not-the-bridge-name/" is failing with HTTP response code 404:
@@ -62,7 +68,7 @@ Feature: Ingress tests
     }
     """
 
-  Scenario: Send json Cloud Event without authentication
+  Scenario: Send Cloud Event without authentication
     When logout of Manager
     
     Then send a cloud event to the Ingress of the Bridge "mybridge" with path "events" is failing with HTTP response code 401:
@@ -84,7 +90,7 @@ Feature: Ingress tests
   Scenario: Send plain Cloud Event without authentication
     When logout of Manager
     
-    Then send a cloud event to the Ingress of the Bridge "mybridge" with path "events/plain" is failing with HTTP response code 401:
+    Then send a cloud event to the Ingress of the Bridge "mybridge" with path "events/plain" and default headers is failing with HTTP response code 401:
     """
     { "data" : "test" }
     """

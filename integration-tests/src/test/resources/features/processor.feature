@@ -1,7 +1,5 @@
-@test
 Feature: Processor tests
 
-  @test2
   Scenario: Processor is created, deployed and correctly deleted
     Given authenticate against Manager
     And create a new Bridge "mybridge"

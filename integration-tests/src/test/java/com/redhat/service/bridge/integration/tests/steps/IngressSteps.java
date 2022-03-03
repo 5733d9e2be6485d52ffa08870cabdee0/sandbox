@@ -52,27 +52,43 @@ public class IngressSteps {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, 200);
     }
 
+    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers:$")
+    public void sendPlainCloudEventToIngressOfBridgeWithPath(String testBridgeName, String path, String cloudEvent) {
+        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), 200);
+    }
+
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" is failing with HTTP response code (\\d+):$")
     public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path, int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, responseCode);
     }
 
+    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers is failing with HTTP response code (\\d+):$")
+    public void sendPlainCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path, int responseCode, String cloudEvent) {
+        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), responseCode);
+    }
+
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
+        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, new Headers(), responseCode);
+    }
+
+    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers, int responseCode) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
         endpoint = endpoint + "/" + path;
 
         InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
 
-        Headers headers = new Headers(
+        String token = context.getManagerToken();
+        IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
+                .then()
+                .statusCode(responseCode);
+    }
+
+    private Headers getDefaultCloudEventHeaders() {
+        return new Headers(
                 new Header("ce-specversion", SpecVersion.V1.toString()),
                 new Header("ce-type", "myType"),
                 new Header("ce-id", "myId"),
                 new Header("ce-source", "mySource"),
                 new Header("ce-subject", "mySubject"));
-
-        String token = context.getManagerToken();
-        IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
-                .then()
-                .statusCode(responseCode);
     }
 }
