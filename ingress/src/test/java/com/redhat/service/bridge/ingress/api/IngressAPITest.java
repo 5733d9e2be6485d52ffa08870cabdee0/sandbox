@@ -67,14 +67,6 @@ public class IngressAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void testSendCloudEventWithBadRequestException() throws JsonProcessingException {
-        Mockito.doCallRealMethod().when(kafkaEventPublisher).sendEvent(any(CloudEvent.class));
-        doApiCall(TestUtils.buildTestCloudEventWithReservedAttributes(), 400);
-        verify(kafkaEventPublisher, times(1)).sendEvent(any(CloudEvent.class));
-    }
-
-    @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testNonCloudEvent() {
         doApiCall("{\"key\": \"not a cloud event\"}", 400);
         verify(kafkaEventPublisher, times(0)).sendEvent(any(CloudEvent.class));
