@@ -6,6 +6,7 @@ import java.time.ZonedDateTime;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -93,6 +94,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
         connectorEntity.setStatus(ConnectorStatus.FAILED);
+        connectorEntity.getProcessor().setStatus(BridgeStatus.FAILED);
         return connectorEntity;
     }
 }

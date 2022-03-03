@@ -4,6 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.openshift.cloud.api.kas.auth.models.Topic;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.connectors.AbstractConnectorWorker;
@@ -39,6 +40,7 @@ public class CreateTopicWorker extends AbstractConnectorWorker<Topic> {
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
         connectorEntity.setStatus(ConnectorStatus.FAILED);
+        connectorEntity.getProcessor().setStatus(BridgeStatus.FAILED);
         return connectorEntity;
     }
 

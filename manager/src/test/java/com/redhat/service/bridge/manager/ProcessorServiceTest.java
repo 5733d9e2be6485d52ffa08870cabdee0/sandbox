@@ -54,6 +54,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.bridge.infra.models.dto.BridgeStatus.DEPROVISION;
+import static com.redhat.service.bridge.infra.models.dto.BridgeStatus.FAILED;
 import static com.redhat.service.bridge.manager.RhoasServiceImpl.createFailureErrorMessageFor;
 import static com.redhat.service.bridge.manager.api.internal.ShardBridgesSyncAPI.SHARD_REQUESTED_STATUS;
 import static java.util.Arrays.asList;
@@ -399,7 +400,7 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    public void createConnectorFailure() {
+    public void createConnectorFailureTopic() {
         Bridge b = createPersistBridge(BridgeStatus.READY);
 
         BaseAction slackAction = createSlackAction();
@@ -410,20 +411,30 @@ public class ProcessorServiceTest {
         when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
+        assertThat(connectors).hasSize(1);
 
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    String.format("OpenBridge-slack_sink_0.1-%s",
-                            processor.getId()));
-
-            assertThat(connector).isNotNull();
-            assertThat(connector.getError()).contains("Failed creating and granting access to topic 'errorTopic");
-            assertThat(connector.getDesiredStatus()).isEqualTo(ConnectorStatus.READY);
-            assertThat(connector.getStatus()).isEqualTo(ConnectorStatus.FAILED);
-        });
+        waitForProcessorAndConnectorToFail(connectors.get(0));
 
         verify(rhoasService).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
         verify(connectorsApiClient, never()).createConnector(any());
+    }
+
+    @Test
+    public void createConnectorFailureConnector() {
+        Bridge b = createPersistBridge(BridgeStatus.READY);
+
+        BaseAction slackAction = createSlackAction();
+        ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
+
+        doThrow(new InternalPlatformException(createFailureErrorMessageFor("errorDeletingConnector"), new RuntimeException("error")))
+                .when(connectorsApiClient).deleteConnector(anyString());
+
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
+        assertThat(connectors).hasSize(1);
+
+        waitForProcessorAndConnectorToFail(connectors.get(0));
     }
 
     @Test
@@ -531,9 +542,8 @@ public class ProcessorServiceTest {
 
     private void waitForProcessorAndConnectorToFail(ConnectorEntity connector) {
         await().atMost(5, SECONDS).untilAsserted(() -> {
-            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(connector.getProcessor().getId(), "connectorToBeDeleted");
+            ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(connector.getProcessor().getId(), connector.getName());
             assertThat(foundConnector.getStatus()).isEqualTo(ConnectorStatus.FAILED);
-            assertThat(foundConnector.getDesiredStatus()).isEqualTo(ConnectorStatus.DELETED);
 
             reloadAssertProcessorIsInStatus(connector.getProcessor(), BridgeStatus.FAILED);
         });
