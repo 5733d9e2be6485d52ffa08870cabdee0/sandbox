@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
