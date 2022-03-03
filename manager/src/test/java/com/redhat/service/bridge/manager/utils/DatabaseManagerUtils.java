@@ -71,32 +71,24 @@ public class DatabaseManagerUtils {
         deleteAllShards();
     }
 
-    /**
-     * processorDAO.deleteAll() does not cascade! https://github.com/quarkusio/quarkus/issues/13941
-     */
     private void deleteAllProcessors() {
-        List<String> ids = processorDAO.getEntityManager().createQuery("select p.id from Processor p", String.class).getResultList();
-        ids.forEach(x -> processorDAO.deleteById(x));
+        processorDAO.getEntityManager().createQuery("DELETE FROM Processor").executeUpdate();
     }
 
     private void deleteAllBridges() {
-        List<String> ids = bridgeDAO.getEntityManager().createQuery("select b.id from Bridge b", String.class).getResultList();
-        ids.forEach(x -> bridgeDAO.deleteById(x));
+        bridgeDAO.getEntityManager().createQuery("DELETE FROM Bridge").executeUpdate();
     }
 
     private void deleteAllWork() {
-        List<String> ids = workDAO.getEntityManager().createQuery("select w.id from Work w", String.class).getResultList();
-        ids.forEach(x -> workDAO.deleteById(x));
+        workDAO.getEntityManager().createQuery("DELETE FROM Work").executeUpdate();
     }
 
     private void deleteAllConnectors() {
-        List<String> ids = connectorsDAO.getEntityManager().createQuery("select c.id from ConnectorEntity c", String.class).getResultList();
-        ids.forEach(x -> connectorsDAO.deleteById(x));
+        connectorsDAO.getEntityManager().createQuery("DELETE FROM ConnectorEntity").executeUpdate();
     }
 
     private void deleteAllShards() {
-        List<String> ids = shardDAO.getEntityManager().createQuery("select s.id from Shard s", String.class).getResultList();
-        ids.forEach(x -> shardDAO.deleteById(x));
+        shardDAO.getEntityManager().createQuery("DELETE FROM Shard").executeUpdate();
     }
 
     private void registerDefaultShard() {
