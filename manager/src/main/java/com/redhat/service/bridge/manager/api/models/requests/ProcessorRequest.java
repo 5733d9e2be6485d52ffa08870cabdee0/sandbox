@@ -24,6 +24,7 @@ public class ProcessorRequest {
 
     @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
+    @Valid
     private BaseAction baseAction;
 
     public ProcessorRequest() {
