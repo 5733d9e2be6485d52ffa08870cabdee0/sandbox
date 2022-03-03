@@ -59,7 +59,7 @@ Feature: Processor tests
     }
     """
 
-  Scenario: Cannot access the list of Processors without 
+  Scenario: Cannot access the list of Processors without authentication
     Given authenticate against Manager
     And create a new Bridge "mybridge"
     And the Bridge "mybridge" is existing with status "ready" within 2 minutes
