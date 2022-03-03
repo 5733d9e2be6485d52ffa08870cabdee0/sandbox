@@ -79,10 +79,7 @@ public class WorkManagerImpl implements WorkManager {
             return;
         }
 
-        // Work has been detached from the EntityManager at this point by virtue of it being serialised by VertX.
-        // We therefore need to re-associate it with the EntityManaged before deleting.
-        Work merged = workDAO.getEntityManager().merge(work);
-        workDAO.delete(merged);
+        workDAO.deleteById(work.getId());
     }
 
     @SuppressWarnings("unused")
@@ -94,9 +91,7 @@ public class WorkManagerImpl implements WorkManager {
 
     @Transactional
     protected List<Work> getWorkQueue() {
-        try (Stream<Work> work = workDAO.findByWorkerId(this.workerId.value())) {
-            return work.collect(Collectors.toList());
-        }
+        return workDAO.findByWorkerId(workerId.value()).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unused")

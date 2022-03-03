@@ -68,7 +68,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected T setStatus(T managedResource, ManagedResourceStatus status) {
         T resource = getDao().findById(managedResource.getId());
         resource.setStatus(status);
-        getDao().persist(resource);
         return resource;
     }
 
@@ -76,7 +75,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected T recordAttempt(T managedResource) {
         T resource = getDao().findById(managedResource.getId());
         resource.getDependencyStatus().recordAttempt();
-        getDao().persist(resource);
         return resource;
     }
 
@@ -84,7 +82,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected T setDependencyReady(T managedResource, boolean ready) {
         T resource = getDao().findById(managedResource.getId());
         resource.getDependencyStatus().setReady(ready);
-        getDao().persist(resource);
         return resource;
     }
 
@@ -92,7 +89,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected T setDependencyDeleted(T managedResource, boolean deleted) {
         T resource = getDao().findById(managedResource.getId());
         resource.getDependencyStatus().setDeleted(deleted);
-        getDao().persist(resource);
         return resource;
     }
 
@@ -152,7 +148,18 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     @Override
     public T deleteDependencies(T managedResource) {
         // Fail when we've had enough
-        if (areRetriesExceeded(managedResource) || isTimeoutExceeded(managedResource)) {
+        if (areRetriesExceeded(managedResource)) {
+            info(LOGGER,
+                    String.format("Max retry attempts exceeded trying to delete dependencies for '%s' [%s].",
+                            managedResource.getName(),
+                            managedResource.getId()));
+            return setStatus(managedResource, ManagedResourceStatus.FAILED);
+        }
+        if (isTimeoutExceeded(managedResource)) {
+            info(LOGGER,
+                    String.format("Timeout exceeded trying to delete dependencies for '%s' [%s].",
+                            managedResource.getName(),
+                            managedResource.getId()));
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
 

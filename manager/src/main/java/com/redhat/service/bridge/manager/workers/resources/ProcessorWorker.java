@@ -71,11 +71,19 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     @Override
     protected Processor runDeleteOfDependencies(Processor processor) {
         if (hasZeroConnectors(processor)) {
+            info(LOGGER,
+                    String.format("No dependencies required for '%s' [%s]",
+                            processor.getName(),
+                            processor.getId()));
             return setDependencyDeleted(processor, true);
         }
 
         ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(getConnectorEntity(processor));
         if (connectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
+            info(LOGGER,
+                    String.format("Failed to destroy Connector. Failing Processor '%s' [%s]",
+                            processor.getName(),
+                            processor.getId()));
             return setStatus(processor, ManagedResourceStatus.FAILED);
         }
 

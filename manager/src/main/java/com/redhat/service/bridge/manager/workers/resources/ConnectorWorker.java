@@ -107,7 +107,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         if (status.getState() == ConnectorState.FAILED) {
             info(LOGGER,
-                    String.format("Managed Connector for '%s' [%s] failed.",
+                    String.format("Creating Managed Connector for '%s' [%s] failed.",
                             connectorEntity.getName(),
                             connectorEntity.getId()));
 
@@ -160,7 +160,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     protected ConnectorEntity setConnectorExternalId(ConnectorEntity connectorEntity, String connectorExternalId) {
         ConnectorEntity resource = getDao().findById(connectorEntity.getId());
         resource.setConnectorExternalId(connectorExternalId);
-        getDao().persist(resource);
         return resource;
     }
 
@@ -173,7 +172,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             return doDeleteDependencies(merged);
         }
 
-        return connectorEntity;
+        return merged;
     }
 
     @Override
@@ -197,17 +196,30 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             return deleteTopic(connectorEntity);
         }
         if (status.getState() == ConnectorState.FAILED) {
+            info(LOGGER,
+                    String.format("Deleting Managed Connector for '%s' [%s] failed.",
+                            connectorEntity.getName(),
+                            connectorEntity.getId()));
+
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             return setStatus(connectorEntity, ManagedResourceStatus.FAILED);
         }
 
         // Step 2 - Delete Connector
+        info(LOGGER,
+                String.format("Deleting Managed Connector for '%s' [%s]",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
         connectorsApi.deleteConnector(connectorEntity.getConnectorExternalId());
 
         return connectorEntity;
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
+        info(LOGGER,
+                String.format("Deleting Kafka Topic for '%s' [%s]",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
         rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
 
         return setDeleted(connectorEntity);
@@ -219,7 +231,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         resource.setStatus(ManagedResourceStatus.READY);
         resource.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         resource.getDependencyStatus().setReady(true);
-        getDao().persist(resource);
         return resource;
     }
 
@@ -228,15 +239,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         ConnectorEntity resource = getDao().findById(connectorEntity.getId());
         resource.setStatus(ManagedResourceStatus.DELETED);
         resource.getDependencyStatus().setDeleted(true);
-        getDao().persist(resource);
         return resource;
     }
 
     @Transactional
     protected ConnectorEntity doDeleteDependencies(ConnectorEntity connectorEntity) {
-        ConnectorEntity merged = getDao().getEntityManager().merge(connectorEntity);
-        getDao().delete(merged);
-        return merged;
+        getDao().deleteById(connectorEntity.getId());
+        return connectorEntity;
     }
 
 }
