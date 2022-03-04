@@ -48,7 +48,7 @@ public class BridgeSteps {
         }
         if (isBridgeExisting(systemBridgeName)) {
             throw new RuntimeException(
-                    "Cannot create a initiate a random bridge name correctly. Please cleanup the environment...");
+                    "Cannot create and initiate a random bridge name correctly. Please cleanup the environment...");
         }
 
         BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(), systemBridgeName);
