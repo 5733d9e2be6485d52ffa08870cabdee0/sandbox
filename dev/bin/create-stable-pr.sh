@@ -1,5 +1,16 @@
 #!/bin/sh
 
+if ! command -v yq &> /dev/null
+then
+    echo "yq could not be found, install it from https://github.com/mikefarah/yq"
+    exit
+fi
+
+if (( $# == 0 )); then
+    echo "Usage: ./create-stable-br <GIT_DEV_DEPLOY_HASH>"
+    exit
+fi
+
 COMMIT_HASH=${1}
 COMMIT_DESCRIPTION=$(git log --pretty=format:"%h %s" -1 $COMMIT_HASH)
 
