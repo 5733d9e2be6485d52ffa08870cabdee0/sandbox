@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.manager.connectors;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -88,7 +86,6 @@ class ConnectorsServiceTest {
     @Transactional
     void doNotDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
-        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(new ArrayList<>());
 
         connectorsService.deleteConnectorEntity(testProcessor());
 
@@ -100,7 +97,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doDeleteConnector() {
-        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(List.of(testConnectorEntity()));
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity());
 
         connectorsService.deleteConnectorEntity(testProcessor());
 

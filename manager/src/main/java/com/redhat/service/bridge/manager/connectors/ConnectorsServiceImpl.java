@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.manager.connectors;
 
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -62,11 +62,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for destruction in the same transaction as a Processor
     public void deleteConnectorEntity(Processor processor) {
-        List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
-        connectors.forEach(c -> {
-            c.setStatus(ManagedResourceStatus.DEPROVISION);
-            connectorsDAO.persist(c);
-        });
+        Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> c.setStatus(ManagedResourceStatus.DEPROVISION));
     }
 
     private String connectorName(String connectorType, Processor processor) {

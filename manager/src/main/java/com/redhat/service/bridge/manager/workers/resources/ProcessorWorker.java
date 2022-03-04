@@ -1,13 +1,15 @@
 package com.redhat.service.bridge.manager.workers.resources;
 
+import java.util.Objects;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
@@ -23,6 +25,9 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Inject
     ProcessorDAO processorDAO;
+
+    @Inject
+    ConnectorsDAO connectorsDAO;
 
     @Inject
     ConnectorWorker connectorWorker;
@@ -91,16 +96,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         return setDependencyDeleted(processor, deleted);
     }
 
-    @Transactional
     protected boolean hasZeroConnectors(Processor processor) {
-        //This needs to be in a transaction as the child is loaded lazily
-        return getDao().findById(processor.getId()).getConnectorEntities().isEmpty();
+        return Objects.isNull(getConnectorEntity(processor));
     }
 
-    @Transactional
     protected ConnectorEntity getConnectorEntity(Processor processor) {
-        //This needs to be in a transaction as the child is loaded lazily
-        return getDao().findById(processor.getId()).getConnectorEntities().get(0);
+        return connectorsDAO.findByProcessorId(processor.getId());
     }
 
 }
