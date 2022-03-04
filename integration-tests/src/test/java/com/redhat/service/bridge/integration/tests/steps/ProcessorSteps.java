@@ -153,6 +153,18 @@ public class ProcessorSteps {
         });
     }
 
+    @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\"$")
+    public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName,
+            String actionType) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
+
+        ProcessorResponse response = ProcessorResource.getProcessor(context.getManagerToken(),
+                bridgeContext.getId(), processorId);
+        BaseAction action = response.getAction();
+        assertThat(action.getType()).isEqualTo(actionType);
+    }
+
     @When("^delete the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\"$")
     public void deleteProcessorOfBridge(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
