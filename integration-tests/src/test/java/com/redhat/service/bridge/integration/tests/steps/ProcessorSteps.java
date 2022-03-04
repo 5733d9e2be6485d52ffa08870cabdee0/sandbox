@@ -1,12 +1,12 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
@@ -17,13 +17,14 @@ import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.vertx.core.json.JsonObject;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessorSteps {
 
@@ -60,9 +61,14 @@ public class ProcessorSteps {
         JsonObject json = new JsonObject(processorRequestJson);
         String processorName = json.getString("name");
 
-        InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
-        ProcessorResponse response = ProcessorResource.createProcessor(context.getManagerToken(),
-                bridgeContext.getId(), resourceStream);
+        ProcessorResponse response;
+        try (InputStream resourceStream = new ByteArrayInputStream(
+                processorRequestJson.getBytes(StandardCharsets.UTF_8))) {
+            response = ProcessorResource.createProcessor(context.getManagerToken(),
+                    bridgeContext.getId(), resourceStream);
+        } catch (IOException e) {
+            throw new RuntimeException("Error with inputstream", e);
+        }
 
         bridgeContext.newProcessor(processorName, response.getId());
 
@@ -76,12 +82,16 @@ public class ProcessorSteps {
     public void newProcessorIsAddedToBridgeWithBodyIsFailingWithHTTPResponseCode(String testBridgeName,
             int responseCode, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8));
 
-        ProcessorResource
-                .createProcessorResponse(context.getManagerToken(), bridgeContext.getId(), resourceStream)
-                .then()
-                .statusCode(responseCode);
+        try (InputStream resourceStream = new ByteArrayInputStream(
+                processorRequestJson.getBytes(StandardCharsets.UTF_8))) {
+            ProcessorResource
+                    .createProcessorResponse(context.getManagerToken(), bridgeContext.getId(), resourceStream)
+                    .then()
+                    .statusCode(responseCode);
+        } catch (IOException e) {
+            throw new RuntimeException("Error with inputstream", e);
+        }
     }
 
     @And("^get Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")

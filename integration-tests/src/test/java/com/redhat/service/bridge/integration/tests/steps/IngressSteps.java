@@ -1,16 +1,17 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
-
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
+
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
 
 import io.cloudevents.SpecVersion;
 import io.cucumber.java.en.And;
@@ -58,12 +59,14 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" is failing with HTTP response code (\\d+):$")
-    public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path, int responseCode, String cloudEvent) {
+    public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path,
+            int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, responseCode);
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers is failing with HTTP response code (\\d+):$")
-    public void sendPlainCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path, int responseCode, String cloudEvent) {
+    public void sendPlainCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName,
+            String path, int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), responseCode);
     }
 
@@ -71,16 +74,19 @@ public class IngressSteps {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, new Headers(), responseCode);
     }
 
-    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers, int responseCode) {
+    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers,
+            int responseCode) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
         endpoint = endpoint + "/" + path;
 
-        InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8));
-
         String token = context.getManagerToken();
-        IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
-                .then()
-                .statusCode(responseCode);
+        try (InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8))) {
+            IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
+                    .then()
+                    .statusCode(responseCode);
+        } catch (IOException e) {
+            throw new RuntimeException("Error with inputstream", e);
+        }
     }
 
     private Headers getDefaultCloudEventHeaders() {
