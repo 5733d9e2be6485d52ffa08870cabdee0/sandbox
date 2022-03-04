@@ -18,7 +18,7 @@ import io.cloudevents.CloudEvent;
 public class ExecutorsService {
 
     /**
-     * Kafka Topic that we expect to have configured for receiving events.
+     * Channel used for receiving events.
      */
     public static final String EVENTS_IN_CHANNEL = "events-in";
 
