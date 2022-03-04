@@ -52,9 +52,13 @@ public class BridgeResource {
     }
 
     public static void deleteBridge(String token, String bridgeId) {
-        ResourceUtils.jsonRequest(token)
-                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId)
+        deleteBridgeResponse(token, bridgeId)
                 .then()
                 .statusCode(202);
+    }
+
+    public static Response deleteBridgeResponse(String token, String bridgeId) {
+        return ResourceUtils.jsonRequest(token)
+                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 }

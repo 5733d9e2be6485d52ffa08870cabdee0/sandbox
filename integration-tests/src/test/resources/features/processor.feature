@@ -45,6 +45,16 @@ Feature: Processor tests
     }
     """
 
+  Scenario: Delete non existing processor
+    Given authenticate against Manager
+    And create a new Bridge "mybridge"
+    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Ingress of Bridge "mybridge" is available within 2 minutes
+
+    When add a fake Processor "myProcessor" to the Bridge "mybridge"
+
+    Then delete the Processor "myProcessor" of the Bridge "mybridge" is failing with HTTP response code 404
+
   Scenario: Processor payload is malformed
     Given authenticate against Manager
     

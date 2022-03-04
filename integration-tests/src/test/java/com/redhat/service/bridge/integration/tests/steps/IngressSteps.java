@@ -6,12 +6,12 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
-
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 import io.cloudevents.SpecVersion;
 import io.cucumber.java.en.And;

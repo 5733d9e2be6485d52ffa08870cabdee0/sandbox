@@ -69,6 +69,13 @@ public class BridgeSteps {
                 .statusCode(responseCode);
     }
 
+    @When("^create a fake Bridge \"([^\"]*)\"$")
+    public void addFakeProcessorToBridge(String testBridgeName) {
+        BridgeContext bridgeContext = context.newBridge(testBridgeName, Utils.generateId(testBridgeName),
+                Utils.generateId("test-" + testBridgeName));
+        bridgeContext.setDeleted(true);
+    }
+
     @And("^the list of Bridge instances is containing the Bridge \"([^\"]*)\"$")
     public void listOfBridgeInstancesIsContainingBridge(String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
@@ -110,6 +117,13 @@ public class BridgeSteps {
     public void deleteBridge(String testBridgeName) {
         BridgeResource.deleteBridge(context.getManagerToken(), context.getBridge(testBridgeName).getId());
         context.removeBridge(testBridgeName);
+    }
+
+    @When("^delete the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
+    public void deleteBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
+        BridgeResource.deleteBridgeResponse(context.getManagerToken(), context.getBridge(testBridgeName).getId())
+                .then()
+                .statusCode(responseCode);
     }
 
     @Then("^the Bridge \"([^\"]*)\" is not existing within (\\d+) (?:minute|minutes)$")

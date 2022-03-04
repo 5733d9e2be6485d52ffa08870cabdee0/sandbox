@@ -40,11 +40,15 @@ public class ProcessorResource {
     }
 
     public static void deleteProcessor(String token, String bridgeId, String processorId) {
-        ResourceUtils.jsonRequest(token)
-                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/"
-                        + processorId)
+        deleteProcessorResponse(token, bridgeId, processorId)
                 .then()
                 .statusCode(202);
+    }
+
+    public static Response deleteProcessorResponse(String token, String bridgeId, String processorId) {
+        return ResourceUtils.jsonRequest(token)
+                .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/"
+                        + processorId);
     }
 
     public static ProcessorListResponse getProcessorList(String token, String bridgeId) {

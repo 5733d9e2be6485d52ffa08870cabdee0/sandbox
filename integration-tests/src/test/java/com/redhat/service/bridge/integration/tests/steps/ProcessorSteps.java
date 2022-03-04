@@ -1,15 +1,17 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
@@ -17,14 +19,13 @@ import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
-
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.vertx.core.json.JsonObject;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessorSteps {
 
@@ -76,6 +77,13 @@ public class ProcessorSteps {
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+    }
+
+    @When("^add a fake Processor \"([^\"]*)\" to the Bridge \"([^\"]*)\"$")
+    public void addFakeProcessorToBridge(String processorName, String testBridgeName) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        ProcessorContext processorContext = bridgeContext.newProcessor(processorName, Utils.generateId(processorName));
+        processorContext.setDeleted(true);
     }
 
     @Then("add a Processor to the Bridge \"([^\"]*)\" with body is failing with HTTP response code (\\d+):$")
@@ -145,6 +153,17 @@ public class ProcessorSteps {
 
         ProcessorResource.deleteProcessor(context.getManagerToken(), bridgeContext.getId(), processorId);
         bridgeContext.removeProcessor(processorName);
+    }
+
+    @When("^delete the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
+    public void deleteProcessorOfBridgeIsFailingWithHTTPResponseCode(String processorName, String testBridgeName,
+            int responseCode) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
+
+        ProcessorResource.deleteProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
+                .then()
+                .statusCode(responseCode);
     }
 
     @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is not existing within (\\d+) (?:minute|minutes)$")

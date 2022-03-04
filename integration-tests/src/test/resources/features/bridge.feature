@@ -15,6 +15,13 @@ Feature: Bridge tests
     And the Manager metric 'manager_bridge_status_change_total{status="PROVISIONING",}' count is at least 1
     And the Manager metric 'manager_bridge_status_change_total{status="READY",}' count is at least 1
     And the Manager metric 'manager_bridge_status_change_total{status="DELETED",}' count is at least 1
+  
+  Scenario: Delete non existing bridge
+    Given authenticate against Manager
+    
+    When create a fake Bridge "mybridge"
+
+    Then delete the Bridge "mybridge" is failing with HTTP response code 404
 
   Scenario: Cannot access the list of Bridges without authentication
     Given the list of Bridge instances is failing with HTTP response code 401

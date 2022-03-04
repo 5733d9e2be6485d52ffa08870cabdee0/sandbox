@@ -1,4 +1,3 @@
-@test
 Feature: Ingress tests
 
   Background:
