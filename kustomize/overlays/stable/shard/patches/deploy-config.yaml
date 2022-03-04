@@ -6,7 +6,7 @@ data:
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
   EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge
   EVENT_BRIDGE_SSO_SECRET: secret
-  EVENT_BRIDGE_SSO_URL: https://keycloak-event-bridge-stable.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm
+  EVENT_BRIDGE_SSO_URL: https://keycloak-event-bridge-stable.apps.ob-stable.0b9l.p1.openshiftapps.com//auth/realms/event-bridge-fm
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config
