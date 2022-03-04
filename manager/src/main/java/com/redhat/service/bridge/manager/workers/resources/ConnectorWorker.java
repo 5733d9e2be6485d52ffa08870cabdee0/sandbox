@@ -129,18 +129,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
-        ConnectorEntity merged = super.deleteDependencies(work, connectorEntity);
-
-        // Physical deletion of Processors is handled by the Shard calling back to the Manager.
-        if (merged.getDependencyStatus() == ManagedResourceStatus.DELETED) {
-            return doDeleteDependencies(merged);
-        }
-
-        return merged;
-    }
-
-    @Override
     protected ConnectorEntity runDeleteOfDependencies(Work work, ConnectorEntity connectorEntity) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Destroying dependencies for '%s' [%s]",
@@ -196,7 +184,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
         rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
 
-        return setDeleted(connectorEntity);
+        return doDeleteDependencies(connectorEntity);
     }
 
     @Transactional
@@ -205,14 +193,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         resource.setStatus(ManagedResourceStatus.READY);
         resource.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         resource.setDependencyStatus(ManagedResourceStatus.READY);
-        return resource;
-    }
-
-    @Transactional
-    protected ConnectorEntity setDeleted(ConnectorEntity connectorEntity) {
-        ConnectorEntity resource = getDao().findById(connectorEntity.getId());
-        resource.setStatus(ManagedResourceStatus.DELETED);
-        resource.setDependencyStatus(ManagedResourceStatus.DELETED);
         return resource;
     }
 

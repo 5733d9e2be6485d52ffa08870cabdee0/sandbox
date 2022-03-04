@@ -36,10 +36,10 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     WorkManagerImpl workManager;
 
     @Override
-    public void handleWork(Work work) {
+    public boolean handleWork(Work work) {
         //By the time VertX gets to execute an item of Work it may have been deleted.
         if (!workManager.exists(work)) {
-            return;
+            return false;
         }
 
         T managedResource = load(work);
@@ -59,6 +59,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         if (complete) {
             workManager.complete(work);
         }
+
+        return true;
     }
 
     @Transactional
@@ -107,12 +109,10 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         } catch (Exception e) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(String.format("Failed to create dependencies for '%s' [%s].%n"
-                        + "Dependency status: %s%n"
                         + "Work status: %s%n"
                         + "%s",
                         managedResource.getName(),
                         managedResource.getId(),
-                        managedResource.getDependencyStatus(),
                         work,
                         e.getMessage()));
             }
@@ -157,12 +157,10 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         } catch (Exception e) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(String.format("Failed to delete dependencies for '%s' [%s].%n"
-                        + "Dependency status: %s%n"
                         + "Work status: %s%n"
                         + "%s",
                         managedResource.getName(),
                         managedResource.getId(),
-                        managedResource.getDependencyStatus(),
                         work,
                         e.getMessage()));
             }

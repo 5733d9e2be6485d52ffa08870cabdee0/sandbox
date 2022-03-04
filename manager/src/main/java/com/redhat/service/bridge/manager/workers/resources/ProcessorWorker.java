@@ -39,8 +39,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     // This must be equal to the Processor.class.getSimpleName()
     @ConsumeEvent(value = "Processor", blocking = true)
-    public void handleWork(Work work) {
-        super.handleWork(work);
+    public boolean handleWork(Work work) {
+        return super.handleWork(work);
     }
 
     @Override

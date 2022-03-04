@@ -24,8 +24,9 @@ public interface Worker<T extends ManagedResource> {
      * Execute work. When complete {@link WorkManager#complete(Work)} should be invoked.
      * 
      * @param work
+     * @return true if the Work was processed, otherwise false.
      */
-    void handleWork(Work work);
+    boolean handleWork(Work work);
 
     /**
      * Creates dependent resources required by the {@link ManagedResource}.
