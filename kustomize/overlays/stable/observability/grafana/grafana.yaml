@@ -1,0 +1,33 @@
+apiVersion: integreatly.org/v1alpha1
+kind: Grafana
+metadata:
+  name: event-bridge-grafana
+spec:
+  deployment:
+    skipCreateAdminAccount: true
+    envFrom:
+      - secretRef:
+          name: grafana-secrets
+  config:
+    server:
+      root_url: https://grafana-route-event-bridge-stable.apps.openbridge-dev.fdvn.p1.openshiftapps.com
+    log:
+      level: warn
+      mode: console
+    auth:
+      disable_login_form: False
+      disable_signout_menu: True
+  dashboardLabelSelector:
+    - matchExpressions:
+        - key: app
+          operator: In
+          values:
+            - event-bridge
+  ingress:
+    enabled: true
+    targetPort: grafana
+  dataStorage:
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+    class: gp2

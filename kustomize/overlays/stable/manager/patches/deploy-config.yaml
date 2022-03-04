@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-bridge-manager-config
+data:
+  EVENT_BRIDGE_DB_USERNAME: "postgres"
+  EVENT_BRIDGE_DB_PASSWORD: "postgres"
+  EVENT_BRIDGE_DB_HOST: "event-bridge-db"
+  EVENT_BRIDGE_DB_PORT: "5432"
+  EVENT_BRIDGE_DB_SCHEMA: "event-bridge"
+  EVENT_BRIDGE_SSO_URL: "https://keycloak-event-bridge-stable.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm"
+  EVENT_BRIDGE_SSO_CLIENT_ID: "event-bridge"
+  EVENT_BRIDGE_KAFKA_SECURITY_PROTOCOL: SASL_SSL
+  EVENT_BRIDGE_KAFKA_TOPIC_PREFIX: "ob-stable-"
