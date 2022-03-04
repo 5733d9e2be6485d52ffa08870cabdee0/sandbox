@@ -8,18 +8,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
-import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
-import com.openshift.cloud.api.connector.models.DeploymentLocation;
-import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
-import com.openshift.cloud.api.connector.models.ServiceAccount;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
@@ -33,20 +27,6 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorWorker.class);
-
-    public static final String KAFKA_ID_IGNORED = "kafkaId-ignored";
-
-    @ConfigProperty(name = "managed-connectors.cluster.id")
-    String mcClusterId;
-
-    @ConfigProperty(name = "managed-connectors.kafka.bootstrap.servers")
-    String kafkaBootstrapServer;
-
-    @ConfigProperty(name = "managed-connectors.kafka.client.id")
-    String serviceAccountId;
-
-    @ConfigProperty(name = "managed-connectors.kafka.client.secret")
-    String serviceAccountSecret;
 
     @Inject
     ConnectorsDAO connectorsDAO;
@@ -119,41 +99,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
-        JsonNode payload = connectorEntity.getDefinition();
-        String newConnectorName = connectorEntity.getName();
-        String connectorType = connectorEntity.getConnectorType();
-
-        ConnectorRequest createConnectorRequest = new ConnectorRequest();
-
-        createConnectorRequest.setName(newConnectorName);
-
-        DeploymentLocation deploymentLocation = new DeploymentLocation();
-        deploymentLocation.setKind("addon");
-        deploymentLocation.setClusterId(mcClusterId);
-        createConnectorRequest.setDeploymentLocation(deploymentLocation);
-
-        createConnectorRequest.setConnectorTypeId(connectorType);
-
-        createConnectorRequest.setConnector(payload);
-
-        ServiceAccount serviceAccount = new ServiceAccount();
-        serviceAccount.setClientId(serviceAccountId);
-        serviceAccount.setClientSecret(serviceAccountSecret);
-        createConnectorRequest.setServiceAccount(serviceAccount);
-
-        KafkaConnectionSettings kafka = new KafkaConnectionSettings();
-        kafka.setUrl(kafkaBootstrapServer);
-
-        // https://issues.redhat.com/browse/MGDOBR-198
-        // this is currently ignored in the Connectors API
-        kafka.setId(KAFKA_ID_IGNORED);
-
-        createConnectorRequest.setKafka(kafka);
-
         // Creation is performed asynchronously. The returned Connector is a place-holder.
-        Connector c = connectorsApi.createConnector(createConnectorRequest);
-
-        return setConnectorExternalId(connectorEntity, c.getId());
+        Connector connector = connectorsApi.createConnector(connectorEntity);
+        return setConnectorExternalId(connectorEntity, connector.getId());
     }
 
     @Transactional

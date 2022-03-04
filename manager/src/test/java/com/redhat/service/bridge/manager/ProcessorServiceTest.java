@@ -438,20 +438,21 @@ public class ProcessorServiceTest {
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         //Emulate successful creation
-        Connector externalConnector = new Connector();
+        Connector externalConnector = stubbedExternalConnector("connectorExternalId");
         ConnectorStatusStatus externalConnectorStatus = new ConnectorStatusStatus();
         externalConnectorStatus.setState(ConnectorState.READY);
         externalConnector.setStatus(externalConnectorStatus);
 
         //Emulate the connector not being found when first looked up, to force provisioning
         when(connectorsApiClient.getConnector(any())).thenReturn(null, externalConnector);
-        when(connectorsApiClient.createConnector(any())).thenReturn(externalConnector);
+        when(connectorsApiClient.createConnector(any(ConnectorEntity.class))).thenCallRealMethod();
+        when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(externalConnector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
 
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
-        await().atMost(15, SECONDS).untilAsserted(() -> {
+        await().atMost(15000, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
                     String.format("OpenBridge-slack_sink_0.1-%s",
                             processor.getId()));
@@ -463,7 +464,6 @@ public class ProcessorServiceTest {
 
         verify(rhoasService, atLeast(1)).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
 
-        when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         ArgumentCaptor<ConnectorRequest> connectorCaptor = ArgumentCaptor.forClass(ConnectorRequest.class);
         verify(connectorsApiClient).createConnector(connectorCaptor.capture());
         ConnectorRequest calledConnector = connectorCaptor.getValue();
@@ -479,7 +479,7 @@ public class ProcessorServiceTest {
 
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenThrow(
                 new InternalPlatformException(createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")));
-        when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
+        when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(new Connector());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
         List<ConnectorEntity> connectors = connectorsDAO.findByProcessorId(processor.getId());
@@ -499,7 +499,7 @@ public class ProcessorServiceTest {
         });
 
         verify(rhoasService, atLeast(1)).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
-        verify(connectorsApiClient, never()).createConnector(any());
+        verify(connectorsApiClient, never()).createConnector(any(ConnectorRequest.class));
     }
 
     @Test

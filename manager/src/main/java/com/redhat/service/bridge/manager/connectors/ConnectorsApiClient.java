@@ -14,7 +14,10 @@ public interface ConnectorsApiClient {
      */
     Connector getConnector(ConnectorEntity connectorEntity);
 
-    Connector createConnector(ConnectorRequest connector);
+    Connector createConnector(ConnectorRequest connectorRequest);
+
+    Connector createConnector(ConnectorEntity connectorEntity);
 
     void deleteConnector(String id);
+
 }
