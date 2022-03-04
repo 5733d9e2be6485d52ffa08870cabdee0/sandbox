@@ -13,7 +13,7 @@ import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.manager.workers.Work;
+import com.redhat.service.bridge.manager.models.Work;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.vertx.ConsumeEvent;
@@ -45,16 +45,18 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Override
     protected Processor runCreateOfDependencies(Processor processor) {
-        info(LOGGER,
-                String.format("Creating dependencies for '%s' [%s]",
-                        processor.getName(),
-                        processor.getId()));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Creating dependencies for '%s' [%s]",
+                    processor.getName(),
+                    processor.getId()));
+        }
 
         if (hasZeroConnectors(processor)) {
-            info(LOGGER,
-                    String.format("No dependencies required for '%s' [%s]",
-                            processor.getName(),
-                            processor.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("No dependencies required for '%s' [%s]",
+                        processor.getName(),
+                        processor.getId()));
+            }
             return setDependencyReady(processor, true);
         }
 
@@ -62,10 +64,11 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
         ConnectorEntity connectorEntity = connectorWorker.createDependencies(getConnectorEntity(processor));
         if (connectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            info(LOGGER,
-                    String.format("Failed to create Connector. Failing Processor '%s' [%s]",
-                            processor.getName(),
-                            processor.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Failed to create Connector. Failing Processor '%s' [%s]",
+                        processor.getName(),
+                        processor.getId()));
+            }
             return setStatus(processor, ManagedResourceStatus.FAILED);
         }
 
@@ -75,20 +78,28 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Override
     protected Processor runDeleteOfDependencies(Processor processor) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Destroying dependencies for '%s' [%s]",
+                    processor.getName(),
+                    processor.getId()));
+        }
+
         if (hasZeroConnectors(processor)) {
-            info(LOGGER,
-                    String.format("No dependencies required for '%s' [%s]",
-                            processor.getName(),
-                            processor.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("No dependencies required for '%s' [%s]",
+                        processor.getName(),
+                        processor.getId()));
+            }
             return setDependencyDeleted(processor, true);
         }
 
         ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(getConnectorEntity(processor));
         if (connectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            info(LOGGER,
-                    String.format("Failed to destroy Connector. Failing Processor '%s' [%s]",
-                            processor.getName(),
-                            processor.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Failed to destroy Connector. Failing Processor '%s' [%s]",
+                        processor.getName(),
+                        processor.getId()));
+            }
             return setStatus(processor, ManagedResourceStatus.FAILED);
         }
 

@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.manager.dao.WorkDAO;
 import com.redhat.service.bridge.manager.models.ManagedResource;
-import com.redhat.service.bridge.manager.workers.id.WorkerId;
+import com.redhat.service.bridge.manager.models.Work;
+import com.redhat.service.bridge.manager.workers.id.WorkerIdProvider;
 
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.mutiny.core.eventbus.EventBus;
@@ -29,40 +30,41 @@ public class WorkManagerImpl implements WorkManager {
     EventBus eventBus;
 
     @Inject
-    WorkerId workerId;
+    WorkerIdProvider workerIdProvider;
 
     @Override
     public Work schedule(ManagedResource managedResource) {
         Work w = workDAO.findByManagedResource(managedResource);
         if (w == null) {
-            w = Work.forResource(managedResource, this.workerId.value());
+            w = Work.forResource(managedResource, workerIdProvider.getWorkerId());
+
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(String.format("Scheduling work for '%s' [%s]",
                         w.getManagedResourceId(),
                         w.getType()));
             }
-            persist(w);
+
             fireEvent(w);
-        } else {
-            w.setScheduledAt(ZonedDateTime.now());
-            persist(w);
         }
 
         return w;
     }
 
-    @Transactional
-    protected void persist(Work work) {
-        workDAO.persist(workDAO.getEntityManager().merge(work));
-    }
-
     private void fireEvent(Work w) {
+        w.setScheduledAt(ZonedDateTime.now());
+        persist(w);
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Executing work for '%s' [%s]",
                     w.getManagedResourceId(),
                     w.getType()));
         }
         eventBus.requestAndForget(w.getType(), w);
+    }
+
+    @Transactional
+    protected void persist(Work work) {
+        workDAO.getEntityManager().merge(work);
     }
 
     @Override
@@ -77,7 +79,6 @@ public class WorkManagerImpl implements WorkManager {
         if (!exists(work)) {
             return;
         }
-
         workDAO.deleteById(work.getId());
     }
 
@@ -90,7 +91,7 @@ public class WorkManagerImpl implements WorkManager {
 
     @Transactional
     protected List<Work> getWorkQueue() {
-        return workDAO.findByWorkerId(workerId.value()).collect(Collectors.toList());
+        return workDAO.findByWorkerId(workerIdProvider.getWorkerId()).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unused")
@@ -98,7 +99,7 @@ public class WorkManagerImpl implements WorkManager {
     @Scheduled(every = "5m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void adoptOrphanWorkers() {
         ZonedDateTime age = ZonedDateTime.now().minusMinutes(5);
-        workDAO.rebalanceWork(this.workerId.value(), age);
+        workDAO.rebalanceWork(workerIdProvider.getWorkerId(), age);
     }
 
 }

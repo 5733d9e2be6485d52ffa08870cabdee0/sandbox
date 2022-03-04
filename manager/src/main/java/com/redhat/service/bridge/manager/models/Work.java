@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.workers;
+package com.redhat.service.bridge.manager.models;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -9,8 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Version;
-
-import com.redhat.service.bridge.manager.models.ManagedResource;
 
 @NamedQueries({
         @NamedQuery(name = "Work.findByManagedResourceId", query = "from Work w where w.managedResourceId=:managedResourceId"),

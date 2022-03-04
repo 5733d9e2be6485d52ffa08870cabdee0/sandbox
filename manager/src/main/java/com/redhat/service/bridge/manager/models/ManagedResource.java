@@ -47,7 +47,6 @@ public class ManagedResource {
     @Column(name = "published_at", columnDefinition = "TIMESTAMP")
     protected ZonedDateTime publishedAt;
 
-    //TODO {manstis} Do we want a modified date?
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime modifiedAt;
 

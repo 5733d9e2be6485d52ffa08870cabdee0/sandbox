@@ -7,7 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import com.redhat.service.bridge.manager.models.ManagedResource;
-import com.redhat.service.bridge.manager.workers.Work;
+import com.redhat.service.bridge.manager.models.Work;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;

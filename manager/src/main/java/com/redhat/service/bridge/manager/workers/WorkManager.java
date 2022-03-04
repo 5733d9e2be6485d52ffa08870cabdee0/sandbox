@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.workers;
 
 import com.redhat.service.bridge.manager.models.ManagedResource;
+import com.redhat.service.bridge.manager.models.Work;
 
 /**
  * Handles the completion of {@link Work} for {@link ManagedResource}.

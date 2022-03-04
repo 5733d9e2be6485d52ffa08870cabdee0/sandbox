@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.models.ManagedResource;
-import com.redhat.service.bridge.manager.workers.Work;
+import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.manager.workers.WorkManagerImpl;
 import com.redhat.service.bridge.manager.workers.Worker;
 
@@ -54,8 +54,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
         if (complete) {
             workManager.complete(work);
-        } else {
-            workManager.schedule(managedResource);
         }
     }
 
@@ -103,29 +101,32 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
         // Fail when we've had enough
         if (areRetriesExceeded(managedResource)) {
-            info(LOGGER,
-                    String.format("Max retry attempts exceeded trying to create dependencies for '%s' [%s].",
-                            managedResource.getName(),
-                            managedResource.getId()));
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(String.format("Max retry attempts exceeded trying to create dependencies for '%s' [%s].",
+                        managedResource.getName(),
+                        managedResource.getId()));
+            }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
         if (isTimeoutExceeded(managedResource)) {
-            info(LOGGER,
-                    String.format("Timeout exceeded trying to create dependencies for '%s' [%s].",
-                            managedResource.getName(),
-                            managedResource.getId()));
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(String.format("Timeout exceeded trying to create dependencies for '%s' [%s].",
+                        managedResource.getName(),
+                        managedResource.getId()));
+            }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
 
         try {
             return runCreateOfDependencies(managedResource);
         } catch (Exception e) {
-            info(LOGGER,
-                    String.format("Failed to create dependencies for '%s' [%s].%nDependency status: %s%n%s",
-                            managedResource.getName(),
-                            managedResource.getId(),
-                            managedResource.getDependencyStatus(),
-                            e.getMessage()));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(String.format("Failed to create dependencies for '%s' [%s].%nDependency status: %s%n%s",
+                        managedResource.getName(),
+                        managedResource.getId(),
+                        managedResource.getDependencyStatus(),
+                        e.getMessage()));
+            }
             // Something has gone wrong. We need to retry.
             return recordAttempt(managedResource);
         }
@@ -149,40 +150,37 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     public T deleteDependencies(T managedResource) {
         // Fail when we've had enough
         if (areRetriesExceeded(managedResource)) {
-            info(LOGGER,
-                    String.format("Max retry attempts exceeded trying to delete dependencies for '%s' [%s].",
-                            managedResource.getName(),
-                            managedResource.getId()));
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(String.format("Max retry attempts exceeded trying to delete dependencies for '%s' [%s].",
+                        managedResource.getName(),
+                        managedResource.getId()));
+            }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
         if (isTimeoutExceeded(managedResource)) {
-            info(LOGGER,
-                    String.format("Timeout exceeded trying to delete dependencies for '%s' [%s].",
-                            managedResource.getName(),
-                            managedResource.getId()));
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(String.format("Timeout exceeded trying to delete dependencies for '%s' [%s].",
+                        managedResource.getName(),
+                        managedResource.getId()));
+            }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
 
         try {
             return runDeleteOfDependencies(managedResource);
         } catch (Exception e) {
-            info(LOGGER,
-                    String.format("Failed to delete dependencies for '%s' [%s].%nDependency status: %s%n%s",
-                            managedResource.getName(),
-                            managedResource.getId(),
-                            managedResource.getDependencyStatus(),
-                            e.getMessage()));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(String.format("Failed to delete dependencies for '%s' [%s].%nDependency status: %s%n%s",
+                        managedResource.getName(),
+                        managedResource.getId(),
+                        managedResource.getDependencyStatus(),
+                        e.getMessage()));
+            }
             // Something has gone wrong. We need to retry.
             return recordAttempt(managedResource);
         }
     }
 
     protected abstract T runDeleteOfDependencies(T managedResource);
-
-    protected void info(Logger logger, String message) {
-        if (logger.isInfoEnabled()) {
-            logger.info(message);
-        }
-    }
 
 }

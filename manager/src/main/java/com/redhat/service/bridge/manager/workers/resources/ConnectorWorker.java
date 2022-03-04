@@ -44,27 +44,36 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected ConnectorEntity runCreateOfDependencies(ConnectorEntity connectorEntity) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Creating dependencies for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
+
         // This is idempotent as it gets overridden later depending on actual state
         connectorEntity = setStatus(connectorEntity, ManagedResourceStatus.PROVISIONING);
 
         // Step 1 - Create Kafka Topic
-        info(LOGGER,
-                String.format("Creating Kafka Topic for '%s' [%s]",
-                        connectorEntity.getName(),
-                        connectorEntity.getId()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Creating Kafka Topic for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
         rhoasService.createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
 
         // Step 2 - Create Connector
-        info(LOGGER,
-                String.format("Creating Managed Connector for '%s' [%s]",
-                        connectorEntity.getName(),
-                        connectorEntity.getId()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Creating Managed Connector for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
         Connector connector = connectorsApi.getConnector(connectorEntity);
         if (Objects.isNull(connector)) {
-            info(LOGGER,
-                    String.format("Managed Connector for '%s' [%s] not found. Provisioning...",
-                            connectorEntity.getName(),
-                            connectorEntity.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Managed Connector for '%s' [%s] not found. Provisioning...",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
+            }
             // This is an asynchronous operation so exit and wait for it's READY state to be detected on the next poll.
             return deployConnector(connectorEntity);
         }
@@ -72,13 +81,19 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         // Step 3 - Check it has been provisioned
         ConnectorStatusStatus status = connector.getStatus();
         if (Objects.isNull(status)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Managed Connector status for '%s' [%s] is undetermined.",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
+            }
             return connectorEntity;
         }
         if (status.getState() == ConnectorState.READY) {
-            info(LOGGER,
-                    String.format("Managed Connector for '%s' [%s] is ready.",
-                            connectorEntity.getName(),
-                            connectorEntity.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Managed Connector for '%s' [%s] is ready.",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
+            }
 
             // Connector is ready. We can proceed with the deployment of the Processor in the Shard
             // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
@@ -86,10 +101,11 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         if (status.getState() == ConnectorState.FAILED) {
-            info(LOGGER,
-                    String.format("Creating Managed Connector for '%s' [%s] failed.",
-                            connectorEntity.getName(),
-                            connectorEntity.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Creating Managed Connector for '%s' [%s] failed.",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
+            }
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             return setStatus(connectorEntity, ManagedResourceStatus.FAILED);
@@ -125,6 +141,12 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected ConnectorEntity runDeleteOfDependencies(ConnectorEntity connectorEntity) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(String.format("Destroying dependencies for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
+
         // This is idempotent as it gets overridden later depending on actual state
         connectorEntity = setStatus(connectorEntity, ManagedResourceStatus.DELETING);
 
@@ -144,30 +166,33 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             return deleteTopic(connectorEntity);
         }
         if (status.getState() == ConnectorState.FAILED) {
-            info(LOGGER,
-                    String.format("Deleting Managed Connector for '%s' [%s] failed.",
-                            connectorEntity.getName(),
-                            connectorEntity.getId()));
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(String.format("Deleting Managed Connector for '%s' [%s] failed.",
+                        connectorEntity.getName(),
+                        connectorEntity.getId()));
+            }
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             return setStatus(connectorEntity, ManagedResourceStatus.FAILED);
         }
 
         // Step 2 - Delete Connector
-        info(LOGGER,
-                String.format("Deleting Managed Connector for '%s' [%s]",
-                        connectorEntity.getName(),
-                        connectorEntity.getId()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Deleting Managed Connector for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
         connectorsApi.deleteConnector(connectorEntity.getConnectorExternalId());
 
         return connectorEntity;
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
-        info(LOGGER,
-                String.format("Deleting Kafka Topic for '%s' [%s]",
-                        connectorEntity.getName(),
-                        connectorEntity.getId()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Deleting Kafka Topic for '%s' [%s]",
+                    connectorEntity.getName(),
+                    connectorEntity.getId()));
+        }
         rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
 
         return setDeleted(connectorEntity);

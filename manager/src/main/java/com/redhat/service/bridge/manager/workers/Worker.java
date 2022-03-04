@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager.workers;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.models.ManagedResource;
+import com.redhat.service.bridge.manager.models.Work;
 
 /**
  * Handles completion of {@link Work} for a {@link ManagedResource}.
