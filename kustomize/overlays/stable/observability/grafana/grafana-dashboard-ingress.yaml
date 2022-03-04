@@ -208,4 +208,3 @@ spec:
   configMapRef:
     name: grafana-dashboard-ingress
     key: ingress.json
-  name: ingress.json

@@ -1100,4 +1100,3 @@ spec:
   configMapRef:
     name: grafana-dashboard-executor
     key: executor.json
-  name: executor.json

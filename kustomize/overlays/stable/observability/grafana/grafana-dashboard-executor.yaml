@@ -1069,4 +1069,3 @@ spec:
   configMapRef:
     name: grafana-dashboard-manager
     key: manager.json
-  name: manager.json
