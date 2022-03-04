@@ -13,4 +13,4 @@ if [ -f "${CONFIGURE_SCRIPT_DIR_PATH}/environment" ]; then
   echo "Loaded local environment file"
 fi
 
-source "$(dirname "${BASH_SOURCE[0]}")/get_token.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/get-token.sh"

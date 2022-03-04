@@ -6,7 +6,7 @@ Then it's important to always have the bearer token set
 
 ```shell
 
-source get_token.sh
+source get-token.sh
 
 ```
 
@@ -15,6 +15,6 @@ And then call the others such as
 
 ```shell
 
-./get_all_bridges.sh
+./get-all-bridges.sh
 
 ```
