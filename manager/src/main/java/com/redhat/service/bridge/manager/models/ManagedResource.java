@@ -10,11 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
-import org.hibernate.annotations.Type;
-
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
-
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @MappedSuperclass
 public class ManagedResource {
@@ -34,9 +30,9 @@ public class ManagedResource {
     @Enumerated(EnumType.STRING)
     protected ManagedResourceStatus status;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "dependency_status", columnDefinition = JsonTypes.JSON_BIN)
-    protected DependencyStatus dependencyStatus = new DependencyStatus();
+    @Column(name = "dependency_status")
+    @Enumerated(EnumType.STRING)
+    protected ManagedResourceStatus dependencyStatus;
 
     @Column(nullable = false, name = "name")
     protected String name;
@@ -66,11 +62,11 @@ public class ManagedResource {
         this.status = status;
     }
 
-    public DependencyStatus getDependencyStatus() {
+    public ManagedResourceStatus getDependencyStatus() {
         return dependencyStatus;
     }
 
-    public void setDependencyStatus(DependencyStatus dependencyStatus) {
+    public void setDependencyStatus(ManagedResourceStatus dependencyStatus) {
         this.dependencyStatus = dependencyStatus;
     }
 

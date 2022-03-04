@@ -148,7 +148,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         assertThatExceptionOfType(AlreadyExistingItemException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), r));
@@ -163,7 +163,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         assertThat(processor.getBridge().getId()).isEqualTo(b.getId());
@@ -222,7 +222,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         ProcessorDTO dto = processorService.toDTO(processor);
@@ -260,7 +260,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         Processor found = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
@@ -279,7 +279,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor(processor.getId(), "doesNotExist", b.getCustomerId()));
@@ -294,7 +294,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor("doesNotExist", b.getId(), b.getCustomerId()));
@@ -309,7 +309,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
@@ -349,7 +349,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
@@ -391,7 +391,7 @@ public class ProcessorServiceTest {
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus().isReady()).isTrue();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         });
 
         assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
@@ -489,13 +489,11 @@ public class ProcessorServiceTest {
 
         //TOOD {manstis} Move to above method?
         //There will be 4 re-tries at 5s each. Add 5s to be certain everything completes.
-        await().atMost(25, SECONDS).untilAsserted(() -> {
-            ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    String.format("OpenBridge-slack_sink_0.1-%s",
-                            processor.getId()));
+        await().atMost(25000, SECONDS).untilAsserted(() -> {
+            Processor p = processorDAO.findById(processor.getId());
 
-            assertThat(connector).isNotNull();
-            assertThat(connector.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+            assertThat(p).isNotNull();
+            assertThat(p.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
         });
 
         verify(rhoasService, atLeast(1)).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));

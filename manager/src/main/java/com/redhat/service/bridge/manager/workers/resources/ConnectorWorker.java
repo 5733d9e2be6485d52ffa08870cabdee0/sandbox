@@ -19,6 +19,7 @@ import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
+import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -43,7 +44,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected ConnectorEntity runCreateOfDependencies(ConnectorEntity connectorEntity) {
+    protected ConnectorEntity runCreateOfDependencies(Work work, ConnectorEntity connectorEntity) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Creating dependencies for '%s' [%s]",
                     connectorEntity.getName(),
@@ -128,11 +129,11 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity deleteDependencies(ConnectorEntity connectorEntity) {
-        ConnectorEntity merged = super.deleteDependencies(connectorEntity);
+    public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
+        ConnectorEntity merged = super.deleteDependencies(work, connectorEntity);
 
         // Physical deletion of Processors is handled by the Shard calling back to the Manager.
-        if (merged.getDependencyStatus().isDeleted()) {
+        if (merged.getDependencyStatus() == ManagedResourceStatus.DELETED) {
             return doDeleteDependencies(merged);
         }
 
@@ -140,7 +141,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected ConnectorEntity runDeleteOfDependencies(ConnectorEntity connectorEntity) {
+    protected ConnectorEntity runDeleteOfDependencies(Work work, ConnectorEntity connectorEntity) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Destroying dependencies for '%s' [%s]",
                     connectorEntity.getName(),
@@ -203,7 +204,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         ConnectorEntity resource = getDao().findById(connectorEntity.getId());
         resource.setStatus(ManagedResourceStatus.READY);
         resource.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        resource.getDependencyStatus().setReady(true);
+        resource.setDependencyStatus(ManagedResourceStatus.READY);
         return resource;
     }
 
@@ -211,7 +212,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     protected ConnectorEntity setDeleted(ConnectorEntity connectorEntity) {
         ConnectorEntity resource = getDao().findById(connectorEntity.getId());
         resource.setStatus(ManagedResourceStatus.DELETED);
-        resource.getDependencyStatus().setDeleted(true);
+        resource.setDependencyStatus(ManagedResourceStatus.DELETED);
         return resource;
     }
 

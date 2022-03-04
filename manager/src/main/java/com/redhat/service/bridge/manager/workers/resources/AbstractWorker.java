@@ -2,6 +2,7 @@ package com.redhat.service.bridge.manager.workers.resources;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -21,6 +22,9 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 public abstract class AbstractWorker<T extends ManagedResource> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
+
+    private static final Set<ManagedResourceStatus> PROVISIONING_COMPLETE = Set.of(ManagedResourceStatus.READY, ManagedResourceStatus.FAILED);
+    private static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETE = Set.of(ManagedResourceStatus.DELETED, ManagedResourceStatus.FAILED);
 
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;
@@ -47,9 +51,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
         boolean complete = false;
         if (managedResource.getStatus() == ManagedResourceStatus.ACCEPTED) {
-            complete = createDependencies(managedResource).getDependencyStatus().isReady();
+            complete = PROVISIONING_COMPLETE.contains(createDependencies(work, managedResource).getStatus());
         } else if (managedResource.getStatus() == ManagedResourceStatus.DEPROVISION) {
-            complete = deleteDependencies(managedResource).getDependencyStatus().isDeleted();
+            complete = DEPROVISIONING_COMPLETE.contains(deleteDependencies(work, managedResource).getStatus());
         }
 
         if (complete) {
@@ -70,37 +74,18 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     }
 
     @Transactional
-    protected T recordAttempt(T managedResource) {
+    protected T setDependencyStatus(T managedResource, ManagedResourceStatus status) {
         T resource = getDao().findById(managedResource.getId());
-        resource.getDependencyStatus().recordAttempt();
-        return resource;
-    }
-
-    @Transactional
-    protected T setDependencyReady(T managedResource, boolean ready) {
-        T resource = getDao().findById(managedResource.getId());
-        resource.getDependencyStatus().setReady(ready);
-        return resource;
-    }
-
-    @Transactional
-    protected T setDependencyDeleted(T managedResource, boolean deleted) {
-        T resource = getDao().findById(managedResource.getId());
-        resource.getDependencyStatus().setDeleted(deleted);
+        resource.setDependencyStatus(status);
         return resource;
     }
 
     protected abstract PanacheRepositoryBase<T, String> getDao();
 
     @Override
-    public T createDependencies(T managedResource) {
-        // Don't process resources that have their Work completed
-        if (managedResource.getStatus() == ManagedResourceStatus.READY || managedResource.getStatus() == ManagedResourceStatus.FAILED) {
-            return managedResource;
-        }
-
+    public T createDependencies(Work work, T managedResource) {
         // Fail when we've had enough
-        if (areRetriesExceeded(managedResource)) {
+        if (areRetriesExceeded(work)) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(String.format("Max retry attempts exceeded trying to create dependencies for '%s' [%s].",
                         managedResource.getName(),
@@ -108,7 +93,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
-        if (isTimeoutExceeded(managedResource)) {
+        if (isTimeoutExceeded(work)) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(String.format("Timeout exceeded trying to create dependencies for '%s' [%s].",
                         managedResource.getName(),
@@ -118,38 +103,39 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         }
 
         try {
-            return runCreateOfDependencies(managedResource);
+            return runCreateOfDependencies(work, managedResource);
         } catch (Exception e) {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(String.format("Failed to create dependencies for '%s' [%s].%nDependency status: %s%n%s",
+                LOGGER.info(String.format("Failed to create dependencies for '%s' [%s].%n"
+                        + "Dependency status: %s%n"
+                        + "Work status: %s%n"
+                        + "%s",
                         managedResource.getName(),
                         managedResource.getId(),
                         managedResource.getDependencyStatus(),
+                        work,
                         e.getMessage()));
             }
             // Something has gone wrong. We need to retry.
-            return recordAttempt(managedResource);
+            workManager.recordAttempt(work);
+            return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
     }
 
-    @Transactional
-    protected boolean areRetriesExceeded(T managedEntity) {
-        //This needs to be in a transaction as the child is loaded lazily
-        return getDao().findById(managedEntity.getId()).getDependencyStatus().getAttempts() > maxRetries;
+    protected boolean areRetriesExceeded(Work w) {
+        return w.getAttempts() > maxRetries;
     }
 
-    @Transactional
-    protected boolean isTimeoutExceeded(T managedEntity) {
-        //This needs to be in a transaction as the child is loaded lazily
-        return ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(getDao().findById(managedEntity.getId()).getSubmittedAt());
+    protected boolean isTimeoutExceeded(Work work) {
+        return ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
     }
 
-    protected abstract T runCreateOfDependencies(T managedResource);
+    protected abstract T runCreateOfDependencies(Work work, T managedResource);
 
     @Override
-    public T deleteDependencies(T managedResource) {
+    public T deleteDependencies(Work work, T managedResource) {
         // Fail when we've had enough
-        if (areRetriesExceeded(managedResource)) {
+        if (areRetriesExceeded(work)) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(String.format("Max retry attempts exceeded trying to delete dependencies for '%s' [%s].",
                         managedResource.getName(),
@@ -157,7 +143,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             }
             return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
-        if (isTimeoutExceeded(managedResource)) {
+        if (isTimeoutExceeded(work)) {
             if (LOGGER.isErrorEnabled()) {
                 LOGGER.error(String.format("Timeout exceeded trying to delete dependencies for '%s' [%s].",
                         managedResource.getName(),
@@ -167,20 +153,25 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         }
 
         try {
-            return runDeleteOfDependencies(managedResource);
+            return runDeleteOfDependencies(work, managedResource);
         } catch (Exception e) {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(String.format("Failed to delete dependencies for '%s' [%s].%nDependency status: %s%n%s",
+                LOGGER.info(String.format("Failed to delete dependencies for '%s' [%s].%n"
+                        + "Dependency status: %s%n"
+                        + "Work status: %s%n"
+                        + "%s",
                         managedResource.getName(),
                         managedResource.getId(),
                         managedResource.getDependencyStatus(),
+                        work,
                         e.getMessage()));
             }
             // Something has gone wrong. We need to retry.
-            return recordAttempt(managedResource);
+            workManager.recordAttempt(work);
+            return setStatus(managedResource, ManagedResourceStatus.FAILED);
         }
     }
 
-    protected abstract T runDeleteOfDependencies(T managedResource);
+    protected abstract T runDeleteOfDependencies(Work work, T managedResource);
 
 }

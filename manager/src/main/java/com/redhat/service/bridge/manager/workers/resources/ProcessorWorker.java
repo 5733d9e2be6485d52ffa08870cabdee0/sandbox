@@ -44,7 +44,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
-    protected Processor runCreateOfDependencies(Processor processor) {
+    protected Processor runCreateOfDependencies(Work work, Processor processor) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Creating dependencies for '%s' [%s]",
                     processor.getName(),
@@ -57,27 +57,17 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
                         processor.getName(),
                         processor.getId()));
             }
-            return setDependencyReady(processor, true);
+            return setDependencyStatus(processor, ManagedResourceStatus.READY);
         }
 
         // If we have to deploy a Managed Connector, delegate to the ConnectorWorker.
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-        ConnectorEntity connectorEntity = connectorWorker.createDependencies(getConnectorEntity(processor));
-        if (connectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Failed to create Connector. Failing Processor '%s' [%s]",
-                        processor.getName(),
-                        processor.getId()));
-            }
-            return setStatus(processor, ManagedResourceStatus.FAILED);
-        }
-
-        boolean ready = connectorEntity.getDependencyStatus().isReady();
-        return setDependencyReady(processor, ready);
+        ConnectorEntity connectorEntity = connectorWorker.createDependencies(work, getConnectorEntity(processor));
+        return setDependencyStatus(processor, connectorEntity.getStatus());
     }
 
     @Override
-    protected Processor runDeleteOfDependencies(Processor processor) {
+    protected Processor runDeleteOfDependencies(Work work, Processor processor) {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Destroying dependencies for '%s' [%s]",
                     processor.getName(),
@@ -90,21 +80,11 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
                         processor.getName(),
                         processor.getId()));
             }
-            return setDependencyDeleted(processor, true);
+            return setDependencyStatus(processor, ManagedResourceStatus.DELETED);
         }
 
-        ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(getConnectorEntity(processor));
-        if (connectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Failed to destroy Connector. Failing Processor '%s' [%s]",
-                        processor.getName(),
-                        processor.getId()));
-            }
-            return setStatus(processor, ManagedResourceStatus.FAILED);
-        }
-
-        boolean deleted = connectorEntity.getDependencyStatus().isDeleted();
-        return setDependencyDeleted(processor, deleted);
+        ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(work, getConnectorEntity(processor));
+        return setDependencyStatus(processor, connectorEntity.getStatus());
     }
 
     protected boolean hasZeroConnectors(Processor processor) {

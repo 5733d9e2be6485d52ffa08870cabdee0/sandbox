@@ -8,10 +8,10 @@ import com.redhat.service.bridge.manager.models.Work;
  * Handles completion of {@link Work} for a {@link ManagedResource}.
  * 
  * If {@link ManagedResource#getStatus()} is {@link ManagedResourceStatus#ACCEPTED} it is assumed the {@link ManagedResource} needs to
- * be created and its dependencies created by {@link Worker#createDependencies(ManagedResource)}.
+ * be created and its dependencies created by {@link Worker#createDependencies(Work, ManagedResource)}.
  * 
  * If the {@link ManagedResource#getStatus()} is {@link ManagedResourceStatus#DEPROVISION} it is assumed the {@link ManagedResource} needs to
- * be destroyed and its dependencies deleted by {@link Worker#deleteDependencies(ManagedResource)}.
+ * be destroyed and its dependencies deleted by {@link Worker#deleteDependencies(Work, ManagedResource)}.
  * 
  * Other values of {@link ManagedResourceStatus} when the {@link Work} is {@link WorkManager#schedule(ManagedResource)} will result
  * in the {@link Work} remaining incomplete indefinitely.
@@ -33,7 +33,7 @@ public interface Worker<T extends ManagedResource> {
      * @param managedResource
      * @return
      */
-    T createDependencies(T managedResource);
+    T createDependencies(Work work, T managedResource);
 
     /**
      * Deletes dependent resources that were required by the {@link ManagedResource}.
@@ -41,5 +41,5 @@ public interface Worker<T extends ManagedResource> {
      * @param managedResource
      * @return
      */
-    T deleteDependencies(T managedResource);
+    T deleteDependencies(Work work, T managedResource);
 }

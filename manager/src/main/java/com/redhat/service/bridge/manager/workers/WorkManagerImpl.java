@@ -37,6 +37,7 @@ public class WorkManagerImpl implements WorkManager {
         Work w = workDAO.findByManagedResource(managedResource);
         if (w == null) {
             w = Work.forResource(managedResource, workerIdProvider.getWorkerId());
+            workDAO.persist(w);
 
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(String.format("Scheduling work for '%s' [%s]",
@@ -51,8 +52,7 @@ public class WorkManagerImpl implements WorkManager {
     }
 
     private void fireEvent(Work w) {
-        w.setScheduledAt(ZonedDateTime.now());
-        persist(w);
+        setModifiedAt(w);
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(String.format("Executing work for '%s' [%s]",
@@ -63,8 +63,8 @@ public class WorkManagerImpl implements WorkManager {
     }
 
     @Transactional
-    protected void persist(Work work) {
-        workDAO.getEntityManager().merge(work);
+    protected void setModifiedAt(Work work) {
+        work.setModifiedAt(ZonedDateTime.now());
     }
 
     @Override
@@ -75,10 +75,25 @@ public class WorkManagerImpl implements WorkManager {
 
     @Override
     @Transactional
+    public void recordAttempt(Work work) {
+        if (!exists(work)) {
+            return;
+        }
+        // Work has been serialised by VertX at this point and has therefore lost all affinity with
+        // a JPA session. We therefore need to first retrieve the entity before updating it.
+        Work w = workDAO.findById(work.getId());
+        w.setModifiedAt(ZonedDateTime.now());
+        w.setAttempts(w.getAttempts() + 1);
+    }
+
+    @Override
+    @Transactional
     public void complete(Work work) {
         if (!exists(work)) {
             return;
         }
+        // Work has been serialised by VertX at this point and has therefore lost all affinity with
+        // a JPA session. We therefore need to delete it by Id and not the entity itself.
         workDAO.deleteById(work.getId());
     }
 

@@ -13,7 +13,7 @@ import javax.persistence.Version;
 @NamedQueries({
         @NamedQuery(name = "Work.findByManagedResourceId", query = "from Work w where w.managedResourceId=:managedResourceId"),
         @NamedQuery(name = "Work.findByWorkerId", query = "from Work w where w.workerId=:workerId"),
-        @NamedQuery(name = "Work.updateWorkerId", query = "update Work w set w.workerId=:workerId where w.scheduledAt >= :age")
+        @NamedQuery(name = "Work.updateWorkerId", query = "update Work w set w.workerId=:workerId where w.submittedAt >= :age")
 })
 @Entity
 public class Work {
@@ -30,8 +30,14 @@ public class Work {
     @Column(name = "worker_id", nullable = false)
     private String workerId;
 
-    @Column(name = "scheduled_at", nullable = false)
-    private ZonedDateTime scheduledAt;
+    @Column(name = "submitted_at", nullable = false)
+    private ZonedDateTime submittedAt;
+
+    @Column(name = "modified_at", columnDefinition = "TIMESTAMP", nullable = false)
+    private ZonedDateTime modifiedAt;
+
+    @Column(name = "attempts", nullable = false)
+    private int attempts = 0;
 
     @Version
     @SuppressWarnings("unused")
@@ -49,22 +55,6 @@ public class Work {
         this.managedResourceId = entityId;
     }
 
-    public String getWorkerId() {
-        return workerId;
-    }
-
-    public void setWorkerId(String workerId) {
-        this.workerId = workerId;
-    }
-
-    public ZonedDateTime getScheduledAt() {
-        return scheduledAt;
-    }
-
-    public void setScheduledAt(ZonedDateTime scheduledAt) {
-        this.scheduledAt = scheduledAt;
-    }
-
     public String getType() {
         return type;
     }
@@ -73,12 +63,58 @@ public class Work {
         this.type = type;
     }
 
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
+    }
+
+    public ZonedDateTime getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(ZonedDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public ZonedDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(ZonedDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public int getAttempts() {
+        return attempts;
+    }
+
+    public void setAttempts(int attempts) {
+        this.attempts = attempts;
+    }
+
     public static Work forResource(ManagedResource managedResource, String workerId) {
         Work w = new Work();
-        w.setScheduledAt(ZonedDateTime.now());
+        w.setSubmittedAt(ZonedDateTime.now());
+        w.setModifiedAt(ZonedDateTime.now());
         w.setType(managedResource.getClass().getSimpleName());
         w.setManagedResourceId(managedResource.getId());
         w.setWorkerId(workerId);
         return w;
+    }
+
+    @Override
+    public String toString() {
+        return "Work{" +
+                "id='" + id + '\'' +
+                ", managedResourceId='" + managedResourceId + '\'' +
+                ", type='" + type + '\'' +
+                ", workerId='" + workerId + '\'' +
+                ", submittedAt=" + submittedAt +
+                ", modifiedAt=" + modifiedAt +
+                ", attempts=" + attempts +
+                '}';
     }
 }

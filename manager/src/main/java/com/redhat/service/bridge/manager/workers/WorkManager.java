@@ -29,6 +29,13 @@ public interface WorkManager {
     boolean exists(Work work);
 
     /**
+     * Records an attempt to complete an item of {@link Work}
+     * 
+     * @param work
+     */
+    void recordAttempt(Work work);
+
+    /**
      * Marks {@link Work} as complete so that it can be removed from the work queue.
      * 
      * @param work
