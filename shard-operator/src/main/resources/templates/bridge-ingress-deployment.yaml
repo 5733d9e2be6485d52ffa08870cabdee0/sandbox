@@ -26,8 +26,6 @@ spec:
           image: ""
           imagePullPolicy: IfNotPresent
           env:
-            - name: EVENT_BRIDGE_BRIDGE_ID
-              value: ""
             - name: EVENT_BRIDGE_CUSTOMER_ID
               value: ""
             - name: EVENT_BRIDGE_SSO_URL

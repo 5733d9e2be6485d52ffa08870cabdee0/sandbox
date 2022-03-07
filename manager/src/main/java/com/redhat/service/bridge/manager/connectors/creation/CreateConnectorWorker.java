@@ -14,6 +14,7 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.DeploymentLocation;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
 import com.redhat.service.bridge.manager.connectors.AbstractConnectorWorker;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
@@ -93,6 +94,7 @@ public class CreateConnectorWorker extends AbstractConnectorWorker<Connector> {
     @Override
     protected ConnectorEntity updateEntityForError(ConnectorEntity connectorEntity, Throwable error) {
         connectorEntity.setStatus(ConnectorStatus.FAILED);
+        connectorEntity.getProcessor().setStatus(BridgeStatus.FAILED);
         return connectorEntity;
     }
 }
