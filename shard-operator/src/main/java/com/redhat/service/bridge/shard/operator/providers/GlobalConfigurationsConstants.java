@@ -9,4 +9,10 @@ public class GlobalConfigurationsConstants {
     public static final String KAFKA_GROUP_ID_ENV_VAR = "KAFKA_GROUP_ID";
     public static final String SSO_URL_CONFIG_ENV_VAR = "EVENT_BRIDGE_SSO_URL";
     public static final String SSO_CLIENT_ID_CONFIG_ENV_VAR = "EVENT_BRIDGE_SSO_CLIENT_ID";
+
+    public static final String KNATIVE_KAFKA_PROTOCOL = "protocol";
+    public static final String KNATIVE_KAFKA_SASL_MECHANISM = "sasl.mechanism";
+    public static final String KNATIVE_KAFKA_USER = "user";
+    public static final String KNATIVE_KAFKA_PASSWORD = "password";
+    public static final String KNATIVE_KAFKA_BOOTSTRAP_SERVERS = "bootstrap.servers";
 }

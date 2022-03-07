@@ -3,7 +3,9 @@ package com.redhat.service.bridge.shard.operator.utils;
 import java.util.Map;
 
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorClient;
+import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -18,6 +20,28 @@ import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEven
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
 
 public class EventSourceFactory {
+
+    public static EventSource buildBrokerInformer(KubernetesClient kubernetesClient, String componentName) {
+        SharedIndexInformer<KnativeBroker> knativeBrokerInformer =
+                kubernetesClient
+                        .resources(KnativeBroker.class)
+                        .inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(knativeBrokerInformer, Mappers.fromOwnerReference());
+    }
+
+    public static EventSource buildConfigMapsInformer(KubernetesClient kubernetesClient, String componentName) {
+        SharedIndexInformer<ConfigMap> configMapsInformer =
+                kubernetesClient
+                        .configMaps()
+                        .inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(configMapsInformer, Mappers.fromOwnerReference());
+    }
 
     public static EventSource buildSecretsInformer(KubernetesClient kubernetesClient, String componentName) {
         SharedIndexInformer<Secret> secretsInformer =

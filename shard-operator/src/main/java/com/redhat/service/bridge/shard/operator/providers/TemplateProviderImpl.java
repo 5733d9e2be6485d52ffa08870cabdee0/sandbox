@@ -7,7 +7,9 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -28,6 +30,9 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
     private static final String BRIDGE_INGRESS_SECRET_PATH = TEMPLATES_DIR + "/bridge-ingress-secret.yaml";
 
+    private static final String BRIDGE_INGRESS_CONFIGMAP_PATH = TEMPLATES_DIR + "/bridge-ingress-broker-configmap.yaml";
+    private static final String BRIDGE_INGRESS_BROKER_PATH = TEMPLATES_DIR + "/bridge-ingress-broker.yaml";
+
     private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_EXECUTOR_SECRET_PATH = TEMPLATES_DIR + "/bridge-executor-secret.yaml";
@@ -46,6 +51,20 @@ public class TemplateProviderImpl implements TemplateProvider {
         Service service = loadYaml(Service.class, BRIDGE_INGRESS_SERVICE_PATH);
         updateMetadata(bridgeIngress, service.getMetadata());
         return service;
+    }
+
+    @Override
+    public ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress) {
+        ConfigMap configMap = loadYaml(ConfigMap.class, BRIDGE_INGRESS_CONFIGMAP_PATH);
+        updateMetadata(bridgeIngress, configMap.getMetadata());
+        return configMap;
+    }
+
+    @Override
+    public KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress) {
+        KnativeBroker knativeBroker = loadYaml(KnativeBroker.class, BRIDGE_INGRESS_BROKER_PATH);
+        updateMetadata(bridgeIngress, knativeBroker.getMetadata());
+        return knativeBroker;
     }
 
     @Override
