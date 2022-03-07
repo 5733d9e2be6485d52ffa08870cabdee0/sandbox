@@ -93,7 +93,7 @@ class CustomerNamespaceProviderImplTest {
                         .withName(BridgeIngress.resolveResourceName(dto.getId()))
                         .get() != null);
         // try to delete the namespace...
-        customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(dto.getCustomerId());
+        customerNamespaceProvider.deleteNamespaceIfEmpty(kubernetesClient.namespaces().withName("ob-cooper").get());
         final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
         assertThat(namespace).isNotNull();
     }
