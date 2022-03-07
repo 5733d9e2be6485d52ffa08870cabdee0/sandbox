@@ -1,6 +1,7 @@
 name: Labels Check
 on:
-  pull_request:    
+  pull_request:  
+    types: [opened, labeled, unlabeled, synchronize]
     branches:
       - main
     paths-ignore:
