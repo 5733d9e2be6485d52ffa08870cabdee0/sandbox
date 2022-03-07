@@ -28,6 +28,11 @@ public interface CustomerNamespaceProvider {
     void deleteNamespaceIfEmpty(Namespace namespace);
 
     /**
+     * Deletes all custom namespaces if owned by the Shard Operator, and that do not have any OpenBridge CRs.
+     */
+    void cleanUpEmptyNamespaces();
+
+    /**
      * Get a sanitized name for the Customer Namespace with the given customer ID.
      *
      * @see <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names">Object Names and IDs</a>

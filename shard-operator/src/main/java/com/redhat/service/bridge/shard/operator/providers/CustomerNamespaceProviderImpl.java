@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.shard.operator.providers;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,6 +18,7 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
 public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider {
@@ -41,6 +44,32 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
         return ensureManagedLabels(namespace, customerId);
     }
 
+    // Scheduled at midnight
+    @Scheduled(cron = "0 0 0 * * ?", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    public void cleanUpEmptyNamespaces() {
+        List<Namespace> namespaces = kubernetesClient
+                .namespaces()
+                .list()
+                .getItems()
+                .stream()
+                .filter(ns -> ns.getMetadata().getName().startsWith(CustomerNamespaceProvider.NS_PREFIX_FORMAT))
+                .collect(Collectors.toList());
+        for (Namespace namespace : namespaces) {
+            deleteNamespaceIfEmpty(namespace);
+        }
+    }
+
+    @Override
+    public void deleteNamespaceIfEmpty(Namespace namespace) {
+        if (isSafeToDelete(namespace)) {
+            // deletion can be tricky with finalizers, pending objects, etc.
+            // let's start simple and build on top of the constraints and scenarios as we evolve.
+            if (!kubernetesClient.namespaces().withName(namespace.getMetadata().getName()).delete()) {
+                LOGGER.warn("Namespace '{}' hasn't been deleted", namespace.getMetadata().getName());
+            }
+        }
+    }
+
     private Map<String, String> createLabels(final String customerId) {
         return new LabelsBuilder().withCustomerId(customerId).buildWithDefaults();
     }
@@ -61,17 +90,6 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
                     namespace.getMetadata().getName()).edit(n -> new NamespaceBuilder(n).editOrNewMetadata().addToLabels(labels).endMetadata().build());
         }
         return namespace;
-    }
-
-    @Override
-    public void deleteNamespaceIfEmpty(Namespace namespace) {
-        if (isSafeToDelete(namespace)) {
-            // deletion can be tricky with finalizers, pending objects, etc.
-            // let's start simple and build on top of the constraints and scenarios as we evolve.
-            if (!kubernetesClient.namespaces().withName(namespace.getMetadata().getName()).delete()) {
-                LOGGER.warn("Namespace '{}' hasn't been deleted", namespace.getMetadata().getName());
-            }
-        }
     }
 
     private boolean isSafeToDelete(final Namespace namespace) {
