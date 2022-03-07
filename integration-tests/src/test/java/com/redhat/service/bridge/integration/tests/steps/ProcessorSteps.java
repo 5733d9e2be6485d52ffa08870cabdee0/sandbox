@@ -11,6 +11,8 @@ import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutLogger;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
@@ -120,6 +122,10 @@ public class ProcessorSteps {
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
+                                        processorId)))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -173,6 +179,10 @@ public class ProcessorSteps {
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
+                                        processorId)))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(

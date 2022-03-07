@@ -6,6 +6,8 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutLogger;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
@@ -101,6 +103,8 @@ public class BridgeSteps {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(() -> BridgeResource
+                        .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -131,6 +135,8 @@ public class BridgeSteps {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(() -> BridgeResource
+                        .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
