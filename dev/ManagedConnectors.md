@@ -144,6 +144,34 @@ ocm login --token <offline_token>
 ./cos-tools/bin/create-cluster-secret <cluster_id>
 ```
 
-## Conclusion
+### Conclusion
 
 Now you should be ready to deploy Managed Connectors into this namespace using the **obtained Cluster ID and the offline token**.
+
+You can see see the new pods in the `cos` namespace (one for every connector deployed) with:
+
+```shell
+kubectl -n cos get pods
+```
+
+**IMPORTANT:** the connector pods name start with `mctr-`.
+
+### Extra: Connector logging
+
+It's possible to manually configure enabled a more verbose logging in a Managed Connector with the following `curl` call:
+
+```shell
+curl -vvv --insecure --oauth2-bearer "${OFFLINE_TOKEN}" -S -s -D /dev/stderr \
+  "${COS_BASE_PATH}/api/connector_mgmt/v1/kafka_connectors/${CONNECTOR_ID}" \
+  -XPATCH \
+  -H "Content-Type: application/merge-patch+json" \
+  -d '{"connector":{"processors":[{"log":{"multiLine":true,"showHeaders":true}}]}}'
+```
+
+where `CONNECTOR_ID` is the ID of the connector, `OFFLINE_TOKEN` is the OpenShift offline token and `COS_BASE_PATH` is the variable exported above.
+
+The connector pod will be redeployed and the logs can be checked with:
+
+```shell
+kubectl -n cos logs <pod_name>
+```
