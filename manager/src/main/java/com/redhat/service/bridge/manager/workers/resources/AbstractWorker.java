@@ -49,11 +49,59 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             throw new IllegalStateException(message);
         }
 
+        // Fail when we've had enough
+        if (areRetriesExceeded(work)) {
+            LOGGER.error(
+                    "Max retry attempts exceeded trying to create dependencies for '{}' [{}].",
+                    managedResource.getName(),
+                    managedResource.getId());
+            setStatus(managedResource, ManagedResourceStatus.FAILED);
+            return false;
+        }
+        if (isTimeoutExceeded(work)) {
+            LOGGER.error(
+                    "Timeout exceeded trying to create dependencies for '{}' [{}].",
+                    managedResource.getName(),
+                    managedResource.getId());
+            setStatus(managedResource, ManagedResourceStatus.FAILED);
+            return false;
+        }
+
         boolean complete = false;
         if (managedResource.getStatus() == ManagedResourceStatus.ACCEPTED) {
-            complete = PROVISIONING_COMPLETE.contains(createDependencies(work, managedResource).getStatus());
+            try {
+                T updated = createDependencies(managedResource);
+                complete = PROVISIONING_COMPLETE.contains(updated.getStatus());
+            } catch (Exception e) {
+                LOGGER.info(
+                        "Failed to create dependencies for '{}' [{}].\n"
+                                + "Work status: {}\n"
+                                + "{}",
+                        managedResource.getName(),
+                        managedResource.getId(),
+                        work,
+                        e.getMessage());
+                // Something has gone wrong. We need to retry.
+                workManager.recordAttempt(work);
+                return false;
+            }
+
         } else if (managedResource.getStatus() == ManagedResourceStatus.DEPROVISION) {
-            complete = DEPROVISIONING_COMPLETE.contains(deleteDependencies(work, managedResource).getStatus());
+            try {
+                T updated = deleteDependencies(managedResource);
+                complete = DEPROVISIONING_COMPLETE.contains(updated.getStatus());
+            } catch (Exception e) {
+                LOGGER.info("Failed to delete dependencies for '{}' [{}].\n"
+                        + "Work status: {}\n"
+                        + "{}",
+                        managedResource.getName(),
+                        managedResource.getId(),
+                        work,
+                        e.getMessage());
+                // Something has gone wrong. We need to retry.
+                workManager.recordAttempt(work);
+                return false;
+            }
         }
 
         if (complete) {
@@ -84,44 +132,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     protected abstract PanacheRepositoryBase<T, String> getDao();
 
-    @Override
-    public T createDependencies(Work work, T managedResource) {
-        // Fail when we've had enough
-        if (areRetriesExceeded(work)) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("Max retry attempts exceeded trying to create dependencies for '%s' [%s].",
-                        managedResource.getName(),
-                        managedResource.getId()));
-            }
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-        if (isTimeoutExceeded(work)) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("Timeout exceeded trying to create dependencies for '%s' [%s].",
-                        managedResource.getName(),
-                        managedResource.getId()));
-            }
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-
-        try {
-            return runCreateOfDependencies(work, managedResource);
-        } catch (Exception e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(String.format("Failed to create dependencies for '%s' [%s].%n"
-                        + "Work status: %s%n"
-                        + "%s",
-                        managedResource.getName(),
-                        managedResource.getId(),
-                        work,
-                        e.getMessage()));
-            }
-            // Something has gone wrong. We need to retry.
-            workManager.recordAttempt(work);
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-    }
-
     protected boolean areRetriesExceeded(Work w) {
         return w.getAttempts() > maxRetries;
     }
@@ -129,47 +139,5 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected boolean isTimeoutExceeded(Work work) {
         return ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
     }
-
-    protected abstract T runCreateOfDependencies(Work work, T managedResource);
-
-    @Override
-    public T deleteDependencies(Work work, T managedResource) {
-        // Fail when we've had enough
-        if (areRetriesExceeded(work)) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("Max retry attempts exceeded trying to delete dependencies for '%s' [%s].",
-                        managedResource.getName(),
-                        managedResource.getId()));
-            }
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-        if (isTimeoutExceeded(work)) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error(String.format("Timeout exceeded trying to delete dependencies for '%s' [%s].",
-                        managedResource.getName(),
-                        managedResource.getId()));
-            }
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-
-        try {
-            return runDeleteOfDependencies(work, managedResource);
-        } catch (Exception e) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(String.format("Failed to delete dependencies for '%s' [%s].%n"
-                        + "Work status: %s%n"
-                        + "%s",
-                        managedResource.getName(),
-                        managedResource.getId(),
-                        work,
-                        e.getMessage()));
-            }
-            // Something has gone wrong. We need to retry.
-            workManager.recordAttempt(work);
-            return setStatus(managedResource, ManagedResourceStatus.FAILED);
-        }
-    }
-
-    protected abstract T runDeleteOfDependencies(Work work, T managedResource);
 
 }

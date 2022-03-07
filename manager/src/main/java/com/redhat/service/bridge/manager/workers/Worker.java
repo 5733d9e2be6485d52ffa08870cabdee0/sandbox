@@ -26,21 +26,27 @@ public interface Worker<T extends ManagedResource> {
      * @param work
      * @return true if the Work was processed, otherwise false.
      */
+    /*
+     * A return value is not really needed however there is an issue with (possibly) Quarkus and
+     * {@link EventBus#requestAndForget(String, Object)}. If a value is not returned the logs shows
+     * occurrences of "ERROR: Failed to send reply.(TIMEOUT,-1) Timed out after waiting 30000(ms)".
+     * See https://stackoverflow.com/questions/49449257/vertx-timeout-in-message-reply
+     */
     boolean handleWork(Work work);
 
     /**
      * Creates dependent resources required by the {@link ManagedResource}.
-     * 
+     *
      * @param managedResource
      * @return
      */
-    T createDependencies(Work work, T managedResource);
+    T createDependencies(T managedResource);
 
     /**
      * Deletes dependent resources that were required by the {@link ManagedResource}.
-     * 
+     *
      * @param managedResource
      * @return
      */
-    T deleteDependencies(Work work, T managedResource);
+    T deleteDependencies(T managedResource);
 }

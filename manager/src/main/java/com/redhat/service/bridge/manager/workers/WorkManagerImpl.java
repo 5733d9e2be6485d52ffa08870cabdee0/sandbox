@@ -100,8 +100,7 @@ public class WorkManagerImpl implements WorkManager {
     @SuppressWarnings("unused")
     @Scheduled(every = "5s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     protected void processWorkQueue() {
-        //Don't keep a transaction active whilst triggering work
-        getWorkQueue().forEach(this::fireEvent);
+        processWorkQueue(getWorkQueue());
     }
 
     @Transactional
@@ -109,10 +108,15 @@ public class WorkManagerImpl implements WorkManager {
         return workDAO.findByWorkerId(workerIdProvider.getWorkerId()).collect(Collectors.toList());
     }
 
+    @Transactional(Transactional.TxType.NEVER)
+    protected void processWorkQueue(List<Work> work) {
+        work.forEach(this::fireEvent);
+    }
+
     @SuppressWarnings("unused")
     @Transactional
     @Scheduled(every = "5m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
-    void adoptOrphanWorkers() {
+    void reconnectDroppedWorkers() {
         ZonedDateTime age = ZonedDateTime.now().minusMinutes(5);
         workDAO.rebalanceWork(workerIdProvider.getWorkerId(), age);
     }

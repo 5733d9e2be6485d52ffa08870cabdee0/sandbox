@@ -117,14 +117,17 @@ public class ProcessorDAOTest {
     @Transactional
     public void findProcessorsToBeDeployed() {
         Bridge b = createBridge();
-        createProcessor(b, "foo");
+        Processor p = createProcessor(b, "foo");
+        p.setDependencyStatus(ManagedResourceStatus.READY);
 
         Processor q = createProcessor(b, "bob");
         q.setStatus(ManagedResourceStatus.READY);
+        q.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(q);
 
         Processor r = createProcessor(b, "frank");
         r.setStatus(ManagedResourceStatus.DEPROVISION);
+        r.setStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
@@ -140,10 +143,12 @@ public class ProcessorDAOTest {
 
         Processor q = createProcessor(b, "bob");
         q.setStatus(ManagedResourceStatus.READY);
+        q.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(q);
 
         Processor r = createProcessor(b, "frank");
         r.setStatus(ManagedResourceStatus.DEPROVISION);
+        r.setDependencyStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
         List<Processor> processors = processorDAO.findByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);

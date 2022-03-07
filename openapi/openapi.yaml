@@ -1,8 +1,8 @@
 ---
 openapi: 3.0.3
 info:
-  title: Generated API
-  version: "1.0"
+  title: manager API
+  version: 0.0.1-SNAPSHOT
 paths:
   /api/v1/bridges:
     get:

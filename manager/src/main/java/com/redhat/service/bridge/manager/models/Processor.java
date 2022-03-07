@@ -29,7 +29,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "where p.status='ACCEPTED' " +
                         "and p.bridge.status='READY' " +
                         "and p.shardId=:shardId " +
-                        "and (p.dependencyStatus is null or p.dependencyStatus='READY')"),
+                        "and p.dependencyStatus='READY'"),
         @NamedQuery(name = "PROCESSOR.findByShardIdWithDeletedDependencies",
                 query = "select p " +
                         "from Processor p " +
@@ -38,7 +38,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "where p.status='DEPROVISION' " +
                         "and p.bridge.status='READY' " +
                         "and p.shardId=:shardId " +
-                        "and (p.dependencyStatus is null or p.dependencyStatus='DELETED')"),
+                        "and p.dependencyStatus='DELETED'"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",

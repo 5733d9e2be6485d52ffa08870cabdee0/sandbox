@@ -184,6 +184,7 @@ public class ProcessorServiceTest {
         processor1.setBridge(b);
         processor1.setShardId(TestConstants.SHARD_ID);
         processor1.setStatus(ManagedResourceStatus.ACCEPTED);
+        processor1.setDependencyStatus(ManagedResourceStatus.READY);
         processor1.setSubmittedAt(ZonedDateTime.now());
         processor1.setDefinition(new TextNode("definition"));
         processorDAO.persist(processor1);
@@ -193,6 +194,7 @@ public class ProcessorServiceTest {
         processor2.setBridge(b);
         processor2.setShardId(TestConstants.SHARD_ID);
         processor2.setStatus(ManagedResourceStatus.READY);
+        processor2.setDependencyStatus(ManagedResourceStatus.READY);
         processor2.setSubmittedAt(ZonedDateTime.now());
         processor2.setDefinition(new TextNode("definition"));
         processorDAO.persist(processor2);
@@ -202,6 +204,7 @@ public class ProcessorServiceTest {
         processor3.setBridge(b);
         processor3.setShardId(TestConstants.SHARD_ID);
         processor3.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor3.setDependencyStatus(ManagedResourceStatus.DELETED);
         processor3.setSubmittedAt(ZonedDateTime.now());
         processor3.setDefinition(new TextNode("definition"));
         processorDAO.persist(processor3);

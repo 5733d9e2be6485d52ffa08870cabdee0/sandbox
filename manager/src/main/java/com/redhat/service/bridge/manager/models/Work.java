@@ -99,7 +99,7 @@ public class Work {
         Work w = new Work();
         w.setSubmittedAt(ZonedDateTime.now());
         w.setModifiedAt(ZonedDateTime.now());
-        w.setType(managedResource.getClass().getSimpleName());
+        w.setType(managedResource.getClass().getName());
         w.setManagedResourceId(managedResource.getId());
         w.setWorkerId(workerId);
         return w;
