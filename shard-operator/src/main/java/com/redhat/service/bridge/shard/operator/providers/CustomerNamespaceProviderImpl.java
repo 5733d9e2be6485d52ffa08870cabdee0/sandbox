@@ -2,7 +2,6 @@ package com.redhat.service.bridge.shard.operator.providers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -49,11 +48,9 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
     public void cleanUpEmptyNamespaces() {
         List<Namespace> namespaces = kubernetesClient
                 .namespaces()
+                .withLabels(new LabelsBuilder().buildWithDefaults())
                 .list()
-                .getItems()
-                .stream()
-                .filter(ns -> ns.getMetadata().getName().startsWith(CustomerNamespaceProvider.NS_PREFIX_FORMAT))
-                .collect(Collectors.toList());
+                .getItems();
         for (Namespace namespace : namespaces) {
             deleteNamespaceIfEmpty(namespace);
         }

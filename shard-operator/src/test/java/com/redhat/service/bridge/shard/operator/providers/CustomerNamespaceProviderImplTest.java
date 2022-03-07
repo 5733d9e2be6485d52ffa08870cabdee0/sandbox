@@ -114,7 +114,12 @@ class CustomerNamespaceProviderImplTest {
         // there's only one bridge there
         bridgeIngressService.deleteBridgeIngress(dto);
         Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
+                .atMost(Duration.ofSeconds(60))
+                .until(() -> kubernetesClient.resources(BridgeIngress.class).withName(BridgeIngress.resolveResourceName(dto.getId())).get() == null);
+
+        customerNamespaceProvider.cleanUpEmptyNamespaces();
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(60))
                 .until(() -> kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get() == null);
     }
 }
