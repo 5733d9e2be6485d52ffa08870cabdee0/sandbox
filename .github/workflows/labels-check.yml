@@ -15,6 +15,9 @@ on:
 jobs:
   label:
     runs-on: ubuntu-latest
+    concurrency:
+      group: event-bridge-label-pr-${{ github.head_ref }}
+      cancel-in-progress: true
     steps:
       - name: Safe to test label must be added on the pull request
         uses: mheap/github-action-required-labels@v1
