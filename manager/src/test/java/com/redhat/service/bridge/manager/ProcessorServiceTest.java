@@ -57,8 +57,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.bridge.manager.RhoasServiceImpl.createFailureErrorMessageFor;
-import static com.redhat.service.bridge.manager.api.internal.ShardBridgesSyncAPI.SHARD_REQUESTED_STATUS;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -208,9 +206,13 @@ public class ProcessorServiceTest {
         processor3.setDefinition(new TextNode("definition"));
         processorDAO.persist(processor3);
 
-        List<Processor> processors = processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(asList(ManagedResourceStatus.ACCEPTED, DEPROVISION), TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(2);
-        processors.forEach((px) -> assertThat(px.getName()).isIn("My Processor", "My Processor 3"));
+        List<Processor> processorsToDeploy = processorService.getProcessorsToDeployByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(processorsToDeploy.size()).isEqualTo(1);
+        assertThat(processorsToDeploy.get(0).getName()).isEqualTo("My Processor");
+
+        List<Processor> processorsToDelete = processorService.getProcessorsToDeleteByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);
+        assertThat(processorsToDelete.size()).isEqualTo(1);
+        assertThat(processorsToDelete.get(0).getName()).isEqualTo("My Processor 3");
     }
 
     @Test
@@ -628,12 +630,12 @@ public class ProcessorServiceTest {
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(SHARD_REQUESTED_STATUS, TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).contains(processor.getId());
     }
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(SHARD_REQUESTED_STATUS, TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
     }
 

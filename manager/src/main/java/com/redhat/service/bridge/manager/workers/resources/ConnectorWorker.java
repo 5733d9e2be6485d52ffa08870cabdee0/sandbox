@@ -199,6 +199,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     @Transactional
     protected ConnectorEntity doDeleteDependencies(ConnectorEntity connectorEntity) {
         getDao().deleteById(connectorEntity.getId());
+        connectorEntity.setStatus(ManagedResourceStatus.DELETED);
         return connectorEntity;
     }
 

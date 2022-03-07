@@ -21,15 +21,24 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
-        @NamedQuery(name = "PROCESSOR.findByStatusesAndShardIdWithReadyDependencies",
+        @NamedQuery(name = "PROCESSOR.findByShardIdWithReadyDependencies",
                 query = "select p " +
                         "from Processor p " +
                         "join fetch p.bridge " +
                         "left join p.connectorEntities as c " +
-                        "where p.status in (:statuses) " +
+                        "where p.status='ACCEPTED' " +
                         "and p.bridge.status='READY' " +
                         "and p.shardId=:shardId " +
-                        "and (c is null or c.status = 'READY')"),
+                        "and (p.dependencyStatus is null or p.dependencyStatus='READY')"),
+        @NamedQuery(name = "PROCESSOR.findByShardIdWithDeletedDependencies",
+                query = "select p " +
+                        "from Processor p " +
+                        "join fetch p.bridge " +
+                        "left join p.connectorEntities as c " +
+                        "where p.status='DEPROVISION' " +
+                        "and p.bridge.status='READY' " +
+                        "and p.shardId=:shardId " +
+                        "and (p.dependencyStatus is null or p.dependencyStatus='DELETED')"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
