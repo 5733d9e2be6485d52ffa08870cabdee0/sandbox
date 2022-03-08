@@ -17,6 +17,7 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorDeletionException;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorGetException;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 
@@ -66,18 +67,6 @@ class ConnectorsApiClientTest {
     }
 
     @Test
-    void doGetConnectorApiExceptionNotFound() throws ApiException {
-        final ApiException exception = new ApiException("Not Found",
-                new IllegalStateException(""),
-                Response.Status.NOT_FOUND.getStatusCode(),
-                Collections.emptyMap(), "");
-
-        when(connectorsApi.getConnector(any())).thenThrow(exception);
-
-        assertThat(connectorsApiClient.getConnector(testConnectorEntity())).isNull();
-    }
-
-    @Test
     void doGetConnectorApiExceptionUnknown() throws ApiException {
         final ApiException exception = new ApiException("Internal Server Error",
                 new IllegalStateException(""),
@@ -86,7 +75,7 @@ class ConnectorsApiClientTest {
 
         when(connectorsApi.getConnector(any())).thenThrow(exception);
 
-        assertThatThrownBy(() -> connectorsApiClient.getConnector(testConnectorEntity())).isInstanceOf(ConnectorCreationException.class);
+        assertThatThrownBy(() -> connectorsApiClient.getConnector(testConnectorEntity())).isInstanceOf(ConnectorGetException.class);
     }
 
     @Test

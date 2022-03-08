@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
@@ -24,6 +23,7 @@ import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorDeletionException;
+import com.redhat.service.bridge.infra.exceptions.definitions.platform.ConnectorGetException;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 
 @RequestScoped
@@ -73,11 +73,8 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
             }
             return connectorsAPI.getConnector(connectorExternalId);
         } catch (ApiException e) {
-            if (e.getCode() != Response.Status.NOT_FOUND.getStatusCode()) {
-                throw new ConnectorCreationException("Error while retrieving the connector on MC Fleet Manager", e);
-            }
+            throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
-        return null;
     }
 
     @Override

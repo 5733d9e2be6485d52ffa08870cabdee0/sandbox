@@ -124,26 +124,26 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         Connector connector = connectorsApi.getConnector(connectorEntity);
 
-        // Step 1 - Clean up Kafka Topic if Connector cannot be found
+        // Steps, in reverse order...
+        // Step 3 - Connector has been deleted and does not exist: Clean up Kafka Topic
         if (Objects.isNull(connector)) {
             return deleteTopic(connectorEntity);
         }
-
-        // Step 1 - Clean up Kafka Topic if Connector is DELETED
         ConnectorStatusStatus status = connector.getStatus();
         if (Objects.isNull(status)) {
             return connectorEntity;
         }
         if (status.getState() == ConnectorState.DELETED) {
+            LOGGER.debug("Managed Connector for '{}' [{}] has status 'DELETED'. Continuing with deletion of Kafka Topic..",
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
             return deleteTopic(connectorEntity);
         }
         if (status.getState() == ConnectorState.FAILED) {
-            LOGGER.debug("Deleting Managed Connector for '{}' [{}] failed.",
+            LOGGER.debug("Managed Connector for '{}' [{}] has status 'FAILED'. Continuing with deletion of Kafka Topic..",
                     connectorEntity.getName(),
                     connectorEntity.getId());
-
-            // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
-            return setStatus(connectorEntity, ManagedResourceStatus.FAILED);
+            return deleteTopic(connectorEntity);
         }
 
         // Step 2 - Delete Connector
@@ -156,6 +156,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
+        // Step 1 - Delete Kafka Topic
         LOGGER.debug("Deleting Kafka Topic for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
