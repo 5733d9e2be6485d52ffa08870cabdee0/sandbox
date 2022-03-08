@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      # keep in sync with Manager-CI.yml
+      # keep in sync with Manager-CI.yaml
       - 'LICENSE'
       - '**/.gitignore'
       - '**.md'
