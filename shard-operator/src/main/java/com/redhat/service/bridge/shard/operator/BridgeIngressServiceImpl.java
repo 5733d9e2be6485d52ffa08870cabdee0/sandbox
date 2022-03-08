@@ -164,7 +164,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         Secret existing = kubernetesClient
                 .secrets()
-                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace(bridgeIngress.getMetadata().getNamespace().substring(0, 8))
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
@@ -172,7 +172,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             kubernetesClient
                     .secrets()
                     .inNamespace(bridgeIngress.getMetadata().getNamespace())
-                    .withName(bridgeIngress.getMetadata().getName())
+                    .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
         }
     }
@@ -182,7 +182,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         return kubernetesClient
                 .secrets()
                 .inNamespace(bridgeIngress.getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
+                .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
     }
 
@@ -192,13 +192,13 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         expected.getData().replace("default.topic.partitions", "10");
         expected.getData().replace("default.topic.replication.factor", "3");
-        expected.getData().replace("bootstrap.servers", secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS));
+        expected.getData().replace("bootstrap.servers", new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS))));
         expected.getData().replace("auth.secret.ref.name", secret.getMetadata().getName());
 
         ConfigMap existing = kubernetesClient
                 .configMaps()
                 .inNamespace(bridgeIngress.getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
+                .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
@@ -206,7 +206,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                     .configMaps()
                     .inNamespace(bridgeIngress.getMetadata().getNamespace())
                     // Best practice would be to generate a new name for the configmap and replace its reference
-                    .withName(bridgeIngress.getMetadata().getName())
+                    .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
         }
 
@@ -217,11 +217,11 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap) {
         KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(bridgeIngress);
         expected.getSpec().getConfig().setName(configMap.getMetadata().getName());
-        expected.getSpec().getConfig().setName(configMap.getMetadata().getName());
+        expected.getSpec().getConfig().setNamespace(configMap.getMetadata().getNamespace());
 
         KnativeBroker existing = kubernetesClient.resources(KnativeBroker.class)
                 .inNamespace(bridgeIngress.getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
+                .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
 
         if (existing == null || !expected.getSpec().getConfig().equals(existing.getSpec().getConfig())) {
@@ -229,7 +229,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                     .resources(KnativeBroker.class)
                     .inNamespace(bridgeIngress.getMetadata().getNamespace())
                     // Best practice would be to generate a new name for the configmap and replace its reference
-                    .withName(bridgeIngress.getMetadata().getName())
+                    .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
         }
 

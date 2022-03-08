@@ -57,6 +57,8 @@ public class TemplateProviderImpl implements TemplateProvider {
     public ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress) {
         ConfigMap configMap = loadYaml(ConfigMap.class, BRIDGE_INGRESS_CONFIGMAP_PATH);
         updateMetadata(bridgeIngress, configMap.getMetadata());
+        // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
+        configMap.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         return configMap;
     }
 
@@ -64,6 +66,8 @@ public class TemplateProviderImpl implements TemplateProvider {
     public KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress) {
         KnativeBroker knativeBroker = loadYaml(KnativeBroker.class, BRIDGE_INGRESS_BROKER_PATH);
         updateMetadata(bridgeIngress, knativeBroker.getMetadata());
+        // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
+        knativeBroker.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         return knativeBroker;
     }
 
@@ -106,6 +110,8 @@ public class TemplateProviderImpl implements TemplateProvider {
     public Secret loadBridgeIngressSecretTemplate(BridgeIngress bridgeIngress) {
         final Secret secret = loadYaml(Secret.class, BRIDGE_INGRESS_SECRET_PATH);
         updateMetadata(bridgeIngress, secret.getMetadata());
+        // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
+        secret.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         return secret;
     }
 

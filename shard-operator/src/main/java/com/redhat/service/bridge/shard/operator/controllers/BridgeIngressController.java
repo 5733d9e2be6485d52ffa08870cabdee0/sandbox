@@ -92,16 +92,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         Service service = kubernetesClient.services().inNamespace("knative-eventing").withName("kafka-broker-ingress").get();
 
         // Create Route
-        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
+//        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
-        if (!networkResource.isReady()) {
-            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
-            return UpdateControl.updateStatus(bridgeIngress);
-        }
-        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+//        if (!networkResource.isReady()) {
+//            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+//                    bridgeIngress.getMetadata().getNamespace());
+//            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+//            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+//            return UpdateControl.updateStatus(bridgeIngress);
+//        }
+//        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         //        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
         //        if (serviceMonitor.isPresent()) {
@@ -120,13 +120,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         //            return UpdateControl.updateStatus(bridgeIngress);
         //        }
 
-        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
-            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeIngress, BridgeStatus.READY);
-            return UpdateControl.updateStatus(bridgeIngress);
-        }
+//        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
+//            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
+//            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
+//            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
+//            notifyManager(bridgeIngress, BridgeStatus.READY);
+//            return UpdateControl.updateStatus(bridgeIngress);
+//        }
         return UpdateControl.noUpdate();
     }
 
