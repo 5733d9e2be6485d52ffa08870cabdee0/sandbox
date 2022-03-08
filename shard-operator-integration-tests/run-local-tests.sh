@@ -21,7 +21,6 @@ ARGS=
 
 while getopts "t:ph" i
 do
-    echo $i
     case "$i"
     in
         p) ARGS="${ARGS} -Dparallel" ;;
