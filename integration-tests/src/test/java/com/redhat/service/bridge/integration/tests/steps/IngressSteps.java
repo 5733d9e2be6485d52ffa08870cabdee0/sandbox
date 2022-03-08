@@ -18,6 +18,7 @@ import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.common.SlackUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
 
@@ -73,13 +74,13 @@ public class IngressSteps {
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" is failing with HTTP response code (\\d+):$")
     public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path,
-            int responseCode, String cloudEvent) {
+                                                                                     int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, responseCode);
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*) is failing with HTTP response code (\\d+):$")
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
-            String path, String headers, int responseCode, String cloudEvent) {
+                                                                                                      String path, String headers, int responseCode, String cloudEvent) {
         sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), responseCode);
     }
 
@@ -111,7 +112,7 @@ public class IngressSteps {
     }
 
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers,
-            int responseCode) {
+                                        int responseCode) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
         endpoint = endpoint + "/" + path;
 
@@ -157,7 +158,6 @@ public class IngressSteps {
             }
             parsedHeaders.add(new Header(headerValues[0].replaceAll("\"", ""), headerValues[1].replaceAll("\"", "")));
         }
-
         return new Headers(parsedHeaders);
     }
 }
