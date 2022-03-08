@@ -25,7 +25,12 @@ public interface CustomerNamespaceProvider {
     /**
      * Deletes the given custom namespace if owned by the Shard Operator, and it does not have any OpenBridge CRs.
      */
-    void deleteCustomerNamespaceIfEmpty(String customerId);
+    void deleteNamespaceIfEmpty(Namespace namespace);
+
+    /**
+     * Deletes all custom namespaces if owned by the Shard Operator, and that do not have any OpenBridge CRs.
+     */
+    void cleanUpEmptyNamespaces();
 
     /**
      * Get a sanitized name for the Customer Namespace with the given customer ID.

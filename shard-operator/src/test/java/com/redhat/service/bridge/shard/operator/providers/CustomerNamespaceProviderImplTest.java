@@ -93,7 +93,7 @@ class CustomerNamespaceProviderImplTest {
                         .withName(BridgeIngress.resolveResourceName(dto.getId()))
                         .get() != null);
         // try to delete the namespace...
-        customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(dto.getCustomerId());
+        customerNamespaceProvider.deleteNamespaceIfEmpty(kubernetesClient.namespaces().withName("ob-cooper").get());
         final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
         assertThat(namespace).isNotNull();
     }
@@ -114,7 +114,12 @@ class CustomerNamespaceProviderImplTest {
         // there's only one bridge there
         bridgeIngressService.deleteBridgeIngress(dto);
         Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
+                .atMost(Duration.ofSeconds(60))
+                .until(() -> kubernetesClient.resources(BridgeIngress.class).withName(BridgeIngress.resolveResourceName(dto.getId())).get() == null);
+
+        customerNamespaceProvider.cleanUpEmptyNamespaces();
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(60))
                 .until(() -> kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get() == null);
     }
 }

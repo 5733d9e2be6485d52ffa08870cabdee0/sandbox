@@ -133,9 +133,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                         .resources(BridgeExecutor.class)
                         .inNamespace(namespace)
                         .delete(BridgeExecutor.fromDTO(processorDTO, namespace, executorImage));
-        if (bridgeDeleted) {
-            customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(processorDTO.getCustomerId());
-        } else {
+        if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
         }
