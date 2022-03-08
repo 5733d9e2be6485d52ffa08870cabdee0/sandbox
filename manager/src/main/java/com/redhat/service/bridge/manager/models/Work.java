@@ -43,6 +43,10 @@ public class Work {
     @SuppressWarnings("unused")
     private long version;
 
+    private void setId(String id) {
+        this.id = id;
+    }
+
     public String getId() {
         return id;
     }
@@ -105,16 +109,28 @@ public class Work {
         return w;
     }
 
+    public static Work forDependentResource(ManagedResource dependency, Work originalWork) {
+        Work w = new Work();
+        w.setId(originalWork.getId());
+        w.setSubmittedAt(originalWork.getSubmittedAt());
+        w.setModifiedAt(originalWork.getModifiedAt());
+        w.setType(dependency.getClass().getName());
+        w.setManagedResourceId(dependency.getId());
+        w.setWorkerId(originalWork.getWorkerId());
+        w.setAttempts(originalWork.getAttempts());
+        return w;
+    }
+
     @Override
     public String toString() {
         return "Work{" +
-                "id='" + id + '\'' +
-                ", managedResourceId='" + managedResourceId + '\'' +
-                ", type='" + type + '\'' +
-                ", workerId='" + workerId + '\'' +
-                ", submittedAt=" + submittedAt +
-                ", modifiedAt=" + modifiedAt +
-                ", attempts=" + attempts +
+                "id='" + getId() + '\'' +
+                ", managedResourceId='" + getManagedResourceId() + '\'' +
+                ", type='" + getType() + '\'' +
+                ", workerId='" + getWorkerId() + '\'' +
+                ", submittedAt=" + getSubmittedAt() +
+                ", modifiedAt=" + getModifiedAt() +
+                ", attempts=" + getAttempts() +
                 '}';
     }
 }

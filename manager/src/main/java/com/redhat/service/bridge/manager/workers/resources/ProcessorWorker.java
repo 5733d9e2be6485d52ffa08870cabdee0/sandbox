@@ -39,12 +39,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     // This must be equal to the Processor.class.getName()
     @ConsumeEvent(value = "com.redhat.service.bridge.manager.models.Processor", blocking = true)
-    public boolean handleWork(Work work) {
+    public Processor handleWork(Work work) {
         return super.handleWork(work);
     }
 
     @Override
-    public Processor createDependencies(Processor processor) {
+    public Processor createDependencies(Work work, Processor processor) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 processor.getName(),
                 processor.getId());
@@ -60,13 +60,11 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
         // If we have to deploy a Managed Connector, delegate to the ConnectorWorker.
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-        ConnectorEntity connectorEntity = connectorWorker.createDependencies(getConnectorEntity(processor));
-        processor.setDependencyStatus(connectorEntity.getStatus());
-        return persist(processor);
+        return delegate(work, processor);
     }
 
     @Override
-    public Processor deleteDependencies(Processor processor) {
+    public Processor deleteDependencies(Work work, Processor processor) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 processor.getName(),
                 processor.getId());
@@ -79,8 +77,17 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
             return persist(processor);
         }
 
-        ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(getConnectorEntity(processor));
-        processor.setDependencyStatus(connectorEntity.getStatus());
+        return delegate(work, processor);
+    }
+
+    private Processor delegate(Work work, Processor processor) {
+        //Get Processor's Connector for which work needs completing
+        final ConnectorEntity connectorEntity = getConnectorEntity(processor);
+
+        //Delegate to the ConnectorWorker however mimic that the Work originated from the Processor.
+        Work connectorEntityWork = Work.forDependentResource(connectorEntity, work);
+        ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(connectorEntityWork);
+        processor.setDependencyStatus(updatedConnectorEntity.getStatus());
         return persist(processor);
     }
 

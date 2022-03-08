@@ -19,6 +19,7 @@ import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
+import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -43,7 +44,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity createDependencies(ConnectorEntity connectorEntity) {
+    public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
@@ -113,7 +114,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity deleteDependencies(ConnectorEntity connectorEntity) {
+    public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());

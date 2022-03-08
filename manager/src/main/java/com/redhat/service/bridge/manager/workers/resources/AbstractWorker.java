@@ -23,8 +23,11 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
-    private static final Set<ManagedResourceStatus> PROVISIONING_COMPLETE = Set.of(ManagedResourceStatus.READY, ManagedResourceStatus.FAILED);
-    private static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETE = Set.of(ManagedResourceStatus.DELETED, ManagedResourceStatus.FAILED);
+    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING);
+    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING);
+
+    private static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.READY, ManagedResourceStatus.FAILED);
+    private static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.DELETED, ManagedResourceStatus.FAILED);
 
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;
@@ -36,12 +39,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     WorkManagerImpl workManager;
 
     @Override
-    public boolean handleWork(Work work) {
-        //By the time VertX gets to execute an item of Work it may have been deleted.
-        if (!workManager.exists(work)) {
-            return false;
-        }
-
+    public T handleWork(Work work) {
         T managedResource = load(work);
         if (Objects.isNull(managedResource)) {
             //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
@@ -57,7 +55,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     managedResource.getId());
             managedResource.setStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
-            return false;
+            return managedResource;
         }
         if (isTimeoutExceeded(work)) {
             LOGGER.error(
@@ -66,14 +64,15 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     managedResource.getId());
             managedResource.setStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
-            return false;
+            return managedResource;
         }
 
         boolean complete = false;
-        if (managedResource.getStatus() == ManagedResourceStatus.ACCEPTED) {
+        T updated = managedResource;
+        if (PROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
-                T updated = createDependencies(managedResource);
-                complete = PROVISIONING_COMPLETE.contains(updated.getStatus());
+                updated = createDependencies(work, managedResource);
+                complete = PROVISIONING_COMPLETED.contains(updated.getStatus());
             } catch (Exception e) {
                 LOGGER.info(
                         "Failed to create dependencies for '{}' [{}].\n"
@@ -85,13 +84,12 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                         e.getMessage());
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
-                return false;
             }
 
-        } else if (managedResource.getStatus() == ManagedResourceStatus.DEPROVISION) {
+        } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
-                T updated = deleteDependencies(managedResource);
-                complete = DEPROVISIONING_COMPLETE.contains(updated.getStatus());
+                updated = deleteDependencies(work, managedResource);
+                complete = DEPROVISIONING_COMPLETED.contains(updated.getStatus());
             } catch (Exception e) {
                 LOGGER.info("Failed to delete dependencies for '{}' [{}].\n"
                         + "Work status: {}\n"
@@ -102,7 +100,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                         e.getMessage());
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
-                return false;
             }
         }
 
@@ -110,7 +107,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             workManager.complete(work);
         }
 
-        return true;
+        return updated;
     }
 
     @Transactional
