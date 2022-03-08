@@ -1,6 +1,10 @@
 #!/bin/sh
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
+check_token
+configure_manager
+
 processor_name=$TODAY_PROCESSOR_NAME
 processor_type='slack'
 
@@ -32,6 +36,7 @@ do
 done
 shift "$((OPTIND-1))"
 
+processor_payload=
 if [ "${processor_type}" = 'slack' ]; then
   processor_payload='{
    "name": '"\"$processor_name\""',
@@ -39,7 +44,7 @@ if [ "${processor_type}" = 'slack' ]; then
       "type": "Slack",
       "parameters": {
          "channel": "mc",
-         "webhookUrl": '"\"$SLACK_WEBHOOK_URL\""'
+         "webhookUrl": '"\"${SLACK_WEBHOOK_URL}\""'
       }
    },
   "filters": [
@@ -57,7 +62,7 @@ elif [ "${processor_type}" = 'webhook' ]; then
    "action": {
       "type": "Webhook",
       "parameters": {
-         "endpoint": '"\"$SLACK_WEBHOOK_URL\""'
+         "endpoint": '"\"${SLACK_WEBHOOK_URL}\""'
       }
    },
   "filters": [
@@ -75,9 +80,11 @@ else
   exit 1
 fi
 
+echo $processor_payload
 
 printf "\n\nCreating the ${processor_type} processor with name $processor_name\n"
-PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$processor_payload" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: Bearer $(get_token)" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "${processor_payload}" ${manager_url}/api/v1/bridges/${BRIDGE_ID}/processors | jq -r .id)
 
 printf "\n\nProcessor ${processor_type} created: $processor_name\n"
-echo "export PROCESSOR_ID=$PROCESSOR_ID"
+printf "\texport PROCESSOR_ID=$PROCESSOR_ID"
+printf "\n\n"

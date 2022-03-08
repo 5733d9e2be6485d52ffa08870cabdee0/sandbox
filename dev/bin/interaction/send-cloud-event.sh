@@ -2,6 +2,9 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
+check_token
+configure_manager
+
 BRIDGE_NAME=${1:-$TODAY_BRIDGE_NAME}
 
 MESSAGE="'$(date +%H:%M:%S)'-my new message"
@@ -15,13 +18,13 @@ export CLOUD_EVENT='{
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "myMessage" : '"\"$MESSAGE\""'
+        "myMessage" : '"\"${MESSAGE}\""'
     }
 }'
 
 
-BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
+BRIDGE_ENDPOINT=$(curl -s -H "Authorization: Bearer $(get_token)" -X GET "${manager_url}/api/v1/bridges/${BRIDGE_ID}" | jq -r .endpoint)
 
-echo "Sending cloud event to $BRIDGE_ENDPOINT"
-curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d "$CLOUD_EVENT" "$BRIDGE_ENDPOINT"
-echo "- Message $MESSAGE sent"
+echo "Sending cloud event to ${BRIDGE_ENDPOINT}"
+curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: Bearer $(get_token)" -d "${CLOUD_EVENT}" "${BRIDGE_ENDPOINT}"
+echo "- Message ${MESSAGE} sent"

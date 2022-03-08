@@ -9,7 +9,7 @@
 # This requires the ocm command: https://github.com/openshift-online/ocm-cli
 # You will to login with `ocm login --token [...]`. Token can be found here: https://console.redhat.com/openshift/token
 
-. $(dirname "${BASH_SOURCE[0]}")/../configure.sh
+. $(dirname "${BASH_SOURCE[0]}")/../common.sh
 
 username=$1
 

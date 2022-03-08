@@ -1,4 +1,4 @@
-# integration-tests
+# Integration Tests
 
 Module contains integration tests verifying end to end functionality in real cluster.  
 The tests are executed using command:
@@ -25,7 +25,7 @@ CI build has its own `WEBHOOK_SITE_UUID` value preconfigured.
 
 ## Local testing
 
-Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` or `kustomize/startMinikubeDeployLocalDev.sh` script, you can use the `integration-tests/run-local-tests.sh` script to launch the test with all local parameters set automatically.
+Alternatively, if you started the environment for local development via `dev/bin/deploy.sh` script, you can use the `integration-tests/run-local-tests.sh` script to launch the tests with all local parameters set automatically.
 
 Script has 2 options:
 

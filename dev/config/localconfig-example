@@ -5,14 +5,26 @@
 
 MANAGED_CONNECTORS_NAMESPACE_ID=mc-namespace-id
 MANAGED_CONNECTORS_CONTROL_PLANE_URL=https://managedconnector-controlplane.com
+SSO_REDHAT_URL=https://sso.redhat.com
 OPENSHIFT_OFFLINE_TOKEN=my-offline-token
+# Managed Kafka instance name should not be changed
+MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
 # RHOAS_USERNAME=
 
-# optional
-# MANAGED_KAFKA_REGION=
+# Cluster specifics
+# CLUSTER_TYPE=(minikube|kind)
+
+# Minikube (See dev/bin/minikube-start.sh)
+# MINIKUBE_PROFILE=
 # MINIKUBE_DRIVER=podman
 # MINIKUBE_CONTAINER_RUNTIME=cri-o
+# MINIKUBE_CPUS=
+# MINIKUBE_MEMORY=
+# MINIKUBE_KUBERNETES_VERSION=
 
-# integration-tests
-# TODO - check where to document/store
-# webhook.site.uuid=
+# Kind (See dev/bin/kind-start.sh)
+# KIND_NAME=
+# KIND_CONTAINER_ENGINE=podman
+# KIND_CONFIG_FILE=dev/config/kind/config.yaml
+# KIND_NETWORK=calico
+# KIND_KUBERNETES_VERSION=

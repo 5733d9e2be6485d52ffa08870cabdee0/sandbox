@@ -5,7 +5,7 @@ data:
   EVENT_BRIDGE_K8S_PLATFORM: k8s
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge.event-bridge-manager.svc.cluster.local:8080
   EVENT_BRIDGE_SHARD_ID: 150b23e9-0b34-45b7-a91a-5ec388d03a1d
-  EVENT_BRIDGE_SSO_URL: http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm
+  EVENT_BRIDGE_SSO_URL: http://<REPLACE_WITH_CLUSTER_IP>:30007/auth/realms/event-bridge-fm
   INGRESS_OVERRIDE_HOSTNAME: <REPLACE_WITH_KIND_HOSTNAME_OR_MINIKUBE_IP>
 kind: ConfigMap
 metadata:

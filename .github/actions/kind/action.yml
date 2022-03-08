@@ -10,18 +10,23 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: cardinalby/export-env-action@v1
+      with:
+        envFile: '.env'    
+        expand: 'true'
+
     - name: Set up KinD
       uses: container-tools/kind-action@v1
       with:
-        config: .github/kind-config.yaml
+        config: dev/config/kind/config.yaml
         registry: false                  # Registry not needed
-        node_image: kindest/node:v1.22.2 # Newest image
+        node_image: kindest/node:${{ env.KIND_KUBERNETES_VERSION }} # Correspond to kubernetes managed services
     - name: Check cluster status
       shell: bash
       run: |
         kubectl get nodes
         kubectl cluster-info
-    - name: Install Ingres
+    - name: Install Ingress
       shell: bash
       run: |
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml

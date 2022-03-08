@@ -6,12 +6,11 @@
 # variable OPENSHIFT_OFFLINE_TOKEN accordingly (retrieve the token from https://console.redhat.com/openshift/token).
 # If you target your local environment, then replace the variables KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD.
 
-MINIKUBE_IP=$(minikube ip)
 TARGET_ENVIRONMENT=local # valid values [local,remote]
-SSO_REDHAT_URL=https://sso.redhat.com
-OPENSHIFT_OFFLINE_TOKEN=<REPLACE>
-KEYCLOAK_URL=http://$MINIKUBE_IP:30007
-MANAGER_URL=http://localhost:8080
-KEYCLOAK_USERNAME=username
-KEYCLOAK_PASSWORD=password
-SLACK_WEBHOOK_URL=webhook_url
+
+KEYCLOAK_CLIENT_ID=event-bridge
+KEYCLOAK_CLIENT_SECRET=secret
+KEYCLOAK_TOKEN_OFFLINE_ACCESS=false
+# KEYCLOAK_USERNAME=kermit
+# KEYCLOAK_PASSWORD=thefrog
+# SLACK_WEBHOOK_URL=webhook_url

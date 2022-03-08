@@ -1,6 +1,8 @@
 #!/bin/bash
 
-SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+script_dir_path=$(dirname "${BASH_SOURCE[0]}")
+
+. ${script_dir_path}/../dev/bin/common.sh
 
 usage() {
     echo 'Usage: run-local-tests.sh [OPTIONS]'
@@ -32,12 +34,14 @@ do
 done
 shift "$((OPTIND-1))"
 
-BIN_DIR=${SCRIPT_DIR_PATH}/../dev/bin
-INTEGRATION_TESTS_DIR=${SCRIPT_DIR_PATH}
+integration_tests_dir=`realpath ${script_dir_path}`
 
-. ${BIN_DIR}/configure.sh minikube-started
-. ${LOCAL_ENV_FILE}
+configure_cluster_started
 
-cd ${INTEGRATION_TESTS_DIR}
+set -x
 
-mvn clean verify -Pcucumber $ARGS
+mvn clean verify $ARGS \
+    -f ${integration_tests_dir}/pom.xml \
+    -Pcucumber
+
+set +x

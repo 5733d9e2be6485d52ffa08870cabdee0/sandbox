@@ -6,7 +6,7 @@ This document contains notes on how we configured Managed Connectors to deploy c
 
 **IMPORTANT #2: this configurations considers only camel-based connectors, whose catalog can be found [here](https://github.com/bf2fc6cc711aee1a0c2a/cos-fleet-catalog-camel/tree/main/cos-fleet-catalog-connectors).**
 
-## Prelimiary operations
+## Preliminary operations
 
 ### Required CLI tools
 

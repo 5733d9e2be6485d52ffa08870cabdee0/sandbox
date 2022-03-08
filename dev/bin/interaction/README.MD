@@ -1,21 +1,21 @@
 # Shell scripts to interact with SmartEvents
 
-Start by making a copy of the `environment-example` file called `environment` and modify it accordingly, it won't be pushed into the repository.
+Start by making a copy of the `dev/bin/config/interaction-config-example` file to `dev/bin/config/interaction` and modify it accordingly.  
+This new file should not be pushed into the repository.
 
-Then it's important to always have the bearer token set
+Then it's important to always have the bearer token set with:
 
-```shell
-
-source get-token.sh
-
+```bash
+./dev/bin/interaction/get-token.sh
 ```
 
-And then call the others such as
+And then call the others such as:
 
-```shell
-
-./get-all-bridges.sh
+```bash
+./dev/bin/interaction/get-all-bridges.sh
 ```
+
+See other scripts in `dev/bin/interaction` folder for more interactions.
 
 ### Note
 
