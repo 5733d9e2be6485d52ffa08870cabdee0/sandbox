@@ -4,14 +4,16 @@ on:
     types: [labeled]
     branches:    
       - 'main'
-    paths:
-      - 'actions/**'
-      - 'executor/**'
-      - 'infra/**'
-      - 'ingress/**'
-      - 'manager/**'
-      - 'integration-tests/**'
-      - 'shard-operator/**'
+    paths-ignore:
+      # keep in sync with labels-check.yml
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
 jobs:
   event-bridge-build:
     env:
