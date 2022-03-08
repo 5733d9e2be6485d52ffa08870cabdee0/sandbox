@@ -98,7 +98,7 @@ public class WorkManagerImpl implements WorkManager {
     }
 
     @SuppressWarnings("unused")
-    @Scheduled(every = "5s", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(cron = "{event-bridge.resources.workers.schedule}", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     protected void processWorkQueue() {
         processWorkQueue(getWorkQueue());
     }
