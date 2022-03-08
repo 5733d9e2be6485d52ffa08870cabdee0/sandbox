@@ -54,13 +54,15 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
                     "No dependencies required for '{}' [{}]",
                     processor.getName(),
                     processor.getId());
-            return setDependencyStatus(processor, ManagedResourceStatus.READY);
+            processor.setDependencyStatus(ManagedResourceStatus.READY);
+            return persist(processor);
         }
 
         // If we have to deploy a Managed Connector, delegate to the ConnectorWorker.
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
         ConnectorEntity connectorEntity = connectorWorker.createDependencies(getConnectorEntity(processor));
-        return setDependencyStatus(processor, connectorEntity.getStatus());
+        processor.setDependencyStatus(connectorEntity.getStatus());
+        return persist(processor);
     }
 
     @Override
@@ -73,11 +75,13 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
             LOGGER.debug("No dependencies required for '{}' [{}]",
                     processor.getName(),
                     processor.getId());
-            return setDependencyStatus(processor, ManagedResourceStatus.DELETED);
+            processor.setDependencyStatus(ManagedResourceStatus.DELETED);
+            return persist(processor);
         }
 
         ConnectorEntity connectorEntity = connectorWorker.deleteDependencies(getConnectorEntity(processor));
-        return setDependencyStatus(processor, connectorEntity.getStatus());
+        processor.setDependencyStatus(connectorEntity.getStatus());
+        return persist(processor);
     }
 
     protected boolean hasZeroConnectors(Processor processor) {

@@ -49,7 +49,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                 connectorEntity.getId());
 
         // This is idempotent as it gets overridden later depending on actual state
-        connectorEntity = setStatus(connectorEntity, ManagedResourceStatus.PROVISIONING);
+        connectorEntity.setStatus(ManagedResourceStatus.PROVISIONING);
+        connectorEntity = persist(connectorEntity);
 
         // Step 1 - Create Kafka Topic
         LOGGER.debug("Creating Kafka Topic for '{}' [{}]",
@@ -85,7 +86,10 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
             // Connector is ready. We can proceed with the deployment of the Processor in the Shard
             // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-            return setReady(connectorEntity);
+            connectorEntity.setStatus(ManagedResourceStatus.READY);
+            connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+            connectorEntity.setDependencyStatus(ManagedResourceStatus.READY);
+            return persist(connectorEntity);
         }
 
         if (status.getState() == ConnectorState.FAILED) {
@@ -94,7 +98,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                     connectorEntity.getId());
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
-            return setStatus(connectorEntity, ManagedResourceStatus.FAILED);
+            connectorEntity.setStatus(ManagedResourceStatus.FAILED);
+            return persist(connectorEntity);
         }
 
         return connectorEntity;
@@ -103,14 +108,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
         // Creation is performed asynchronously. The returned Connector is a place-holder.
         Connector connector = connectorsApi.createConnector(connectorEntity);
-        return setConnectorExternalId(connectorEntity, connector.getId());
-    }
-
-    @Transactional
-    protected ConnectorEntity setConnectorExternalId(ConnectorEntity connectorEntity, String connectorExternalId) {
-        ConnectorEntity resource = getDao().findById(connectorEntity.getId());
-        resource.setConnectorExternalId(connectorExternalId);
-        return resource;
+        connectorEntity.setConnectorExternalId(connector.getId());
+        return persist(connectorEntity);
     }
 
     @Override
@@ -120,7 +119,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                 connectorEntity.getId());
 
         // This is idempotent as it gets overridden later depending on actual state
-        connectorEntity = setStatus(connectorEntity, ManagedResourceStatus.DELETING);
+        connectorEntity.setStatus(ManagedResourceStatus.DELETING);
+        connectorEntity = persist(connectorEntity);
 
         Connector connector = connectorsApi.getConnector(connectorEntity);
 
@@ -163,15 +163,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
 
         return doDeleteDependencies(connectorEntity);
-    }
-
-    @Transactional
-    protected ConnectorEntity setReady(ConnectorEntity connectorEntity) {
-        ConnectorEntity resource = getDao().findById(connectorEntity.getId());
-        resource.setStatus(ManagedResourceStatus.READY);
-        resource.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        resource.setDependencyStatus(ManagedResourceStatus.READY);
-        return resource;
     }
 
     @Transactional

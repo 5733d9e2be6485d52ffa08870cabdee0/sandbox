@@ -55,7 +55,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     "Max retry attempts exceeded trying to create dependencies for '{}' [{}].",
                     managedResource.getName(),
                     managedResource.getId());
-            setStatus(managedResource, ManagedResourceStatus.FAILED);
+            managedResource.setStatus(ManagedResourceStatus.FAILED);
+            persist(managedResource);
             return false;
         }
         if (isTimeoutExceeded(work)) {
@@ -63,7 +64,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     "Timeout exceeded trying to create dependencies for '{}' [{}].",
                     managedResource.getName(),
                     managedResource.getId());
-            setStatus(managedResource, ManagedResourceStatus.FAILED);
+            managedResource.setStatus(ManagedResourceStatus.FAILED);
+            persist(managedResource);
             return false;
         }
 
@@ -117,17 +119,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     }
 
     @Transactional
-    protected T setStatus(T managedResource, ManagedResourceStatus status) {
-        T resource = getDao().findById(managedResource.getId());
-        resource.setStatus(status);
-        return resource;
-    }
-
-    @Transactional
-    protected T setDependencyStatus(T managedResource, ManagedResourceStatus status) {
-        T resource = getDao().findById(managedResource.getId());
-        resource.setDependencyStatus(status);
-        return resource;
+    protected T persist(T managedResource) {
+        return getDao().getEntityManager().merge(managedResource);
     }
 
     protected abstract PanacheRepositoryBase<T, String> getDao();
