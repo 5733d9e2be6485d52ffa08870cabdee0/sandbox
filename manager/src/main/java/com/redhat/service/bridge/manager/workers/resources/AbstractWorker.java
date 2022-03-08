@@ -120,8 +120,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return getDao().getEntityManager().merge(managedResource);
     }
 
-    protected abstract PanacheRepositoryBase<T, String> getDao();
-
     protected boolean areRetriesExceeded(Work w) {
         return w.getAttempts() > maxRetries;
     }
@@ -129,5 +127,11 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected boolean isTimeoutExceeded(Work work) {
         return ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
     }
+
+    protected abstract PanacheRepositoryBase<T, String> getDao();
+
+    protected abstract T createDependencies(Work work, T managedResource);
+
+    protected abstract T deleteDependencies(Work work, T managedResource);
 
 }
