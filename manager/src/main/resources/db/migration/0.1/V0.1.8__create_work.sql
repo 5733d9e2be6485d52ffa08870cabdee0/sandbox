@@ -28,3 +28,13 @@ alter table CONNECTOR
 
 alter table CONNECTOR drop column desired_state;
 alter table CONNECTOR drop column worker_id;
+
+-- This will not cater for any Processor that was in the midst of being provisioned/de-provisioned
+update PROCESSOR
+set dependency_status = 'READY'
+where status = 'READY';
+
+-- This will not cater for any Connector that was in the midst of being provisioned/de-provisioned
+update CONNECTOR
+set dependency_status = 'READY'
+where status = 'READY';
