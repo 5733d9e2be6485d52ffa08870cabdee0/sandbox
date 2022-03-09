@@ -42,7 +42,8 @@ class SlackActionTest {
         JsonNode expected = new ObjectMapper().readTree("{" +
                 "    \"" + CONNECTOR_CHANNEL_PARAMETER + "\":\"" + channelValue + "\"," +
                 "    \"" + CONNECTOR_WEBHOOK_URL_PARAMETER + "\":\"" + webhookUrlValue + "\"," +
-                "    \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + topicValue + "\"" +
+                "    \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + topicValue + "\"," +
+                "    \"processors\":[{\"log\":{\"multiLine\":true,\"showHeaders\":true}}]}" +
                 "}");
 
         assertThat(slackConnectorPayload).isEqualTo(expected);
