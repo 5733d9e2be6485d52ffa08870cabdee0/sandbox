@@ -10,7 +10,7 @@ If you do not specify a `Transformation` then the `Event` is passed through unch
 
 ## Writing a Transformation
 
-`Transformations` are defined using the [Qute Templating](https://quarkus.pro/guides/qute-reference) engine. You can provide a
+`Transformations` are defined using the [Qute Templating](https://quarkus.io/guides/qute-reference) engine. You can provide a
 template to be used to transform the original `Event` as part of your `Processor` definition:
 
 ```json

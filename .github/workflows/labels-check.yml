@@ -1,0 +1,29 @@
+name: Labels Check
+on:
+  pull_request:  
+    types: [opened, labeled, unlabeled, synchronize]
+    branches:
+      - main
+    paths-ignore:
+      # keep in sync with Manager-CI.yaml
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: event-bridge-label-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Safe to test label must be added on the pull request
+        uses: mheap/github-action-required-labels@v1
+        with:
+          mode: exactly
+          count: 1
+          labels: "safe to test"

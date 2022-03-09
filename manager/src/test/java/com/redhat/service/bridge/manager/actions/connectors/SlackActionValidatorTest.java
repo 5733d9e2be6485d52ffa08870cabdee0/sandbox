@@ -21,16 +21,6 @@ class SlackActionValidatorTest {
     SlackActionValidator validator;
 
     @Test
-    void isInvalidWithNullParams() {
-        assertIsInvalid(actionWith(null), SlackActionValidator.EMPTY_PARAMETERS_MESSAGE);
-    }
-
-    @Test
-    void isInvalidWithEmptyParams() {
-        assertIsInvalid(actionWith(new HashMap<>()), SlackActionValidator.EMPTY_PARAMETERS_MESSAGE);
-    }
-
-    @Test
     void isInvalidWithEmptyChannelParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAMETER, "");

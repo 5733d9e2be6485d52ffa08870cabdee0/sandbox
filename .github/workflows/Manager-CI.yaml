@@ -4,14 +4,16 @@ on:
     types: [labeled]
     branches:    
       - 'main'
-    paths:
-      - 'actions/**'
-      - 'executor/**'
-      - 'infra/**'
-      - 'ingress/**'
-      - 'manager/**'
-      - 'integration-tests/**'
-      - 'shard-operator/**'
+    paths-ignore:
+      # keep in sync with labels-check.yml
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
 jobs:
   event-bridge-build:
     env:
@@ -132,6 +134,9 @@ jobs:
           kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
           kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
       - name: Run integration tests
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=http://localhost:80/manager
