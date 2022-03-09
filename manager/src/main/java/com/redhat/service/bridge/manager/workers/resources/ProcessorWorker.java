@@ -64,6 +64,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
+    protected boolean isProvisioningComplete(Processor managedResource) {
+        //As far as the Worker mechanism is concerned work for a Processor is complete when the dependencies are complete.
+        return PROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
+    }
+
+    @Override
     public Processor deleteDependencies(Work work, Processor processor) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 processor.getName(),
@@ -78,6 +84,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         }
 
         return delegate(work, processor);
+    }
+
+    @Override
+    protected boolean isDeprovisioningComplete(Processor managedResource) {
+        //As far as the Worker mechanism is concerned work for a Processor is complete when the dependencies are complete.
+        return DEPROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
     }
 
     private Processor delegate(Work work, Processor processor) {

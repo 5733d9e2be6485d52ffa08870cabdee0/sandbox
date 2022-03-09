@@ -51,6 +51,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         // This is idempotent as it gets overridden later depending on actual state
         connectorEntity.setStatus(ManagedResourceStatus.PROVISIONING);
+        connectorEntity.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         connectorEntity = persist(connectorEntity);
 
         // Step 1 - Create Kafka Topic
@@ -106,6 +107,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         return connectorEntity;
     }
 
+    @Override
+    protected boolean isProvisioningComplete(ConnectorEntity managedResource) {
+        // As far as the Worker mechanism is concerned work for a Connector is never
+        // complete as removal of the Work is controlled by the ProcessorWorker.
+        return false;
+    }
+
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
         // Creation is performed asynchronously. The returned Connector is a place-holder.
         Connector connector = connectorsApi.createConnector(connectorEntity);
@@ -121,6 +129,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         // This is idempotent as it gets overridden later depending on actual state
         connectorEntity.setStatus(ManagedResourceStatus.DELETING);
+        connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETING);
         connectorEntity = persist(connectorEntity);
 
         Connector connector = connectorsApi.getConnector(connectorEntity);
@@ -156,6 +165,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         return connectorEntity;
     }
 
+    @Override
+    protected boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
+        // As far as the Worker mechanism is concerned work for a Connector is never
+        // complete as removal of the Work is controlled by the ProcessorWorker.
+        return false;
+    }
+
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
         // Step 1 - Delete Kafka Topic
         LOGGER.debug("Deleting Kafka Topic for '{}' [{}]",
@@ -170,6 +186,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     protected ConnectorEntity doDeleteDependencies(ConnectorEntity connectorEntity) {
         getDao().deleteById(connectorEntity.getId());
         connectorEntity.setStatus(ManagedResourceStatus.DELETED);
+        connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETED);
         return connectorEntity;
     }
 

@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.time.ZonedDateTime;
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -20,8 +20,8 @@ public class WorkDAO implements PanacheRepositoryBase<Work, String> {
         return find("#Work.findByManagedResourceId", Parameters.with("managedResourceId", managedResource.getId())).firstResult();
     }
 
-    public Stream<Work> findByWorkerId(String workerId) {
-        return stream("#Work.findByWorkerId", Parameters.with("workerId", workerId));
+    public List<Work> findByWorkerId(String workerId) {
+        return list("#Work.findByWorkerId", Parameters.with("workerId", workerId));
     }
 
     public int rebalanceWork(String workerId, ZonedDateTime lastUpdated) {

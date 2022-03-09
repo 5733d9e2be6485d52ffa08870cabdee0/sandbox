@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.workers;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -105,7 +104,7 @@ public class WorkManagerImpl implements WorkManager {
 
     @Transactional
     protected List<Work> getWorkQueue() {
-        return workDAO.findByWorkerId(workerIdProvider.getWorkerId()).collect(Collectors.toList());
+        return workDAO.findByWorkerId(workerIdProvider.getWorkerId());
     }
 
     @Transactional(Transactional.TxType.NEVER)
