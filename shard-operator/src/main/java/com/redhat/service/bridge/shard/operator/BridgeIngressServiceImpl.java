@@ -139,9 +139,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                         .resources(BridgeIngress.class)
                         .inNamespace(namespace)
                         .delete(BridgeIngress.fromDTO(bridgeDTO, namespace, ingressImage));
-        if (bridgeDeleted) {
-            customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(bridgeDTO.getCustomerId());
-        } else {
+        if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
         }

@@ -80,7 +80,7 @@ public class IngressAPI {
             @HeaderParam("ce-type") @NotNull String cloudEventType,
             @HeaderParam("ce-id") @NotNull String cloudEventId,
             @HeaderParam("ce-source") @NotNull String cloudEventSource,
-            @HeaderParam("ce-subject") @NotNull String cloudEventSubject,
+            @HeaderParam("ce-subject") String cloudEventSubject,
             @NotNull JsonNode event) {
         failIfNotAuthorized(jwt);
         LOGGER.debug("New event has been uploaded to endpoint /events/plain");
