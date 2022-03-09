@@ -115,54 +115,38 @@ public class ProcessorDAOTest {
 
     @Test
     @Transactional
-    public void findProcessorsToBeDeployed() {
+    public void findProcessorsToBeDeployedOrDelete() {
         Bridge b = createBridge();
+        //To be provisioned
         Processor p = createProcessor(b, "foo");
         p.setDependencyStatus(ManagedResourceStatus.READY);
+        processorDAO.getEntityManager().merge(p);
 
+        //Already provisioned
         Processor q = createProcessor(b, "bob");
         q.setStatus(ManagedResourceStatus.READY);
         q.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(q);
 
-        Processor r = createProcessor(b, "frank");
-        r.setStatus(ManagedResourceStatus.DEPROVISION);
-        r.setStatus(ManagedResourceStatus.DELETED);
-        processorDAO.getEntityManager().merge(r);
-
-        List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(1);
-        assertThat(processors.get(0).getName()).isEqualTo("foo");
-    }
-
-    @Test
-    @Transactional
-    public void findProcessorsToBeDeleted() {
-        Bridge b = createBridge();
-        createProcessor(b, "foo");
-
-        Processor q = createProcessor(b, "bob");
-        q.setStatus(ManagedResourceStatus.READY);
-        q.setDependencyStatus(ManagedResourceStatus.READY);
-        processorDAO.getEntityManager().merge(q);
-
+        //To be de-provisioned
         Processor r = createProcessor(b, "frank");
         r.setStatus(ManagedResourceStatus.DEPROVISION);
         r.setDependencyStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
-        List<Processor> processors = processorDAO.findByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(1);
-        assertThat(processors.get(0).getName()).isEqualTo("frank");
+        List<Processor> processors = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(processors.size()).isEqualTo(2);
+        processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
     }
 
     @Test
     @Transactional
-    public void findProcessorsToBeDeployedWithConnectors() {
+    public void findProcessorsToBeDeployedOrDeleteWithConnectors() {
         Bridge b = createBridge();
 
+        //To be provisioned
         Processor withProvisionedConnectors = createProcessor(b, "withProvisionedConnectors");
-        withProvisionedConnectors.setStatus(ManagedResourceStatus.READY);
+        withProvisionedConnectors.setStatus(ManagedResourceStatus.ACCEPTED);
         withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
@@ -172,8 +156,9 @@ public class ProcessorDAOTest {
                 "");
         processorDAO.getEntityManager().merge(provisionedConnector);
 
+        //Not to be provisioned as Connector is not ready
         Processor nonProvisioned = createProcessor(b, "withUnprovisionedConnector");
-        nonProvisioned.setStatus(ManagedResourceStatus.READY);
+        nonProvisioned.setStatus(ManagedResourceStatus.ACCEPTED);
         nonProvisioned.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
@@ -181,10 +166,10 @@ public class ProcessorDAOTest {
                 "nonProvisionedConnector",
                 ManagedResourceStatus.READY,
                 "");
-
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
 
-        Processor toBeDeleted = createProcessor(b, "notToBeDeletedYet"); // If there's a connector yet to be deleted it shouldn't be returned
+        // Not to be de-provisioned as there's a connector yet to be deleted
+        Processor toBeDeleted = createProcessor(b, "notToBeDeletedYet");
         toBeDeleted.setStatus(ManagedResourceStatus.DEPROVISION);
         toBeDeleted.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(nonProvisioned);
@@ -193,56 +178,10 @@ public class ProcessorDAOTest {
                 "toBeDeletedConnector",
                 ManagedResourceStatus.ACCEPTED,
                 "");
-
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 
-        List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(0);
-    }
-
-    @Test
-    @Transactional
-    public void findProcessorsToBeDeletedWithConnectors() {
-        Bridge b = createBridge();
-
-        Processor withProvisionedConnectors = createProcessor(b, "withProvisionedConnectors");
-        withProvisionedConnectors.setStatus(ManagedResourceStatus.READY);
-        withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
-        processorDAO.getEntityManager().merge(withProvisionedConnectors);
-
-        ConnectorEntity provisionedConnector = Fixtures.createConnector(withProvisionedConnectors,
-                "connectorProvisioned",
-                ManagedResourceStatus.READY,
-                "");
-        processorDAO.getEntityManager().merge(provisionedConnector);
-
-        Processor nonProvisioned = createProcessor(b, "withUnprovisionedConnector");
-        nonProvisioned.setStatus(ManagedResourceStatus.DEPROVISION);
-        nonProvisioned.setDependencyStatus(ManagedResourceStatus.DELETED);
-        processorDAO.getEntityManager().merge(nonProvisioned);
-
-        ConnectorEntity nonProvisionedConnector = Fixtures.createConnector(nonProvisioned,
-                "nonProvisionedConnector",
-                ManagedResourceStatus.DELETED,
-                "");
-
-        processorDAO.getEntityManager().merge(nonProvisionedConnector);
-
-        Processor toBeDeleted = createProcessor(b, "notToBeDeletedYet"); // If there's a connector yet to be deleted it shouldn't be returned
-        toBeDeleted.setStatus(ManagedResourceStatus.DEPROVISION);
-        toBeDeleted.setDependencyStatus(ManagedResourceStatus.READY);
-        processorDAO.getEntityManager().merge(nonProvisioned);
-
-        ConnectorEntity toBeDeletedConnector = Fixtures.createConnector(toBeDeleted,
-                "toBeDeletedConnector",
-                ManagedResourceStatus.ACCEPTED,
-                "");
-
-        processorDAO.getEntityManager().merge(toBeDeletedConnector);
-
-        List<Processor> processors = processorDAO.findByShardIdWithDeletedDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(1);
-        assertThat(processors.get(0).getName()).isEqualTo("withUnprovisionedConnector");
+        List<Processor> processors = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(processors.stream().map(Processor::getName)).contains("withProvisionedConnectors");
     }
 
     @Test

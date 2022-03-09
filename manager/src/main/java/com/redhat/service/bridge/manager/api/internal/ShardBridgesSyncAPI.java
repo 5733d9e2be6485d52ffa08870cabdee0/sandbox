@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.manager.api.internal;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -88,13 +87,9 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        List<Processor> processorToDeploy = processorService.getProcessorsToDeployByShardIdWithReadyDependencies(shardId);
-        List<Processor> processorToDelete = processorService.getProcessorsToDeleteByShardIdWithDeletedDependencies(shardId);
-        List<Processor> allProcessors = new ArrayList<>();
-        allProcessors.addAll(processorToDeploy);
-        allProcessors.addAll(processorToDelete);
-        LOGGER.info("Found {} processor(s) to deploy or delete", allProcessors.size());
-        return Response.ok(allProcessors
+        List<Processor> processorToDeployOrDelete = processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(shardId);
+        LOGGER.info("Found {} processor(s) to deploy or delete", processorToDeployOrDelete.size());
+        return Response.ok(processorToDeployOrDelete
                 .stream()
                 .map(processorService::toDTO)
                 .collect(toList()))

@@ -21,24 +21,19 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @NamedQueries({
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
-        @NamedQuery(name = "PROCESSOR.findByShardIdWithReadyDependencies",
+        @NamedQuery(name = "PROCESSOR.findByStatusesAndShardIdWithReadyDependencies",
                 query = "select p " +
                         "from Processor p " +
                         "join fetch p.bridge " +
                         "left join p.connectorEntities as c " +
-                        "where p.status='ACCEPTED' " +
-                        "and p.bridge.status='READY' " +
-                        "and p.shardId=:shardId " +
-                        "and p.dependencyStatus='READY'"),
-        @NamedQuery(name = "PROCESSOR.findByShardIdWithDeletedDependencies",
-                query = "select p " +
-                        "from Processor p " +
-                        "join fetch p.bridge " +
-                        "left join p.connectorEntities as c " +
-                        "where p.status='DEPROVISION' " +
-                        "and p.bridge.status='READY' " +
-                        "and p.shardId=:shardId " +
-                        "and p.dependencyStatus='DELETED'"),
+                        "where " +
+                        "p.bridge.status='READY' and " +
+                        "p.shardId=:shardId and " +
+                        "(" +
+                        "  (p.status='ACCEPTED' and p.dependencyStatus='READY') " +
+                        "  or " +
+                        "  (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
+                        ")"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerId",
