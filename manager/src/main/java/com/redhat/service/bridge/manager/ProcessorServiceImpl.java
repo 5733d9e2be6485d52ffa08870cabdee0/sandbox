@@ -20,6 +20,7 @@ import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
@@ -79,24 +80,25 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor getProcessor(String processorId, String bridgeId, String customerId) {
-
-        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+    public Processor getProcessor(String processorId, Bridge bridge) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridge.getId(), bridge.getCustomerId());
         if (processor == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on Bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on Bridge '%s' for customer '%s'", processorId, bridge.getId(), bridge.getCustomerId()));
         }
 
         return processor;
     }
 
     @Override
-    public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
+    public Processor createProcessor(Bridge bridge, ProcessorRequest processorRequest) {
         /* We cannot deploy Processors to a Bridge that is not Available */
-        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+        if (!bridgesService.isBridgeReady(bridge)) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
+        }
 
-        if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
-            throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
+        if (processorDAO.findByBridgeIdAndName(bridge.getId(), processorRequest.getName()) != null) {
+            throw new AlreadyExistingItemException(
+                    "Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridge.getId() + "' for customer '" + bridge.getCustomerId() + "'");
         }
 
         Processor newProcessor = new Processor();
@@ -109,7 +111,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
                 bridge.getId(),
-                customerId,
+                bridge.getCustomerId(),
                 newProcessor.getId());
 
         newProcessor.setName(processorRequest.getName());
@@ -143,10 +145,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
-        Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", processorDTO.getId(), processorDTO.getBridgeId(),
                     processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
@@ -164,20 +165,22 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Long getProcessorsCount(String bridgeId, String customerId) {
-        return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
+    public Long getProcessorsCount(Bridge bridge) {
+        return processorDAO.countByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId());
     }
 
     @Transactional
     @Override
-    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo) {
-        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+    public ListResult<Processor> getProcessors(Bridge bridge, QueryInfo queryInfo) {
+        if (!bridgesService.isBridgeReady(bridge)) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
+        }
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 
     @Override
-    public void deleteProcessor(String bridgeId, String processorId, String customerId) {
-        List<ConnectorEntity> connectorEntitiesToBeDeleted = commitDeletionRequest(bridgeId, processorId, customerId);
+    public void deleteProcessor(Bridge bridge, String processorId) {
+        List<ConnectorEntity> connectorEntitiesToBeDeleted = commitDeletionRequest(bridge, processorId);
         connectorEntitiesToBeDeleted.forEach(c -> {
             LOGGER.info("Firing deletion event for entity: " + c);
             eventBus.requestAndForget(Events.CONNECTOR_DELETED_EVENT, c);
@@ -185,10 +188,10 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Transactional
-    public List<ConnectorEntity> commitDeletionRequest(String bridgeId, String processorId, String customerId) {
-        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
+    public List<ConnectorEntity> commitDeletionRequest(Bridge bridge, String processorId) {
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridge.getId(), bridge.getCustomerId());
         if (processor == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridge.getId(), bridge.getCustomerId()));
         }
         processor.setStatus(BridgeStatus.DEPROVISION);
 

@@ -20,10 +20,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.AdditionalMatchers.not;
-import static org.mockito.AdditionalMatchers.or;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -70,12 +66,13 @@ class SendToBridgeActionTransformerTest {
     void beforeEach() {
         reset(bridgesServiceMock);
 
-        when(bridgesServiceMock.getReadyBridge(BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(bridge);
-        when(bridgesServiceMock.getReadyBridge(OTHER_BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(otherBridge);
-        when(bridgesServiceMock.getReadyBridge(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
-        when(bridgesServiceMock.getReadyBridge(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
-                .thenThrow(new ItemNotFoundException("Bridge not found"));
-        when(bridgesServiceMock.getReadyBridge(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
+        when(bridgesServiceMock.isBridgeReady(bridge)).thenReturn(true);
+        when(bridgesServiceMock.isBridgeReady(otherBridge)).thenReturn(true);
+        //
+        //        when(bridgesServiceMock.isBridgeReady(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
+        //        when(bridgesServiceMock.isBridgeReady(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
+        //                .thenThrow(new ItemNotFoundException("Bridge not found"));
+        //        when(bridgesServiceMock.isBridgeReady(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
     }
 
     @Test

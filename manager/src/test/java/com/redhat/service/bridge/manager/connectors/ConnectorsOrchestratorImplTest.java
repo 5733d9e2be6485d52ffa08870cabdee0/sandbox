@@ -98,7 +98,7 @@ class ConnectorsOrchestratorImplTest {
         BaseAction slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessorDoubleUpdate", slackAction);
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        Processor processor = processorService.createProcessor(b, processorRequest);
 
         when(connectorsApiClient.createConnector(any())).thenReturn(stubbedExternalConnector("connectorExternalId"));
         when(shardService.getAssignedShardId(anyString())).thenReturn("myId");

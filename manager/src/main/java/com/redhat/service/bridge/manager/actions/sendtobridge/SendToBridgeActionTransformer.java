@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,7 +12,10 @@ import javax.inject.Inject;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.models.Bridge;
 
@@ -24,7 +28,15 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
     @Override
     public BaseAction transform(BaseAction action, String bridgeId, String customerId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
-        Bridge destinationBridge = bridgesService.getReadyBridge(destinationBridgeId, customerId);
+        Optional<Bridge> destinationBridgeOptional = bridgesService.getBridgeByIdAndCustomerId(bridgeId, customerId);
+        if (destinationBridgeOptional.isEmpty()) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", bridgeId, customerId));
+        }
+        Bridge destinationBridge = destinationBridgeOptional.get();
+        if (!bridgesService.isBridgeReady(destinationBridge)) {
+            throw new BridgeLifecycleException(
+                    String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", destinationBridge.getId(), destinationBridge.getCustomerId(), BridgeStatus.READY));
+        }
 
         Map<String, String> parameters = new HashMap<>();
 

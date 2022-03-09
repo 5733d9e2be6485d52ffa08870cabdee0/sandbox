@@ -123,13 +123,7 @@ public class ProcessorServiceTest {
     @Test
     public void createProcessor_bridgeNotActive() {
         Bridge b = createPersistBridge(BridgeStatus.PROVISIONING);
-        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), new ProcessorRequest()));
-    }
-
-    @Test
-    public void createProcessor_bridgeDoesNotExist() {
-        assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.createProcessor(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> processorService.createProcessor(b, new ProcessorRequest()));
     }
 
     @Test
@@ -137,10 +131,10 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        assertThatExceptionOfType(AlreadyExistingItemException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), r));
+        assertThatExceptionOfType(AlreadyExistingItemException.class).isThrownBy(() -> processorService.createProcessor(b, r));
     }
 
     @Test
@@ -148,7 +142,7 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
         assertThat(processor.getBridge().getId()).isEqualTo(b.getId());
@@ -167,15 +161,15 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
 
         r.setName("My Processor 2");
-        processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        processor = processorService.createProcessor(b, r);
         processor.setStatus(BridgeStatus.READY);
         processorDAO.getEntityManager().merge(processor);
 
         r.setName("My Processor 3");
-        processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        processor = processorService.createProcessor(b, r);
         processor.setStatus(DEPROVISION);
         processorDAO.getEntityManager().merge(processor);
 
@@ -189,7 +183,7 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         ProcessorDTO dto = processorService.toDTO(processor);
         dto.setStatus(BridgeStatus.READY);
 
@@ -221,10 +215,10 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        Processor found = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
+        Processor found = processorService.getProcessor(processor.getId(), b);
         assertThat(found).isNotNull();
         assertThat(found.getId()).isEqualTo(processor.getId());
         assertThat(found.getBridge().getId()).isEqualTo(b.getId());
@@ -236,10 +230,13 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor(processor.getId(), "doesNotExist", b.getCustomerId()));
+        Bridge fakeBridge = new Bridge();
+        fakeBridge.setId("doesNotExist");
+        fakeBridge.setCustomerId(b.getCustomerId());
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor(processor.getId(), fakeBridge));
     }
 
     @Test
@@ -247,10 +244,10 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor("doesNotExist", b.getId(), b.getCustomerId()));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor("doesNotExist", b));
     }
 
     @Test
@@ -258,10 +255,10 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> results = processorService.getProcessors(b, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -273,7 +270,7 @@ public class ProcessorServiceTest {
     public void getProcessors_noProcessorsOnBridge() {
 
         Bridge b = createPersistBridge(BridgeStatus.READY);
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> results = processorService.getProcessors(b, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
@@ -281,13 +278,16 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessors_bridgeDoesNotExist() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
+        Bridge fakeBridge = new Bridge();
+        fakeBridge.setId("doesNotExist");
+        fakeBridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors(fakeBridge, new QueryInfo(0, 100)));
     }
 
     @Test
     public void deleteProcessor_processorDoesNotExist() {
         Bridge b = createPersistBridge(BridgeStatus.READY);
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.deleteProcessor(b.getId(), "doesNotExist", b.getCustomerId()));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.deleteProcessor(b, "doesNotExist"));
     }
 
     @Test
@@ -295,10 +295,10 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Long result = processorService.getProcessorsCount(b);
         assertThat(result).isEqualTo(1L);
     }
 
@@ -307,11 +307,11 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(BridgeStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        processor = processorService.getProcessor(processor.getId(), b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processorService.deleteProcessor(b, processor.getId());
+        processor = processorService.getProcessor(processor.getId(), b);
         assertThat(processor.getStatus()).isEqualTo(DEPROVISION);
     }
 
@@ -323,10 +323,10 @@ public class ProcessorServiceTest {
         filters.add(new StringEquals("surename", "mySurename"));
         ProcessorRequest r = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+        Processor processor = processorService.createProcessor(b, r);
         assertThat(processor).isNotNull();
 
-        assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
+        assertThat(processorService.getProcessors(b, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
     }
 
     @Test
@@ -372,7 +372,7 @@ public class ProcessorServiceTest {
         when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        Processor processor = processorService.createProcessor(b, processorRequest);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
@@ -405,7 +405,7 @@ public class ProcessorServiceTest {
                 new InternalPlatformException(createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")));
         when(connectorsApiClient.createConnector(any())).thenReturn(new Connector());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), processorRequest);
+        Processor processor = processorService.createProcessor(b, processorRequest);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
@@ -434,7 +434,7 @@ public class ProcessorServiceTest {
         processorDAO.persist(processor);
         connectorsDAO.persist(connector);
 
-        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processorService.deleteProcessor(bridge, processor.getId());
 
         Processor deletionRequestedProcessor = processorDAO.findById(processor.getId());
         assertThat(deletionRequestedProcessor.getStatus()).isEqualTo(DEPROVISION);
@@ -443,7 +443,7 @@ public class ProcessorServiceTest {
             ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), "connectorToBeDeleted");
             assertThat(foundConnector).isNull();
 
-            final Processor processorDeleted = processorService.getProcessor(processor.getId(), bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+            final Processor processorDeleted = processorService.getProcessor(processor.getId(), bridge);
             assertThat(processorDeleted.getStatus()).isEqualTo(DEPROVISION);
         });
 

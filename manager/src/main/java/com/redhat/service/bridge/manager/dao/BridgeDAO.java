@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -24,16 +25,16 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return find("#BRIDGE.findByStatusesAndShardId", params).list();
     }
 
-    public Bridge findByNameAndCustomerId(String name, String customerId) {
+    public Optional<Bridge> findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
                 .with("name", name).and("customerId", customerId);
-        return find("#BRIDGE.findByNameAndCustomerId", params).firstResult();
+        return find("#BRIDGE.findByNameAndCustomerId", params).firstResultOptional();
     }
 
-    public Bridge findByIdAndCustomerId(String id, String customerId) {
+    public Optional<Bridge> findByIdAndCustomerId(String id, String customerId) {
         Parameters params = Parameters
                 .with("id", id).and("customerId", customerId);
-        return find("#BRIDGE.findByIdAndCustomerId", params).firstResult();
+        return find("#BRIDGE.findByIdAndCustomerId", params).firstResultOptional();
     }
 
     public ListResult<Bridge> findByCustomerId(String customerId, QueryInfo queryInfo) {

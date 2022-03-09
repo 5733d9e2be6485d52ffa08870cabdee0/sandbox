@@ -23,11 +23,14 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
 import com.redhat.service.bridge.infra.auth.IdentityResolver;
+import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
+import com.redhat.service.bridge.manager.BridgesService;
 import com.redhat.service.bridge.manager.ProcessorService;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.user.validators.actions.ValidActionParams;
+import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
@@ -48,38 +51,48 @@ public class ProcessorsAPI {
     ProcessorService processorService;
 
     @Inject
+    BridgesService bridgesService;
+
+    @Inject
     IdentityResolver identityResolver;
 
     @Inject
     JsonWebToken jwt;
 
     @GET
-    @Path("{bridgeId}/processors/{processorId}")
-    public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
+    @Path("{bridgeIdentifier}/processors/{processorId}")
+    public Response getProcessor(@NotEmpty @PathParam("bridgeIdentifier") String bridgeIdentifier, @NotEmpty @PathParam("processorId") String processorId) {
         String customerId = identityResolver.resolve(jwt);
-        Processor processor = processorService.getProcessor(processorId, bridgeId, customerId);
+        Bridge bridge = bridgesService.getBridgeByBridgeIdentifier(bridgeIdentifier, customerId);
+        Processor processor = processorService.getProcessor(processorId, bridge);
         return Response.ok(processorService.toResponse(processor)).build();
     }
 
     @GET
-    @Path("{bridgeId}/processors")
-    public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryInfo queryInfo) {
-        return Response.ok(ListResponse.fill(processorService.getProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
+    @Path("{bridgeIdentifier}/processors")
+    public Response listProcessors(@NotEmpty @PathParam("bridgeIdentifier") String bridgeIdentifier, @Valid @BeanParam QueryInfo queryInfo) {
+        String customerId = identityResolver.resolve(jwt);
+        Bridge bridge = bridgesService.getBridgeByBridgeIdentifier(bridgeIdentifier, customerId);
+        ListResult<Processor> processors = processorService.getProcessors(bridge, queryInfo);
+        return Response.ok(ListResponse.fill(processors, new ProcessorListResponse(),
                 processorService::toResponse)).build();
     }
 
     @POST
-    @Path("{bridgeId}/processors")
-    public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
+    @Path("{bridgeIdentifier}/processors")
+    public Response addProcessorToBridge(@PathParam("bridgeIdentifier") @NotEmpty String bridgeIdentifier, @ValidActionParams @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
-        Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
+        Bridge bridge = bridgesService.getBridgeByBridgeIdentifier(bridgeIdentifier, customerId);
+        Processor processor = processorService.createProcessor(bridge, processorRequest);
         return Response.status(Response.Status.CREATED).entity(processorService.toResponse(processor)).build();
     }
 
     @DELETE
-    @Path("{bridgeId}/processors/{processorId}")
-    public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
-        processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
+    @Path("{bridgeIdentifier}/processors/{processorId}")
+    public Response deleteProcessor(@PathParam("bridgeIdentifier") String bridgeIdentifier, @PathParam("processorId") String processorId) {
+        String customerId = identityResolver.resolve(jwt);
+        Bridge bridge = bridgesService.getBridgeByBridgeIdentifier(bridgeIdentifier, customerId);
+        processorService.deleteProcessor(bridge, processorId);
         return Response.accepted().build();
     }
 }

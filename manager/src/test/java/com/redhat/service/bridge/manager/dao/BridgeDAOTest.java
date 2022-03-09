@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.dao;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -54,14 +55,14 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        Bridge retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge).isNull();
+        Optional<Bridge> retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isEmpty();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, "not-the-customer-id");
-        assertThat(retrievedBridge).isNull();
+        assertThat(retrievedBridge).isEmpty();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge).isNotNull();
+        assertThat(retrievedBridge).isPresent();
     }
 
     @Test
