@@ -59,6 +59,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         updateMetadata(bridgeIngress, configMap.getMetadata());
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         configMap.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
+        configMap.getMetadata().setNamespace("default");
         return configMap;
     }
 
@@ -68,6 +69,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         updateMetadata(bridgeIngress, knativeBroker.getMetadata());
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         knativeBroker.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
+        knativeBroker.getMetadata().setNamespace("default");
         return knativeBroker;
     }
 
@@ -96,6 +98,7 @@ public class TemplateProviderImpl implements TemplateProvider {
     public Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress) {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
+        ingress.getMetadata().setNamespace("knative-eventing");
         return ingress;
     }
 
@@ -112,6 +115,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         updateMetadata(bridgeIngress, secret.getMetadata());
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         secret.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
+        secret.getMetadata().setNamespace("default");
         return secret;
     }
 

@@ -187,6 +187,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Override
     public String getBridgeTopicName(Bridge bridge) {
         // TODO: kafka topic is an internal detail of knative so we have to follow them. It requires String.format("knative-broker-%s-%s", resource.getNamespace(), resource.getId())
-        return internalKafkaConfigurationProvider.getTopicPrefix() + "ob-" + bridge.getCustomerId() + "-ob-" + bridge.getId().substring(0, 5);
+        // At the moment we create this but it's not used since we give the knative broker the admin account
+        return internalKafkaConfigurationProvider.getTopicPrefix() + bridge.getId();
     }
 }

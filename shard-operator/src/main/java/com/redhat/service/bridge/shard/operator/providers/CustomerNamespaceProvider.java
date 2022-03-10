@@ -13,7 +13,8 @@ public interface CustomerNamespaceProvider {
     /**
      * String format for the owned Bridge Namespace name.
      */
-    String NS_PREFIX_FORMAT = "ob-%s";
+    //    String NS_PREFIX_FORMAT = "ob-%s";
+    String NS_PREFIX_FORMAT = "%s";
 
     /**
      * Creates a new namespace with the given customer ID. If the namespace already exists, return it instead.

@@ -8,8 +8,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConfigurationProvider {
 
     public static final String KAFKA_BOOTSTRAP_SERVERS_PROPERTY = "event-bridge.kafka.bootstrap.servers";
-    public static final String KAFKA_CLIENT_ID_PROPERTY = "event-bridge.kafka.client.id";
-    public static final String KAFKA_CLIENT_SECRET_PROPERTY = "event-bridge.kafka.client.secret";
+
+    // TODO: workaround because knative broker needs admin credentials
+    public static final String KAFKA_CLIENT_ID_PROPERTY = "managed-connectors.kafka.client.id";
+    public static final String KAFKA_CLIENT_SECRET_PROPERTY = "managed-connectors.kafka.client.secret";
+
     public static final String KAFKA_SECURITY_PROTOCOL_PROPERTY = "event-bridge.kafka.security.protocol";
     public static final String KAFKA_TOPIC_PREFIX_PROPERTY = "event-bridge.kafka.topic-prefix";
 

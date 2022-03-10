@@ -47,10 +47,26 @@ public class KubernetesNetworkingService implements NetworkingService {
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Ingress expected = buildIngress(bridgeIngress, service);
 
-        Ingress existing = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
-
+        Ingress existing = client
+                .network()
+                .v1()
+                .ingresses()
+                .inNamespace(service.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
+        if (existing != null) {
+            LOGGER.info("exists");
+            LOGGER.info(existing.toString());
+        }
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).createOrReplace(expected);
+            LOGGER.info("Don't exist");
+            client
+                    .network()
+                    .v1()
+                    .ingresses()
+                    .inNamespace(service.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
+                    .createOrReplace(expected);
             return buildNetworkingResource(expected);
         }
 
@@ -70,6 +86,9 @@ public class KubernetesNetworkingService implements NetworkingService {
     private Ingress buildIngress(BridgeIngress bridgeIngress, Service service) {
         Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
 
+        // TODO: refactor
+        ingress.getMetadata().getAnnotations().replace("nginx.ingress.kubernetes.io/rewrite-target", "/default/ob-" + bridgeIngress.getSpec().getId().substring(0, 5));
+
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
                         .withName(service.getMetadata().getName())
@@ -79,7 +98,8 @@ public class KubernetesNetworkingService implements NetworkingService {
 
         HTTPIngressPath httpIngressPath = new HTTPIngressPathBuilder()
                 .withBackend(ingressBackend)
-                .withPath("/" + service.getMetadata().getName() + PATH_REGEX)
+                // TODO: refactor
+                .withPath("/" + bridgeIngress.getMetadata().getName())
                 .withPathType("Prefix")
                 .build();
 

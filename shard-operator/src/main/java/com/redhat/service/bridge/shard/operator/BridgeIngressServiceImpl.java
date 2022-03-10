@@ -62,18 +62,20 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
 
-        BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName(), ingressImage);
+        BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, "default", ingressImage);
 
         BridgeIngress existing = kubernetesClient
                 .resources(BridgeIngress.class)
-                .inNamespace(namespace.getMetadata().getName())
+                .inNamespace("default")
+                //                .inNamespace(namespace.getMetadata().getName())
                 .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             BridgeIngress bridgeIngress = kubernetesClient
                     .resources(BridgeIngress.class)
-                    .inNamespace(namespace.getMetadata().getName())
+                    .inNamespace("default")
+                    //                    .inNamespace(namespace.getMetadata().getName())
                     .createOrReplace(expected);
 
             // create or update the secrets for the bridgeIngress
@@ -142,7 +144,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         final boolean bridgeDeleted =
                 kubernetesClient
                         .resources(BridgeIngress.class)
-                        .inNamespace(namespace)
+                        .inNamespace("default")
+                        //                        .inNamespace(namespace)
                         .delete(BridgeIngress.fromDTO(bridgeDTO, namespace, ingressImage));
         if (bridgeDeleted) {
             customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(bridgeDTO.getCustomerId());
@@ -164,14 +167,16 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         Secret existing = kubernetesClient
                 .secrets()
-                .inNamespace(bridgeIngress.getMetadata().getNamespace().substring(0, 8))
+                .inNamespace("default")
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace().substring(0, 8))
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
             kubernetesClient
                     .secrets()
-                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .inNamespace("default")
+                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
                     .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
         }
@@ -181,7 +186,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public Secret fetchBridgeIngressSecret(BridgeIngress bridgeIngress) {
         return kubernetesClient
                 .secrets()
-                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace("default")
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
                 .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
     }
@@ -197,14 +203,16 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
         ConfigMap existing = kubernetesClient
                 .configMaps()
-                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace("default")
                 .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
             return kubernetesClient
                     .configMaps()
-                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .inNamespace("default")
                     // Best practice would be to generate a new name for the configmap and replace its reference
                     .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
@@ -220,14 +228,16 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getSpec().getConfig().setNamespace(configMap.getMetadata().getNamespace());
 
         KnativeBroker existing = kubernetesClient.resources(KnativeBroker.class)
-                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace("default")
                 .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
 
         if (existing == null || !expected.getSpec().getConfig().equals(existing.getSpec().getConfig())) {
             return kubernetesClient
                     .resources(KnativeBroker.class)
-                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .inNamespace("default")
                     // Best practice would be to generate a new name for the configmap and replace its reference
                     .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);

@@ -15,7 +15,6 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
-import com.redhat.service.bridge.shard.operator.networking.NetworkResource;
 import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
@@ -25,7 +24,6 @@ import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
@@ -75,7 +73,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Override
     public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
-        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
@@ -88,20 +86,32 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
 
-        // TODO: refactor
-        Service service = kubernetesClient.services().inNamespace("knative-eventing").withName("kafka-broker-ingress").get();
+        if (knativeBroker.getStatus().getAddress() == null || "".equals(knativeBroker.getStatus().getAddress())) {
+            LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+            return UpdateControl.updateStatus(bridgeIngress);
+        }
 
+        if (!bridgeIngress.getStatus().isReady() || !knativeBroker.getStatus().getAddress().equals(bridgeIngress.getStatus().getEndpoint())) {
+            bridgeIngress.getStatus().setEndpoint(knativeBroker.getStatus().getAddress());
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
+            notifyManager(bridgeIngress, BridgeStatus.READY);
+            return UpdateControl.updateStatus(bridgeIngress);
+        }
         // Create Route
-//        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
+        //        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 
-//        if (!networkResource.isReady()) {
-//            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
-//                    bridgeIngress.getMetadata().getNamespace());
-//            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-//            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
-//            return UpdateControl.updateStatus(bridgeIngress);
-//        }
-//        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        //        if (!networkResource.isReady()) {
+        //            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+        //                    bridgeIngress.getMetadata().getNamespace());
+        //            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+        //            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+        //            return UpdateControl.updateStatus(bridgeIngress);
+        //        }
+        //        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         //        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
         //        if (serviceMonitor.isPresent()) {
@@ -120,13 +130,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         //            return UpdateControl.updateStatus(bridgeIngress);
         //        }
 
-//        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
-//            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
-//            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
-//            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
-//            notifyManager(bridgeIngress, BridgeStatus.READY);
-//            return UpdateControl.updateStatus(bridgeIngress);
-//        }
+        //        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
+        //            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
+        //            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
+        //            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
+        //            notifyManager(bridgeIngress, BridgeStatus.READY);
+        //            return UpdateControl.updateStatus(bridgeIngress);
+        //        }
         return UpdateControl.noUpdate();
     }
 
