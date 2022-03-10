@@ -6,8 +6,6 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 public interface ConnectorAction extends ActionProvider {
 
-    String PROCESSORS_PARAMETER = "processors";
-
     String getConnectorType();
 
     JsonNode connectorPayload(BaseAction action);
