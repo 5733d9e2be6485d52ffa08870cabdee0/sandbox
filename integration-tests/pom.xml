@@ -125,6 +125,9 @@
                 <!--Manager and key-cloak url-->
                 <event-bridge.manager.url></event-bridge.manager.url>
                 <keycloak.realm.url></keycloak.realm.url>
+
+                <slack.webhook.url>${env.SLACK_WEBHOOK_URL}</slack.webhook.url>
+                <slack.webhook.token>${env.SLACK_WEBHOOK_TOKEN}</slack.webhook.token>
               </systemProperties>
             </configuration>
           </plugin>

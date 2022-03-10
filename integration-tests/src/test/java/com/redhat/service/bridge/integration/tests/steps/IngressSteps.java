@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
+import com.redhat.service.bridge.integration.tests.common.SlackUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
 
@@ -80,6 +81,13 @@ public class IngressSteps {
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
             String path, String headers, int responseCode, String cloudEvent) {
         sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), responseCode);
+    }
+
+    @When("^send a slack message cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\":$")
+    public void sendSlackMessageToIngressEndpoint(String testBridgeName, String path, String cloudEvent) {
+
+        String slackCloudEvent = SlackUtils.setAndRetrieveSlackMessageCloudEvent(cloudEvent);
+        sendAndCheckCloudEvent(testBridgeName, slackCloudEvent, path, getDefaultCloudEventHeaders(), 200);
     }
 
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
