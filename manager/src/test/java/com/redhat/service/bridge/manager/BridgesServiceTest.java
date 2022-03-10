@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.manager;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
@@ -44,7 +45,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
     }
 
@@ -104,9 +105,9 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
+        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridgesToDeploy.size()).isEqualTo(1);
-        assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(bridgesToDeploy.get(0).getEndpoint()).isNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
@@ -118,18 +119,47 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isEqualTo(1);
-        assertThat(bridges.get(0).getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(bridges.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
 
-        bridge.setStatus(BridgeStatus.PROVISIONING);
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
+        bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
 
         Bridge retrievedBridge = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge.getStatus()).isEqualTo(BridgeStatus.PROVISIONING);
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+    }
+
+    @Test
+    public void testUpdateBridgeStatusReadyPublishedAt() {
+        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge retrievedBridge = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(retrievedBridge.getPublishedAt()).isNull();
+
+        // Once ready it should have its published date set
+        bridge.setStatus(ManagedResourceStatus.READY);
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge publishedBridge = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(publishedBridge.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        ZonedDateTime publishedAt = publishedBridge.getPublishedAt();
+        assertThat(publishedAt).isNotNull();
+
+        //Check calls to set PublishedAt at idempotent
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge publishedBridge2 = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(publishedBridge2.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(publishedBridge2.getPublishedAt()).isEqualTo(publishedAt);
     }
 
     @Test

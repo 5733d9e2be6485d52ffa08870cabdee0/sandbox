@@ -22,6 +22,14 @@ Just a note, the `OB_TOKEN` value has to be the token value itself, without the 
 
 Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` or `kustomize/startMinikubeDeployLocalDev.sh` script, you can use the `integration-tests/run-local-tests.sh` script to launch the test with all local parameters set automatically.
 
+Script has 2 options:
+
+- `-t TAGS`  
+  Specify which tags to execute  
+  See also https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
+- `-p`  
+  Run tests in parallel
+
 ## Keycloak token authentication
 
 By Default test runs with those authentication parameters for Keycloak:

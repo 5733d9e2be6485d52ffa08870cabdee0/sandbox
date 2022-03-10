@@ -4,6 +4,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -19,8 +20,8 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
@@ -62,7 +63,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = bridgeRequest.toEntity();
-        bridge.setStatus(BridgeStatus.ACCEPTED);
+        bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
@@ -87,8 +88,8 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public Bridge getReadyBridge(String idOrName, String customerId) {
         Bridge bridge = getBridgeByIdOrName(idOrName, customerId);
-        if (BridgeStatus.READY != bridge.getStatus()) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
+        if (ManagedResourceStatus.READY != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), ManagedResourceStatus.READY));
         }
         return bridge;
     }
@@ -125,7 +126,7 @@ public class BridgesServiceImpl implements BridgesService {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
-        bridge.setStatus(BridgeStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         LOGGER.info("Bridge with idOrName '{}' for customer '{}' has been marked for deletion", idOrName, customerId);
     }
 
@@ -137,7 +138,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public List<Bridge> getBridgesByStatusesAndShardId(List<BridgeStatus> statuses, String shardId) {
+    public List<Bridge> getBridgesByStatusesAndShardId(List<ManagedResourceStatus> statuses, String shardId) {
         return bridgeDAO.findByStatusesAndShardId(statuses, shardId);
     }
 
@@ -147,10 +148,14 @@ public class BridgesServiceImpl implements BridgesService {
         Bridge bridge = findByIdAndCustomerId(bridgeDTO.getId(), bridgeDTO.getCustomerId());
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
+        bridge.setModifiedAt(ZonedDateTime.now());
 
-        if (bridgeDTO.getStatus().equals(BridgeStatus.DELETED)) {
+        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             rhoasService.deleteTopicAndRevokeAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        }
+        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(bridge.getPublishedAt())) {
+            bridge.setPublishedAt(ZonedDateTime.now());
         }
 
         // Update metrics
