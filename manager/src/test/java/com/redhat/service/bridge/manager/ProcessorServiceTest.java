@@ -242,6 +242,12 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
 
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            Processor p = processorDAO.findById(processor.getId());
+            assertThat(p).isNotNull();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+        });
+
         processor.setStatus(ManagedResourceStatus.PROVISIONING);
         processorService.updateProcessorStatus(processorService.toDTO(processor));
 

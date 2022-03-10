@@ -107,15 +107,13 @@ public class ConnectorWorkerTest {
         // This emulates a subsequent invocation by WorkManager
         worker.handleWork(work);
 
-        verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
-        verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
         assertThat(connectorEntity.getPublishedAt()).isNotNull();
         assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.READY);
         assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-
-        verify(workManager, never()).complete(work);
-
         verify(connectorEntity, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
+        verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
+        verify(workManager, never()).complete(work);
     }
 
     @ParameterizedTest

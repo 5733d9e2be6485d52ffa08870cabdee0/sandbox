@@ -29,8 +29,10 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,13 +88,12 @@ public class BridgeWorkerTest {
     @MethodSource("srcHandleWorkProvisioningWithKnownResource")
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean throwRhosError,
-            boolean isWorkComplete) {
+            boolean throwRhosError) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        Bridge bridge = new Bridge();
+        Bridge bridge = spy(new Bridge());
         bridge.setStatus(status);
 
         when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
@@ -106,29 +107,29 @@ public class BridgeWorkerTest {
         worker.handleWork(work);
 
         assertThat(bridge.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
+        verify(bridge, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
         verify(rhoasService).createTopicAndGrantAccessFor(TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(workManager, never()).complete(any(Work.class));
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResource() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, false),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, false, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, true, false));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, false),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, true));
     }
 
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResource")
     void handleWorkDeletingWithKnownResource(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean throwRhosError,
-            boolean isWorkComplete) {
+            boolean throwRhosError) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        Bridge bridge = new Bridge();
+        Bridge bridge = spy(new Bridge());
         bridge.setStatus(status);
 
         when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
@@ -142,16 +143,17 @@ public class BridgeWorkerTest {
         worker.handleWork(work);
 
         assertThat(bridge.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
+        verify(bridge, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
         verify(rhoasService).deleteTopicAndRevokeAccessFor(TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(workManager, never()).complete(any(Work.class));
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResource() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, false, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, false),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, false));
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, false),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true));
     }
 
 }

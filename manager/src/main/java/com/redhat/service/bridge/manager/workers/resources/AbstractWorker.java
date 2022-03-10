@@ -2,7 +2,6 @@ package com.redhat.service.bridge.manager.workers.resources;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -23,12 +22,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
-    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING);
-    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING);
-
-    protected static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.READY, ManagedResourceStatus.FAILED);
-    protected static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.DELETED, ManagedResourceStatus.FAILED);
-
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;
 
@@ -39,7 +32,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     WorkManager workManager;
 
     @Override
-    public T handleWork(Work work) {
+    public boolean handleWork(Work work) {
         T managedResource = load(work);
         if (Objects.isNull(managedResource)) {
             //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
@@ -54,8 +47,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     managedResource.getName(),
                     managedResource.getId());
             managedResource.setStatus(ManagedResourceStatus.FAILED);
+            managedResource.setDependencyStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
-            return managedResource;
+            return true;
         }
         if (isTimeoutExceeded(work)) {
             LOGGER.error(
@@ -63,12 +57,13 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     managedResource.getName(),
                     managedResource.getId());
             managedResource.setStatus(ManagedResourceStatus.FAILED);
+            managedResource.setDependencyStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
-            return managedResource;
+            return true;
         }
 
         boolean complete = false;
-        T updated = managedResource;
+        T updated;
         if (PROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = createDependencies(work, managedResource);
@@ -103,11 +98,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             }
         }
 
-        if (complete) {
-            workManager.complete(work);
-        }
-
-        return updated;
+        return complete;
     }
 
     @Transactional
@@ -135,14 +126,12 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     protected abstract T deleteDependencies(Work work, T managedResource);
 
-    // When Work is "complete" the Work is removed from the Work Queue acted on by WorkManager.
-    // For simple two-step chains (e.g. our existing Processor->Connector resource) it does not matter
-    // a great deal if either Processor or Connector decide the work is complete. However, consider a three-step
-    // chain: A->B->C where A is the primary work, B a dependency on A and C a dependency on B. We would not want
-    // the work for A to be removed from the Work Queue until B and C are complete. Therefore, neither B nor C should
-    // flag that work is complete. B would check on the status of C and A on B. These methods allow for this.
-    protected abstract boolean isProvisioningComplete(T managedResource);
+    protected boolean isProvisioningComplete(T managedResource) {
+        return PROVISIONING_COMPLETED.contains(managedResource.getStatus());
+    }
 
-    protected abstract boolean isDeprovisioningComplete(T managedResource);
+    protected boolean isDeprovisioningComplete(T managedResource) {
+        return DEPROVISIONING_COMPLETED.contains(managedResource.getStatus());
+    }
 
 }

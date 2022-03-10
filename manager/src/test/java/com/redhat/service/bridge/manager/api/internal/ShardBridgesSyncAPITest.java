@@ -321,4 +321,18 @@ public class ShardBridgesSyncAPITest {
         TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);
         TestUtils.updateProcessor(new ProcessorDTO()).then().statusCode(403);
     }
+
+    // Wait for a Processor to be created
+    private ProcessorDTO getProcessor() {
+        List<ProcessorDTO> processors = new ArrayList<>();
+        await().atMost(15, SECONDS).untilAsserted(() -> {
+            processors.clear();
+            processors.addAll(TestUtils.getProcessorsToDeployOrDelete().as(new TypeRef<>() {
+            }));
+
+            assertThat(processors.size()).isEqualTo(1);
+        });
+        return processors.get(0);
+    }
+
 }

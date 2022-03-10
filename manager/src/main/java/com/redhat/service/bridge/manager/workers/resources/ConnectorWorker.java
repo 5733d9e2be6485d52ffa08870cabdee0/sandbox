@@ -94,8 +94,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             // Connector is ready. We can proceed with the deployment of the Processor in the Shard
             // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
             connectorEntity.setStatus(ManagedResourceStatus.READY);
-            connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
             connectorEntity.setDependencyStatus(ManagedResourceStatus.READY);
+            connectorEntity.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
             return persist(connectorEntity);
         }
 
@@ -103,20 +103,10 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             LOGGER.debug("Creating Managed Connector for '{}' [{}] failed.",
                     connectorEntity.getName(),
                     connectorEntity.getId());
-
-            // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
-            connectorEntity.setStatus(ManagedResourceStatus.FAILED);
-            return persist(connectorEntity);
+            return connectorEntity;
         }
 
         return connectorEntity;
-    }
-
-    @Override
-    protected boolean isProvisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
-        // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
     }
 
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
@@ -171,13 +161,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         connectorsApi.deleteConnector(connectorEntity.getConnectorExternalId());
 
         return connectorEntity;
-    }
-
-    @Override
-    protected boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
-        // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {

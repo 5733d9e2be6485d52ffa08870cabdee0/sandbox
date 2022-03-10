@@ -38,7 +38,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     // This must be equal to the Bridge.class.getName()
     @ConsumeEvent(value = "com.redhat.service.bridge.manager.models.Bridge", blocking = true)
-    public Bridge handleWork(Work work) {
+    public boolean handleWork(Work work) {
         return super.handleWork(work);
     }
 
@@ -61,12 +61,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     @Override
-    protected boolean isProvisioningComplete(Bridge managedResource) {
-        //As far as the Worker mechanism is concerned work for a Bridge is complete when the dependencies are complete.
-        return PROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
-    }
-
-    @Override
     public Bridge deleteDependencies(Work work, Bridge bridge) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 bridge.getName(),
@@ -82,12 +76,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         // ...otherwise the Bridge's dependencies are DELETED
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         return persist(bridge);
-    }
-
-    @Override
-    protected boolean isDeprovisioningComplete(Bridge managedResource) {
-        //As far as the Worker mechanism is concerned work for a Bridge is complete when the dependencies are complete.
-        return DEPROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
     }
 
 }

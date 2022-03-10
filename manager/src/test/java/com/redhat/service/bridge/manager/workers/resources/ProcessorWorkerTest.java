@@ -12,8 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,10 +26,10 @@ import com.redhat.service.bridge.manager.workers.WorkManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,16 +45,10 @@ public class ProcessorWorkerTest {
     ConnectorsDAO connectorsDAO;
 
     @Mock
-    ConnectorWorker connectorWorker;
-
-    @Mock
     WorkManager workManager;
 
     @Mock
     EntityManager entityManager;
-
-    @Captor
-    ArgumentCaptor<Work> workArgumentCaptor;
 
     private ProcessorWorker worker;
 
@@ -65,7 +57,6 @@ public class ProcessorWorkerTest {
         this.worker = new ProcessorWorker();
         this.worker.processorDAO = this.processorDAO;
         this.worker.connectorsDAO = this.connectorsDAO;
-        this.worker.connectorWorker = this.connectorWorker;
         this.worker.workManager = this.workManager;
         this.worker.maxRetries = 3;
         this.worker.timeoutSeconds = 60;
@@ -88,25 +79,27 @@ public class ProcessorWorkerTest {
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        Processor processor = new Processor();
+        Processor processor = spy(new Processor());
         processor.setStatus(status);
 
         when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
         when(processorDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(processor)).thenReturn(processor);
+        when(connectorsDAO.findByProcessorId(anyString())).thenReturn(null);
 
         worker.handleWork(work);
 
+        assertThat(processor.getStatus()).isEqualTo(status);
         assertThat(processor.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(workManager).complete(work);
+        verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
+        verify(workManager, never()).complete(work);
     }
 
     @ParameterizedTest
     @MethodSource("srcHandleWorkProvisioningWithKnownResourceWithConnector")
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
-            ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) {
+            ManagedResourceStatus dependencyStatusWhenComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
@@ -114,41 +107,28 @@ public class ProcessorWorkerTest {
         Processor processor = new Processor();
         processor.setStatus(status);
         ConnectorEntity connector = new ConnectorEntity();
-        connector.setStatus(ManagedResourceStatus.ACCEPTED);
+        connector.setStatus(dependencyStatusWhenComplete);
 
         when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
         when(processorDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(processor)).thenReturn(processor);
-        when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
-        doAnswer((i) -> {
-            //Emulate ConnectorWorker completing work
-            connector.setStatus(dependencyStatusWhenComplete);
-            return connector;
-        }).when(connectorWorker).handleWork(any(Work.class));
+        when(connectorsDAO.findByProcessorId(anyString())).thenReturn(connector);
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(connectorWorker).handleWork(workArgumentCaptor.capture());
-
-        Work connectorWork = workArgumentCaptor.getValue();
-        assertThat(connectorWork).isNotNull();
-        assertThat(connectorWork.getId()).isEqualTo(work.getId());
-        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
-        assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
         assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
-
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        verify(workManager, never()).complete(any(Work.class));
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, false),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, false));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING));
     }
 
     @ParameterizedTest
@@ -167,18 +147,17 @@ public class ProcessorWorkerTest {
 
         worker.handleWork(work);
 
+        assertThat(processor.getStatus()).isEqualTo(status);
         assertThat(processor.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(workManager).complete(work);
-
         verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
+        verify(workManager, never()).complete(work);
     }
 
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResourceWithConnector")
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
-            ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) {
+            ManagedResourceStatus dependencyStatusWhenComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
@@ -186,43 +165,28 @@ public class ProcessorWorkerTest {
         Processor processor = spy(new Processor());
         processor.setStatus(status);
         ConnectorEntity connector = new ConnectorEntity();
-        connector.setStatus(ManagedResourceStatus.ACCEPTED);
+        connector.setStatus(dependencyStatusWhenComplete);
 
         when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
         when(processorDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(processor)).thenReturn(processor);
         when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
-        doAnswer((i) -> {
-            //Emulate ConnectorWorker completing work
-            connector.setStatus(dependencyStatusWhenComplete);
-            return connector;
-        }).when(connectorWorker).handleWork(any(Work.class));
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(connectorWorker).handleWork(workArgumentCaptor.capture());
-
-        Work connectorWork = workArgumentCaptor.getValue();
-        assertThat(connectorWork).isNotNull();
-        assertThat(connectorWork.getId()).isEqualTo(work.getId());
-        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
-        assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
         assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
-
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
-
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, false),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, false));
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING));
     }
 
 }
