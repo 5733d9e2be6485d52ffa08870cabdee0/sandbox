@@ -1,9 +1,7 @@
 package com.redhat.service.bridge.manager.connectors;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
@@ -30,13 +28,14 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     ConnectorsDAO connectorsDAO;
 
     @Override
-    @Transactional(Transactional.TxType.MANDATORY) // Connector should always be created in the same transaction of a Processor
-    public Optional<ConnectorEntity> createConnectorEntity(BaseAction resolvedAction,
+    @Transactional(Transactional.TxType.MANDATORY)
+    // Connector should always be marked for creation in the same transaction as a Processor
+    public void createConnectorEntity(BaseAction resolvedAction,
             Processor processor,
             ActionProvider actionProvider) {
 
         if (!actionProvider.isConnectorAction()) {
-            return Optional.empty();
+            return;
         }
 
         ConnectorAction connectorAction = (ConnectorAction) actionProvider;
@@ -49,8 +48,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 
         newConnectorEntity.setName(newConnectorName);
-        newConnectorEntity.setStatus(ConnectorStatus.ACCEPTED);
-        newConnectorEntity.setDesiredStatus(ConnectorStatus.READY);
+        newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setDefinition(connectorPayload);
@@ -58,21 +56,13 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setTopicName(topicName);
 
         connectorsDAO.persist(newConnectorEntity);
-
-        return Optional.of(newConnectorEntity);
     }
 
     @Override
-    @Transactional
-    public List<ConnectorEntity> deleteConnectorIfNeeded(Processor processor) {
-
-        List<ConnectorEntity> optionalConnector = connectorsDAO.findByProcessorId(processor.getId());
-
-        return optionalConnector.stream().peek(c -> {
-            String connectorId = c.getId();
-            c.setDesiredStatus(ConnectorStatus.DELETED);
-            LOGGER.info("connector with id '{}' has been marked for deletion", connectorId);
-        }).collect(Collectors.toList());
+    @Transactional(Transactional.TxType.MANDATORY)
+    // Connector should always be marked for destruction in the same transaction as a Processor
+    public void deleteConnectorEntity(Processor processor) {
+        Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> c.setStatus(ManagedResourceStatus.DEPROVISION));
     }
 
     private String connectorName(String connectorType, Processor processor) {

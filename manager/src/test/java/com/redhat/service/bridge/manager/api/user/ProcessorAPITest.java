@@ -13,7 +13,7 @@ import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.filters.ValuesIn;
@@ -321,7 +321,7 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor(bridgeResponse.getId(), processorResponse.getId()).then().statusCode(202);
         processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
 
-        assertThat(processorResponse.getStatus()).isEqualTo(BridgeStatus.DEPROVISION);
+        assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
     }
 
     private BridgeResponse createBridge() {
@@ -335,7 +335,7 @@ public class ProcessorAPITest {
 
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridgeResponse.getId());
-        dto.setStatus(BridgeStatus.READY);
+        dto.setStatus(ManagedResourceStatus.READY);
         dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         dto.setEndpoint("https://foo.bridges.redhat.com");
 

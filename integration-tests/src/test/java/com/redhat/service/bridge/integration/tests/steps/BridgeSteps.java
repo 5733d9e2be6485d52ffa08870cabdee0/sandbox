@@ -5,7 +5,7 @@ import java.time.Duration;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
@@ -53,7 +53,7 @@ public class BridgeSteps {
 
         BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(), systemBridgeName);
         assertThat(response.getName()).isEqualTo(systemBridgeName);
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();

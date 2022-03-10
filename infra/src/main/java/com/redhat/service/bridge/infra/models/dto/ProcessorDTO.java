@@ -23,7 +23,7 @@ public class ProcessorDTO {
     private String customerId;
 
     @JsonProperty("status")
-    private BridgeStatus status;
+    private ManagedResourceStatus status;
 
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
@@ -31,7 +31,7 @@ public class ProcessorDTO {
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, BridgeStatus status, KafkaConnectionDTO kafkaConnection) {
+    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.bridgeId = bridgeId;
@@ -81,11 +81,11 @@ public class ProcessorDTO {
         this.customerId = customerId;
     }
 
-    public BridgeStatus getStatus() {
+    public ManagedResourceStatus getStatus() {
         return status;
     }
 
-    public void setStatus(BridgeStatus status) {
+    public void setStatus(ManagedResourceStatus status) {
         this.status = status;
     }
 

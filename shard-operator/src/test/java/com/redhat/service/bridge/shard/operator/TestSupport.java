@@ -8,8 +8,8 @@ import java.util.Set;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
@@ -38,15 +38,15 @@ public class TestSupport {
             KAFKA_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.PROVISIONING, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.PROVISIONING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newAvailableBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, BridgeStatus.READY, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.READY, KAFKA_CONNECTION_DTO);
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
@@ -64,6 +64,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, BridgeStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 }
