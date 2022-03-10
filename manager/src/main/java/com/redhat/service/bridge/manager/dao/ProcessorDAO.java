@@ -62,10 +62,10 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return singleResultFromList(find("#PROCESSOR.findByIdBridgeIdAndCustomerId", p));
     }
 
-    public List<Processor> findByStatusesAndShardIdWithReadyDependencies(String shardId) {
+    public List<Processor> findByShardIdWithReadyDependencies(String shardId) {
         Parameters p = Parameters
                 .with("shardId", shardId);
-        return find("#PROCESSOR.findByStatusesAndShardIdWithReadyDependencies", p).list();
+        return find("#PROCESSOR.findByShardIdWithReadyDependencies", p).list();
     }
 
     private Long countProcessorsOnBridge(Parameters params) {

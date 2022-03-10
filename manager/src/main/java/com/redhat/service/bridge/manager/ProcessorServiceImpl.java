@@ -137,8 +137,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(String shardId) {
-        return processorDAO.findByStatusesAndShardIdWithReadyDependencies(shardId);
+    public List<Processor> findByShardIdWithReadyDependencies(String shardId) {
+        return processorDAO.findByShardIdWithReadyDependencies(shardId);
     }
 
     @Transactional

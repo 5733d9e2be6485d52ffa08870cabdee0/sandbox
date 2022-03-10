@@ -212,7 +212,7 @@ public class ProcessorServiceTest {
         processorDAO.persist(processor3);
 
         List<Processor> processors =
-                processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+                processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(processors.size()).isEqualTo(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("My Processor", "My Processor 3"));
     }
@@ -632,12 +632,12 @@ public class ProcessorServiceTest {
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).contains(processor.getId());
     }
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
     }
 

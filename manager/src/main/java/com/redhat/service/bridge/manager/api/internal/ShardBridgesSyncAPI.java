@@ -87,7 +87,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        List<Processor> processorToDeployOrDelete = processorService.getProcessorByStatusesAndShardIdWithReadyDependencies(shardId);
+        List<Processor> processorToDeployOrDelete = processorService.findByShardIdWithReadyDependencies(shardId);
         LOGGER.info("Found {} processor(s) to deploy or delete", processorToDeployOrDelete.size());
         return Response.ok(processorToDeployOrDelete
                 .stream()

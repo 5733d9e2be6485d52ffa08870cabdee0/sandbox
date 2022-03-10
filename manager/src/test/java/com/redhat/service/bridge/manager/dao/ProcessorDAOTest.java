@@ -134,7 +134,7 @@ public class ProcessorDAOTest {
         r.setDependencyStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
-        List<Processor> processors = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(processors.size()).isEqualTo(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
     }
@@ -180,7 +180,7 @@ public class ProcessorDAOTest {
                 "");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 
-        List<Processor> processors = processorDAO.findByStatusesAndShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(processors.stream().map(Processor::getName)).contains("withProvisionedConnectors");
     }
 
