@@ -9,11 +9,21 @@
 # This requires the ocm command: https://github.com/openshift-online/ocm-cli
 # You will to login with `ocm login --token [...]`. Token can be found here: https://console.redhat.com/openshift/token
 
+. $(dirname "${BASH_SOURCE[0]}")/../configure.sh
+
 username=$1
 
 if [ -z "$username" ]; then
-    username=${USERNAME}
+    if [ -n "${RHOAS_USERNAME}" ]; then
+        username=${RHOAS_USERNAME}
+    elif rhoas whoami &> /dev/null; then
+        username=$(rhoas whoami)
+    else
+        username=${USERNAME}
+    fi
 fi
+
+echo "Using owner matching ${username}"
 
 ids=$(ocm get /api/kafkas_mgmt/v1/service_accounts --parameter size=1000 | jq '.items[] | {id,owner} | join(" ")' | grep ${username} | tr -d '"' | awk '{print $1}')
 
