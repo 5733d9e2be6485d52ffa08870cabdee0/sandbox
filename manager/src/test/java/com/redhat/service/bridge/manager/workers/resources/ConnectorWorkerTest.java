@@ -26,8 +26,11 @@ import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,7 +85,7 @@ public class ConnectorWorkerTest {
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        ConnectorEntity connectorEntity = new ConnectorEntity();
+        ConnectorEntity connectorEntity = spy(new ConnectorEntity());
         connectorEntity.setStatus(status);
         Connector connector = new Connector();
         connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
@@ -109,6 +112,8 @@ public class ConnectorWorkerTest {
         assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
 
         verify(workManager, never()).complete(work);
+
+        verify(connectorEntity, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
     @ParameterizedTest
@@ -118,7 +123,7 @@ public class ConnectorWorkerTest {
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        ConnectorEntity connectorEntity = new ConnectorEntity();
+        ConnectorEntity connectorEntity = spy(new ConnectorEntity());
         connectorEntity.setStatus(status);
         connectorEntity.setTopicName("topicName");
         connectorEntity.setConnectorExternalId("connectorExternalId");
@@ -146,6 +151,8 @@ public class ConnectorWorkerTest {
         verify(rhoasService).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
         verify(connectorsDAO).deleteById(connectorEntity.getId());
         verify(workManager, never()).complete(work);
+
+        verify(connectorEntity, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
 }

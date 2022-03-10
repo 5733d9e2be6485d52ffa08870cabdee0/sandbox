@@ -13,7 +13,7 @@ import javax.persistence.Version;
 @NamedQueries({
         @NamedQuery(name = "Work.findByManagedResourceId", query = "from Work w where w.managedResourceId=:managedResourceId"),
         @NamedQuery(name = "Work.findByWorkerId", query = "from Work w where w.workerId=:workerId"),
-        @NamedQuery(name = "Work.updateWorkerId", query = "update Work w set w.workerId=:workerId where w.submittedAt >= :age")
+        @NamedQuery(name = "Work.reconnectDroppedWorkers", query = "update Work w set w.workerId=:workerId, w.submittedAt=:now where w.modifiedAt >= :age")
 })
 @Entity
 public class Work {

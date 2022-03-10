@@ -24,7 +24,10 @@ public class WorkDAO implements PanacheRepositoryBase<Work, String> {
         return list("#Work.findByWorkerId", Parameters.with("workerId", workerId));
     }
 
-    public int rebalanceWork(String workerId, ZonedDateTime lastUpdated) {
-        return update("#Work.updateWorkerId", Parameters.with("workerId", workerId).and("age", lastUpdated));
+    public int reconnectDroppedWorkers(String workerId, ZonedDateTime lastUpdated) {
+        return update("#Work.reconnectDroppedWorkers",
+                Parameters.with("workerId", workerId)
+                        .and("now", ZonedDateTime.now())
+                        .and("age", lastUpdated));
     }
 }

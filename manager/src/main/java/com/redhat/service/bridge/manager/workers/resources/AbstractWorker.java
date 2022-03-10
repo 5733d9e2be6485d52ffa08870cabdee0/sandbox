@@ -117,6 +117,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     @Transactional
     protected T persist(T managedResource) {
+        managedResource.setModifiedAt(ZonedDateTime.now());
         return getDao().getEntityManager().merge(managedResource);
     }
 

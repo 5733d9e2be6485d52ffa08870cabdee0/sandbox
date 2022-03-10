@@ -153,7 +153,7 @@ public class WorkManagerImplTest {
     void reconnectDroppedWorkers() {
         manager.reconnectDroppedWorkers();
 
-        verify(workDAO).rebalanceWork(eq(WORKER_ID_PROVIDER.getWorkerId()), any(ZonedDateTime.class));
+        verify(workDAO).reconnectDroppedWorkers(eq(WORKER_ID_PROVIDER.getWorkerId()), any(ZonedDateTime.class));
     }
 
 }

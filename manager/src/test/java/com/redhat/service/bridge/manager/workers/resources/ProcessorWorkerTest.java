@@ -28,7 +28,9 @@ import com.redhat.service.bridge.manager.workers.WorkManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -154,7 +156,7 @@ public class ProcessorWorkerTest {
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        Processor processor = new Processor();
+        Processor processor = spy(new Processor());
         processor.setStatus(status);
 
         when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
@@ -165,6 +167,8 @@ public class ProcessorWorkerTest {
 
         assertThat(processor.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         verify(workManager).complete(work);
+
+        verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
     @ParameterizedTest
@@ -176,7 +180,7 @@ public class ProcessorWorkerTest {
         work.setManagedResourceId(RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
-        Processor processor = new Processor();
+        Processor processor = spy(new Processor());
         processor.setStatus(status);
         ConnectorEntity connector = new ConnectorEntity();
         connector.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -203,6 +207,8 @@ public class ProcessorWorkerTest {
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
 
         verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
+
+        verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {

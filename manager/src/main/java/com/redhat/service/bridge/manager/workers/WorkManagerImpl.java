@@ -117,7 +117,7 @@ public class WorkManagerImpl implements WorkManager {
     @Scheduled(every = "5m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void reconnectDroppedWorkers() {
         ZonedDateTime age = ZonedDateTime.now().minusMinutes(5);
-        workDAO.rebalanceWork(workerIdProvider.getWorkerId(), age);
+        workDAO.reconnectDroppedWorkers(workerIdProvider.getWorkerId(), age);
     }
 
 }
