@@ -4,7 +4,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -58,7 +57,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
-        if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId).isPresent()) {
+        if (findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
@@ -86,46 +85,48 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Transactional
-    public boolean isBridgeReady(Bridge bridge) {
-        return BridgeStatus.READY == bridge.getStatus();
+    public Bridge getReadyBridge(String idOrName, String customerId) {
+        Bridge bridge = getBridgeByIdOrName(idOrName, customerId);
+        if (BridgeStatus.READY != bridge.getStatus()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
+        }
+        return bridge;
     }
 
     @Override
-    public Bridge getBridgeByBridgeIdentifier(String bridgeIdentifier, String customerId) {
-        Optional<Bridge> bridgeOptional = getBridgeByIdAndCustomerId(bridgeIdentifier, customerId);
-        if (bridgeOptional.isPresent()) {
-            return bridgeOptional.get();
+    public Bridge getBridgeByIdOrName(String idOrName, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdOrNameAndCustomerId(idOrName, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge with idOrName '%s' for customer '%s' does not exist", idOrName, customerId));
         }
-
-        bridgeOptional = getBridgeByNameAndCustomerId(bridgeIdentifier, customerId);
-        if (bridgeOptional.isPresent()) {
-            return bridgeOptional.get();
-        }
-        throw new ItemNotFoundException(String.format("Bridge with identifier '%s' for customer '%s' does not exist", bridgeIdentifier, customerId));
+        return bridge;
     }
 
     @Transactional
-    @Override
-    public Optional<Bridge> getBridgeByIdAndCustomerId(String bridgeId, String customerId) {
-        return bridgeDAO.findByIdAndCustomerId(bridgeId, customerId);
+    private Bridge findByIdAndCustomerId(String id, String customerId) {
+        Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
+        if (bridge == null) {
+            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
+        }
+        return bridge;
     }
 
     @Transactional
-    public Optional<Bridge> getBridgeByNameAndCustomerId(String bridgeName, String customerId) {
+    public Bridge findByNameAndCustomerId(String bridgeName, String customerId) {
         return bridgeDAO.findByNameAndCustomerId(bridgeName, customerId);
     }
 
     @Transactional
     @Override
-    public void deleteBridge(String bridgeIdentifier, String customerId) {
-        Bridge bridge = getBridgeByBridgeIdentifier(bridgeIdentifier, customerId);
+    public void deleteBridge(String idOrName, String customerId) {
+        Bridge bridge = getBridgeByIdOrName(idOrName, customerId);
         Long processorsCount = processorService.getProcessorsCount(bridge);
         if (processorsCount > 0) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
         bridge.setStatus(BridgeStatus.DEPROVISION);
-        LOGGER.info("Bridge with identifier '{}' for customer '{}' has been marked for deletion", bridgeIdentifier, customerId);
+        LOGGER.info("Bridge with idOrName '{}' for customer '{}' has been marked for deletion", idOrName, customerId);
     }
 
     @Transactional
@@ -143,11 +144,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     @Override
     public Bridge updateBridge(BridgeDTO bridgeDTO) {
-        Optional<Bridge> bridgeOptional = getBridgeByIdAndCustomerId(bridgeDTO.getId(), bridgeDTO.getCustomerId());
-        if (bridgeOptional.isEmpty()) {
-            throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", bridgeDTO.getId(), bridgeDTO.getCustomerId()));
-        }
-        Bridge bridge = bridgeOptional.get();
+        Bridge bridge = findByIdAndCustomerId(bridgeDTO.getId(), bridgeDTO.getCustomerId());
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
 

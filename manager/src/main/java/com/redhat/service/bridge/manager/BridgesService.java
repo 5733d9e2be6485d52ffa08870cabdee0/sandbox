@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
@@ -17,33 +16,11 @@ public interface BridgesService {
 
     Bridge getBridge(String id);
 
-    /**
-     * Provides Bridge instance for given id/name. It throws `ItemNotFoundException` if bridge instance not found.
-     * 
-     * @param bridgeIdentifier It could be a bridge Id or bridge name.
-     * @param customerId Customer id.
-     * @return Bridge instance.
-     */
-    Bridge getBridgeByBridgeIdentifier(String bridgeIdentifier, String customerId);
+    Bridge getReadyBridge(String idOrName, String customerId);
 
-    /**
-     * Provide Bridge instance for given bridge id.
-     * 
-     * @param id Bridge id.
-     * @param customerId Customer id.
-     * @return Optional Bridge instance.
-     */
-    Optional<Bridge> getBridgeByIdAndCustomerId(String id, String customerId);
+    Bridge getBridgeByIdOrName(String idOrName, String customerId);
 
-    /**
-     * Return `True` if Bridge is in ready state else return `false`.
-     * 
-     * @param bridge Bridge instance
-     * @return `True` if Bridge is in ready state else return `false`
-     */
-    boolean isBridgeReady(Bridge bridge);
-
-    void deleteBridge(String id, String customerId);
+    void deleteBridge(String idOrName, String customerId);
 
     ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo);
 

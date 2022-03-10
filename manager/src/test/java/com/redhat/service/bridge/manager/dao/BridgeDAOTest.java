@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.dao;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -55,14 +54,14 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        Optional<Bridge> retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge).isEmpty();
+        Bridge retrievedBridge = bridgeDAO.findByNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNull();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, "not-the-customer-id");
-        assertThat(retrievedBridge).isEmpty();
+        assertThat(retrievedBridge).isNull();
 
         retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge).isPresent();
+        assertThat(retrievedBridge).isNotNull();
     }
 
     @Test
@@ -133,5 +132,20 @@ public class BridgeDAOTest {
         bridge.setShardId(TestConstants.SHARD_ID);
 
         return bridge;
+    }
+
+    @Test
+    public void testFindByIdOrNameAndCustomerId() {
+        Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(bridge);
+
+        Bridge retrievedBridge = bridgeDAO.findByIdOrNameAndCustomerId("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNull();
+
+        retrievedBridge = bridgeDAO.findByIdOrNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNotNull();
+
+        retrievedBridge = bridgeDAO.findByNameAndCustomerId(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge).isNotNull();
     }
 }

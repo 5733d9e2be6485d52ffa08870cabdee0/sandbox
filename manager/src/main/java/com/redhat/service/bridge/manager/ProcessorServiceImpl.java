@@ -20,7 +20,6 @@ import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
@@ -91,12 +90,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public Processor createProcessor(Bridge bridge, ProcessorRequest processorRequest) {
-        /* We cannot deploy Processors to a Bridge that is not Available */
-        if (!bridgesService.isBridgeReady(bridge)) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
-        }
-
-        if (processorDAO.findByBridgeIdAndName(bridge.getId(), processorRequest.getName()) != null) {
+        if (findByBridgeIdAndName(bridge.getId(), processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException(
                     "Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridge.getId() + "' for customer '" + bridge.getCustomerId() + "'");
         }
@@ -128,6 +122,11 @@ public class ProcessorServiceImpl implements ProcessorService {
         persist.ifPresent(c -> eventBus.requestAndForget(CONNECTOR_CREATED_EVENT, c));
 
         return newProcessor;
+    }
+
+    @Transactional
+    private Processor findByBridgeIdAndName(String bridgeId, String name) {
+        return processorDAO.findByBridgeIdAndName(bridgeId, name);
     }
 
     @Transactional
@@ -172,9 +171,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public ListResult<Processor> getProcessors(Bridge bridge, QueryInfo queryInfo) {
-        if (!bridgesService.isBridgeReady(bridge)) {
-            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in the '%s' state.", bridge.getId(), bridge.getCustomerId(), BridgeStatus.READY));
-        }
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 

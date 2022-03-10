@@ -25,6 +25,8 @@ import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
+        @NamedQuery(name = "BRIDGE.findByIdOrNameAndCustomerId",
+                query = "from Bridge where (id=:idOrName or name=:idOrName) and customer_id=:customerId"),
 })
 @Entity
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })

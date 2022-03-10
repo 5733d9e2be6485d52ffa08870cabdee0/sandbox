@@ -78,7 +78,7 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        Bridge retrievedBridge = bridgesService.getBridgeByBridgeIdentifier(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Bridge retrievedBridge = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge).isNotNull();
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getCustomerId()).isEqualTo(bridge.getCustomerId());
@@ -88,7 +88,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetUnexistingBridge() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridgeByBridgeIdentifier("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridgeByIdOrName("not-the-id", TestConstants.DEFAULT_CUSTOMER_ID));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridgeByBridgeIdentifier(bridge.getId(), "not-the-customerId"));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridgeByIdOrName(bridge.getId(), "not-the-customerId"));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class BridgesServiceTest {
         bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(BridgeStatus.ACCEPTED), TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
 
-        Bridge retrievedBridge = bridgesService.getBridgeByBridgeIdentifier(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Bridge retrievedBridge = bridgesService.getBridgeByIdOrName(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(BridgeStatus.PROVISIONING);
     }
 

@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -25,16 +24,16 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return find("#BRIDGE.findByStatusesAndShardId", params).list();
     }
 
-    public Optional<Bridge> findByNameAndCustomerId(String name, String customerId) {
+    public Bridge findByNameAndCustomerId(String name, String customerId) {
         Parameters params = Parameters
                 .with("name", name).and("customerId", customerId);
-        return find("#BRIDGE.findByNameAndCustomerId", params).firstResultOptional();
+        return find("#BRIDGE.findByNameAndCustomerId", params).firstResult();
     }
 
-    public Optional<Bridge> findByIdAndCustomerId(String id, String customerId) {
+    public Bridge findByIdAndCustomerId(String id, String customerId) {
         Parameters params = Parameters
                 .with("id", id).and("customerId", customerId);
-        return find("#BRIDGE.findByIdAndCustomerId", params).firstResultOptional();
+        return find("#BRIDGE.findByIdAndCustomerId", params).firstResult();
     }
 
     public ListResult<Bridge> findByCustomerId(String customerId, QueryInfo queryInfo) {
@@ -42,5 +41,11 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         long total = find("#BRIDGE.findByCustomerId", parameters).count();
         List<Bridge> bridges = find("#BRIDGE.findByCustomerId", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
+    }
+
+    public Bridge findByIdOrNameAndCustomerId(String idOrName, String customerId) {
+        Parameters params = Parameters
+                .with("idOrName", idOrName).and("customerId", customerId);
+        return find("#BRIDGE.findByIdOrNameAndCustomerId", params).firstResult();
     }
 }
