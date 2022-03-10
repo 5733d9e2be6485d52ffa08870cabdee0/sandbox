@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -151,9 +152,13 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
+        p.setModifiedAt(ZonedDateTime.now());
 
         if (processorDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());
+        }
+        if (processorDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(p.getPublishedAt())) {
+            p.setPublishedAt(ZonedDateTime.now());
         }
 
         // Update metrics

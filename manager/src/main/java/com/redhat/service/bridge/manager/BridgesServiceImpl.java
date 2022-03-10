@@ -4,6 +4,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -139,10 +140,14 @@ public class BridgesServiceImpl implements BridgesService {
         Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
+        bridge.setModifiedAt(ZonedDateTime.now());
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             rhoasService.deleteTopicAndRevokeAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        }
+        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(bridge.getPublishedAt())) {
+            bridge.setPublishedAt(ZonedDateTime.now());
         }
 
         // Update metrics

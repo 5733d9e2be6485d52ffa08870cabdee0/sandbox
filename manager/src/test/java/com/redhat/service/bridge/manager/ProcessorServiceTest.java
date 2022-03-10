@@ -237,6 +237,36 @@ public class ProcessorServiceTest {
     }
 
     @Test
+    public void testUpdateProcessorStatusReadyPublishedAt() {
+        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
+        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+
+        processor.setStatus(ManagedResourceStatus.PROVISIONING);
+        processorService.updateProcessorStatus(processorService.toDTO(processor));
+
+        Processor retrievedProcessor = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
+        assertThat(retrievedProcessor.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(retrievedProcessor.getPublishedAt()).isNull();
+
+        // Once ready it should have its published date set
+        processor.setStatus(ManagedResourceStatus.READY);
+        processorService.updateProcessorStatus(processorService.toDTO(processor));
+
+        Processor publishedProcessor = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
+        assertThat(publishedProcessor.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        ZonedDateTime publishedAt = publishedProcessor.getPublishedAt();
+        assertThat(publishedAt).isNotNull();
+
+        //Check calls to set PublishedAt at idempotent
+        processorService.updateProcessorStatus(processorService.toDTO(processor));
+
+        Processor publishedProcessor2 = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
+        assertThat(publishedProcessor2.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedAt);
+    }
+
+    @Test
     public void updateProcessorStatus_bridgeDoesNotExist() {
         ProcessorDTO processor = new ProcessorDTO();
         processor.setBridgeId("foo");

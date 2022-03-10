@@ -108,6 +108,7 @@ public class ConnectorWorkerTest {
 
         verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
         verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
+        assertThat(connectorEntity.getPublishedAt()).isNotNull();
         assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.READY);
         assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
 

@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.manager;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -130,6 +131,35 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+    }
+
+    @Test
+    public void testUpdateBridgeStatusReadyPublishedAt() {
+        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(retrievedBridge.getPublishedAt()).isNull();
+
+        // Once ready it should have its published date set
+        bridge.setStatus(ManagedResourceStatus.READY);
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge publishedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(publishedBridge.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        ZonedDateTime publishedAt = publishedBridge.getPublishedAt();
+        assertThat(publishedAt).isNotNull();
+
+        //Check calls to set PublishedAt at idempotent
+        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+
+        Bridge publishedBridge2 = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        assertThat(publishedBridge2.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(publishedBridge2.getPublishedAt()).isEqualTo(publishedAt);
     }
 
     @Test
