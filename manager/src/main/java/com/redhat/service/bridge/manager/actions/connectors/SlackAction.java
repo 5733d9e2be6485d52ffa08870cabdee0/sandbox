@@ -7,13 +7,13 @@ import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.bridge.actions.ActionTransformer;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
+
+import static com.redhat.service.bridge.manager.actions.connectors.ConnectorActionUtils.addLogProcessorToDefinition;
 
 @ApplicationScoped
 public class SlackAction implements ConnectorAction {
@@ -56,19 +56,7 @@ public class SlackAction implements ConnectorAction {
         objectNode.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
         objectNode.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(kafkaTopic));
 
-
-        ObjectNode logProcessorParams = mapper.createObjectNode();
-        logProcessorParams.set("multiLine", BooleanNode.TRUE);
-        logProcessorParams.set("showHeaders", BooleanNode.TRUE);
-
-        ObjectNode logProcessor = mapper.createObjectNode();
-        logProcessor.set("log", logProcessorParams);
-
-        ArrayNode processors = mapper.createArrayNode();
-        processors.add(logProcessor);
-
-        objectNode.set("processors", processors);
-
+        addLogProcessorToDefinition(mapper, objectNode);
 
         return objectNode;
     }
