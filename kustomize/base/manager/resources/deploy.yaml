@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       app-component: fleet-manager
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
