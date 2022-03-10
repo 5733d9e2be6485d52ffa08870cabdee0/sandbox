@@ -6,7 +6,6 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutLogger;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.common.Utils;
@@ -72,7 +71,7 @@ public class BridgeSteps {
     }
 
     @When("^create a fake Bridge \"([^\"]*)\"$")
-    public void addFakeProcessorToBridge(String testBridgeName) {
+    public void createFakeBridge(String testBridgeName) {
         BridgeContext bridgeContext = context.newBridge(testBridgeName, Utils.generateId(testBridgeName),
                 Utils.generateId("test-" + testBridgeName));
         bridgeContext.setDeleted(true);

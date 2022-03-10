@@ -61,7 +61,7 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers:$")
-    public void sendPlainCloudEventToIngressOfBridgeWithPath(String testBridgeName, String path, String cloudEvent) {
+    public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeaders(String testBridgeName, String path, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), 200);
     }
 
@@ -72,7 +72,7 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers is failing with HTTP response code (\\d+):$")
-    public void sendPlainCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName,
+    public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
             String path, int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), responseCode);
     }
