@@ -17,4 +17,9 @@ public class ManagerSteps {
     public void authenticateAgainstManager() {
         context.setManagerToken(BridgeUtils.retrieveBridgeToken());
     }
+
+    @Given("^logout of Manager$")
+    public void logoutOfManager() {
+        context.setManagerToken(null);
+    }
 }

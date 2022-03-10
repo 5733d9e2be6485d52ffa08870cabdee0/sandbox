@@ -47,7 +47,8 @@ public class BridgeSteps {
             systemBridgeName = Utils.generateId("test-" + testBridgeName);
         }
         if (isBridgeExisting(systemBridgeName)) {
-            throw new RuntimeException("Cannot create a initiate a random bridge name correctly. Please cleanup the environment...");
+            throw new RuntimeException(
+                    "Cannot create and initiate a random bridge name correctly. Please cleanup the environment...");
         }
 
         BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(), systemBridgeName);
@@ -61,7 +62,21 @@ public class BridgeSteps {
         context.newBridge(testBridgeName, response.getId(), systemBridgeName);
     }
 
-    @And("^the list of Bridge instances is containing the Bridge \"([^\"]*)\"+$")
+    @Given("^create a new Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
+    public void createNewBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
+        BridgeResource.addBridgeResponse(context.getManagerToken(), testBridgeName)
+                .then()
+                .statusCode(responseCode);
+    }
+
+    @When("^create a fake Bridge \"([^\"]*)\"$")
+    public void addFakeProcessorToBridge(String testBridgeName) {
+        BridgeContext bridgeContext = context.newBridge(testBridgeName, Utils.generateId(testBridgeName),
+                Utils.generateId("test-" + testBridgeName));
+        bridgeContext.setDeleted(true);
+    }
+
+    @And("^the list of Bridge instances is containing the Bridge \"([^\"]*)\"$")
     public void listOfBridgeInstancesIsContainingBridge(String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
@@ -71,6 +86,14 @@ public class BridgeSteps {
         BridgeResponse bridge = response.getItems().stream().filter(b -> b.getId().equals(bridgeContext.getId()))
                 .findFirst().orElseThrow();
         assertThat(bridge.getName()).isEqualTo(bridgeContext.getName());
+    }
+
+    @And("^get Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
+    public void getBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        BridgeResource.getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
+                .then()
+                .statusCode(responseCode);
     }
 
     @And("^the Bridge \"([^\"]*)\" is existing with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
@@ -94,6 +117,13 @@ public class BridgeSteps {
     public void deleteBridge(String testBridgeName) {
         BridgeResource.deleteBridge(context.getManagerToken(), context.getBridge(testBridgeName).getId());
         context.removeBridge(testBridgeName);
+    }
+
+    @When("^delete the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
+    public void deleteBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
+        BridgeResource.deleteBridgeResponse(context.getManagerToken(), context.getBridge(testBridgeName).getId())
+                .then()
+                .statusCode(responseCode);
     }
 
     @Then("^the Bridge \"([^\"]*)\" is not existing within (\\d+) (?:minute|minutes)$")

@@ -93,7 +93,11 @@
               </includes>
               <systemProperties>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                <cucumber.filter.tags>${tags}</cucumber.filter.tags>
+                <!--
+                    Make use of JUnit 5 tags instead 
+                    See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
+                -->
+                <!--cucumber.filter.tags>${tags}</cucumber.filter.tags--> 
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
                 <test.logs>${project.build.directory}/logs</test.logs>
               </systemProperties>

@@ -40,9 +40,4 @@ INTEGRATION_TESTS_DIR=${SCRIPT_DIR_PATH}
 
 cd ${INTEGRATION_TESTS_DIR}
 
-mvn clean verify $ARGS \
-  -Pcucumber \
-  -Devent-bridge.manager.url=${MANAGER_URL} \
-  -Dkeycloak.realm.url=${KEYCLOAK_URL}/auth/realms/event-bridge-fm
-  # -Dbridge.token.username=${} \
-  # -Dbridge.token.password=${}
+mvn clean verify -Pcucumber $ARGS
