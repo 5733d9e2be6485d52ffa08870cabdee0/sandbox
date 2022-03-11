@@ -1,13 +1,32 @@
 ---
 openapi: 3.0.3
 info:
-  title: manager API
-  version: 0.0.1-SNAPSHOT
+  title: Red Hat Openshift Smart Events Fleet Manager
+  description: The api exposed by the fleet manager of the RHOSE service.
+  contact:
+    name: Development Team
+    email: openbridge-dev@redhat.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+tags:
+- name: Errors Catalog API
+  description: List and get the error definitions from the error catalog.
+- name: Ingress API
+  description: "The API that allow the user to retrieve, create or delete ingresses."
+- name: Processors API
+  description: "The API that allow the user to retrieve, create or delete processors\
+    \ of an ingress."
+- name: Shard API
+  description: The API that allow a shard to retrieve and update resources.
 paths:
   /api/v1/bridges:
     get:
       tags:
-      - Bridges API
+      - Ingress API
+      summary: Get the list of ingresses
+      description: Get the list of ingresses for the authenticated user.
       parameters:
       - name: page
         in: query
@@ -26,26 +45,89 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BridgeResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     post:
       tags:
-      - Bridges API
+      - Ingress API
+      summary: Create an ingress
+      description: Create an ingress for the authenticated user.
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BridgeRequest'
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BridgeStatus'
+                  endpoint:
+                    type: string
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}:
     get:
       tags:
-      - Bridges API
+      - Ingress API
+      summary: Get an ingress
+      description: Get an ingress of the authenticated user by ID.
       parameters:
       - name: bridgeId
         in: path
@@ -56,12 +138,45 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BridgeStatus'
+                  endpoint:
+                    type: string
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     delete:
       tags:
-      - Bridges API
+      - Ingress API
+      summary: Delete an ingress
+      description: Delete an ingress of the authenticated user by ID.
       parameters:
       - name: bridgeId
         in: path
@@ -69,14 +184,25 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors:
     get:
       tags:
       - Processors API
+      summary: Get the list of processors of an ingress
+      description: Get the list of processors of an ingress for the authenticated
+        user.
       parameters:
       - name: bridgeId
         in: path
@@ -102,12 +228,42 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProcessorResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     post:
       tags:
       - Processors API
+      summary: Create a processor of an ingress
+      description: Create a processor of an ingress for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -122,14 +278,54 @@ paths:
             schema:
               $ref: '#/components/schemas/ProcessorRequest'
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BridgeStatus'
+                  filters:
+                    uniqueItems: true
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BaseFilter'
+                  transformationTemplate:
+                    type: string
+                  action:
+                    $ref: '#/components/schemas/BaseAction'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors/{processorId}:
     get:
       tags:
       - Processors API
+      summary: Get a processor of an ingress
+      description: Get a processor of an ingress for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -147,12 +343,52 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BridgeStatus'
+                  filters:
+                    uniqueItems: true
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BaseFilter'
+                  transformationTemplate:
+                    type: string
+                  action:
+                    $ref: '#/components/schemas/BaseAction'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     delete:
       tags:
       - Processors API
+      summary: Delete a processor of an ingress
+      description: Delete a processor of an ingress for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -165,14 +401,24 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
   /api/v1/errors:
     get:
       tags:
-      - Errors API
+      - Errors Catalog API
+      summary: Get the list of errors.
+      description: Get the list of errors from the error catalog.
       parameters:
       - name: page
         in: query
@@ -191,13 +437,41 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ErrorResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
       security:
       - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
-      - Errors API
+      - Errors Catalog API
+      summary: Get an error from the error catalog.
+      description: Get an error from the error catalog.
       parameters:
       - name: id
         in: path
@@ -207,21 +481,59 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    format: int32
+                    type: integer
+                  code:
+                    type: string
+                  reason:
+                    type: string
+                  type:
+                    $ref: '#/components/schemas/BridgeErrorType'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
       security:
       - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Get ingresses to be processed by a shard.
+      description: Get ingresses to be processed by a shard.
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BridgeDTO'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Update an ingress.
+      description: Update an ingress.
       requestBody:
         content:
           application/json:
@@ -229,21 +541,47 @@ paths:
               $ref: '#/components/schemas/BridgeDTO'
       responses:
         "200":
-          description: OK
+          description: Success.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
   /api/v1/shard/bridges/processors:
     get:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Get processors to be processed by a shard.
+      description: Get processors to be processed by a shard.
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessorDTO'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Update a processor.
+      description: Update a processor.
       requestBody:
         content:
           application/json:
@@ -251,7 +589,15 @@ paths:
               $ref: '#/components/schemas/ProcessorDTO'
       responses:
         "200":
-          description: OK
+          description: Success.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Not authenticated.
+        "403":
+          description: Not authorized.
       security:
       - bearer: []
 components:
@@ -296,6 +642,11 @@ components:
           $ref: '#/components/schemas/BridgeStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
+    BridgeErrorType:
+      enum:
+      - PLATFORM
+      - USER
+      type: string
     BridgeRequest:
       required:
       - name
@@ -305,6 +656,27 @@ components:
           minLength: 1
           type: string
           nullable: false
+    BridgeResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/BridgeStatus'
+        endpoint:
+          type: string
     BridgeStatus:
       enum:
       - ACCEPTED
@@ -315,6 +687,21 @@ components:
       - PROVISIONING
       - READY
       type: string
+    ErrorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        code:
+          type: string
+        reason:
+          type: string
     KafkaConnectionDTO:
       type: object
       properties:
@@ -382,6 +769,34 @@ components:
           - allOf:
             - $ref: '#/components/schemas/BaseAction'
             - nullable: false
+    ProcessorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/BridgeStatus'
+        filters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseFilter'
+        transformationTemplate:
+          type: string
+        action:
+          $ref: '#/components/schemas/BaseAction'
   securitySchemes:
     bearer:
       type: http
