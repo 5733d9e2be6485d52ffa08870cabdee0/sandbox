@@ -109,7 +109,7 @@ paths:
                     format: date-time
                     type: string
                   status:
-                    $ref: '#/components/schemas/BridgeStatus'
+                    $ref: '#/components/schemas/ManagedResourceStatus'
                   endpoint:
                     type: string
         "400":
@@ -159,7 +159,7 @@ paths:
                     format: date-time
                     type: string
                   status:
-                    $ref: '#/components/schemas/BridgeStatus'
+                    $ref: '#/components/schemas/ManagedResourceStatus'
                   endpoint:
                     type: string
         "400":
@@ -300,7 +300,7 @@ paths:
                     format: date-time
                     type: string
                   status:
-                    $ref: '#/components/schemas/BridgeStatus'
+                    $ref: '#/components/schemas/ManagedResourceStatus'
                   filters:
                     uniqueItems: true
                     type: array
@@ -364,7 +364,7 @@ paths:
                     format: date-time
                     type: string
                   status:
-                    $ref: '#/components/schemas/BridgeStatus'
+                    $ref: '#/components/schemas/ManagedResourceStatus'
                   filters:
                     uniqueItems: true
                     type: array
@@ -639,7 +639,7 @@ components:
         customerId:
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     BridgeErrorType:
@@ -674,19 +674,9 @@ components:
           format: date-time
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         endpoint:
           type: string
-    BridgeStatus:
-      enum:
-      - ACCEPTED
-      - DELETED
-      - DELETING
-      - DEPROVISION
-      - FAILED
-      - PROVISIONING
-      - READY
-      type: string
     ErrorResponse:
       type: object
       properties:
@@ -715,6 +705,16 @@ components:
           type: string
         topic:
           type: string
+    ManagedResourceStatus:
+      enum:
+      - ACCEPTED
+      - DELETED
+      - DELETING
+      - DEPROVISION
+      - FAILED
+      - PROVISIONING
+      - READY
+      type: string
     ProcessorDTO:
       type: object
       properties:
@@ -729,7 +729,7 @@ components:
         customerId:
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     ProcessorDefinition:
@@ -787,7 +787,7 @@ components:
           format: date-time
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         filters:
           uniqueItems: true
           type: array

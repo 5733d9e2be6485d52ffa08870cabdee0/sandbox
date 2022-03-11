@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.manager.utils;
 
-import java.util.List;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -11,6 +9,7 @@ import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.dao.ShardDAO;
+import com.redhat.service.bridge.manager.dao.WorkDAO;
 import com.redhat.service.bridge.manager.models.Shard;
 import com.redhat.service.bridge.manager.models.ShardType;
 
@@ -36,8 +35,11 @@ public class DatabaseManagerUtils {
     @Inject
     ShardDAO shardDAO;
 
+    @Inject
+    WorkDAO workDAO;
+
     /**
-     * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dinamically, the processor
+     * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dynamically, the processor
      * will cascade the removal of filters that belongs to it.
      * This is why it is not needed to inject the FilterDAO atm.
      */
@@ -60,33 +62,31 @@ public class DatabaseManagerUtils {
     @Transactional
     public void cleanUp() {
         // Clean up
+        deleteAllWork();
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
         deleteAllShards();
     }
 
-    /**
-     * processorDAO.deleteAll() does not cascade! https://github.com/quarkusio/quarkus/issues/13941
-     */
     private void deleteAllProcessors() {
-        List<String> ids = processorDAO.getEntityManager().createQuery("select p.id from Processor p", String.class).getResultList();
-        ids.forEach(x -> processorDAO.deleteById(x));
+        processorDAO.getEntityManager().createQuery("DELETE FROM Processor").executeUpdate();
     }
 
     private void deleteAllBridges() {
-        List<String> ids = bridgeDAO.getEntityManager().createQuery("select b.id from Bridge b", String.class).getResultList();
-        ids.forEach(x -> bridgeDAO.deleteById(x));
+        bridgeDAO.getEntityManager().createQuery("DELETE FROM Bridge").executeUpdate();
+    }
+
+    private void deleteAllWork() {
+        workDAO.getEntityManager().createQuery("DELETE FROM Work").executeUpdate();
     }
 
     private void deleteAllConnectors() {
-        List<String> ids = connectorsDAO.getEntityManager().createQuery("select c.id from ConnectorEntity c", String.class).getResultList();
-        ids.forEach(x -> connectorsDAO.deleteById(x));
+        connectorsDAO.getEntityManager().createQuery("DELETE FROM ConnectorEntity").executeUpdate();
     }
 
     private void deleteAllShards() {
-        List<String> ids = shardDAO.getEntityManager().createQuery("select s.id from Shard s", String.class).getResultList();
-        ids.forEach(x -> shardDAO.deleteById(x));
+        shardDAO.getEntityManager().createQuery("DELETE FROM Shard").executeUpdate();
     }
 
     private void registerDefaultShard() {

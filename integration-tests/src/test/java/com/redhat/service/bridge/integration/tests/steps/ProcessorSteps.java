@@ -10,7 +10,7 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
@@ -76,7 +76,7 @@ public class ProcessorSteps {
         assertThat(response.getName()).isEqualTo(processorName);
         assertThat(response.getKind()).isEqualTo("Processor");
         assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(BridgeStatus.ACCEPTED);
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
     }
 
     @When("^add a fake Processor \"([^\"]*)\" to the Bridge \"([^\"]*)\"$")
