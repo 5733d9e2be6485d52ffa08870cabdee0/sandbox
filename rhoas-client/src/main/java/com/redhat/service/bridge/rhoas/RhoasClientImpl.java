@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.openshift.cloud.api.kas.auth.models.AclBinding;
 import com.openshift.cloud.api.kas.auth.models.AclOperation;
 import com.openshift.cloud.api.kas.auth.models.AclPatternType;
@@ -16,11 +20,9 @@ import com.openshift.cloud.api.kas.models.ServiceAccount;
 import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
 import com.redhat.service.bridge.rhoas.exceptions.AppServicesException;
 import com.redhat.service.bridge.rhoas.exceptions.RhoasClientException;
+
 import io.smallrye.mutiny.CompositeException;
 import io.smallrye.mutiny.Uni;
-import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RhoasClientImpl implements RhoasClient {
 
