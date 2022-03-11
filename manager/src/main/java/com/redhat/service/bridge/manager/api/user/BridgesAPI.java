@@ -65,8 +65,8 @@ public class BridgesAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = BridgeListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get the list of ingresses", description = "Get the list of ingresses for the authenticated user.")
     @GET
@@ -80,8 +80,8 @@ public class BridgesAPI {
             @APIResponse(description = "Accepted.", responseCode = "202",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = BridgeResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Create an ingress", description = "Create an ingress for the authenticated user.")
     @POST
@@ -94,8 +94,8 @@ public class BridgesAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = BridgeResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get an ingress", description = "Get an ingress of the authenticated user by ID.")
     @GET
@@ -108,8 +108,8 @@ public class BridgesAPI {
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202"),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Delete an ingress", description = "Delete an ingress of the authenticated user by ID.")
     @DELETE

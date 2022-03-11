@@ -78,8 +78,8 @@ public class ShardBridgesSyncAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200"),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Update a processor.", description = "Update a processor.")
     @PUT
@@ -100,8 +100,8 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = ProcessorDTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get processors to be processed by a shard.", description = "Get processors to be processed by a shard.")
     @GET
@@ -123,8 +123,8 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = BridgeDTO.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get ingresses to be processed by a shard.", description = "Get ingresses to be processed by a shard.")
     @GET
@@ -144,8 +144,8 @@ public class ShardBridgesSyncAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200"),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Update an ingress.", description = "Update an ingress.")
     @PUT

@@ -66,8 +66,8 @@ public class ProcessorsAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get a processor of an ingress", description = "Get a processor of an ingress for the authenticated user.")
     @GET
@@ -82,8 +82,8 @@ public class ProcessorsAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Get the list of processors of an ingress", description = "Get the list of processors of an ingress for the authenticated user.")
     @GET
@@ -97,8 +97,8 @@ public class ProcessorsAPI {
             @APIResponse(description = "Accepted.", responseCode = "202",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Create a processor of an ingress", description = "Create a processor of an ingress for the authenticated user.")
     @POST
@@ -112,8 +112,8 @@ public class ProcessorsAPI {
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202"),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Not authenticated.", responseCode = "401"),
-            @APIResponse(description = "Not authorized.", responseCode = "403")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403")
     })
     @Operation(summary = "Delete a processor of an ingress", description = "Delete a processor of an ingress for the authenticated user.")
     @DELETE
