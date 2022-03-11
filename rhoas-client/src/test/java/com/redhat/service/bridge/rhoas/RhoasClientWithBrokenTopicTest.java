@@ -56,4 +56,10 @@ class RhoasClientWithBrokenTopicTest extends RhoasClientTestBase {
         configureMockAPIWithBrokenTopicDeletion();
         testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 1, 5);
     }
+
+    @Test
+    void testDeleteTopicAndRevokeAccessConsumerAndProducerWithAlreadyDeletedTopic() {
+        configureMockAPIWithAlreadyDeletedTopic();
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 5);
+    }
 }

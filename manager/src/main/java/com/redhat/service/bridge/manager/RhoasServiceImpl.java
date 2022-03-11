@@ -61,7 +61,6 @@ public class RhoasServiceImpl implements RhoasService {
                     .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
         } catch (CompletionException e) {
-
             throw new InternalPlatformException(deleteFailureErrorMessageFor(topicName), e);
         } catch (TimeoutException e) {
             throw new InternalPlatformException(deleteTimeoutErrorMessageFor(topicName), e);

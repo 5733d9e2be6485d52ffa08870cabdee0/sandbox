@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import com.openshift.cloud.api.kas.auth.models.NewTopicInput;
 import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.openshift.cloud.api.kas.models.ServiceAccount;
 import com.openshift.cloud.api.kas.models.ServiceAccountRequest;
+import com.redhat.service.bridge.rhoas.exceptions.AppServicesException;
 import com.redhat.service.bridge.rhoas.exceptions.RhoasClientException;
 
 import io.smallrye.mutiny.CompositeException;
@@ -73,7 +75,23 @@ public class RhoasClientImpl implements RhoasClient {
     public Uni<Void> deleteTopic(String topicName) {
         return instanceClient.deleteTopic(topicName)
                 .onItem().invoke(t -> LOG.info("Deleted topic '{}'", topicName))
-                .onFailure().transform(f -> logAndWrapFailure("Error when deleting topic " + topicName, f));
+                .onFailure()
+                .recoverWithUni(f -> handleTopicDeleteFailure(topicName, f));
+    }
+
+    private Uni<Void> handleTopicDeleteFailure(String topicName, Throwable f) {
+        if (!(f instanceof AppServicesException)) {
+            RhoasClientException rhoasClientException = logAndWrapFailure("Error when deleting topic " + topicName, f);
+            return Uni.createFrom().failure(rhoasClientException);
+        }
+        AppServicesException exception = (AppServicesException) f;
+        if (exception.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+            LOG.info("Topic {} was already deleted", topicName);
+            return Uni.createFrom().voidItem();
+        } else {
+            RhoasClientException rhoasClientException = logAndWrapFailure("Error when deleting topic " + topicName, f);
+            return Uni.createFrom().failure(rhoasClientException);
+        }
     }
 
     @Override
