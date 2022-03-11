@@ -14,6 +14,10 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 
+import static com.redhat.service.bridge.manager.actions.connectors.BaseConnectorAction.LOG_PROCESSOR_MULTILINE_PARAMETER;
+import static com.redhat.service.bridge.manager.actions.connectors.BaseConnectorAction.LOG_PROCESSOR_PARENT_PARAMETER;
+import static com.redhat.service.bridge.manager.actions.connectors.BaseConnectorAction.LOG_PROCESSOR_SHOWHEADERS_PARAMETER;
+import static com.redhat.service.bridge.manager.actions.connectors.BaseConnectorAction.PROCESSORS_PARAMETER;
 import static com.redhat.service.bridge.manager.actions.connectors.SlackAction.CONNECTOR_CHANNEL_PARAMETER;
 import static com.redhat.service.bridge.manager.actions.connectors.SlackAction.CONNECTOR_TOPIC_PARAMETER;
 import static com.redhat.service.bridge.manager.actions.connectors.SlackAction.CONNECTOR_WEBHOOK_URL_PARAMETER;
@@ -21,6 +25,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 class SlackActionTest {
+
+    static final String EXPECTED_PROCESSORS_JSON = "\"" + PROCESSORS_PARAMETER + "\":[" +
+            "  {" +
+            "    \"" + LOG_PROCESSOR_PARENT_PARAMETER + "\": {" +
+            "        \"" + LOG_PROCESSOR_MULTILINE_PARAMETER + "\":true," +
+            "        \"" + LOG_PROCESSOR_SHOWHEADERS_PARAMETER + "\":true" +
+            "    }" +
+            "  }" +
+            "]";
 
     @Inject
     SlackAction slackAction;
@@ -42,7 +55,8 @@ class SlackActionTest {
         JsonNode expected = new ObjectMapper().readTree("{" +
                 "    \"" + CONNECTOR_CHANNEL_PARAMETER + "\":\"" + channelValue + "\"," +
                 "    \"" + CONNECTOR_WEBHOOK_URL_PARAMETER + "\":\"" + webhookUrlValue + "\"," +
-                "    \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + topicValue + "\"" +
+                "    \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + topicValue + "\"," +
+                "    " + EXPECTED_PROCESSORS_JSON +
                 "}");
 
         assertThat(slackConnectorPayload).isEqualTo(expected);

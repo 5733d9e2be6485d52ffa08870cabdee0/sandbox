@@ -5,6 +5,7 @@ import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 public interface ConnectorAction extends ActionProvider {
+
     String getConnectorType();
 
     JsonNode connectorPayload(BaseAction action);
