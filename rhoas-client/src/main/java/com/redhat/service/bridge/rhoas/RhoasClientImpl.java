@@ -59,14 +59,14 @@ public class RhoasClientImpl implements RhoasClient {
     public Uni<Topic> createTopicAndGrantAccess(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType) {
         return grantAccess(newTopicInput.getName(), userId, accessType)
                 .onItem().transformToUni(v1 -> createTopic(newTopicInput))
-                .onFailure().recoverWithUni(f -> recoverCreateTopicAndGrantAccessFailure(newTopicInput, userId, accessType, f));
+                .onFailure().recoverWithUni(f -> revertCreateTopicAndGrantAccessThenFail(newTopicInput, userId, accessType, f));
     }
 
-    private Uni<Topic> recoverCreateTopicAndGrantAccessFailure(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType, Throwable failure) {
+    private Uni<Topic> revertCreateTopicAndGrantAccessThenFail(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType, Throwable failure) {
         return revokeAccess(newTopicInput.getName(), userId, accessType)
                 .onItem().transform(v -> new Topic())
-                .onItem().failWith(() -> failure)
-                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when creating topic and granting access", failure, failure2));
+                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when creating topic and granting access", failure, failure2))
+                .onItem().failWith(() -> failure);
     }
 
     @Override
@@ -80,13 +80,13 @@ public class RhoasClientImpl implements RhoasClient {
     public Uni<Void> deleteTopicAndRevokeAccess(String topicName, String userId, RhoasTopicAccessType accessType) {
         return revokeAccess(topicName, userId, accessType)
                 .onItem().transformToUni(v -> deleteTopic(topicName))
-                .onFailure().recoverWithUni(f -> recoverDeleteTopicAndRevokeAccess(topicName, userId, accessType, f));
+                .onFailure().recoverWithUni(f -> revertDeleteTopicAndRevokeAccessThenFail(topicName, userId, accessType, f));
     }
 
-    private Uni<Void> recoverDeleteTopicAndRevokeAccess(String topicName, String userId, RhoasTopicAccessType accessType, Throwable failure) {
+    private Uni<Void> revertDeleteTopicAndRevokeAccessThenFail(String topicName, String userId, RhoasTopicAccessType accessType, Throwable failure) {
         return grantAccess(topicName, userId, accessType)
-                .onItem().failWith(() -> failure)
-                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when deleting topic and revoking access", failure, failure2));
+                .onFailure().transform(failure2 -> logAndWrapFailures("Multiple errors when deleting topic and revoking access", failure, failure2))
+                .onItem().failWith(() -> failure);
     }
 
     @Override

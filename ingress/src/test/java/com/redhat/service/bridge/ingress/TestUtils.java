@@ -18,10 +18,6 @@ public class TestUtils {
         return builderForTestCloudEvent().build();
     }
 
-    public static CloudEvent buildTestCloudEventWithReservedAttributes() throws JsonProcessingException {
-        return builderForTestCloudEvent().withExtension("ebbridgeid", "foo").build();
-    }
-
     private static CloudEventBuilder builderForTestCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
         return CloudEventUtils.builderFor("myId", SpecVersion.V1, URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString));

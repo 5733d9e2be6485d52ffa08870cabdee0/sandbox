@@ -19,7 +19,7 @@ public class BridgeDTO {
     private String customerId;
 
     @JsonProperty("status")
-    private BridgeStatus status;
+    private ManagedResourceStatus status;
 
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
@@ -27,7 +27,7 @@ public class BridgeDTO {
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String customerId, BridgeStatus status, KafkaConnectionDTO kafkaConnection) {
+    public BridgeDTO(String id, String name, String endpoint, String customerId, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -40,7 +40,7 @@ public class BridgeDTO {
         this.customerId = customerId;
     }
 
-    public void setStatus(BridgeStatus status) {
+    public void setStatus(ManagedResourceStatus status) {
         this.status = status;
     }
 
@@ -76,7 +76,7 @@ public class BridgeDTO {
         return name;
     }
 
-    public BridgeStatus getStatus() {
+    public ManagedResourceStatus getStatus() {
         return status;
     }
 

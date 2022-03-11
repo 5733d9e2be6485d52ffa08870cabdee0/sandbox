@@ -258,14 +258,10 @@ components:
   schemas:
     BaseAction:
       required:
-      - name
       - type
       - parameters
       type: object
       properties:
-        name:
-          type: string
-          nullable: false
         type:
           type: string
           nullable: false
@@ -297,7 +293,7 @@ components:
         customerId:
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     BridgeRequest:
@@ -309,16 +305,6 @@ components:
           minLength: 1
           type: string
           nullable: false
-    BridgeStatus:
-      enum:
-      - ACCEPTED
-      - DELETED
-      - DELETING
-      - DEPROVISION
-      - FAILED
-      - PROVISIONING
-      - READY
-      type: string
     KafkaConnectionDTO:
       type: object
       properties:
@@ -332,6 +318,16 @@ components:
           type: string
         topic:
           type: string
+    ManagedResourceStatus:
+      enum:
+      - ACCEPTED
+      - DELETED
+      - DELETING
+      - DEPROVISION
+      - FAILED
+      - PROVISIONING
+      - READY
+      type: string
     ProcessorDTO:
       type: object
       properties:
@@ -346,7 +342,7 @@ components:
         customerId:
           type: string
         status:
-          $ref: '#/components/schemas/BridgeStatus'
+          $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     ProcessorDefinition:

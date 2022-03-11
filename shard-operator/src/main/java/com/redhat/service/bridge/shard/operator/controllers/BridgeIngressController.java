@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
@@ -98,7 +98,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             bridgeIngress.getStatus().setEndpoint(knativeBroker.getStatus().getAddress());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
-            notifyManager(bridgeIngress, BridgeStatus.READY);
+            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
         // Create Route
@@ -111,22 +111,22 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         //            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
         //            return UpdateControl.updateStatus(bridgeIngress);
         //        }
-        //        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-
+        //        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        //
         //        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
         //        if (serviceMonitor.isPresent()) {
         //            // this is an optional resource
         //            LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
         //        } else {
         //            LOGGER.warn("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeIngress.getMetadata().getName(),
-        //                    bridgeIngress.getMetadata().getNamespace());
+        //                        bridgeIngress.getMetadata().getNamespace());
         //            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
         //                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
         //            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
-        //                    ConditionReason.PrometheusUnavailable,
-        //                    prometheusNotAvailableError.getReason(),
-        //                    prometheusNotAvailableError.getCode());
-        //            notifyManager(bridgeIngress, BridgeStatus.FAILED);
+        //                                                         ConditionReason.PrometheusUnavailable,
+        //                                                         prometheusNotAvailableError.getReason(),
+        //                                                         prometheusNotAvailableError.getCode());
+        //            notifyManager(bridgeIngress, ManagedResourceStatus.FAILED);
         //            return UpdateControl.updateStatus(bridgeIngress);
         //        }
 
@@ -146,7 +146,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Linked resources are automatically deleted
 
-        notifyManager(bridgeIngress, BridgeStatus.DELETED);
+        notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 
         return DeleteControl.defaultDelete();
     }
@@ -154,10 +154,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     private void notifyDeploymentFailure(BridgeIngress bridgeIngress, String failureReason) {
         LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeIngress, BridgeStatus.FAILED);
+        notifyManager(bridgeIngress, ManagedResourceStatus.FAILED);
     }
 
-    private void notifyManager(BridgeIngress bridgeIngress, BridgeStatus status) {
+    private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
 

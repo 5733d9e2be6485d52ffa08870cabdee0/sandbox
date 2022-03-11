@@ -24,8 +24,6 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
 
     static final String TYPE_PARAM = "type";
 
-    static final String NAME_PARAM = "name";
-
     @Inject
     ActionProviderFactory actionProviderFactory;
 
@@ -69,7 +67,6 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
                 message = ACTION_PARAMETERS_NOT_VALID_ERROR;
                 HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
                 hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
-                hibernateContext.addMessageParameter(NAME_PARAM, baseAction.getName());
             } else {
                 message = InterpolationHelper.escapeMessageParameter(message);
             }

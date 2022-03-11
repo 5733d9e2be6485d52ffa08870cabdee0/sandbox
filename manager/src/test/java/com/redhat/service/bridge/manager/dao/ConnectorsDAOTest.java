@@ -3,7 +3,6 @@ package com.redhat.service.bridge.manager.dao;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -14,8 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
-import com.redhat.service.bridge.infra.models.dto.ConnectorStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
@@ -55,13 +53,12 @@ public class ConnectorsDAOTest {
         Processor p = new Processor();
         p.setBridge(bridge);
         p.setName(name);
-        p.setStatus(BridgeStatus.ACCEPTED);
+        p.setStatus(ManagedResourceStatus.ACCEPTED);
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
-        a.setName(TestConstants.DEFAULT_ACTION_NAME);
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
@@ -78,7 +75,7 @@ public class ConnectorsDAOTest {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(BridgeStatus.READY);
+        b.setStatus(ManagedResourceStatus.READY);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
         bridgeDAO.persist(b);
@@ -86,9 +83,8 @@ public class ConnectorsDAOTest {
     }
 
     private ConnectorEntity createPersistConnector(Processor p, String connectorName,
-            ConnectorStatus status,
-            ConnectorStatus desiredStatus) {
-        ConnectorEntity c = Fixtures.createConnector(p, connectorName, status, desiredStatus, "topicName");
+            ManagedResourceStatus status) {
+        ConnectorEntity c = Fixtures.createConnector(p, connectorName, status, "topicName");
         connectorsDAO.persist(c);
         return c;
     }
@@ -97,23 +93,9 @@ public class ConnectorsDAOTest {
     public void findByProcessorIdName() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
-        ConnectorEntity c = createPersistConnector(p, "connector", ConnectorStatus.READY, ConnectorStatus.READY);
+        ConnectorEntity c = createPersistConnector(p, "connector", ManagedResourceStatus.READY);
 
         assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
     }
 
-    @Test
-    public void findUnprocessed() {
-        Bridge b = createBridge();
-
-        Processor p1 = createProcessor(b, "availableConnectorProcessor");
-        createPersistConnector(p1, "availableConnector", ConnectorStatus.READY, ConnectorStatus.READY);
-
-        Processor p2 = createProcessor(b, "requestedConnectorProcessor");
-        ConnectorEntity requestedConnector = createPersistConnector(p2, "availableConnector", ConnectorStatus.ACCEPTED, ConnectorStatus.READY);
-
-        List<ConnectorEntity> unprocessedConnectors = connectorsDAO.findUnprocessed();
-
-        assertThat(unprocessedConnectors).containsOnly(requestedConnector);
-    }
 }

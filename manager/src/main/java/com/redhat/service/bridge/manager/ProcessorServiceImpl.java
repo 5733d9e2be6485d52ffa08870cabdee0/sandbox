@@ -3,7 +3,7 @@ package com.redhat.service.bridge.manager;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -24,29 +24,26 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundE
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.connectors.ConnectorsService;
-import com.redhat.service.bridge.manager.connectors.Events;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.workers.WorkManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import io.vertx.mutiny.core.eventbus.EventBus;
-
-import static com.redhat.service.bridge.manager.connectors.Events.CONNECTOR_CREATED_EVENT;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
@@ -71,10 +68,10 @@ public class ProcessorServiceImpl implements ProcessorService {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
-    EventBus eventBus;
+    ShardService shardService;
 
     @Inject
-    ShardService shardService;
+    WorkManager workManager;
 
     @Transactional
     @Override
@@ -113,30 +110,36 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
-        newProcessor.setStatus(BridgeStatus.ACCEPTED);
+        newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
 
         ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
         newProcessor.setDefinition(definitionToJsonNode(definition));
 
-        Optional<ConnectorEntity> persist = createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
+                newProcessor.getId(),
+                newProcessor.getBridge().getCustomerId(),
+                newProcessor.getBridge().getId());
 
-        persist.ifPresent(c -> eventBus.requestAndForget(CONNECTOR_CREATED_EVENT, c));
+        createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
+
+        workManager.schedule(newProcessor);
 
         return newProcessor;
     }
 
     @Transactional
-    public Optional<ConnectorEntity> createProcessorConnectorEntity(Processor newProcessor, ActionProvider actionProvider, BaseAction resolvedAction) {
+    // Connector should always be marked for creation in the same transaction as a Processor
+    public void createProcessorConnectorEntity(Processor newProcessor, ActionProvider actionProvider, BaseAction resolvedAction) {
         processorDAO.persist(newProcessor);
-        return connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
+        connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
     }
 
     @Transactional
     @Override
-    public List<Processor> getProcessorByStatusesAndShardIdWithReadyDependencies(List<BridgeStatus> statuses, String shardId) {
-        return processorDAO.findByStatusesAndShardIdWithReadyDependencies(statuses, shardId);
+    public List<Processor> findByShardIdWithReadyDependencies(String shardId) {
+        return processorDAO.findByShardIdWithReadyDependencies(shardId);
     }
 
     @Transactional
@@ -149,9 +152,13 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
+        p.setModifiedAt(ZonedDateTime.now());
 
-        if (processorDTO.getStatus().equals(BridgeStatus.DELETED)) {
+        if (processorDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             processorDAO.deleteById(processorDTO.getId());
+        }
+        if (processorDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(p.getPublishedAt())) {
+            p.setPublishedAt(ZonedDateTime.now());
         }
 
         // Update metrics
@@ -176,22 +183,27 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
-        List<ConnectorEntity> connectorEntitiesToBeDeleted = updateProcessorConnectorForDeletionOnDB(bridgeId, processorId, customerId);
-        connectorEntitiesToBeDeleted.forEach(c -> {
-            LOGGER.info("Firing deletion event for entity: " + c);
-            eventBus.requestAndForget(Events.CONNECTOR_DELETED_EVENT, c);
-        });
+        Processor processor = doDeleteProcessor(bridgeId, processorId, customerId);
+
+        workManager.schedule(processor);
     }
 
     @Transactional
-    public List<ConnectorEntity> updateProcessorConnectorForDeletionOnDB(String bridgeId, String processorId, String customerId) {
+    protected Processor doDeleteProcessor(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
-        processor.setStatus(BridgeStatus.DEPROVISION);
+        if (processor == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
+        }
+        processor.setStatus(ManagedResourceStatus.DEPROVISION);
 
-        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion", processor.getId(), processor.getBridge().getCustomerId(),
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
+                processor.getId(),
+                processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
 
-        return connectorService.deleteConnectorIfNeeded(processor);
+        connectorService.deleteConnectorEntity(processor);
+
+        return processor;
     }
 
     @Override

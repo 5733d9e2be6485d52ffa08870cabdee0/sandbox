@@ -4,14 +4,16 @@ on:
     types: [labeled]
     branches:    
       - 'main'
-    paths:
-      - 'actions/**'
-      - 'executor/**'
-      - 'infra/**'
-      - 'ingress/**'
-      - 'manager/**'
-      - 'integration-tests/**'
-      - 'shard-operator/**'
+    paths-ignore:
+      # keep in sync with labels-check.yml
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
 jobs:
   event-bridge-build:
     env:
@@ -67,6 +69,8 @@ jobs:
           MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
           MANAGED_KAFKA_MC_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MC_CLIENT_ID }}
           MANAGED_KAFKA_MC_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MC_CLIENT_SECRET }}
+          MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
+          MANAGED_CONNECTORS_CLUSTER_ID: ${{ secrets.MANAGED_CONNECTORS_CLUSTER_ID }}
         run: |
           sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
@@ -76,13 +80,11 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_SECRET|" kustomization.yaml
           sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_TOPIC_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
-          # Need to be enabled and specified for tests using MC
-          # sed -i -E "s|(.*MANAGED_CONNECTORS_CLUSTER_ID=).*|\1$MANAGED_CONNECTORS_CLUSTER_ID|" overlays/minikube/manager/kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_CLUSTER_ID=).*|\1$MANAGED_CONNECTORS_CLUSTER_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MC_CLIENT_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MC_CLIENT_SECRET|" kustomization.yaml
-          # Need to be enabled and specified for tests using MC
-          # sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$OPENSHIFT_OFFLINE_TOKEN|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
           sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
         working-directory: kustomize/overlays/minikube/manager
       - name: Build all images and resources
@@ -132,6 +134,9 @@ jobs:
           kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
           kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
       - name: Run integration tests
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=http://localhost:80/manager

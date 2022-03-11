@@ -7,11 +7,10 @@ It is possible to [Transform](TRANSFORMATIONS.md) the original `Event` structure
 
 ## Parameters of an Action
 
-Each `Action` has 3 parameters to specify:
+Each `Action` has 2 parameters to specify:
 
 - `type`: the type of the `Action`. This must be one of the supported `Action` types listed below
     - Attempting to use an unknown `Action` type will result in an Error from the Bridge API.
-- `name`: A human-readable `name` for the `Action` to help identify it.
 - `parameters`: A key/value map of configuration parameters for the `Action`
   - Only string for the `key` and `value` of the parameters are supported.
   - The required parameters are `Action` specific and documented in the list of supported `Actions`
@@ -20,7 +19,7 @@ Each `Action` has 3 parameters to specify:
 
 The following `Actions` are currently supported by Event Bridge:
 
-### SendToKafka
+### KafkaTopic
 
 Allows you to send an `Event` to a Kafka Topic on a hard-coded Kafka Cluster made available via the Event Bridge deployment
 
@@ -35,8 +34,7 @@ To send an Event to the topic `myRequestedTopic`:
 ```json
 {
   "action": {
-    "type": "SendToKafka",
-    "name": "Send to Kafka Topic",
+    "type": "KafkaTopic",
     "parameters": {
       "topic": "myRequestedTopic"
     }
@@ -59,7 +57,6 @@ To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 {
   "action": {
     "type": "Webhook",
-    "name": "Invoke an endpoint",
     "parameters": {
       "endpoint": "https://example.com/my-webhook-endpoint"
     }
@@ -85,7 +82,6 @@ To send an event to bridge with id `foo` in my account:
 {
   "action": {
     "type": "SendToBridge",
-    "name": "Forward to my other bridge",
     "parameters": {
       "bridgeId": "foo"
     }
@@ -93,7 +89,7 @@ To send an event to bridge with id `foo` in my account:
 }
 ```
 
-### SlackAction
+### Slack
 
 Allows you to send a message to a Slack Channel of your choice
 
@@ -109,8 +105,7 @@ To send an Event to channel `foo` with webhook URL `https://example.com`:
 ```json
 {
   "action": {
-    "type": "SlackAction",
-    "name": "Send to channel foo",
+    "type": "Slack",
     "parameters": {
       "channel": "foo",
       "webhookUrl": "https://example.com"

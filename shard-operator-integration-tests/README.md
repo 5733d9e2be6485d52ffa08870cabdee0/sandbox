@@ -15,6 +15,19 @@ Every test scenario runs in a dedicated namespace which is deleted after the tes
 
 Logs are stored in `target/logs` directory, contains logs of all containers and events in a namespace used to run the tests.
 
-## Supported Maven parameters:
+## Supported Maven parameters
+
 - `tags`: Used to specify a single scenario to be executed. Set the parameter to (for example) `@wip` and annotate a scenario which you want to execute by same tag (`@wip`).
 - `parallel`: User to allow running tests in parallel.
+
+## Local testing
+
+Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` or `kustomize/startMinikubeDeployLocalDev.sh` script, you can use the `shard-operator-integration-tests/run-local-tests.sh` script to launch the test with all local parameters set automatically.
+
+Script has 2 options:
+
+- `-t TAGS`  
+  Specify which tags to execute  
+  See also https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
+- `-p`  
+  Run tests in parallel

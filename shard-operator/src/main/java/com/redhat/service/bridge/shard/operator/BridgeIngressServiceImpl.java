@@ -98,7 +98,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_BRIDGE_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getCustomerId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID).withValue(webhookTechnicalAccountId).build());
 
@@ -147,9 +146,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                         .inNamespace("default")
                         //                        .inNamespace(namespace)
                         .delete(BridgeIngress.fromDTO(bridgeDTO, namespace, ingressImage));
-        if (bridgeDeleted) {
-            customerNamespaceProvider.deleteCustomerNamespaceIfEmpty(bridgeDTO.getCustomerId());
-        } else {
+        if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
         }
