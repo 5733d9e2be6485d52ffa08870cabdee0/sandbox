@@ -9,7 +9,7 @@ import java.time.Duration;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutLogger;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
@@ -33,7 +33,7 @@ public class IngressSteps {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
         Awaitility.await()
-                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
@@ -47,7 +47,7 @@ public class IngressSteps {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
         Awaitility.await()
-                .conditionEvaluationListener(new AwaitilityOnTimeOutLogger(
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
                 .atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)

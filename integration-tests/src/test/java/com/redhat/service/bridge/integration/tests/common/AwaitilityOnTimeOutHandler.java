@@ -4,10 +4,10 @@ import org.awaitility.core.ConditionEvaluationListener;
 import org.awaitility.core.EvaluatedCondition;
 import org.awaitility.core.TimeoutEvent;
 
-public class AwaitilityOnTimeOutLogger implements ConditionEvaluationListener {
+public class AwaitilityOnTimeOutHandler implements ConditionEvaluationListener {
     private final Runnable runnable;
 
-    public AwaitilityOnTimeOutLogger(Runnable runnable) {
+    public AwaitilityOnTimeOutHandler(Runnable runnable) {
         this.runnable = runnable;
     }
 
