@@ -1,7 +1,7 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: 48e596374a228731fed1fe0d0803898d3c39a3ea-jvm
+  newTag: c7b5f0693e790c542cf20e4d0699ab715b76ea90-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
   newTag: k8s-48e596374a228731fed1fe0d0803898d3c39a3ea-jvm
