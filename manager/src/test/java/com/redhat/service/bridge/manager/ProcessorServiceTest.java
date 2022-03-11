@@ -127,13 +127,6 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    public void createProcessor_bridgeNotActive() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.PROVISIONING);
-        assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.createProcessor(b, new ProcessorRequest()));
-    }
-
-    @Test
     public void createProcessor_processorWithSameNameAlreadyExists() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
@@ -261,14 +254,6 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    public void updateProcessorStatus_bridgeDoesNotExist() {
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridgeId("foo");
-
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
-    }
-
-    @Test
     public void updateProcessorStatus_processorDoesNotExist() {
         Processor p = new Processor();
         p.setBridge(createPersistBridge(ManagedResourceStatus.READY));
@@ -358,14 +343,6 @@ public class ProcessorServiceTest {
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
-    }
-
-    @Test
-    public void getProcessors_bridgeDoesNotExist() {
-        Bridge fakeBridge = new Bridge();
-        fakeBridge.setId("doesNotExist");
-        fakeBridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors(fakeBridge, new QueryInfo(0, 100)));
     }
 
     @Test

@@ -85,7 +85,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Transactional
-    private Processor findByBridgeIdAndName(String bridgeId, String name) {
+    public Processor findByBridgeIdAndName(String bridgeId, String name) {
         return processorDAO.findByBridgeIdAndName(bridgeId, name);
     }
 

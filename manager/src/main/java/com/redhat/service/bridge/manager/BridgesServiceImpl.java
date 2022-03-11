@@ -104,7 +104,7 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Transactional
-    private Bridge findByIdAndCustomerId(String id, String customerId) {
+    public Bridge findByIdAndCustomerId(String id, String customerId) {
         Bridge bridge = bridgeDAO.findByIdAndCustomerId(id, customerId);
         if (bridge == null) {
             throw new ItemNotFoundException(String.format("Bridge with id '%s' for customer '%s' does not exist", id, customerId));
