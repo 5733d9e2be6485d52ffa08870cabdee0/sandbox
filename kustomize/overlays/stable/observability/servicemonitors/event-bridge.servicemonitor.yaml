@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: manager
+  namespace: openshift-monitoring
+  labels:
+    team: event-bridge-team
+spec:
+  selector:
+    matchLabels:
+      app: event-bridge
+  namespaceSelector:
+    matchNames:
+      - event-bridge-stable
+  endpoints:
+    - interval: 15s
+      port: web
+      path: /q/metrics
+      scheme: http
+      scrapeTimeout: 10s
+  targetLabels:
+    - app
