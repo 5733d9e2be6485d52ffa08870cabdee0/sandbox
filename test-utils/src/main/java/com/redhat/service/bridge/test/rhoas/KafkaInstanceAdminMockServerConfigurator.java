@@ -52,6 +52,14 @@ public class KafkaInstanceAdminMockServerConfigurator extends AbstractApiMockSer
         server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));
     }
 
+    public void configureWithAlreadyDeletedTopic(WireMockServer server) {
+        server.stubFor(authPost("/topics").willReturn(responseWithStatus(404)));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(404)));
+
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));
+    }
+
     public void configureWithBrokenACLCreation(WireMockServer server) {
         server.stubFor(authPost("/topics").willReturn(responseWithCreatedTopic()));
         server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(200)));
