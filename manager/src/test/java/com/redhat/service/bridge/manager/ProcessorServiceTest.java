@@ -26,7 +26,6 @@ import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
-import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;

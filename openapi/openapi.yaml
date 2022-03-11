@@ -42,43 +42,12 @@ paths:
           description: OK
       security:
       - bearer: []
-  /api/v1/bridges/{bridgeId}:
-    get:
-      tags:
-      - Bridges API
-      parameters:
-      - name: bridgeId
-        in: path
-        required: true
-        schema:
-          minLength: 1
-          type: string
-          nullable: false
-      responses:
-        "200":
-          description: OK
-      security:
-      - bearer: []
-    delete:
-      tags:
-      - Bridges API
-      parameters:
-      - name: bridgeId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-      security:
-      - bearer: []
-  /api/v1/bridges/{bridgeId}/processors:
+  /api/v1/bridges/{bridgeIdOrName}/processors:
     get:
       tags:
       - Processors API
       parameters:
-      - name: bridgeId
+      - name: bridgeIdOrName
         in: path
         required: true
         schema:
@@ -109,7 +78,7 @@ paths:
       tags:
       - Processors API
       parameters:
-      - name: bridgeId
+      - name: bridgeIdOrName
         in: path
         required: true
         schema:
@@ -126,12 +95,12 @@ paths:
           description: OK
       security:
       - bearer: []
-  /api/v1/bridges/{bridgeId}/processors/{processorId}:
+  /api/v1/bridges/{bridgeIdOrName}/processors/{processorId}:
     get:
       tags:
       - Processors API
       parameters:
-      - name: bridgeId
+      - name: bridgeIdOrName
         in: path
         required: true
         schema:
@@ -154,12 +123,43 @@ paths:
       tags:
       - Processors API
       parameters:
-      - name: bridgeId
+      - name: bridgeIdOrName
         in: path
         required: true
         schema:
           type: string
       - name: processorId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+  /api/v1/bridges/{idOrName}:
+    get:
+      tags:
+      - Bridges API
+      parameters:
+      - name: idOrName
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      responses:
+        "200":
+          description: OK
+      security:
+      - bearer: []
+    delete:
+      tags:
+      - Bridges API
+      parameters:
+      - name: idOrName
         in: path
         required: true
         schema:
