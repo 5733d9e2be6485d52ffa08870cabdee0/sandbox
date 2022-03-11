@@ -1,0 +1,29 @@
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - /default/ob-95d87
+      when:
+        - key: 'request.auth.claims[sub]'
+          values:
+            - 1608dc1f-4139-49c5-ae22-afe73ed807d7
+
+
+spec:
+  gateways:
+    - my-app-gateway
+  hosts:
+    - '*'
+  http:
+    - match:
+        - uri:
+            exact: /default/ob-95d87
+      route:
+        - destination:
+            host: kafka-broker-ingress
+            port:
+              number: 80

@@ -20,11 +20,16 @@ metadata:
   name: my-app-virtual-service
   namespace: knative-eventing
 spec:
-  hosts:
-  - "*"
   gateways:
-  - my-app-gateway
+    - my-app-gateway
+  hosts:
+    - '*'
   http:
-  - route:
-    - destination:
-        host: kafka-broker-ingress 
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kafka-broker-ingress
+            port:
+              number: 80

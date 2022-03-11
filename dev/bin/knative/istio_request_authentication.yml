@@ -2,7 +2,7 @@ apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
   name: "jwt-example"
-  namespace: default 
+  namespace: istio-system
 spec:
   jwtRules:
   - issuer: "http://192.168.49.2:30007/auth/realms/event-bridge-fm"
@@ -12,18 +12,18 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: require-jwt
-  namespace: default 
+  namespace: istio-system
 spec:
   action: ALLOW
   rules:
-  - from:
-    - source:
-       requestPrincipals: ["testing@secure.istio.io/testing@secure.istio.io"]
-    - source:
-        #namespaces: ["default", "demo-mw"]
-        namespaces: ["default"]
-    to:
-    - operation:
-        methods: ["POST"]
-        paths: ["/default/ob-95d87"]
-        #paths: ["/default/other-broker"]
+    - to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - /default/ob-c427f
+      when:
+        - key: 'request.auth.claims[sub]'
+          values:
+            - 1608dc1f-4139-49c5-ae22-afe73ed807d7
+
