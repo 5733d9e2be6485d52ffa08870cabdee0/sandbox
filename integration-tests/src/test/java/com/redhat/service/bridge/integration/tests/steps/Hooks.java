@@ -75,6 +75,17 @@ public class Hooks {
                         case FAILED:
                             try {
                                 BridgeResource.deleteBridge(token, bridgeId);
+
+                                // Wait until the Bridge is deleted before finishing the scenario. The reason is that creating a Bridge while another Bridge is deleted seems to cause various transaction errors.
+                                // TODO: remove once https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/431 is merged, which should hopefully address the issue
+                                Awaitility.await()
+                                        .atMost(Duration.ofMinutes(2))
+                                        .pollInterval(Duration.ofSeconds(1))
+                                        .untilAsserted(
+                                                () -> BridgeResource
+                                                        .getBridgeDetailsResponse(context.getManagerToken(), bridgeId)
+                                                        .then()
+                                                        .statusCode(404));
                             } catch (Exception e) {
                                 LOGGER.warn(e, () -> "Unable to delete bridge with id " + bridgeId);
                             }
