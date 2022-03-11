@@ -1,10 +1,12 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import org.awaitility.Awaitility;
 
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
@@ -43,25 +45,26 @@ public class Hooks {
 
     @After
     public void cleanUp() {
+        String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
         // Remove all bridges/processors created
         context.getAllBridges().values()
                 .stream()
                 .filter(bridgeContext -> !bridgeContext.isDeleted())
                 .forEach(bridgeContext -> {
                     final String bridgeId = bridgeContext.getId();
-                    BridgeResponse bridge = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeId);
-                    if (bridge.getStatus() == BridgeStatus.READY) {
+                    BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
+                    if (bridge.getStatus() == ManagedResourceStatus.READY) {
                         ProcessorListResponse processorList = ProcessorResource.getProcessorList(
-                                context.getManagerToken(),
+                                token,
                                 bridgeId);
                         if (processorList.getSize() > 0) {
                             processorList.getItems().stream().forEach(
-                                    p -> ProcessorResource.deleteProcessor(context.getManagerToken(), bridgeId,
+                                    p -> ProcessorResource.deleteProcessor(token, bridgeId,
                                             p.getId()));
                             Awaitility.await()
                                     .atMost(Duration.ofMinutes(2))
                                     .pollInterval(Duration.ofSeconds(5))
-                                    .until(() -> ProcessorResource.getProcessorList(context.getManagerToken(), bridgeId)
+                                    .until(() -> ProcessorResource.getProcessorList(token, bridgeId)
                                             .getSize() == 0);
                         }
                     }
@@ -71,7 +74,7 @@ public class Hooks {
                         case READY:
                         case FAILED:
                             try {
-                                BridgeResource.deleteBridge(context.getManagerToken(), bridgeId);
+                                BridgeResource.deleteBridge(token, bridgeId);
                             } catch (Exception e) {
                                 LOGGER.warn(e, () -> "Unable to delete bridge with id " + bridgeId);
                             }

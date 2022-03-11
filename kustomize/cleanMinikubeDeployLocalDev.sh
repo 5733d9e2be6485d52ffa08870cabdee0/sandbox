@@ -11,11 +11,9 @@ KUSTOMIZE_DEPLOY_DIR="${DEPLOY_DIR}/kustomize"
 
 stat "${KUSTOMIZE_DEPLOY_DIR}"  &> /dev/null || die "Can't access deployed dir. Did you start the minikube with `startMinikubeDeployLocalDev.sh` script ?"
 
-echo "Remove all Openbridge namespaces"
-# This could be replaced by a read in manager of all OB instances running and wait for all of them to be deleted
-kubectl get ns | grep "Active" | awk -F " " '{print $1}' | grep "^ob-" | xargs kubectl delete ns || echo "nothing to delete"
-
 echo "Removing all resources"
 kustomize build ${KUSTOMIZE_DIR}/overlays/minikube | kubectl delete -f -
 
-sleep 30
+echo "Remove all Openbridge namespaces"
+# This could be replaced by a read in manager of all OB instances running and wait for all of them to be deleted
+kubectl get ns | grep "Active" | awk -F " " '{print $1}' | grep "^ob-" | xargs kubectl delete ns || echo "nothing to delete"

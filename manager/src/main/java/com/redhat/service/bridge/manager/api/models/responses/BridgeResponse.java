@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.bridge.infra.api.models.responses.BaseResponse;
-import com.redhat.service.bridge.infra.models.dto.BridgeStatus;
+import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BridgeResponse extends BaseResponse {
@@ -20,7 +20,7 @@ public class BridgeResponse extends BaseResponse {
     private ZonedDateTime publishedAt;
 
     @JsonProperty("status")
-    private BridgeStatus status;
+    private ManagedResourceStatus status;
 
     @JsonProperty("endpoint")
     private String endpoint;
@@ -37,7 +37,7 @@ public class BridgeResponse extends BaseResponse {
         return publishedAt;
     }
 
-    public BridgeStatus getStatus() {
+    public ManagedResourceStatus getStatus() {
         return status;
     }
 
@@ -53,7 +53,7 @@ public class BridgeResponse extends BaseResponse {
         this.publishedAt = publishedAt;
     }
 
-    public void setStatus(BridgeStatus status) {
+    public void setStatus(ManagedResourceStatus status) {
         this.status = status;
     }
 

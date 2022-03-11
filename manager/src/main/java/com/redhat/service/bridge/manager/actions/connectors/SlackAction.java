@@ -5,8 +5,6 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.bridge.actions.ActionTransformer;
@@ -14,7 +12,7 @@ import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
 @ApplicationScoped
-public class SlackAction implements ConnectorAction {
+public class SlackAction extends BaseConnectorAction {
 
     public static final String TYPE = "Slack";
 
@@ -32,29 +30,22 @@ public class SlackAction implements ConnectorAction {
     @Inject
     SlackActionTransformer transformer;
 
-    @Inject
-    ObjectMapper mapper;
-
     @Override
     public String getConnectorType() {
         return CONNECTOR_TYPE;
     }
 
     @Override
-    public JsonNode connectorPayload(BaseAction action) {
+    public void addConnectorSpecificPayload(BaseAction action, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
         String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAMETER);
         String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAMETER);
         String kafkaTopic = topicName(action);
 
-        ObjectNode objectNode = mapper.createObjectNode();
-
-        objectNode.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
-        objectNode.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
-        objectNode.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(kafkaTopic));
-
-        return objectNode;
+        definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
+        definition.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
+        definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(kafkaTopic));
     }
 
     @Override
