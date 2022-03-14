@@ -42,6 +42,11 @@ public class KafkaInstanceAdminClientImpl extends AbstractAppServicesClientImpl 
     }
 
     @Override
+    public Uni<Topic> getTopic(String topicName) {
+        return topicsValueCall(api -> api.getTopic(topicName));
+    }
+
+    @Override
     public Uni<Topic> createTopic(NewTopicInput newTopicInput) {
         return topicsValueCall(api -> api.createTopic(newTopicInput));
     }
