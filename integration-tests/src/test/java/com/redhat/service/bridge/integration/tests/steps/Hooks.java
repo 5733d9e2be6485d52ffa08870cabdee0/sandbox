@@ -32,12 +32,6 @@ public class Hooks {
         this.context = context;
     }
 
-    // Enable this if you need to see all the requests / responses which are failing
-    // @BeforeAll
-    // public static void beforeAll() {
-    // RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    // }
-
     @Before
     public void before(Scenario scenario) {
         this.context.setScenario(scenario);

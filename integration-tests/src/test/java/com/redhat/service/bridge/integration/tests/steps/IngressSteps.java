@@ -9,6 +9,7 @@ import java.time.Duration;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
@@ -31,7 +32,10 @@ public class IngressSteps {
     public void ingressOfBridgeIsAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
-        Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes))
+        Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
+                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                         .then()
@@ -42,7 +46,10 @@ public class IngressSteps {
     public void ingressOfBridgeIsNotAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
 
-        Awaitility.await().atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
+        Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
+                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                .atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                         .then()
                         .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
@@ -54,7 +61,7 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers:$")
-    public void sendPlainCloudEventToIngressOfBridgeWithPath(String testBridgeName, String path, String cloudEvent) {
+    public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeaders(String testBridgeName, String path, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), 200);
     }
 
@@ -65,7 +72,7 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and default headers is failing with HTTP response code (\\d+):$")
-    public void sendPlainCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName,
+    public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
             String path, int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, getDefaultCloudEventHeaders(), responseCode);
     }
