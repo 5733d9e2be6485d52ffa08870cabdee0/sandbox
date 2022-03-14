@@ -8,6 +8,7 @@ usage() {
     echo 'Options:'
     echo '  -t $TAGS            Tags to use for selecting scenario'
     echo '  -p                  To be set if you want to run the tests in parallel mode'
+    echo '  -k                  Keep created data, aka do not perform cleanup. Mostly used for local test run and debug.'
     echo
     echo 'Examples:'
     echo '  # Simple run'
@@ -19,12 +20,13 @@ usage() {
 
 ARGS=
 
-while getopts "t:ph" i
+while getopts "t:pkh" i
 do
     case "$i"
     in
         p) ARGS="${ARGS} -Dparallel" ;;
         t) ARGS="${ARGS} -Dgroups=${OPTARG}" ;;
+        k) ARGS="${ARGS} -Dcleanup.disable" ;;
         h) usage; exit 0 ;;
         :) usage; exit 1 ;; # If expected argument omitted:
         *) usage; exit 1 ;; # If unknown (any other) option

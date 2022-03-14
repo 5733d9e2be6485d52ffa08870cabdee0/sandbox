@@ -122,6 +122,7 @@
                 <!-- Token authorization configuration-->
                 <bridge.client.id>kermit</bridge.client.id>
                 <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
+                <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
 
                 <!--Manager and key-cloak url-->
                 <event-bridge.manager.url></event-bridge.manager.url>

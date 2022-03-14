@@ -22,11 +22,11 @@ The following `Actions` are currently supported by Event Bridge:
 
 Allows you to send an `Event` to a Kafka Topic on a hard-coded Kafka Cluster made available via the SmartEvents deployment
 
-#### Configuration Parameters
+#### KafkaTopic Configuration Parameters
 
 * `topic` - The topic name to send the Event to
 
-#### Example
+#### KafkaTopic Example
 
 To send an Event to the topic `myRequestedTopic`:
 
@@ -40,15 +40,16 @@ To send an Event to the topic `myRequestedTopic`:
   }
 }
 ```
+
 ### Webhook
 
 Allows you to send a WebHook to an endpoint of your choice. The configured endpoint will be called via an HTTP POST.
 
-#### Configuration Parameters
+#### Webhook Configuration Parameters
 
-* `endpoint` - The FQDN of the endpoint to invoke for the WebHook
+- `endpoint` - The FQDN of the endpoint to invoke for the WebHook
 
-#### Example
+#### Webhook Example
 
 To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 
@@ -68,12 +69,14 @@ To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 Allows you to forward an Event to any SmartEvents Instance in your account. Sending events to an SmartEvents instance not in your
 account is not currently supported.
 
-#### Configuration Parameters
+#### SendToBridge Configuration Parameters
 
-* `bridgeId` - An optional property for the `id` of the bridge instance to forward the Event to
-  * If the `bridgeId` configuration property is omitted, then the bridge instance on which the Processor exists is the target 
+- `bridgeId` - Set the `id` of the bridge instance to forward the Event to 
 
-#### Example
+**WARNING:** There is currently no circuit breaker and your event could end up in an infinite loop.
+**Please do not use the `bridgeId` omission without a transformation in your processor.**
+
+#### SendToBridge Example
 
 To send an event to bridge with id `foo` in my account:
 
@@ -92,12 +95,12 @@ To send an event to bridge with id `foo` in my account:
 
 Allows you to send a message to a Slack Channel of your choice
 
-#### Configuration Parameters
+#### Slack Configuration Parameters
 
-* `channel` - The Slack Channel to send the message to
-* `webhookUrl` - The webhook URL for the Slack Channel
+- `channel` - The Slack Channel to send the message to
+- `webhookUrl` - The webhook URL for the Slack Channel
 
-#### Example
+#### Slack Example
 
 To send an Event to channel `foo` with webhook URL `https://example.com`:
 
