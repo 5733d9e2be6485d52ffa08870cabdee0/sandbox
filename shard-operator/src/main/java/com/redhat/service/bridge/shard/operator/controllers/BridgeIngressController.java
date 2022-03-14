@@ -66,6 +66,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
 
         return eventSources;
@@ -82,6 +83,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return UpdateControl.noUpdate();
         }
 
+        LOGGER.info("created");
+
+        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress);
+
         ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
 
         KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
@@ -95,12 +100,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         }
 
         if (!bridgeIngress.getStatus().isReady() || !knativeBroker.getStatus().getAddress().equals(bridgeIngress.getStatus().getEndpoint())) {
-            bridgeIngress.getStatus().setEndpoint(knativeBroker.getStatus().getAddress());
+            bridgeIngress.getStatus().setEndpoint(knativeBroker.getStatus().getAddress().getUrl());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
+
         // Create Route
         //        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
 

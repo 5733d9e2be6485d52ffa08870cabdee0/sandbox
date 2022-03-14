@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.shard.operator.providers;
 
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
@@ -24,6 +25,8 @@ public interface TemplateProvider {
     ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress);
 
     KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress);
+
+    AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress);
 
     Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor);
 

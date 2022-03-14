@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
@@ -32,6 +33,7 @@ public class TemplateProviderImpl implements TemplateProvider {
 
     private static final String BRIDGE_INGRESS_CONFIGMAP_PATH = TEMPLATES_DIR + "/bridge-ingress-broker-configmap.yaml";
     private static final String BRIDGE_INGRESS_BROKER_PATH = TEMPLATES_DIR + "/bridge-ingress-broker.yaml";
+    private static final String BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH = TEMPLATES_DIR + "/bridge-ingress-authorization-policy.yaml";
 
     private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
@@ -60,6 +62,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         configMap.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         configMap.getMetadata().setNamespace("default");
+        configMap.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return configMap;
     }
 
@@ -70,7 +73,19 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         knativeBroker.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         knativeBroker.getMetadata().setNamespace("default");
+        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return knativeBroker;
+    }
+
+    @Override
+    public AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress) {
+        AuthorizationPolicy authorizationPolicy = loadYaml(AuthorizationPolicy.class, BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH);
+        updateMetadata(bridgeIngress, authorizationPolicy.getMetadata());
+        // TODO:  https://github.com/istio/istio/issues/37221
+        authorizationPolicy.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
+        authorizationPolicy.getMetadata().setNamespace("istio-system");
+        authorizationPolicy.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
+        return authorizationPolicy;
     }
 
     @Override
@@ -99,6 +114,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         ingress.getMetadata().setNamespace("knative-eventing");
+        ingress.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
         return ingress;
     }
 
@@ -116,6 +132,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         secret.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         secret.getMetadata().setNamespace("default");
+        secret.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
         return secret;
     }
 

@@ -3,6 +3,7 @@ package com.redhat.service.bridge.shard.operator.utils;
 import java.util.Map;
 
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorClient;
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -20,6 +21,17 @@ import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEven
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
 
 public class EventSourceFactory {
+
+    public static EventSource buildAuthorizationPolicyInformer(KubernetesClient kubernetesClient, String componentName) {
+        SharedIndexInformer<AuthorizationPolicy> authorizationPolicyInformer =
+                kubernetesClient
+                        .resources(AuthorizationPolicy.class)
+                        .inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(authorizationPolicyInformer, Mappers.fromOwnerReference());
+    }
 
     public static EventSource buildBrokerInformer(KubernetesClient kubernetesClient, String componentName) {
         SharedIndexInformer<KnativeBroker> knativeBrokerInformer =

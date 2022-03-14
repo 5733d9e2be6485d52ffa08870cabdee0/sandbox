@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.shard.operator;
 
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
 
@@ -21,6 +22,8 @@ public interface BridgeIngressService {
     ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret);
 
     KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap);
+
+    AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress);
 
     // TODO: remove
     Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress, Secret secret);

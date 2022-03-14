@@ -46,6 +46,12 @@ rules:
       - brokers
     verbs:
       - "*"
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - requestauthentications
+    verbs:
+      - "*"
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""

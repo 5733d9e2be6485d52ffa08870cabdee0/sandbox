@@ -2,7 +2,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: my-app-gateway
-  namespace: knative-eventing 
+  namespace: knative-eventing
 spec:
   selector:
     istio: ingressgateway
@@ -18,7 +18,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: my-app-virtual-service
-  namespace: knative-eventing
+  namespace: knative-eventing 
 spec:
   gateways:
     - my-app-gateway

@@ -8,6 +8,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvi
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
@@ -238,6 +241,42 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                     // Best practice would be to generate a new name for the configmap and replace its reference
                     .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
+        }
+
+        return existing;
+    }
+
+    @Override
+    public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress) {
+        LOGGER.info("in");
+        AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress);
+        LOGGER.info("out");
+        expected.getSpec().setAction("ALLOW");
+        expected.getSpec().getRules().get(0).getWhen().get(0).getValues().set(0, bridgeIngress.getSpec().getCustomerId());
+        expected.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().set(0, "/default/" + bridgeIngress.getMetadata().getName().substring(0, 8));
+
+        AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace("istio-system")
+                .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
+                .get();
+
+
+        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+            AuthorizationPolicy e = kubernetesClient
+                    .resources(AuthorizationPolicy.class)
+                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .inNamespace("istio-system")
+                    // Best practice would be to generate a new name for the configmap and replace its reference
+                    .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
+                    .createOrReplace(expected);
+            try {
+                LOGGER.info(new ObjectMapper().writeValueAsString(e));
+            } catch (JsonProcessingException ex) {
+                ex.printStackTrace();
+            }
+
+            return e;
         }
 
         return existing;

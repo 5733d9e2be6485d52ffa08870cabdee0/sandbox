@@ -6,7 +6,7 @@ metadata:
 spec:
   jwtRules:
   - issuer: "http://192.168.49.2:30007/auth/realms/event-bridge-fm"
-    jwksUri: "http://192.168.49.2:3007/auth/realms/event-bridge-fm/protocol/openid-connect/certs"
+    jwksUri: "http://keycloak.keycloak:8180/auth/realms/event-bridge-fm/protocol/openid-connect/certs"
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -21,7 +21,7 @@ spec:
             methods:
               - POST
             paths:
-              - /default/ob-c427f
+              - /default/ob-32abd
       when:
         - key: 'request.auth.claims[sub]'
           values:
