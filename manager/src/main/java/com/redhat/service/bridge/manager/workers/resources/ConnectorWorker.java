@@ -64,8 +64,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         LOGGER.debug("Creating Managed Connector for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
-        Connector connector = connectorsApi.getConnector(connectorEntity);
-        if (Objects.isNull(connector)) {
+        String connectorExternalId = connectorEntity.getConnectorExternalId();
+        if (Objects.isNull(connectorExternalId)) {
             LOGGER.debug("Managed Connector for '{}' [{}] not found. Provisioning...",
                     connectorEntity.getName(),
                     connectorEntity.getId());
@@ -74,6 +74,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         // Step 3 - Check it has been provisioned
+        Connector connector = connectorsApi.getConnector(connectorExternalId);
         ConnectorStatusStatus status = connector.getStatus();
         if (Objects.isNull(status)) {
             LOGGER.debug("Managed Connector status for '{}' [{}] is undetermined.",
@@ -132,10 +133,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETING);
         connectorEntity = persist(connectorEntity);
 
-        Connector connector = connectorsApi.getConnector(connectorEntity);
-
         // Steps, in reverse order...
         // Step 3 - Connector has been deleted and does not exist: Clean up Kafka Topic
+        String connectorExternalId = connectorEntity.getConnectorExternalId();
+        if (Objects.isNull(connectorExternalId)) {
+            return deleteTopic(connectorEntity);
+        }
+        Connector connector = connectorsApi.getConnector(connectorExternalId);
         if (Objects.isNull(connector)) {
             return deleteTopic(connectorEntity);
         }

@@ -61,9 +61,14 @@ class ConnectorsApiClientTest {
 
     @Test
     void doGetConnectorNotFound() throws ApiException {
-        when(connectorsApi.getConnector(any())).thenReturn(null);
+        final ApiException exception = new ApiException("Not Found",
+                new IllegalStateException(""),
+                Response.Status.NOT_FOUND.getStatusCode(),
+                Collections.emptyMap(), "");
 
-        assertThat(connectorsApiClient.getConnector(testConnectorEntity())).isNull();
+        when(connectorsApi.getConnector(any())).thenThrow(exception);
+
+        assertThat(connectorsApiClient.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).isNull();
     }
 
     @Test
@@ -75,7 +80,7 @@ class ConnectorsApiClientTest {
 
         when(connectorsApi.getConnector(any())).thenThrow(exception);
 
-        assertThatThrownBy(() -> connectorsApiClient.getConnector(testConnectorEntity())).isInstanceOf(ConnectorGetException.class);
+        assertThatThrownBy(() -> connectorsApiClient.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).isInstanceOf(ConnectorGetException.class);
     }
 
     @Test

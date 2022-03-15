@@ -88,13 +88,14 @@ public class ConnectorWorkerTest {
         ConnectorEntity connectorEntity = spy(new ConnectorEntity());
         connectorEntity.setStatus(status);
         Connector connector = new Connector();
+        connector.setId("connectorExternalId");
         connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
 
         when(connectorsDAO.findById(RESOURCE_ID)).thenReturn(connectorEntity);
         when(connectorsDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(connectorEntity)).thenReturn(connectorEntity);
-        // Managed Connector will not be available immediately
-        when(connectorsApi.getConnector(connectorEntity)).thenReturn(null, connector);
+        when(connectorsApi.getConnector("connectorExternalId")).thenReturn(connector);
+        when(connectorsApi.createConnector(connectorEntity)).thenReturn(connector);
 
         worker.handleWork(work);
 
@@ -135,7 +136,7 @@ public class ConnectorWorkerTest {
         when(connectorsDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(connectorEntity)).thenReturn(connectorEntity);
         // Managed Connector will initially be available before it is deleted
-        when(connectorsApi.getConnector(connectorEntity)).thenReturn(connector, null);
+        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, null);
 
         worker.handleWork(work);
 
