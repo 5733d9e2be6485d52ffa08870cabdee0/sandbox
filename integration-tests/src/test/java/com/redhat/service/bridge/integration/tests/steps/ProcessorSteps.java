@@ -16,6 +16,7 @@ import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
+import com.redhat.service.bridge.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
@@ -59,6 +60,7 @@ public class ProcessorSteps {
     @When("^add a Processor to the Bridge \"([^\"]*)\" with body:$")
     public void addProcessorToBridgeWithBody(String testBridgeName, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        processorRequestJson = ContextResolver.resolveWithScenarioContext(context, processorRequestJson);
 
         JsonObject json = new JsonObject(processorRequestJson);
         String processorName = json.getString("name");
