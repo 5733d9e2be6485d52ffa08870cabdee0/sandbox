@@ -51,10 +51,33 @@ public class RhoasClientImpl implements RhoasClient {
     }
 
     @Override
+    public Uni<Topic> getTopic(String topicName) {
+        return instanceClient.getTopic(topicName)
+                .onItem().invoke(t -> LOG.info("Retrieved topic '{}'", t.getName()))
+                .onFailure().transform(f -> logAndWrapFailure("Error when retrieving topic " + topicName, f));
+    }
+
+    @Override
     public Uni<Topic> createTopic(NewTopicInput newTopicInput) {
         return instanceClient.createTopic(newTopicInput)
                 .onItem().invoke(t -> LOG.info("Created topic '{}'", t.getName()))
-                .onFailure().transform(f -> logAndWrapFailure("Error when creating topic " + newTopicInput.getName(), f));
+                .onFailure()
+                .recoverWithUni(f -> handleCreateTopicFailure(newTopicInput.getName(), f));
+    }
+
+    private Uni<Topic> handleCreateTopicFailure(String topicName, Throwable f) {
+        if (!(f instanceof AppServicesException)) {
+            RhoasClientException rhoasClientException = logAndWrapFailure("Error when creating topic " + topicName, f);
+            return Uni.createFrom().failure(rhoasClientException);
+        }
+        AppServicesException exception = (AppServicesException) f;
+        if (exception.getStatusCode() == HttpStatus.SC_CONFLICT) {
+            LOG.info("Topic {} has already been created", topicName);
+            return getTopic(topicName);
+        } else {
+            RhoasClientException rhoasClientException = logAndWrapFailure("Error when creating topic " + topicName, f);
+            return Uni.createFrom().failure(rhoasClientException);
+        }
     }
 
     @Override

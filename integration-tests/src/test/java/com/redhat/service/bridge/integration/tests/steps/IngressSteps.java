@@ -12,10 +12,10 @@ import java.util.List;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
