@@ -44,9 +44,26 @@ public class KafkaInstanceAdminMockServerConfigurator extends AbstractApiMockSer
         server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));
     }
 
+    public void configureWithAlreadyCreatedTopic(WireMockServer server) {
+        server.stubFor(authPost("/topics").willReturn(responseWithStatus(409)));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(409)));
+        server.stubFor(authGet("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithCreatedTopic()));
+
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));
+    }
+
     public void configureWithBrokenTopicDeletion(WireMockServer server) {
         server.stubFor(authPost("/topics").willReturn(responseWithStatus(500)));
         server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(500)));
+
+        server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
+        server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));
+    }
+
+    public void configureWithAlreadyDeletedTopic(WireMockServer server) {
+        server.stubFor(authPost("/topics").willReturn(responseWithStatus(404)));
+        server.stubFor(authDelete("/topics/" + TEST_TOPIC_NAME).willReturn(responseWithStatus(404)));
 
         server.stubFor(authPost("/acls").willReturn(responseWithStatus(201)));
         server.stubFor(authDelete("/acls?.*").willReturn(responseWithDeletedACL()));

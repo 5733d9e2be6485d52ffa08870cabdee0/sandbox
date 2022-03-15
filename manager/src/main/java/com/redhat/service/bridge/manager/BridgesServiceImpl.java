@@ -27,7 +27,7 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
-import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
+import com.redhat.service.bridge.manager.workers.WorkManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -47,13 +47,13 @@ public class BridgesServiceImpl implements BridgesService {
     MeterRegistry meterRegistry;
 
     @Inject
-    RhoasService rhoasService;
-
-    @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
     ShardService shardService;
+
+    @Inject
+    WorkManager workManager;
 
     @Transactional
     @Override
@@ -62,6 +62,17 @@ public class BridgesServiceImpl implements BridgesService {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
 
+        Bridge bridge = doCreateBridge(customerId, bridgeRequest);
+
+        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
+
+        workManager.schedule(bridge);
+
+        return bridge;
+    }
+
+    @Transactional
+    protected Bridge doCreateBridge(String customerId, BridgeRequest bridgeRequest) {
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -69,9 +80,6 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridgeDAO.persist(bridge);
 
-        rhoasService.createTopicAndGrantAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-
-        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
     }
 
@@ -95,6 +103,7 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
+    @Transactional
     public Bridge getBridgeByIdOrName(String idOrName, String customerId) {
         Bridge bridge = bridgeDAO.findByIdOrNameAndCustomerId(idOrName, customerId);
         if (bridge == null) {
@@ -117,9 +126,15 @@ public class BridgesServiceImpl implements BridgesService {
         return bridgeDAO.findByNameAndCustomerId(bridgeName, customerId);
     }
 
-    @Transactional
     @Override
     public void deleteBridge(String idOrName, String customerId) {
+        Bridge bridge = doDeleteBridge(idOrName, customerId);
+
+        workManager.schedule(bridge);
+    }
+
+    @Transactional
+    protected Bridge doDeleteBridge(String idOrName, String customerId) {
         Bridge bridge = getBridgeByIdOrName(idOrName, customerId);
         Long processorsCount = processorService.getProcessorsCount(bridge);
         if (processorsCount > 0) {
@@ -127,7 +142,9 @@ public class BridgesServiceImpl implements BridgesService {
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
-        LOGGER.info("Bridge with idOrName '{}' for customer '{}' has been marked for deletion", idOrName, customerId);
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+
+        return bridge;
     }
 
     @Transactional
@@ -152,7 +169,6 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
-            rhoasService.deleteTopicAndRevokeAccessFor(getBridgeTopicName(bridge), RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         }
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(bridge.getPublishedAt())) {
             bridge.setPublishedAt(ZonedDateTime.now());
@@ -173,7 +189,7 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                getBridgeTopicName(bridge));
+                internalKafkaConfigurationProvider.getBridgeTopicName(bridge));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
@@ -197,8 +213,4 @@ public class BridgesServiceImpl implements BridgesService {
         return response;
     }
 
-    @Override
-    public String getBridgeTopicName(Bridge bridge) {
-        return internalKafkaConfigurationProvider.getTopicPrefix() + bridge.getId();
-    }
 }

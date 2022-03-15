@@ -11,6 +11,7 @@ import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
@@ -36,7 +37,7 @@ public class ProcessorSteps {
     }
 
     @And("^the list of Processor instances of the Bridge \"([^\"]*)\" is containing the Processor \"([^\"]*)\"$")
-    public void listOfBridgeInstancesIsContainingBridge(String testBridgeName, String processorName) {
+    public void listOfProcessorInstancesOfBridgeIsContainingProcessor(String testBridgeName, String processorName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         ProcessorContext processorContext = bridgeContext.getProcessor(processorName);
 
@@ -47,7 +48,7 @@ public class ProcessorSteps {
     }
 
     @And("^the list of Processor instances of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
-    public void listOfBridgeInstancesIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
+    public void listOfProcessorInstancesOfBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         ProcessorResource.getProcessorListResponse(context.getManagerToken(), bridgeContext.getId())
@@ -87,7 +88,7 @@ public class ProcessorSteps {
     }
 
     @Then("add a Processor to the Bridge \"([^\"]*)\" with body is failing with HTTP response code (\\d+):$")
-    public void newProcessorIsAddedToBridgeWithBodyIsFailingWithHTTPResponseCode(String testBridgeName,
+    public void addProcessorToBridgeWithBodyIsFailingWithHTTPResponseCode(String testBridgeName,
             int responseCode, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
@@ -120,6 +121,10 @@ public class ProcessorSteps {
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
+                                        processorId)))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -173,6 +178,10 @@ public class ProcessorSteps {
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
+                        () -> ProcessorResource
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
+                                        processorId)))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
