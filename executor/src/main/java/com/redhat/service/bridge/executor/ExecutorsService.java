@@ -1,18 +1,22 @@
 package com.redhat.service.bridge.executor;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.kafka.common.header.Header;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 @ApplicationScoped
 public class ExecutorsService {
@@ -28,12 +32,37 @@ public class ExecutorsService {
     ExecutorsProvider executorsProvider;
 
     @Incoming(EVENTS_IN_CHANNEL)
-    public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
+    public CompletionStage<Void> processBridgeEvent(final IncomingKafkaRecord<Integer, String> message) {
         try {
-            CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
+            for (Header h : message.getHeaders().toArray()) {
+                System.out.println("key: " + h.key() + ", value: " + new String(h.value()));
+            }
+
+            //            key: ce_specversion, value: 1.0
+            //            key: ce_id, value: 9aeb0fdf-c01e-0131-0922-9eb54906e209
+            //            key: ce_source, value: StorageService
+            //            key: ce_type, value: Microsoft.Storage.BlobCreated
+            //            key: ce_dataschema, value: #
+            //            key: ce_subject, value: blobServices/default/containers/{storage-container}/blobs/{new-file}
+            //                key: ce_time, value: 2019-11-18T15:13:39.4589254Z
+
+            Map<String, String> headers = new HashMap<>();
+            for (Header h : message.getHeaders().toArray()) {
+                headers.put(h.key().substring(3), new String(h.value()));
+            }
+
+            CloudEvent ce = new CloudEventBuilder()
+                    .withData(message.getPayload().getBytes(StandardCharsets.UTF_8))
+                    .withId(headers.get("id"))
+                    .withSource(new URI(headers.get("source")))
+                    .withType(headers.get("type"))
+                    .withDataSchema(new URI(headers.get("dataschema")))
+                    .withSubject(headers.get("subject"))
+                    .build();
+            //            CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
             Executor executor = executorsProvider.getExecutor();
             try {
-                executor.onEvent(cloudEvent);
+                executor.onEvent(ce);
             } catch (Throwable t) {
                 // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
                 LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),

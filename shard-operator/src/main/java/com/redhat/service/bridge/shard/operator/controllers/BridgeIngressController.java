@@ -16,6 +16,7 @@ import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.networking.NetworkingService;
+import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
@@ -83,9 +84,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return UpdateControl.noUpdate();
         }
 
-        LOGGER.info("created");
-
-        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress);
+        AuthorizationPolicy authorizationPolicy = bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress);
 
         ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
 

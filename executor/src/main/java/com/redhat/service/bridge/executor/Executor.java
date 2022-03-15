@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.InvokableActionProvider;

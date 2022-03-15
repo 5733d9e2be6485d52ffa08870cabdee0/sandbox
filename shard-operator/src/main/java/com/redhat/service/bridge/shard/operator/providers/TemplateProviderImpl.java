@@ -62,7 +62,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         configMap.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         configMap.getMetadata().setNamespace("default");
-        configMap.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
+        //        configMap.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return configMap;
     }
 
@@ -73,7 +73,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         knativeBroker.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         knativeBroker.getMetadata().setNamespace("default");
-        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
+        //        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return knativeBroker;
     }
 
@@ -114,7 +114,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
         updateMetadata(bridgeIngress, ingress.getMetadata());
         ingress.getMetadata().setNamespace("knative-eventing");
-        ingress.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
+        //        ingress.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
         return ingress;
     }
 
@@ -132,7 +132,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         secret.getMetadata().setName(bridgeIngress.getMetadata().getName().substring(0, 8));
         secret.getMetadata().setNamespace("default");
-        secret.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
+        //        secret.getMetadata().setOwnerReferences(null); // TODO: move secret to ns of the bridge ingress
         return secret;
     }
 

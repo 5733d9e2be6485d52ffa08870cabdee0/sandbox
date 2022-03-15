@@ -8,12 +8,12 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
@@ -260,7 +260,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .inNamespace("istio-system")
                 .withName(bridgeIngress.getMetadata().getName().substring(0, 8))
                 .get();
-
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             AuthorizationPolicy e = kubernetesClient
