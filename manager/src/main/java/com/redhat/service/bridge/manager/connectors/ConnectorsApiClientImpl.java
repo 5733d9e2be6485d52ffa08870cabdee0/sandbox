@@ -73,6 +73,9 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
             }
             return connectorsAPI.getConnector(connectorExternalId);
         } catch (ApiException e) {
+            if (e.getCode() == 404) {
+                return null;
+            }
             throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }
