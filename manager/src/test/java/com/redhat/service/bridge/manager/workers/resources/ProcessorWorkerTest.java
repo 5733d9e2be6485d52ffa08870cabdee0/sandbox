@@ -104,7 +104,7 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @MethodSource("srcHandleWorkProvisioningWithKnownResourceWithConnector")
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus connectorStatusWhenComplete,
+            ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
@@ -121,13 +121,13 @@ public class ProcessorWorkerTest {
         when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(connectorStatusWhenComplete);
+            connector.setStatus(dependencyStatusWhenComplete);
             return connector;
         }).when(connectorWorker).handleWork(any(Work.class));
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(connectorStatusWhenComplete);
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
@@ -174,7 +174,7 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResourceWithConnector")
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus connectorStatusWhenComplete,
+            ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
@@ -191,13 +191,13 @@ public class ProcessorWorkerTest {
         when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(connectorStatusWhenComplete);
+            connector.setStatus(dependencyStatusWhenComplete);
             return connector;
         }).when(connectorWorker).handleWork(any(Work.class));
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(connectorStatusWhenComplete);
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
