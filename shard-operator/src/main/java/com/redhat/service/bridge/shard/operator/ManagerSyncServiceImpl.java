@@ -90,10 +90,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                     }
                                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
                                         y.setStatus(ManagedResourceStatus.DELETING);
-                                        bridgeIngressService.deleteBridgeIngress(y);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
-                                                        success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                        success -> bridgeIngressService.deleteBridgeIngress(y),
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
@@ -116,10 +115,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                             }
                             if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(ManagedResourceStatus.DELETING);
-                                bridgeExecutorService.deleteBridgeExecutor(y);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
-                                                success -> LOGGER.debug("Delete notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                success -> bridgeExecutorService.deleteBridgeExecutor(y),
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
