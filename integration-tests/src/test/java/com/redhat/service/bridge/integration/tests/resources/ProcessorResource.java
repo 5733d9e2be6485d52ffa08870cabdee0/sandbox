@@ -21,7 +21,7 @@ public class ProcessorResource {
         return createProcessorResponse(token, bridgeId, processorRequest)
                 .then()
                 .log().ifValidationFails()
-                .statusCode(201)
+                .statusCode(202)
                 .extract()
                 .as(ProcessorResponse.class);
     }

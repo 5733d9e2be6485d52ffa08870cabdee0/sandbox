@@ -73,7 +73,6 @@ public class BridgesAPI {
     @Operation(summary = "Get the list of ingresses", description = "Get the list of ingresses for the authenticated user.")
     @GET
     public Response getBridges(@Valid @BeanParam QueryInfo queryInfo) {
-        System.out.println(jwt.getSubject());
         return Response.ok(ListResponse.fill(bridgesService
                 .getBridges(identityResolver.resolve(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
     }
