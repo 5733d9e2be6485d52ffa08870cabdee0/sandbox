@@ -58,7 +58,8 @@ public class ErrorsAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Unauthorized.", responseCode = "401")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Get the list of errors.", description = "Get the list of errors from the error catalog.")
     @GET
@@ -70,7 +71,8 @@ public class ErrorsAPI {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = BridgeError.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Unauthorized.", responseCode = "401")
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Get an error from the error catalog.", description = "Get an error from the error catalog.")
     @GET

@@ -71,9 +71,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     post:
@@ -117,9 +125,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}:
@@ -167,9 +179,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     delete:
@@ -191,9 +207,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors:
@@ -254,9 +278,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     post:
@@ -315,9 +347,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors/{processorId}:
@@ -379,9 +419,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     delete:
@@ -408,9 +456,17 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/errors:
@@ -463,7 +519,11 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/errors/{id}:
@@ -501,7 +561,11 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/shard/bridges:
@@ -524,9 +588,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     put:
@@ -547,9 +615,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/shard/bridges/processors:
@@ -572,9 +644,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     put:
@@ -595,9 +671,13 @@ paths:
           content:
             application/json: {}
         "401":
-          description: Not authenticated.
+          description: Unauthorized.
         "403":
-          description: Not authorized.
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
 components:

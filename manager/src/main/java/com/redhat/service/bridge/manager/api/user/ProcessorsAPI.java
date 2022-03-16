@@ -67,7 +67,9 @@ public class ProcessorsAPI {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403")
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Get a processor of an ingress", description = "Get a processor of an ingress for the authenticated user.")
     @GET
@@ -83,7 +85,9 @@ public class ProcessorsAPI {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403")
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Get the list of processors of an ingress", description = "Get the list of processors of an ingress for the authenticated user.")
     @GET
@@ -98,7 +102,9 @@ public class ProcessorsAPI {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403")
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Create a processor of an ingress", description = "Create a processor of an ingress for the authenticated user.")
     @POST
@@ -106,14 +112,16 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
-        return Response.status(Response.Status.CREATED).entity(processorService.toResponse(processor)).build();
+        return Response.accepted(processorService.toResponse(processor)).build();
     }
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202"),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403")
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Delete a processor of an ingress", description = "Delete a processor of an ingress for the authenticated user.")
     @DELETE
