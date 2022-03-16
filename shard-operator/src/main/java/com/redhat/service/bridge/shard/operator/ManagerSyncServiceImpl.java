@@ -127,7 +127,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
                                                 success -> {
-                                                    LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                                    LOGGER.debug("Deletfing notification for Processor '{}' has been sent to the manager successfully", y.getId());
                                                     bridgeExecutorService.deleteBridgeExecutor(y);
                                                 },
                                                 failure -> failedToSendUpdateToManager(y, failure));
