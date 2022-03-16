@@ -9,10 +9,10 @@ public interface ConnectorsApiClient {
     /**
      * Retrieve the Managed Connector represented by the ConnectorEntity.
      *
-     * @param connectorEntity
+     * @param connectorExternalId The ID of the Managed Connector
      * @return The Managed Connector or null if not found.
      */
-    Connector getConnector(ConnectorEntity connectorEntity);
+    Connector getConnector(String connectorExternalId);
 
     Connector createConnector(ConnectorRequest connectorRequest);
 
