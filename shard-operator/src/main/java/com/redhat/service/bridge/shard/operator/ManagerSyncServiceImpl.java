@@ -48,7 +48,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     EventBridgeOidcClient eventBridgeOidcClient;
 
-    @Scheduled(every = "30s")
+    @Scheduled(every = "10s")
     void syncUpdatesFromManager() {
         LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         fetchAndProcessBridgesToDeployOrDelete().subscribe().with(
