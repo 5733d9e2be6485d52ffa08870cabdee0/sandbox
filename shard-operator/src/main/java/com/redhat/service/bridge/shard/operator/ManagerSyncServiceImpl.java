@@ -85,14 +85,20 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         y.setStatus(ManagedResourceStatus.PROVISIONING);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
-                                                        success -> bridgeIngressService.createBridgeIngress(y),
+                                                        success -> {
+                                                            LOGGER.debug("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                                            bridgeIngressService.createBridgeIngress(y);
+                                                        },
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
                                         y.setStatus(ManagedResourceStatus.DELETING);
                                         return notifyBridgeStatusChange(y)
                                                 .subscribe().with(
-                                                        success -> bridgeIngressService.deleteBridgeIngress(y),
+                                                        success -> {
+                                                            LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                                            bridgeIngressService.deleteBridgeIngress(y);
+                                                        },
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
@@ -110,14 +116,20 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 y.setStatus(ManagedResourceStatus.PROVISIONING);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
-                                                success -> bridgeExecutorService.createBridgeExecutor(y),
+                                                success -> {
+                                                    LOGGER.debug("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                                    bridgeExecutorService.createBridgeExecutor(y);
+                                                },
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
                                 y.setStatus(ManagedResourceStatus.DELETING);
                                 return notifyProcessorStatusChange(y)
                                         .subscribe().with(
-                                                success -> bridgeExecutorService.deleteBridgeExecutor(y),
+                                                success -> {
+                                                    LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                                    bridgeExecutorService.deleteBridgeExecutor(y);
+                                                },
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
