@@ -47,6 +47,10 @@ public abstract class AbstractApiMockServerConfigurator {
         return auth(WireMock::post, subPath);
     }
 
+    protected MappingBuilder authGet(String subPath) {
+        return auth(WireMock::get, subPath);
+    }
+
     protected ResponseDefinitionBuilder jsonResponse(Object body) {
         return jsonResponse(body, 200);
     }

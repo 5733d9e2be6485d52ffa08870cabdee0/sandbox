@@ -22,7 +22,8 @@ public class IngressResource {
         }
     }
 
-    public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream, Headers headers) {
+    public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream,
+            Headers headers) {
         return ResourceUtils.jsonRequest(token)
                 .headers(headers)
                 .body(cloudEventStream)

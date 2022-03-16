@@ -9,8 +9,8 @@ spec:
         - name: event-bridge-manager
           resources:
             requests:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: "500m"
+              memory: "500M"
             limits:
-              cpu: "4000m"
-              memory: "4Gi"
+              cpu: "2000m"
+              memory: "2Gi"

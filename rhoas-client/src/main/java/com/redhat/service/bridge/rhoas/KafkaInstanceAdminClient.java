@@ -12,6 +12,8 @@ public interface KafkaInstanceAdminClient {
 
     Uni<Void> deleteAcl(AclBinding aclBinding);
 
+    Uni<Topic> getTopic(String topicName);
+
     Uni<Topic> createTopic(NewTopicInput newTopicInput);
 
     Uni<Void> deleteTopic(String topicName);

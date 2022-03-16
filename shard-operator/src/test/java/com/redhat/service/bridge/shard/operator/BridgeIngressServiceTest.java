@@ -58,6 +58,7 @@ public class BridgeIngressServiceTest {
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
+        waitUntilBridgeIngressExists(dto);
 
         // Then
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
@@ -81,8 +82,10 @@ public class BridgeIngressServiceTest {
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
+        waitUntilBridgeIngressExists(dto);
         dto.setCustomerId(patchedCustomerId);
         bridgeIngressService.createBridgeIngress(dto);
+        waitUntilBridgeIngressExists(dto);
 
         // Then
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
@@ -162,7 +165,9 @@ public class BridgeIngressServiceTest {
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
+        waitUntilBridgeIngressExists(dto);
         bridgeIngressService.deleteBridgeIngress(dto);
+        waitUntilBridgeIngressDoesntExist(dto);
 
         // Then
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
@@ -177,15 +182,9 @@ public class BridgeIngressServiceTest {
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            Deployment deployment = fetchBridgeIngressDeployment(dto);
-                            assertThat(deployment).isNotNull();
-                        });
+        waitUntilBridgeIngressExists(dto);
         bridgeIngressService.deleteBridgeIngress(dto);
+        waitUntilBridgeIngressDoesntExist(dto);
 
         // Then
         Awaitility.await()
@@ -218,5 +217,27 @@ public class BridgeIngressServiceTest {
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
+    }
+
+    private void waitUntilBridgeIngressExists(BridgeDTO dto) {
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofMillis(200))
+                .untilAsserted(
+                        () -> {
+                            BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
+                            assertThat(bridgeIngress).isNotNull();
+                        });
+    }
+
+    private void waitUntilBridgeIngressDoesntExist(BridgeDTO dto) {
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofMillis(200))
+                .untilAsserted(
+                        () -> {
+                            BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
+                            assertThat(bridgeIngress).isNull();
+                        });
     }
 }

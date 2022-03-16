@@ -20,6 +20,7 @@ public class ProcessorResource {
     public static ProcessorResponse createProcessor(String token, String bridgeId, InputStream processorRequest) {
         return createProcessorResponse(token, bridgeId, processorRequest)
                 .then()
+                .log().ifValidationFails()
                 .statusCode(201)
                 .extract()
                 .as(ProcessorResponse.class);
@@ -28,6 +29,7 @@ public class ProcessorResource {
     public static ProcessorResponse getProcessor(String token, String bridgeId, String processorId) {
         return getProcessorResponse(token, bridgeId, processorId)
                 .then()
+                .log().ifValidationFails()
                 .statusCode(200)
                 .extract()
                 .as(ProcessorResponse.class);
@@ -42,6 +44,7 @@ public class ProcessorResource {
     public static void deleteProcessor(String token, String bridgeId, String processorId) {
         deleteProcessorResponse(token, bridgeId, processorId)
                 .then()
+                .log().ifValidationFails()
                 .statusCode(202);
     }
 
@@ -54,6 +57,8 @@ public class ProcessorResource {
     public static ProcessorListResponse getProcessorList(String token, String bridgeId) {
         return getProcessorListResponse(token, bridgeId)
                 .then()
+                .log().ifValidationFails()
+                .statusCode(200)
                 .extract()
                 .as(ProcessorListResponse.class);
     }
