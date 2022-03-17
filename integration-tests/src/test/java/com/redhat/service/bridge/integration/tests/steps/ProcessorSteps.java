@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -12,8 +13,6 @@ import org.hamcrest.Matchers;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
-import com.redhat.service.bridge.integration.tests.common.Utils;
-import com.redhat.service.bridge.integration.tests.common.SlackUtils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
@@ -86,7 +85,7 @@ public class ProcessorSteps {
     @When("^add a fake Processor \"([^\"]*)\" to the Bridge \"([^\"]*)\"$")
     public void addFakeProcessorToBridge(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        ProcessorContext processorContext = bridgeContext.newProcessor(processorName, Utils.generateId(processorName));
+        ProcessorContext processorContext = bridgeContext.newProcessor(processorName, UUID.randomUUID().toString());
         processorContext.setDeleted(true);
     }
 
@@ -117,13 +116,6 @@ public class ProcessorSteps {
                 .statusCode(responseCode);
     }
 
-    @When("^add a Slack Action Processor to the Bridge \"([^\"]*)\" with body:$")
-    public void addSlackActionProcessorToBridgeWithBody(String testBridgeName, String processorRequestJson) {
-
-        String slackCloudEvent = SlackUtils.setAndRetrieveSlackProcessorPayload(processorRequestJson);
-        addProcessorToBridgeWithBody(testBridgeName, slackCloudEvent);
-    }
-
     @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is existing with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
     public void processorOfBridgeIsExistingWithStatusWithinMinutes(String processorName, String testBridgeName,
                                                                    String status, int timeoutMinutes) {
@@ -148,13 +140,8 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\" and parameters:$")
     public void processorOfBridgeHasActionOfTypeAndParameters(String processorName, String testBridgeName,
                                                               String actionType, DataTable parametersDatatable) {
-        BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessor(processorName).getId();
 
-        ProcessorResponse response = ProcessorResource.getProcessor(context.getManagerToken(),
-                                                                    bridgeContext.getId(), processorId);
-
-        BaseAction action = response.getAction();
+        BaseAction action = getProcessorResponse(processorName, testBridgeName).getAction();
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
             assertThat(action.getParameters()).containsEntry(key, value);
@@ -164,12 +151,7 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\"$")
     public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName,
                                                  String actionType) {
-        BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String processorId = bridgeContext.getProcessor(processorName).getId();
-
-        ProcessorResponse response = ProcessorResource.getProcessor(context.getManagerToken(),
-                                                                    bridgeContext.getId(), processorId);
-        BaseAction action = response.getAction();
+        BaseAction action = getProcessorResponse(processorName, testBridgeName).getAction();
         assertThat(action.getType()).isEqualTo(actionType);
     }
 
@@ -212,5 +194,13 @@ public class ProcessorSteps {
                                                       processorId)
                                 .then()
                                 .statusCode(404));
+    }
+
+    public ProcessorResponse getProcessorResponse(String processorName, String testBridgeName) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String processorId = bridgeContext.getProcessor(processorName).getId();
+
+        return ProcessorResource.getProcessor(context.getManagerToken(),
+                                              bridgeContext.getId(), processorId);
     }
 }

@@ -26,4 +26,3 @@ public class SlackResource {
                 .getList("messages.text");
     }
 }
-

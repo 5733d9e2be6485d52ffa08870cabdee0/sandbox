@@ -16,9 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
-
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
-import com.redhat.service.bridge.integration.tests.common.SlackUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.IngressResource;
 
@@ -158,6 +156,7 @@ public class IngressSteps {
             }
             parsedHeaders.add(new Header(headerValues[0].replaceAll("\"", ""), headerValues[1].replaceAll("\"", "")));
         }
+
         return new Headers(parsedHeaders);
     }
 }
