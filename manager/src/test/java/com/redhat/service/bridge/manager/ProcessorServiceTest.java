@@ -477,8 +477,7 @@ public class ProcessorServiceTest {
         externalConnectorStatus.setState(ConnectorState.READY);
         externalConnector.setStatus(externalConnectorStatus);
 
-        //Emulate the connector not being found when first looked up, to force provisioning
-        when(connectorsApiClient.getConnector(any())).thenReturn(null, externalConnector);
+        when(connectorsApiClient.getConnector(any())).thenReturn(externalConnector);
         when(connectorsApiClient.createConnector(any(ConnectorEntity.class))).thenCallRealMethod();
         when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(externalConnector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
