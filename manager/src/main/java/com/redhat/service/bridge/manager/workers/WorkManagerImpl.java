@@ -43,8 +43,6 @@ public class WorkManagerImpl implements WorkManager {
                         w.getManagedResourceId(),
                         w.getType()));
             }
-
-            fireEvent(w);
         }
 
         return w;
