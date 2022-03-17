@@ -19,13 +19,13 @@ public class MetricsServiceImpl implements MetricsService {
     @Inject
     MeterRegistry meterRegistry;
 
-    @ConfigProperty(name = "event-bridge.sso.grant-options.password.username")
-    String username;
+    @ConfigProperty(name = "event-bridge.sso.grant-options.password.user-id")
+    String shardId;
 
     @Override
     public void updateManagerRequestMetrics(ManagerRequestType requestType, ManagerRequestStatus status) {
         List<Tag> tags = new ArrayList<>();
-        tags.add(Tag.of("shardId", username));
+        tags.add(Tag.of("shardId", shardId));
         tags.add(Tag.of("type", requestType.name()));
         tags.add(Tag.of("status", status.name()));
         meterRegistry.counter(MANAGER_REQUEST_METRICS, tags).increment();
