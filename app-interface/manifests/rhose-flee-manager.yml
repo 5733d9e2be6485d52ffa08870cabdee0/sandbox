@@ -83,11 +83,9 @@ parameters:
   - name: FLEET_MANAGER_IMAGE
     value: "quay.io/app-sre/rhose-fleet-manager"
     displayName: the image of fleet-manager to deploy
-  - name: FLEET_MANAGER_TAG
+  - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
     displayName: the tag of fleet-manager to deploy
-  - name: IMAGE_TAG
-    value: "latest"
   - name: FLEET_MANAGER_DEPLOYMENT_REPLICAS
     value: "1"
     displayName: the number of fleet-manager deployed
