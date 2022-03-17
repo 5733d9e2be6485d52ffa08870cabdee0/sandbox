@@ -23,7 +23,7 @@ public class MetricsServiceImpl implements MetricsService {
     String username;
 
     @Override
-    public void UpdateManagerRequestMetrics(ManagerRequestType requestType, ManagerRequestStatus status) {
+    public void updateManagerRequestMetrics(ManagerRequestType requestType, ManagerRequestStatus status) {
         List<Tag> tags = new ArrayList<>();
         tags.add(Tag.of("shardId", username));
         tags.add(Tag.of("type", requestType.name()));

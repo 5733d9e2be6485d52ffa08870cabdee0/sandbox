@@ -70,8 +70,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
-                .onItem().invoke(success -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
+                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
@@ -79,16 +79,16 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
         LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
-                .onItem().invoke(success -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
+                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES)
-                .onFailure().invoke(failure -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE));
+                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE));
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
-                .onItem().invoke(success -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
+                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
@@ -116,8 +116,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
-                .onItem().invoke(success -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.UpdateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
+                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
                 .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
