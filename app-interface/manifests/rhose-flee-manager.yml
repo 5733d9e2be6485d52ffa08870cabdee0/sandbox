@@ -23,7 +23,7 @@ objects:
             app-component: rhose-fleet-manager
         spec:
           containers:
-            - image: ${{FLEET_MANAGER_IMAGE}}:${{{FLEET_MANAGER_IMAGE_TAG}}}
+            - image: ${{FLEET_MANAGER_IMAGE}}:${{FLEET_MANAGER_IMAGE_TAG}}
               imagePullPolicy: IfNotPresent
               name: rhose-fleet-manager
               resources:
