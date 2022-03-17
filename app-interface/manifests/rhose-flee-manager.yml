@@ -16,23 +16,23 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: ${{FLEET_MANAGER_DEPLOYMENT_REPLICAS}}
+      replicas: ${FLEET_MANAGER_DEPLOYMENT_REPLICAS}
       template:
         metadata:
           labels:
             app-component: rhose-fleet-manager
         spec:
           containers:
-            - image: ${{FLEET_MANAGER_IMAGE}}:${{FLEET_MANAGER_IMAGE_TAG}}
+            - image: ${FLEET_MANAGER_IMAGE}:${FLEET_MANAGER_IMAGE_TAG}
               imagePullPolicy: IfNotPresent
               name: rhose-fleet-manager
               resources:
                 limits:
-                  cpu: ${{FLEET_MANAGER_CPU_LIMITS}}
-                  memory: ${{FLEET_MANAGER_MEM_LIMITS}}
+                  cpu: ${FLEET_MANAGER_CPU_LIMITS}
+                  memory: ${FLEET_MANAGER_MEM_LIMITS}
                 requests:
-                  cpu: ${{FLEET_MANAGER_CPU_REQS}}
-                  memory: ${{FLEET_MANAGER_MEM_REQS}}
+                  cpu: ${FLEET_MANAGER_CPU_REQS}
+                  memory: ${FLEET_MANAGER_MEM_REQS}
               ports:
                 - containerPort: 8080
               envFrom:
@@ -71,13 +71,13 @@ objects:
     metadata:
       name: rhose-fleet-manager-config
     data:
-      EVENT_BRIDGE_DB_USERNAME: ${{EVENT_BRIDGE_DB_USERNAME}}
-      EVENT_BRIDGE_DB_PASSWORD: ${{EVENT_BRIDGE_DB_PASSWORD}}
-      EVENT_BRIDGE_DB_HOST: ${{EVENT_BRIDGE_DB_HOST}}
-      EVENT_BRIDGE_DB_PORT: ${{EVENT_BRIDGE_DB_PORT}}
-      EVENT_BRIDGE_DB_SCHEMA: ${{EVENT_BRIDGE_DB_SCHEMA}}
-      EVENT_BRIDGE_SSO_URL: ${{EVENT_BRIDGE_SSO_URL}}
-      EVENT_BRIDGE_SSO_CLIENT_ID: ${{EVENT_BRIDGE_SSO_CLIENT_ID}}
+      EVENT_BRIDGE_DB_USERNAME: ${EVENT_BRIDGE_DB_USERNAME}
+      EVENT_BRIDGE_DB_PASSWORD: ${EVENT_BRIDGE_DB_PASSWORD}
+      EVENT_BRIDGE_DB_HOST: ${EVENT_BRIDGE_DB_HOST}
+      EVENT_BRIDGE_DB_PORT: ${EVENT_BRIDGE_DB_PORT}
+      EVENT_BRIDGE_DB_SCHEMA: ${{EVENT_BRIDGE_DB_SCHEMA}
+      EVENT_BRIDGE_SSO_URL: ${EVENT_BRIDGE_SSO_URL}
+      EVENT_BRIDGE_SSO_CLIENT_ID: ${EVENT_BRIDGE_SSO_CLIENT_ID}
 
 parameters:
   - name: FLEET_MANAGER_IMAGE
