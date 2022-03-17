@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.integration.tests.context;
 
+import io.cucumber.java.Scenario;
+
 /**
  * Shared processor context
  */
@@ -9,7 +11,10 @@ public class ProcessorContext {
 
     private boolean deleted;
 
-    public ProcessorContext(String id) {
+    private Scenario scenario;
+
+    public ProcessorContext(Scenario scenario, String id) {
+        this.scenario = scenario;
         this.id = id;
     }
 
@@ -23,5 +28,9 @@ public class ProcessorContext {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
     }
 }
