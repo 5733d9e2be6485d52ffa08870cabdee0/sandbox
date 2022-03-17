@@ -1,7 +1,7 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,12 +20,16 @@ import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
+@TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
 public class BridgesServiceTest {
 
@@ -45,7 +49,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
+        List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(bridges.size()).isZero();
     }
 
@@ -105,8 +109,13 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridgesToDeploy = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
-        assertThat(bridgesToDeploy.size()).isEqualTo(1);
+        final List<Bridge> bridgesToDeploy = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridgesToDeploy.clear();
+            bridgesToDeploy.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
+            assertThat(bridgesToDeploy.size()).isEqualTo(1);
+        });
+
         assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(bridgesToDeploy.get(0).getEndpoint()).isNull();
 
@@ -119,15 +128,24 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        List<Bridge> bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
-        assertThat(bridges.size()).isEqualTo(1);
+        final List<Bridge> bridges = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridges.clear();
+            bridges.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
+            assertThat(bridges.size()).isEqualTo(1);
+        });
+
         assertThat(bridges.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
 
+        // Emulate Shard setting Bridge status to PROVISIONING
         bridge.setStatus(ManagedResourceStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        bridges = bridgesService.getBridgesByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
-        assertThat(bridges.size()).isZero();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridges.clear();
+            bridges.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
+            assertThat(bridges).isEmpty();
+        });
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);

@@ -146,8 +146,8 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public List<Bridge> getBridgesByStatusesAndShardId(List<ManagedResourceStatus> statuses, String shardId) {
-        return bridgeDAO.findByStatusesAndShardId(statuses, shardId);
+    public List<Bridge> findByShardIdWithReadyDependencies(String shardId) {
+        return bridgeDAO.findByShardIdWithReadyDependencies(shardId);
     }
 
     @Transactional
