@@ -55,13 +55,8 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     WorkManager workManager;
 
-    @Transactional
     @Override
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
-        if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
-            throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
-        }
-
         Bridge bridge = doCreateBridge(customerId, bridgeRequest);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
@@ -73,6 +68,10 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     protected Bridge doCreateBridge(String customerId, BridgeRequest bridgeRequest) {
+        if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
+            throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
+        }
+
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
