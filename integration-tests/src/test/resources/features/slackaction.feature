@@ -14,17 +14,10 @@ Feature: Slack Action tests
       "action": {
         "type": "Slack",
         "parameters": {
-            "channel": "mc",
+            "channel": "${env.slack.channel.name}",
             "webhookUrl": "${env.slack.webhook.url}"
             }
-      },
-      "filters": [
-        {
-        "key": "source",
-        "type": "StringEquals",
-        "value": "StorageService"
-        }
-       ]
+      }
     }
     """
     And the Processor "slackProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
@@ -46,48 +39,4 @@ Feature: Slack Action tests
     }
     """
 
-    Then Slack channel contains message with id "{${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
-
-  Scenario: Slack Action Processor creation returns Error when wrong parameters is passed
-
-    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
-    """
-    {
-      "name": "processorInvalid1",
-      "action": {
-        "type": "Slack",
-        "properties": {
-            "channel": "test",
-            "webhookUrl": "https://example.com"
-        }
-      }
-    }
-    """
-
-    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
-  """
-    {
-      "name": "processorInvalid2",
-      "action": {
-        "type": "Slack",
-        "parameters": {
-            "channel": "",
-            "webhookUrl": "https://example.com"
-        }
-      }
-    }
-    """
-
-    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
-  """
-    {
-      "name": "processorInvalid3",
-      "action": {
-        "type": "Slack",
-        "parameters": {
-            "channel": "channel",
-            "webhookUrl": ""
-        }
-      }
-    }
-    """
+    Then Slack channel contains message with text "${bridge.mybridge.cloud-event.my-id.id}" within 1 minute

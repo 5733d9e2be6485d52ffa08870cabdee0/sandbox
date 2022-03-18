@@ -28,16 +28,6 @@ public class SlackSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
                 .untilAsserted(
-                        () -> assertThat(SlackResource.getListOfSlackMessages()).containsAnyOf(messageTextWithoutPlaceholders));
-    }
-
-    @Then("^Slack channel contains message with id \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void slackChannelContainsID(String messageText, int timeoutMinutes) {
-        String messageTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, messageText);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(timeoutMinutes))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(
-                        () -> assertThat(SlackResource.getListOfSlackMessages().stream().anyMatch(msg -> msg.contains(messageTextWithoutPlaceholders))).isTrue());
+                        () -> assertThat(SlackResource.getListOfSlackMessages()).anyMatch(msg -> msg.contains(messageTextWithoutPlaceholders)));
     }
 }
