@@ -50,7 +50,7 @@ public class BridgesAPITest {
     }
 
     @Test
-    public void testAuthentication() {
+    public void testGetBridgesNoAuthentication() {
         TestUtils.getBridges().then().statusCode(401);
     }
 
@@ -66,6 +66,19 @@ public class BridgesAPITest {
     public void createBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(201);
+    }
+
+    @Test
+    public void createBridgeNoAuthentication() {
+        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+                .then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void createInvalidBridge() {
+        TestUtils.createBridge(new BridgeRequest())
+                .then().statusCode(400);
     }
 
     @Test
@@ -90,6 +103,11 @@ public class BridgesAPITest {
         assertThat(response.getId()).isEqualTo("4");
         assertThat(response.getCode()).endsWith("4");
         assertThat(response.getReason()).isNotBlank();
+    }
+
+    @Test
+    public void getBridgeNoAuthentication() {
+        TestUtils.getBridge("any-id").then().statusCode(401);
     }
 
     @Test
@@ -118,6 +136,17 @@ public class BridgesAPITest {
         response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
 
         assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    public void testDeleteBridgeNoAuthentication() {
+        TestUtils.deleteBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingBridge() {
+        TestUtils.deleteBridge("not-the-id").then().statusCode(404);
     }
 
     @Test

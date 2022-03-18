@@ -60,7 +60,7 @@ public class BridgesAPI {
     }
 
     @POST
-    public Response createBridge(BridgeRequest bridgeRequest) {
+    public Response createBridge(@Valid BridgeRequest bridgeRequest) {
         Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
         return Response.status(Response.Status.CREATED).entity(bridgesService.toResponse(bridge)).build();
     }
