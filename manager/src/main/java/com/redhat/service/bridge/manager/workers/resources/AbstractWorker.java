@@ -54,6 +54,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     "Max retry attempts exceeded trying to create dependencies for '{}' [{}].",
                     managedResource.getName(),
                     managedResource.getId());
+            workManager.complete(work);
             managedResource.setStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
             return managedResource;
@@ -63,6 +64,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                     "Timeout exceeded trying to create dependencies for '{}' [{}].",
                     managedResource.getName(),
                     managedResource.getId());
+            workManager.complete(work);
             managedResource.setStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
             return managedResource;
