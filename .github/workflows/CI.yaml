@@ -2,14 +2,15 @@ name: Bridge - CI
 on:
   pull_request:
     paths-ignore:
-      - 'LICENSE'
-      - '**/.gitignore'
-      - '**.md'
-      - '**.adoc'
-      - '*.txt'
-      - '.github/**'
-      - 'kustomize/**'
-      - 'dev/**'
+      - "LICENSE"
+      - "**/.gitignore"
+      - "**.md"
+      - "**.adoc"
+      - "*.txt"
+      - ".github/**"
+      - "kustomize/**"
+      - "dev/**"
+      - "app-interface/**"
 jobs:
   event-bridge-build:
     concurrency:

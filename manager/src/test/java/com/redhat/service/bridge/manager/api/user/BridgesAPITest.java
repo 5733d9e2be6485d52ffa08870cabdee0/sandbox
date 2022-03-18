@@ -13,6 +13,7 @@ import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
@@ -21,6 +22,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
@@ -29,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
+@TestProfile(WorkerSchedulerProfile.class)
 public class BridgesAPITest {
 
     @Inject

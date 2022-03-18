@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -12,7 +13,6 @@ import org.hamcrest.Matchers;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
-import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
 import com.redhat.service.bridge.integration.tests.context.ProcessorContext;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
@@ -85,7 +85,7 @@ public class ProcessorSteps {
     @When("^add a fake Processor \"([^\"]*)\" to the Bridge \"([^\"]*)\"$")
     public void addFakeProcessorToBridge(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        ProcessorContext processorContext = bridgeContext.newProcessor(processorName, Utils.generateId(processorName));
+        ProcessorContext processorContext = bridgeContext.newProcessor(processorName, UUID.randomUUID().toString());
         processorContext.setDeleted(true);
     }
 

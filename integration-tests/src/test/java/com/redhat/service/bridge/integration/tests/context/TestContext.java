@@ -30,15 +30,21 @@ public class TestContext {
     /**
      * This creates a new bridge in the test context
      * 
-     * @param testBridgeName Name of the new bridge so you are able to easily reference it in your tests without having to care about the uniqueness of the name
-     * @param systemBridgeName Used name of the bridge on the system which will so be unique on the system where the test happens
+     * @param testBridgeName Name of the new bridge so you are able to easily
+     *        reference it in your tests without having to care
+     *        about the uniqueness of the name
+     * @param systemBridgeName Used name of the bridge on the system which will so
+     *        be unique on the system where the test happens
      * @return the new test bridge context
      */
     public BridgeContext newBridge(String testBridgeName, String bridgeId, String systemBridgeName) {
         if (this.bridges.containsKey(testBridgeName)) {
             throw new RuntimeException("Bridge with name " + testBridgeName + " is already created in context.");
         } else {
-            this.bridges.put(testBridgeName, new BridgeContext(bridgeId, systemBridgeName));
+            scenario.log("Creating new Bridge context with test name '" + testBridgeName + "' and system name '"
+                    + systemBridgeName + "'");
+            BridgeContext bridgeContext = new BridgeContext(this.scenario, bridgeId, systemBridgeName);
+            this.bridges.put(testBridgeName, bridgeContext);
         }
         return getBridge(testBridgeName);
     }
