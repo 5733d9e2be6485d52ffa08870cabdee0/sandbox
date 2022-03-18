@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import io.cucumber.java.Scenario;
+
 /**
  * Shared bridge context
  */
@@ -19,7 +21,10 @@ public class BridgeContext {
 
     private boolean deleted;
 
-    public BridgeContext(String id, String systemBridgeName) {
+    private Scenario scenario;
+
+    public BridgeContext(Scenario scenario, String id, String systemBridgeName) {
+        this.scenario = scenario;
         this.id = id;
         this.name = systemBridgeName;
     }
@@ -41,7 +46,9 @@ public class BridgeContext {
     }
 
     public ProcessorContext newProcessor(String processorName, String processorId) {
-        ProcessorContext processorContext = new ProcessorContext(processorId);
+        scenario.log("Bridge '" + this.name + "': Creating new Processor context with name '" + processorName + "' and id '"
+                + processorId + "'");
+        ProcessorContext processorContext = new ProcessorContext(this.scenario, processorId);
         this.processors.put(processorName, processorContext);
         return processorContext;
     }
@@ -66,13 +73,17 @@ public class BridgeContext {
     }
 
     /**
-     * @param testCloudEventId ID of the new Cloud event sent so you are able to easily reference it in your tests without having to care about the uniqueness of the name
+     * @param testCloudEventId ID of the new Cloud event sent so you are able to
+     *        easily reference it in your tests without having to
+     *        care about the uniqueness of the name
      */
     public void storeCloudEventInContext(String testCloudEventId) {
         if (cloudEvents.containsKey(testCloudEventId)) {
             throw new RuntimeException("Cloud event with id " + testCloudEventId + " is already created in context.");
         }
         String systemCloudEventId = UUID.randomUUID().toString();
+        scenario.log("Bridge '" + this.name + "': Store cloud event with test id '" + testCloudEventId + "' and system id '"
+                + systemCloudEventId + "'");
         cloudEvents.put(testCloudEventId, systemCloudEventId);
     }
 

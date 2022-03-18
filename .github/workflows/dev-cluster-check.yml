@@ -1,7 +1,8 @@
 name: Check development cluster
 on:
-  schedule:
-    - cron: '0 0/2 * * *'
+  workflow_dispatch
+#  schedule:
+#    - cron: '0 0/2 * * *'
 jobs:
   run-integration-tests:
     timeout-minutes: 30

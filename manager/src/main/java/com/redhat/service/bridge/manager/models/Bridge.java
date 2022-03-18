@@ -10,8 +10,13 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByStatusesAndShardId",
-                query = "from Bridge where status IN :statuses and shard_id=:shardId"),
+        @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
+                query = "from Bridge where shard_id=:shardId and " +
+                        "( " +
+                        "  (status='ACCEPTED' and dependencyStatus='READY') " +
+                        "  or " +
+                        "  (status='DEPROVISION' and dependencyStatus='DELETED') " +
+                        ")"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
