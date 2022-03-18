@@ -98,6 +98,7 @@ public class BridgesAPI {
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Get an ingress", description = "Get an ingress of the authenticated user by ID.")
