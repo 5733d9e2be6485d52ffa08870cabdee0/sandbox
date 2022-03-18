@@ -112,6 +112,11 @@ public class ProcessorAPITest {
     }
 
     @Test
+    public void listProcessorsNoAuthentication() {
+        assertThat(TestUtils.listProcessors("any-id", 0, 100).getStatusCode()).isEqualTo(401);
+    }
+
+    @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -319,6 +324,12 @@ public class ProcessorAPITest {
     }
 
     @Test
+    public void addProcessorToBridgeNoAuthentication() {
+        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
+        assertThat(response.getStatusCode()).isEqualTo(401);
+    }
+
+    @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteProcessor() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
@@ -330,6 +341,18 @@ public class ProcessorAPITest {
         processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
 
         assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingProcessor() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+        TestUtils.deleteProcessor(bridgeResponse.getId(), "not-existing").then().statusCode(404);
+    }
+
+    @Test
+    public void testDeleteProcessorNoAuthentication() {
+        TestUtils.deleteProcessor("any-id", "any-id").then().statusCode(401);
     }
 
     private BridgeResponse createBridge() {
