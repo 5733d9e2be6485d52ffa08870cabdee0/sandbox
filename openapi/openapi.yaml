@@ -3,11 +3,17 @@ openapi: 3.0.3
 info:
   title: manager API
   version: 0.0.1-SNAPSHOT
+tags:
+- name: Bridges
+- name: Errors
+- name: Processors
+- name: ShardBridgesSync
 paths:
   /api/v1/bridges:
     get:
       tags:
-      - Bridges API
+      - Bridges
+      operationId: BridgesAPI_getBridges
       parameters:
       - name: page
         in: query
@@ -26,26 +32,36 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: The list of Bridges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeListResponse'
       security:
       - bearer: []
     post:
       tags:
-      - Bridges API
+      - Bridges
+      operationId: BridgesAPI_createBridge
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BridgeRequest'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: The new created Bridge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeResponse'
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}:
     get:
       tags:
-      - Bridges API
+      - Bridges
+      operationId: BridgesAPI_getBridge
       parameters:
       - name: bridgeId
         in: path
@@ -56,12 +72,17 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: The Bridge with given ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeResponse'
       security:
       - bearer: []
     delete:
       tags:
-      - Bridges API
+      - Bridges
+      operationId: BridgesAPI_deleteBridge
       parameters:
       - name: bridgeId
         in: path
@@ -69,14 +90,15 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Delete the Bridge with given ID
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors:
     get:
       tags:
-      - Processors API
+      - Processors
+      operationId: ProcessorsAPI_listProcessors
       parameters:
       - name: bridgeId
         in: path
@@ -102,12 +124,17 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: The list of Processors of given Bridge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorListResponse'
       security:
       - bearer: []
     post:
       tags:
-      - Processors API
+      - Processors
+      operationId: ProcessorsAPI_addProcessorToBridge
       parameters:
       - name: bridgeId
         in: path
@@ -122,14 +149,19 @@ paths:
             schema:
               $ref: '#/components/schemas/ProcessorRequest'
       responses:
-        "200":
-          description: OK
+        "201":
+          description: The Processor added to given Bridge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorResponse'
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors/{processorId}:
     get:
       tags:
-      - Processors API
+      - Processors
+      operationId: ProcessorsAPI_getProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -147,12 +179,17 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: The Processor of given Bridge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorResponse'
       security:
       - bearer: []
     delete:
       tags:
-      - Processors API
+      - Processors
+      operationId: ProcessorsAPI_deleteProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -165,14 +202,15 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Delete the given Processor of given Bridge
       security:
       - bearer: []
   /api/v1/errors:
     get:
       tags:
-      - Errors API
+      - Errors
+      operationId: ErrorsAPI_getErrors
       parameters:
       - name: page
         in: query
@@ -191,13 +229,18 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: The list of ErrorResponses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorListResponse'
       security:
       - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
-      - Errors API
+      - Errors
+      operationId: ErrorsAPI_getError
       parameters:
       - name: id
         in: path
@@ -207,21 +250,35 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: The ErrorResponse with given ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: The given Error not found
       security:
       - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
-      - Shard Bridges Sync API
+      - ShardBridgesSync
+      operationId: ShardBridgesSyncAPI_getBridges
       responses:
         "200":
-          description: OK
+          description: List of Bridges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BridgeDTO'
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - ShardBridgesSync
+      operationId: ShardBridgesSyncAPI_updateBridge
       requestBody:
         content:
           application/json:
@@ -229,21 +286,29 @@ paths:
               $ref: '#/components/schemas/BridgeDTO'
       responses:
         "200":
-          description: OK
+          description: Update the Bridge
       security:
       - bearer: []
   /api/v1/shard/bridges/processors:
     get:
       tags:
-      - Shard Bridges Sync API
+      - ShardBridgesSync
+      operationId: ShardBridgesSyncAPI_getProcessors
       responses:
         "200":
-          description: OK
+          description: List of Processors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessorDTO'
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - ShardBridgesSync
+      operationId: ShardBridgesSyncAPI_updateProcessorStatus
       requestBody:
         content:
           application/json:
@@ -251,7 +316,7 @@ paths:
               $ref: '#/components/schemas/ProcessorDTO'
       responses:
         "200":
-          description: OK
+          description: Update the Processor status
       security:
       - bearer: []
 components:
@@ -296,6 +361,24 @@ components:
           $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
+    BridgeListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BridgeResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
     BridgeRequest:
       required:
       - name
@@ -305,6 +388,60 @@ components:
           minLength: 1
           type: string
           nullable: false
+    BridgeResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/ManagedResourceStatus'
+        endpoint:
+          type: string
+    ErrorListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        code:
+          type: string
+        reason:
+          type: string
     KafkaConnectionDTO:
       type: object
       properties:
@@ -359,6 +496,24 @@ components:
           $ref: '#/components/schemas/BaseAction'
         resolvedAction:
           $ref: '#/components/schemas/BaseAction'
+    ProcessorListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
     ProcessorRequest:
       required:
       - name
@@ -382,6 +537,34 @@ components:
           - allOf:
             - $ref: '#/components/schemas/BaseAction'
             - nullable: false
+    ProcessorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/ManagedResourceStatus'
+        filters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseFilter'
+        transformationTemplate:
+          type: string
+        action:
+          $ref: '#/components/schemas/BaseAction'
   securitySchemes:
     bearer:
       type: http

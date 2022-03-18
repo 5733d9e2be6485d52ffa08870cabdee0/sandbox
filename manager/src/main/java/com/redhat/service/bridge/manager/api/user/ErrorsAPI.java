@@ -15,9 +15,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
@@ -40,18 +45,38 @@ import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PA
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
+@Tag(name = "Errors")
 public class ErrorsAPI {
 
     @Inject
     BridgeErrorService service;
 
     @GET
+    @APIResponse(
+            responseCode = "200",
+            description = "The list of ErrorResponses",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorListResponse.class)))
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {
         return Response.ok(ListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
     }
 
     @GET
     @Path("{id}")
+    @APIResponses(
+            value = {
+                    @APIResponse(
+                            responseCode = "200",
+                            description = "The ErrorResponse with given ID",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            implementation = ErrorResponse.class))),
+                    @APIResponse(
+                            responseCode = "404",
+                            description = "The given Error not found")
+            })
     public Response getError(@PathParam("id") int id) {
         Optional<BridgeError> error = service.getUserError(id);
         return (error.isPresent() ? Response.ok(ErrorResponse.from(error.get())) : Response.status(Status.NOT_FOUND)).build();

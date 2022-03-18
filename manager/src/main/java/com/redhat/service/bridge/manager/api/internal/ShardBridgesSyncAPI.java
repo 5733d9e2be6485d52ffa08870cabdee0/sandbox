@@ -12,10 +12,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +49,7 @@ import static java.util.stream.Collectors.toList;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
+@Tag(name = "ShardBridgesSync")
 public class ShardBridgesSyncAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ShardBridgesSyncAPI.class);
@@ -65,6 +71,9 @@ public class ShardBridgesSyncAPI {
 
     @PUT
     @Path("processors")
+    @APIResponse(
+            responseCode = "200",
+            description = "Update the Processor status")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
@@ -79,6 +88,14 @@ public class ShardBridgesSyncAPI {
 
     @GET
     @Path("processors")
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Processors",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(
+                            type = SchemaType.ARRAY,
+                            implementation = ProcessorDTO.class)))
     public Response getProcessors() {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
@@ -93,6 +110,14 @@ public class ShardBridgesSyncAPI {
     }
 
     @GET
+    @APIResponse(
+            responseCode = "200",
+            description = "List of Bridges",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(
+                            type = SchemaType.ARRAY,
+                            implementation = BridgeDTO.class)))
     public Response getBridges() {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
@@ -107,6 +132,9 @@ public class ShardBridgesSyncAPI {
     }
 
     @PUT
+    @APIResponse(
+            responseCode = "200",
+            description = "Update the Bridge")
     public Response updateBridge(BridgeDTO dto) {
         String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
