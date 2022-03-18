@@ -16,7 +16,7 @@ Feature: Slack Action tests
         "parameters": {
             "channel": "${env.slack.channel.name}",
             "webhookUrl": "${env.slack.webhook.url}"
-            }
+          }
       }
     }
     """
@@ -26,16 +26,16 @@ Feature: Slack Action tests
     And send a cloud event to the Ingress of the Bridge "mybridge" with path "events":
     """
     {
-    "specversion": "1.0",
-    "type": "Microsoft.Storage.BlobCreated",
-    "source": "StorageService",
-    "id": "my-id",
-    "time": "2019-11-18T15:13:39.4589254Z",
-    "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
-    "dataschema": "#",
-    "data": {
-      "name": "Hello world!"
-     }
+      "specversion": "1.0",
+      "type": "Microsoft.Storage.BlobCreated",
+      "source": "StorageService",
+      "id": "my-id",
+      "time": "2019-11-18T15:13:39.4589254Z",
+      "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
+      "dataschema": "#",
+      "data": {
+        "name": "Hello world!"
+        }
     }
     """
 

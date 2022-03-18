@@ -72,13 +72,13 @@ public class IngressSteps {
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" is failing with HTTP response code (\\d+):$")
     public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path,
-                                                                                     int responseCode, String cloudEvent) {
+            int responseCode, String cloudEvent) {
         sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, responseCode);
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*) is failing with HTTP response code (\\d+):$")
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
-                                                                                                      String path, String headers, int responseCode, String cloudEvent) {
+            String path, String headers, int responseCode, String cloudEvent) {
         sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), responseCode);
     }
 
@@ -110,7 +110,7 @@ public class IngressSteps {
     }
 
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers,
-                                        int responseCode) {
+            int responseCode) {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
         endpoint = endpoint + "/" + path;
 

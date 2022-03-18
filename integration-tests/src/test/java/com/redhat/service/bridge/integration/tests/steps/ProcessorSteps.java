@@ -140,7 +140,7 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\" and parameters:$")
     public void processorOfBridgeHasActionOfTypeAndParameters(String processorName, String testBridgeName,
             String actionType, DataTable parametersDatatable) {
-        BaseAction action = getProcessorResponse(processorName, testBridgeName).getAction();
+        BaseAction action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
             assertThat(action.getParameters()).containsEntry(key, value);
@@ -150,7 +150,7 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\"$")
     public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName,
             String actionType) {
-        BaseAction action = getProcessorResponse(processorName, testBridgeName).getAction();
+        BaseAction action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
     }
 
@@ -195,11 +195,11 @@ public class ProcessorSteps {
                                 .statusCode(404));
     }
 
-    public ProcessorResponse getProcessorResponse(String processorName, String testBridgeName) {
+    public BaseAction getProcessorAction(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
         return ProcessorResource.getProcessor(context.getManagerToken(),
-                bridgeContext.getId(), processorId);
+                bridgeContext.getId(), processorId).getAction();
     }
 }
