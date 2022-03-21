@@ -125,7 +125,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get ingresses to be processed by a shard.", description = "Get ingresses to be processed by a shard.")
+    @Operation(summary = "Get Bridges to be processed by a shard.", description = "Get Bridges to be processed by a shard.")
     @GET
     public Response getBridges() {
         String shardId = identityResolver.resolve(jwt);
@@ -147,7 +147,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Update an ingress.", description = "Update an ingress.")
+    @Operation(summary = "Update a Bridge.", description = "Update a Bridge.")
     @PUT
     public Response updateBridge(BridgeDTO dto) {
         String subject = identityResolver.resolve(jwt);

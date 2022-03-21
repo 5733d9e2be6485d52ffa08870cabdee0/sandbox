@@ -40,7 +40,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Processors API", description = "The API that allow the user to retrieve, create or delete processors of an ingress.")
+@Tag(name = "Processors API", description = "The API that allow the user to retrieve, create or delete processors of a Bridge.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -71,7 +71,7 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get a processor of an ingress", description = "Get a processor of an ingress for the authenticated user.")
+    @Operation(summary = "Get a processor of a Bridge", description = "Get a processor of a Bridge for the authenticated user.")
     @GET
     @Path("{bridgeId}/processors/{processorId}")
     public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
@@ -89,7 +89,7 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get the list of processors of an ingress", description = "Get the list of processors of an ingress for the authenticated user.")
+    @Operation(summary = "Get the list of processors of a Bridge", description = "Get the list of processors of a Bridge for the authenticated user.")
     @GET
     @Path("{bridgeId}/processors")
     public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryInfo queryInfo) {
@@ -106,7 +106,7 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Create a processor of an ingress", description = "Create a processor of an ingress for the authenticated user.")
+    @Operation(summary = "Create a processor of a Bridge", description = "Create a processor of a Bridge for the authenticated user.")
     @POST
     @Path("{bridgeId}/processors")
     public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
@@ -123,7 +123,7 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Delete a processor of an ingress", description = "Delete a processor of an ingress for the authenticated user.")
+    @Operation(summary = "Delete a processor of a Bridge", description = "Delete a processor of a Bridge for the authenticated user.")
     @DELETE
     @Path("{bridgeId}/processors/{processorId}")
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
