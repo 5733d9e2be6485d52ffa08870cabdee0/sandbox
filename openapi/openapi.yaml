@@ -11,22 +11,22 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
 tags:
-- name: Bridge API
-  description: "The API that allow the user to retrieve, create or delete Bridges."
+- name: Bridges API
+  description: "The API that allow the user to retrieve, create or delete Bridge instances."
 - name: Errors Catalog API
   description: List and get the error definitions from the error catalog.
 - name: Processors API
-  description: "The API that allow the user to retrieve, create or delete processors\
-    \ of a Bridge."
+  description: "The API that allow the user to retrieve, create or delete Processors\
+    \ of a Bridge instance."
 - name: Shard API
   description: The API that allow a shard to retrieve and update resources.
 paths:
   /api/v1/bridges:
     get:
       tags:
-      - Bridge API
-      summary: Get the list of Bridges
-      description: Get the list of Bridges for the authenticated user.
+      - Bridges API
+      summary: Get the list of Bridge instances
+      description: Get the list of Bridge instances for the authenticated user.
       parameters:
       - name: page
         in: query
@@ -86,9 +86,9 @@ paths:
       - bearer: []
     post:
       tags:
-      - Bridge API
-      summary: Create a Bridge
-      description: Create a Bridge for the authenticated user.
+      - Bridges API
+      summary: Create a Bridge instance
+      description: Create a Bridge instance for the authenticated user.
       requestBody:
         content:
           application/json:
@@ -137,9 +137,9 @@ paths:
   /api/v1/bridges/{bridgeId}:
     get:
       tags:
-      - Bridge API
-      summary: Get a Bridge
-      description: Get a Bridge of the authenticated user by ID.
+      - Bridges API
+      summary: Get a Bridge instance
+      description: Get a Bridge instance of the authenticated user by ID.
       parameters:
       - name: bridgeId
         in: path
@@ -194,9 +194,9 @@ paths:
       - bearer: []
     delete:
       tags:
-      - Bridge API
-      summary: Delete a Bridge
-      description: Delete a Bridge of the authenticated user by ID.
+      - Bridges API
+      summary: Delete a Bridge instance
+      description: Delete a Bridge instance of the authenticated user by ID.
       parameters:
       - name: bridgeId
         in: path
@@ -228,8 +228,9 @@ paths:
     get:
       tags:
       - Processors API
-      summary: Get the list of processors of a Bridge
-      description: Get the list of processors of a Bridge for the authenticated user.
+      summary: Get the list of Processors of a Bridge instance
+      description: Get the list of Processors of a Bridge instance for the authenticated
+        user.
       parameters:
       - name: bridgeId
         in: path
@@ -297,8 +298,8 @@ paths:
     post:
       tags:
       - Processors API
-      summary: Create a processor of a Bridge
-      description: Create a processor of a Bridge for the authenticated user.
+      summary: Create a Processor of a Bridge instance
+      description: Create a Processor of a Bridge instance for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -367,8 +368,8 @@ paths:
     get:
       tags:
       - Processors API
-      summary: Get a processor of a Bridge
-      description: Get a processor of a Bridge for the authenticated user.
+      summary: Get a Processor of a Bridge instance
+      description: Get a Processor of a Bridge instance for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -438,8 +439,8 @@ paths:
     delete:
       tags:
       - Processors API
-      summary: Delete a processor of a Bridge
-      description: Delete a processor of a Bridge for the authenticated user.
+      summary: Delete a Processor of a Bridge instance
+      description: Delete a Processor of a Bridge instance for the authenticated user.
       parameters:
       - name: bridgeId
         in: path
@@ -575,8 +576,8 @@ paths:
     get:
       tags:
       - Shard API
-      summary: Get Bridges to be processed by a shard.
-      description: Get Bridges to be processed by a shard.
+      summary: Get Bridge instances to be processed by a shard.
+      description: Get Bridge instances to be processed by a shard.
       responses:
         "200":
           description: Success.
@@ -603,8 +604,8 @@ paths:
     put:
       tags:
       - Shard API
-      summary: Update a Bridge.
-      description: Update a Bridge.
+      summary: Update a Bridge instance.
+      description: Update a Bridge instance.
       requestBody:
         content:
           application/json:
@@ -631,8 +632,8 @@ paths:
     get:
       tags:
       - Shard API
-      summary: Get processors to be processed by a shard.
-      description: Get processors to be processed by a shard.
+      summary: Get Processors to be processed by a shard.
+      description: Get Processors to be processed by a shard.
       responses:
         "200":
           description: Success.
@@ -659,8 +660,8 @@ paths:
     put:
       tags:
       - Shard API
-      summary: Update a processor.
-      description: Update a processor.
+      summary: Update a Processor.
+      description: Update a Processor.
       requestBody:
         content:
           application/json:

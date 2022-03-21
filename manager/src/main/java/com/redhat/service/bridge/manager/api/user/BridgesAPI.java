@@ -39,7 +39,7 @@ import com.redhat.service.bridge.manager.models.Bridge;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Bridge API", description = "The API that allow the user to retrieve, create or delete Bridges.")
+@Tag(name = "Bridges API", description = "The API that allow the user to retrieve, create or delete Bridge instances.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -70,7 +70,7 @@ public class BridgesAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get the list of Bridges", description = "Get the list of Bridges for the authenticated user.")
+    @Operation(summary = "Get the list of Bridge instances", description = "Get the list of Bridge instances for the authenticated user.")
     @GET
     public Response getBridges(@Valid @BeanParam QueryInfo queryInfo) {
         return Response.ok(ListResponse.fill(bridgesService
@@ -85,7 +85,7 @@ public class BridgesAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Create a Bridge", description = "Create a Bridge for the authenticated user.")
+    @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
     public Response createBridge(BridgeRequest bridgeRequest) {
         Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
@@ -101,7 +101,7 @@ public class BridgesAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get a Bridge", description = "Get a Bridge of the authenticated user by ID.")
+    @Operation(summary = "Get a Bridge instance", description = "Get a Bridge instance of the authenticated user by ID.")
     @GET
     @Path("{bridgeId}")
     public Response getBridge(@PathParam("bridgeId") @NotEmpty String bridgeId) {
@@ -117,7 +117,7 @@ public class BridgesAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Delete a Bridge", description = "Delete a Bridge of the authenticated user by ID.")
+    @Operation(summary = "Delete a Bridge instance", description = "Delete a Bridge instance of the authenticated user by ID.")
     @DELETE
     @Path("{bridgeId}")
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
