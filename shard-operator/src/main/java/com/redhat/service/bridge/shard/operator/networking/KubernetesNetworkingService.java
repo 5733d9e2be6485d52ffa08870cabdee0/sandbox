@@ -46,8 +46,9 @@ public class KubernetesNetworkingService implements NetworkingService {
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Ingress expected = buildIngress(bridgeIngress, service);
-
         Ingress existing = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        LOGGER.debug("Expected Ingress: {}", expected);
+        LOGGER.debug("Existing Ingress: {}", existing);
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).createOrReplace(expected);
@@ -110,6 +111,7 @@ public class KubernetesNetworkingService implements NetworkingService {
             host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname();
         }
         String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath().replace(PATH_REGEX, "");
+        endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
         return new NetworkResource(endpoint, true);
     }
 }
