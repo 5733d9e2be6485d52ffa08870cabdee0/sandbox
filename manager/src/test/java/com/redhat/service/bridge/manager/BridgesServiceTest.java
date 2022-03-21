@@ -1,7 +1,6 @@
 package com.redhat.service.bridge.manager;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,6 +15,7 @@ import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.TestUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -23,10 +23,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
 @TestProfile(WorkerSchedulerProfile.class)
@@ -84,10 +82,7 @@ public class BridgesServiceTest {
         Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         //Wait for Workers to complete
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-            assertThat(bridges.size()).isEqualTo(1);
-        });
+        TestUtils.waitForBridgeToBeReady(bridgesService);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge).isNotNull();
@@ -105,13 +100,10 @@ public class BridgesServiceTest {
     @Test
     public void testGetBridgeWithWrongCustomerId() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         //Wait for Workers to complete
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-            assertThat(bridges.size()).isEqualTo(1);
-        });
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridge(bridge.getId(), "not-the-customerId"));
     }
@@ -121,15 +113,11 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        final List<Bridge> bridgesToDeploy = new ArrayList<>();
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            bridgesToDeploy.clear();
-            bridgesToDeploy.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
-            assertThat(bridgesToDeploy.size()).isEqualTo(1);
-        });
+        //Wait for Workers to complete
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridgesToDeploy.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
-        assertThat(bridgesToDeploy.get(0).getEndpoint()).isNull();
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getEndpoint()).isNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
@@ -138,26 +126,18 @@ public class BridgesServiceTest {
     @Test
     public void testUpdateBridgeStatus() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
-        final List<Bridge> bridges = new ArrayList<>();
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            bridges.clear();
-            bridges.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
-            assertThat(bridges.size()).isEqualTo(1);
-        });
+        //Wait for Workers to complete
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridges.get(0).getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
 
         // Emulate Shard setting Bridge status to PROVISIONING
         bridge.setStatus(ManagedResourceStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            bridges.clear();
-            bridges.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
-            assertThat(bridges).isEmpty();
-        });
+        assertThat(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID)).isEmpty();
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
@@ -166,14 +146,12 @@ public class BridgesServiceTest {
     @Test
     public void testUpdateBridgeStatusReadyPublishedAt() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         //Wait for Workers to complete
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-            assertThat(bridges.size()).isEqualTo(1);
-        });
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
+        // Emulate Shard setting Bridge status to PROVISIONING
         bridge.setStatus(ManagedResourceStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
@@ -201,13 +179,10 @@ public class BridgesServiceTest {
     @Test
     public void getBridge() {
         BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
 
         //Wait for Workers to complete
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-            assertThat(bridges.size()).isEqualTo(1);
-        });
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
         Bridge found = bridgesService.getBridge(bridge.getId());
         assertThat(found).isNotNull();
