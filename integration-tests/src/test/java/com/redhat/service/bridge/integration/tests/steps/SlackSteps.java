@@ -28,6 +28,7 @@ public class SlackSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
                 .untilAsserted(
-                        () -> assertThat(SlackResource.getListOfSlackMessages()).containsAnyOf(messageTextWithoutPlaceholders));
+                        () -> assertThat(SlackResource.getListOfSlackMessages()).as("Searching for message containing text: '%s'", messageTextWithoutPlaceholders)
+                                .anyMatch(msg -> msg.contains(messageTextWithoutPlaceholders)));
     }
 }
