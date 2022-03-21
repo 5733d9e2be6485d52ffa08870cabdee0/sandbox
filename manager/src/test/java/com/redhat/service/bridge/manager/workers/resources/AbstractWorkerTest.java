@@ -9,9 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.RhoasService;
-import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.manager.workers.WorkManager;
@@ -45,15 +43,9 @@ public class AbstractWorkerTest {
     @Test
     @Transactional
     void workIsCompletedWhenResourceIsNotFound() {
-        Bridge bridge = new Bridge(TestConstants.DEFAULT_BRIDGE_NAME);
-        bridge.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        bridge.setStatus(ManagedResourceStatus.ACCEPTED);
-        bridge.setSubmittedAt(ZonedDateTime.now());
-        bridge.setId(RESOURCE_ID);
-
         Work work = new Work();
         work.setType(Bridge.class.getName());
-        work.setSubmittedAt(bridge.getSubmittedAt());
+        work.setSubmittedAt(ZonedDateTime.now());
         work.setManagedResourceId(RESOURCE_ID);
 
         assertThatThrownBy(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
