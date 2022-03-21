@@ -182,6 +182,10 @@ paths:
           description: Unauthorized.
         "403":
           description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
         "500":
           description: Internal error.
           content:
