@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.manager.api.user;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -33,11 +35,14 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 
 import static com.redhat.service.bridge.manager.utils.TestUtils.createKafkaAction;
 import static com.redhat.service.bridge.manager.utils.TestUtils.createSendToBridgeAction;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -336,6 +341,16 @@ public class ProcessorAPITest {
     private BridgeResponse createAndDeployBridge() {
         BridgeResponse bridgeResponse = createBridge();
 
+        //Wait for the Bridge to be provisioned
+        final List<BridgeDTO> bridges = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridges.clear();
+            bridges.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+            }));
+            assertThat(bridges.size()).isEqualTo(1);
+        });
+
+        //Emulate Shard updating Bridge status
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridgeResponse.getId());
         dto.setStatus(ManagedResourceStatus.READY);

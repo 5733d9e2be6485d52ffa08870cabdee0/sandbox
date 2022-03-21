@@ -3,7 +3,7 @@ Feature: Processor tests
   Scenario: Processor is created, deployed and correctly deleted
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
     And add a Processor to the Bridge "mybridge" with body:
@@ -35,7 +35,7 @@ Feature: Processor tests
     Given authenticate against Manager
     
     When create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
     
     Then add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
@@ -48,7 +48,7 @@ Feature: Processor tests
   Scenario: Delete non existing processor
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
     When add a fake Processor "myProcessor" to the Bridge "mybridge"
@@ -59,7 +59,7 @@ Feature: Processor tests
     Given authenticate against Manager
     
     When create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
     
     Then add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
@@ -73,7 +73,7 @@ Feature: Processor tests
   Scenario: Cannot access the list of Processors without authentication
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
     When logout of Manager
@@ -83,7 +83,7 @@ Feature: Processor tests
   Scenario: Cannot create a processor without authentication
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
     When logout of Manager
@@ -104,7 +104,7 @@ Feature: Processor tests
   Scenario: Cannot access processor details without authentication
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
     And add a Processor to the Bridge "mybridge" with body:

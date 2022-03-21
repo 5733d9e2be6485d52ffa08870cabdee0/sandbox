@@ -3,7 +3,7 @@ Feature: Ingress tests
   Background:
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
     And add a Processor to the Bridge "mybridge" with body:
     """
