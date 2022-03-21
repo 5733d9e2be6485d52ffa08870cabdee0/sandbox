@@ -110,6 +110,6 @@ public class KubernetesNetworkingService implements NetworkingService {
             host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname();
         }
         String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath().replace(PATH_REGEX, "");
-        return new NetworkResource(endpoint, true);
+        return new NetworkResource(endpoint + EVENTS_ENDPOINT_SUFFIX, true);
     }
 }

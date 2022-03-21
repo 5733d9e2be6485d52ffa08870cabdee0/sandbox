@@ -7,6 +7,8 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public interface NetworkingService {
 
+    String EVENTS_ENDPOINT_SUFFIX = "/events";
+
     NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service);
 
     EventSource buildInformerEventSource(String component);
