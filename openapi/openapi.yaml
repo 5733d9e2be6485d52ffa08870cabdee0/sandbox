@@ -27,6 +27,7 @@ paths:
       - Bridges API
       summary: Get the list of Bridge instances
       description: Get the list of Bridge instances for the authenticated user.
+      operationId: BridgesAPI_getBridges
       parameters:
       - name: page
         in: query
@@ -89,6 +90,7 @@ paths:
       - Bridges API
       summary: Create a Bridge instance
       description: Create a Bridge instance for the authenticated user.
+      operationId: BridgesAPI_createBridge
       requestBody:
         content:
           application/json:
@@ -140,6 +142,7 @@ paths:
       - Bridges API
       summary: Get a Bridge instance
       description: Get a Bridge instance of the authenticated user by ID.
+      operationId: BridgesAPI_getBridge
       parameters:
       - name: bridgeId
         in: path
@@ -197,6 +200,7 @@ paths:
       - Bridges API
       summary: Delete a Bridge instance
       description: Delete a Bridge instance of the authenticated user by ID.
+      operationId: BridgesAPI_deleteBridge
       parameters:
       - name: bridgeId
         in: path
@@ -231,6 +235,7 @@ paths:
       summary: Get the list of Processors of a Bridge instance
       description: Get the list of Processors of a Bridge instance for the authenticated
         user.
+      operationId: ProcessorsAPI_listProcessors
       parameters:
       - name: bridgeId
         in: path
@@ -300,6 +305,7 @@ paths:
       - Processors API
       summary: Create a Processor of a Bridge instance
       description: Create a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_addProcessorToBridge
       parameters:
       - name: bridgeId
         in: path
@@ -370,6 +376,7 @@ paths:
       - Processors API
       summary: Get a Processor of a Bridge instance
       description: Get a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_getProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -441,6 +448,7 @@ paths:
       - Processors API
       summary: Delete a Processor of a Bridge instance
       description: Delete a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_deleteProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -479,6 +487,7 @@ paths:
       - Errors Catalog API
       summary: Get the list of errors.
       description: Get the list of errors from the error catalog.
+      operationId: ErrorsAPI_getErrors
       parameters:
       - name: page
         in: query
@@ -536,6 +545,7 @@ paths:
       - Errors Catalog API
       summary: Get an error from the error catalog.
       description: Get an error from the error catalog.
+      operationId: ErrorsAPI_getError
       parameters:
       - name: id
         in: path
@@ -578,6 +588,7 @@ paths:
       - Shard API
       summary: Get Bridge instances to be processed by a shard.
       description: Get Bridge instances to be processed by a shard.
+      operationId: ShardBridgesSyncAPI_getBridges
       responses:
         "200":
           description: Success.
@@ -606,6 +617,7 @@ paths:
       - Shard API
       summary: Update a Bridge instance.
       description: Update a Bridge instance.
+      operationId: ShardBridgesSyncAPI_updateBridge
       requestBody:
         content:
           application/json:
@@ -634,6 +646,7 @@ paths:
       - Shard API
       summary: Get Processors to be processed by a shard.
       description: Get Processors to be processed by a shard.
+      operationId: ShardBridgesSyncAPI_getProcessors
       responses:
         "200":
           description: Success.
@@ -662,6 +675,7 @@ paths:
       - Shard API
       summary: Update a Processor.
       description: Update a Processor.
+      operationId: ShardBridgesSyncAPI_updateProcessorStatus
       requestBody:
         content:
           application/json:
