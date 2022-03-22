@@ -40,3 +40,47 @@ Feature: Slack Action tests
     """
 
     Then Slack channel contains message with text "${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
+
+  Scenario: Slack Action Processor creation returns Error when wrong parameters is passed
+
+    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
+    """
+    {
+      "name": "processorInvalid1",
+      "action": {
+        "type": "Slack",
+        "properties": {
+            "channel": "test",
+            "webhookUrl": "https://example.com"
+          }
+      }
+    }
+    """
+
+    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
+    """
+    {
+      "name": "processorInvalid2",
+      "action": {
+        "type": "Slack",
+        "parameters": {
+            "channel": "",
+            "webhookUrl": "https://example.com"
+          }
+      }
+    }
+    """
+
+    When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
+    """
+    {
+      "name": "processorInvalid3",
+      "action": {
+        "type": "Slack",
+        "parameters": {
+            "channel": "channel",
+            "webhookUrl": ""
+          }
+      }
+    }
+    """
