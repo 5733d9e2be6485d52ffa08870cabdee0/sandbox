@@ -12,10 +12,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +41,7 @@ import io.quarkus.security.Authenticated;
 
 import static java.util.stream.Collectors.toList;
 
+@Tag(name = "Shard API", description = "The API that allow a shard to retrieve and update resources.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -63,6 +71,14 @@ public class ShardBridgesSyncAPI {
     @Inject
     JsonWebToken jwt;
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200"),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Update a Processor.", description = "Update a Processor.")
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
@@ -77,6 +93,15 @@ public class ShardBridgesSyncAPI {
         return Response.ok().build();
     }
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = ProcessorDTO.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get Processors to be processed by a shard.", description = "Get Processors to be processed by a shard.")
     @GET
     @Path("processors")
     public Response getProcessors() {
@@ -92,6 +117,15 @@ public class ShardBridgesSyncAPI {
                 .build();
     }
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = BridgeDTO.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get Bridge instances to be processed by a shard.", description = "Get Bridge instances to be processed by a shard.")
     @GET
     public Response getBridges() {
         String shardId = identityResolver.resolve(jwt);
@@ -106,6 +140,14 @@ public class ShardBridgesSyncAPI {
                 .build();
     }
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200"),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
     @PUT
     public Response updateBridge(BridgeDTO dto) {
         String subject = identityResolver.resolve(jwt);

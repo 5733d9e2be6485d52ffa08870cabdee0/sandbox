@@ -31,7 +31,7 @@ def create_bridge():
         if (response.status_code == 401):
             authenticate()
             continue
-        elif(response.status_code == 201):       
+        elif(response.status_code == 202):
             bridges.append(json.loads(response.text)['id'])
         print('[bridge] response status code: {0}'.format(response.status_code))
         print('[bridge] sleeping for 30 seconds')
@@ -59,7 +59,7 @@ def create_processor():
         if (response.status_code == 401):
             authenticate()
             continue
-        elif(response.status_code == 201):       
+        elif(response.status_code == 202):
             processors.append(json.loads(response.text)['id'])
         print('[processor] response status code: {0}'.format(response.status_code))
         print('[processor] sleeping for 20 seconds')

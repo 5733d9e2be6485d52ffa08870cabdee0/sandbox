@@ -65,7 +65,7 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void createBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getBridge() {
         Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
-        bridgeCreateResponse.then().statusCode(201);
+        bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
 
@@ -114,7 +114,7 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
 
@@ -157,7 +157,7 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY,
                         new KafkaConnectionDTO()));
 
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(201);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
         TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
     }
@@ -166,7 +166,7 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(400);
     }

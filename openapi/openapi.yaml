@@ -1,13 +1,33 @@
 ---
 openapi: 3.0.3
 info:
-  title: manager API
-  version: 0.0.1-SNAPSHOT
+  title: Red Hat Openshift Smart Events Fleet Manager
+  description: The api exposed by the fleet manager of the RHOSE service.
+  contact:
+    name: Development Team
+    email: openbridge-dev@redhat.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+tags:
+- name: Bridges API
+  description: "The API that allow the user to retrieve, create or delete Bridge instances."
+- name: Errors Catalog API
+  description: List and get the error definitions from the error catalog.
+- name: Processors API
+  description: "The API that allow the user to retrieve, create or delete Processors\
+    \ of a Bridge instance."
+- name: Shard API
+  description: The API that allow a shard to retrieve and update resources.
 paths:
   /api/v1/bridges:
     get:
       tags:
       - Bridges API
+      summary: Get the list of Bridge instances
+      description: Get the list of Bridge instances for the authenticated user.
+      operationId: BridgesAPI_getBridges
       parameters:
       - name: page
         in: query
@@ -26,26 +46,103 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BridgeResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     post:
       tags:
       - Bridges API
+      summary: Create a Bridge instance
+      description: Create a Bridge instance for the authenticated user.
+      operationId: BridgesAPI_createBridge
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BridgeRequest'
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/ManagedResourceStatus'
+                  endpoint:
+                    type: string
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}:
     get:
       tags:
       - Bridges API
+      summary: Get a Bridge instance
+      description: Get a Bridge instance of the authenticated user by ID.
+      operationId: BridgesAPI_getBridge
       parameters:
       - name: bridgeId
         in: path
@@ -56,12 +153,54 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/ManagedResourceStatus'
+                  endpoint:
+                    type: string
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     delete:
       tags:
       - Bridges API
+      summary: Delete a Bridge instance
+      description: Delete a Bridge instance of the authenticated user by ID.
+      operationId: BridgesAPI_deleteBridge
       parameters:
       - name: bridgeId
         in: path
@@ -69,14 +208,34 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors:
     get:
       tags:
       - Processors API
+      summary: Get the list of Processors of a Bridge instance
+      description: Get the list of Processors of a Bridge instance for the authenticated
+        user.
+      operationId: ProcessorsAPI_listProcessors
       parameters:
       - name: bridgeId
         in: path
@@ -102,12 +261,51 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProcessorResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     post:
       tags:
       - Processors API
+      summary: Create a Processor of a Bridge instance
+      description: Create a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_addProcessorToBridge
       parameters:
       - name: bridgeId
         in: path
@@ -122,14 +320,63 @@ paths:
             schema:
               $ref: '#/components/schemas/ProcessorRequest'
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/ManagedResourceStatus'
+                  filters:
+                    uniqueItems: true
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BaseFilter'
+                  transformationTemplate:
+                    type: string
+                  action:
+                    $ref: '#/components/schemas/BaseAction'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/bridges/{bridgeId}/processors/{processorId}:
     get:
       tags:
       - Processors API
+      summary: Get a Processor of a Bridge instance
+      description: Get a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_getProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -147,12 +394,61 @@ paths:
           nullable: false
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  href:
+                    type: string
+                  submitted_at:
+                    format: date-time
+                    type: string
+                  published_at:
+                    format: date-time
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/ManagedResourceStatus'
+                  filters:
+                    uniqueItems: true
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BaseFilter'
+                  transformationTemplate:
+                    type: string
+                  action:
+                    $ref: '#/components/schemas/BaseAction'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     delete:
       tags:
       - Processors API
+      summary: Delete a Processor of a Bridge instance
+      description: Delete a Processor of a Bridge instance for the authenticated user.
+      operationId: ProcessorsAPI_deleteProcessor
       parameters:
       - name: bridgeId
         in: path
@@ -165,14 +461,33 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "404":
+          description: Not found.
+          content:
+            application/json: {}
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/errors:
     get:
       tags:
-      - Errors API
+      - Errors Catalog API
+      summary: Get the list of errors.
+      description: Get the list of errors from the error catalog.
+      operationId: ErrorsAPI_getErrors
       parameters:
       - name: page
         in: query
@@ -191,13 +506,46 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ErrorResponse'
+                  page:
+                    format: int64
+                    type: integer
+                  size:
+                    format: int64
+                    type: integer
+                  total:
+                    format: int64
+                    type: integer
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
-      - Errors API
+      - Errors Catalog API
+      summary: Get an error from the error catalog.
+      description: Get an error from the error catalog.
+      operationId: ErrorsAPI_getError
       parameters:
       - name: id
         in: path
@@ -207,21 +555,69 @@ paths:
           type: integer
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    format: int32
+                    type: integer
+                  code:
+                    type: string
+                  reason:
+                    type: string
+                  type:
+                    $ref: '#/components/schemas/BridgeErrorType'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Get Bridge instances to be processed by a shard.
+      description: Get Bridge instances to be processed by a shard.
+      operationId: ShardBridgesSyncAPI_getBridges
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BridgeDTO'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Update a Bridge instance.
+      description: Update a Bridge instance.
+      operationId: ShardBridgesSyncAPI_updateBridge
       requestBody:
         content:
           application/json:
@@ -229,21 +625,57 @@ paths:
               $ref: '#/components/schemas/BridgeDTO'
       responses:
         "200":
-          description: OK
+          description: Success.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
   /api/v1/shard/bridges/processors:
     get:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Get Processors to be processed by a shard.
+      description: Get Processors to be processed by a shard.
+      operationId: ShardBridgesSyncAPI_getProcessors
       responses:
         "200":
-          description: OK
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessorDTO'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
     put:
       tags:
-      - Shard Bridges Sync API
+      - Shard API
+      summary: Update a Processor.
+      description: Update a Processor.
+      operationId: ShardBridgesSyncAPI_updateProcessorStatus
       requestBody:
         content:
           application/json:
@@ -251,7 +683,19 @@ paths:
               $ref: '#/components/schemas/ProcessorDTO'
       responses:
         "200":
-          description: OK
+          description: Success.
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
       security:
       - bearer: []
 components:
@@ -296,6 +740,11 @@ components:
           $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
+    BridgeErrorType:
+      enum:
+      - PLATFORM
+      - USER
+      type: string
     BridgeRequest:
       required:
       - name
@@ -305,6 +754,42 @@ components:
           minLength: 1
           type: string
           nullable: false
+    BridgeResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/ManagedResourceStatus'
+        endpoint:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        code:
+          type: string
+        reason:
+          type: string
     KafkaConnectionDTO:
       type: object
       properties:
@@ -382,6 +867,34 @@ components:
           - allOf:
             - $ref: '#/components/schemas/BaseAction'
             - nullable: false
+    ProcessorResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+        submitted_at:
+          format: date-time
+          type: string
+        published_at:
+          format: date-time
+          type: string
+        status:
+          $ref: '#/components/schemas/ManagedResourceStatus'
+        filters:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseFilter'
+        transformationTemplate:
+          type: string
+        action:
+          $ref: '#/components/schemas/BaseAction'
   securitySchemes:
     bearer:
       type: http
