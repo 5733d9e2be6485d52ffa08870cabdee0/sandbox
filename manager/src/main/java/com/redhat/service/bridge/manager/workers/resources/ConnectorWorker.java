@@ -157,12 +157,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
                     connectorEntity.getId());
             return deleteTopic(connectorEntity);
         }
-        if (status.getState() == ConnectorState.FAILED) {
-            LOGGER.debug("Managed Connector for '{}' [{}] has status 'FAILED'. Continuing with deletion of Kafka Topic..",
-                    connectorEntity.getName(),
-                    connectorEntity.getId());
-            return deleteTopic(connectorEntity);
-        }
 
         // Step 2 - Delete Connector
         LOGGER.debug("Deleting Managed Connector for '{}' [{}]",

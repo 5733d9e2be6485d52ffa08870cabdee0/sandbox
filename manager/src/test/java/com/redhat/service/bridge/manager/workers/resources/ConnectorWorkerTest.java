@@ -1,6 +1,7 @@
 package com.redhat.service.bridge.manager.workers.resources;
 
 import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 
@@ -8,7 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -36,9 +38,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ConnectorWorkerTest {
+class ConnectorWorkerTest {
 
-    private static final String RESOURCE_ID = "123";
+    private static final String TEST_CONNECTOR_EXTERNAL_ID = "connectorExternalId";
+    private static final String TEST_RESOURCE_ID = "123";
+    private static final String TEST_TOPIC_NAME = "topicName";
 
     @Mock
     ConnectorsDAO connectorsDAO;
@@ -71,30 +75,34 @@ public class ConnectorWorkerTest {
     @Test
     void handleWorkProvisioningWithUnknownResource() {
         Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
+        work.setManagedResourceId(TEST_RESOURCE_ID);
 
-        when(connectorsDAO.findById(RESOURCE_ID)).thenReturn(null);
+        when(connectorsDAO.findById(TEST_RESOURCE_ID)).thenReturn(null);
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PROVISIONING" })
-    void handleWorkProvisioningWithKnownResourceMultiplePasses(ManagedResourceStatus status) {
+    @MethodSource("provideArgsForCreateTest")
+    void handleWorkProvisioningWithKnownResourceMultiplePasses(
+            ManagedResourceStatus resourceStatus,
+            ConnectorState connectorState,
+            ManagedResourceStatus expectedResourceStatus,
+            ManagedResourceStatus expectedResourceDependencyStatus) {
         Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
+        work.setManagedResourceId(TEST_RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
         ConnectorEntity connectorEntity = spy(new ConnectorEntity());
-        connectorEntity.setStatus(status);
+        connectorEntity.setStatus(resourceStatus);
         Connector connector = new Connector();
-        connector.setId("connectorExternalId");
-        connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
+        connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
+        connector.setStatus(new ConnectorStatusStatus().state(connectorState));
 
-        when(connectorsDAO.findById(RESOURCE_ID)).thenReturn(connectorEntity);
+        when(connectorsDAO.findById(TEST_RESOURCE_ID)).thenReturn(connectorEntity);
         when(connectorsDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(connectorEntity)).thenReturn(connectorEntity);
-        when(connectorsApi.getConnector("connectorExternalId")).thenReturn(connector);
+        when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
         when(connectorsApi.createConnector(connectorEntity)).thenReturn(connector);
 
         worker.handleWork(work);
@@ -109,9 +117,13 @@ public class ConnectorWorkerTest {
 
         verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
         verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
-        assertThat(connectorEntity.getPublishedAt()).isNotNull();
-        assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(connectorEntity.getStatus()).isEqualTo(expectedResourceStatus);
+        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(expectedResourceDependencyStatus);
+        if (expectedResourceStatus == ManagedResourceStatus.READY) {
+            assertThat(connectorEntity.getPublishedAt()).isNotNull();
+        } else {
+            assertThat(connectorEntity.getPublishedAt()).isNull();
+        }
 
         verify(workManager, never()).complete(work);
 
@@ -119,20 +131,22 @@ public class ConnectorWorkerTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
-    void handleWorkDeletingWithKnownResourceMultiplePasses(ManagedResourceStatus status) {
+    @MethodSource("provideArgsForDeleteTest")
+    void handleWorkDeletingWithKnownResourceMultiplePasses(
+            ManagedResourceStatus resourceStatus,
+            ConnectorState connectorState) {
         Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
+        work.setManagedResourceId(TEST_RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
 
         ConnectorEntity connectorEntity = spy(new ConnectorEntity());
-        connectorEntity.setStatus(status);
-        connectorEntity.setTopicName("topicName");
-        connectorEntity.setConnectorExternalId("connectorExternalId");
+        connectorEntity.setStatus(resourceStatus);
+        connectorEntity.setTopicName(TEST_TOPIC_NAME);
+        connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
         Connector connector = new Connector();
-        connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
+        connector.setStatus(new ConnectorStatusStatus().state(connectorState));
 
-        when(connectorsDAO.findById(RESOURCE_ID)).thenReturn(connectorEntity);
+        when(connectorsDAO.findById(TEST_RESOURCE_ID)).thenReturn(connectorEntity);
         when(connectorsDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(connectorEntity)).thenReturn(connectorEntity);
         // Managed Connector will initially be available before it is deleted
@@ -140,13 +154,15 @@ public class ConnectorWorkerTest {
 
         worker.handleWork(work);
 
-        assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.DELETING);
-        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETING);
-        verify(rhoasService, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
-        verify(connectorsApi).deleteConnector(connectorEntity.getConnectorExternalId());
+        if (connectorState != ConnectorState.DELETED) {
+            assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.DELETING);
+            assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETING);
+            verify(rhoasService, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+            verify(connectorsApi).deleteConnector(connectorEntity.getConnectorExternalId());
 
-        // This emulates a subsequent invocation by WorkManager
-        worker.handleWork(work);
+            // This emulates a subsequent invocation by WorkManager
+            worker.handleWork(work);
+        }
 
         assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
@@ -157,4 +173,21 @@ public class ConnectorWorkerTest {
         verify(connectorEntity, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
     }
 
+    private static Stream<Arguments> provideArgsForCreateTest() {
+        return Stream.of(
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.READY, ManagedResourceStatus.READY, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, ManagedResourceStatus.FAILED, ManagedResourceStatus.PROVISIONING),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.READY, ManagedResourceStatus.READY, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, ManagedResourceStatus.FAILED, ManagedResourceStatus.PROVISIONING));
+    }
+
+    private static Stream<Arguments> provideArgsForDeleteTest() {
+        return Stream.of(
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.READY),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED),
+                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.READY),
+                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.FAILED),
+                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.DELETED));
+    }
 }
