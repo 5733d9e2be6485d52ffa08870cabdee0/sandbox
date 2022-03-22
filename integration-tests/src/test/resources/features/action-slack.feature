@@ -42,7 +42,6 @@ Feature: Slack Action tests
     Then Slack channel contains message with text "${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
 
   Scenario: Slack Action Processor creation returns Error when wrong parameters is passed
-
     When add a Processor to the Bridge "mybridge" with body is failing with HTTP response code 400:
     """
     {
