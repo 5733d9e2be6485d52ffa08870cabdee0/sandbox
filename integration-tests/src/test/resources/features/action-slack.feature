@@ -3,7 +3,7 @@ Feature: Slack Action tests
   Background:
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
   Scenario: Slack Action Processor is created and slack message should be received in the slack channel
