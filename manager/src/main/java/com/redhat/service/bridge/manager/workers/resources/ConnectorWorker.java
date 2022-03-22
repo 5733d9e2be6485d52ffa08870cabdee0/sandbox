@@ -106,6 +106,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
             return persist(connectorEntity);
         }
 
@@ -153,12 +154,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
         if (status.getState() == ConnectorState.DELETED) {
             LOGGER.debug("Managed Connector for '{}' [{}] has status 'DELETED'. Continuing with deletion of Kafka Topic..",
-                    connectorEntity.getName(),
-                    connectorEntity.getId());
-            return deleteTopic(connectorEntity);
-        }
-        if (status.getState() == ConnectorState.FAILED) {
-            LOGGER.debug("Managed Connector for '{}' [{}] has status 'FAILED'. Continuing with deletion of Kafka Topic..",
                     connectorEntity.getName(),
                     connectorEntity.getId());
             return deleteTopic(connectorEntity);
