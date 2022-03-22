@@ -27,6 +27,7 @@ import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.workers.WorkManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -48,6 +49,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @Inject
     ShardService shardService;
@@ -179,7 +183,7 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                internalKafkaConfigurationProvider.getBridgeTopicName(bridge));
+                resourceNamesProvider.getBridgeTopicName(bridge.getId()));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
