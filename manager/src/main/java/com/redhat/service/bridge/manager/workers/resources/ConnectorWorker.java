@@ -106,6 +106,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
             return persist(connectorEntity);
         }
 

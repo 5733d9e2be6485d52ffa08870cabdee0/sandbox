@@ -87,8 +87,7 @@ class ConnectorWorkerTest {
     void handleWorkProvisioningWithKnownResourceMultiplePasses(
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
-            ManagedResourceStatus expectedResourceStatus,
-            ManagedResourceStatus expectedResourceDependencyStatus) {
+            ManagedResourceStatus expectedResourceStatus) {
         Work work = new Work();
         work.setManagedResourceId(TEST_RESOURCE_ID);
         work.setSubmittedAt(ZonedDateTime.now());
@@ -118,7 +117,7 @@ class ConnectorWorkerTest {
         verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
         verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
         assertThat(connectorEntity.getStatus()).isEqualTo(expectedResourceStatus);
-        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(expectedResourceDependencyStatus);
+        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(expectedResourceStatus);
         if (expectedResourceStatus == ManagedResourceStatus.READY) {
             assertThat(connectorEntity.getPublishedAt()).isNotNull();
         } else {
@@ -175,10 +174,10 @@ class ConnectorWorkerTest {
 
     private static Stream<Arguments> provideArgsForCreateTest() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.READY, ManagedResourceStatus.READY, ManagedResourceStatus.READY),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, ManagedResourceStatus.FAILED, ManagedResourceStatus.PROVISIONING),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.READY, ManagedResourceStatus.READY, ManagedResourceStatus.READY),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, ManagedResourceStatus.FAILED, ManagedResourceStatus.PROVISIONING));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.READY, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, ManagedResourceStatus.FAILED),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.READY, ManagedResourceStatus.READY),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, ManagedResourceStatus.FAILED));
     }
 
     private static Stream<Arguments> provideArgsForDeleteTest() {
