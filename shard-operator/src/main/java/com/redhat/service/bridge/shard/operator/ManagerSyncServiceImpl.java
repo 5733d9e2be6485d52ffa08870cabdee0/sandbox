@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +71,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
         LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
-                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
@@ -79,16 +80,16 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
         LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorDTO.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
-                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.SUCCESS))
-                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES)
-                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.UPDATE, ManagerRequestStatus.FAILURE));
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.UPDATE, failure))
+                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
     @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
-                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
@@ -116,8 +117,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
-                .onItem().invoke(success -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.SUCCESS))
-                .onFailure().invoke(failure -> metricsService.updateManagerRequestMetrics(ManagerRequestType.FETCH, ManagerRequestStatus.FAILURE))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
                 .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
@@ -182,7 +183,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         return Uni.createFrom().item(x);
                     } else {
                         return Uni.createFrom().failure(
-                                new HTTPResponseException(String.format("Shard failed to communicate with the manager, the request failed with status %s", x.statusCode())));
+                                new HTTPResponseException(String.format("Shard failed to communicate with the manager, the request failed with status %s", x.statusCode()), x.statusCode()));
                     }
                 });
     }
@@ -195,5 +196,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
      */
     private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
         return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
+    }
+
+    private void updateManagerRequestMetricsOnSuccess(ManagerRequestType requestType, HttpResponse<Buffer> successResponse) {
+        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.SUCCESS, String.valueOf(successResponse.statusCode()));
+    }
+
+    private void updateManagerRequestMetricsOnFailure(ManagerRequestType requestType, Throwable error) {
+        if (error instanceof HTTPResponseException) {
+            int statusCode = ((HTTPResponseException) error).getStatusCode();
+            metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, String.valueOf(statusCode));
+        }
+        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, StringUtils.EMPTY);
     }
 }

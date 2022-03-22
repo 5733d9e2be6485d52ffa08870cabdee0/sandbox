@@ -15,19 +15,24 @@ import io.micrometer.core.instrument.Tag;
 public class MetricsServiceImpl implements MetricsService {
 
     private static final String MANAGER_REQUEST_METRICS = "http.manager.request";
+    private static final String SHARD_ID = "shardId";
+    private static final String REQUEST_TYPE = "type";
+    private static final String REQUEST_STATUS = "status";
+    private static final String HTTP_STATUS_CODE = "statusCode";
 
     @Inject
     MeterRegistry meterRegistry;
 
-    @ConfigProperty(name = "event-bridge.sso.grant-options.password.user-id")
+    @ConfigProperty(name = "event-bridge.sso.grant-options.password.shard-id")
     String shardId;
 
     @Override
-    public void updateManagerRequestMetrics(ManagerRequestType requestType, ManagerRequestStatus status) {
+    public void updateManagerRequestMetrics(ManagerRequestType requestType, ManagerRequestStatus status, String statusCode) {
         List<Tag> tags = new ArrayList<>();
-        tags.add(Tag.of("shardId", shardId));
-        tags.add(Tag.of("type", requestType.name()));
-        tags.add(Tag.of("status", status.name()));
+        tags.add(Tag.of(SHARD_ID, shardId));
+        tags.add(Tag.of(REQUEST_TYPE, requestType.name()));
+        tags.add(Tag.of(REQUEST_STATUS, status.name()));
+        tags.add(Tag.of(HTTP_STATUS_CODE, statusCode));
         meterRegistry.counter(MANAGER_REQUEST_METRICS, tags).increment();
     }
 }
