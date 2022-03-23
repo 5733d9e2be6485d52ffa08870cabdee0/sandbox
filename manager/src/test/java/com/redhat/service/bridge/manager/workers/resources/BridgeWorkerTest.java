@@ -23,6 +23,7 @@ import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.workers.WorkManager;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
@@ -51,6 +52,9 @@ public class BridgeWorkerTest {
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Mock
+    ResourceNamesProvider resourceNamesProvider;
+
+    @Mock
     WorkManager workManager;
 
     @Mock
@@ -67,6 +71,7 @@ public class BridgeWorkerTest {
         this.worker.bridgeDAO = this.bridgeDAO;
         this.worker.rhoasService = this.rhoasService;
         this.worker.internalKafkaConfigurationProvider = this.internalKafkaConfigurationProvider;
+        this.worker.resourceNamesProvider = this.resourceNamesProvider;
         this.worker.workManager = this.workManager;
         this.worker.maxRetries = 3;
         this.worker.timeoutSeconds = 60;
@@ -98,7 +103,7 @@ public class BridgeWorkerTest {
         when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
         when(bridgeDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(bridge)).thenReturn(bridge);
-        when(internalKafkaConfigurationProvider.getBridgeTopicName(bridge)).thenReturn(TOPIC_NAME);
+        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TOPIC_NAME);
         if (throwRhosError) {
             when(rhoasService.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
         }
@@ -134,7 +139,7 @@ public class BridgeWorkerTest {
         when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
         when(bridgeDAO.getEntityManager()).thenReturn(entityManager);
         when(entityManager.merge(bridge)).thenReturn(bridge);
-        when(internalKafkaConfigurationProvider.getBridgeTopicName(bridge)).thenReturn(TOPIC_NAME);
+        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TOPIC_NAME);
         if (throwRhosError) {
             doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(any(), any());
         }

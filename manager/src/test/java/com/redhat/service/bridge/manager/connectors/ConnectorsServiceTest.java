@@ -14,7 +14,7 @@ import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -44,7 +44,7 @@ class ConnectorsServiceTest {
     ConnectorsService connectorsService;
 
     @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+    ResourceNamesProvider resourceNamesProvider;
 
     @InjectMock
     ConnectorsDAO connectorsDAOMock;
@@ -127,7 +127,6 @@ class ConnectorsServiceTest {
     }
 
     private String testActionTopic() {
-        return internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID;
+        return resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID);
     }
-
 }
