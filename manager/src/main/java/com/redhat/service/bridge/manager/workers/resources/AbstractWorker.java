@@ -43,6 +43,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         T managedResource = load(work);
         if (Objects.isNull(managedResource)) {
             //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
+            workManager.complete(work);
             String message = String.format("Resource of type '%s' with id '%s' no longer exists in the database.", work.getType(), work.getManagedResourceId());
             throw new IllegalStateException(message);
         }

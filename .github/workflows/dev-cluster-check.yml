@@ -1,7 +1,8 @@
 name: Check development cluster
 on:
-  schedule:
-    - cron: '0 0/2 * * *'
+  workflow_dispatch
+#  schedule:
+#    - cron: '0 0/2 * * *'
 jobs:
   run-integration-tests:
     timeout-minutes: 30
@@ -27,6 +28,10 @@ jobs:
         with:
           maven-command: clean install -Dquickly
       - name: Run integration tests
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=${{ secrets.DEV_CLUSTER_MANAGER_URL }} -Dkeycloak.realm.url=${{ secrets.DEV_CLUSTER_KEY_CLOAK_URL }} -Dbridge.token.username=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_USERNAME }} -Dbridge.token.password=${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_PASSWORD }}

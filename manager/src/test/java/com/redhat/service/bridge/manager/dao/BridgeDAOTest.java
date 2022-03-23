@@ -1,10 +1,10 @@
 package com.redhat.service.bridge.manager.dao;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,17 +35,34 @@ public class BridgeDAOTest {
     }
 
     @Test
+    @Transactional
     public void testFindByStatus() {
         Bridge bridge = buildBridge(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.PROVISIONING), TestConstants.SHARD_ID);
-        assertThat(retrievedBridges.size()).isZero();
+        List<Bridge> retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges).isEmpty();
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.READY), TestConstants.SHARD_ID);
-        assertThat(retrievedBridges.size()).isZero();
+        // Emulate dependencies being completed
+        bridge.setDependencyStatus(ManagedResourceStatus.READY);
+        bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByStatusesAndShardId(Collections.singletonList(ManagedResourceStatus.ACCEPTED), TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges.size()).isEqualTo(1);
+
+        // Emulate de-provision request
+        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setDependencyStatus(ManagedResourceStatus.READY);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges).isEmpty();
+
+        // Emulate dependencies being deleted
+        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 

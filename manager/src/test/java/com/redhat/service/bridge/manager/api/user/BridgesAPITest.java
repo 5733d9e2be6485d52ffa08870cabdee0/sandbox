@@ -13,6 +13,7 @@ import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
@@ -21,6 +22,7 @@ import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
@@ -29,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
+@TestProfile(WorkerSchedulerProfile.class)
 public class BridgesAPITest {
 
     @Inject
@@ -47,7 +50,7 @@ public class BridgesAPITest {
     }
 
     @Test
-    public void testAuthentication() {
+    public void testGetBridgesNoAuthentication() {
         TestUtils.getBridges().then().statusCode(401);
     }
 
@@ -62,14 +65,27 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void createBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
+    }
+
+    @Test
+    public void createBridgeNoAuthentication() {
+        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+                .then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void createInvalidBridge() {
+        TestUtils.createBridge(new BridgeRequest())
+                .then().statusCode(400);
     }
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getBridge() {
         Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
-        bridgeCreateResponse.then().statusCode(201);
+        bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
 
@@ -90,10 +106,15 @@ public class BridgesAPITest {
     }
 
     @Test
+    public void getBridgeNoAuthentication() {
+        TestUtils.getBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
 
@@ -118,6 +139,17 @@ public class BridgesAPITest {
     }
 
     @Test
+    public void testDeleteBridgeNoAuthentication() {
+        TestUtils.deleteBridge("any-id").then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testDeleteNotExistingBridge() {
+        TestUtils.deleteBridge("not-the-id").then().statusCode(404);
+    }
+
+    @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
@@ -125,7 +157,7 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY,
                         new KafkaConnectionDTO()));
 
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(201);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
         TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
     }
@@ -134,7 +166,7 @@ public class BridgesAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
-                .then().statusCode(201);
+                .then().statusCode(202);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
                 .then().statusCode(400);
     }

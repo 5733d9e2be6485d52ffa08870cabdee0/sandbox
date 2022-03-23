@@ -100,6 +100,12 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         Work connectorEntityWork = Work.forDependentResource(connectorEntity, work);
         ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(connectorEntityWork);
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
+
+        // If the Connector failed we should mark the Processor as failed too
+        if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
+            processor.setStatus(ManagedResourceStatus.FAILED);
+        }
+
         return persist(processor);
     }
 

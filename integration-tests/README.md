@@ -42,3 +42,10 @@ By Default test runs with those authentication parameters for Keycloak:
 ```
 
 You can update the parameters needs to configure in `integration-tests/pom.xml` or via the maven command.
+
+## Feature file placeholders
+
+Curently there is a possibility to use these placeholders in feature files:
+
+- ${env.`<System property name>`} to use System property
+- ${bridge.`<Bridge name>`.cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
