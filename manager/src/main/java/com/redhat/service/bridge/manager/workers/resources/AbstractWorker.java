@@ -49,20 +49,8 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         }
 
         // Fail when we've had enough
-        if (areRetriesExceeded(work)) {
-            LOGGER.error(
-                    "Max retry attempts exceeded trying to create dependencies for '{}' [{}].",
-                    managedResource.getName(),
-                    managedResource.getId());
-            managedResource.setStatus(ManagedResourceStatus.FAILED);
-            persist(managedResource);
-            return managedResource;
-        }
-        if (isTimeoutExceeded(work)) {
-            LOGGER.error(
-                    "Timeout exceeded trying to create dependencies for '{}' [{}].",
-                    managedResource.getName(),
-                    managedResource.getId());
+        if (areRetriesExceeded(work, managedResource) || isTimeoutExceeded(work, managedResource)) {
+            workManager.complete(work);
             managedResource.setStatus(ManagedResourceStatus.FAILED);
             persist(managedResource);
             return managedResource;
@@ -122,12 +110,26 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return getDao().getEntityManager().merge(managedResource);
     }
 
-    protected boolean areRetriesExceeded(Work w) {
-        return w.getAttempts() > maxRetries;
+    protected boolean areRetriesExceeded(Work w, ManagedResource managedResource) {
+        boolean areRetriesExceeded = w.getAttempts() > maxRetries;
+        if (areRetriesExceeded) {
+            LOGGER.error(
+                    "Max retry attempts exceeded trying to create dependencies for '{}' [{}].",
+                    managedResource.getName(),
+                    managedResource.getId());
+        }
+        return areRetriesExceeded;
     }
 
-    protected boolean isTimeoutExceeded(Work work) {
-        return ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
+    protected boolean isTimeoutExceeded(Work work, ManagedResource managedResource) {
+        boolean isTimeoutExceeded = ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
+        if (isTimeoutExceeded) {
+            LOGGER.error(
+                    "Timeout exceeded trying to create dependencies for '{}' [{}].",
+                    managedResource.getName(),
+                    managedResource.getId());
+        }
+        return isTimeoutExceeded;
     }
 
     protected abstract PanacheRepositoryBase<T, String> getDao();
