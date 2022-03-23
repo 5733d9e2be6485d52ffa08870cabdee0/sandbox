@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.openshift.cloud.api.kas.auth.models.Topic;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.rhoas.RhoasClient;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
@@ -38,7 +38,7 @@ class RhoasServiceTest {
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
 
     @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+    ResourceNamesProvider resourceNamesProvider;
 
     @InjectMock
     RhoasClient rhoasClientMock;
@@ -132,11 +132,11 @@ class RhoasServiceTest {
     }
 
     private String testBridgeTopicName() {
-        return internalKafkaConfigurationProvider.getTopicPrefix() + TEST_BRIDGE_ID;
+        return resourceNamesProvider.getBridgeTopicName(TEST_BRIDGE_ID);
     }
 
     private String testProcessorTopicName() {
-        return internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID;
+        return resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID);
     }
 
     // verify(rhoasClientMock, times(4)).createTopicAndGrantAccess(any(), any(), any()); does not take into account the retries. So this is a workaround.

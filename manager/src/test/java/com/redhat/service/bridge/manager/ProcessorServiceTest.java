@@ -47,6 +47,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
@@ -94,6 +95,9 @@ public class ProcessorServiceTest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @InjectMock
     RhoasService rhoasService;
@@ -449,8 +453,7 @@ public class ProcessorServiceTest {
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    String.format("OpenBridge-slack_sink_0.1-%s",
-                            processor.getId()));
+                    resourceNamesProvider.getProcessorConnectorName(processor.getId()));
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();
