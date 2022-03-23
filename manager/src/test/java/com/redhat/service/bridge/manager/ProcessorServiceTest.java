@@ -28,6 +28,7 @@ import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalP
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -604,6 +605,14 @@ public class ProcessorServiceTest {
         verify(connectorsApiClient, atLeast(1)).deleteConnector(anyString());
 
         assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
+    }
+
+    @Test
+    public void testDeleteProcess_whenProcessorIsNotReady() {
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, "bridgeTestDelete", ManagedResourceStatus.PROVISIONING);
+        processorDAO.persist(processor);
+        assertThatExceptionOfType(ProcessorLifecycleException.class).isThrownBy(() -> processorService.deleteProcessor(bridge.getId(), processor.getId(), bridge.getCustomerId()));
     }
 
     private BaseAction createSlackAction() {

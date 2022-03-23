@@ -21,6 +21,7 @@ import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -194,6 +195,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
+        if (!isProcessorDeletable(processor)) {
+            throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
+        }
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
@@ -204,6 +208,11 @@ public class ProcessorServiceImpl implements ProcessorService {
         connectorService.deleteConnectorEntity(processor);
 
         return processor;
+    }
+
+    private boolean isProcessorDeletable(Processor processor) {
+        // bridge could only be deleted if its in READY or FAILED state
+        return processor.getStatus() == ManagedResourceStatus.READY || processor.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Override

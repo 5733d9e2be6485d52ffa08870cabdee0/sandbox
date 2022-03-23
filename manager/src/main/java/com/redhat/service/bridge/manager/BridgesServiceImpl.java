@@ -131,10 +131,18 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
+        if (!isBridgeDeletable(bridge)) {
+            throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
+        }
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         return bridge;
+    }
+
+    private boolean isBridgeDeletable(Bridge bridge) {
+        // bridge could only be deleted if its in READY or FAILED state
+        return bridge.getStatus() == ManagedResourceStatus.READY || bridge.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Transactional
