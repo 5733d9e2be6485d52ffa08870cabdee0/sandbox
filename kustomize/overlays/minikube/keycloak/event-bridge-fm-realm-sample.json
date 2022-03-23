@@ -95,6 +95,37 @@
       "webOrigins": [
         "*"
       ],
+      "protocolMappers": [
+        {
+          "name": "account_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "id",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "account_id",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "org_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.value": "15247674",
+            "userinfo.token.claim": "false",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "org_id",
+            "jsonType.label": "String",
+            "access.tokenResponse.claim": "false"
+          }
+        }
+      ],
       "bearerOnly": false,
       "protocol": "openid-connect"
     },
