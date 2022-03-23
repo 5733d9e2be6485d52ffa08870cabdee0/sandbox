@@ -331,6 +331,15 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithMalformedTemplateToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, "Malformed template {data.payload ", createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridgeAndRetrieve() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 

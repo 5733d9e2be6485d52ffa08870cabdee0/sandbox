@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.executor.transformations;
+package com.redhat.service.bridge.infra.transformations;
 
 import java.util.HashMap;
 import java.util.Map;
