@@ -15,8 +15,6 @@ import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.KafkaConnectionDTO;
@@ -25,6 +23,8 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;

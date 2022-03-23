@@ -7,10 +7,10 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.bridge.infra.validations.ValidationResult;
 
 import io.quarkus.test.junit.QuarkusTest;
 

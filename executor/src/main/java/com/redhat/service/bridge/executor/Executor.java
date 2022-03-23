@@ -13,10 +13,10 @@ import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluator;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.transformations.TransformationEvaluator;
+import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
