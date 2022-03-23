@@ -38,7 +38,7 @@ import io.quarkus.security.Authenticated;
 
 import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PATH;
 
-@Tag(name = "Errors Catalog API", description = "List and get the error definitions from the error catalog.")
+@Tag(name = "Error Catalog", description = "List and get the error definitions from the error catalog.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
