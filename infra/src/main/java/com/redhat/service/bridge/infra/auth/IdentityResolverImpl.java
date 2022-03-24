@@ -17,6 +17,7 @@ public class IdentityResolverImpl implements IdentityResolver {
         if (jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)) {
             return jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM);
         }
-        throw new ForbiddenRequestException("The token is valid but it does not contain 'rh-user-id' nor 'account_id' claim.");
+        throw new ForbiddenRequestException(String.format("The token is valid but it does not contain '%s' nor '%s' claim.", APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM,
+                APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM));
     }
 }
