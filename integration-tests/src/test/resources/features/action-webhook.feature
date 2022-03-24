@@ -15,9 +15,9 @@ Feature: Webhook Action tests
         "type": "Webhook",
         "parameters": {
             "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
-        },
-        "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
-      }
+        }
+      },
+      "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
     }
     """
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "myProcessor"
