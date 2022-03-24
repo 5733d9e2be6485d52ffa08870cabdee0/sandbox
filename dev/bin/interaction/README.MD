@@ -19,8 +19,6 @@ And then call the others such as
 
 ### Note
 
-If you are using Ubuntu the default shell is `dash` that does not support the `source` command.
+Some Operating Systems may not have `bash` as the default shell. You may therefore encounter issues with the `source` command used in these scripts.
 
-You can either invoke the scripts with `bash` explicitly, e.g. `bash ./get-token.sh`, or configuring `dash` as the default shell.
-
-See [here](https://unix.stackexchange.com/questions/442510/how-to-use-bash-for-sh-in-ubuntu/442517#442517).
+You can either invoke the scripts with `bash` explicitly, e.g. `bash ./get-token.sh`, or configuring `bash` as the default shell.
