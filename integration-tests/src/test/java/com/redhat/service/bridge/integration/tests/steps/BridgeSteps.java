@@ -113,7 +113,7 @@ public class BridgeSteps {
                                 .body("status", Matchers.equalTo(status))
                                 .body("endpoint", Matchers.containsString(bridgeContext.getId())));
 
-        BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+        BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
     }
 
     @When("^delete the Bridge \"([^\"]*)\"$")
