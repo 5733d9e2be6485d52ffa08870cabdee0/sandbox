@@ -44,6 +44,14 @@ public class IdentityResolverTest {
                 }
                 return null;
             }
+
+            @Override
+            public boolean containsClaim(String s) {
+                if (APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM.equals(s)) {
+                    return true;
+                }
+                return false;
+            }
         };
         assertThat(identityResolver.getCustomerIdFromUserToken(jwt)).isEqualTo(CUSTOMER_ID);
     }
@@ -67,6 +75,14 @@ public class IdentityResolverTest {
                     return (T) CUSTOMER_ID;
                 }
                 return null;
+            }
+
+            @Override
+            public boolean containsClaim(String s) {
+                if (APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM.equals(s)) {
+                    return true;
+                }
+                return false;
             }
         };
         assertThat(identityResolver.getCustomerIdFromServiceAccountToken(jwt)).isEqualTo(CUSTOMER_ID);
