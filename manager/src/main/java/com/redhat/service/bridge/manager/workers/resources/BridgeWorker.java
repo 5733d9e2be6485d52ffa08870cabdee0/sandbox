@@ -12,6 +12,7 @@ import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Work;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -30,6 +31,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @Override
     protected PanacheRepositoryBase<Bridge, String> getDao() {
@@ -52,7 +56,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         bridge = persist(bridge);
 
         // If this call throws an exception the Bridge's dependencies will be left in PROVISIONING state...
-        rhoasService.createTopicAndGrantAccessFor(internalKafkaConfigurationProvider.getBridgeTopicName(bridge),
+        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // ...otherwise the Bridge's dependencies are READY
@@ -76,7 +80,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         bridge = persist(bridge);
 
         // If this call throws an exception the Bridge's dependencies will be left in DELETING state...
-        rhoasService.deleteTopicAndRevokeAccessFor(internalKafkaConfigurationProvider.getBridgeTopicName(bridge),
+        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // ...otherwise the Bridge's dependencies are DELETED

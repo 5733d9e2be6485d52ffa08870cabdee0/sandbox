@@ -39,7 +39,7 @@ import com.redhat.service.bridge.manager.models.Bridge;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Bridges API", description = "The API that allow the user to retrieve, create or delete Bridge instances.")
+@Tag(name = "Bridges", description = "The API that allow the user to retrieve, create or delete Bridge instances.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,

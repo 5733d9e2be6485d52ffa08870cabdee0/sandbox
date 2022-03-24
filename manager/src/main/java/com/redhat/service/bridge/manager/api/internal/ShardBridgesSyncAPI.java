@@ -41,7 +41,7 @@ import io.quarkus.security.Authenticated;
 
 import static java.util.stream.Collectors.toList;
 
-@Tag(name = "Shard API", description = "The API that allow a shard to retrieve and update resources.")
+@Tag(name = "Shard", description = "The API that allow a shard to retrieve and update resources.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,

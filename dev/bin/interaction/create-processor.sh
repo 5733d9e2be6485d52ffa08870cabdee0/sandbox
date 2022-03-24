@@ -4,7 +4,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 PROCESSOR_NAME=${1:-$TODAY_PROCESSOR_NAME}
 
-export PROCESSOR_CREATION='{
+export PROCESSOR_CONNECTOR_PAYLOAD='{
    "name": '"\"$PROCESSOR_NAME\""',
    "action": {
       "type": "Slack",
@@ -23,7 +23,7 @@ export PROCESSOR_CREATION='{
   "transformationTemplate": "{\"test\": \"{data.myMessage}\"}"
 }'
 
-export PROCESSOR_CREATION_WEBHOOK='{
+export PROCESSOR_WEBHOOK_PAYLOAD='{
    "name": '"\"$PROCESSOR_NAME\""',
    "action": {
       "type": "Webhook",
@@ -42,7 +42,7 @@ export PROCESSOR_CREATION_WEBHOOK='{
 }'
 
 printf "\n\nCreating the processor with name $PROCESSOR_NAME\n"
-PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$PROCESSOR_CREATION_WEBHOOK" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$PROCESSOR_CONNECTOR_PAYLOAD" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
 
 printf "\n\nProcessor Created: $PROCESSOR_NAME\n"
 echo "export PROCESSOR_ID=$PROCESSOR_ID"

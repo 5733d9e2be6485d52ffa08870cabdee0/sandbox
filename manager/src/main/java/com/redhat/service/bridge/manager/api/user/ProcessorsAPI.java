@@ -40,7 +40,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Processors API", description = "The API that allow the user to retrieve, create or delete Processors of a Bridge instance.")
+@Tag(name = "Processors", description = "The API that allow the user to retrieve, create or delete Processors of a Bridge instance.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
