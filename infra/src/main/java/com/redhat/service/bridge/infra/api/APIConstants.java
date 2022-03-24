@@ -21,9 +21,14 @@ public class APIConstants {
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
-     * User id attribute claim key.
+     * Account id attribute claim key for a user token.
      */
-    public static final String SUBJECT_ATTRIBUTE_CLAIM = "sub";
+    public static final String ACCOUNT_ID_USER_ATTRIBUTE_CLAIM = "account_id";
+
+    /**
+     * Account id attribute claim key for a service account token.
+     */
+    public static final String ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM = "rh-user-id";
 
     /**
      * The page query parameter name

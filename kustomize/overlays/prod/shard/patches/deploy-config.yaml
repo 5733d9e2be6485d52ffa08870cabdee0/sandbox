@@ -4,8 +4,6 @@ data:
   EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:7c045d0b9bdb61a1987c43b17d73ba5c51ef4286-jvm
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
-  EVENT_BRIDGE_SSO_CLIENT_ID: event-bridge
-  EVENT_BRIDGE_SSO_SECRET: secret
   EVENT_BRIDGE_SSO_URL: https://keycloak-event-bridge-prod.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm
 kind: ConfigMap
 metadata:

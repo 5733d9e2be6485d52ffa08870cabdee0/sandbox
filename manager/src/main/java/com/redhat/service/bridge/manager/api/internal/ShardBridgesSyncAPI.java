@@ -82,7 +82,7 @@ public class ShardBridgesSyncAPI {
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
-        String shardId = identityResolver.resolve(jwt);
+        String shardId = identityResolver.getCustomerIdFromServiceAccountToken(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}' with status '{}'",
                 processorDTO.getId(),
@@ -105,7 +105,7 @@ public class ShardBridgesSyncAPI {
     @GET
     @Path("processors")
     public Response getProcessors() {
-        String shardId = identityResolver.resolve(jwt);
+        String shardId = identityResolver.getCustomerIdFromServiceAccountToken(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
         List<Processor> processorToDeployOrDelete = processorService.findByShardIdWithReadyDependencies(shardId);
@@ -128,7 +128,7 @@ public class ShardBridgesSyncAPI {
     @Operation(summary = "Get Bridge instances to be processed by a shard.", description = "Get Bridge instances to be processed by a shard.")
     @GET
     public Response getBridges() {
-        String shardId = identityResolver.resolve(jwt);
+        String shardId = identityResolver.getCustomerIdFromServiceAccountToken(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
         List<Bridge> bridgesToDeployOrDelete = bridgesService.findByShardIdWithReadyDependencies(shardId);
@@ -150,7 +150,7 @@ public class ShardBridgesSyncAPI {
     @Operation(summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
     @PUT
     public Response updateBridge(BridgeDTO dto) {
-        String subject = identityResolver.resolve(jwt);
+        String subject = identityResolver.getCustomerIdFromServiceAccountToken(jwt);
         failIfNotAuthorized(subject);
         LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
         bridgesService.updateBridge(dto);

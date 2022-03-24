@@ -65,7 +65,11 @@ public class ShardBridgesSyncAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
@@ -315,7 +319,7 @@ public class ShardBridgesSyncAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testUnauthorizedRole() {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("hacker");
         TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
         TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);
