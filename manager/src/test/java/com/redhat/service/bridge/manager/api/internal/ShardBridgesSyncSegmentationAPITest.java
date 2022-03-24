@@ -65,6 +65,12 @@ public class ShardBridgesSyncSegmentationAPITest {
     @Test
     @TestSecurity(user = "knative")
     public void testShardSegmentation() {
+        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("knative");
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+
         // the bridge gets assigned to the default shard
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
