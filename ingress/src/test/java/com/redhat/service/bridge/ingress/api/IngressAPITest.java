@@ -48,7 +48,7 @@ public class IngressAPITest {
 
     @BeforeEach
     public void cleanUp() {
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
+        mockJwt(TestConstants.DEFAULT_CUSTOMER_ID);
     }
 
     @BeforeAll
@@ -107,7 +107,7 @@ public class IngressAPITest {
     @TestSecurity(user = "hacker")
     public void testPlainEndpointWithUnauthorizedUser() {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        mockJwt("hacker");
         Headers headers = buildHeaders(HEADER_CE_SPECVERSION, HEADER_CE_TYPE, HEADER_CE_ID, HEADER_CE_SOURCE, HEADER_CE_SUBJECT);
         doPlainApiCall("{\"key\": \"value\"}", headers, HttpStatus.SC_FORBIDDEN);
     }
@@ -116,7 +116,7 @@ public class IngressAPITest {
     @TestSecurity(user = "hacker")
     public void testCloudEventEndpointWithUnauthorizedUser() throws JsonProcessingException {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        mockJwt("hacker");
         doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_FORBIDDEN);
     }
 
@@ -124,7 +124,7 @@ public class IngressAPITest {
     @TestSecurity(user = "robot")
     public void testSendCloudEventFromRobotAccount() throws JsonProcessingException {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn("robot");
+        mockJwt("robot");
         doApiCall(TestUtils.buildTestCloudEvent(), HttpStatus.SC_OK);
     }
 
@@ -160,5 +160,10 @@ public class IngressAPITest {
                 new Header("ce-id", id),
                 new Header("ce-source", source),
                 new Header("ce-subject", subject));
+    }
+
+    private void mockJwt(String user) {
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(user);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 }
