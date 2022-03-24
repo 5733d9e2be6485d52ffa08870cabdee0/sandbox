@@ -29,6 +29,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -65,15 +66,10 @@ public class ShardBridgesSyncSegmentationAPITest {
     @Test
     @TestSecurity(user = "knative")
     public void testShardSegmentation() {
-        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("knative");
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
-
         // the bridge gets assigned to the default shard
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
+        mockJwt(TestConstants.SHARD_ID);
         final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployForDefaultShard.clear();
@@ -82,12 +78,7 @@ public class ShardBridgesSyncSegmentationAPITest {
             assertThat(bridgesToDeployForDefaultShard.size()).isEqualTo(1);
         });
 
-        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("knative");
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
-
+        mockJwt("knative");
         // No bridges are assigned to the 'knative' shard
         List<BridgeDTO> bridgesToDeployForOtherShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -96,5 +87,14 @@ public class ShardBridgesSyncSegmentationAPITest {
             }));
             assertThat(bridgesToDeployForOtherShard.size()).isEqualTo(0);
         });
+    }
+
+    private void mockJwt(String shardId) {
+        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(shardId);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 }
