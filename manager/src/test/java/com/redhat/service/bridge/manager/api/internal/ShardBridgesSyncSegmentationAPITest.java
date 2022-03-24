@@ -67,9 +67,9 @@ public class ShardBridgesSyncSegmentationAPITest {
     @TestSecurity(user = "knative")
     public void testShardSegmentation() {
         // the bridge gets assigned to the default shard
+        mockJwt(TestConstants.SHARD_ID);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
-        mockJwt(TestConstants.SHARD_ID);
         final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployForDefaultShard.clear();
