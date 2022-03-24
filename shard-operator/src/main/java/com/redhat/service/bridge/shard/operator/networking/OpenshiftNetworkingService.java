@@ -34,9 +34,8 @@ public class OpenshiftNetworkingService implements NetworkingService {
     @Override
     public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
         Route expected = buildRoute(bridgeIngress, service);
+
         Route existing = client.routes().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
-        LOGGER.debug("Expected Ingress: {}", expected);
-        LOGGER.debug("Existing Ingress: {}", existing);
 
         if (existing == null || !expected.getSpec().getTo().getName().equals(existing.getSpec().getTo().getName())) {
             client.routes().inNamespace(service.getMetadata().getNamespace()).createOrReplace(expected);
