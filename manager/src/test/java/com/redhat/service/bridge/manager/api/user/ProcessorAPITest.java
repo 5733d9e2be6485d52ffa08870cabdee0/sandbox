@@ -2,7 +2,9 @@ package com.redhat.service.bridge.manager.api.user;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -22,6 +24,7 @@ import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
+import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -36,10 +39,13 @@ import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import static com.redhat.service.bridge.manager.utils.TestUtils.createKafkaAction;
 import static com.redhat.service.bridge.manager.utils.TestUtils.createSendToBridgeAction;
+import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -275,6 +281,51 @@ public class ProcessorAPITest {
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", Collections.singleton(new ValuesIn("pepe", null)), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithEmptyChannelParameterToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        BaseAction action = createKafkaAction();
+        action.setType(SlackAction.TYPE);
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.CHANNEL_PARAMETER, "");
+        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "https://example.com");
+        action.setParameters(params);
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithEmptyWebhookURLParameterToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        BaseAction action = createKafkaAction();
+        action.setType(SlackAction.TYPE);
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.CHANNEL_PARAMETER, "channel");
+        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "");
+        action.setParameters(params);
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithWrongParametersNameToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        String requestBody = String.format("{\"name\": \"processorInvalid\", \"action\": {\"type\": \"Slack\", \"properties\": {\"channel\": \"test\", \"webhookUrl\": \"https://example.com\"}}}");
+        Response response = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when().body(requestBody).post(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId() + "/processors/");
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
