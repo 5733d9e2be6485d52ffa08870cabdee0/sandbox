@@ -53,7 +53,7 @@ public class IdentityResolverTest {
                 return false;
             }
         };
-        assertThat(identityResolver.getCustomerIdFromUserToken(jwt)).isEqualTo(CUSTOMER_ID);
+        assertThat(identityResolver.resolve(jwt)).isEqualTo(CUSTOMER_ID);
     }
 
     @Test
@@ -85,11 +85,11 @@ public class IdentityResolverTest {
                 return false;
             }
         };
-        assertThat(identityResolver.getCustomerIdFromServiceAccountToken(jwt)).isEqualTo(CUSTOMER_ID);
+        assertThat(identityResolver.resolve(jwt)).isEqualTo(CUSTOMER_ID);
     }
 
     @Test
-    public void testNotValidUserToken() {
+    public void testValidTokenWithoutClaims() {
         JsonWebToken jwt = new JsonWebToken() {
             @Override
             public String getName() {
@@ -106,27 +106,6 @@ public class IdentityResolverTest {
                 return null;
             }
         };
-        assertThatThrownBy(() -> identityResolver.getCustomerIdFromUserToken(jwt)).isInstanceOf(ForbiddenRequestException.class);
-    }
-
-    @Test
-    public void testNotValidServiceAccountToken() {
-        JsonWebToken jwt = new JsonWebToken() {
-            @Override
-            public String getName() {
-                return null;
-            }
-
-            @Override
-            public Set<String> getClaimNames() {
-                return null;
-            }
-
-            @Override
-            public <T> T getClaim(String s) {
-                return null;
-            }
-        };
-        assertThatThrownBy(() -> identityResolver.getCustomerIdFromServiceAccountToken(jwt)).isInstanceOf(ForbiddenRequestException.class);
+        assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
     }
 }

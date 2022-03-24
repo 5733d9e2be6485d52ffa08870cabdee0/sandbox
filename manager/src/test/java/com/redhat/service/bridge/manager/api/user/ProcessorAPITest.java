@@ -63,8 +63,6 @@ public class ProcessorAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_CUSTOMER_ID);
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
         when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
         when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }

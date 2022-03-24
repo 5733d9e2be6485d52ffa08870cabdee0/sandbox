@@ -74,7 +74,7 @@ public class BridgesAPI {
     @GET
     public Response getBridges(@Valid @BeanParam QueryInfo queryInfo) {
         return Response.ok(ListResponse.fill(bridgesService
-                .getBridges(identityResolver.getCustomerIdFromUserToken(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
+                .getBridges(identityResolver.resolve(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
     }
 
     @APIResponses(value = {
@@ -88,7 +88,7 @@ public class BridgesAPI {
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
     public Response createBridge(@Valid BridgeRequest bridgeRequest) {
-        Bridge bridge = bridgesService.createBridge(identityResolver.getCustomerIdFromUserToken(jwt), bridgeRequest);
+        Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 
@@ -105,7 +105,7 @@ public class BridgesAPI {
     @GET
     @Path("{bridgeId}")
     public Response getBridge(@PathParam("bridgeId") @NotEmpty String bridgeId) {
-        Bridge bridge = bridgesService.getBridge(bridgeId, identityResolver.getCustomerIdFromUserToken(jwt));
+        Bridge bridge = bridgesService.getBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.ok(bridgesService.toResponse(bridge)).build();
     }
 
@@ -121,7 +121,7 @@ public class BridgesAPI {
     @DELETE
     @Path("{bridgeId}")
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
-        bridgesService.deleteBridge(bridgeId, identityResolver.getCustomerIdFromUserToken(jwt));
+        bridgesService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.accepted().build();
     }
 }

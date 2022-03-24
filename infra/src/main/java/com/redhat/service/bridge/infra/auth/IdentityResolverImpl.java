@@ -10,18 +10,13 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequ
 @ApplicationScoped
 public class IdentityResolverImpl implements IdentityResolver {
     @Override
-    public String getCustomerIdFromUserToken(JsonWebToken jwt) {
-        if (!jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)) {
-            throw new ForbiddenRequestException("Not a valid User bearer token.");
+    public String resolve(JsonWebToken jwt) {
+        if (jwt.containsClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)) {
+            return jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM);
         }
-        return jwt.getClaim(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM);
-    }
-
-    @Override
-    public String getCustomerIdFromServiceAccountToken(JsonWebToken jwt) {
-        if (!jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)) {
-            throw new ForbiddenRequestException("Not a valid Service Account bearer token.");
+        if (jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)) {
+            return jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM);
         }
-        return jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM);
+        throw new ForbiddenRequestException("The token is valid but it does not contain 'rh-user-id' nor 'account_id' claim.");
     }
 }
