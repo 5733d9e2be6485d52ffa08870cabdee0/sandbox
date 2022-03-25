@@ -67,7 +67,7 @@ public class ProcessorWorkerTest {
 
     @BeforeEach
     public void setup() {
-        databaseManagerUtils.cleanUp();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     @Test
@@ -83,7 +83,6 @@ public class ProcessorWorkerTest {
     void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -105,7 +104,6 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
@@ -152,7 +150,6 @@ public class ProcessorWorkerTest {
     void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -175,7 +172,6 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);

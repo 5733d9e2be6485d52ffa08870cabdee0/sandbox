@@ -77,7 +77,7 @@ class ConnectorWorkerTest {
 
     @BeforeEach
     public void setup() {
-        databaseManagerUtils.cleanUp();
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     @Test
@@ -96,7 +96,6 @@ class ConnectorWorkerTest {
             ManagedResourceStatus expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, resourceStatus, TEST_TOPIC_NAME);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
@@ -143,7 +142,6 @@ class ConnectorWorkerTest {
             ConnectorState connectorState) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        processor.setShardId(null);//V0.1.5__create_shards.sql adds a FK for Processor to Shard by the DTO does not have the association
         ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, resourceStatus, TEST_TOPIC_NAME);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
