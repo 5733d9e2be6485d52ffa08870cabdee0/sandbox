@@ -1,20 +1,14 @@
 package com.redhat.service.bridge.manager.workers.resources;
 
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
@@ -22,67 +16,58 @@ import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Work;
-import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.workers.WorkManager;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
+import com.redhat.service.bridge.test.resource.PostgresResource;
+
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@QuarkusTest
+@QuarkusTestResource(PostgresResource.class)
 public class BridgeWorkerTest {
 
-    private static final String RESOURCE_ID = "123";
+    private static final String TEST_RESOURCE_ID = "123";
+    private static final String TEST_TOPIC_NAME = "TopicName";
 
-    private static final String TOPIC_NAME = "TopicName";
-
-    @Mock
-    BridgeDAO bridgeDAO;
-
-    @Mock
+    @InjectMock
     RhoasService rhoasService;
 
-    @Mock
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
-
-    @Mock
+    @InjectMock
     ResourceNamesProvider resourceNamesProvider;
 
-    @Mock
+    @Inject
     WorkManager workManager;
 
-    @Mock
-    EntityManager entityManager;
+    @Inject
+    BridgeWorker worker;
 
-    @Captor
-    ArgumentCaptor<Work> workArgumentCaptor;
+    @Inject
+    BridgeDAO bridgeDAO;
 
-    private BridgeWorker worker;
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void setup() {
-        this.worker = new BridgeWorker();
-        this.worker.bridgeDAO = this.bridgeDAO;
-        this.worker.rhoasService = this.rhoasService;
-        this.worker.internalKafkaConfigurationProvider = this.internalKafkaConfigurationProvider;
-        this.worker.resourceNamesProvider = this.resourceNamesProvider;
-        this.worker.workManager = this.workManager;
-        this.worker.maxRetries = 3;
-        this.worker.timeoutSeconds = 60;
+    public void setup() {
+        databaseManagerUtils.cleanUp();
     }
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
         Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-
-        when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(null);
+        work.setManagedResourceId(TEST_RESOURCE_ID);
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
@@ -93,26 +78,22 @@ public class BridgeWorkerTest {
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhosError,
             boolean isWorkComplete) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Bridge bridge = new Bridge();
+        Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
+        bridgeDAO.persist(bridge);
 
-        when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
-        when(bridgeDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(bridge)).thenReturn(bridge);
-        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TOPIC_NAME);
+        Work work = workManager.schedule(bridge);
+
+        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
         if (throwRhosError) {
             when(rhoasService.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
         }
 
-        worker.handleWork(work);
+        Bridge refreshed = worker.handleWork(work);
 
-        assertThat(bridge.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
-        verify(rhoasService).createTopicAndGrantAccessFor(TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        verify(rhoasService).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResource() {
@@ -129,26 +110,22 @@ public class BridgeWorkerTest {
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhosError,
             boolean isWorkComplete) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Bridge bridge = new Bridge();
+        Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
+        bridgeDAO.persist(bridge);
 
-        when(bridgeDAO.findById(RESOURCE_ID)).thenReturn(bridge);
-        when(bridgeDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(bridge)).thenReturn(bridge);
-        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TOPIC_NAME);
+        Work work = workManager.schedule(bridge);
+
+        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
         if (throwRhosError) {
             doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(any(), any());
         }
 
-        worker.handleWork(work);
+        Bridge refreshed = worker.handleWork(work);
 
-        assertThat(bridge.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
-        verify(rhoasService).deleteTopicAndRevokeAccessFor(TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResource() {
