@@ -15,7 +15,7 @@ on:
       - 'kustomize/**'
       - 'dev/**'
 jobs:
-  remove_labels:
+  labels:
     concurrency:
       group: event-bridge-label-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -24,13 +24,13 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: Remove labels
+      - name: Remove labels at new commits
         uses: actions/labeler@v4
         if: github.event.action == 'synchronize'
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           sync-labels: true
-      - name: Remove labels
+      - name: Fail if safe to test label is not present or if there are new commits
         if: github.event.action == 'synchronize' || github.event.action == 'opened'
         run: |
           echo "You pushed a new commit. Please add the label 'safe to test'."
