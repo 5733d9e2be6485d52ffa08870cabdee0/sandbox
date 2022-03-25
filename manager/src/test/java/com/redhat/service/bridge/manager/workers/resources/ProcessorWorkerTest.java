@@ -104,7 +104,8 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @MethodSource("srcHandleWorkProvisioningWithKnownResourceWithConnector")
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus connectorStatusWhenComplete,
+            ManagedResourceStatus statusWhenComplete,
+            ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
@@ -121,13 +122,13 @@ public class ProcessorWorkerTest {
         when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(connectorStatusWhenComplete);
+            connector.setStatus(dependencyStatusWhenComplete);
             return connector;
         }).when(connectorWorker).handleWork(any(Work.class));
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(connectorStatusWhenComplete);
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
@@ -135,18 +136,19 @@ public class ProcessorWorkerTest {
         assertThat(connectorWork.getId()).isEqualTo(work.getId());
         assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
+        assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
 
         verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, false),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, false));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, true),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, false),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, true),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
+                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, false));
     }
 
     @ParameterizedTest
@@ -174,7 +176,8 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResourceWithConnector")
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
-            ManagedResourceStatus connectorStatusWhenComplete,
+            ManagedResourceStatus statusWhenComplete,
+            ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Work work = new Work();
         work.setManagedResourceId(RESOURCE_ID);
@@ -191,13 +194,13 @@ public class ProcessorWorkerTest {
         when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(connectorStatusWhenComplete);
+            connector.setStatus(dependencyStatusWhenComplete);
             return connector;
         }).when(connectorWorker).handleWork(any(Work.class));
 
         worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(connectorStatusWhenComplete);
+        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
@@ -205,6 +208,7 @@ public class ProcessorWorkerTest {
         assertThat(connectorWork.getId()).isEqualTo(work.getId());
         assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
+        assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
 
         verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
 
@@ -213,12 +217,12 @@ public class ProcessorWorkerTest {
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, false),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, false));
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, true),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, false),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, true),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, false));
     }
 
 }
