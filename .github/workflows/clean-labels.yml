@@ -17,9 +17,11 @@ on:
 jobs:
   remove_labels:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-remove-labels@v1
+      - name: Remove labels
+        uses: andymckay/labeler@5c59dabdfd4dd5bd9c6e6d255b01b9d764af4414
         with:
-          labels: |
-            'safe to test'
+          remove-labels: "safe to test"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
