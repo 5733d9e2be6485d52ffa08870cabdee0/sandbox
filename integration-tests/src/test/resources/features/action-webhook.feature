@@ -25,7 +25,7 @@ Feature: Webhook Action tests
     And the Processor "myProcessor" of the Bridge "mybridge" has action of type "Webhook" and parameters:
       | endpoint | https://webhook.site/${env.webhook.site.uuid} |
 
-    When send a cloud event to the Ingress of the Bridge "mybridge" with path "events":
+    When send a cloud event to the Ingress of the Bridge "mybridge":
     """
     {
       "specversion": "1.0",
