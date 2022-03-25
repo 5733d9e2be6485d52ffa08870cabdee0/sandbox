@@ -144,6 +144,89 @@ ocm login --token <offline_token>
 ./cos-tools/bin/create-cluster-secret <cluster_id>
 ```
 
+### Step 6: Update Job
+
+There's no automatic CI/CD mechanism in Managed Connectors to update the operators with the newest version.
+
+The only way at the moment is to configure a Kubernetes [CronJob](https://v1-21.docs.kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/)
+that deletes the existing operator pods, so that the deployment triggers the pull of the newest image (if existing) before recreating it.
+
+To configure this job, create a file named `updatejob.yaml` with the following content:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cos-updater
+  namespace: cos
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-deleter
+  namespace: cos
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+    verbs:
+      - get
+      - watch
+      - list
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cos-updater-pod-deleter
+  namespace: cos
+subjects:
+  - kind: ServiceAccount
+    name: cos-updater
+    namespace: cos
+roleRef:
+  kind: Role
+  name: pod-deleter
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cos-update-by-delete
+  namespace: cos
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "@daily"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 60
+      template:
+        spec:
+          serviceAccountName: cos-updater
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl:1.21.6
+              command:
+              - kubectl
+              - delete
+              - pods
+              - --namespace=cos
+              - --selector=app.kubernetes.io/part-of=cos
+```
+
+And apply it to the cluster with:
+
+```shell
+kubectl -n cos apply -f updatejob.yaml
+```
+
+**IMPORTANT:** this file assumes Kubernetes v1.21.6. In case of a different version, update the `image: bitnami/kubectl:1.21.6` line.
+
 ### Conclusion
 
 Now you should be ready to deploy Managed Connectors into this namespace using the **obtained Cluster ID and the offline token**.
