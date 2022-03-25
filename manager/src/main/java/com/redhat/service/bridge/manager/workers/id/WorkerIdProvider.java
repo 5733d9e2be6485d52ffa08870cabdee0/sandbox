@@ -27,7 +27,7 @@ public class WorkerIdProvider {
     @Produces
     public String getWorkerId() {
         String podNameFromKubernetes = findPodNameFromKubernetes();
-        if(podNameFromKubernetes == null) {
+        if (podNameFromKubernetes == null) {
             return RANDOM_STATIC_WORKER_ID;
         } else {
             return podNameFromKubernetes;
