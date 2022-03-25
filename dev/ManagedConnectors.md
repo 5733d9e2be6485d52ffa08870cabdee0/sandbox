@@ -149,7 +149,7 @@ ocm login --token <offline_token>
 There's no automatic CI/CD mechanism in Managed Connectors to update the operators with the newest version.
 
 The only way at the moment is to configure a Kubernetes [CronJob](https://v1-21.docs.kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/)
-that kills the existing operator pods, so that the deployment triggers the pull of the newest image (if existing) before recreating it.
+that deletes the existing operator pods, so that the deployment triggers the pull of the newest image (if existing) before recreating it.
 
 To configure this job, create a file named `updatejob.yaml` with the following content:
 
@@ -163,7 +163,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: pod-killer
+  name: pod-deleter
   namespace: cos
 rules:
   - apiGroups:
@@ -179,7 +179,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cos-updater-pod-killer
+  name: cos-updater-pod-deleter
   namespace: cos
 subjects:
   - kind: ServiceAccount
@@ -187,7 +187,7 @@ subjects:
     namespace: cos
 roleRef:
   kind: Role
-  name: pod-killer
+  name: pod-deleter
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: batch/v1
