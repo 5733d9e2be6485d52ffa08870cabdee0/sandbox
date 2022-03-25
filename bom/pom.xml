@@ -72,6 +72,42 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-sl4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-sl4j</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>logging-sl4j</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
       </dependency>

@@ -43,6 +43,7 @@
     <module>actions</module>
     <module>use-cases</module>
     <module>rhoas-client</module>
+    <module>logging-parent</module>
   </modules>
 
 </project>
