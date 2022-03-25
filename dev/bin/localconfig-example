@@ -12,3 +12,7 @@ OPENSHIFT_OFFLINE_TOKEN=my-offline-token
 # MANAGED_KAFKA_REGION=
 # MINIKUBE_DRIVER=podman
 # MINIKUBE_CONTAINER_RUNTIME=cri-o
+
+# integration-tests
+# TODO - check where to document/store
+# webhook.site.uuid=

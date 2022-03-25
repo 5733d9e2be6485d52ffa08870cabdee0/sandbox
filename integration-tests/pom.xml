@@ -130,6 +130,8 @@
                 <slack.webhook.token>${env.SLACK_WEBHOOK_TOKEN}</slack.webhook.token>
                 <slack.channel>${env.SLACK_CHANNEL}</slack.channel>
                 <slack.channel.name>mc</slack.channel.name>
+
+                <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
               </systemProperties>
             </configuration>
           </plugin>

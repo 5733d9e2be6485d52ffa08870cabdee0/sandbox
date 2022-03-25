@@ -40,6 +40,8 @@ INTEGRATION_TESTS_DIR=${SCRIPT_DIR_PATH}
 
 cd ${INTEGRATION_TESTS_DIR}
 
+set -x # activate printing executed commands
+
 mvn clean verify $ARGS \
   -Pcucumber \
   -Devent-bridge.manager.url=${MANAGER_URL} \
