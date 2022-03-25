@@ -197,7 +197,7 @@ metadata:
   namespace: cos
 spec:
   concurrencyPolicy: Forbid
-  schedule: "@hourly"
+  schedule: "@daily"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
