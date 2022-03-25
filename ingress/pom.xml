@@ -55,8 +55,6 @@
       <groupId>io.cloudevents</groupId>
       <artifactId>cloudevents-core</artifactId>
     </dependency>
-
-
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra</artifactId>
@@ -98,7 +96,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 
   <build>
     <plugins>

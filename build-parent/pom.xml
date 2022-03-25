@@ -49,6 +49,7 @@
     <version.org.localstack>0.13.3</version.org.localstack>
     <version.org.keycloak>15.1.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
+    <version.io.quarkiverse.loggingjson.quarkiverse-logging-json>1.1.1</version.io.quarkiverse.loggingjson.quarkiverse-logging-json>
     <version.io.quarkiverse.operatorsdk>3.0.6</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
@@ -151,6 +152,11 @@
         <groupId>com.amazonaws.secretsmanager</groupId>
         <artifactId>aws-secretsmanager-caching-java</artifactId>
         <version>${version.com.amazonaws.secretsmanager}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.loggingjson</groupId>
+        <artifactId>quarkus-logging-json</artifactId>
+        <version>${version.io.quarkiverse.loggingjson.quarkiverse-logging-json}</version>
       </dependency>
 
       <dependency>

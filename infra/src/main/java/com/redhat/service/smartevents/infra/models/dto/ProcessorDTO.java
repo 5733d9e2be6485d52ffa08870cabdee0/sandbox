@@ -113,4 +113,17 @@ public class ProcessorDTO {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString() {
+        return "ProcessorDTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", definition=" + definition +
+                ", bridgeId='" + bridgeId + '\'' +
+                ", customerId='" + customerId + '\'' +
+                ", status=" + status +
+                ", kafkaConnection=" + kafkaConnection +
+                '}';
+    }
 }
