@@ -17,17 +17,17 @@ import io.quarkus.oidc.client.Tokens;
 
 public abstract class AbstractOidcClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
 
     protected static final String SCHEDULER_TIME = "5s";
     protected static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
     protected static final Duration REFRESH_TOKEN_TIME_SKEW = Duration.ofSeconds(30);
 
-    private String name;
-    private OidcClient client;
+    protected String name;
+    protected OidcClient client;
     private OidcClients oidcClients;
-    private Duration timeout;
-    private Tokens currentTokens;
+    protected Duration timeout;
+    protected Tokens currentTokens;
 
     public AbstractOidcClient() {
     }
@@ -76,7 +76,7 @@ public abstract class AbstractOidcClient {
         }
     }
 
-    private void retrieveTokens() {
+    protected void retrieveTokens() {
         currentTokens = client.getTokens().await().atMost(timeout);
         LOGGER.info("New token for OIDC client '{}' has been set", name);
     }
