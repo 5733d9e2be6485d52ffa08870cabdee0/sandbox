@@ -1,6 +1,6 @@
-name: Labels Check
+name: Labels Cleanup and Check
 on:
-  pull_request:  
+  pull_request_target:
     types: [opened, labeled, unlabeled, synchronize]
     branches:
       - main
@@ -15,15 +15,27 @@ on:
       - 'kustomize/**'
       - 'dev/**'
 jobs:
-  label:
-    runs-on: ubuntu-latest
+  remove_labels:
     concurrency:
       group: event-bridge-label-pr-${{ github.head_ref }}
       cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Safe to test label must be added on the pull request
-        uses: mheap/github-action-required-labels@v1
+      - name: Remove labels
+        uses: actions/labeler@v4
+        if: github.event.action == 'synchronize'
         with:
-          mode: exactly
-          count: 1
-          labels: "safe to test"
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          sync-labels: true
+      - name: Remove labels
+        if: github.event.action == 'synchronize' || github.event.action == 'opened'
+        run: |
+          echo "You pushed a new commit. Please add the label 'safe to test'."
+          exit 1
+      - name: Safe to test label must be added on the pull request
+        if: (github.event.action == 'labeled' || github.event.action == 'unlabeled') && contains( github.event.pull_request.labels.*.name, 'safe to test')
+        run: |
+          echo "'safe to test' label is triggering the ManagerCI pipeline properly"
