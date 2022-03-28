@@ -742,8 +742,8 @@ components:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     BridgeErrorType:
       enum:
-      - PLATFORM
       - USER
+      - PLATFORM
       type: string
     BridgeRequest:
       required:
@@ -806,12 +806,12 @@ components:
     ManagedResourceStatus:
       enum:
       - ACCEPTED
-      - DELETED
-      - DELETING
-      - DEPROVISION
-      - FAILED
       - PROVISIONING
       - READY
+      - DEPROVISION
+      - DELETING
+      - DELETED
+      - FAILED
       type: string
     ProcessorDTO:
       type: object
