@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "You pushed a new commit. Please add the label 'safe to test'."
           exit 1
-      - name: Safe to test label must be added on the pull request
+      - name: "'safe to test' label must be added on the pull request"
         if: (github.event.action == 'labeled' || github.event.action == 'unlabeled') && contains( github.event.pull_request.labels.*.name, 'safe to test')
         run: |
           echo "'safe to test' label is triggering the ManagerCI pipeline properly"
