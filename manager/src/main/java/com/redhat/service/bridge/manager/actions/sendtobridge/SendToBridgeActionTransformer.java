@@ -43,7 +43,6 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
     }
 
     static String getBridgeWebhookUrl(String bridgeEndpoint) throws MalformedURLException {
-        String fullUrl = String.join("", bridgeEndpoint, bridgeEndpoint.endsWith("/") ? "" : "/", "events");
-        return new URL(fullUrl).toString();
+        return new URL(bridgeEndpoint).toString();
     }
 }
