@@ -50,7 +50,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     String serviceAccountSecret;
 
     @Inject
-    ConnectorsAuth connectorsAuth;
+    ConnectorsOidcClient connectorsAuth;
 
     // The API is provided by a Supplier to (easily) support overriding it for Unit Tests
     private Supplier<ConnectorsApi> apiSupplier = () -> {
@@ -58,7 +58,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         defaultClient.setBasePath(mcServicesBaseUrl);
 
         HttpBearerAuth Bearer = (HttpBearerAuth) defaultClient.getAuthentication("Bearer");
-        Bearer.setBearerToken(connectorsAuth.bearerToken());
+        Bearer.setBearerToken(connectorsAuth.getToken());
 
         return new com.openshift.cloud.api.connector.ConnectorsApi(defaultClient);
     };
