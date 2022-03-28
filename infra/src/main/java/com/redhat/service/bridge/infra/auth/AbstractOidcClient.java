@@ -17,7 +17,7 @@ import io.quarkus.oidc.client.Tokens;
 
 public abstract class AbstractOidcClient {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
 
     protected static final String SCHEDULER_TIME = "5s";
     protected static final Duration SSO_CONNECTION_TIMEOUT = Duration.ofSeconds(30);

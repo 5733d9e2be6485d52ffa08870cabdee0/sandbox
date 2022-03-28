@@ -12,9 +12,13 @@ import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.oidc.common.runtime.OidcConstants;
 import io.quarkus.scheduler.Scheduled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ConnectorsOidcClient extends AbstractOidcClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsOidcClient.class);
 
     private static final String NAME = "managed-connectors-client";
 
