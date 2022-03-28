@@ -18,6 +18,7 @@ import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -26,6 +27,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Inject
     ConnectorsDAO connectorsDAO;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
@@ -42,7 +46,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         JsonNode connectorPayload = connectorAction.connectorPayload(resolvedAction);
 
         String connectorType = connectorAction.getConnectorType();
-        String newConnectorName = connectorName(connectorType, processor);
+        String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
         String topicName = connectorAction.topicName(resolvedAction);
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
@@ -63,9 +67,5 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     // Connector should always be marked for destruction in the same transaction as a Processor
     public void deleteConnectorEntity(Processor processor) {
         Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> c.setStatus(ManagedResourceStatus.DEPROVISION));
-    }
-
-    private String connectorName(String connectorType, Processor processor) {
-        return String.format("OpenBridge-%s-%s", connectorType, processor.getId());
     }
 }

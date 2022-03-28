@@ -6,7 +6,7 @@
 
 You will need the following installed locally on your machine to support local development:
 
-* [Minikube v1.16.0](https://minikube.sigs.k8s.io/docs/start/)
+* [Minikube v1.25.2](https://minikube.sigs.k8s.io/docs/start/)
 * [Docker Engine](https://docker.com)
   * The most recent version should be fine.
 * [Docker Compose v1.29.2](https://github.com/docker/compose)

@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.workers.resources;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -64,8 +65,11 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         LOGGER.debug("Creating Managed Connector for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
-        Connector connector = connectorsApi.getConnector(connectorEntity);
-        if (Objects.isNull(connector)) {
+        Optional<Connector> optConnector = Optional.of(connectorEntity)
+                .filter(ce -> Objects.nonNull(ce.getConnectorExternalId()) && !ce.getConnectorExternalId().isBlank())
+                .map(ConnectorEntity::getConnectorExternalId)
+                .map(connectorsApi::getConnector);
+        if (optConnector.isEmpty()) {
             LOGGER.debug("Managed Connector for '{}' [{}] not found. Provisioning...",
                     connectorEntity.getName(),
                     connectorEntity.getId());
@@ -74,6 +78,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         // Step 3 - Check it has been provisioned
+        Connector connector = optConnector.get();
         ConnectorStatusStatus status = connector.getStatus();
         if (Objects.isNull(status)) {
             LOGGER.debug("Managed Connector status for '{}' [{}] is undetermined.",
@@ -101,6 +106,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
             return persist(connectorEntity);
         }
 
@@ -132,10 +138,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETING);
         connectorEntity = persist(connectorEntity);
 
-        Connector connector = connectorsApi.getConnector(connectorEntity);
-
         // Steps, in reverse order...
         // Step 3 - Connector has been deleted and does not exist: Clean up Kafka Topic
+        String connectorExternalId = connectorEntity.getConnectorExternalId();
+        if (Objects.isNull(connectorExternalId)) {
+            return deleteTopic(connectorEntity);
+        }
+        Connector connector = connectorsApi.getConnector(connectorExternalId);
         if (Objects.isNull(connector)) {
             return deleteTopic(connectorEntity);
         }
@@ -145,12 +154,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
         if (status.getState() == ConnectorState.DELETED) {
             LOGGER.debug("Managed Connector for '{}' [{}] has status 'DELETED'. Continuing with deletion of Kafka Topic..",
-                    connectorEntity.getName(),
-                    connectorEntity.getId());
-            return deleteTopic(connectorEntity);
-        }
-        if (status.getState() == ConnectorState.FAILED) {
-            LOGGER.debug("Managed Connector for '{}' [{}] has status 'FAILED'. Continuing with deletion of Kafka Topic..",
                     connectorEntity.getName(),
                     connectorEntity.getId());
             return deleteTopic(connectorEntity);

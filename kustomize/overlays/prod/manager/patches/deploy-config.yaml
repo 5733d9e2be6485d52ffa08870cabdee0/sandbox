@@ -11,3 +11,6 @@ data:
   EVENT_BRIDGE_SSO_URL: "https://keycloak-event-bridge-prod.apps.openbridge-dev.fdvn.p1.openshiftapps.com/auth/realms/event-bridge-fm"
   EVENT_BRIDGE_SSO_CLIENT_ID: "event-bridge"
   EVENT_BRIDGE_KAFKA_SECURITY_PROTOCOL: SASL_SSL
+  # TODO: remove the following property after the system is updated to use "event-bridge.resource-prefix" property
+  EVENT_BRIDGE_KAFKA_TOPIC_PREFIX: "ob-dev-"
+  EVENT_BRIDGE_RESOURCE_PREFIX: "ob-dev-"

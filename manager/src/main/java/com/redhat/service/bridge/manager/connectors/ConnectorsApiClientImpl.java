@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
+import org.apache.http.HttpStatus;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     String serviceAccountSecret;
 
     @Inject
-    ConnectorsAuth connectorsAuth;
+    ConnectorsOidcClient connectorsAuth;
 
     // The API is provided by a Supplier to (easily) support overriding it for Unit Tests
     private Supplier<ConnectorsApi> apiSupplier = () -> {
@@ -57,22 +58,24 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         defaultClient.setBasePath(mcServicesBaseUrl);
 
         HttpBearerAuth Bearer = (HttpBearerAuth) defaultClient.getAuthentication("Bearer");
-        Bearer.setBearerToken(connectorsAuth.bearerToken());
+        Bearer.setBearerToken(connectorsAuth.getToken());
 
         return new com.openshift.cloud.api.connector.ConnectorsApi(defaultClient);
     };
 
     @Override
-    public Connector getConnector(ConnectorEntity connectorEntity) {
+    public Connector getConnector(String connectorExternalId) {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            String connectorExternalId = connectorEntity.getConnectorExternalId();
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(String.format("Retrieving Connector with ID '%s'", connectorExternalId));
             }
             return connectorsAPI.getConnector(connectorExternalId);
         } catch (ApiException e) {
+            if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
+                return null;
+            }
             throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }

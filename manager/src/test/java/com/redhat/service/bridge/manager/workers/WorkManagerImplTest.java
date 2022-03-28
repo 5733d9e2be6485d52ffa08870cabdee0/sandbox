@@ -58,7 +58,7 @@ public class WorkManagerImplTest {
     }
 
     @Test
-    void scheduleFiresEventForNewWork() {
+    void scheduleDoesNotFireEventForWork() {
         when(resource.getId()).thenReturn(RESOURCE_ID);
         when(workDAO.findByManagedResource(resource)).thenReturn(null);
 
@@ -71,7 +71,7 @@ public class WorkManagerImplTest {
         assertThat(work.getType()).contains(Processor.class.getName());
         assertThat(work.getManagedResourceId()).isEqualTo(RESOURCE_ID);
 
-        verify(eventBus).requestAndForget(anyString(), eq(work));
+        verify(eventBus, never()).requestAndForget(anyString(), any(Work.class));
     }
 
     @Test

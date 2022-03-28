@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -18,6 +19,7 @@ import com.redhat.service.bridge.manager.workers.id.WorkerIdProvider;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.mutiny.core.eventbus.EventBus;
 
+@ApplicationScoped
 public class WorkManagerImpl implements WorkManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkManagerImpl.class);
@@ -43,8 +45,6 @@ public class WorkManagerImpl implements WorkManager {
                         w.getManagedResourceId(),
                         w.getType()));
             }
-
-            fireEvent(w);
         }
 
         return w;

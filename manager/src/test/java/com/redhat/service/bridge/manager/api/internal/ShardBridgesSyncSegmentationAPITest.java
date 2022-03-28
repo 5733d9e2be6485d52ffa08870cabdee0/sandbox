@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.manager.api.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -13,21 +14,26 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.ShardService;
 import com.redhat.service.bridge.manager.TestConstants;
+import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
+@TestProfile(WorkerSchedulerProfile.class)
 public class ShardBridgesSyncSegmentationAPITest {
 
     @Inject
@@ -45,7 +51,6 @@ public class ShardBridgesSyncSegmentationAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
 
         // Authorize all
         when(shardService.isAuthorizedShard(any(String.class))).thenReturn(true);
@@ -62,19 +67,32 @@ public class ShardBridgesSyncSegmentationAPITest {
     @TestSecurity(user = "knative")
     public void testShardSegmentation() {
         // the bridge gets assigned to the default shard
+        mockJwt(TestConstants.SHARD_ID);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
-        // The default shard retrieves the bridge to deploy
-        List<BridgeDTO> bridgesToDeployForDefaultShard = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+        final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridgesToDeployForDefaultShard.clear();
+            bridgesToDeployForDefaultShard.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+            }));
+            assertThat(bridgesToDeployForDefaultShard.size()).isEqualTo(1);
         });
-        assertThat(bridgesToDeployForDefaultShard.size()).isEqualTo(1);
 
-        reset(jwt);
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn("knative");
-
+        mockJwt("knative");
         // No bridges are assigned to the 'knative' shard
-        List<BridgeDTO> bridgesToDeployForOtherShard = TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+        List<BridgeDTO> bridgesToDeployForOtherShard = new ArrayList<>();
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            bridgesToDeployForOtherShard.clear();
+            bridgesToDeployForOtherShard.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
+            }));
+            assertThat(bridgesToDeployForOtherShard.size()).isEqualTo(0);
         });
-        assertThat(bridgesToDeployForOtherShard.size()).isEqualTo(0);
+    }
+
+    private void mockJwt(String shardId) {
+        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(shardId);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 }

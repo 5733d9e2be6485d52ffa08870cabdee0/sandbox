@@ -14,7 +14,7 @@ public class BridgeResource {
         return addBridgeResponse(token, bridgeName)
                 .then()
                 .log().ifValidationFails()
-                .statusCode(201)
+                .statusCode(202)
                 .extract()
                 .as(BridgeResponse.class);
     }
