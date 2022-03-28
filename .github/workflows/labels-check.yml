@@ -38,4 +38,4 @@ jobs:
       - name: "'safe to test' label must be added on the pull request"
         if: (github.event.action == 'labeled' || github.event.action == 'unlabeled') && contains( github.event.pull_request.labels.*.name, 'safe to test')
         run: |
-          echo "'safe to test' label is triggering the ManagerCI pipeline properly"
+          echo "'safe to test' label is triggering additional pipelines properly"
