@@ -60,6 +60,7 @@ public class BridgesServiceImpl implements BridgesService {
     WorkManager workManager;
 
     @Override
+    @Transactional
     public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
@@ -71,17 +72,13 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
 
-        doCreateBridge(bridge);
-
-        return bridge;
-    }
-
-    @Transactional
-    // Bridge and Work creation should always be in the same transaction
-    protected void doCreateBridge(Bridge bridge) {
+        // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
+
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
+
+        return bridge;
     }
 
     @Transactional
@@ -118,6 +115,7 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
+    @Transactional
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
         if (processorsCount > 0) {
@@ -126,14 +124,11 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
-        doDeleteBridge(bridge);
-    }
 
-    @Transactional
-    // Bridge deletion and related Work creation should always be in the same transaction
-    protected void doDeleteBridge(Bridge bridge) {
+        // Bridge deletion and related Work creation should always be in the same transaction
         bridgeDAO.getEntityManager().merge(bridge).setStatus(ManagedResourceStatus.DEPROVISION);
         workManager.schedule(bridge);
+
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
