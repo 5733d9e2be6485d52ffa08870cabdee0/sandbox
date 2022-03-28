@@ -30,7 +30,7 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           sync-labels: true
-      - name: Fail if safe to test label is not present or if there are new commits
+      - name: "Fail if 'safe to test' label is not present or if there are new commits"
         if: github.event.action == 'synchronize' || github.event.action == 'opened'
         run: |
           echo "You pushed a new commit. Please add the label 'safe to test'."
