@@ -42,7 +42,7 @@ public class SendToBridgeActionTransformer implements ActionTransformer {
         return transformedAction;
     }
 
-    static String getBridgeWebhookUrl(String bridgeEndpoint) throws MalformedURLException {
+    private String getBridgeWebhookUrl(String bridgeEndpoint) throws MalformedURLException {
         return new URL(bridgeEndpoint).toString();
     }
 }

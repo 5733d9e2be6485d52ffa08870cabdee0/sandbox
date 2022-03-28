@@ -36,7 +36,7 @@ class SendToBridgeActionTransformerTest {
     private static final String BRIDGE_WEBHOOK = BRIDGE_ENDPOINT + "/events";
     private static final String OTHER_BRIDGE_ID = "br-02";
     private static final String OTHER_BRIDGE_ENDPOINT = "http://www.example.com/bridge02";
-    private static final String OTHER_BRIDGE_WEBHOOK = OTHER_BRIDGE_ENDPOINT + "/events";
+    private static final String OTHER_BRIDGE_WEBHOOK = OTHER_BRIDGE_ENDPOINT;
     private static final String UNAVAILABLE_BRIDGE_ID = "br-unavailable";
     private static final String UNKNOWN_BRIDGE_ID = "br-unknown";
 
