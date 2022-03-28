@@ -26,9 +26,9 @@ public class Fixtures {
         return action;
     }
 
-    public static Processor createProcessor(Bridge b, String name, ManagedResourceStatus status) {
+    public static Processor createProcessor(Bridge b, ManagedResourceStatus status) {
         Processor p = new Processor();
-        p.setName(name);
+        p.setName(TestConstants.DEFAULT_PROCESSOR_NAME);
         p.setStatus(status);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
@@ -54,18 +54,15 @@ public class Fixtures {
         return b;
     }
 
-    public static ConnectorEntity createConnector(Processor p,
-            String connectorName,
-            ManagedResourceStatus status,
-            String topicName) {
+    public static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status) {
         ConnectorEntity c = new ConnectorEntity();
-        c.setName(connectorName);
+        c.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
         c.setProcessor(p);
         c.setStatus(status);
         c.setSubmittedAt(ZonedDateTime.now());
         c.setPublishedAt(ZonedDateTime.now());
         c.setDefinition(new TextNode("definition"));
-        c.setTopicName(topicName);
+        c.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
         c.setConnectorExternalId("connectorExternalId");
 
         return c;

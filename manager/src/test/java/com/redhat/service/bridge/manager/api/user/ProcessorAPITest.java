@@ -28,7 +28,12 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.bridge.manager.dao.BridgeDAO;
+import com.redhat.service.bridge.manager.dao.ProcessorDAO;
+import com.redhat.service.bridge.manager.models.Bridge;
+import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -51,6 +56,12 @@ public class ProcessorAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    ProcessorDAO processorDAO;
+
+    @Inject
+    BridgeDAO bridgeDAO;
 
     @InjectMock
     JsonWebToken jwt;
@@ -332,13 +343,15 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteProcessor() {
-        BridgeResponse bridgeResponse = createAndDeployBridge();
-        ProcessorResponse processorResponse = TestUtils.addProcessorToBridge(
-                bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", null, null, createKafkaAction())).as(ProcessorResponse.class);
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setStatus(ManagedResourceStatus.READY);
+        bridgeDAO.persist(bridge);
 
-        TestUtils.deleteProcessor(bridgeResponse.getId(), processorResponse.getId()).then().statusCode(202);
-        processorResponse = TestUtils.getProcessor(bridgeResponse.getId(), processorResponse.getId()).as(ProcessorResponse.class);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        processorDAO.persist(processor);
+
+        TestUtils.deleteProcessor(bridge.getId(), processor.getId()).then().statusCode(202);
+        ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), processor.getId()).as(ProcessorResponse.class);
 
         assertThat(processorResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
     }

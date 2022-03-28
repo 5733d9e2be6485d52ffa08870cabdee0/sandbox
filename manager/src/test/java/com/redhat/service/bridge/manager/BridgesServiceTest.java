@@ -17,6 +17,7 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
@@ -200,16 +201,12 @@ public class BridgesServiceTest {
 
     @Test
     public void testDeleteBridge() {
-        BridgeRequest request = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
-
-        //Wait for Workers to complete
-        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
 
         bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
 
-        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
     }
 
     @Test
@@ -219,12 +216,8 @@ public class BridgesServiceTest {
     }
 
     private Bridge createPersistBridge(ManagedResourceStatus status) {
-        Bridge b = new Bridge();
-        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
-        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        Bridge b = Fixtures.createBridge();
         b.setStatus(status);
-        b.setSubmittedAt(ZonedDateTime.now());
-        b.setPublishedAt(ZonedDateTime.now());
         bridgeDAO.persist(b);
         return b;
     }
