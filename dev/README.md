@@ -50,9 +50,9 @@ Check the [localconfig-example](bin/localconfig-example) file for an example of 
 
 A remote Managed Kafka instance is required for the internal communication between components of the system.
 
-The development team is asked to use the *shared kafka instance* we have deployed under our organization. with the following with the service accounts you can download.
+The development team is asked to use the *shared kafka instance* we have deployed under our organization. 
 
-**Follow the instructions [here](https://docs.google.com/document/d/1fMnHUmGnO-GZuY2BuEe02_prJs3_7QZdSZ5-SfOJ_Yk) to setup the service accounts (you need to be part of the `rhose` google group to access the document)**.
+**Follow the instructions [here](https://docs.google.com/document/d/1fMnHUmGnO-GZuY2BuEe02_prJs3_7QZdSZ5-SfOJ_Yk) to setup the service accounts (you need to be part of the `rhose` google group to access the document)**. Those service accounts will be used by the local services to create/delete topics and acls on the shared kafka cluster.
 
 ### Credentials folder
 
