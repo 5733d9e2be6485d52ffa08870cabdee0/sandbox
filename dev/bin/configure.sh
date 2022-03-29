@@ -29,7 +29,6 @@ kubectl
 kustomize
 mvn
 ping
-rhoas
 "
 
 # check if required tools are installed
