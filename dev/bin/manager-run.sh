@@ -5,11 +5,12 @@
 #
 # Env vars:
 # - MANAGED_CONNECTORS_CLUSTER_ID: cluster where managed connectors will be deployed (required only if MC actions are used, default="empty")
-# - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
+export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
 
 . "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started managed-connectors
 
