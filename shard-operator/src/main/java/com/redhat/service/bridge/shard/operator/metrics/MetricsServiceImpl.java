@@ -23,7 +23,7 @@ public class MetricsServiceImpl implements MetricsService {
     @Inject
     MeterRegistry meterRegistry;
 
-    @ConfigProperty(name = "event-bridge.sso.grant-options.password.shard-id")
+    @ConfigProperty(name = "event-bridge.shard-id")
     String shardId;
 
     @Override
