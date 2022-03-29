@@ -18,6 +18,11 @@ spec:
         - image: event-bridge-manager
           imagePullPolicy: IfNotPresent
           name: event-bridge-manager
+          env:
+            - name: EVENT_BRIDGE_RESOURCES_WORKER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           ports:
             - containerPort: 8080
           envFrom:
