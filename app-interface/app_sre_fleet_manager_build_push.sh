@@ -3,7 +3,7 @@
 IMAGE_NAME="quay.io/app-sre/rhose-fleet-manager"
 IMAGE_TAG=$(git rev-parse --short=7 HEAD)
 
-docker build -f ../docker/Dockerfile.jvm -t "${IMAGE_NAME}:latest" ../manager
+docker build -f docker/Dockerfile.appsre -t "${IMAGE_NAME}:latest"  .
 docker tag "${IMAGE_NAME}:latest" "${IMAGE_NAME}:${IMAGE_TAG}"
 
 DOCKER_CONF="${PWD}/.docker"
