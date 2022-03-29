@@ -21,7 +21,7 @@ Feature: Tests of Processor Transformation template
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
-    And send a cloud event to the Ingress of the Bridge "mybridge" with path "events":
+    And send a cloud event to the Ingress of the Bridge "mybridge":
     """
     {
     "specversion": "1.0",

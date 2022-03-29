@@ -1,82 +1,79 @@
 package com.redhat.service.bridge.manager.workers.resources;
 
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
-import javax.persistence.EntityManager;
+import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
+import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.models.Work;
+import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.workers.WorkManager;
+import com.redhat.service.bridge.test.resource.PostgresResource;
+
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@QuarkusTest
+@QuarkusTestResource(PostgresResource.class)
 public class ProcessorWorkerTest {
 
-    private static final String RESOURCE_ID = "123";
+    private static final String TEST_PROCESSOR_NAME = "TestProcessor";
+    private static final String TEST_CONNECTOR_NAME = "TestConnector";
+    private static final String TEST_RESOURCE_ID = "123";
+    private static final String TEST_TOPIC_NAME = "TopicName";
 
-    @Mock
-    ProcessorDAO processorDAO;
-
-    @Mock
-    ConnectorsDAO connectorsDAO;
-
-    @Mock
+    @InjectMock
     ConnectorWorker connectorWorker;
 
-    @Mock
+    @Inject
     WorkManager workManager;
 
-    @Mock
-    EntityManager entityManager;
+    @Inject
+    ProcessorWorker worker;
 
-    @Captor
-    ArgumentCaptor<Work> workArgumentCaptor;
+    @Inject
+    BridgeDAO bridgeDAO;
 
-    private ProcessorWorker worker;
+    @Inject
+    ProcessorDAO processorDAO;
+
+    @Inject
+    ConnectorsDAO connectorsDAO;
+
+    @Inject
+    DatabaseManagerUtils databaseManagerUtils;
 
     @BeforeEach
-    void setup() {
-        this.worker = new ProcessorWorker();
-        this.worker.processorDAO = this.processorDAO;
-        this.worker.connectorsDAO = this.connectorsDAO;
-        this.worker.connectorWorker = this.connectorWorker;
-        this.worker.workManager = this.workManager;
-        this.worker.maxRetries = 3;
-        this.worker.timeoutSeconds = 60;
+    public void setup() {
+        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
         Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-
-        when(processorDAO.findById(RESOURCE_ID)).thenReturn(null);
+        work.setManagedResourceId(TEST_RESOURCE_ID);
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
@@ -84,21 +81,18 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PROVISIONING" })
     void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Processor processor = new Processor();
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
 
-        when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
-        when(processorDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(processor)).thenReturn(processor);
+        Work work = workManager.schedule(processor);
 
-        worker.handleWork(work);
+        Processor refreshed = worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(workManager).complete(work);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(workManager.exists(work)).isFalse();
     }
 
     @ParameterizedTest
@@ -107,38 +101,38 @@ public class ProcessorWorkerTest {
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Processor processor = new Processor();
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connector = new ConnectorEntity();
-        connector.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
+        connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connectorEntity);
 
-        when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
-        when(processorDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(processor)).thenReturn(processor);
-        when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
+        Work work = workManager.schedule(processor);
+
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(dependencyStatusWhenComplete);
-            return connector;
+            connectorEntity.setStatus(dependencyStatusWhenComplete);
+            return connectorEntity;
         }).when(connectorWorker).handleWork(any(Work.class));
 
-        worker.handleWork(work);
+        Processor refreshed = worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+
+        ArgumentCaptor<Work> workArgumentCaptor = ArgumentCaptor.forClass(Work.class);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
         assertThat(connectorWork).isNotNull();
         assertThat(connectorWork.getId()).isEqualTo(work.getId());
-        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
+        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connectorEntity.getId());
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
-        assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
 
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
@@ -154,23 +148,19 @@ public class ProcessorWorkerTest {
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
     void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Processor processor = spy(new Processor());
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
 
-        when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
-        when(processorDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(processor)).thenReturn(processor);
+        Work work = workManager.schedule(processor);
 
-        worker.handleWork(work);
+        Processor refreshed = worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(workManager).complete(work);
-
-        verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+        assertThat(refreshed.getModifiedAt()).isNotNull();
+        assertThat(workManager.exists(work)).isFalse();
     }
 
     @ParameterizedTest
@@ -179,40 +169,39 @@ public class ProcessorWorkerTest {
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
-        Work work = new Work();
-        work.setManagedResourceId(RESOURCE_ID);
-        work.setSubmittedAt(ZonedDateTime.now());
-
-        Processor processor = spy(new Processor());
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connector = new ConnectorEntity();
-        connector.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
+        connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connectorEntity);
 
-        when(processorDAO.findById(RESOURCE_ID)).thenReturn(processor);
-        when(processorDAO.getEntityManager()).thenReturn(entityManager);
-        when(entityManager.merge(processor)).thenReturn(processor);
-        when(connectorsDAO.findByProcessorId(processor.getId())).thenReturn(connector);
+        Work work = workManager.schedule(processor);
+
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connector.setStatus(dependencyStatusWhenComplete);
-            return connector;
+            connectorEntity.setStatus(dependencyStatusWhenComplete);
+            return connectorEntity;
         }).when(connectorWorker).handleWork(any(Work.class));
 
-        worker.handleWork(work);
+        Processor refreshed = worker.handleWork(work);
 
-        assertThat(processor.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(refreshed.getModifiedAt()).isNotNull();
+
+        ArgumentCaptor<Work> workArgumentCaptor = ArgumentCaptor.forClass(Work.class);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());
 
         Work connectorWork = workArgumentCaptor.getValue();
         assertThat(connectorWork).isNotNull();
         assertThat(connectorWork.getId()).isEqualTo(work.getId());
-        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connector.getId());
+        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connectorEntity.getId());
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
-        assertThat(processor.getStatus()).isEqualTo(statusWhenComplete);
 
-        verify(workManager, times(isWorkComplete ? 1 : 0)).complete(any(Work.class));
-
-        verify(processor, atLeastOnce()).setModifiedAt(any(ZonedDateTime.class));
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {

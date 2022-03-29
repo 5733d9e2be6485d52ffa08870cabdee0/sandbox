@@ -12,9 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.bridge.executor.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -22,7 +21,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 public class ExecutorsProviderImpl implements ExecutorsProvider {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
-    private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
 
     @Inject
     ActionProviderFactory actionProviderFactory;
@@ -35,6 +33,9 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    TransformationEvaluatorFactory transformationEvaluatorFactory;
 
     private Executor executor;
 

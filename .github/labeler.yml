@@ -1,0 +1,3 @@
+# Always remove the safe to test label
+'safe to test':
+  - '!*'

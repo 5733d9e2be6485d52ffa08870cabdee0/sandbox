@@ -36,6 +36,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.workers.WorkManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -66,6 +67,9 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @Inject
     ShardService shardService;
@@ -213,7 +217,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                internalKafkaConfigurationProvider.getBridgeTopicName(processor.getBridge()));
+                resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
         return new ProcessorDTO(processor.getId(),
                 processor.getName(),
                 definition,

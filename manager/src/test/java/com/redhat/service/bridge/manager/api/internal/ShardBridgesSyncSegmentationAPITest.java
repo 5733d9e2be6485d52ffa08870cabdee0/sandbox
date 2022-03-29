@@ -51,7 +51,6 @@ public class ShardBridgesSyncSegmentationAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
 
         // Authorize all
         when(shardService.isAuthorizedShard(any(String.class))).thenReturn(true);
@@ -68,6 +67,7 @@ public class ShardBridgesSyncSegmentationAPITest {
     @TestSecurity(user = "knative")
     public void testShardSegmentation() {
         // the bridge gets assigned to the default shard
+        mockJwt(TestConstants.SHARD_ID);
         TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
 
         final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
@@ -78,9 +78,7 @@ public class ShardBridgesSyncSegmentationAPITest {
             assertThat(bridgesToDeployForDefaultShard.size()).isEqualTo(1);
         });
 
-        reset(jwt);
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn("knative");
-
+        mockJwt("knative");
         // No bridges are assigned to the 'knative' shard
         List<BridgeDTO> bridgesToDeployForOtherShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -89,5 +87,12 @@ public class ShardBridgesSyncSegmentationAPITest {
             }));
             assertThat(bridgesToDeployForOtherShard.size()).isEqualTo(0);
         });
+    }
+
+    private void mockJwt(String shardId) {
+        // Since the tests are using the user's api as well as the shard api we craft a token that is valid for both.
+        reset(jwt);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(shardId);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 }

@@ -2,7 +2,9 @@ package com.redhat.service.bridge.manager.api.user;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -22,6 +24,7 @@ import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
+import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
@@ -63,7 +66,8 @@ public class ProcessorAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
+        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
@@ -280,6 +284,57 @@ public class ProcessorAPITest {
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
                 new ProcessorRequest("myProcessor", Collections.singleton(new ValuesIn("pepe", null)), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithEmptyChannelParameterToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        BaseAction action = createKafkaAction();
+        action.setType(SlackAction.TYPE);
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.CHANNEL_PARAMETER, "");
+        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "https://example.com");
+        action.setParameters(params);
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithEmptyWebhookURLParameterToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        BaseAction action = createKafkaAction();
+        action.setType(SlackAction.TYPE);
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.CHANNEL_PARAMETER, "channel");
+        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "");
+        action.setParameters(params);
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithWrongParametersNameToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        String requestBody = String.format("{\"name\": \"processorInvalid\", \"action\": {\"type\": \"Slack\", \"properties\": {\"channel\": \"test\", \"webhookUrl\": \"https://example.com\"}}}");
+        Response response = TestUtils.addProcessorToBridgeWithRequestBody(bridgeResponse.getId(), requestBody);
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithMalformedTemplateToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, "Malformed template {data.payload ", createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

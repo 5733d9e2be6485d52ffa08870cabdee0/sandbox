@@ -38,12 +38,13 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.api.user.validators.actions.ValidActionParams;
+import com.redhat.service.bridge.manager.api.user.validators.templates.ValidTransformationTemplate;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Processors API", description = "The API that allow the user to retrieve, create or delete Processors of a Bridge instance.")
+@Tag(name = "Processors", description = "The API that allow the user to retrieve, create or delete Processors of a Bridge instance.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -119,7 +120,7 @@ public class ProcessorsAPI {
     @Operation(summary = "Create a Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
     @POST
     @Path("{bridgeIdOrName}/processors")
-    public Response addProcessorToBridge(@PathParam("bridgeIdOrName") @NotEmpty String bridgeIdOrName, @ValidActionParams @Valid ProcessorRequest processorRequest) {
+    public Response addProcessorToBridge(@PathParam("bridgeIdOrName") @NotEmpty String bridgeIdOrName, @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         /* We cannot deploy Processors to a Bridge that is not Available */
         Bridge bridge = bridgesService.getReadyBridge(bridgeIdOrName, customerId);

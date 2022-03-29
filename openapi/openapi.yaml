@@ -11,20 +11,20 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
 tags:
-  - name: Bridges API
+  - name: Bridges
     description: "The API that allow the user to retrieve, create or delete Bridge instances."
-  - name: Errors Catalog API
+  - name: Error Catalog
     description: List and get the error definitions from the error catalog.
-  - name: Processors API
+  - name: Processors
     description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
-  - name: Shard API
+  - name: Shard
     description: The API that allow a shard to retrieve and update resources.
 paths:
   /api/v1/bridges:
     get:
       tags:
-        - Bridges API
+        - Bridges
       summary: Get the list of Bridge instances
       description: Get the list of Bridge instances for the authenticated user.
       operationId: BridgesAPI_getBridges
@@ -87,7 +87,7 @@ paths:
         - bearer: []
     post:
       tags:
-        - Bridges API
+        - Bridges
       summary: Create a Bridge instance
       description: Create a Bridge instance for the authenticated user.
       operationId: BridgesAPI_createBridge
@@ -139,7 +139,7 @@ paths:
   /api/v1/bridges/{bridgeIdOrName}/processors:
     get:
       tags:
-        - Processors API
+        - Processors
       summary: Get the list of Processors of a Bridge instance
       description: Get the list of Processors of a Bridge instance for the authenticated
         user.
@@ -210,7 +210,7 @@ paths:
         - bearer: []
     post:
       tags:
-        - Processors API
+        - Processors
       summary: Create a Processor of a Bridge instance
       description: Create a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_addProcessorToBridge
@@ -281,7 +281,7 @@ paths:
   /api/v1/bridges/{bridgeIdOrName}/processors/{processorId}:
     get:
       tags:
-        - Processors API
+        - Processors
       summary: Get a Processor of a Bridge instance
       description: Get a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_getProcessor
@@ -353,7 +353,7 @@ paths:
         - bearer: []
     delete:
       tags:
-        - Processors API
+        - Processors
       summary: Delete a Processor of a Bridge instance
       description: Delete a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_deleteProcessor
@@ -392,7 +392,7 @@ paths:
   /api/v1/bridges/{idOrName}:
     get:
       tags:
-        - Bridges API
+        - Bridges
       summary: Get a Bridge instance
       description: Get a Bridge instance of the authenticated user by ID.
       operationId: BridgesAPI_getBridge
@@ -450,7 +450,7 @@ paths:
         - bearer: []
     delete:
       tags:
-        - Bridges API
+        - Bridges
       summary: Delete a Bridge instance
       description: Delete a Bridge instance of the authenticated user by ID.
       operationId: BridgesAPI_deleteBridge
@@ -484,7 +484,7 @@ paths:
   /api/v1/errors:
     get:
       tags:
-        - Errors Catalog API
+        - Error Catalog
       summary: Get the list of errors.
       description: Get the list of errors from the error catalog.
       operationId: ErrorsAPI_getErrors
@@ -542,7 +542,7 @@ paths:
   /api/v1/errors/{id}:
     get:
       tags:
-        - Errors Catalog API
+        - Error Catalog
       summary: Get an error from the error catalog.
       description: Get an error from the error catalog.
       operationId: ErrorsAPI_getError
@@ -585,7 +585,7 @@ paths:
   /api/v1/shard/bridges:
     get:
       tags:
-        - Shard API
+        - Shard
       summary: Get Bridge instances to be processed by a shard.
       description: Get Bridge instances to be processed by a shard.
       operationId: ShardBridgesSyncAPI_getBridges
@@ -614,7 +614,7 @@ paths:
         - bearer: []
     put:
       tags:
-        - Shard API
+        - Shard
       summary: Update a Bridge instance.
       description: Update a Bridge instance.
       operationId: ShardBridgesSyncAPI_updateBridge
@@ -643,7 +643,7 @@ paths:
   /api/v1/shard/bridges/processors:
     get:
       tags:
-        - Shard API
+        - Shard
       summary: Get Processors to be processed by a shard.
       description: Get Processors to be processed by a shard.
       operationId: ShardBridgesSyncAPI_getProcessors
@@ -672,7 +672,7 @@ paths:
         - bearer: []
     put:
       tags:
-        - Shard API
+        - Shard
       summary: Update a Processor.
       description: Update a Processor.
       operationId: ShardBridgesSyncAPI_updateProcessorStatus
