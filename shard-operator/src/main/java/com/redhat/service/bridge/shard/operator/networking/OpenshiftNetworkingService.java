@@ -75,6 +75,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
         if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
             String endpoint = route.getSpec().getHost();
             endpoint = route.getSpec().getTls() != null ? NetworkingConstants.HTTPS_SCHEME + endpoint : NetworkingConstants.HTTP_SCHEME + endpoint;
+            endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
             return new NetworkResource(endpoint, true);
         }
 

@@ -16,7 +16,7 @@ public class IngressResource {
             return ResourceUtils.jsonRequest(token)
                     .body(cloudEventStream)
                     .contentType(ContentType.JSON)
-                    .options(endpoint + "/events");
+                    .options(endpoint);
         } catch (IOException e) {
             throw new RuntimeException("Error with inputstream", e);
         }

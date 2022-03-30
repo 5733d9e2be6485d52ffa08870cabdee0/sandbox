@@ -1,7 +1,5 @@
 package com.redhat.service.bridge.infra;
 
-import java.util.Set;
-
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -9,10 +7,16 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.auth.IdentityResolver;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ForbiddenRequestException;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class IdentityResolverTest {
@@ -24,25 +28,27 @@ public class IdentityResolverTest {
 
     @Test
     public void testCustomerIdResolver() {
-        JsonWebToken jwt = new JsonWebToken() {
-            @Override
-            public String getName() {
-                return null;
-            }
-
-            @Override
-            public Set<String> getClaimNames() {
-                return null;
-            }
-
-            @Override
-            public <T> T getClaim(String s) {
-                if (s.equals(APIConstants.SUBJECT_ATTRIBUTE_CLAIM)) {
-                    return (T) CUSTOMER_ID;
-                }
-                return null;
-            }
-        };
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim(eq(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(CUSTOMER_ID);
+        when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(true);
+        when(jwt.containsClaim(not(eq(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM)))).thenReturn(false);
         assertThat(identityResolver.resolve(jwt)).isEqualTo(CUSTOMER_ID);
+    }
+
+    @Test
+    public void testCustomerIdResolverForServiceAccount() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim(eq(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(CUSTOMER_ID);
+        when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(true);
+        when(jwt.containsClaim(not(eq(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)))).thenReturn(false);
+        assertThat(identityResolver.resolve(jwt)).isEqualTo(CUSTOMER_ID);
+    }
+
+    @Test
+    public void testValidTokenWithoutClaims() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(false);
+        when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(false);
+        assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
     }
 }

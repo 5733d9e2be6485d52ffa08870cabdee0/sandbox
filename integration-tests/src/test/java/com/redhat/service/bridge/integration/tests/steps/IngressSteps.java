@@ -35,7 +35,7 @@ public class IngressSteps {
 
     @And("^the Ingress of Bridge \"([^\"]*)\" is available within (\\d+) (?:minute|minutes)$")
     public void ingressOfBridgeIsAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
@@ -49,7 +49,7 @@ public class IngressSteps {
 
     @And("^the Ingress of Bridge \"([^\"]*)\" is not available within (\\d+) (?:minute|minutes)$")
     public void ingressOfBridgeIsNotAvailableWithinMinutes(String testBridgeName, int timeoutMinutes) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
@@ -60,26 +60,14 @@ public class IngressSteps {
                         .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
     }
 
-    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\":$")
-    public void sendCloudEventToIngressOfBridgeWithPath(String testBridgeName, String path, String cloudEvent) {
-        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, 200);
+    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")
+    public void sendCloudEventToIngressOfBridgeWithPath(String testBridgeName, String cloudEvent) {
+        sendAndCheckCloudEvent(testBridgeName, cloudEvent, "", 200);
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*):$")
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeaders(String testBridgeName, String path, String headers, String cloudEvent) {
         sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), 200);
-    }
-
-    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" is failing with HTTP response code (\\d+):$")
-    public void sendCloudEventToIngressOfBridgeWithPathIsFailingWithHTTPResponseCode(String testBridgeName, String path,
-            int responseCode, String cloudEvent) {
-        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, responseCode);
-    }
-
-    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*) is failing with HTTP response code (\\d+):$")
-    public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeadersIsFailingWithHTTPResponseCode(String testBridgeName,
-            String path, String headers, int responseCode, String cloudEvent) {
-        sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), responseCode);
     }
 
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
@@ -111,7 +99,7 @@ public class IngressSteps {
 
     private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers,
             int responseCode) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
         endpoint = endpoint + "/" + path;
 
         String token = context.getManagerToken();

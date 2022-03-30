@@ -143,7 +143,8 @@ public class ProcessorSteps {
         BaseAction action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
-            assertThat(action.getParameters()).containsEntry(key, value);
+            String parameterTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, value);
+            assertThat(action.getParameters()).containsEntry(key, parameterTextWithoutPlaceholders);
         });
     }
 

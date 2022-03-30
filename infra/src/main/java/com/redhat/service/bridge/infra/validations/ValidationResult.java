@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.actions;
+package com.redhat.service.bridge.infra.validations;
 
 public class ValidationResult {
 
