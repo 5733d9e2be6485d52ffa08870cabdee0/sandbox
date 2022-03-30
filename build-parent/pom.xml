@@ -55,9 +55,12 @@
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
+    <version.jacoco.maven.plugin>0.8.7</version.jacoco.maven.plugin>
+
     <container.image.localstack>localstack/localstack:${version.org.localstack}</container.image.localstack>
     <container.image.keycloak>quay.io/keycloak/keycloak:${version.org.keycloak}</container.image.keycloak>
 
+    <jacoco.skip>true</jacoco.skip>
     <formatter.skip>false</formatter.skip>
     <formatter.goal>format</formatter.goal>
     <impsort.goal>sort</impsort.goal>
@@ -252,7 +255,9 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${version.surefire.plugin}</version>
           <configuration>
-            <argLine>-Xmx1024m -Dfile.encoding=UTF-8</argLine>
+            <!-- ${argLine} placeholder needed due to surefire & jacoco issue -->
+            <!-- https://stackoverflow.com/questions/23190107/cannot-use-jacoco-jvm-args-and-surefire-jvm-args-together-in-maven -->
+            <argLine>-Xmx1024m -Dfile.encoding=UTF-8 ${argLine}</argLine>
             <systemPropertyVariables>
               <apple.awt.UIElement>true</apple.awt.UIElement>
               <org.uberfire.nio.git.daemon.enabled>false</org.uberfire.nio.git.daemon.enabled>
@@ -373,6 +378,50 @@
             </execution>
           </executions>
         </plugin>
+
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${version.jacoco.maven.plugin}</version>
+          <executions>
+            <execution>
+              <id>default-prepare-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+              <configuration>
+                <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-prepare-agent-integration</id>
+              <goals>
+                <goal>prepare-agent-integration</goal>
+              </goals>
+              <configuration>
+                <destFile>${basedir}/target/coverage-reports/jacoco-integration.exec</destFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <configuration>
+                <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-report-integration</id>
+              <goals>
+                <goal>report-integration</goal>
+              </goals>
+              <configuration>
+                <dataFile>${basedir}/target/coverage-reports/jacoco-integration.exec</dataFile>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -388,6 +437,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -416,8 +469,20 @@
       </activation>
       <properties>
         <formatter.skip>true</formatter.skip>
+        <jacoco.skip>true</jacoco.skip>
         <skipITs>true</skipITs>
         <skipTests>true</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>measure-code-coverage</id>
+      <activation>
+        <property>
+          <name>measure-code-coverage</name>
+        </property>
+      </activation>
+      <properties>
+        <jacoco.skip>false</jacoco.skip>
       </properties>
     </profile>
   </profiles>
