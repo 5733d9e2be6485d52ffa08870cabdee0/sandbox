@@ -19,8 +19,8 @@ public class GlobalConfigurationsProviderImpl implements GlobalConfigurationsPro
     @ConfigProperty(name = "event-bridge.webhook.client-secret")
     String webhookClientSecret;
 
-    @ConfigProperty(name = "event-bridge.webhook.technical-account-id")
-    String webhookTechnicalAccountId;
+    @ConfigProperty(name = "event-bridge.webhook.account-id")
+    String webhookAccountId;
 
     @Override
     public String getSsoUrl() {
@@ -44,6 +44,6 @@ public class GlobalConfigurationsProviderImpl implements GlobalConfigurationsPro
 
     @Override
     public String getSsoWebhookClientAccountId() {
-        return webhookTechnicalAccountId;
+        return webhookAccountId;
     }
 }
