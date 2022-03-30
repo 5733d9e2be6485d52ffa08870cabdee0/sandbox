@@ -59,6 +59,12 @@
       <groupId>io.fabric8</groupId>
       <artifactId>openshift-model-monitoring</artifactId>
     </dependency>
+    <!-- needed for https://issues.redhat.com/browse/MGDOBR-503 https://github.com/quarkusio/quarkus/issues/24644 -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-minikube</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
@@ -153,7 +159,6 @@
         <dependency>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-minikube</artifactId>
-          <optional>true</optional>
         </dependency>
       </dependencies>
     </profile>
