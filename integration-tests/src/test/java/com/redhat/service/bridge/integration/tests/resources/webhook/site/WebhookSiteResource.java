@@ -27,6 +27,6 @@ public class WebhookSiteResource {
                         ENDPOINT_UUID,
                         request.getUuid())
                 .then()
-                .statusCode(204);
+                .statusCode(200);
     }
 }
