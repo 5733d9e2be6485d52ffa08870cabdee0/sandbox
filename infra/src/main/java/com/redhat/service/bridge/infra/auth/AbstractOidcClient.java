@@ -66,6 +66,10 @@ public abstract class AbstractOidcClient {
         return currentTokens.getAccessToken();
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     private void refreshTokens() {
         Tokens tokens = currentTokens;
         try {

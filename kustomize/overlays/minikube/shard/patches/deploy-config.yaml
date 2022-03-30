@@ -4,8 +4,6 @@ data:
   EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:81697365f19810f534ea18b1f4a66200870a481e-jvm
   EVENT_BRIDGE_K8S_PLATFORM: k8s
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge.event-bridge-manager.svc.cluster.local:8080
-  EVENT_BRIDGE_SSO_CLIENT_ID: shard-1
-  EVENT_BRIDGE_SSO_SECRET: clhG7KwrwLk1rYr4yEjtjjiTM1iU8Vbc
   EVENT_BRIDGE_SSO_URL: http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm
 kind: ConfigMap
 metadata:

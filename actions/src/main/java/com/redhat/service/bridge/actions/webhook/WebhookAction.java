@@ -1,20 +1,23 @@
 package com.redhat.service.bridge.actions.webhook;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
+import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
+import com.redhat.service.bridge.infra.auth.OidcClientConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -27,8 +30,8 @@ public class WebhookAction implements InvokableActionProvider {
 
     private WebClient client;
 
-    @ConfigProperty(name = "event-bridge.webhook.technical-bearer-token")
-    Optional<String> webhookTechnicalBearerToken;
+    @Inject
+    Instance<AbstractOidcClient> oidcClients;
 
     @Inject
     WebhookActionValidator validator;
@@ -38,7 +41,7 @@ public class WebhookAction implements InvokableActionProvider {
 
     @PostConstruct
     private void onPostConstruct() {
-        client = WebClient.create(vertx);
+        client = WebClient.create(vertx, new WebClientOptions().setLogActivity(true));
     }
 
     @Override
@@ -56,10 +59,12 @@ public class WebhookAction implements InvokableActionProvider {
         String endpoint = Optional.ofNullable(baseAction.getParameters().get(ENDPOINT_PARAM))
                 .orElseThrow(() -> buildNoEndpointException(processor));
         if (baseAction.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN) && baseAction.getParameters().get(USE_TECHNICAL_BEARER_TOKEN).equals("true")) {
-            if (!webhookTechnicalBearerToken.isPresent()) {
-                throw new TechnicalBearerTokenNotConfiguredException("A webhook action needed the technical bearer token but it was not configured.");
-            }
-            return new WebhookInvoker(endpoint, client, webhookTechnicalBearerToken.get());
+            AbstractOidcClient abstractOidcClient =
+                    oidcClients.stream()
+                            .filter(x -> Objects.equals(x.getName(), OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME))
+                            .findFirst()
+                            .orElseThrow(() -> new TechnicalBearerTokenNotConfiguredException("A webhook action needed the webhook oidc client bean but it was not configured."));
+            return new WebhookInvoker(endpoint, client, abstractOidcClient);
         }
         return new WebhookInvoker(endpoint, client);
     }

@@ -9,6 +9,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -23,6 +24,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = WebhookSinkMockResource.class)
@@ -63,7 +66,10 @@ class WebhookInvokerTest extends AbstractWireMockTest {
         addUpdateRequestListener(TEST_WEBHOOK_PATH, RequestMethod.POST, latch);
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
-        WebhookInvoker invoker = new WebhookInvoker(testSinkEndpoint, WebClient.create(vertx), "token");
+        AbstractOidcClient abstractOidcClient = mock(AbstractOidcClient.class);
+        when(abstractOidcClient.getToken()).thenReturn("token");
+
+        WebhookInvoker invoker = new WebhookInvoker(testSinkEndpoint, WebClient.create(vertx), abstractOidcClient);
         invoker.onEvent(TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
