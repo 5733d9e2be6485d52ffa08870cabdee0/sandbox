@@ -1,5 +1,6 @@
 package com.redhat.service.bridge.actions.webhook;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -58,11 +59,12 @@ public class WebhookAction implements InvokableActionProvider {
         String endpoint = Optional.ofNullable(baseAction.getParameters().get(ENDPOINT_PARAM))
                 .orElseThrow(() -> buildNoEndpointException(processor));
         if (baseAction.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN) && baseAction.getParameters().get(USE_TECHNICAL_BEARER_TOKEN).equals("true")) {
-            Optional<AbstractOidcClient> abstractOidcClient = oidcClients.stream().filter(x -> x.getName().equals(OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME)).findFirst();
-            if (abstractOidcClient.isEmpty()) {
-                throw new TechnicalBearerTokenNotConfiguredException("A webhook action needed the webhook oidc client bean but it was not configured.");
-            }
-            return new WebhookInvoker(endpoint, client, abstractOidcClient.get());
+            AbstractOidcClient abstractOidcClient =
+                    oidcClients.stream()
+                            .filter(x -> Objects.equals(x.getName(), OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME))
+                            .findFirst()
+                            .orElseThrow(() -> new TechnicalBearerTokenNotConfiguredException("A webhook action needed the webhook oidc client bean but it was not configured."));
+            return new WebhookInvoker(endpoint, client, abstractOidcClient);
         }
         return new WebhookInvoker(endpoint, client);
     }
