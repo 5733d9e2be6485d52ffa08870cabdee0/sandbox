@@ -1,0 +1,34 @@
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-240 as builder
+
+RUN microdnf install wget tar java-11-openjdk-devel
+
+RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp \
+    && tar xf /tmp/apache-maven-3.8.1-bin.tar.gz -C /opt \
+    && ln -s /opt/apache-maven-3.8.1 /opt/maven \
+    && mkdir -p /workspace
+
+COPY . /workspace
+
+WORKDIR  /workspace
+
+RUN export JAVA_HOME=/usr/lib/jvm/java-11-openjdk \
+    && export M2_HOME=/opt/maven \
+    && export MAVEN_HOME=/opt/maven \
+    && export PATH=$M2_HOME/bin:$PATH \
+    && sh app-interface/buid_project.sh
+
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
+
+COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/*.jar /deployments/
+COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/app/ /deployments/app/
+COPY --from=builder --chown=185 /workspace/manager/target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+USER 185
+ENV AB_JOLOKIA_OFF=""
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"

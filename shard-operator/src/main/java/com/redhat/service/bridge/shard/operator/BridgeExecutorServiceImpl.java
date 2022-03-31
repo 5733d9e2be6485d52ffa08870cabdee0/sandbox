@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
@@ -41,9 +42,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
     int deploymentTimeout;
 
-    @ConfigProperty(name = "event-bridge.webhook.technical-bearer-token")
-    String webhookTechnicalBearerToken;
-
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -55,6 +53,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
@@ -91,7 +92,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getSpec().setProgressDeadlineSeconds(deploymentTimeout);
 
         List<EnvVar> environmentVariables = new ArrayList<>();
-        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_TECHNICAL_BEARER_TOKEN_ENV_VAR).withValue(webhookTechnicalBearerToken).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getSsoWebhookClientId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getSsoWebhookClientSecret()).build());
         try {
             environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {
