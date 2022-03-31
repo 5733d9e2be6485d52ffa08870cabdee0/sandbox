@@ -7,6 +7,6 @@ elif [[ "$TARGET_ENVIRONMENT" == "remote" ]]; then
   export OB_TOKEN="Bearer $(curl -s --insecure -X POST $SSO_REDHAT_URL/auth/realms/redhat-external/protocol/openid-connect/token --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'client_id=cloud-services' --data-urlencode 'grant_type=refresh_token' --data-urlencode "refresh_token=$OPENSHIFT_OFFLINE_TOKEN" | jq --raw-output '.access_token')"
 else
   echo "Unknown value for TARGET_ENVIRONMENT. Valid values are [local, remote]"
-  exit 1
+  return 1
 fi
 echo '- Token Set'
