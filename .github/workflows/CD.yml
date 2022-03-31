@@ -12,7 +12,7 @@ on:
       - '.github/**'
       - 'kustomize/**'
       - 'dev/**'
-
+      - 'app-interface/**'
 jobs:
   event-bridge-build:
     env:
