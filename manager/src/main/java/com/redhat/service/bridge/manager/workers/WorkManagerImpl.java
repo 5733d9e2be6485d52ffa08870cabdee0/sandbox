@@ -34,6 +34,7 @@ public class WorkManagerImpl implements WorkManager {
     WorkerIdProvider workerIdProvider;
 
     @Override
+    @Transactional(Transactional.TxType.MANDATORY)
     public Work schedule(ManagedResource managedResource) {
         Work w = workDAO.findByManagedResource(managedResource);
         if (w == null) {

@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Java and Maven Setup
