@@ -31,7 +31,14 @@ Each request will need a [Bearer](https://quarkus.io/guides/security#openid-conn
 export OB_TOKEN="Bearer $(curl --insecure -X POST $KEYCLOAK_URL/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
 ```
 
-This token will last 3 minutes. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+This token will last 10 hours. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+
+If you target any remote environment (dev or stable) you will have to use a token from sso.redhat.com. Export your token from [here](https://console.redhat.com/openshift/token) and run the following command 
+
+```shell
+export OPENSHIFT_OFFLINE_TOKEN=<REPLACE WITH YOUR TOKEN>
+export OB_TOKEN="Bearer $(curl -s --insecure -X POST https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'client_id=cloud-services' --data-urlencode 'grant_type=refresh_token' --data-urlencode "refresh_token=$OPENSHIFT_OFFLINE_TOKEN" | jq --raw-output '.access_token')"
+```
 
 ## Testing your Setup
 
