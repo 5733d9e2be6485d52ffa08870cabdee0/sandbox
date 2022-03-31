@@ -13,9 +13,11 @@ mkdir -p ${KUSTOMIZE_DEPLOY_DIR}/overlays
 cp -r ${KUSTOMIZE_DIR}/base ${KUSTOMIZE_DEPLOY_DIR}
 cp -r ${KUSTOMIZE_DIR}/overlays/minikube ${KUSTOMIZE_DEPLOY_DIR}/overlays
 
+echo "Using 'rhose-local-development' kafka instance"
+export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
+
 echo "Setup Managed Kafka and Managed Connectors"
 . ${BIN_DIR}/configure.sh kafka managed-connectors
-${BIN_DIR}/kafka-setup.sh
 
 echo "Starting Minikube"
 ${BIN_DIR}/minikube-start.sh true

@@ -4,7 +4,6 @@
 # If you want to use it, make a copy of this named "localconfig" in this same folder.
 
 MANAGED_CONNECTORS_CLUSTER_ID=mc-cluster-id
-MANAGED_KAFKA_INSTANCE_NAME=mk-local
 OPENSHIFT_OFFLINE_TOKEN=my-offline-token
 # RHOAS_USERNAME=
 

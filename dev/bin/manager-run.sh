@@ -5,21 +5,22 @@
 #
 # Env vars:
 # - MANAGED_CONNECTORS_CLUSTER_ID: cluster where managed connectors will be deployed (required only if MC actions are used, default="empty")
-# - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 
+export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
+
 . "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started managed-connectors
 
-bootstrap_server_host=$( getManagedKafkaBootstrapServerHost ) || die "can't find instance json credentials. Run kafka-setup.sh to configure it."
-admin_client_id=$( getManagedKafkaAdminSAClientId ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-admin_client_secret=$( getManagedKafkaAdminSAClientSecret ) || die "can't find admin json credentials. Run kafka-setup.sh to configure it."
-ops_client_id=$( getManagedKafkaOpsSAClientId ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-ops_client_secret=$( getManagedKafkaOpsSAClientSecret ) || die "can't find ops json credentials. Run kafka-setup.sh to configure it."
-mc_client_id=$( getManagedKafkaMcSAClientId ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
-mc_client_secret=$( getManagedKafkaMcSAClientSecret ) || die "can't find mc json credentials. Run kafka-setup.sh to configure it."
+bootstrap_server_host=$( getManagedKafkaBootstrapServerHost )
+admin_client_id=$( getManagedKafkaAdminSAClientId )
+admin_client_secret=$( getManagedKafkaAdminSAClientSecret )
+ops_client_id=$( getManagedKafkaOpsSAClientId )
+ops_client_secret=$( getManagedKafkaOpsSAClientSecret )
+mc_client_id=$( getManagedKafkaMcSAClientId )
+mc_client_secret=$( getManagedKafkaMcSAClientSecret )
 
 export KAFKA_CLIENT_ID=${ops_client_id}
 export KAFKA_CLIENT_SECRET=${ops_client_secret}
