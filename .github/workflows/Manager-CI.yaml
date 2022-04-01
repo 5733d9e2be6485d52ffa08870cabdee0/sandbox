@@ -1,7 +1,7 @@
 name: Manager - CI
 on:
   pull_request_target:
-    types: [labeled]
+    types: [opened, labeled, unlabeled, synchronize]
     branches:    
       - 'main'
     paths-ignore:
@@ -27,13 +27,18 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox' && contains(github.event.pull_request.labels.*.name, 'safe to test')
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     name: Build all images and run E2E tests
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Check label
+        if: !contains(github.event.pull_request.labels.*.name, 'safe to test')
+        run: |
+          echo "Please add the label 'safe to test'"
+          exit 1
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
