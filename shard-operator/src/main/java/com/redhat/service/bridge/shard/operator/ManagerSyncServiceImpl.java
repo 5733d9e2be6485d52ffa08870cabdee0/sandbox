@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,10 +212,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void updateManagerRequestMetricsOnFailure(ManagerRequestType requestType, Throwable error) {
+        String statusCode = null;
         if (error instanceof HTTPResponseException) {
-            int statusCode = ((HTTPResponseException) error).getStatusCode();
-            metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, String.valueOf(statusCode));
+            statusCode = String.valueOf(((HTTPResponseException) error).getStatusCode());
         }
-        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, StringUtils.EMPTY);
+        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, String.valueOf(statusCode));
     }
 }

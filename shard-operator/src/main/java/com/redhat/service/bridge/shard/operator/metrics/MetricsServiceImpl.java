@@ -6,6 +6,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -32,7 +33,9 @@ public class MetricsServiceImpl implements MetricsService {
         tags.add(Tag.of(SHARD_ID, shardId));
         tags.add(Tag.of(REQUEST_TYPE, requestType.name()));
         tags.add(Tag.of(REQUEST_STATUS, status.name()));
-        tags.add(Tag.of(HTTP_STATUS_CODE, statusCode));
+        if (StringUtils.isNotEmpty(statusCode)) {
+            tags.add(Tag.of(HTTP_STATUS_CODE, statusCode));
+        }
         meterRegistry.counter(MANAGER_REQUEST_METRICS, tags).increment();
     }
 }

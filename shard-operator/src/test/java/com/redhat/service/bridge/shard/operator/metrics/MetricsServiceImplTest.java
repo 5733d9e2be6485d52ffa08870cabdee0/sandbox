@@ -39,4 +39,16 @@ public class MetricsServiceImplTest {
         List<Tag> actualTags = argumentCaptor.getValue();
         assertThat(actualTags).size().isEqualTo(4);
     }
+
+    @Test
+    public void testUpdateManagerRequestMetrics_whenStatusIsNull() {
+        Mockito.doNothing().when(meterRegistry.counter(anyString(), anyList()));
+        ManagerRequestType requestType = ManagerRequestType.UPDATE;
+        ManagerRequestStatus status = ManagerRequestStatus.FAILURE;
+        metricsService.updateManagerRequestMetrics(requestType, status, null);
+        ArgumentCaptor<List<Tag>> argumentCaptor = forClass(List.class);
+        Mockito.verify(meterRegistry).counter(Mockito.eq("http.manager.request"), argumentCaptor.capture()).increment();
+        List<Tag> actualTags = argumentCaptor.getValue();
+        assertThat(actualTags).size().isEqualTo(3);
+    }
 }
