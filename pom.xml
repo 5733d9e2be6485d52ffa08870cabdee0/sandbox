@@ -41,7 +41,6 @@
     <module>integration-tests</module>
     <module>ingress</module>
     <module>infra</module>
-    <module>actions</module>
     <module>use-cases</module>
     <module>rhoas-client</module>
   </modules>
