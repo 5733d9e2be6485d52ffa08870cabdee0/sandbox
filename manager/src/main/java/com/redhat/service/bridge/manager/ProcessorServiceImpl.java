@@ -193,7 +193,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
-        processorDAO.getEntityManager().merge(processor).setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatus.DEPROVISION);
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
 

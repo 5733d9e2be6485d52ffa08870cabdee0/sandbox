@@ -210,6 +210,16 @@ public class BridgesServiceTest {
     }
 
     @Test
+    public void testDeleteBridge_whenStatusIsFailed() {
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.FAILED);
+
+        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
     public void testDeleteBridge_whenStatusIsNotReady() {
         Bridge bridge = createPersistBridge(ManagedResourceStatus.PROVISIONING);
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));

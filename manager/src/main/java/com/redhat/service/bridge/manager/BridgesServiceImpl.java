@@ -130,7 +130,7 @@ public class BridgesServiceImpl implements BridgesService {
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction
-        bridgeDAO.getEntityManager().merge(bridge).setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         workManager.schedule(bridge);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());

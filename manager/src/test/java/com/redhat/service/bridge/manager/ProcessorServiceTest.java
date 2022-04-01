@@ -390,6 +390,22 @@ public class ProcessorServiceTest {
     }
 
     @Test
+    public void testDeleteProcessor_whenProcessorStatusIsFailed() {
+        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Processor processor = createPersistProcessor(b, ManagedResourceStatus.FAILED);
+
+        processorService.deleteProcessor(b.getId(), processor.getId(), b.getCustomerId());
+        await().atMost(5, SECONDS).untilAsserted(() -> {
+            Processor p = processorDAO.findById(processor.getId());
+            assertThat(p).isNotNull();
+            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+            assertThat(p.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+
+            assertShardAsksForProcessorToBeDeletedIncludes(processor);
+        });
+    }
+
+    @Test
     public void testMGDOBR_80() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
         Set<BaseFilter> filters = new HashSet<>();
