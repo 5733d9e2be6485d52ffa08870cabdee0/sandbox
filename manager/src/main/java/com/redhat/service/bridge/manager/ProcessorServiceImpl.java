@@ -92,6 +92,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
+    @Transactional
     public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
         /* We cannot deploy Processors to a Bridge that is not Available */
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
@@ -122,23 +123,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
         newProcessor.setDefinition(definitionToJsonNode(definition));
 
+        // Processor, Connector and Work should always be created in the same transaction
+        processorDAO.persist(newProcessor);
+        connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
+        workManager.schedule(newProcessor);
+
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 newProcessor.getId(),
                 newProcessor.getBridge().getCustomerId(),
                 newProcessor.getBridge().getId());
 
-        createProcessorConnectorEntity(newProcessor, actionProvider, resolvedAction);
-
-        workManager.schedule(newProcessor);
-
         return newProcessor;
-    }
-
-    @Transactional
-    // Connector should always be marked for creation in the same transaction as a Processor
-    public void createProcessorConnectorEntity(Processor newProcessor, ActionProvider actionProvider, BaseAction resolvedAction) {
-        processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
     }
 
     @Transactional
@@ -187,14 +182,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
-    public void deleteProcessor(String bridgeId, String processorId, String customerId) {
-        Processor processor = doDeleteProcessor(bridgeId, processorId, customerId);
-
-        workManager.schedule(processor);
-    }
-
     @Transactional
-    protected Processor doDeleteProcessor(String bridgeId, String processorId, String customerId) {
+    public void deleteProcessor(String bridgeId, String processorId, String customerId) {
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
@@ -204,14 +193,15 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
 
+        // Processor and Connector deletion and related Work creation should always be in the same transaction
+        processorDAO.getEntityManager().merge(processor).setStatus(ManagedResourceStatus.DEPROVISION);
+        connectorService.deleteConnectorEntity(processor);
+        workManager.schedule(processor);
+
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),
                 processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
-
-        connectorService.deleteConnectorEntity(processor);
-
-        return processor;
     }
 
     private boolean isProcessorDeletable(Processor processor) {

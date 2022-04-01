@@ -4,4 +4,10 @@ public interface GlobalConfigurationsProvider {
     String getSsoUrl();
 
     String getSsoClientId();
+
+    String getSsoWebhookClientId();
+
+    String getSsoWebhookClientSecret();
+
+    String getSsoWebhookClientAccountId();
 }

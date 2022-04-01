@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 public class ShardBridgesSyncAPITest {
 
     private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
-    private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT + "/events";
+    private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;

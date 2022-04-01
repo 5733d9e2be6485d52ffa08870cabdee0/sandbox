@@ -13,9 +13,11 @@ mkdir -p ${KUSTOMIZE_DEPLOY_DIR}/overlays
 cp -r ${KUSTOMIZE_DIR}/base ${KUSTOMIZE_DEPLOY_DIR}
 cp -r ${KUSTOMIZE_DIR}/overlays/minikube ${KUSTOMIZE_DEPLOY_DIR}/overlays
 
+echo "Using 'rhose-local-development' kafka instance"
+export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
+
 echo "Setup Managed Kafka and Managed Connectors"
 . ${BIN_DIR}/configure.sh kafka managed-connectors
-${BIN_DIR}/kafka-setup.sh
 
 echo "Starting Minikube"
 ${BIN_DIR}/minikube-start.sh true
@@ -54,14 +56,6 @@ sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1${OPENSHIFT_OFFLINE_
 echo "Wait for Keycloak to start"
 kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
 timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://'${MINIKUBE_IP}':30007/auth)" != "303" ]]; do sleep 5; done'
-
-echo "Configure shard operator technical bearer token"
-TOKEN="$( getKeycloakAccessToken )"
-sed -i -E "s|(.*WEBHOOK_TECHNICAL_BEARER_TOKEN=).*|\1${TOKEN}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/kustomization.yaml
-
-echo "Redeploy resources to apply token"
-kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
-kubectl delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
 
 echo "Wait for manager and operator to start"
 kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator

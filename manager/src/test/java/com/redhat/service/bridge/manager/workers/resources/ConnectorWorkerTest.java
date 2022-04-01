@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.workers.resources;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,6 +86,7 @@ class ConnectorWorkerTest {
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
+    @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForCreateTest")
     void handleWorkProvisioningWithKnownResourceMultiplePasses(
@@ -132,6 +134,7 @@ class ConnectorWorkerTest {
         assertThat(workManager.exists(work)).isTrue();
     }
 
+    @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForDeleteTest")
     void handleWorkDeletingWithKnownResourceMultiplePasses(

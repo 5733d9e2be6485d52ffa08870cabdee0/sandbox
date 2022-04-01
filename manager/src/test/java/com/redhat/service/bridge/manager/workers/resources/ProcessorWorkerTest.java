@@ -3,6 +3,7 @@ package com.redhat.service.bridge.manager.workers.resources;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,7 @@ public class ProcessorWorkerTest {
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
+    @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PROVISIONING" })
     void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
@@ -92,6 +94,7 @@ public class ProcessorWorkerTest {
         assertThat(workManager.exists(work)).isFalse();
     }
 
+    @Transactional
     @ParameterizedTest
     @MethodSource("srcHandleWorkProvisioningWithKnownResourceWithConnector")
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
@@ -142,6 +145,7 @@ public class ProcessorWorkerTest {
                 Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, false));
     }
 
+    @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
     void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
@@ -160,6 +164,7 @@ public class ProcessorWorkerTest {
         assertThat(workManager.exists(work)).isFalse();
     }
 
+    @Transactional
     @ParameterizedTest
     @MethodSource("srcHandleWorkDeletingWithKnownResourceWithConnector")
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
