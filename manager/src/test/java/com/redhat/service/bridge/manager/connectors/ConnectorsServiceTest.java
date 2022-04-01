@@ -7,8 +7,8 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
