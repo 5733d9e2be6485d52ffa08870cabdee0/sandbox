@@ -127,7 +127,6 @@ public class BridgesServiceImpl implements BridgesService {
         if (!isBridgeDeletable(bridge)) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
-        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction

@@ -191,7 +191,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!isProcessorDeletable(processor)) {
             throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
         }
-        processor.setStatus(ManagedResourceStatus.DEPROVISION);
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
         processorDAO.getEntityManager().merge(processor).setStatus(ManagedResourceStatus.DEPROVISION);
