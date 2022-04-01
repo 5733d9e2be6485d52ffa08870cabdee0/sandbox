@@ -1,37 +1,30 @@
 package com.redhat.service.bridge.processor.actions.kafkatopic;
 
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.apache.kafka.clients.admin.AdminClient;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
+
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
 import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilder;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction.DEFAULT_LIST_TOPICS_TIMEOUT;
-import static com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction.DEFAULT_LIST_TOPICS_TIMEUNIT;
-import static com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction.TOPIC_PARAM;
 
 @ApplicationScoped
-public class KafkaTopicActionInvokerBuilder implements ActionInvokerBuilder {
+public class KafkaTopicActionInvokerBuilder implements KafkaTopicAction, ActionInvokerBuilder {
 
     @Channel("actions-out")
     Emitter<String> emitter;
 
     @Inject
     AdminClient adminClient;
-
-    @Override
-    public String getType() {
-        return KafkaTopicAction.TYPE;
-    }
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {

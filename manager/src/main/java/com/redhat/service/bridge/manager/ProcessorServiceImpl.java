@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.actions.ActionProvider;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -60,9 +58,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     ObjectMapper mapper;
-
-    @Inject
-    ActionProviderFactory actionProviderFactory;
 
     @Inject
     ActionResolverFactory actionResolverFactory;
@@ -111,7 +106,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
 
         BaseAction resolvedAction = actionResolverFactory.get(requestedAction.getType()).resolve(requestedAction,
                 customerId, bridge.getId(),
@@ -128,7 +122,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
+        connectorService.createConnectorEntity(newProcessor, resolvedAction);
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",

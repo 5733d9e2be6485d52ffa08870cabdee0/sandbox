@@ -1,7 +1,13 @@
 package com.redhat.service.bridge.executor;
 
-import com.redhat.service.bridge.actions.ActionProvider;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -10,17 +16,12 @@ import com.redhat.service.bridge.infra.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilderFactory;
+
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class Executor {
 
@@ -35,16 +36,16 @@ public class Executor {
     private Timer actionTimer;
     private Timer transformationTimer;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
-                    MeterRegistry registry) {
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory,
+            ActionInvokerBuilderFactory actionInvokerBuilderFactory,
+            MeterRegistry registry) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
 
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
         BaseAction action = processor.getDefinition().getResolvedAction();
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(action.getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, action);
+        this.actionInvoker = actionInvokerBuilderFactory.get(action.getType()).build(processor, action);
 
         initMetricFields(processor, registry);
     }

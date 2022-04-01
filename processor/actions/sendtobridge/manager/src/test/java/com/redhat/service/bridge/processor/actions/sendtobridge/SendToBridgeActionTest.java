@@ -1,10 +1,12 @@
 package com.redhat.service.bridge.processor.actions.sendtobridge;
 
-import com.redhat.service.bridge.processor.actions.common.ActionParameterValidatorFactory;
-import io.quarkus.test.junit.QuarkusTest;
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
+import com.redhat.service.bridge.processor.actions.common.ActionParameterValidatorFactory;
+
+import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

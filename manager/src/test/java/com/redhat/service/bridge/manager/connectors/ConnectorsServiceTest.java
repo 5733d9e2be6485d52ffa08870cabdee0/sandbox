@@ -7,14 +7,14 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -52,7 +52,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        connectorsService.createConnectorEntity(testWebhookAction(), testProcessor(), webhookAction);
+        connectorsService.createConnectorEntity(testProcessor(), testWebhookAction());
 
         verify(connectorsDAOMock, never()).persist(any(ConnectorEntity.class));
     }
@@ -60,7 +60,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
+        connectorsService.createConnectorEntity(testProcessor(), testKafkaAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -68,7 +68,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnectorFromConnectorEntity() {
-        connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
+        connectorsService.createConnectorEntity(testProcessor(), testKafkaAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }

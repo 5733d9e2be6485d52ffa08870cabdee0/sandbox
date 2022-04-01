@@ -1,18 +1,15 @@
 package com.redhat.service.bridge.processor.actions.webhook;
 
-import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
 
-import javax.enterprise.context.ApplicationScoped;
+public interface WebhookAction extends ActionAccepter {
 
-@ApplicationScoped
-public class WebhookAction implements ActionProvider {
-
-    public static final String TYPE = "Webhook";
-    public static final String ENDPOINT_PARAM = "endpoint";
-    public static final String USE_TECHNICAL_BEARER_TOKEN = "useTechnicalBearerToken";
+    String TYPE = "Webhook";
+    String ENDPOINT_PARAM = "endpoint";
+    String USE_TECHNICAL_BEARER_TOKEN = "useTechnicalBearerToken";
 
     @Override
-    public String getType() {
+    default String getType() {
         return TYPE;
     }
 }

@@ -8,7 +8,6 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
@@ -24,9 +23,6 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
     static final String ACTION_PARAMETERS_NOT_VALID_ERROR = "Parameters for Action '{name}' of Type '{type}' are not valid.";
 
     static final String TYPE_PARAM = "type";
-
-    @Inject
-    ActionProviderFactory actionProviderFactory;
 
     @Inject
     ActionParameterValidatorFactory actionParameterValidatorFactory;

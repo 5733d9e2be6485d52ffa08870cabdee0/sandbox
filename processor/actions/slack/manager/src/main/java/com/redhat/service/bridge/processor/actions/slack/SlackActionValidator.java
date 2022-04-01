@@ -9,17 +9,12 @@ import com.redhat.service.bridge.infra.validations.ValidationResult;
 import com.redhat.service.bridge.processor.actions.common.ActionParameterValidator;
 
 @ApplicationScoped
-public class SlackActionValidator implements ActionParameterValidator {
+public class SlackActionValidator implements SlackAction, ActionParameterValidator {
     public static final String INVALID_CHANNEL_MESSAGE =
             "The supplied " + SlackAction.CHANNEL_PARAMETER + " parameter is not valid";
 
     public static final String INVALID_WEBHOOK_URL_MESSAGE =
             "The supplied " + SlackAction.WEBHOOK_URL_PARAMETER + " parameter is not valid";
-
-    @Override
-    public String getType() {
-        return SlackAction.TYPE;
-    }
 
     @Override
     public ValidationResult isValid(BaseAction action) {

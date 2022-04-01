@@ -1,5 +1,13 @@
 package com.redhat.service.bridge.processor.actions.webhook;
 
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
 import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.infra.auth.OidcClientConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
@@ -8,22 +16,13 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
 import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilder;
+
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import java.util.Objects;
-import java.util.Optional;
-
-import static com.redhat.service.bridge.processor.actions.webhook.WebhookAction.ENDPOINT_PARAM;
-import static com.redhat.service.bridge.processor.actions.webhook.WebhookAction.USE_TECHNICAL_BEARER_TOKEN;
-
 @ApplicationScoped
-public class WebhookActionInvokerBuilder implements ActionInvokerBuilder {
+public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvokerBuilder {
 
     private WebClient client;
 
@@ -36,11 +35,6 @@ public class WebhookActionInvokerBuilder implements ActionInvokerBuilder {
     @PostConstruct
     private void onPostConstruct() {
         client = WebClient.create(vertx, new WebClientOptions().setLogActivity(true));
-    }
-
-    @Override
-    public String getType() {
-        return WebhookAction.TYPE;
     }
 
     @Override
