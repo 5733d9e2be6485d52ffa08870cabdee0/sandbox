@@ -24,19 +24,11 @@ class ActionProviderFactoryTest {
         assertThat(actionProviderFactory.getActionProvider(KafkaTopicAction.TYPE))
                 .isNotNull()
                 .isInstanceOf(KafkaTopicAction.class);
-
-        assertThat(actionProviderFactory.getInvokableActionProvider(KafkaTopicAction.TYPE))
-                .isNotNull()
-                .isInstanceOf(KafkaTopicAction.class);
     }
 
     @Test
     void getWebhookActionProvider() {
         assertThat(actionProviderFactory.getActionProvider(WebhookAction.TYPE))
-                .isNotNull()
-                .isInstanceOf(WebhookAction.class);
-
-        assertThat(actionProviderFactory.getInvokableActionProvider(WebhookAction.TYPE))
                 .isNotNull()
                 .isInstanceOf(WebhookAction.class);
     }

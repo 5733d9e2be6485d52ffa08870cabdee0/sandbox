@@ -37,7 +37,6 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.bridge.manager.connectors.ConnectorsApiClient;
@@ -50,6 +49,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 

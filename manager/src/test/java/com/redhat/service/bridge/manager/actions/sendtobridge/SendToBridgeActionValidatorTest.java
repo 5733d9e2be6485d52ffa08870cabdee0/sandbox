@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionParameterValidatorFactory;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
@@ -39,9 +38,6 @@ public class KafkaTopicActionTest {
 
     @Inject
     KafkaTopicAction kafkaTopicAction;
-
-    @Inject
-    ActionParameterValidatorFactory actionParameterValidatorFactory;
 
     private Set<String> topics = Collections.singleton(TOPIC_NAME);
 
@@ -77,11 +73,6 @@ public class KafkaTopicActionTest {
     @Test
     public void getType() {
         assertThat(kafkaTopicAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
-    }
-
-    @Test
-    public void getValidator() {
-        assertThat(actionParameterValidatorFactory.get(KafkaTopicAction.TYPE)).isNotNull();
     }
 
     @Test

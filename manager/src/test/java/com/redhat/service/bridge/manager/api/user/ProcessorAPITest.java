@@ -24,8 +24,6 @@ import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
-import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
-import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
@@ -38,6 +36,8 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;

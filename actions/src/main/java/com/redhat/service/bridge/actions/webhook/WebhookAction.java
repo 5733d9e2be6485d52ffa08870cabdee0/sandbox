@@ -9,7 +9,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.InvokableActionProvider;
+import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.infra.auth.OidcClientConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
@@ -22,7 +22,7 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
-public class WebhookAction implements InvokableActionProvider {
+public class WebhookAction implements ActionProvider {
 
     public static final String TYPE = "Webhook";
     public static final String ENDPOINT_PARAM = "endpoint";
