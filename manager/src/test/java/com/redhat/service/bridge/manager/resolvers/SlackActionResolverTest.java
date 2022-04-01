@@ -1,14 +1,17 @@
 package com.redhat.service.bridge.manager.resolvers;
 
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
+import java.util.Map;
 
 import javax.inject.Inject;
-import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+
+import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

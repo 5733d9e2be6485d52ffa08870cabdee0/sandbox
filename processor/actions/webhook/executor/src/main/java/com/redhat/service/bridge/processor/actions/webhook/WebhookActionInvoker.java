@@ -2,6 +2,7 @@ package com.redhat.service.bridge.processor.actions.webhook;
 
 import com.redhat.service.bridge.infra.auth.AbstractOidcClient;
 import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;

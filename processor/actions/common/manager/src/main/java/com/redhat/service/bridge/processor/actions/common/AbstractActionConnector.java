@@ -1,16 +1,17 @@
 package com.redhat.service.bridge.processor.actions.common;
 
+import javax.inject.Inject;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.inject.Inject;
-
-public abstract class BaseConnectorAction implements ConnectorAction {
+public abstract class AbstractActionConnector implements ActionConnector {
 
     public static final String PROCESSORS_PARAMETER = "processors";
     public static final String LOG_PROCESSOR_PARENT_PARAMETER = "log";

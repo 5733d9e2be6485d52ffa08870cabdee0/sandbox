@@ -1,22 +1,24 @@
 package com.redhat.service.bridge.manager.connectors;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.common.ConnectorAction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import java.time.ZonedDateTime;
-import java.util.Optional;
+import com.redhat.service.bridge.processor.actions.common.ActionConnector;
+import com.redhat.service.bridge.processor.actions.common.ActionConnectorFactory;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -29,23 +31,24 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
+    @Inject
+    ActionConnectorFactory actionConnectorFactory;
+
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(BaseAction resolvedAction,
-                                      Processor processor,
-                                      ActionProvider actionProvider) {
+    public void createConnectorEntity(Processor processor, BaseAction resolvedAction) {
 
-        if (!actionProvider.isConnectorAction()) {
+        if (!actionConnectorFactory.hasConnector(resolvedAction.getType())) {
             return;
         }
 
-        ConnectorAction connectorAction = (ConnectorAction) actionProvider;
-        JsonNode connectorPayload = connectorAction.connectorPayload(resolvedAction);
+        ActionConnector actionConnector = actionConnectorFactory.get(resolvedAction.getType());
+        JsonNode connectorPayload = actionConnector.connectorPayload(resolvedAction);
 
-        String connectorType = connectorAction.getConnectorType();
+        String connectorType = actionConnector.getConnectorType();
         String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
-        String topicName = connectorAction.topicName(resolvedAction);
+        String topicName = actionConnector.topicName(resolvedAction);
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 

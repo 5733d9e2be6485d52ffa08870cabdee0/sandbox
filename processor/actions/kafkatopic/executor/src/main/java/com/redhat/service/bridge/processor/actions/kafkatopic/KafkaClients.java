@@ -1,15 +1,17 @@
 package com.redhat.service.bridge.processor.actions.kafkatopic;
 
-import io.smallrye.common.annotation.Identifier;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.KafkaAdminClient;
+
+import io.smallrye.common.annotation.Identifier;
 
 @ApplicationScoped
 public class KafkaClients {

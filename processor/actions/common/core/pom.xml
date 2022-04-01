@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
+      <artifactId>infra</artifactId>
     </dependency>
   </dependencies>
 

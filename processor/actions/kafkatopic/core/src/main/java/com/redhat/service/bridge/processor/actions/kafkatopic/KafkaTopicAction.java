@@ -1,8 +1,8 @@
 package com.redhat.service.bridge.processor.actions.kafkatopic;
 
-import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
-
 import java.util.concurrent.TimeUnit;
+
+import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
 
 public interface KafkaTopicAction extends ActionAccepter {
 

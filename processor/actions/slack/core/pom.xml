@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-actions-common-core</artifactId>
+      <artifactId>processor-actions-kafkatopic-core</artifactId>
     </dependency>
   </dependencies>
 

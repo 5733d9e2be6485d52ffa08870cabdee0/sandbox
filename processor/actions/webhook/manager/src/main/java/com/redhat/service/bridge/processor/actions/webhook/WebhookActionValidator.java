@@ -10,7 +10,7 @@ import com.redhat.service.bridge.infra.validations.ValidationResult;
 import com.redhat.service.bridge.processor.actions.common.ActionParameterValidator;
 
 @ApplicationScoped
-public class WebhookActionValidator implements ActionParameterValidator {
+public class WebhookActionValidator implements WebhookAction, ActionParameterValidator {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
@@ -19,11 +19,6 @@ public class WebhookActionValidator implements ActionParameterValidator {
 
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
-
-    @Override
-    public String getType() {
-        return WebhookAction.TYPE;
-    }
 
     @Override
     public ValidationResult isValid(BaseAction baseAction) {
