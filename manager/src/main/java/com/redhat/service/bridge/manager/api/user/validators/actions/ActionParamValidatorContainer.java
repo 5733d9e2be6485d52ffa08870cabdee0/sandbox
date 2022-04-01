@@ -8,7 +8,8 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.bridge.actions.ActionProvider;
+import com.redhat.service.bridge.actions.ActionParameterValidator;
+import com.redhat.service.bridge.actions.ActionParameterValidatorFactory;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -26,6 +27,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
 
     @Inject
     ActionProviderFactory actionProviderFactory;
+
+    @Inject
+    ActionParameterValidatorFactory actionParameterValidatorFactory;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -47,9 +51,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        ActionProvider actionProvider;
+        ActionParameterValidator actionValidator;
         try {
-            actionProvider = actionProviderFactory.getActionProvider(baseAction.getType());
+            actionValidator = actionParameterValidatorFactory.get(baseAction.getType());
         } catch (ActionProviderException e) {
             context.disableDefaultConstraintViolation();
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
@@ -58,7 +62,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        ValidationResult v = actionProvider.getParameterValidator().isValid(baseAction);
+        ValidationResult v = actionValidator.isValid(baseAction);
 
         if (!v.isValid()) {
             String message = v.getMessage();

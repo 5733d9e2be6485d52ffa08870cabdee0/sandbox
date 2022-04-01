@@ -39,6 +39,22 @@
       <artifactId>actions</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-kafkatopic-executor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-sendtobridge-executor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-slack-executor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-webhook-executor</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-feel</artifactId>
     </dependency>

@@ -72,6 +72,22 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-kafkatopic-manager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-sendtobridge-manager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-slack-manager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>processor-actions-webhook-manager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
       <artifactId>rhoas-client</artifactId>
     </dependency>
     <dependency>

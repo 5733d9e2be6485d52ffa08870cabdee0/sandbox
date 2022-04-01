@@ -4,6 +4,8 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.actions.ActionParameterValidatorFactory;
+
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,6 +16,9 @@ class SendToBridgeActionTest {
     @Inject
     SendToBridgeAction sendToBridgeAction;
 
+    @Inject
+    ActionParameterValidatorFactory actionParameterValidatorFactory;
+
     @Test
     void testType() {
         assertThat(sendToBridgeAction.getType()).isEqualTo(SendToBridgeAction.TYPE);
@@ -21,7 +26,7 @@ class SendToBridgeActionTest {
 
     @Test
     void testValidator() {
-        assertThat(sendToBridgeAction.getParameterValidator()).isNotNull();
+        assertThat(actionParameterValidatorFactory.get(SendToBridgeAction.TYPE)).isNotNull();
     }
 
     @Test

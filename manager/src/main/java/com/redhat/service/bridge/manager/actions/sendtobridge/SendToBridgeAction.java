@@ -13,19 +13,11 @@ public class SendToBridgeAction implements ActionProvider {
     public static final String BRIDGE_ID_PARAM = "bridgeId";
 
     @Inject
-    SendToBridgeActionValidator validator;
-
-    @Inject
     SendToBridgeActionTransformer transformer;
 
     @Override
     public String getType() {
         return TYPE;
-    }
-
-    @Override
-    public SendToBridgeActionValidator getParameterValidator() {
-        return validator;
     }
 
     @Override
