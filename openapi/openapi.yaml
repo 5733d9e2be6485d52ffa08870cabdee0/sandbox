@@ -11,39 +11,39 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
 tags:
-  - name: Bridges
-    description: "The API that allow the user to retrieve, create or delete Bridge instances."
-  - name: Error Catalog
-    description: List and get the error definitions from the error catalog.
-  - name: Processors
-    description: "The API that allow the user to retrieve, create or delete Processors\
+- name: Bridges
+  description: "The API that allow the user to retrieve, create or delete Bridge instances."
+- name: Error Catalog
+  description: List and get the error definitions from the error catalog.
+- name: Processors
+  description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
-  - name: Shard
-    description: The API that allow a shard to retrieve and update resources.
+- name: Shard
+  description: The API that allow a shard to retrieve and update resources.
 paths:
   /api/v1/bridges:
     get:
       tags:
-        - Bridges
+      - Bridges
       summary: Get the list of Bridge instances
       description: Get the list of Bridge instances for the authenticated user.
       operationId: BridgesAPI_getBridges
       parameters:
-        - name: page
-          in: query
-          schema:
-            format: int32
-            default: 0
-            minimum: 0
-            type: integer
-        - name: size
-          in: query
-          schema:
-            format: int32
-            default: 100
-            maximum: 100
-            minimum: 1
-            type: integer
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
       responses:
         "200":
           description: Success.
@@ -84,10 +84,10 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     post:
       tags:
-        - Bridges
+      - Bridges
       summary: Create a Bridge instance
       description: Create a Bridge instance for the authenticated user.
       operationId: BridgesAPI_createBridge
@@ -135,22 +135,22 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/bridges/{bridgeId}:
     get:
       tags:
-        - Bridges
+      - Bridges
       summary: Get a Bridge instance
       description: Get a Bridge instance of the authenticated user by ID.
       operationId: BridgesAPI_getBridge
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            minLength: 1
-            type: string
-            nullable: false
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
       responses:
         "200":
           description: Success.
@@ -194,19 +194,19 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     delete:
       tags:
-        - Bridges
+      - Bridges
       summary: Delete a Bridge instance
       description: Delete a Bridge instance of the authenticated user by ID.
       operationId: BridgesAPI_deleteBridge
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "202":
           description: Accepted.
@@ -227,38 +227,38 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/bridges/{bridgeId}/processors:
     get:
       tags:
-        - Processors
+      - Processors
       summary: Get the list of Processors of a Bridge instance
       description: Get the list of Processors of a Bridge instance for the authenticated
         user.
       operationId: ProcessorsAPI_listProcessors
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            minLength: 1
-            type: string
-            nullable: false
-        - name: page
-          in: query
-          schema:
-            format: int32
-            default: 0
-            minimum: 0
-            type: integer
-        - name: size
-          in: query
-          schema:
-            format: int32
-            default: 100
-            maximum: 100
-            minimum: 1
-            type: integer
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
       responses:
         "200":
           description: Success.
@@ -299,21 +299,21 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     post:
       tags:
-        - Processors
+      - Processors
       summary: Create a Processor of a Bridge instance
       description: Create a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_addProcessorToBridge
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            minLength: 1
-            type: string
-            nullable: false
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
       requestBody:
         content:
           application/json:
@@ -369,29 +369,29 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/bridges/{bridgeId}/processors/{processorId}:
     get:
       tags:
-        - Processors
+      - Processors
       summary: Get a Processor of a Bridge instance
       description: Get a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_getProcessor
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            minLength: 1
-            type: string
-            nullable: false
-        - name: processorId
-          in: path
-          required: true
-          schema:
-            minLength: 1
-            type: string
-            nullable: false
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
+      - name: processorId
+        in: path
+        required: true
+        schema:
+          minLength: 1
+          type: string
+          nullable: false
       responses:
         "200":
           description: Success.
@@ -442,24 +442,24 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     delete:
       tags:
-        - Processors
+      - Processors
       summary: Delete a Processor of a Bridge instance
       description: Delete a Processor of a Bridge instance for the authenticated user.
       operationId: ProcessorsAPI_deleteProcessor
       parameters:
-        - name: bridgeId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: processorId
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: bridgeId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: processorId
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "202":
           description: Accepted.
@@ -480,30 +480,30 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/errors:
     get:
       tags:
-        - Error Catalog
+      - Error Catalog
       summary: Get the list of errors.
       description: Get the list of errors from the error catalog.
       operationId: ErrorsAPI_getErrors
       parameters:
-        - name: page
-          in: query
-          schema:
-            format: int32
-            default: 0
-            minimum: 0
-            type: integer
-        - name: size
-          in: query
-          schema:
-            format: int32
-            default: 100
-            maximum: 100
-            minimum: 1
-            type: integer
+      - name: page
+        in: query
+        schema:
+          format: int32
+          default: 0
+          minimum: 0
+          type: integer
+      - name: size
+        in: query
+        schema:
+          format: int32
+          default: 100
+          maximum: 100
+          minimum: 1
+          type: integer
       responses:
         "200":
           description: Success.
@@ -538,21 +538,21 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
-        - Error Catalog
+      - Error Catalog
       summary: Get an error from the error catalog.
       description: Get an error from the error catalog.
       operationId: ErrorsAPI_getError
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            format: int32
-            type: integer
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int32
+          type: integer
       responses:
         "200":
           description: Success.
@@ -581,11 +581,11 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
-        - Shard
+      - Shard
       summary: Get Bridge instances to be processed by a shard.
       description: Get Bridge instances to be processed by a shard.
       operationId: ShardBridgesSyncAPI_getBridges
@@ -611,10 +611,10 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     put:
       tags:
-        - Shard
+      - Shard
       summary: Update a Bridge instance.
       description: Update a Bridge instance.
       operationId: ShardBridgesSyncAPI_updateBridge
@@ -639,11 +639,11 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
   /api/v1/shard/bridges/processors:
     get:
       tags:
-        - Shard
+      - Shard
       summary: Get Processors to be processed by a shard.
       description: Get Processors to be processed by a shard.
       operationId: ShardBridgesSyncAPI_getProcessors
@@ -669,10 +669,10 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
     put:
       tags:
-        - Shard
+      - Shard
       summary: Update a Processor.
       description: Update a Processor.
       operationId: ShardBridgesSyncAPI_updateProcessorStatus
@@ -697,13 +697,13 @@ paths:
           content:
             application/json: {}
       security:
-        - bearer: []
+      - bearer: []
 components:
   schemas:
     BaseAction:
       required:
-        - type
-        - parameters
+      - type
+      - parameters
       type: object
       properties:
         type:
@@ -716,7 +716,7 @@ components:
             type: string
     BaseFilter:
       required:
-        - key
+      - key
       type: object
       properties:
         type:
@@ -742,12 +742,12 @@ components:
           $ref: '#/components/schemas/KafkaConnectionDTO'
     BridgeErrorType:
       enum:
-        - USER
-        - PLATFORM
+      - USER
+      - PLATFORM
       type: string
     BridgeRequest:
       required:
-        - name
+      - name
       type: object
       properties:
         name:
@@ -805,13 +805,13 @@ components:
           type: string
     ManagedResourceStatus:
       enum:
-        - ACCEPTED
-        - PROVISIONING
-        - READY
-        - DEPROVISION
-        - DELETING
-        - DELETED
-        - FAILED
+      - ACCEPTED
+      - PROVISIONING
+      - READY
+      - DEPROVISION
+      - DELETING
+      - DELETED
+      - FAILED
       type: string
     ProcessorDTO:
       type: object
@@ -846,8 +846,8 @@ components:
           $ref: '#/components/schemas/BaseAction'
     ProcessorRequest:
       required:
-        - name
-        - action
+      - name
+      - action
       type: object
       properties:
         name:
@@ -863,10 +863,10 @@ components:
           type: string
         action:
           allOf:
+          - $ref: '#/components/schemas/BaseAction'
+          - allOf:
             - $ref: '#/components/schemas/BaseAction'
-            - allOf:
-                - $ref: '#/components/schemas/BaseAction'
-                - nullable: false
+            - nullable: false
     ProcessorResponse:
       type: object
       properties:
