@@ -1,4 +1,2 @@
 resources:
-  - keycloak-realm.yaml
-  - keycloak-route.yaml
   - route.yaml

@@ -3,11 +3,11 @@
 ########
 # Run Fleet Shard locally in dev mode
 #
-# Env vars:
-# - MANAGED_KAFKA_INSTANCE_NAME: set the managed kafka instance name (required)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
+
+export MANAGED_KAFKA_INSTANCE_NAME=rhose-local-development
 
 . "${SCRIPT_DIR_PATH}/configure.sh" kafka minikube-started
 

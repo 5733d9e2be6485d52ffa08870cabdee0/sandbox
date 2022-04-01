@@ -29,7 +29,6 @@ kubectl
 kustomize
 mvn
 ping
-rhoas
 "
 
 # check if required tools are installed
@@ -71,12 +70,28 @@ function configure {
 function configure_kafka {
   check_required_variable "MANAGED_KAFKA_INSTANCE_NAME"
   MANAGED_KAFKA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${MANAGED_KAFKA_INSTANCE_NAME}.json"
+  if [[ ! -f $MANAGED_KAFKA_CREDENTIALS_FILE ]] ; then
+    echo "$MANAGED_KAFKA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
+    exit
+  fi
   ADMIN_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-admin"
   ADMIN_SA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${ADMIN_SA_NAME}.json"
+  if [[ ! -f $ADMIN_SA_CREDENTIALS_FILE ]] ; then
+    echo "$ADMIN_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
+    exit
+  fi
   OPS_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-ops"
   OPS_SA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${OPS_SA_NAME}.json"
+  if [[ ! -f $OPS_SA_CREDENTIALS_FILE ]] ; then
+    echo "$OPS_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
+    exit
+  fi
   MC_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
   MC_SA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${MC_SA_NAME}.json"
+  if [[ ! -f $MC_SA_CREDENTIALS_FILE ]] ; then
+    echo "$MC_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
+    exit
+  fi
 }
 
 function configure_managed_connectors {

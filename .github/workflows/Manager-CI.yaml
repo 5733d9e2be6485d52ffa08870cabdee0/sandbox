@@ -119,6 +119,11 @@ jobs:
         run: |
           kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
           timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
+      - name: Configure bearer token for tests
+        run: |
+          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')
+          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
+        working-directory: kustomize
       - name: Update all resources and delete current operator pod(to refresh operator config)
         run: |
           kustomize build overlays/minikube | oc apply -f -
