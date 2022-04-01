@@ -177,6 +177,283 @@
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
+
+      <!-- ===== ACTIONS ===== -->
+
+      <!-- Common action module - Core -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Common action module - Executor -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-executor</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Common action module - Manager -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-manager</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-common-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <!-- KafkaTopic action - Core -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- KafkaTopic action - Executor -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-executor</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- KafkaTopic action - Manager -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-manager</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-kafkatopic-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <!-- SendToBridge action - Core -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- SendToBridge action - Executor -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-executor</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- SendToBridge action - Manager -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-manager</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-sendtobridge-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <!-- Slack action - Core -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Slack action - Executor -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-executor</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Slack action - Manager -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-manager</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-slack-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <!-- Webhook action - Core -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Webhook action - Executor -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-executor</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-executor</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+      <!-- Webhook action - Manager -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-manager</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-actions-webhook-manager</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
