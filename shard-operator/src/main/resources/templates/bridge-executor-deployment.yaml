@@ -28,7 +28,9 @@ spec:
           env:
             - name: PROCESSOR_DEFINITION
               value: ""
-            - name: WEBHOOK_TECHNICAL_BEARER_TOKEN
+            - name: WEBHOOK_CLIENT_ID
+              value: ""
+            - name: WEBHOOK_CLIENT_SECRET
               value: ""
           envFrom:
             - secretRef:

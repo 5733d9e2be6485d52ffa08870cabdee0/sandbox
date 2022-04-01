@@ -60,22 +60,8 @@ public class BridgesServiceImpl implements BridgesService {
     WorkManager workManager;
 
     @Override
-    public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
-        if (findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
-            throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
-        }
-
-        Bridge bridge = doCreateBridge(customerId, bridgeRequest);
-
-        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
-
-        workManager.schedule(bridge);
-
-        return bridge;
-    }
-
     @Transactional
-    protected Bridge doCreateBridge(String customerId, BridgeRequest bridgeRequest) {
+    public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
@@ -85,7 +71,12 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
+
+        // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
+        workManager.schedule(bridge);
+
+        LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
         return bridge;
     }
@@ -128,30 +119,21 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
-    @Transactional
-    public Bridge findByNameAndCustomerId(String bridgeName, String customerId) {
-        return bridgeDAO.findByNameAndCustomerId(bridgeName, customerId);
-    }
-
     @Override
-    public void deleteBridge(String idOrName, String customerId) {
-        Bridge bridge = doDeleteBridge(idOrName, customerId);
-
-        workManager.schedule(bridge);
-    }
-
     @Transactional
-    protected Bridge doDeleteBridge(String idOrName, String customerId) {
+    public void deleteBridge(String idOrName, String customerId) {
         Bridge bridge = getBridgeByIdOrName(idOrName, customerId);
         Long processorsCount = processorService.getProcessorsCount(bridge);
         if (processorsCount > 0) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
-        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
-        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
-        return bridge;
+        // Bridge deletion and related Work creation should always be in the same transaction
+        bridgeDAO.getEntityManager().merge(bridge).setStatus(ManagedResourceStatus.DEPROVISION);
+        workManager.schedule(bridge);
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
 
     @Transactional

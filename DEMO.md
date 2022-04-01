@@ -31,7 +31,14 @@ Each request will need a [Bearer](https://quarkus.io/guides/security#openid-conn
 export OB_TOKEN="Bearer $(curl --insecure -X POST $KEYCLOAK_URL/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
 ```
 
-This token will last 3 minutes. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+This token will last 10 hours. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+
+If you target any remote environment (dev or stable) you will have to use a token from sso.redhat.com. Export your token from [here](https://console.redhat.com/openshift/token) and run the following command 
+
+```shell
+export OPENSHIFT_OFFLINE_TOKEN=<REPLACE WITH YOUR TOKEN>
+export OB_TOKEN="Bearer $(curl -s --insecure -X POST https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'client_id=cloud-services' --data-urlencode 'grant_type=refresh_token' --data-urlencode "refresh_token=$OPENSHIFT_OFFLINE_TOKEN" | jq --raw-output '.access_token')"
+```
 
 ## Testing your Setup
 
@@ -276,7 +283,7 @@ Here's the cloud event we are going to send:
 with the following request (change the url according to your ingress application endpoint)
 
 ```bash
-curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d '{ "specversion": "1.0", "type": "Microsoft.Storage.BlobCreated", "source": "StorageService", "id": "9aeb0fdf-c01e-0131-0922-9eb54906e209", "time": "2019-11-18T15:13:39.4589254Z", "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}", "dataschema": "#", "data": { "api": "PutBlockList", "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a", "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000", "eTag": "0x8D76C39E4407333", "contentType": "image/png", "contentLength": 30699, "blobType": "BlockBlob", "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}", "sequencer": "000000000000000000000000000099240000000000c41c18", "storageDiagnostics": { "batchId": "681fe319-3006-00a8-0022-9e7cde000000"}}}' "$BRIDGE_ENDPOINT/events"
+curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' -H "Authorization: $OB_TOKEN" -d '{ "specversion": "1.0", "type": "Microsoft.Storage.BlobCreated", "source": "StorageService", "id": "9aeb0fdf-c01e-0131-0922-9eb54906e209", "time": "2019-11-18T15:13:39.4589254Z", "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}", "dataschema": "#", "data": { "api": "PutBlockList", "clientRequestId": "4c5dd7fb-2c48-4a27-bb30-5361b5de920a", "requestId": "9aeb0fdf-c01e-0131-0922-9eb549000000", "eTag": "0x8D76C39E4407333", "contentType": "image/png", "contentLength": 30699, "blobType": "BlockBlob", "url": "https://gridtesting.blob.core.windows.net/testcontainer/{new-file}", "sequencer": "000000000000000000000000000099240000000000c41c18", "storageDiagnostics": { "batchId": "681fe319-3006-00a8-0022-9e7cde000000"}}}' "$BRIDGE_ENDPOINT"
 ```
 
 if the event is a valid cloud event and everything went well, the server will return a response with status `200`.
