@@ -25,9 +25,6 @@ public class SlackAction extends BaseConnectorAction {
     public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
     @Inject
-    SlackActionValidator validator;
-
-    @Inject
     SlackActionTransformer transformer;
 
     @Override
@@ -56,11 +53,6 @@ public class SlackAction extends BaseConnectorAction {
     @Override
     public String getType() {
         return TYPE;
-    }
-
-    @Override
-    public SlackActionValidator getParameterValidator() {
-        return validator;
     }
 
     @Override

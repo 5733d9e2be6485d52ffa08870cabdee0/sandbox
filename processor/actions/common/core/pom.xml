@@ -18,4 +18,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.redhat.service.bridge</groupId>
+      <artifactId>actions</artifactId>
+    </dependency>
+  </dependencies>
+
 </project>

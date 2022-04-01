@@ -15,6 +15,11 @@ public class SendToBridgeActionValidator implements ActionParameterValidator {
             "The supplied " + SendToBridgeAction.BRIDGE_ID_PARAM + " parameter is not valid";
 
     @Override
+    public String getType() {
+        return SendToBridgeAction.TYPE;
+    }
+
+    @Override
     public ValidationResult isValid(BaseAction action) {
         if (action.getParameters() != null) {
             Map<String, String> parameters = action.getParameters();

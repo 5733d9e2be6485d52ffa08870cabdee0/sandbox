@@ -13,7 +13,6 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionParameterValidator;
 import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -36,17 +35,9 @@ public class KafkaTopicAction implements InvokableActionProvider {
     @Inject
     AdminClient adminClient;
 
-    @Inject
-    KafkaTopicActionValidator validator;
-
     @Override
     public String getType() {
         return TYPE;
-    }
-
-    @Override
-    public ActionParameterValidator getParameterValidator() {
-        return validator;
     }
 
     @Override

@@ -34,9 +34,6 @@ public class WebhookAction implements InvokableActionProvider {
     Instance<AbstractOidcClient> oidcClients;
 
     @Inject
-    WebhookActionValidator validator;
-
-    @Inject
     Vertx vertx;
 
     @PostConstruct
@@ -47,11 +44,6 @@ public class WebhookAction implements InvokableActionProvider {
     @Override
     public String getType() {
         return TYPE;
-    }
-
-    @Override
-    public WebhookActionValidator getParameterValidator() {
-        return validator;
     }
 
     @Override

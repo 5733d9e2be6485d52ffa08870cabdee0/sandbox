@@ -17,6 +17,11 @@ public class SlackActionValidator implements ActionParameterValidator {
             "The supplied " + SlackAction.WEBHOOK_URL_PARAMETER + " parameter is not valid";
 
     @Override
+    public String getType() {
+        return SlackAction.TYPE;
+    }
+
+    @Override
     public ValidationResult isValid(BaseAction action) {
         Map<String, String> parameters = action.getParameters();
 

@@ -21,6 +21,11 @@ public class WebhookActionValidator implements ActionParameterValidator {
     private static final String PROTOCOL_HTTPS = "https";
 
     @Override
+    public String getType() {
+        return WebhookAction.TYPE;
+    }
+
+    @Override
     public ValidationResult isValid(BaseAction baseAction) {
         if (baseAction.getParameters() == null) {
             return ValidationResult.invalid();
