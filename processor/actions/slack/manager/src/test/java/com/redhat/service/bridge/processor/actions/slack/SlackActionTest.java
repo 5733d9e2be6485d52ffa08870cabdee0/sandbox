@@ -1,24 +1,21 @@
 package com.redhat.service.bridge.processor.actions.slack;
 
-import java.util.Map;
-
-import javax.inject.Inject;
-
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-
 import io.quarkus.test.junit.QuarkusTest;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static com.redhat.service.bridge.processor.actions.slack.BaseConnectorAction.LOG_PROCESSOR_MULTILINE_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.slack.BaseConnectorAction.LOG_PROCESSOR_PARENT_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.slack.BaseConnectorAction.LOG_PROCESSOR_SHOWHEADERS_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.slack.BaseConnectorAction.PROCESSORS_PARAMETER;
+import javax.inject.Inject;
+import java.util.Map;
+
+import static com.redhat.service.bridge.processor.actions.common.BaseConnectorAction.LOG_PROCESSOR_MULTILINE_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.common.BaseConnectorAction.LOG_PROCESSOR_PARENT_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.common.BaseConnectorAction.LOG_PROCESSOR_SHOWHEADERS_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.common.BaseConnectorAction.PROCESSORS_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackAction.CONNECTOR_CHANNEL_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackAction.CONNECTOR_TOPIC_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackAction.CONNECTOR_WEBHOOK_URL_PARAMETER;

@@ -11,8 +11,8 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;

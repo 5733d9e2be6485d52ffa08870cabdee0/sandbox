@@ -1,14 +1,5 @@
 package com.redhat.service.bridge.executor;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.bridge.actions.ActionInvoker;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
@@ -18,11 +9,18 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-
+import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class Executor {
 
@@ -38,7 +36,7 @@ public class Executor {
     private Timer transformationTimer;
 
     public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
-            MeterRegistry registry) {
+                    MeterRegistry registry) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
 

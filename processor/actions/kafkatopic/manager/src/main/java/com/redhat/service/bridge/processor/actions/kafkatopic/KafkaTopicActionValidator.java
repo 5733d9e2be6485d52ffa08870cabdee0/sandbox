@@ -2,7 +2,6 @@ package com.redhat.service.bridge.processor.actions.kafkatopic;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
 import com.redhat.service.bridge.processor.actions.common.ActionParameterValidator;

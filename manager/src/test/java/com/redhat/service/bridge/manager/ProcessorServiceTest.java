@@ -22,7 +22,7 @@ import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.openshift.cloud.api.kas.auth.models.Topic;
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;

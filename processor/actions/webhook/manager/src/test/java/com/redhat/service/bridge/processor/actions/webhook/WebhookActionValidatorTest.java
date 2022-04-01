@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
 

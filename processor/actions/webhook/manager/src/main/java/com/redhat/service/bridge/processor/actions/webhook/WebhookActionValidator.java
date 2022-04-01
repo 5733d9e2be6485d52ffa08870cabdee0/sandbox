@@ -5,7 +5,6 @@ import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
 import com.redhat.service.bridge.processor.actions.common.ActionParameterValidator;
