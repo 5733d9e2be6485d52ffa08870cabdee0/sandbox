@@ -14,11 +14,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.bridge.manager.actions.connectors.ConnectorAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.slack.ConnectorAction;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
