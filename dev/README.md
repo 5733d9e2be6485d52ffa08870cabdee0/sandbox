@@ -33,12 +33,11 @@ Every script contains a header explaining which variables it reads.
 
 Here is a list of the **required** environment variable:
 
-| Name                                   | Description                                                                                                                                      |
-|:---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| `MANAGED_CONNECTORS_CLUSTER_ID`        | ID of the cluster where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
-| `MANAGED_CONNECTORS_CONTROL_PLANE_URL` | URL of the MC control plane, required to use Managed Connectors based actions. Skip it if you don't need MC actions.                             |
-| `MANAGED_CONNECTORS_NAMESPACE_ID`      | Namespace where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you don't need MC actions.         |
-| `OPENSHIFT_OFFLINE_TOKEN`              | OpenShift offline token. To obtain it, go to https://console.redhat.com/openshift/token                                                          |
+| Name                            | Description                                                                                                                         |
+|:--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `MANAGED_CONNECTORS_NAMESPACE_ID` | ID of the namespace where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
+| `MANAGED_CONNECTORS_CONTROL_PLANE_URL` | URL of the MC control plane, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
+| `OPENSHIFT_OFFLINE_TOKEN`       | OpenShift offline token. To obtain it, go to https://console.redhat.com/openshift/token                                             |
 
 ### Configuration via "localconfig" file
 

@@ -52,6 +52,8 @@
     <version.io.quarkiverse.operatorsdk>3.0.6</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
+    <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
+    <version.com.redhat.cloud-connectors>0.19.0-beta1</version.com.redhat.cloud-connectors>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
@@ -133,7 +135,7 @@
       <dependency>
         <groupId>com.redhat.cloud</groupId>
         <artifactId>connector-management-sdk</artifactId>
-        <version>${version.com.redhat.cloud}</version>
+        <version>${version.com.redhat.cloud-connectors}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.cloud</groupId>

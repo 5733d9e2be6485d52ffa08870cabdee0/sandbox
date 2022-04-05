@@ -3,7 +3,6 @@
 # without the need of exporting them every time, like offline tokens etc.
 # If you want to use it, make a copy of this named "localconfig" in this same folder.
 
-MANAGED_CONNECTORS_CLUSTER_ID=mc-cluster-id
 MANAGED_CONNECTORS_NAMESPACE_ID=mc-namespace-id
 MANAGED_CONNECTORS_CONTROL_PLANE_URL=https://managedconnector-controlplane.com
 OPENSHIFT_OFFLINE_TOKEN=my-offline-token

@@ -41,8 +41,8 @@ class ConnectorsApiClientTest {
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
 
-    @ConfigProperty(name = "managed-connectors.cluster.id")
-    String mcClusterId;
+    @ConfigProperty(name = "managed-connectors.namespace.id")
+    String mcNamespaceId;
 
     @ConfigProperty(name = "managed-connectors.kafka.client.id")
     String serviceAccountId;
@@ -98,8 +98,7 @@ class ConnectorsApiClientTest {
         assertThat(connectorRequest).isNotNull();
 
         assertThat(connectorRequest.getName()).isEqualTo(TEST_CONNECTOR_NAME);
-        assertThat(connectorRequest.getDeploymentLocation().getKind()).isEqualTo("addon");
-        assertThat(connectorRequest.getDeploymentLocation().getClusterId()).isEqualTo(mcClusterId);
+        assertThat(connectorRequest.getNamespaceId()).isEqualTo(mcNamespaceId);
         assertThat(connectorRequest.getConnectorTypeId()).isEqualTo(TEST_CONNECTOR_TYPE);
         assertThat(connectorRequest.getServiceAccount().getClientId()).isEqualTo(serviceAccountId);
         assertThat(connectorRequest.getServiceAccount().getClientSecret()).isEqualTo(serviceAccountSecret);
