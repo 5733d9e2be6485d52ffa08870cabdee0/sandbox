@@ -7,5 +7,10 @@ public enum KnativeBrokerConditionType {
     DataPlaneAvailable,
     ProbeSucceeded,
     Ready,
-    TopicReady;
+    TopicReady,
+    BrokerReady,
+    DeadLetterSinkResolved,
+    DependencyReady,
+    SubscriberResolved,
+    SubscriptionReady
 }

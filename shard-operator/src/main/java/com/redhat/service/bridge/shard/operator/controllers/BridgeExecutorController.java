@@ -20,7 +20,10 @@ import com.redhat.service.bridge.shard.operator.ManagerSyncService;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
+import com.redhat.service.bridge.shard.operator.resources.ConditionStatus;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
+import com.redhat.service.bridge.shard.operator.resources.KnativeBrokerConditionType;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 import com.redhat.service.bridge.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
 
@@ -129,9 +132,18 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
-        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
-        bridgeExecutorService.fetchOrCreateKnativeTrigger(bridgeExecutor, service);
+        KnativeTrigger trigger = bridgeExecutorService.fetchOrCreateKnativeTrigger(bridgeExecutor, service);
+
+        if (trigger.getStatus().getConditions().stream().noneMatch(x -> KnativeBrokerConditionType.Ready.equals(x.getType()) && ConditionStatus.True.equals(x.getStatus()))) {
+            LOGGER.debug("Knative trigger for BridgeExecutor: '{}' in namespace '{}' is not ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.KnativeTriggerNotReady);
+            return UpdateControl.updateStatus(bridgeExecutor);
+        }
+
+        LOGGER.info("Knative trigger for BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);

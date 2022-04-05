@@ -1,12 +1,17 @@
 package com.redhat.service.bridge.executor.api;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -17,6 +22,7 @@ import com.redhat.service.bridge.executor.ExecutorsProvider;
 import com.redhat.service.bridge.executor.ExecutorsService;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
 
 @Path("/events")
 public class ExecutorAPI {
@@ -27,12 +33,29 @@ public class ExecutorAPI {
     ExecutorsProvider executorsProvider;
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response consumeEvent(@NotNull CloudEvent event) {
+    @Produces("*/*")
+    @Consumes("*/*")
+    public Response consumeEvent(@Context HttpHeaders headers, String event) {
         Executor executor = executorsProvider.getExecutor();
+        LOG.info(headers.getRequestHeaders().toString());
         try {
-            executor.onEvent(event);
+            Map<String, String> ceheaders = new HashMap<>();
+            for (String h : headers.getRequestHeaders().keySet()) {
+                ceheaders.put(h.substring(3), headers.getHeaderString(h));
+            }
+
+            CloudEvent ce = new CloudEventBuilder()
+                    .withData(event.getBytes(StandardCharsets.UTF_8))
+                    .withId(ceheaders.get("id"))
+                    .withSource(new URI(ceheaders.get("source")))
+                    .withType(ceheaders.get("type"))
+                    .withDataSchema(new URI(ceheaders.get("dataschema")))
+                    .withSubject(ceheaders.get("subject"))
+                    .build();
+
+            LOG.info(headers.getRequestHeaders().toString());
+            LOG.info(event);
+            executor.onEvent(ce);
         } catch (Throwable t) {
             // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event.", executor.getProcessor().getId(),

@@ -1,11 +1,13 @@
 package com.redhat.service.bridge.shard.operator.resources;
 
-import java.net.URI;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KnativeTriggerSpecSubscriber {
     private KnativeTriggerSpecSubscriberRef ref;
-    private URI iri;
+    private String uri;
 
     public KnativeTriggerSpecSubscriberRef getRef() {
         return ref;
@@ -15,12 +17,12 @@ public class KnativeTriggerSpecSubscriber {
         this.ref = ref;
     }
 
-    public URI getIri() {
-        return iri;
+    public String getUri() {
+        return uri;
     }
 
-    public void setIri(URI iri) {
-        this.iri = iri;
+    public void setIri(String iri) {
+        this.uri = uri;
     }
 
     @Override
@@ -32,11 +34,11 @@ public class KnativeTriggerSpecSubscriber {
             return false;
         }
         KnativeTriggerSpecSubscriber that = (KnativeTriggerSpecSubscriber) o;
-        return Objects.equals(ref, that.ref) && Objects.equals(iri, that.iri);
+        return Objects.equals(ref, that.ref) && Objects.equals(uri, that.uri);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ref, iri);
+        return Objects.hash(ref, uri);
     }
 }

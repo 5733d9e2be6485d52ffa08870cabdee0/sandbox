@@ -18,5 +18,6 @@ public enum ConditionReason {
     ServiceNotReady,
     NetworkResourceNotReady,
     PrometheusUnavailable,
+    KnativeTriggerNotReady,
     SecretsNotFound;
 }

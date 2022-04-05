@@ -90,7 +90,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
 
-        if (knativeBroker.getStatus().getAddress() == null || "".equals(knativeBroker.getStatus().getAddress())) {
+        if (knativeBroker.getStatus() == null || knativeBroker.getStatus().getAddress() == null || "".equals(knativeBroker.getStatus().getAddress())) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);

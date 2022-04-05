@@ -86,7 +86,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
         knativeTrigger.getMetadata().setName(bridgeExecutor.getMetadata().getName().substring(0, 8));
         knativeTrigger.getMetadata().setNamespace("default");
-        //        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
+        knativeTrigger.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return knativeTrigger;
     }
 

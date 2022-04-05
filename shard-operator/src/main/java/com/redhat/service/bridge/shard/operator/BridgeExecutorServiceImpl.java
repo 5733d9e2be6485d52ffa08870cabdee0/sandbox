@@ -179,9 +179,11 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public KnativeTrigger fetchOrCreateKnativeTrigger(BridgeExecutor bridgeExecutor, Service service) {
+        LOGGER.info("trigger");
         KnativeTrigger expected = templateProvider.loadBridgeExecutorTriggerTemplate(bridgeExecutor);
-        expected.getSpec().setBroker(bridgeExecutor.getSpec().getBridgeId().substring(0, 8));
+        expected.getSpec().setBroker("ob-" + bridgeExecutor.getSpec().getBridgeId().substring(0, 5));
         expected.getSpec().getSubscriber().getRef().setName(service.getMetadata().getName());
+        expected.getSpec().getSubscriber().getRef().setNamespace(service.getMetadata().getNamespace());
 
         KnativeTrigger existing = kubernetesClient.resources(KnativeTrigger.class)
                 //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
@@ -189,14 +191,24 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .withName(bridgeExecutor.getMetadata().getName().substring(0, 8))
                 .get();
 
+        LOGGER.info("bridge executor trigger: " + bridgeExecutor.getMetadata().getName());
+        LOGGER.info("exists: " + String.valueOf(existing == null));
+
         if (existing == null || !expected.getSpec().getBroker().equals(existing.getSpec().getBroker()) || !expected.getSpec().getSubscriber().equals(existing.getSpec().getSubscriber())) {
-            return kubernetesClient
+            LOGGER.info("creating");
+            KnativeTrigger trigger = kubernetesClient
                     .resources(KnativeTrigger.class)
                     //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
                     .inNamespace("default")
                     // Best practice would be to generate a new name for the configmap and replace its reference
                     .withName(bridgeExecutor.getMetadata().getName().substring(0, 8))
                     .createOrReplace(expected);
+            try {
+                LOGGER.info(new ObjectMapper().writeValueAsString(trigger.getSpec()));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            return trigger;
         }
 
         return existing;

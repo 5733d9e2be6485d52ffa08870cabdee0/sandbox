@@ -2,10 +2,14 @@ package com.redhat.service.bridge.shard.operator.resources;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KnativeTriggerSpecSubscriberRef {
     private String apiVersion;
     private String kind;
     private String name;
+    private String namespace;
 
     public String getApiVersion() {
         return apiVersion;
@@ -29,6 +33,14 @@ public class KnativeTriggerSpecSubscriberRef {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     @Override
