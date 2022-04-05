@@ -78,9 +78,9 @@ class BridgeErrorServiceTest {
         assertThat(bridgeError)
                 .withFailMessage(String.format("exception %s not found in the errors", clazz))
                 .isNotNull();
-        assertThat(service.getUserError(bridgeError.getId()).isPresent())
+        assertThat(service.getUserError(bridgeError.getId()))
                 .withFailMessage(String.format("exception %s should not be in the user errors", clazz))
-                .isFalse();
+                .isEmpty();
     }
 
 }
