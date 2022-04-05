@@ -18,6 +18,11 @@ Just a note, the `OB_TOKEN` value has to be the token value itself, without the 
 - Configure `event-bridge.manager.url` and `keycloak.realm.url`  
   *in pom.xml, via the maven command mentioned above or use local-tests script (see below)*
 
+### Webhook Action tests
+
+For running Webhook Action tests locally, please set `WEBHOOK_SITE_UUID` environment variable. You can obtain your `WEBHOOK_SITE_UUID` value on https://webhook.site.
+CI build has its own `WEBHOOK_SITE_UUID` value preconfigured.
+
 ## Local testing
 
 Alternatively, if you started the environment for local development via `dev/bin/manager-run.sh` or `kustomize/startMinikubeDeployLocalDev.sh` script, you can use the `integration-tests/run-local-tests.sh` script to launch the test with all local parameters set automatically.
