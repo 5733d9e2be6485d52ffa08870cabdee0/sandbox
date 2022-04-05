@@ -16,30 +16,51 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: ${FLEET_MANAGER_DEPLOYMENT_REPLICAS}
+      replicas: 3
       template:
         metadata:
           labels:
             app-component: rhose-fleet-manager
         spec:
           containers:
-            - image: ${FLEET_MANAGER_IMAGE}
+            - image: ${FLEET_MANAGER_IMAGE}:${FLEET_MANAGER_IMAGE_TAG}
               imagePullPolicy: IfNotPresent
               name: rhose-fleet-manager
               resources:
                 limits:
-                  cpu: ${FLEET_MANAGER_CPU_LIMITS}
-                  memory: ${FLEET_MANAGER_MEM_LIMITS}
+                  cpu: 4
+                  memory: 8192Mi
                 requests:
-                  cpu: ${FLEET_MANAGER_CPU_REQS}
-                  memory: ${FLEET_MANAGER_MEM_REQS}
+                  cpu: 2
+                  memory: 4096Mi
+              env:
+                - name: DATABASE_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.host
+                - name: DATABASE_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.port
+                - name: DATABASE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.user
+                - name: DATABASE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.password
+                - name: DATABASE_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.name
               ports:
                 - containerPort: 8080
-              envFrom:
-                - configMapRef:
-                    name: rhose-fleet-manager-config
-                - secretRef:
-                    name: rhose-fleet-manager-secrets
               livenessProbe:
                 httpGet:
                   path: /q/health/live
@@ -52,7 +73,6 @@ objects:
                   port: 8080
                 initialDelaySeconds: 10
                 periodSeconds: 10
-
   - apiVersion: v1
     kind: Service
     metadata:
@@ -65,20 +85,6 @@ objects:
           targetPort: 8080
       selector:
         app-component: rhose-fleet-manager
-
-  - apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: rhose-fleet-manager-config
-    data:
-      EVENT_BRIDGE_DB_USERNAME: ${EVENT_BRIDGE_DB_USERNAME}
-      EVENT_BRIDGE_DB_PASSWORD: ${EVENT_BRIDGE_DB_PASSWORD}
-      EVENT_BRIDGE_DB_HOST: ${EVENT_BRIDGE_DB_HOST}
-      EVENT_BRIDGE_DB_PORT: ${EVENT_BRIDGE_DB_PORT}
-      EVENT_BRIDGE_DB_SCHEMA: ${{EVENT_BRIDGE_DB_SCHEMA}
-      EVENT_BRIDGE_SSO_URL: ${EVENT_BRIDGE_SSO_URL}
-      EVENT_BRIDGE_SSO_CLIENT_ID: ${EVENT_BRIDGE_SSO_CLIENT_ID}
-
 parameters:
   - name: FLEET_MANAGER_IMAGE
     value: "quay.io/app-sre/rhose-fleet-manager"
@@ -86,39 +92,12 @@ parameters:
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
     displayName: the tag of fleet-manager to deploy
-  - name: FLEET_MANAGER_DEPLOYMENT_REPLICAS
-    value: "1"
-    displayName: the number of fleet-manager deployed
-  - name: FLEET_MANAGER_CPU_LIMITS
-    value: "4"
-    displayName: the fleet-manager's cpu limits in vCPUs
-  - name: FLEET_MANAGER_CPU_REQS
-    value: "2"
-    displayName: the fleet-manager's cpu requests in vCPUs
-  - name: FLEET_MANAGER_MEM_LIMITS
-    value: "8192Mi"
-    displayName: the fleet-manager's memory limits
-  - name: FLEET_MANAGER_MEM_REQS
-    value: "4096Mi"
-    displayName: the fleet-manager's memory requests
-  - name: FLEET_MANAGER_DB_USERNAME
-    value: "toReplace"
-    displayName: the username to connect to the fleet-manager's database
-  - name: FLEET_MANAGER_DB_PASSWORD
-    value: "toReplace"
-    displayName: the password to connect to the fleet-manager's database
-  - name: FLEET_MANAGER_DB_HOST
-    value: "toReplace"
-    displayName: the host to connect to the fleet-manager's database
-  - name: FLEET_MANAGER_DB_PORT
-    value: "toReplace"
-    displayName: the port to connect to the fleet-manager's database
-  - name: FLEET_MANAGER_DB_SCHEMA
-    value: "toReplace"
-    displayName: the schema to connect to the fleet-manager's database
   - name: FLEET_MANAGER_SSO_URL
     value: "toReplace"
     displayName: the url to connect to the fleet-manager's SSO
   - name: FLEET_MANAGER_SSO_CLIENT_ID
     value: "toReplace"
+    displayName: the client id to connect to the fleet-manager's SSO
+  - name: RDS_SECRET_NAME
+    value: rhosedb-rds
     displayName: the client id to connect to the fleet-manager's SSO
