@@ -54,16 +54,22 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Override
+    public BridgeIngress getBridgeIngress(BridgeDTO bridgeDTO) {
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
+        return kubernetesClient
+                .resources(BridgeIngress.class)
+                .inNamespace(namespace.getMetadata().getName())
+                .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
+                .get();
+    }
+
+    @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
 
         BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName(), ingressImage);
 
-        BridgeIngress existing = kubernetesClient
-                .resources(BridgeIngress.class)
-                .inNamespace(namespace.getMetadata().getName())
-                .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
-                .get();
+        BridgeIngress existing = getBridgeIngress(bridgeDTO);
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             BridgeIngress bridgeIngress = kubernetesClient

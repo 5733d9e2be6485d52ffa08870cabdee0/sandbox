@@ -8,6 +8,9 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public interface BridgeExecutorService {
+
+    BridgeExecutor getBridgeExecutor(ProcessorDTO processorDTO);
+
     void createBridgeExecutor(ProcessorDTO processorDTO);
 
     void deleteBridgeExecutor(ProcessorDTO processorDTO);

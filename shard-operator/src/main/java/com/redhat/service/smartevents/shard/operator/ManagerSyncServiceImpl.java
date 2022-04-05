@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -104,14 +105,23 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
-                                        y.setStatus(ManagedResourceStatus.DELETING);
-                                        return notifyBridgeStatusChange(y)
-                                                .subscribe().with(
-                                                        success -> {
-                                                            LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
-                                                            bridgeIngressService.deleteBridgeIngress(y);
-                                                        },
-                                                        failure -> failedToSendUpdateToManager(y, failure));
+                                        if (Objects.isNull(bridgeIngressService.getBridgeIngress(y))) {
+                                            LOGGER.debug("Bridge '{}' was not found. Notifying manager that it has been deleted.", y.getId());
+                                            y.setStatus(ManagedResourceStatus.DELETED);
+                                            return notifyBridgeStatusChange(y)
+                                                    .subscribe().with(
+                                                            success -> LOGGER.debug("Deleted notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
+                                                            failure -> failedToSendUpdateToManager(y, failure));
+                                        } else {
+                                            y.setStatus(ManagedResourceStatus.DELETING);
+                                            return notifyBridgeStatusChange(y)
+                                                    .subscribe().with(
+                                                            success -> {
+                                                                LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                                                bridgeIngressService.deleteBridgeIngress(y);
+                                                            },
+                                                            failure -> failedToSendUpdateToManager(y, failure));
+                                        }
                                     }
                                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
@@ -137,14 +147,22 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
-                                y.setStatus(ManagedResourceStatus.DELETING);
-                                return notifyProcessorStatusChange(y)
-                                        .subscribe().with(
-                                                success -> {
-                                                    LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
-                                                    bridgeExecutorService.deleteBridgeExecutor(y);
-                                                },
-                                                failure -> failedToSendUpdateToManager(y, failure));
+                                if (Objects.isNull(bridgeExecutorService.getBridgeExecutor(y))) {
+                                    LOGGER.debug("Processor '{}' was not found. Notifying manager that it has been deleted.", y.getId());
+                                    y.setStatus(ManagedResourceStatus.DELETED);
+                                    return notifyProcessorStatusChange(y).subscribe().with(
+                                            success -> LOGGER.debug("Deleted notification for Processor '{}' has been sent to the manager successfully", y.getId()),
+                                            failure -> failedToSendUpdateToManager(y, failure));
+                                } else {
+                                    y.setStatus(ManagedResourceStatus.DELETING);
+                                    return notifyProcessorStatusChange(y)
+                                            .subscribe().with(
+                                                    success -> {
+                                                        LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                                        bridgeExecutorService.deleteBridgeExecutor(y);
+                                                    },
+                                                    failure -> failedToSendUpdateToManager(y, failure));
+                                }
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));

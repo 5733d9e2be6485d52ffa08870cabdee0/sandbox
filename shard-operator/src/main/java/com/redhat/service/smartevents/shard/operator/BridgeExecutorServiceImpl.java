@@ -58,16 +58,22 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Override
+    public BridgeExecutor getBridgeExecutor(ProcessorDTO processorDTO) {
+        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
+        return kubernetesClient
+                .resources(BridgeExecutor.class)
+                .inNamespace(namespace.getMetadata().getName())
+                .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
+                .get();
+    }
+
+    @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
         BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
 
-        BridgeExecutor existing = kubernetesClient
-                .resources(BridgeExecutor.class)
-                .inNamespace(namespace.getMetadata().getName())
-                .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
-                .get();
+        BridgeExecutor existing = getBridgeExecutor(processorDTO);
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             BridgeExecutor bridgeExecutor = kubernetesClient
