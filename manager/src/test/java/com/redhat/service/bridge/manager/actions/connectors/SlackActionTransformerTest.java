@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -27,7 +27,7 @@ class SlackActionTransformerTest {
     SlackActionTransformer slackActionTransformer;
 
     @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+    ResourceNamesProvider resourceNamesProvider;
 
     @Test
     void testTransform() {
@@ -42,7 +42,7 @@ class SlackActionTransformerTest {
         assertThat(transformedActionParameter)
                 .containsEntry(SlackAction.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM)
                 .containsEntry(SlackAction.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicAction.TOPIC_PARAM, internalKafkaConfigurationProvider.getTopicPrefix() + TEST_PROCESSOR_ID);
+                .containsEntry(KafkaTopicAction.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID));
     }
 
     private BaseAction buildTestAction() {

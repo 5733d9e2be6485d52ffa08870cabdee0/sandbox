@@ -13,6 +13,8 @@ public interface RhoasClient {
 
     Uni<Void> deleteServiceAccount(String id);
 
+    Uni<Topic> getTopic(String topicName);
+
     Uni<Topic> createTopic(NewTopicInput newTopicInput);
 
     Uni<Topic> createTopicAndGrantAccess(NewTopicInput newTopicInput, String userId, RhoasTopicAccessType accessType);

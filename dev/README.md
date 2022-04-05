@@ -6,7 +6,7 @@
 
 You will need the following installed locally on your machine to support local development:
 
-* [Minikube v1.16.0](https://minikube.sigs.k8s.io/docs/start/)
+* [Minikube v1.25.2](https://minikube.sigs.k8s.io/docs/start/)
 * [Docker Engine](https://docker.com)
   * The most recent version should be fine.
 * [Docker Compose v1.29.2](https://github.com/docker/compose)
@@ -15,7 +15,6 @@ You will need the following installed locally on your machine to support local d
 * [Java 11](https://adoptopenjdk.net/)
 * [jq](https://stedolan.github.io/jq/)
 * [curl](https://curl.se/) (or any other HTTP client)
-* [rhoas CLI](https://access.redhat.com/documentation/en-us/red_hat_openshift_streams_for_apache_kafka/1/guide/fa4bad02-10f2-4ef3-be34-7edc1337e7ee)
 * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
 ### macOS users:
@@ -36,8 +35,8 @@ Here is a list of the **required** environment variable:
 
 | Name                            | Description                                                                                                                         |
 |:--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| `MANAGED_CONNECTORS_CLUSTER_ID` | ID of the cluster where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you need them. |
-| `MANAGED_KAFKA_INSTANCE_NAME`   | Name of the remote Managed Kafka instance, used to configure the instance itself and the related service accounts.                  |
+| `MANAGED_CONNECTORS_CLUSTER_ID` | ID of the cluster where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
+| `MANAGED_CONNECTORS_CONTROL_PLANE_URL` | URL of the MC control plane, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
 | `OPENSHIFT_OFFLINE_TOKEN`       | OpenShift offline token. To obtain it, go to https://console.redhat.com/openshift/token                                             |
 
 ### Configuration via "localconfig" file
@@ -52,22 +51,13 @@ Check the [localconfig-example](bin/localconfig-example) file for an example of 
 
 A remote Managed Kafka instance is required for the internal communication between components of the system.
 
-The [kafka-setup.sh](bin/kafka-setup.sh) script takes care of configuring it for you.
-It is **idempotent**, so it can be run whenever you want to make sure the Kafka cluster is configured properly.
+The development team is asked to use the *shared kafka instance* we have deployed under our organization. 
 
-Just run it without arguments:
-
-```bash
-./dev/bin/kafka-setup.sh
-```
-
-**IMPORTANT #1:** the script will perform `rhoas login` for you. Follow the instructions and **log in with your Red Hat account**.
-
-**IMPORTANT #2:** Managed Kafka test instances expire after 48 hours, so you will need to rerun this script at least every 48 hours.
+**Follow the instructions [here](https://docs.google.com/document/d/1fMnHUmGnO-GZuY2BuEe02_prJs3_7QZdSZ5-SfOJ_Yk) to setup the service accounts (you need to be part of the `rhose` google group to access the document)**. Those service accounts will be used by the local services to create/delete topics and acls on the shared kafka cluster.
 
 ### Credentials folder
 
-The script creates some JSON files inside the [credentials](bin/credentials) folder:
+In case you want to use different credentials, you can replace the JSON files in the [credentials](bin/credentials) folder:
 
 | Name                         | Content                                         |
 |:-----------------------------|-------------------------------------------------|
@@ -75,9 +65,6 @@ The script creates some JSON files inside the [credentials](bin/credentials) fol
 | `<instance_name>-admin.json` | Admin service account credentials               |
 | `<instance_name>-ops.json`   | Operational service account credentials         |
 | `<instance_name>-mc.json`    | Managed Connectors service account credentials  |
-
-**IMPORTANT: if you believe the credentials of one of the service accounts are somehow outdated/wrong, simply delete the corresponding file and re-run the script:
-it will create new working credentials for that service account.**
 
 ## Minikube cluster setup
 

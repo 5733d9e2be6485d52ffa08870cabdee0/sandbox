@@ -42,12 +42,12 @@ abstract class RhoasClientTestBase extends RhoasTestBase {
         verifyWireMockServer(expectedPostTopics, expectedPostACLs, expectedDeleteTopics, expectedDeleteACLs);
     }
 
-    protected void testDeleteTopicAndRevokeAccess(RhoasTopicAccessType accessType, boolean expectFalure, int expectedPostTopics, int expectedPostACLs, int expectedDeleteTopics,
+    protected void testDeleteTopicAndRevokeAccess(RhoasTopicAccessType accessType, boolean expectFailure, int expectedPostTopics, int expectedPostACLs, int expectedDeleteTopics,
             int expectedDeleteACLs) {
         UniAssertSubscriber<?> subscriber = rhoasClient.deleteTopicAndRevokeAccess(TEST_TOPIC_NAME, TEST_SERVICE_ACCOUNT_ID, accessType)
                 .subscribe().withSubscriber(UniAssertSubscriber.create());
 
-        if (expectFalure) {
+        if (expectFailure) {
             subscriber.awaitFailure(Duration.ofSeconds(TIMEOUT_SECONDS));
         } else {
             subscriber.awaitItem(Duration.ofSeconds(TIMEOUT_SECONDS));

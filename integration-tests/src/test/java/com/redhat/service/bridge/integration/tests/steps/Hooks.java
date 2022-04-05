@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.integration.tests.steps;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.awaitility.Awaitility;
@@ -10,6 +12,7 @@ import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.context.TestContext;
 import com.redhat.service.bridge.integration.tests.resources.BridgeResource;
 import com.redhat.service.bridge.integration.tests.resources.ProcessorResource;
+import com.redhat.service.bridge.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.api.models.responses.ProcessorListResponse;
 
@@ -17,6 +20,7 @@ import io.cucumber.core.logging.Logger;
 import io.cucumber.core.logging.LoggerFactory;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.BeforeAll;
 import io.cucumber.java.Scenario;
 
 /**
@@ -32,11 +36,17 @@ public class Hooks {
         this.context = context;
     }
 
-    // Enable this if you need to see all the requests / responses which are failing
-    // @BeforeAll
-    // public static void beforeAll() {
-    // RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    // }
+    @BeforeAll
+    public static void webhookSiteRequestHistoryIsCleared() {
+        final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
+        WebhookSiteResource.requests()
+                .stream()
+                .filter(request -> {
+                    final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    return yesterday.isAfter(requestCreatedAt);
+                })
+                .forEach(request -> WebhookSiteResource.deleteRequest(request));
+    }
 
     @Before
     public void before(Scenario scenario) {

@@ -46,6 +46,7 @@ import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
+import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
@@ -58,6 +59,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.bridge.manager.RhoasServiceImpl.createFailureErrorMessageFor;
+import static com.redhat.service.bridge.manager.utils.TestUtils.waitForProcessorDependenciesToBeReady;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -92,6 +94,9 @@ public class ProcessorServiceTest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    ResourceNamesProvider resourceNamesProvider;
 
     @InjectMock
     RhoasService rhoasService;
@@ -145,11 +150,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         assertThatExceptionOfType(AlreadyExistingItemException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), r));
     }
@@ -160,11 +161,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         assertThat(processor.getBridge().getId()).isEqualTo(b.getId());
         assertThat(processor.getName()).isEqualTo(r.getName());
@@ -223,11 +220,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         ProcessorDTO dto = processorService.toDTO(processor);
         dto.setStatus(ManagedResourceStatus.FAILED);
@@ -291,11 +284,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         Processor found = processorService.getProcessor(processor.getId(), b.getId(), b.getCustomerId());
         assertThat(found).isNotNull();
@@ -310,11 +299,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor(processor.getId(), "doesNotExist", b.getCustomerId()));
     }
@@ -325,11 +310,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor("doesNotExist", b.getId(), b.getCustomerId()));
     }
@@ -340,11 +321,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
@@ -380,11 +357,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(1L);
@@ -396,11 +369,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -422,11 +391,7 @@ public class ProcessorServiceTest {
         ProcessorRequest r = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        await().atMost(5, SECONDS).untilAsserted(() -> {
-            Processor p = processorDAO.findById(processor.getId());
-            assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
         assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
     }
@@ -477,8 +442,7 @@ public class ProcessorServiceTest {
         externalConnectorStatus.setState(ConnectorState.READY);
         externalConnector.setStatus(externalConnectorStatus);
 
-        //Emulate the connector not being found when first looked up, to force provisioning
-        when(connectorsApiClient.getConnector(any())).thenReturn(null, externalConnector);
+        when(connectorsApiClient.getConnector(any())).thenReturn(externalConnector);
         when(connectorsApiClient.createConnector(any(ConnectorEntity.class))).thenCallRealMethod();
         when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(externalConnector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
@@ -488,8 +452,7 @@ public class ProcessorServiceTest {
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    String.format("OpenBridge-slack_sink_0.1-%s",
-                            processor.getId()));
+                    resourceNamesProvider.getProcessorConnectorName(processor.getId()));
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();

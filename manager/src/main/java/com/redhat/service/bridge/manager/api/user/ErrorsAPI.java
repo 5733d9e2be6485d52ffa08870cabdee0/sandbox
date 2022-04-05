@@ -14,11 +14,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorListResponse;
 import com.redhat.service.bridge.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.bridge.infra.api.models.responses.ListResponse;
@@ -30,13 +38,14 @@ import io.quarkus.security.Authenticated;
 
 import static com.redhat.service.bridge.infra.api.APIConstants.ERROR_API_BASE_PATH;
 
+@Tag(name = "Error Catalog", description = "List and get the error definitions from the error catalog.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
                 scheme = "Bearer")
 })
 @SecurityRequirement(name = "bearer")
-@Path(ERROR_API_BASE_PATH)
+@Path(APIConstants.ERROR_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -45,11 +54,27 @@ public class ErrorsAPI {
     @Inject
     BridgeErrorService service;
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorListResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get the list of errors.", description = "Get the list of errors from the error catalog.")
     @GET
     public Response getErrors(@Valid @BeanParam QueryInfo queryInfo) {
         return Response.ok(ListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
     }
 
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = BridgeError.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get an error from the error catalog.", description = "Get an error from the error catalog.")
     @GET
     @Path("{id}")
     public Response getError(@PathParam("id") int id) {

@@ -26,6 +26,7 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox' && contains(github.event.pull_request.labels.*.name, 'safe to test')
     name: Build all images and run E2E tests
     steps:
@@ -79,7 +80,7 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_ID|" kustomization.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_SECRET|" kustomization.yaml
           sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_TOPIC_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_CLUSTER_ID=).*|\1$MANAGED_CONNECTORS_CLUSTER_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MC_CLIENT_ID|" kustomization.yaml
@@ -118,10 +119,9 @@ jobs:
         run: |
           kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
           timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
-      - name: Configure shard operator technical bearer token
+      - name: Configure bearer token for tests
         run: |
-          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=webhook-robot-1&password=therobot&grant_type=password&scope=offline_access' | jq --raw-output '.access_token')
-          sed -i -E "s|(.*EVENT_BRIDGE_WEBHOOK_TECHNICAL_BEARER_TOKEN:).*|\1 $TOKEN|" overlays/minikube/shard/patches/deploy-config.yaml
+          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')
           echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
         working-directory: kustomize
       - name: Update all resources and delete current operator pod(to refresh operator config)
@@ -137,6 +137,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=http://localhost:80/manager

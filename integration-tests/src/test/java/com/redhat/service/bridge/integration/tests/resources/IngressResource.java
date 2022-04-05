@@ -16,13 +16,14 @@ public class IngressResource {
             return ResourceUtils.jsonRequest(token)
                     .body(cloudEventStream)
                     .contentType(ContentType.JSON)
-                    .options(endpoint + "/events");
+                    .options(endpoint);
         } catch (IOException e) {
             throw new RuntimeException("Error with inputstream", e);
         }
     }
 
-    public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream, Headers headers) {
+    public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream,
+            Headers headers) {
         return ResourceUtils.jsonRequest(token)
                 .headers(headers)
                 .body(cloudEventStream)

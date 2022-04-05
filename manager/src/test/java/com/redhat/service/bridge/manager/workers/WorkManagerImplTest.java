@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.redhat.service.bridge.manager.dao.WorkDAO;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.models.Work;
-import com.redhat.service.bridge.manager.workers.id.WorkerIdProvider;
 
 import io.vertx.mutiny.core.eventbus.EventBus;
 
@@ -31,9 +30,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class WorkManagerImplTest {
 
-    private static final WorkerIdProvider WORKER_ID_PROVIDER = new WorkerIdProvider();
-
     private static final String RESOURCE_ID = "123";
+    private final String FIXED_WORKER_ID = "workerId";
 
     @Mock
     WorkDAO workDAO;
@@ -54,11 +52,11 @@ public class WorkManagerImplTest {
         this.manager = new WorkManagerImpl();
         this.manager.workDAO = this.workDAO;
         this.manager.eventBus = this.eventBus;
-        this.manager.workerIdProvider = WORKER_ID_PROVIDER;
+        this.manager.workerId = FIXED_WORKER_ID;
     }
 
     @Test
-    void scheduleFiresEventForNewWork() {
+    void scheduleDoesNotFireEventForWork() {
         when(resource.getId()).thenReturn(RESOURCE_ID);
         when(workDAO.findByManagedResource(resource)).thenReturn(null);
 
@@ -71,7 +69,7 @@ public class WorkManagerImplTest {
         assertThat(work.getType()).contains(Processor.class.getName());
         assertThat(work.getManagedResourceId()).isEqualTo(RESOURCE_ID);
 
-        verify(eventBus).requestAndForget(anyString(), eq(work));
+        verify(eventBus, never()).requestAndForget(anyString(), any(Work.class));
     }
 
     @Test
@@ -153,7 +151,7 @@ public class WorkManagerImplTest {
     void reconnectDroppedWorkers() {
         manager.reconnectDroppedWorkers();
 
-        verify(workDAO).reconnectDroppedWorkers(eq(WORKER_ID_PROVIDER.getWorkerId()), any(ZonedDateTime.class));
+        verify(workDAO).reconnectDroppedWorkers(eq(FIXED_WORKER_ID), any(ZonedDateTime.class));
     }
 
 }

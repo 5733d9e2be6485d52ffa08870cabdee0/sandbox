@@ -4,20 +4,22 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.bridge.manager.dao.WorkDAO;
 import com.redhat.service.bridge.manager.models.ManagedResource;
 import com.redhat.service.bridge.manager.models.Work;
-import com.redhat.service.bridge.manager.workers.id.WorkerIdProvider;
 
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.mutiny.core.eventbus.EventBus;
 
+@ApplicationScoped
 public class WorkManagerImpl implements WorkManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkManagerImpl.class);
@@ -28,14 +30,15 @@ public class WorkManagerImpl implements WorkManager {
     @Inject
     EventBus eventBus;
 
-    @Inject
-    WorkerIdProvider workerIdProvider;
+    @ConfigProperty(name = "event-bridge.resources.workers.id")
+    String workerId;
 
     @Override
+    @Transactional(Transactional.TxType.MANDATORY)
     public Work schedule(ManagedResource managedResource) {
         Work w = workDAO.findByManagedResource(managedResource);
         if (w == null) {
-            w = Work.forResource(managedResource, workerIdProvider.getWorkerId());
+            w = Work.forResource(managedResource, workerId);
             workDAO.persist(w);
 
             if (LOGGER.isInfoEnabled()) {
@@ -43,8 +46,6 @@ public class WorkManagerImpl implements WorkManager {
                         w.getManagedResourceId(),
                         w.getType()));
             }
-
-            fireEvent(w);
         }
 
         return w;
@@ -104,7 +105,7 @@ public class WorkManagerImpl implements WorkManager {
 
     @Transactional
     protected List<Work> getWorkQueue() {
-        return workDAO.findByWorkerId(workerIdProvider.getWorkerId());
+        return workDAO.findByWorkerId(workerId);
     }
 
     @Transactional(Transactional.TxType.NEVER)
@@ -117,7 +118,7 @@ public class WorkManagerImpl implements WorkManager {
     @Scheduled(every = "5m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void reconnectDroppedWorkers() {
         ZonedDateTime age = ZonedDateTime.now().minusMinutes(5);
-        workDAO.reconnectDroppedWorkers(workerIdProvider.getWorkerId(), age);
+        workDAO.reconnectDroppedWorkers(workerId, age);
     }
 
 }

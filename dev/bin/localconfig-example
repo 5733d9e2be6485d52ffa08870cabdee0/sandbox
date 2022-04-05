@@ -4,10 +4,15 @@
 # If you want to use it, make a copy of this named "localconfig" in this same folder.
 
 MANAGED_CONNECTORS_CLUSTER_ID=mc-cluster-id
-MANAGED_KAFKA_INSTANCE_NAME=mk-local
+MANAGED_CONNECTORS_CONTROL_PLANE_URL=https://managedconnector-controlplane.com
 OPENSHIFT_OFFLINE_TOKEN=my-offline-token
+# RHOAS_USERNAME=
 
 # optional
 # MANAGED_KAFKA_REGION=
 # MINIKUBE_DRIVER=podman
 # MINIKUBE_CONTAINER_RUNTIME=cri-o
+
+# integration-tests
+# TODO - check where to document/store
+# webhook.site.uuid=

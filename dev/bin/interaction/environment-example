@@ -2,8 +2,14 @@
 # It can be used to configure required variables for your local environment
 # without the need of exporting them every time, like offline tokens etc.
 # If you want to use it, make a copy of this named "environment" in this same folder.
+# The dev and stable environment use sso.redhat.com. So if you want to target such environments, set TARGET_ENVIRONMENT=remote and the
+# variable OPENSHIFT_OFFLINE_TOKEN accordingly (retrieve the token from https://console.redhat.com/openshift/token).
+# If you target your local environment, then replace the variables KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD.
 
 MINIKUBE_IP=$(minikube ip)
+TARGET_ENVIRONMENT=local # valid values [local,remote]
+SSO_REDHAT_URL=https://sso.redhat.com
+OPENSHIFT_OFFLINE_TOKEN=<REPLACE>
 KEYCLOAK_URL=http://$MINIKUBE_IP:30007
 MANAGER_URL=http://localhost:8080
 KEYCLOAK_USERNAME=username

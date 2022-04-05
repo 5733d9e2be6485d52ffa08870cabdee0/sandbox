@@ -1,0 +1,36 @@
+name: SonarCloud Analysis
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Analyze with SonarCloud
+        uses: ./.github/actions/maven
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+        with:
+          maven-command: -B verify sonar:sonar -Dmeasure-code-coverage -Dsonar.projectKey=5733d9e2be6485d52ffa08870cabdee0_sandbox -Dsonar.organization=5733d9e2be6485d52ffa08870cabdee0 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN

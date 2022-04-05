@@ -42,7 +42,6 @@ The Minikube startup and provisioning of all required services is scripted in `s
 - `minikube` binary available on path
 - `kustomize` tool installed
 - `jq` tool installed
-- `rhoas` tool installed
 - `kubectl` tool installed
 
 ## Demo cluster deployment

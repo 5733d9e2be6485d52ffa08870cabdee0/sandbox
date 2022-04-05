@@ -38,9 +38,19 @@ abstract class RhoasTestBase {
         kafkaInstanceConfigurator.configureWithBrokenTopicCreation(wireMockServer);
     }
 
+    protected void configureMockAPIWithAlreadyCreatedTopic() {
+        kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
+        kafkaInstanceConfigurator.configureWithAlreadyCreatedTopic(wireMockServer);
+    }
+
     protected void configureMockAPIWithBrokenTopicDeletion() {
         kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
         kafkaInstanceConfigurator.configureWithBrokenTopicDeletion(wireMockServer);
+    }
+
+    protected void configureMockAPIWithAlreadyDeletedTopic() {
+        kafkaMgmtConfigurator.configureWithAllWorking(wireMockServer);
+        kafkaInstanceConfigurator.configureWithAlreadyDeletedTopic(wireMockServer);
     }
 
     protected void configureMockAPIWithBrokenServiceAccountCreation() {

@@ -6,6 +6,7 @@ import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.bridge.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.bridge.integration.tests.common.BridgeUtils;
 import com.redhat.service.bridge.integration.tests.common.Utils;
 import com.redhat.service.bridge.integration.tests.context.BridgeContext;
@@ -70,7 +71,7 @@ public class BridgeSteps {
     }
 
     @When("^create a fake Bridge \"([^\"]*)\"$")
-    public void addFakeProcessorToBridge(String testBridgeName) {
+    public void createFakeBridge(String testBridgeName) {
         BridgeContext bridgeContext = context.newBridge(testBridgeName, Utils.generateId(testBridgeName),
                 Utils.generateId("test-" + testBridgeName));
         bridgeContext.setDeleted(true);
@@ -101,6 +102,8 @@ public class BridgeSteps {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> BridgeResource
+                        .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -110,7 +113,7 @@ public class BridgeSteps {
                                 .body("status", Matchers.equalTo(status))
                                 .body("endpoint", Matchers.containsString(bridgeContext.getId())));
 
-        BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName);
+        BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
     }
 
     @When("^delete the Bridge \"([^\"]*)\"$")
@@ -131,6 +134,8 @@ public class BridgeSteps {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> BridgeResource
+                        .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(

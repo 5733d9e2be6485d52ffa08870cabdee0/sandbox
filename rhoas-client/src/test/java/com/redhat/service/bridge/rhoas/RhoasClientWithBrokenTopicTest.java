@@ -40,6 +40,12 @@ class RhoasClientWithBrokenTopicTest extends RhoasClientTestBase {
     }
 
     @Test
+    void testCreateTopicAndGrantAccessProducerWithAlreadyCreatedTopic() {
+        configureMockAPIWithAlreadyCreatedTopic();
+        testCreateTopicAndGrantAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 1, 8, 0, 0);
+    }
+
+    @Test
     void testDeleteTopicAndRevokeAccessConsumerWithBrokenTopicDeletion() {
         configureMockAPIWithBrokenTopicDeletion();
         testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER, true, 0, 3, 1, 2);
@@ -55,5 +61,11 @@ class RhoasClientWithBrokenTopicTest extends RhoasClientTestBase {
     void testDeleteTopicAndRevokeAccessConsumerAndProducerWithBrokenTopicDeletion() {
         configureMockAPIWithBrokenTopicDeletion();
         testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, true, 0, 8, 1, 5);
+    }
+
+    @Test
+    void testDeleteTopicAndRevokeAccessConsumerAndProducerWithAlreadyDeletedTopic() {
+        configureMockAPIWithAlreadyDeletedTopic();
+        testDeleteTopicAndRevokeAccess(RhoasTopicAccessType.CONSUMER_AND_PRODUCER, false, 0, 0, 1, 5);
     }
 }

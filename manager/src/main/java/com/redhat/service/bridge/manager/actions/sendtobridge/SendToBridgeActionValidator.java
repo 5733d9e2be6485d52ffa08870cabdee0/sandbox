@@ -5,8 +5,8 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.actions.ActionParameterValidator;
-import com.redhat.service.bridge.actions.ValidationResult;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
+import com.redhat.service.bridge.infra.validations.ValidationResult;
 
 @ApplicationScoped
 public class SendToBridgeActionValidator implements ActionParameterValidator {
