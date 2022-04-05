@@ -18,6 +18,7 @@ import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvi
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
@@ -171,5 +172,30 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .inNamespace(bridgeExecutor.getMetadata().getNamespace())
                 .withName(bridgeExecutor.getMetadata().getName())
                 .get();
+    }
+
+    @Override
+    public KnativeTrigger fetchOrCreateKnativeTrigger(BridgeExecutor bridgeExecutor, Service service) {
+        KnativeTrigger expected = templateProvider.loadBridgeExecutorTriggerTemplate(bridgeExecutor);
+        expected.getSpec().setBroker(bridgeExecutor.getSpec().getBridgeId().substring(0, 8));
+        expected.getSpec().getSubscriber().getRef().setName(service.getMetadata().getName());
+
+        KnativeTrigger existing = kubernetesClient.resources(KnativeTrigger.class)
+                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .inNamespace("default")
+                .withName(bridgeExecutor.getMetadata().getName().substring(0, 8))
+                .get();
+
+        if (existing == null || !expected.getSpec().getBroker().equals(existing.getSpec().getBroker()) || !expected.getSpec().getSubscriber().equals(existing.getSpec().getSubscriber())) {
+            return kubernetesClient
+                    .resources(KnativeTrigger.class)
+                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .inNamespace("default")
+                    // Best practice would be to generate a new name for the configmap and replace its reference
+                    .withName(bridgeExecutor.getMetadata().getName().substring(0, 8))
+                    .createOrReplace(expected);
+        }
+
+        return existing;
     }
 }

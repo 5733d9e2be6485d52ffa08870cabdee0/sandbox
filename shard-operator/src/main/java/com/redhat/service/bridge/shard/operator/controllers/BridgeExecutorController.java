@@ -69,6 +69,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildTriggerInformer(kubernetesClient, BridgeExecutor.COMPONENT_NAME));
 
         return eventSources;
     }
@@ -129,6 +130,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         }
 
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+
+        bridgeExecutorService.fetchOrCreateKnativeTrigger(bridgeExecutor, service);
 
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);

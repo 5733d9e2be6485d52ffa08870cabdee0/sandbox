@@ -9,6 +9,7 @@ import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -38,6 +39,7 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_EXECUTOR_DEPLOYMENT_PATH = TEMPLATES_DIR + "/bridge-executor-deployment.yaml";
     private static final String BRIDGE_EXECUTOR_SERVICE_PATH = TEMPLATES_DIR + "/bridge-executor-service.yaml";
     private static final String BRIDGE_EXECUTOR_SECRET_PATH = TEMPLATES_DIR + "/bridge-executor-secret.yaml";
+    private static final String BRIDGE_EXECUTOR_TRIGGER_PATH = TEMPLATES_DIR + "/bridge-executor-trigger.yaml";
 
     private static final String SERVICE_MONITOR_PATH = TEMPLATES_DIR + "/service-monitor.yaml";
 
@@ -75,6 +77,17 @@ public class TemplateProviderImpl implements TemplateProvider {
         knativeBroker.getMetadata().setNamespace("default");
         //        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
         return knativeBroker;
+    }
+
+    @Override
+    public KnativeTrigger loadBridgeExecutorTriggerTemplate(BridgeExecutor bridgeExecutor) {
+        KnativeTrigger knativeTrigger = loadYaml(KnativeTrigger.class, BRIDGE_EXECUTOR_TRIGGER_PATH);
+        updateMetadata(bridgeExecutor, knativeTrigger.getMetadata());
+        // TODO: https://github.com/knative-sandbox/eventing-kafka-broker/issues/1970
+        knativeTrigger.getMetadata().setName(bridgeExecutor.getMetadata().getName().substring(0, 8));
+        knativeTrigger.getMetadata().setNamespace("default");
+        //        knativeBroker.getMetadata().setOwnerReferences(null); // TODO: move to ns of the bridge ingress
+        return knativeTrigger;
     }
 
     @Override

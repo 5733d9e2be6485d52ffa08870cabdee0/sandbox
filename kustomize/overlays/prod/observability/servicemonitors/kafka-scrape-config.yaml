@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kafka
+  namespace: openshift-monitoring
+  labels:
+    team: event-bridge-team
+spec:
+  endpoints:
+    - interval: 15s
+      port: web
+      path: /q/metrics
+      scheme: http
+      scrapeTimeout: 10s
+  targetLabels:
+    - app

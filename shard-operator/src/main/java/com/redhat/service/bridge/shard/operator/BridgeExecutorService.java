@@ -2,6 +2,7 @@ package com.redhat.service.bridge.shard.operator;
 
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -19,4 +20,6 @@ public interface BridgeExecutorService {
     Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor, Secret secret);
 
     Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment);
+
+    KnativeTrigger fetchOrCreateKnativeTrigger(BridgeExecutor bridgeExecutor, Service service);
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import com.redhat.service.bridge.shard.operator.monitoring.ServiceMonitorClient;
 import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -42,6 +43,17 @@ public class EventSourceFactory {
                         .runnableInformer(0);
 
         return new InformerEventSource<>(knativeBrokerInformer, Mappers.fromOwnerReference());
+    }
+
+    public static EventSource buildTriggerInformer(KubernetesClient kubernetesClient, String componentName) {
+        SharedIndexInformer<KnativeTrigger> knativeTriggerInformer =
+                kubernetesClient
+                        .resources(KnativeTrigger.class)
+                        .inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(knativeTriggerInformer, Mappers.fromOwnerReference());
     }
 
     public static EventSource buildConfigMapsInformer(KubernetesClient kubernetesClient, String componentName) {

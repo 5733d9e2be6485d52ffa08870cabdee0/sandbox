@@ -4,6 +4,7 @@ import com.redhat.service.bridge.shard.operator.resources.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.KnativeBroker;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -25,6 +26,8 @@ public interface TemplateProvider {
     ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress);
 
     KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress);
+
+    KnativeTrigger loadBridgeExecutorTriggerTemplate(BridgeExecutor bridgeExecutor);
 
     AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress);
 
