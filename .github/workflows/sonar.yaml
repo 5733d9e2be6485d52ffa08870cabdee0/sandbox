@@ -12,6 +12,7 @@ on:
       - '.github/**'
       - 'kustomize/**'
       - 'dev/**'
+      - 'app-interface/**'
 jobs:
   build:
     runs-on: ubuntu-latest

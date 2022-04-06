@@ -8,13 +8,16 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.bridge.manager.dao.BridgeDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
@@ -23,13 +26,15 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 
 @QuarkusTest
 @TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
 public class BridgesServiceTest {
+
+    @Inject
+    BridgeDAO bridgeDAO;
 
     @Inject
     BridgesService bridgesService;
@@ -192,5 +197,38 @@ public class BridgesServiceTest {
     @Test
     public void getBridge_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> bridgesService.getBridge("foo"));
+    }
+
+    @Test
+    public void testDeleteBridge() {
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
+
+        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    public void testDeleteBridge_whenStatusIsFailed() {
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.FAILED);
+
+        bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+    }
+
+    @Test
+    public void testDeleteBridge_whenStatusIsNotReady() {
+        Bridge bridge = createPersistBridge(ManagedResourceStatus.PROVISIONING);
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
+    }
+
+    private Bridge createPersistBridge(ManagedResourceStatus status) {
+        Bridge b = Fixtures.createBridge();
+        b.setStatus(status);
+        bridgeDAO.persist(b);
+        return b;
     }
 }

@@ -40,10 +40,7 @@ import static org.mockito.Mockito.verify;
 @QuarkusTestResource(PostgresResource.class)
 public class ProcessorWorkerTest {
 
-    private static final String TEST_PROCESSOR_NAME = "TestProcessor";
-    private static final String TEST_CONNECTOR_NAME = "TestConnector";
     private static final String TEST_RESOURCE_ID = "123";
-    private static final String TEST_TOPIC_NAME = "TopicName";
 
     @InjectMock
     ConnectorWorker connectorWorker;
@@ -84,7 +81,7 @@ public class ProcessorWorkerTest {
     @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PROVISIONING" })
     void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -105,9 +102,9 @@ public class ProcessorWorkerTest {
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -153,7 +150,7 @@ public class ProcessorWorkerTest {
     @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
     void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -175,9 +172,9 @@ public class ProcessorWorkerTest {
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, ManagedResourceStatus.ACCEPTED, TEST_TOPIC_NAME);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);

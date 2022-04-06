@@ -5,6 +5,7 @@
 #
 # Env vars:
 # - MANAGED_CONNECTORS_CLUSTER_ID: cluster where managed connectors will be deployed (required only if MC actions are used, default="empty")
+# - MANAGED_CONNECTORS_CONTROL_PLANE_URL: endpoint of the MC Control plane. (required only if MC actions are used, default="empty")
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
 
@@ -49,7 +50,7 @@ mvn \
   -Dmanaged-connectors.kafka.client.id=${mc_client_id} \
   -Dmanaged-connectors.kafka.client.secret=${mc_client_secret} \
   -Dmanaged-connectors.kafka.security.protocol=SASL_SSL \
-  -Dmanaged-connectors.services.url=https://cos-fleet-manager-cos.rh-fuse-153f1de160110098c1928a6c05e19444-0000.eu-de.containers.appdomain.cloud \
+  -Dmanaged-connectors.services.url=${MANAGED_CONNECTORS_CONTROL_PLANE_URL} \
   -Dmanaged-connectors.auth.server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Dmanaged-connectors.auth.token-path=protocol/openid-connect/token \
   -Dmanaged-connectors.auth.client-id=cloud-services \

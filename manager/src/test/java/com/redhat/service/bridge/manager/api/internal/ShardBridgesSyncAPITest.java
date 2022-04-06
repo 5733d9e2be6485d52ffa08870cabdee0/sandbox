@@ -248,6 +248,9 @@ public class ShardBridgesSyncAPITest {
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
 
+        bridge.setStatus(ManagedResourceStatus.READY);
+        TestUtils.updateBridge(bridge).then().statusCode(200);
+
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -300,6 +303,9 @@ public class ShardBridgesSyncAPITest {
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
+
+        bridge.setStatus(ManagedResourceStatus.READY);
+        TestUtils.updateBridge(bridge).then().statusCode(200);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
