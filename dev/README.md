@@ -15,6 +15,7 @@ You will need the following installed locally on your machine to support local d
 * [Java 11](https://adoptopenjdk.net/)
 * [jq](https://stedolan.github.io/jq/)
 * [curl](https://curl.se/) (or any other HTTP client)
+* [istioctl](https://istio.io/latest/docs/setup/getting-started/#download)
 * Many of us use and recommend [PostMan](https://postman.com) for testing our API instead of curl.
 
 ### macOS users:
