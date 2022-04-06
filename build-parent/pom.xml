@@ -53,7 +53,7 @@
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
     <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
-    <version.com.redhat.cloud-connectors>0.19.0-beta1</version.com.redhat.cloud-connectors>
+    <version.com.redhat.cloud-connectors>0.19.0</version.com.redhat.cloud-connectors>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
