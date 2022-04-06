@@ -115,6 +115,7 @@ jobs:
           kind load docker-image $INGRESS_CONTAINER_NAME
       - name: Install Istio and knative
         run: |
+          chmod +x /dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
           curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.13.2 TARGET_ARCH=x86_64 sh -
           export PATH=$PWD/istio-1.13.2/bin:$PATH
