@@ -119,7 +119,7 @@ jobs:
           ./dev/bin/knative-installer.sh
           curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.13.2 TARGET_ARCH=x86_64 sh -
           export PATH=$PWD/istio-1.13.2/bin:$PATH
-          istioctl manifest apply --set profile=default
+          istioctl manifest apply -y --set profile=default
       - name: Install all resources
         run: kustomize build overlays/minikube | oc apply -f -
         working-directory: kustomize
