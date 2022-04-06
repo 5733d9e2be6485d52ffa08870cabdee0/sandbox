@@ -47,7 +47,6 @@ sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=https://admin-server-).*(/r
 sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=).*|\1$( getManagedKafkaAdminSAClientId )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$( getManagedKafkaAdminSAClientSecret )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$( getManagedKafkaOpsSAClientId )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
-sed -i -E "s|(.*MANAGED_CONNECTORS_CLUSTER_ID=).*|\1${MANAGED_CONNECTORS_CLUSTER_ID}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1${MANAGED_CONNECTORS_NAMESPACE_ID}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$( getManagedKafkaBootstrapServerHost )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$( getManagedKafkaMcSAClientId )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
