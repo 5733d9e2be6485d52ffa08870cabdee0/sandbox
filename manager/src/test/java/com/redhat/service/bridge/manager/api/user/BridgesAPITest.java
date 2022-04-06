@@ -18,7 +18,10 @@ import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.bridge.manager.dao.BridgeDAO;
+import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,6 +39,9 @@ public class BridgesAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    BridgeDAO bridgeDAO;
 
     @InjectMock
     JsonWebToken jwt;
@@ -132,9 +138,12 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteBridge() {
-        BridgeResponse response = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        TestUtils.deleteBridge(response.getId()).then().statusCode(202);
-        response = TestUtils.getBridge(response.getId()).as(BridgeResponse.class);
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setStatus(ManagedResourceStatus.READY);
+        bridgeDAO.persist(bridge);
+
+        TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
+        BridgeResponse response = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
 
         assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
     }

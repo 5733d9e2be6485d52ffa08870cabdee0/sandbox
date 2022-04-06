@@ -13,4 +13,6 @@ public class TestConstants {
 
     public static final int DEFAULT_PAGE = 0;
     public static final int DEFAULT_PAGE_SIZE = 10;
+
+    public static final String DEFAULT_CONNECTOR_NAME = "myConnector";
 }

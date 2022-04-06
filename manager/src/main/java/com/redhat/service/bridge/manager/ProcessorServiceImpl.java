@@ -21,6 +21,7 @@ import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.bridge.infra.models.ListResult;
 import com.redhat.service.bridge.infra.models.QueryInfo;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -187,9 +188,12 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
+        if (!isProcessorDeletable(processor)) {
+            throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
+        }
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
-        processorDAO.getEntityManager().merge(processor).setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setStatus(ManagedResourceStatus.DEPROVISION);
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
 
@@ -197,6 +201,11 @@ public class ProcessorServiceImpl implements ProcessorService {
                 processor.getId(),
                 processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
+    }
+
+    private boolean isProcessorDeletable(Processor processor) {
+        // bridge could only be deleted if its in READY or FAILED state
+        return processor.getStatus() == ManagedResourceStatus.READY || processor.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Override
