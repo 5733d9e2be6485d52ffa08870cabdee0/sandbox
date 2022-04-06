@@ -97,6 +97,7 @@ function configure_kafka {
 function configure_managed_connectors {
   check_required_variable "OPENSHIFT_OFFLINE_TOKEN"
   MANAGED_CONNECTORS_CLUSTER_ID="${MANAGED_CONNECTORS_CLUSTER_ID:-empty}"
+  MANAGED_CONNECTORS_NAMESPACE_ID="${MANAGED_CONNECTORS_NAMESPACE_ID:-empty}"
 }
 
 function configure_minikube {

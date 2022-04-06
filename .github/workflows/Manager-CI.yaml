@@ -77,6 +77,7 @@ jobs:
           MANAGED_KAFKA_MC_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MC_CLIENT_SECRET }}
           MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
           MANAGED_CONNECTORS_CLUSTER_ID: ${{ secrets.MANAGED_CONNECTORS_CLUSTER_ID }}
+          MANAGED_CONNECTORS_NAMESPACE_ID: ${{ secrets.MANAGED_CONNECTORS_NAMESPACE_ID }}
         run: |
           sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
@@ -87,6 +88,7 @@ jobs:
           sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_CLUSTER_ID=).*|\1$MANAGED_CONNECTORS_CLUSTER_ID|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1$MANAGED_CONNECTORS_NAMESPACE_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MC_CLIENT_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MC_CLIENT_SECRET|" kustomization.yaml
