@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class KnativeTriggerSpec {
     private String broker;
 
+    private KnativeTriggerSpecFilter filter;
+
     private KnativeTriggerSpecSubscriber subscriber;
 
     public String getBroker() {
@@ -16,6 +18,14 @@ public class KnativeTriggerSpec {
 
     public void setBroker(String broker) {
         this.broker = broker;
+    }
+
+    public KnativeTriggerSpecFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(KnativeTriggerSpecFilter filter) {
+        this.filter = filter;
     }
 
     public KnativeTriggerSpecSubscriber getSubscriber() {
@@ -35,11 +45,11 @@ public class KnativeTriggerSpec {
             return false;
         }
         KnativeTriggerSpec that = (KnativeTriggerSpec) o;
-        return Objects.equals(broker, that.broker) && Objects.equals(subscriber, that.subscriber);
+        return Objects.equals(broker, that.broker) && Objects.equals(filter, that.filter) && Objects.equals(subscriber, that.subscriber);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(broker, subscriber);
+        return Objects.hash(broker, filter, subscriber);
     }
 }

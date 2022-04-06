@@ -1,8 +1,12 @@
 package com.redhat.service.bridge.shard.operator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -14,12 +18,15 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
+import com.redhat.service.bridge.infra.models.filters.StringEquals;
+import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.KnativeTrigger;
+import com.redhat.service.bridge.shard.operator.resources.KnativeTriggerSpecFilter;
 import com.redhat.service.bridge.shard.operator.utils.Constants;
 import com.redhat.service.bridge.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.bridge.shard.operator.utils.LabelsBuilder;
@@ -184,6 +191,24 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getSpec().setBroker("ob-" + bridgeExecutor.getSpec().getBridgeId().substring(0, 5));
         expected.getSpec().getSubscriber().getRef().setName(service.getMetadata().getName());
         expected.getSpec().getSubscriber().getRef().setNamespace(service.getMetadata().getNamespace());
+        ProcessorDefinition processorDefinition = readProcessor(bridgeExecutor.getSpec().getProcessorDefinition());
+        Map<String, String> attributes = new HashMap<>();
+        if (processorDefinition != null && processorDefinition.getFilters() != null) {
+            try {
+                objectMapper.writeValueAsString(processorDefinition.getFilters());
+            } catch (Exception ignored) {
+            }
+            for (StringEquals se : processorDefinition
+                    .getFilters()
+                    .stream()
+                    .filter(x -> StringEquals.FILTER_TYPE_NAME.equals(x.getType()) && !x.getKey().contains(".")) // Only StringEquals and filters on the headers are supported
+                    .map(x -> (StringEquals) x)
+                    .collect(Collectors.toList())) {
+                LOGGER.info("Adding filter '" + se.getKey() + ": " + se.getValue() + "'");
+                attributes.put(se.getKey(), se.getValue());
+            }
+        }
+        expected.getSpec().setFilter(new KnativeTriggerSpecFilter(attributes));
 
         KnativeTrigger existing = kubernetesClient.resources(KnativeTrigger.class)
                 //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
@@ -194,7 +219,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         LOGGER.info("bridge executor trigger: " + bridgeExecutor.getMetadata().getName());
         LOGGER.info("exists: " + String.valueOf(existing == null));
 
-        if (existing == null || !expected.getSpec().getBroker().equals(existing.getSpec().getBroker()) || !expected.getSpec().getSubscriber().equals(existing.getSpec().getSubscriber())) {
+        if (existing == null || !expected.getSpec().getFilter().equals(existing.getSpec().getFilter()) || !expected.getSpec().getBroker().equals(existing.getSpec().getBroker())
+                || !expected.getSpec().getSubscriber().equals(existing.getSpec().getSubscriber())) {
             LOGGER.info("creating");
             KnativeTrigger trigger = kubernetesClient
                     .resources(KnativeTrigger.class)
@@ -212,5 +238,13 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         }
 
         return existing;
+    }
+
+    private ProcessorDefinition readProcessor(String processorDefinition) {
+        try {
+            return objectMapper.readValue(processorDefinition, ProcessorDefinition.class);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot deserialize processor definition.");
+        }
     }
 }

@@ -36,8 +36,8 @@ public class ExecutorAPI {
     @Produces("*/*")
     @Consumes("*/*")
     public Response consumeEvent(@Context HttpHeaders headers, String event) {
+        LOG.info("Received event on endpoint /events");
         Executor executor = executorsProvider.getExecutor();
-        LOG.info(headers.getRequestHeaders().toString());
         try {
             Map<String, String> ceheaders = new HashMap<>();
             for (String h : headers.getRequestHeaders().keySet()) {
@@ -52,9 +52,6 @@ public class ExecutorAPI {
                     .withDataSchema(new URI(ceheaders.get("dataschema")))
                     .withSubject(ceheaders.get("subject"))
                     .build();
-
-            LOG.info(headers.getRequestHeaders().toString());
-            LOG.info(event);
             executor.onEvent(ce);
         } catch (Throwable t) {
             // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure

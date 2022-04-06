@@ -10,7 +10,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.kafka.common.header.Header;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ public class ExecutorsService {
     @Inject
     ExecutorsProvider executorsProvider;
 
-    @Incoming(EVENTS_IN_CHANNEL)
+    //    @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processBridgeEvent(final IncomingKafkaRecord<Integer, String> message) {
         try {
             for (Header h : message.getHeaders().toArray()) {
