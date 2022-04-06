@@ -12,7 +12,8 @@ import com.redhat.service.bridge.infra.models.filters.ObjectMapperFactory;
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.models.filters.NumberIn;
+import com.redhat.service.bridge.infra.models.filters.StringIn;
 
 public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
 
@@ -38,8 +39,14 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
                 return getFilterConditionForListValues("(contains (%s, %s))", (StringContains) filter);
             case StringBeginsWith.FILTER_TYPE_NAME:
                 return getFilterConditionForListValues("(starts with (%s, %s))", (StringBeginsWith) filter);
-            case ValuesIn.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("%s = %s", (ValuesIn) filter);
+            case NumberIn.FILTER_TYPE_NAME:
+            case StringIn.FILTER_TYPE_NAME:
+//                return String.format("list contains (%s, %s)", filter.getValue(), filter.getKey());
+                try {
+                    return String.format("list contains (%s, %s)", ObjectMapperFactory.get().writeValueAsString(filter.getValue()), filter.getKey());
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             default:
                 throw new IllegalArgumentException("Filter type " + filter.getType() + " is not supported by FEELTemplateFactory.");
         }
@@ -57,5 +64,4 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
         }
         return String.join(" or ", conditions);
     }
-
 }

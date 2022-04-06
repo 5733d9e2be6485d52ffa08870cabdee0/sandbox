@@ -16,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = StringBeginsWith.class, name = StringBeginsWith.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringContains.class, name = StringContains.FILTER_TYPE_NAME),
         @JsonSubTypes.Type(value = StringEquals.class, name = StringEquals.FILTER_TYPE_NAME),
-        @JsonSubTypes.Type(value = ValuesIn.class, name = ValuesIn.FILTER_TYPE_NAME)
+        @JsonSubTypes.Type(value = NumberIn.class, name = NumberIn.FILTER_TYPE_NAME),
+        @JsonSubTypes.Type(value = StringIn.class, name = StringIn.FILTER_TYPE_NAME)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class BaseFilter<T> {

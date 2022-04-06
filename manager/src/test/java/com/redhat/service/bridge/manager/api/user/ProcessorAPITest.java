@@ -20,7 +20,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.models.filters.NumberIn;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
@@ -283,7 +283,7 @@ public class ProcessorAPITest {
 
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", Collections.singleton(new ValuesIn("pepe", null)), null, createKafkaAction()));
+                new ProcessorRequest("myProcessor", Collections.singleton(new NumberIn("pepe", null)), null, createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

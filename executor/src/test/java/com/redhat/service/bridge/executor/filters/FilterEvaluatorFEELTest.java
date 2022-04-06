@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.redhat.service.bridge.infra.models.filters.StringIn;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.filters.StringBeginsWith;
 import com.redhat.service.bridge.infra.models.filters.StringContains;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
-import com.redhat.service.bridge.infra.models.filters.ValuesIn;
+import com.redhat.service.bridge.infra.models.filters.NumberIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,13 +54,23 @@ public class FilterEvaluatorFEELTest {
 
     @Test
     public void testInFilter() {
-        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new ValuesIn("source", Arrays.asList("Service", "Testing", 2))));
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new NumberIn("source", Arrays.asList(2.2, 3d, 4d))));
 
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "Service"))).isTrue();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "Testing"))).isTrue();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2))).isTrue();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "2"))).isFalse();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "notMyApplication"))).isFalse();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2.2))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 3d))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 4d))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2d))).isFalse();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2.22d))).isFalse();
+    }
+
+    @Test
+    public void testStringInFilter() {
+        FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringIn("source", Arrays.asList("hello", "kekkobar"))));
+
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "kekkobar"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "jack"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "wrong"))).isFalse();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "kermit"))).isFalse();
     }
 
     @Test
