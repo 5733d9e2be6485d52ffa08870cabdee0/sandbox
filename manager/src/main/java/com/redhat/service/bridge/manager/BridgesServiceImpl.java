@@ -124,12 +124,21 @@ public class BridgesServiceImpl implements BridgesService {
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
+        if (!isBridgeDeletable(bridge)) {
+            throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
+        }
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction
-        bridgeDAO.getEntityManager().merge(bridge).setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         workManager.schedule(bridge);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
+    }
+
+    private boolean isBridgeDeletable(Bridge bridge) {
+        // bridge could only be deleted if its in READY or FAILED state
+        return bridge.getStatus() == ManagedResourceStatus.READY || bridge.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Transactional

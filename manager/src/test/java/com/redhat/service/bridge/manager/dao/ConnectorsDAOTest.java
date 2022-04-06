@@ -1,6 +1,5 @@
 package com.redhat.service.bridge.manager.dao;
 
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,13 +48,8 @@ public class ConnectorsDAOTest {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
-    private Processor createProcessor(Bridge bridge, String name) {
-        Processor p = new Processor();
-        p.setBridge(bridge);
-        p.setName(name);
-        p.setStatus(ManagedResourceStatus.ACCEPTED);
-        p.setSubmittedAt(ZonedDateTime.now());
-        p.setPublishedAt(ZonedDateTime.now());
+    private Processor createPersistProcessor(Bridge bridge) {
+        Processor p = Fixtures.createProcessor(bridge, ManagedResourceStatus.ACCEPTED);
 
         BaseAction a = new BaseAction();
         a.setType(KafkaTopicAction.TYPE);
@@ -71,29 +65,23 @@ public class ConnectorsDAOTest {
         return p;
     }
 
-    private Bridge createBridge() {
-        Bridge b = new Bridge();
-        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
-        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setStatus(ManagedResourceStatus.READY);
-        b.setSubmittedAt(ZonedDateTime.now());
-        b.setPublishedAt(ZonedDateTime.now());
+    private Bridge createPersistBridge() {
+        Bridge b = Fixtures.createBridge();
         bridgeDAO.persist(b);
         return b;
     }
 
-    private ConnectorEntity createPersistConnector(Processor p, String connectorName,
-            ManagedResourceStatus status) {
-        ConnectorEntity c = Fixtures.createConnector(p, connectorName, status, "topicName");
+    private ConnectorEntity createPersistConnector(Processor p, ManagedResourceStatus status) {
+        ConnectorEntity c = Fixtures.createConnector(p, status);
         connectorsDAO.persist(c);
         return c;
     }
 
     @Test
     public void findByProcessorIdName() {
-        Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo");
-        ConnectorEntity c = createPersistConnector(p, "connector", ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge();
+        Processor p = createPersistProcessor(b);
+        ConnectorEntity c = createPersistConnector(p, ManagedResourceStatus.READY);
 
         assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
     }

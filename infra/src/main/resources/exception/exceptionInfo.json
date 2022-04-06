@@ -106,5 +106,11 @@
     "id": 18,
     "reason": "Error while retrieving the connector on MC Fleet Manager",
     "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.bridge.infra.exceptions.definitions.user.ProcessorLifecycleException",
+    "id": 19,
+    "reason": "You tried a life cycle transition which is not allowed",
+    "type": "USER"
   }
 ]

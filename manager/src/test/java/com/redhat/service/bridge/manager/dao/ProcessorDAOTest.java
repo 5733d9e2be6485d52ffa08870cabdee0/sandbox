@@ -151,9 +151,8 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
         ConnectorEntity provisionedConnector = Fixtures.createConnector(withProvisionedConnectors,
-                "connectorProvisioned",
-                ManagedResourceStatus.READY,
-                "");
+                ManagedResourceStatus.READY);
+        provisionedConnector.setName("connectorProvisioned");
         processorDAO.getEntityManager().merge(provisionedConnector);
 
         //Not to be provisioned as Connector is not ready
@@ -163,9 +162,8 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity nonProvisionedConnector = Fixtures.createConnector(nonProvisioned,
-                "nonProvisionedConnector",
-                ManagedResourceStatus.READY,
-                "");
+                ManagedResourceStatus.READY);
+        nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
 
         // Not to be de-provisioned as there's a connector yet to be deleted
@@ -175,9 +173,8 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity toBeDeletedConnector = Fixtures.createConnector(toBeDeleted,
-                "toBeDeletedConnector",
-                ManagedResourceStatus.ACCEPTED,
-                "");
+                ManagedResourceStatus.ACCEPTED);
+        toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);

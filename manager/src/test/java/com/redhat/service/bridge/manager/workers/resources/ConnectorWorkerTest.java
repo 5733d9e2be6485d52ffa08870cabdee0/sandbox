@@ -46,11 +46,8 @@ import static org.mockito.Mockito.when;
 @QuarkusTestResource(PostgresResource.class)
 class ConnectorWorkerTest {
 
-    private static final String TEST_PROCESSOR_NAME = "TestProcessor";
-    private static final String TEST_CONNECTOR_NAME = "TestConnector";
     private static final String TEST_CONNECTOR_EXTERNAL_ID = "connectorExternalId";
     private static final String TEST_RESOURCE_ID = "123";
-    private static final String TEST_TOPIC_NAME = "TopicName";
 
     @InjectMock
     RhoasService rhoasService;
@@ -97,8 +94,8 @@ class ConnectorWorkerTest {
             ConnectorState connectorState,
             ManagedResourceStatus expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, resourceStatus, TEST_TOPIC_NAME);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, resourceStatus);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -144,8 +141,8 @@ class ConnectorWorkerTest {
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, TEST_PROCESSOR_NAME, ManagedResourceStatus.READY);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, TEST_CONNECTOR_NAME, resourceStatus, TEST_TOPIC_NAME);
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, resourceStatus);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
