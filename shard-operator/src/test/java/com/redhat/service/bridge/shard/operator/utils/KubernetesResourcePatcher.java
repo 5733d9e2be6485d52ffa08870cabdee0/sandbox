@@ -5,10 +5,8 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
-import com.redhat.service.bridge.shard.operator.utils.networking.NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
-import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceStatusBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -26,9 +24,6 @@ public class KubernetesResourcePatcher {
     @Inject
     KubernetesClient kubernetesClient;
 
-    @Inject
-    NetworkingTestUtils networkingTestUtils;
-
     private static final String FAILURE_MESSAGE = "The deployment has failed";
 
     private static final String FAILURE_REASON = "You were too optimistic";
@@ -39,7 +34,6 @@ public class KubernetesResourcePatcher {
         kubernetesClient.secrets().inAnyNamespace().delete();
         kubernetesClient.apps().deployments().inAnyNamespace().delete();
         kubernetesClient.services().inAnyNamespace().delete();
-        networkingTestUtils.cleanUp();
     }
 
     private Deployment getDeployment(String name, String namespace) {
@@ -112,16 +106,5 @@ public class KubernetesResourcePatcher {
                 .inNamespace(namespace)
                 .withName(name)
                 .replace(service);
-    }
-
-    public void patchReadyNetworkResource(String name, String namespace) {
-        // Retrieve the network resource
-        Namespaced resource = networkingTestUtils.getNetworkResource(name, namespace);
-
-        // Fail if it has not been deployed yet
-        assertThat(resource).isNotNull();
-
-        // Patch the network resource - This is what k8s would do when the resource is deployed and is ready.
-        networkingTestUtils.patchNetworkResource(name, namespace);
     }
 }

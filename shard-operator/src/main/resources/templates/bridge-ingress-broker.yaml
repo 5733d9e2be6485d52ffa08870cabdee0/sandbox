@@ -1,22 +1,22 @@
-apiVersion: v1
-kind: Service
+apiVersion: eventing.knative.dev/v1
+kind: Broker
 metadata:
-  name: ""
   labels:
     app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
     app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
     app.kubernetes.io/component: ingress # used to specify the component
-    app.kubernetes.io/instance: ""
-  ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
+  ownerReferences: # used for finding which Processor does this Deployment belong to
     - apiVersion: ""
       kind: ""
       name: ""
       uid: ""
+  annotations:
+    eventing.knative.dev/broker.class: Kafka
+    x-kafka.eventing.knative.dev/external.topic: ""
+  name: ""
 spec:
-  ports:
-    - name: web
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
-  selector:
-    app.kubernetes.io/instance: ""
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: ""
+    namespace: ""

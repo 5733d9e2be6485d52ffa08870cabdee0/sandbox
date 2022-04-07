@@ -28,15 +28,22 @@ rules:
     verbs:
       - '*'
   - apiGroups:
-      - networking.k8s.io
-    resources:
-      - ingresses
-    verbs:
-      - "*"
-  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
+    verbs:
+      - "*"
+  - apiGroups:
+      - eventing.knative.dev
+    resources:
+      - brokers
+      - triggers
+    verbs:
+      - "*"
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - requestauthentications
     verbs:
       - "*"
   # add here the core resources we need to manage
