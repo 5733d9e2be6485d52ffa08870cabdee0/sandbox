@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
@@ -159,9 +160,18 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         processor.setStatus(ManagedResourceStatus.READY);
         processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+
+        // For some reason the latch occasionally triggers sooner than the request is available on wiremock. So wireMockServer.verify is unreliable and waiting loop is implemented.
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(
+                        () -> {
+                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
+                                    .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
+                                    .withHeader("Content-Type", equalTo("application/json")));
+                            assertThat(findAll).hasSize(1);
+                        });
     }
 
     @Test
