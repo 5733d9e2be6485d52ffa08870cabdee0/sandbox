@@ -21,11 +21,11 @@ class SendToBridgeActionTest {
 
     @Test
     void testType() {
-        assertThat(sendToBridgeAction.getType()).isEqualTo(SendToBridgeActionBean.TYPE);
+        assertThat(sendToBridgeAction.getType()).isEqualTo(SendToBridgeAction.TYPE);
     }
 
     @Test
     void testValidator() {
-        assertThat(actionParameterValidatorFactory.get(SendToBridgeActionBean.TYPE)).isNotNull();
+        assertThat(actionParameterValidatorFactory.get(SendToBridgeAction.TYPE)).isNotNull();
     }
 }

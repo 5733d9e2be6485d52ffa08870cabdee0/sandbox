@@ -24,7 +24,7 @@ import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -60,10 +60,10 @@ public class ProcessorDAOTest {
         p.setShardId(TestConstants.SHARD_ID);
 
         BaseAction a = new BaseAction();
-        a.setType(KafkaTopicActionBean.TYPE);
+        a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);

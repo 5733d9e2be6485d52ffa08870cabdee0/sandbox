@@ -26,12 +26,12 @@ public class WebhookActionValidator implements WebhookActionBean, ActionParamete
             return ValidationResult.invalid();
         }
 
-        String endpoint = baseAction.getParameters().get(WebhookActionBean.ENDPOINT_PARAM);
+        String endpoint = baseAction.getParameters().get(WebhookAction.ENDPOINT_PARAM);
         if (endpoint == null || endpoint.isEmpty()) {
             return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
         }
 
-        if (baseAction.getParameters().containsKey(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN)) {
+        if (baseAction.getParameters().containsKey(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
             return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
         }
 

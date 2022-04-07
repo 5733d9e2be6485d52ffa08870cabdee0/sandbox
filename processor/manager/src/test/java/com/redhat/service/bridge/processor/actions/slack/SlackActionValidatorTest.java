@@ -22,24 +22,24 @@ class SlackActionValidatorTest {
     @Test
     void isInvalidWithEmptyChannelParameter() {
         Map<String, String> params = new HashMap<>();
-        params.put(SlackActionBean.CHANNEL_PARAMETER, "");
-        params.put(SlackActionBean.WEBHOOK_URL_PARAMETER, "w");
+        params.put(SlackAction.CHANNEL_PARAM, "");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "w");
         assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
     }
 
     @Test
     void isInvalidWithEmptyWebhookURLParameter() {
         Map<String, String> params = new HashMap<>();
-        params.put(SlackActionBean.CHANNEL_PARAMETER, "c");
-        params.put(SlackActionBean.WEBHOOK_URL_PARAMETER, "");
+        params.put(SlackAction.CHANNEL_PARAM, "c");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "");
         assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_WEBHOOK_URL_MESSAGE);
     }
 
     @Test
     void isValidWithBothParameters() {
         Map<String, String> params = new HashMap<>();
-        params.put(SlackActionBean.CHANNEL_PARAMETER, "channel");
-        params.put(SlackActionBean.WEBHOOK_URL_PARAMETER, "webhook");
+        params.put(SlackAction.CHANNEL_PARAM, "channel");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "webhook");
         assertIsValid(actionWith(params));
     }
 
@@ -60,7 +60,7 @@ class SlackActionValidatorTest {
 
     private BaseAction actionWith(Map<String, String> params) {
         BaseAction b = new BaseAction();
-        b.setType(SlackActionBean.TYPE);
+        b.setType(SlackAction.TYPE);
         b.setParameters(params);
         return b;
     }

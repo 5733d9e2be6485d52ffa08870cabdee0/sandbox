@@ -14,7 +14,7 @@ public class KafkaTopicActionValidator implements KafkaTopicActionBean, ActionPa
     @Override
     public ValidationResult isValid(BaseAction baseAction) {
         if (baseAction.getParameters() != null) {
-            String topic = baseAction.getParameters().get(KafkaTopicActionBean.TOPIC_PARAM);
+            String topic = baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
             if (topic == null || topic.isEmpty()) {
                 return ValidationResult.invalid(INVALID_TOPIC_PARAM_MESSAGE);
             }

@@ -35,9 +35,9 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
-import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionBean;
-import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -141,14 +141,14 @@ public class ProcessorAPITest {
 
         ProcessorResponse pr = response.as(ProcessorResponse.class);
 
-        assertThat(pr.getAction().getType()).isEqualTo(KafkaTopicActionBean.TYPE);
-        assertThat(pr.getAction().getParameters()).containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(pr.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(pr.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
 
         ProcessorResponse found = TestUtils.getProcessor(bridgeResponse.getId(), pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
-        assertThat(found.getAction().getType()).isEqualTo(KafkaTopicActionBean.TYPE);
-        assertThat(found.getAction().getParameters()).containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(found.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(found.getAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -162,21 +162,21 @@ public class ProcessorAPITest {
 
         ProcessorResponse pr = response.as(ProcessorResponse.class);
 
-        assertThat(pr.getAction().getType()).isEqualTo(SendToBridgeActionBean.TYPE);
-        assertThat(pr.getAction().getParameters()).containsEntry(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
+        assertThat(pr.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
+        assertThat(pr.getAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         ProcessorResponse found = TestUtils.getProcessor(bridgeId, pr.getId()).as(ProcessorResponse.class);
 
         assertThat(found.getId()).isEqualTo(pr.getId());
-        assertThat(found.getAction().getType()).isEqualTo(SendToBridgeActionBean.TYPE);
-        assertThat(found.getAction().getParameters()).containsEntry(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
+        assertThat(found.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
+        assertThat(found.getAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
     }
 
     private void assertRequestedAction(ProcessorResponse processorResponse) {
         BaseAction baseAction = processorResponse.getAction();
         assertThat(baseAction).isNotNull();
-        assertThat(baseAction.getType()).isEqualTo(KafkaTopicActionBean.TYPE);
-        assertThat(baseAction.getParameters().get(KafkaTopicActionBean.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(baseAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -304,10 +304,10 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         BaseAction action = createKafkaAction();
-        action.setType(SlackActionBean.TYPE);
+        action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackActionBean.CHANNEL_PARAMETER, "");
-        params.put(SlackActionBean.WEBHOOK_URL_PARAMETER, "https://example.com");
+        params.put(SlackAction.CHANNEL_PARAM, "");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "https://example.com");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
@@ -320,10 +320,10 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         BaseAction action = createKafkaAction();
-        action.setType(SlackActionBean.TYPE);
+        action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackActionBean.CHANNEL_PARAMETER, "channel");
-        params.put(SlackActionBean.WEBHOOK_URL_PARAMETER, "");
+        params.put(SlackAction.CHANNEL_PARAM, "channel");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));

@@ -12,13 +12,13 @@ import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
 public class SendToBridgeActionValidator implements SendToBridgeActionBean, ActionParameterValidator {
 
     public static final String INVALID_BRIDGE_ID_PARAM_MESSAGE =
-            "The supplied " + SendToBridgeActionBean.BRIDGE_ID_PARAM + " parameter is not valid";
+            "The supplied " + SendToBridgeAction.BRIDGE_ID_PARAM + " parameter is not valid";
 
     @Override
     public ValidationResult isValid(BaseAction action) {
         if (action.getParameters() != null) {
             Map<String, String> parameters = action.getParameters();
-            return !parameters.containsKey(SendToBridgeActionBean.BRIDGE_ID_PARAM) || !parameters.get(SendToBridgeActionBean.BRIDGE_ID_PARAM).isEmpty()
+            return !parameters.containsKey(SendToBridgeAction.BRIDGE_ID_PARAM) || !parameters.get(SendToBridgeAction.BRIDGE_ID_PARAM).isEmpty()
                     ? ValidationResult.valid()
                     : ValidationResult.invalid(INVALID_BRIDGE_ID_PARAM_MESSAGE);
         }

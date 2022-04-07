@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -47,9 +47,9 @@ class SlackActionTest {
         BaseAction baseAction = new BaseAction();
 
         Map<String, String> parameters = baseAction.getParameters();
-        parameters.put(SlackActionBean.CHANNEL_PARAMETER, channelValue);
-        parameters.put(SlackActionBean.WEBHOOK_URL_PARAMETER, webhookUrlValue);
-        parameters.put(KafkaTopicActionBean.TOPIC_PARAM, topicValue);
+        parameters.put(SlackAction.CHANNEL_PARAM, channelValue);
+        parameters.put(SlackAction.WEBHOOK_URL_PARAM, webhookUrlValue);
+        parameters.put(KafkaTopicAction.TOPIC_PARAM, topicValue);
         JsonNode slackConnectorPayload = slackActionConnector.connectorPayload(baseAction, topicValue);
 
         JsonNode expected = new ObjectMapper().readTree("{" +

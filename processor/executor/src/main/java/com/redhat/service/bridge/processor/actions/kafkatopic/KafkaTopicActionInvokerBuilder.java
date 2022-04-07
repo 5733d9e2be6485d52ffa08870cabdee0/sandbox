@@ -2,6 +2,7 @@ package com.redhat.service.bridge.processor.actions.kafkatopic;
 
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -20,6 +21,9 @@ import com.redhat.service.bridge.processor.actions.ActionInvokerBuilder;
 @ApplicationScoped
 public class KafkaTopicActionInvokerBuilder implements KafkaTopicActionBean, ActionInvokerBuilder {
 
+    public static final long DEFAULT_LIST_TOPICS_TIMEOUT = 10L;
+    public static final TimeUnit DEFAULT_LIST_TOPICS_TIMEUNIT = TimeUnit.SECONDS;
+
     @Channel("actions-out")
     Emitter<String> emitter;
 
@@ -28,7 +32,7 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicActionBean, Act
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {
-        String requiredTopic = baseAction.getParameters().get(TOPIC_PARAM);
+        String requiredTopic = baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
         if (requiredTopic == null) {
             throw new ActionProviderException(
                     String.format("There is no topic specified in the parameters for Action on Processor '%s' on Bridge '%s'", processor.getId(), processor.getBridgeId()));

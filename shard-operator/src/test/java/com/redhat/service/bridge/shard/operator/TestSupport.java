@@ -13,7 +13,7 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.filters.BaseFilter;
 import com.redhat.service.bridge.infra.models.filters.StringEquals;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
 
 public class TestSupport {
 
@@ -56,10 +56,10 @@ public class TestSupport {
         String transformationTemplate = "{\"test\": {key}}";
 
         BaseAction a = new BaseAction();
-        a.setType(KafkaTopicActionBean.TYPE);
+        a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicActionBean.TOPIC_PARAM, "myTopic");
+        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
