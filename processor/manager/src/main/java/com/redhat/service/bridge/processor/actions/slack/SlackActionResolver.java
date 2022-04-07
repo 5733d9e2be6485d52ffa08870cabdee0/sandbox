@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.resolvers;
+package com.redhat.service.bridge.processor.actions.slack;
 
 import java.util.Map;
 
@@ -6,15 +6,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.ActionResolver;
+import com.redhat.service.bridge.processor.actions.ActionResolverService;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
-import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 
 @ApplicationScoped
 public class SlackActionResolver implements ActionResolver {
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    ActionResolverService actionResolverService;
 
     @Override
     public String getType() {
@@ -31,7 +31,7 @@ public class SlackActionResolver implements ActionResolver {
 
         resolvedAction.setType(KafkaTopicActionBean.TYPE);
 
-        newParameters.put(KafkaTopicActionBean.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(processorId));
+        newParameters.put(KafkaTopicActionBean.TOPIC_PARAM, actionResolverService.getProcessorTopicName(processorId));
 
         return resolvedAction;
     }

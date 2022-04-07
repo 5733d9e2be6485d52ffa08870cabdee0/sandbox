@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.manager.resolvers;
+package com.redhat.service.bridge.processor.actions.sendtobridge;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,16 +10,15 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.BridgesService;
-import com.redhat.service.bridge.manager.models.Bridge;
-import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionBean;
+import com.redhat.service.bridge.processor.actions.ActionResolver;
+import com.redhat.service.bridge.processor.actions.ActionResolverService;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 @ApplicationScoped
 public class SendToBridgeActionResolver implements ActionResolver {
 
     @Inject
-    BridgesService bridgesService;
+    ActionResolverService actionResolverService;
 
     @Override
     public String getType() {
@@ -29,12 +28,12 @@ public class SendToBridgeActionResolver implements ActionResolver {
     @Override
     public BaseAction resolve(BaseAction action, String customerId, String bridgeId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
-        Bridge destinationBridge = bridgesService.getReadyBridge(destinationBridgeId, customerId);
+        // Bridge destinationBridge = bridgesService.getReadyBridge();
 
         Map<String, String> parameters = new HashMap<>();
 
         try {
-            parameters.put(WebhookActionBean.ENDPOINT_PARAM, getBridgeWebhookUrl(destinationBridge.getEndpoint()));
+            parameters.put(WebhookActionBean.ENDPOINT_PARAM, getBridgeWebhookUrl(actionResolverService.getBridgeEndpoint(destinationBridgeId, customerId)));
             parameters.put(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN, "true");
         } catch (MalformedURLException e) {
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);

@@ -1,34 +1,48 @@
-package com.redhat.service.bridge.manager.resolvers;
+package com.redhat.service.bridge.processor.actions.slack;
 
 import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.ActionResolverService;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
-import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class SlackActionBeanResolverTest {
+class SlackActionResolverTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_CUSTOMER_ID = "test-customer-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
+    private static final String TEST_PROCESSOR_TOPIC_NAME = "ob-test-processor-id";
     private static final String TEST_CHANNEL_PARAM = "myChannel";
     private static final String TEST_WEBHOOK_PARAM = "myWebhook";
 
     @Inject
-    ActionResolver slackActionResolver;
+    SlackActionResolver slackActionResolver;
 
-    @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    @InjectMock
+    ActionResolverService actionResolverServiceMock;
+
+    @BeforeEach
+    void beforeEach() {
+        reset(actionResolverServiceMock);
+
+        when(actionResolverServiceMock.getProcessorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
+        when(actionResolverServiceMock.getProcessorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+    }
 
     @Test
     void testTransform() {
@@ -43,7 +57,7 @@ class SlackActionBeanResolverTest {
         assertThat(transformedActionParameter)
                 .containsEntry(SlackActionBean.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM)
                 .containsEntry(SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicActionBean.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID));
+                .containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TEST_PROCESSOR_TOPIC_NAME);
     }
 
     private BaseAction buildTestAction() {

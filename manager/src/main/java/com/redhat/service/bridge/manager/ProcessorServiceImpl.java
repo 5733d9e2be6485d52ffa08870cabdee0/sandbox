@@ -36,8 +36,8 @@ import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.manager.resolvers.ActionResolverFactory;
 import com.redhat.service.bridge.manager.workers.WorkManager;
+import com.redhat.service.bridge.processor.actions.ActionResolverFactory;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
