@@ -3,7 +3,7 @@ package com.redhat.service.bridge.processor.actions;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class ActionResolverTestMock implements ActionService {
+public class ActionServiceMock implements ActionService {
 
     @Override
     public String getBridgeEndpoint(String bridgeId, String customerId) {
