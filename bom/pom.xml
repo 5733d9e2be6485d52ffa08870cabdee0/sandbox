@@ -183,54 +183,54 @@
       <!-- Common action module - Core -->
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-core</artifactId>
+        <artifactId>processor-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-core</artifactId>
+        <artifactId>processor-core</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-core</artifactId>
+        <artifactId>processor-core</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
       <!-- Common action module - Executor -->
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-executor</artifactId>
+        <artifactId>processor-executor</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-executor</artifactId>
+        <artifactId>processor-executor</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-executor</artifactId>
+        <artifactId>processor-executor</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
       <!-- Common action module - Manager -->
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-manager</artifactId>
+        <artifactId>processor-manager</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-manager</artifactId>
+        <artifactId>processor-manager</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-actions-common-manager</artifactId>
+        <artifactId>processor-manager</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

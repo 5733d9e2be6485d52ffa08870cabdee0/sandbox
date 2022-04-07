@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-actions-common-core</artifactId>
+      <artifactId>processor-core</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

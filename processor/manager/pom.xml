@@ -10,9 +10,9 @@
     <relativePath>../../build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>processor-actions-common-manager</artifactId>
+  <artifactId>processor-manager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Processor :: Actions :: Common :: Manager</name>
+  <name>Event Bridge :: Processor :: Manager</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-actions-common-core</artifactId>
+      <artifactId>processor-core</artifactId>
     </dependency>
 
     <dependency>
