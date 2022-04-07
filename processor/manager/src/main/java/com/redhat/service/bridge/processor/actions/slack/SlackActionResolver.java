@@ -7,14 +7,14 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.ActionResolver;
-import com.redhat.service.bridge.processor.actions.ActionResolverService;
+import com.redhat.service.bridge.processor.actions.ActionService;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 @ApplicationScoped
 public class SlackActionResolver implements ActionResolver {
 
     @Inject
-    ActionResolverService actionResolverService;
+    ActionService actionService;
 
     @Override
     public String getType() {
@@ -31,7 +31,7 @@ public class SlackActionResolver implements ActionResolver {
 
         resolvedAction.setType(KafkaTopicActionBean.TYPE);
 
-        newParameters.put(KafkaTopicActionBean.TOPIC_PARAM, actionResolverService.getProcessorTopicName(processorId));
+        newParameters.put(KafkaTopicActionBean.TOPIC_PARAM, actionService.getConnectorTopicName(processorId));
 
         return resolvedAction;
     }

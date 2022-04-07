@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.AbstractActionConnector;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 @ApplicationScoped
 public class SlackActionConnector extends AbstractActionConnector implements SlackActionBean {
@@ -24,20 +23,14 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
     }
 
     @Override
-    protected void addConnectorSpecificPayload(BaseAction action, ObjectNode definition) {
+    protected void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
         String slackChannel = actionParameters.get(SlackActionBean.CHANNEL_PARAMETER);
         String webHookURL = actionParameters.get(SlackActionBean.WEBHOOK_URL_PARAMETER);
-        String kafkaTopic = topicName(action);
 
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
         definition.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
-        definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(kafkaTopic));
-    }
-
-    @Override
-    public String topicName(BaseAction action) {
-        return action.getParameters().get(KafkaTopicActionBean.TOPIC_PARAM);
+        definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
     }
 }

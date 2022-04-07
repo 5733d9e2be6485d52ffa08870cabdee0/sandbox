@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.processor.actions.ActionResolverService;
+import com.redhat.service.bridge.processor.actions.ActionService;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,14 +34,14 @@ class SlackActionResolverTest {
     SlackActionResolver slackActionResolver;
 
     @InjectMock
-    ActionResolverService actionResolverServiceMock;
+    ActionService actionServiceMock;
 
     @BeforeEach
     void beforeEach() {
-        reset(actionResolverServiceMock);
+        reset(actionServiceMock);
 
-        when(actionResolverServiceMock.getProcessorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
-        when(actionResolverServiceMock.getProcessorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+        when(actionServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
+        when(actionServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
     }
 
     @Test

@@ -24,10 +24,10 @@ public abstract class AbstractActionConnector implements ActionConnector {
     @Inject
     ObjectMapper mapper;
 
-    protected abstract void addConnectorSpecificPayload(BaseAction action, ObjectNode definition);
+    protected abstract void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition);
 
     @Override
-    public JsonNode connectorPayload(BaseAction action) {
+    public JsonNode connectorPayload(BaseAction action, String topicName) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {
@@ -36,7 +36,7 @@ public abstract class AbstractActionConnector implements ActionConnector {
             definition.set(PROCESSORS_PARAMETER, processors);
         }
 
-        addConnectorSpecificPayload(action, definition);
+        addConnectorSpecificPayload(action, topicName, definition);
 
         return definition;
     }

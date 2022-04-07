@@ -122,7 +122,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(newProcessor, resolvedAction);
+        connectorService.createConnectorEntity(newProcessor, requestedAction);
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",

@@ -12,7 +12,6 @@ import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
@@ -54,7 +53,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        connectorsService.createConnectorEntity(testProcessor(), testKafkaAction());
+        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -62,7 +61,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnectorFromConnectorEntity() {
-        connectorsService.createConnectorEntity(testProcessor(), testKafkaAction());
+        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -102,13 +101,12 @@ class ConnectorsServiceTest {
         return processor;
     }
 
-    private BaseAction testKafkaAction() {
+    private BaseAction testSlackAction() {
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicActionBean.TYPE);
+        action.setType(SlackActionBean.TYPE);
         action.setParameters(Map.of(
                 SlackActionBean.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
-                SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
-                KafkaTopicActionBean.TOPIC_PARAM, testActionTopic()));
+                SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK));
         return action;
     }
 

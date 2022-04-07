@@ -4,10 +4,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.ActionResolverService;
+import com.redhat.service.bridge.processor.actions.ActionService;
 
 @ApplicationScoped
-public class ActionResolverServiceImpl implements ActionResolverService {
+public class ActionServiceImpl implements ActionService {
 
     @Inject
     BridgesService bridgesService;
@@ -21,7 +21,7 @@ public class ActionResolverServiceImpl implements ActionResolverService {
     }
 
     @Override
-    public String getProcessorTopicName(String processorId) {
+    public String getConnectorTopicName(String processorId) {
         return resourceNamesProvider.getProcessorTopicName(processorId);
     }
 }

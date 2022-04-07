@@ -11,14 +11,14 @@ import javax.inject.Inject;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.ActionResolver;
-import com.redhat.service.bridge.processor.actions.ActionResolverService;
+import com.redhat.service.bridge.processor.actions.ActionService;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 @ApplicationScoped
 public class SendToBridgeActionResolver implements ActionResolver {
 
     @Inject
-    ActionResolverService actionResolverService;
+    ActionService actionService;
 
     @Override
     public String getType() {
@@ -33,7 +33,7 @@ public class SendToBridgeActionResolver implements ActionResolver {
         Map<String, String> parameters = new HashMap<>();
 
         try {
-            parameters.put(WebhookActionBean.ENDPOINT_PARAM, getBridgeWebhookUrl(actionResolverService.getBridgeEndpoint(destinationBridgeId, customerId)));
+            parameters.put(WebhookActionBean.ENDPOINT_PARAM, getBridgeWebhookUrl(actionService.getBridgeEndpoint(destinationBridgeId, customerId)));
             parameters.put(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN, "true");
         } catch (MalformedURLException e) {
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);

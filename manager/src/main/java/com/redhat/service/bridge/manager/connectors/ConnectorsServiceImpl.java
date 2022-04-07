@@ -19,6 +19,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.processor.actions.ActionConnector;
 import com.redhat.service.bridge.processor.actions.ActionConnectorFactory;
+import com.redhat.service.bridge.processor.actions.ActionService;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -32,23 +33,26 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     ResourceNamesProvider resourceNamesProvider;
 
     @Inject
+    ActionService actionService;
+
+    @Inject
     ActionConnectorFactory actionConnectorFactory;
 
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, BaseAction resolvedAction) {
-
-        if (!actionConnectorFactory.hasConnector(resolvedAction.getType())) {
+    public void createConnectorEntity(Processor processor, BaseAction action) {
+        if (!actionConnectorFactory.hasConnector(action.getType())) {
             return;
         }
 
-        ActionConnector actionConnector = actionConnectorFactory.get(resolvedAction.getType());
-        JsonNode connectorPayload = actionConnector.connectorPayload(resolvedAction);
+        String topicName = actionService.getConnectorTopicName(processor.getId());
+
+        ActionConnector actionConnector = actionConnectorFactory.get(action.getType());
+        JsonNode connectorPayload = actionConnector.connectorPayload(action, topicName);
 
         String connectorType = actionConnector.getConnectorType();
         String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
-        String topicName = actionConnector.topicName(resolvedAction);
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 

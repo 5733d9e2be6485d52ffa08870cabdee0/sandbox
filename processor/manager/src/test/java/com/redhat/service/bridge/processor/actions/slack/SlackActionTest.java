@@ -50,7 +50,7 @@ class SlackActionTest {
         parameters.put(SlackActionBean.CHANNEL_PARAMETER, channelValue);
         parameters.put(SlackActionBean.WEBHOOK_URL_PARAMETER, webhookUrlValue);
         parameters.put(KafkaTopicActionBean.TOPIC_PARAM, topicValue);
-        JsonNode slackConnectorPayload = slackActionConnector.connectorPayload(baseAction);
+        JsonNode slackConnectorPayload = slackActionConnector.connectorPayload(baseAction, topicValue);
 
         JsonNode expected = new ObjectMapper().readTree("{" +
                 "    \"" + CONNECTOR_CHANNEL_PARAMETER + "\":\"" + channelValue + "\"," +

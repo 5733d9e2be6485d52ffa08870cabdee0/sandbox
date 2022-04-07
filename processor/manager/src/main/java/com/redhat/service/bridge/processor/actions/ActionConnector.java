@@ -7,7 +7,5 @@ public interface ActionConnector extends ActionBean {
 
     String getConnectorType();
 
-    JsonNode connectorPayload(BaseAction action);
-
-    String topicName(BaseAction action);
+    JsonNode connectorPayload(BaseAction action, String topicName);
 }

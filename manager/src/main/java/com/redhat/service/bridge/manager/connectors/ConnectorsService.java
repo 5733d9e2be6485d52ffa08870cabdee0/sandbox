@@ -5,7 +5,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 public interface ConnectorsService {
 
-    void createConnectorEntity(Processor processor, BaseAction resolvedAction);
+    void createConnectorEntity(Processor processor, BaseAction action);
 
     void deleteConnectorEntity(Processor processor);
 }

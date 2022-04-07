@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.processor.actions.ActionResolverService;
+import com.redhat.service.bridge.processor.actions.ActionService;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -40,18 +40,18 @@ class SendToBridgeActionResolverTest {
     SendToBridgeActionResolver transformer;
 
     @InjectMock
-    ActionResolverService actionResolverServiceMock;
+    ActionService actionServiceMock;
 
     @BeforeEach
     void beforeEach() {
-        reset(actionResolverServiceMock);
+        reset(actionServiceMock);
 
-        when(actionResolverServiceMock.getBridgeEndpoint(BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(BRIDGE_ENDPOINT);
-        when(actionResolverServiceMock.getBridgeEndpoint(OTHER_BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(OTHER_BRIDGE_ENDPOINT);
-        when(actionResolverServiceMock.getBridgeEndpoint(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
-        when(actionResolverServiceMock.getBridgeEndpoint(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
+        when(actionServiceMock.getBridgeEndpoint(BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(BRIDGE_ENDPOINT);
+        when(actionServiceMock.getBridgeEndpoint(OTHER_BRIDGE_ID, TEST_CUSTOMER_ID)).thenReturn(OTHER_BRIDGE_ENDPOINT);
+        when(actionServiceMock.getBridgeEndpoint(UNAVAILABLE_BRIDGE_ID, TEST_CUSTOMER_ID)).thenThrow(new BridgeLifecycleException("Unavailable bridge"));
+        when(actionServiceMock.getBridgeEndpoint(not(or(eq(UNAVAILABLE_BRIDGE_ID), or(eq(BRIDGE_ID), eq(OTHER_BRIDGE_ID)))), eq(TEST_CUSTOMER_ID)))
                 .thenThrow(new ItemNotFoundException("Bridge not found"));
-        when(actionResolverServiceMock.getBridgeEndpoint(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
+        when(actionServiceMock.getBridgeEndpoint(any(), not(eq(TEST_CUSTOMER_ID)))).thenThrow(new ItemNotFoundException("Customer not found"));
     }
 
     @Test
