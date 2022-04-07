@@ -14,15 +14,15 @@ import com.redhat.service.bridge.infra.exceptions.definitions.platform.Technical
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
-import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilder;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilder;
 
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
-public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvokerBuilder {
+public class WebhookActionInvokerBuilder implements WebhookActionBean, ActionInvokerBuilder {
 
     private WebClient client;
 

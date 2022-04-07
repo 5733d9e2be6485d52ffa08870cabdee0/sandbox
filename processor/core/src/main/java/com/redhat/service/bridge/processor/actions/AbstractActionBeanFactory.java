@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.processor.actions.common;
+package com.redhat.service.bridge.processor.actions;
 
 import java.util.Optional;
 
@@ -7,14 +7,14 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 
-public abstract class AbstractActionAccepterFactory<T extends ActionAccepter> {
+public abstract class AbstractActionBeanFactory<T extends ActionBean> {
 
     @Inject
     Instance<T> instances;
 
     private final Class<T> instanceClass;
 
-    protected AbstractActionAccepterFactory(Class<T> instanceClass) {
+    protected AbstractActionBeanFactory(Class<T> instanceClass) {
         this.instanceClass = instanceClass;
     }
 

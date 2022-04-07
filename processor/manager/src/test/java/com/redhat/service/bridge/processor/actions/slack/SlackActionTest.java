@@ -11,14 +11,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.bridge.processor.actions.common.AbstractActionConnector.LOG_PROCESSOR_MULTILINE_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.common.AbstractActionConnector.LOG_PROCESSOR_PARENT_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.common.AbstractActionConnector.LOG_PROCESSOR_SHOWHEADERS_PARAMETER;
-import static com.redhat.service.bridge.processor.actions.common.AbstractActionConnector.PROCESSORS_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.AbstractActionConnector.LOG_PROCESSOR_MULTILINE_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.AbstractActionConnector.LOG_PROCESSOR_PARENT_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.AbstractActionConnector.LOG_PROCESSOR_SHOWHEADERS_PARAMETER;
+import static com.redhat.service.bridge.processor.actions.AbstractActionConnector.PROCESSORS_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackActionConnector.CONNECTOR_CHANNEL_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackActionConnector.CONNECTOR_TOPIC_PARAMETER;
 import static com.redhat.service.bridge.processor.actions.slack.SlackActionConnector.CONNECTOR_WEBHOOK_URL_PARAMETER;
@@ -47,9 +47,9 @@ class SlackActionTest {
         BaseAction baseAction = new BaseAction();
 
         Map<String, String> parameters = baseAction.getParameters();
-        parameters.put(SlackAction.CHANNEL_PARAMETER, channelValue);
-        parameters.put(SlackAction.WEBHOOK_URL_PARAMETER, webhookUrlValue);
-        parameters.put(KafkaTopicAction.TOPIC_PARAM, topicValue);
+        parameters.put(SlackActionBean.CHANNEL_PARAMETER, channelValue);
+        parameters.put(SlackActionBean.WEBHOOK_URL_PARAMETER, webhookUrlValue);
+        parameters.put(KafkaTopicActionBean.TOPIC_PARAM, topicValue);
         JsonNode slackConnectorPayload = slackActionConnector.connectorPayload(baseAction);
 
         JsonNode expected = new ObjectMapper().readTree("{" +

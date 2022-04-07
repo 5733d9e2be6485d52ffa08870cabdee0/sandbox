@@ -1,8 +1,8 @@
 package com.redhat.service.bridge.processor.actions.slack;
 
-import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
+import com.redhat.service.bridge.processor.actions.ActionBean;
 
-public interface SlackAction extends ActionAccepter {
+public interface SlackActionBean extends ActionBean {
 
     String TYPE = "Slack";
 

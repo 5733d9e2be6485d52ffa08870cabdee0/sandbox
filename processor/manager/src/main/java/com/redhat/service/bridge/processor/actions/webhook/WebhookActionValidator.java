@@ -7,10 +7,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
-import com.redhat.service.bridge.processor.actions.common.ActionParameterValidator;
+import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
 
 @ApplicationScoped
-public class WebhookActionValidator implements WebhookAction, ActionParameterValidator {
+public class WebhookActionValidator implements WebhookActionBean, ActionParameterValidator {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
@@ -26,12 +26,12 @@ public class WebhookActionValidator implements WebhookAction, ActionParameterVal
             return ValidationResult.invalid();
         }
 
-        String endpoint = baseAction.getParameters().get(WebhookAction.ENDPOINT_PARAM);
+        String endpoint = baseAction.getParameters().get(WebhookActionBean.ENDPOINT_PARAM);
         if (endpoint == null || endpoint.isEmpty()) {
             return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
         }
 
-        if (baseAction.getParameters().containsKey(WebhookAction.USE_TECHNICAL_BEARER_TOKEN)) {
+        if (baseAction.getParameters().containsKey(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN)) {
             return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
         }
 

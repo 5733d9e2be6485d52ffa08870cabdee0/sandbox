@@ -1,9 +1,9 @@
-package com.redhat.service.bridge.processor.actions.common;
+package com.redhat.service.bridge.processor.actions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 
-public interface ActionConnector extends ActionAccepter {
+public interface ActionConnector extends ActionBean {
 
     String getConnectorType();
 

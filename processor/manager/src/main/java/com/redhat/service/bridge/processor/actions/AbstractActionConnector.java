@@ -1,4 +1,4 @@
-package com.redhat.service.bridge.processor.actions.common;
+package com.redhat.service.bridge.processor.actions;
 
 import javax.inject.Inject;
 

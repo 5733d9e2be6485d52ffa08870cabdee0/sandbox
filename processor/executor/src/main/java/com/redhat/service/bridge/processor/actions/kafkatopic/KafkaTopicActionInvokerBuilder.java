@@ -14,11 +14,11 @@ import org.eclipse.microprofile.reactive.messaging.Emitter;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
-import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
-import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilder;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilder;
 
 @ApplicationScoped
-public class KafkaTopicActionInvokerBuilder implements KafkaTopicAction, ActionInvokerBuilder {
+public class KafkaTopicActionInvokerBuilder implements KafkaTopicActionBean, ActionInvokerBuilder {
 
     @Channel("actions-out")
     Emitter<String> emitter;

@@ -7,11 +7,11 @@ import javax.enterprise.context.ApplicationScoped;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.processor.actions.common.AbstractActionConnector;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.AbstractActionConnector;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 @ApplicationScoped
-public class SlackActionConnector extends AbstractActionConnector implements SlackAction {
+public class SlackActionConnector extends AbstractActionConnector implements SlackActionBean {
 
     public static final String CONNECTOR_TYPE = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
@@ -27,8 +27,8 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
     protected void addConnectorSpecificPayload(BaseAction action, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
-        String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAMETER);
-        String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAMETER);
+        String slackChannel = actionParameters.get(SlackActionBean.CHANNEL_PARAMETER);
+        String webHookURL = actionParameters.get(SlackActionBean.WEBHOOK_URL_PARAMETER);
         String kafkaTopic = topicName(action);
 
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
@@ -38,6 +38,6 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
 
     @Override
     public String topicName(BaseAction action) {
-        return action.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
+        return action.getParameters().get(KafkaTopicActionBean.TOPIC_PARAM);
     }
 }

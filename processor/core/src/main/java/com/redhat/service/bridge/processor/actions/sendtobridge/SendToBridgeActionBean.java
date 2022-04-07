@@ -1,8 +1,8 @@
 package com.redhat.service.bridge.processor.actions.sendtobridge;
 
-import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
+import com.redhat.service.bridge.processor.actions.ActionBean;
 
-public interface SendToBridgeAction extends ActionAccepter {
+public interface SendToBridgeActionBean extends ActionBean {
 
     String TYPE = "SendToBridge";
     String BRIDGE_ID_PARAM = "bridgeId";

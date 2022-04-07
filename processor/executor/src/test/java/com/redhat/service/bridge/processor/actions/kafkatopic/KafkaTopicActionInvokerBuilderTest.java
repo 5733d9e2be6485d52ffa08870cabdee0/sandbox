@@ -17,7 +17,7 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProvide
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
-import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -64,7 +64,7 @@ class KafkaTopicActionInvokerBuilderTest {
 
     private void mockKafkaAdmin() throws Exception {
         KafkaFuture<Set<String>> kafkaFuture = mock(KafkaFuture.class);
-        when(kafkaFuture.get(KafkaTopicAction.DEFAULT_LIST_TOPICS_TIMEOUT, KafkaTopicAction.DEFAULT_LIST_TOPICS_TIMEUNIT)).thenReturn(topics);
+        when(kafkaFuture.get(KafkaTopicActionBean.DEFAULT_LIST_TOPICS_TIMEOUT, KafkaTopicActionBean.DEFAULT_LIST_TOPICS_TIMEUNIT)).thenReturn(topics);
 
         ListTopicsResult listTopicsResult = mock(ListTopicsResult.class);
         when(listTopicsResult.names()).thenReturn(kafkaFuture);
@@ -73,9 +73,9 @@ class KafkaTopicActionInvokerBuilderTest {
 
     private ProcessorDTO createProcessorWithActionForTopic(String topicName) {
         BaseAction b = new BaseAction();
-        b.setType(KafkaTopicAction.TYPE);
+        b.setType(KafkaTopicActionBean.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
+        params.put(KafkaTopicActionBean.TOPIC_PARAM, topicName);
         b.setParameters(params);
 
         ProcessorDTO p = new ProcessorDTO();

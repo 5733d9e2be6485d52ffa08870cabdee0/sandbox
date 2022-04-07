@@ -2,9 +2,9 @@ package com.redhat.service.bridge.processor.actions.kafkatopic;
 
 import java.util.concurrent.TimeUnit;
 
-import com.redhat.service.bridge.processor.actions.common.ActionAccepter;
+import com.redhat.service.bridge.processor.actions.ActionBean;
 
-public interface KafkaTopicAction extends ActionAccepter {
+public interface KafkaTopicActionBean extends ActionBean {
 
     String TYPE = "KafkaTopic";
 

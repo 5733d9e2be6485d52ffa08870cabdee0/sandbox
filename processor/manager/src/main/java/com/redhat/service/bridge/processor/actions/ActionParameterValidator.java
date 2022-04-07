@@ -1,8 +1,8 @@
-package com.redhat.service.bridge.processor.actions.common;
+package com.redhat.service.bridge.processor.actions;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
 
-public interface ActionParameterValidator extends ActionAccepter {
+public interface ActionParameterValidator extends ActionBean {
     ValidationResult isValid(BaseAction baseAction);
 }
