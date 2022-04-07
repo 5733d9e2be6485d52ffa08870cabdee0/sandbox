@@ -12,7 +12,9 @@
   <description>Parent module for event bridge processor</description>
 
   <modules>
-    <module>actions</module>
+    <module>core</module>
+    <module>executor</module>
+    <module>manager</module>
   </modules>
 
 </project>

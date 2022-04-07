@@ -7,12 +7,12 @@
     <groupId>com.redhat.service.bridge</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../../../../build-parent/pom.xml</relativePath>
+    <relativePath>../../build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>processor-actions-kafkatopic-core</artifactId>
+  <artifactId>processor-actions-common-core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Processor :: Actions :: Kafka Topic :: Core</name>
+  <name>Event Bridge :: Processor :: Actions :: Common :: Core</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-actions-common-core</artifactId>
+      <artifactId>infra</artifactId>
     </dependency>
   </dependencies>
 
