@@ -49,6 +49,8 @@ if [ "${disable_extra_components}" != 'true' ]; then
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   sh knative-installer.sh
   istioctl manifest apply --set profile=default
+  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/gateway.yaml
+  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/virtual-service-kafka-broker.yaml
 fi
 
 set +x
