@@ -107,9 +107,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
 
-        BaseAction resolvedAction = actionResolverFactory.get(requestedAction.getType()).resolve(requestedAction,
-                customerId, bridge.getId(),
-                newProcessor.getId());
+        BaseAction resolvedAction = actionResolverFactory.getOptional(requestedAction.getType())
+                .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
+                .orElse(requestedAction);
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());

@@ -35,12 +35,6 @@ class ConnectorsServiceTest {
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
 
     @Inject
-    SlackActionBean slackAction;
-
-    @Inject
-    WebhookActionBean webhookAction;
-
-    @Inject
     ConnectorsService connectorsService;
 
     @Inject
