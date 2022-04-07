@@ -21,11 +21,11 @@ import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
-import com.redhat.service.bridge.processor.actions.common.ActionInvoker;
-import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilder;
-import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilderFactory;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilder;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilderFactory;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -63,9 +63,9 @@ public class ExecutorTest {
         when(actionInvokerBuilder.build(any(), any())).thenReturn(actionInvokerMock);
 
         actionInvokerBuilderFactory = mock(ActionInvokerBuilderFactory.class);
-        when(actionInvokerBuilderFactory.get(KafkaTopicAction.TYPE)).thenReturn(actionInvokerBuilder);
-        when(actionInvokerBuilderFactory.get(WebhookAction.TYPE)).thenReturn(actionInvokerBuilder);
-        when(actionInvokerBuilderFactory.get(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
+        when(actionInvokerBuilderFactory.get(KafkaTopicActionBean.TYPE)).thenReturn(actionInvokerBuilder);
+        when(actionInvokerBuilderFactory.get(WebhookActionBean.TYPE)).thenReturn(actionInvokerBuilder);
+        when(actionInvokerBuilderFactory.get(not(or(eq(KafkaTopicActionBean.TYPE), eq(WebhookActionBean.TYPE)))))
                 .thenThrow(new ActionProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
@@ -79,7 +79,7 @@ public class ExecutorTest {
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
@@ -89,7 +89,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionInvokerBuilderFactory).get(KafkaTopicAction.TYPE);
+        verify(actionInvokerBuilderFactory).get(KafkaTopicActionBean.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 
@@ -104,7 +104,7 @@ public class ExecutorTest {
         requestedAction.setType("SendToBridge");
 
         BaseAction resolvedAction = new BaseAction();
-        resolvedAction.setType(WebhookAction.TYPE);
+        resolvedAction.setType(WebhookActionBean.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
 
@@ -114,7 +114,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionInvokerBuilderFactory).get(WebhookAction.TYPE);
+        verify(actionInvokerBuilderFactory).get(WebhookActionBean.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
     }
 
@@ -124,7 +124,7 @@ public class ExecutorTest {
         filters.add(new StringEquals("data.key", "notTheValue"));
 
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
@@ -143,7 +143,7 @@ public class ExecutorTest {
         filters.add(new StringEquals("data.key", "value"));
 
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
@@ -153,7 +153,7 @@ public class ExecutorTest {
 
         executor.onEvent(cloudEvent);
 
-        verify(actionInvokerBuilderFactory).get(KafkaTopicAction.TYPE);
+        verify(actionInvokerBuilderFactory).get(KafkaTopicActionBean.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 
@@ -163,7 +163,7 @@ public class ExecutorTest {
         filters.add(new StringEquals("data.key", "value"));
 
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 

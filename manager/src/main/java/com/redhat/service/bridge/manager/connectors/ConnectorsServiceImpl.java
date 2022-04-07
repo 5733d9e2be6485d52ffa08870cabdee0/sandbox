@@ -17,8 +17,8 @@ import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.common.ActionConnector;
-import com.redhat.service.bridge.processor.actions.common.ActionConnectorFactory;
+import com.redhat.service.bridge.processor.actions.ActionConnector;
+import com.redhat.service.bridge.processor.actions.ActionConnectorFactory;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {

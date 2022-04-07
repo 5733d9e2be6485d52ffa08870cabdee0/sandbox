@@ -13,15 +13,15 @@ import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 public class Fixtures {
 
     public static BaseAction createKafkaAction() {
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
+        params.put(KafkaTopicActionBean.TOPIC_PARAM, "myTopic");
         action.setParameters(params);
         return action;
     }

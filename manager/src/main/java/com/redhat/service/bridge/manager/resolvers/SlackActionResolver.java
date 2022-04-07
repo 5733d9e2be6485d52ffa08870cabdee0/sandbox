@@ -7,8 +7,8 @@ import javax.inject.Inject;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 
 @ApplicationScoped
 public class SlackActionResolver implements ActionResolver {
@@ -18,7 +18,7 @@ public class SlackActionResolver implements ActionResolver {
 
     @Override
     public String getType() {
-        return SlackAction.TYPE;
+        return SlackActionBean.TYPE;
     }
 
     @Override
@@ -29,9 +29,9 @@ public class SlackActionResolver implements ActionResolver {
         Map<String, String> newParameters = resolvedAction.getParameters();
         newParameters.putAll(action.getParameters());
 
-        resolvedAction.setType(KafkaTopicAction.TYPE);
+        resolvedAction.setType(KafkaTopicActionBean.TYPE);
 
-        newParameters.put(KafkaTopicAction.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(processorId));
+        newParameters.put(KafkaTopicActionBean.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(processorId));
 
         return resolvedAction;
     }

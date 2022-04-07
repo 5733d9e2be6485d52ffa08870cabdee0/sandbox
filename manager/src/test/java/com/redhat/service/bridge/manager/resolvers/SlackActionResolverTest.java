@@ -8,15 +8,15 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class SlackActionResolverTest {
+class SlackActionBeanResolverTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_CUSTOMER_ID = "test-customer-id";
@@ -25,7 +25,7 @@ class SlackActionResolverTest {
     private static final String TEST_WEBHOOK_PARAM = "myWebhook";
 
     @Inject
-    SlackActionResolver slackActionResolver;
+    ActionResolver slackActionResolver;
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
@@ -36,20 +36,20 @@ class SlackActionResolverTest {
 
         BaseAction transformedAction = slackActionResolver.resolve(baseAction, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
-        assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(transformedAction.getType()).isEqualTo(KafkaTopicActionBean.TYPE);
 
         Map<String, String> transformedActionParameter = transformedAction.getParameters();
 
         assertThat(transformedActionParameter)
-                .containsEntry(SlackAction.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM)
-                .containsEntry(SlackAction.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicAction.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID));
+                .containsEntry(SlackActionBean.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM)
+                .containsEntry(SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM)
+                .containsEntry(KafkaTopicActionBean.TOPIC_PARAM, resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID));
     }
 
     private BaseAction buildTestAction() {
         Map<String, String> parameters = Map.of(
-                SlackAction.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM,
-                SlackAction.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM);
+                SlackActionBean.CHANNEL_PARAMETER, TEST_CHANNEL_PARAM,
+                SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_WEBHOOK_PARAM);
 
         BaseAction action = new BaseAction();
         action.setParameters(parameters);

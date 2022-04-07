@@ -12,9 +12,9 @@ import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -35,10 +35,10 @@ class ConnectorsServiceTest {
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
 
     @Inject
-    SlackAction slackAction;
+    SlackActionBean slackAction;
 
     @Inject
-    WebhookAction webhookAction;
+    WebhookActionBean webhookAction;
 
     @Inject
     ConnectorsService connectorsService;
@@ -110,19 +110,19 @@ class ConnectorsServiceTest {
 
     private BaseAction testKafkaAction() {
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(KafkaTopicActionBean.TYPE);
         action.setParameters(Map.of(
-                SlackAction.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
-                SlackAction.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
-                KafkaTopicAction.TOPIC_PARAM, testActionTopic()));
+                SlackActionBean.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
+                SlackActionBean.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
+                KafkaTopicActionBean.TOPIC_PARAM, testActionTopic()));
         return action;
     }
 
     private BaseAction testWebhookAction() {
         BaseAction action = new BaseAction();
-        action.setType(WebhookAction.TYPE);
+        action.setType(WebhookActionBean.TYPE);
         action.setParameters(Map.of(
-                WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
+                WebhookActionBean.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }
 

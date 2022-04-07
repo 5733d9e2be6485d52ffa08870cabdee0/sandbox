@@ -13,7 +13,7 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.bridge.processor.actions.common.ActionInvokerBuilderFactory;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilderFactory;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
