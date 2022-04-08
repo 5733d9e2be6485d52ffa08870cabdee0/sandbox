@@ -18,7 +18,6 @@ import com.openshift.cloud.api.connector.invoker.Configuration;
 import com.openshift.cloud.api.connector.invoker.auth.HttpBearerAuth;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
-import com.openshift.cloud.api.connector.models.DeploymentLocation;
 import com.openshift.cloud.api.connector.models.Error;
 import com.openshift.cloud.api.connector.models.KafkaConnectionSettings;
 import com.openshift.cloud.api.connector.models.ServiceAccount;
@@ -37,8 +36,8 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     @ConfigProperty(name = "managed-connectors.services.url")
     String mcServicesBaseUrl;
 
-    @ConfigProperty(name = "managed-connectors.cluster.id")
-    String mcClusterId;
+    @ConfigProperty(name = "managed-connectors.namespace.id")
+    String mcNamespaceId;
 
     @ConfigProperty(name = "managed-connectors.kafka.bootstrap.servers")
     String kafkaBootstrapServer;
@@ -98,10 +97,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         String newConnectorName = connectorEntity.getName();
         createConnectorRequest.setName(newConnectorName);
 
-        DeploymentLocation deploymentLocation = new DeploymentLocation();
-        deploymentLocation.setKind("addon");
-        deploymentLocation.setClusterId(mcClusterId);
-        createConnectorRequest.setDeploymentLocation(deploymentLocation);
+        createConnectorRequest.setNamespaceId(mcNamespaceId);
 
         String connectorType = connectorEntity.getConnectorType();
         JsonNode payload = connectorEntity.getDefinition();

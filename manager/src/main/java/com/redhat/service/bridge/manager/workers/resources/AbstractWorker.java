@@ -63,14 +63,14 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 updated = createDependencies(work, managedResource);
                 complete = isProvisioningComplete(updated);
             } catch (Exception e) {
-                LOGGER.info(
+                LOGGER.error(
                         "Failed to create dependencies for '{}' [{}].\n"
                                 + "Work status: {}\n"
                                 + "{}",
                         managedResource.getName(),
                         managedResource.getId(),
                         work,
-                        e.getMessage());
+                        e);
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
             }
