@@ -44,9 +44,19 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicActionBean, Act
                 throw new ActionProviderException(
                         String.format("The requested topic '%s' for Action on Processor '%s' for bridge '%s' does not exist", requiredTopic, processor.getId(), processor.getBridgeId()));
             }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (ExecutionException | TimeoutException e) {
             throw new ActionProviderException(String.format("Unable to list topics from Kafka to check requested topic '%s' exists for Action on Processor '%s' on bridge '%s'", requiredTopic,
                     processor.getId(), processor.getBridgeId()), e);
+        } catch (InterruptedException e) {
+            // Fixes SonarCloud bug: "InterruptedException" should not be ignored --
+            // InterruptedExceptions should never be ignored in the code, and simply logging the exception counts in this case as "ignoring".
+            // The throwing of the InterruptedException clears the interrupted state of the Thread, so if the exception is not handled properly
+            // the information that the thread was interrupted will be lost.
+            // Instead, InterruptedExceptions should either be rethrown - immediately or after cleaning up the method’s state - or the thread
+            // should be re-interrupted by calling Thread.interrupt() even if this is supposed to be a single-threaded application.
+            // Any other course of action risks delaying thread shutdown and loses the information that the thread was interrupted - probably
+            // without finishing its task.
+            Thread.currentThread().interrupt();
         }
 
         return new KafkaTopicActionInvoker(emitter, processor, requiredTopic);
