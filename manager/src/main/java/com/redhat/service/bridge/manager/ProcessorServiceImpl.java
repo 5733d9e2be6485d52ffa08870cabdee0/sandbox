@@ -20,6 +20,7 @@ import com.redhat.service.bridge.actions.ActionProvider;
 import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.bridge.infra.models.ListResult;
@@ -134,6 +135,51 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+    }
+
+    @Override
+    @Transactional
+    public Processor updateProcessor(String processorId, String bridgeId, String customerId, ProcessorRequest processorRequest) {
+        // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
+        bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // Extract existing definition
+        Processor existingProcessor = getProcessor(processorId, bridgeId, customerId);
+        ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
+        String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
+        BaseAction existingAction = existingDefinition.getRequestedAction();
+        BaseAction existingResolvedAction = existingDefinition.getResolvedAction();
+
+        // Validate update. Only Filters are supported at present.
+        if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
+            throw new BadRequestException("It is not possible to update the Processor's name.");
+        }
+        if (!Objects.equals(existingTransformationTemplate, processorRequest.getTransformationTemplate())) {
+            throw new BadRequestException("It is not possible to update the Processor's TransformTemplate.");
+        }
+        if (!Objects.equals(existingAction, processorRequest.getAction())) {
+            throw new BadRequestException("It is not possible to update the Processor's Action.");
+        }
+
+        // Create new definition copying existing properties
+        existingProcessor.setSubmittedAt(ZonedDateTime.now());
+        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
+
+        Set<BaseFilter> updatedFilters = processorRequest.getFilters();
+        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, existingTransformationTemplate, existingAction, existingResolvedAction);
+        existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
+
+        // Processor and Work should always be created in the same transaction
+        // Since updates to the Action are unsupported we do not need to update the Connector record.
+        processorDAO.persist(existingProcessor);
+        workManager.schedule(existingProcessor);
+
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
+                existingProcessor.getId(),
+                existingProcessor.getBridge().getCustomerId(),
+                existingProcessor.getBridge().getId());
+
+        return existingProcessor;
     }
 
     @Transactional

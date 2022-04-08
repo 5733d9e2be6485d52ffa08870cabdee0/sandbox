@@ -423,6 +423,153 @@ public class ProcessorAPITest {
         TestUtils.deleteProcessor("any-id", "any-id").then().statusCode(401);
     }
 
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenBridgeNotExists() {
+        Response response = TestUtils.updateProcessor("non-existing",
+                "anything",
+                new ProcessorRequest("myProcessor", Collections.emptySet(), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenBridgeNotInReadyState() {
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridgeDAO.persist(bridge);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                "anything",
+                new ProcessorRequest("myProcessor", Collections.emptySet(), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenProcessorNotExists() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                "non-existing",
+                new ProcessorRequest("myProcessor", Collections.emptySet(), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWhenProcessorNotInReadyState() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.PROVISIONING);
+        processorDAO.persist(processor);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(), Collections.emptySet(), null, createKafkaAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithName() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "value"));
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName() + "-updated",
+                        filters,
+                        processor.getTransformationTemplate(),
+                        processor.getAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithTemplate() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "value"));
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(),
+                        filters,
+                        processor.getTransformationTemplate() + "-updated",
+                        processor.getAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithAction() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "value"));
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(),
+                        filters,
+                        processor.getTransformationTemplate(),
+                        null));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithFilter() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "value"));
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        Set<BaseFilter> updatedFilters = Set.of(new StringEquals("key1", "value1"), new StringEquals("key2", "value2"));
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(),
+                        updatedFilters,
+                        processor.getTransformationTemplate(),
+                        processor.getAction()));
+        assertThat(response.getStatusCode()).isEqualTo(202);
+
+        ProcessorResponse updated = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        assertThat(updated.getName()).isEqualTo("myProcessor");
+        assertThat(updated.getFilters().size()).isEqualTo(2);
+        assertThat(updated.getFilters().stream().filter(f -> f.getKey().equals("key1") && f.getValue().equals("value1")).count()).isEqualTo(1);
+        assertThat(updated.getFilters().stream().filter(f -> f.getKey().equals("key2") && f.getValue().equals("value2")).count()).isEqualTo(1);
+        assertThat(updated.getTransformationTemplate()).isNull();
+        assertRequestedAction(updated);
+    }
+
     private BridgeResponse createBridge() {
         BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
         BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);

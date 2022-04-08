@@ -15,6 +15,8 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest);
 
+    Processor updateProcessor(String processorId, String bridgeId, String customerId, ProcessorRequest processorRequest);
+
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
 
     Processor updateProcessorStatus(ProcessorDTO processorDTO);
