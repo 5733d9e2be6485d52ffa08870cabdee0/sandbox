@@ -52,29 +52,6 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    public void testBridgeIngressGetWhenCreated() {
-        // Given
-        BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
-
-        // When
-        bridgeIngressService.createBridgeIngress(dto);
-
-        // Then
-        BridgeIngress bridgeIngress = bridgeIngressService.getBridgeIngress(dto);
-        assertThat(bridgeIngress).isNotNull();
-    }
-
-    @Test
-    public void testBridgeIngressGetWhenNotCreated() {
-        // Given
-        BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
-
-        // Then
-        BridgeIngress bridgeIngress = bridgeIngressService.getBridgeIngress(dto);
-        assertThat(bridgeIngress).isNull();
-    }
-
-    @Test
     public void testBridgeIngressCreation() {
         // Given
         BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();

@@ -52,29 +52,6 @@ public class BridgeExecutorServiceTest {
     }
 
     @Test
-    public void testBridgeExecutorGetWhenCreated() {
-        // Given
-        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
-
-        // When
-        bridgeExecutorService.createBridgeExecutor(dto);
-
-        // Then
-        BridgeExecutor bridgeExecutor = bridgeExecutorService.getBridgeExecutor(dto);
-        assertThat(bridgeExecutor).isNotNull();
-    }
-
-    @Test
-    public void testBridgeExecutorGetWhenNotCreated() {
-        // Given
-        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
-
-        // Then
-        BridgeExecutor bridgeExecutor = bridgeExecutorService.getBridgeExecutor(dto);
-        assertThat(bridgeExecutor).isNull();
-    }
-
-    @Test
     public void testBridgeExecutorCreation() {
         // Given
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();

@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,16 +13,15 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.exceptions.DeserializationException;
-import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
 import com.redhat.service.smartevents.shard.operator.metrics.MetricsService;
-import com.redhat.service.smartevents.shard.operator.utils.WebClientUtils;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -55,6 +53,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    NotificationService notificationService;
+
     @Scheduled(every = "30s")
     void syncUpdatesFromManager() {
         LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
@@ -68,35 +69,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
-        LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", bridgeDTO.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(bridgeDTO))
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.UPDATE, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.UPDATE, failure))
-                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
-    }
-
-    @Override
-    public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO) {
-        LOGGER.debug("Notifying manager about the new status of the Processor '{}'", processorDTO.getId());
-        return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(processorDTO))
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.UPDATE, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.UPDATE, failure))
-                .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
-    }
-
-    @Override
     public Uni<Object> fetchAndProcessBridgesToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
+                .onItem().invoke(success -> notificationService.updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> notificationService.updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
                 .onItem().transform(this::getBridges)
                 .onItem().transformToUni(x -> Uni.createFrom().item(
                         x.stream()
                                 .map(y -> {
                                     if (y.getStatus().equals(ManagedResourceStatus.ACCEPTED)) { // Bridges to deploy
                                         y.setStatus(ManagedResourceStatus.PROVISIONING);
-                                        return notifyBridgeStatusChange(y)
+                                        return notificationService.notifyBridgeStatusChange(y)
                                                 .subscribe().with(
                                                         success -> {
                                                             LOGGER.debug("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
@@ -105,23 +88,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                         failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
-                                        if (Objects.isNull(bridgeIngressService.getBridgeIngress(y))) {
-                                            LOGGER.debug("Bridge '{}' was not found. Notifying manager that it has been deleted.", y.getId());
-                                            y.setStatus(ManagedResourceStatus.DELETED);
-                                            return notifyBridgeStatusChange(y)
-                                                    .subscribe().with(
-                                                            success -> LOGGER.debug("Deleted notification for Bridge '{}' has been sent to the manager successfully", y.getId()),
-                                                            failure -> failedToSendUpdateToManager(y, failure));
-                                        } else {
-                                            y.setStatus(ManagedResourceStatus.DELETING);
-                                            return notifyBridgeStatusChange(y)
-                                                    .subscribe().with(
-                                                            success -> {
-                                                                LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
-                                                                bridgeIngressService.deleteBridgeIngress(y);
-                                                            },
-                                                            failure -> failedToSendUpdateToManager(y, failure));
-                                        }
+                                        y.setStatus(ManagedResourceStatus.DELETING);
+                                        return notificationService.notifyBridgeStatusChange(y)
+                                                .subscribe().with(
+                                                        success -> {
+                                                            LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                                            bridgeIngressService.deleteBridgeIngress(y);
+                                                        },
+                                                        failure -> failedToSendUpdateToManager(y, failure));
                                     }
                                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                                     return Uni.createFrom().voidItem();
@@ -131,14 +105,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
+                .onItem().invoke(success -> notificationService.updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> notificationService.updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
                 .onItem().transform(this::getProcessors)
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream()
                         .map(y -> {
                             if (ManagedResourceStatus.ACCEPTED.equals(y.getStatus())) {
                                 y.setStatus(ManagedResourceStatus.PROVISIONING);
-                                return notifyProcessorStatusChange(y)
+                                return notificationService.notifyProcessorStatusChange(y)
                                         .subscribe().with(
                                                 success -> {
                                                     LOGGER.debug("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
@@ -147,22 +121,14 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                                 failure -> failedToSendUpdateToManager(y, failure));
                             }
                             if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
-                                if (Objects.isNull(bridgeExecutorService.getBridgeExecutor(y))) {
-                                    LOGGER.debug("Processor '{}' was not found. Notifying manager that it has been deleted.", y.getId());
-                                    y.setStatus(ManagedResourceStatus.DELETED);
-                                    return notifyProcessorStatusChange(y).subscribe().with(
-                                            success -> LOGGER.debug("Deleted notification for Processor '{}' has been sent to the manager successfully", y.getId()),
-                                            failure -> failedToSendUpdateToManager(y, failure));
-                                } else {
-                                    y.setStatus(ManagedResourceStatus.DELETING);
-                                    return notifyProcessorStatusChange(y)
-                                            .subscribe().with(
-                                                    success -> {
-                                                        LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
-                                                        bridgeExecutorService.deleteBridgeExecutor(y);
-                                                    },
-                                                    failure -> failedToSendUpdateToManager(y, failure));
-                                }
+                                y.setStatus(ManagedResourceStatus.DELETING);
+                                return notificationService.notifyProcessorStatusChange(y)
+                                        .subscribe().with(
+                                                success -> {
+                                                    LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                                    bridgeExecutorService.deleteBridgeExecutor(y);
+                                                },
+                                                failure -> failedToSendUpdateToManager(y, failure));
                             }
                             return Uni.createFrom().voidItem();
                         }).collect(Collectors.toList())));
@@ -223,17 +189,5 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
      */
     private boolean isSuccessfulResponse(HttpResponse<?> httpResponse) {
         return httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 400;
-    }
-
-    private void updateManagerRequestMetricsOnSuccess(ManagerRequestType requestType, HttpResponse<Buffer> successResponse) {
-        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.SUCCESS, String.valueOf(successResponse.statusCode()));
-    }
-
-    private void updateManagerRequestMetricsOnFailure(ManagerRequestType requestType, Throwable error) {
-        String statusCode = null;
-        if (error instanceof HTTPResponseException) {
-            statusCode = String.valueOf(((HTTPResponseException) error).getStatusCode());
-        }
-        metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, String.valueOf(statusCode));
     }
 }

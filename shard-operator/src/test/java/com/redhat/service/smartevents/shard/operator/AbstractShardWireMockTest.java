@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -41,6 +42,9 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
 
     @Inject
     protected ObjectMapper objectMapper;
+
+    @Inject
+    protected NotificationService notificationService;
 
     // TODO: revisit processor tests when they will be integrated
     //    @InjectMock

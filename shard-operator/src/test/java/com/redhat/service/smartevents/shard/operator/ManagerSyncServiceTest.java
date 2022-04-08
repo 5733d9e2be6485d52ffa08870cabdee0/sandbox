@@ -97,12 +97,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateProvisioningRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateAvailableRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateAvailableRequest, APIConstants.SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -129,9 +125,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateDeprovisioningRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -139,9 +133,15 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"myEndpoint/events\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                 bridge1.getId(),
                 bridge1.getName(),
+                bridge1.getEndpoint(),
+                bridge1.getCustomerId());
+        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                bridge1.getId(),
+                bridge1.getName(),
+                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
 
         // The BridgeIngressController does not need to execute if the CRD is not deployed
@@ -151,26 +151,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
-    }
-
-    @Test
-    public void testNotifyBridgeStatusChange() throws InterruptedException {
-        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1", "myName-1", "myEndpoint", "myCustomerId", ManagedResourceStatus.PROVISIONING, TestSupport.KAFKA_CONNECTION_DTO);
-        stubBridgeUpdate();
-        String expectedJsonUpdate = "{\"id\": \"bridgeStatusChange-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
-
-        CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
-        addBridgeUpdateRequestListener(latch);
-
-        managerSyncService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
-
-        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdate, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.SHARD_API_BASE_PATH);
+        assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH);
     }
 
     @Test
@@ -203,17 +185,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         processor.setStatus(ManagedResourceStatus.READY);
         processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
 
-        // For some reason the latch occasionally triggers sooner than the request is available on wiremock. So wireMockServer.verify is unreliable and waiting loop is implemented.
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(10))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(
-                        () -> {
-                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
-                                    .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
-                                    .withHeader("Content-Type", equalTo("application/json")));
-                            assertThat(findAll).hasSize(1);
-                        });
+        assertJsonRequest(objectMapper.writeValueAsString(processor), APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
     @Test
@@ -243,9 +215,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(expectedJsonUpdateRequestForDeprovisioning, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
     @Test
@@ -255,6 +225,12 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
+        String expectedJsonUpdateRequestForDeprovisioning =
+                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                        processor.getId(),
+                        processor.getName(),
+                        processor.getBridgeId(),
+                        processor.getCustomerId());
         String expectedJsonUpdateRequest =
                 String.format("{\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                         processor.getId(),
@@ -269,25 +245,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         managerSyncService.fetchAndProcessProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(expectedJsonUpdateRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
-    }
-
-    @Test
-    public void notifyProcessorStatusChange() throws Exception {
-        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
-        stubProcessorUpdate();
-
-        CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
-        addProcessorUpdateRequestListener(latch);
-
-        managerSyncService.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
-
-        assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+        assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
     private BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
@@ -297,5 +256,21 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 TestSupport.CUSTOMER_ID,
                 status,
                 TestSupport.KAFKA_CONNECTION_DTO);
+    }
+
+    private void assertJsonRequest(String expectedJsonRequest, String url) {
+        // For some reason the latch occasionally triggers sooner than the request is available on wiremock.
+        // So wireMockServer.verify is unreliable and waiting loop is implemented.
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(
+                        () -> {
+                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(url))
+                                    .withRequestBody(equalToJson(expectedJsonRequest, true, true))
+                                    .withHeader("Content-Type", equalTo("application/json")));
+                            assertThat(findAll).hasSize(1);
+                        });
+
     }
 }
