@@ -16,7 +16,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class SendToBridgeActionValidatorTest {
+class SendToBridgeActionValidatorTest {
 
     private final static Map<String, String> NULL_PARAMS = null;
     private final static Map<String, String> EMPTY_PARAMS = Collections.emptyMap();

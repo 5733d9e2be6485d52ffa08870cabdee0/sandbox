@@ -39,7 +39,7 @@ class SlackActionTest {
     SlackActionConnector slackActionConnector;
 
     @Test
-    public void createSlackPayload() throws JsonProcessingException {
+    void createSlackPayload() throws JsonProcessingException {
         final String channelValue = "channel";
         final String webhookUrlValue = "webhook_url";
         final String topicValue = "topic";

@@ -9,7 +9,6 @@ import javax.inject.Inject;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 
 import io.smallrye.common.annotation.Identifier;
 
@@ -32,6 +31,6 @@ public class KafkaClients {
                 copy.put(entry.getKey(), entry.getValue());
             }
         }
-        return KafkaAdminClient.create(copy);
+        return AdminClient.create(copy);
     }
 }

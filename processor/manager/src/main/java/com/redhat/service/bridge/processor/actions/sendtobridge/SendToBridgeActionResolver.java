@@ -28,10 +28,8 @@ public class SendToBridgeActionResolver implements ActionResolver {
     @Override
     public BaseAction resolve(BaseAction action, String customerId, String bridgeId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
-        // Bridge destinationBridge = bridgesService.getReadyBridge();
 
         Map<String, String> parameters = new HashMap<>();
-
         try {
             parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(actionService.getBridgeEndpoint(destinationBridgeId, customerId)));
             parameters.put(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");

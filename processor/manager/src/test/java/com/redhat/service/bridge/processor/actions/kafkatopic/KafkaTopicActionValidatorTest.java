@@ -16,7 +16,7 @@ import com.redhat.service.bridge.infra.validations.ValidationResult;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class KafkaTopicActionValidatorTest {
+class KafkaTopicActionValidatorTest {
 
     @Inject
     KafkaTopicActionValidator validator;
@@ -37,13 +37,13 @@ public class KafkaTopicActionValidatorTest {
     }
 
     @Test
-    public void isValid() {
+    void isValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
         Assertions.assertThat(validator.isValid(processor.getDefinition().getResolvedAction()).isValid()).isTrue();
     }
 
     @Test
-    public void isValid_noTopicIsNotValid() {
+    void isValid_noTopicIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
         processor.getDefinition().getResolvedAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
         ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
@@ -53,7 +53,7 @@ public class KafkaTopicActionValidatorTest {
     }
 
     @Test
-    public void isValid_emptyTopicStringIsNotValid() {
+    void isValid_emptyTopicStringIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
         processor.getDefinition().getResolvedAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
         ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
