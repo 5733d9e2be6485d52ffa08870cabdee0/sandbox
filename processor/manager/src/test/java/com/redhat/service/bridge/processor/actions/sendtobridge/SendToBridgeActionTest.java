@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.processor.actions.ActionParameterValidatorFactory;
+import com.redhat.service.bridge.processor.actions.ActionConfigurator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -17,7 +17,7 @@ class SendToBridgeActionTest {
     SendToBridgeActionBean sendToBridgeAction;
 
     @Inject
-    ActionParameterValidatorFactory actionParameterValidatorFactory;
+    ActionConfigurator actionConfigurator;
 
     @Test
     void testType() {
@@ -26,6 +26,6 @@ class SendToBridgeActionTest {
 
     @Test
     void testValidator() {
-        assertThat(actionParameterValidatorFactory.get(SendToBridgeAction.TYPE)).isNotNull();
+        assertThat(actionConfigurator.getValidator(SendToBridgeAction.TYPE)).isNotNull();
     }
 }

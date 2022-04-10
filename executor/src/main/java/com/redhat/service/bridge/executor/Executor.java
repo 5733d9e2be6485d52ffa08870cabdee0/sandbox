@@ -16,7 +16,7 @@ import com.redhat.service.bridge.infra.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
 import com.redhat.service.bridge.processor.actions.ActionInvoker;
-import com.redhat.service.bridge.processor.actions.ActionInvokerBuilderFactory;
+import com.redhat.service.bridge.processor.actions.ActionRuntime;
 
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -37,7 +37,7 @@ public class Executor {
     private Timer transformationTimer;
 
     public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory,
-            ActionInvokerBuilderFactory actionInvokerBuilderFactory,
+            ActionRuntime actionRuntime,
             MeterRegistry registry) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
@@ -45,7 +45,7 @@ public class Executor {
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
         BaseAction action = processor.getDefinition().getResolvedAction();
-        this.actionInvoker = actionInvokerBuilderFactory.get(action.getType()).build(processor, action);
+        this.actionInvoker = actionRuntime.getInvokerBuilder(action.getType()).build(processor, action);
 
         initMetricFields(processor, registry);
     }

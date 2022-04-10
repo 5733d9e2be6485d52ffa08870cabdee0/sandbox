@@ -6,10 +6,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
-import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
+import com.redhat.service.bridge.processor.actions.ActionValidator;
 
 @ApplicationScoped
-public class SlackActionValidator implements SlackActionBean, ActionParameterValidator {
+public class SlackActionValidator implements SlackActionBean, ActionValidator {
     public static final String INVALID_CHANNEL_MESSAGE =
             "The supplied " + SlackAction.CHANNEL_PARAM + " parameter is not valid";
 

@@ -13,7 +13,7 @@ import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.bridge.processor.actions.ActionInvokerBuilderFactory;
+import com.redhat.service.bridge.processor.actions.ActionRuntime;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -23,7 +23,7 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
     @Inject
-    ActionInvokerBuilderFactory actionInvokerBuilderFactory;
+    ActionRuntime actionRuntime;
 
     @Inject
     MeterRegistry registry;
@@ -42,7 +42,7 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     @PostConstruct
     void init() {
         ProcessorDTO dto = readProcessor(processorDefinition);
-        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionInvokerBuilderFactory, registry);
+        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, registry);
     }
 
     @Override

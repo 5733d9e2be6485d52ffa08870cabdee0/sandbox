@@ -37,7 +37,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.workers.WorkManager;
-import com.redhat.service.bridge.processor.actions.ActionResolverFactory;
+import com.redhat.service.bridge.processor.actions.ActionConfigurator;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -60,7 +60,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    ActionResolverFactory actionResolverFactory;
+    ActionConfigurator actionConfigurator;
 
     @Inject
     ConnectorsService connectorService;
@@ -107,7 +107,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
 
-        BaseAction resolvedAction = actionResolverFactory.getOptional(requestedAction.getType())
+        BaseAction resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
                 .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
                 .orElse(requestedAction);
 

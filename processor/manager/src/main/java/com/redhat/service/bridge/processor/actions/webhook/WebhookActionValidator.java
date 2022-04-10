@@ -7,10 +7,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
-import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
+import com.redhat.service.bridge.processor.actions.ActionValidator;
 
 @ApplicationScoped
-public class WebhookActionValidator implements WebhookActionBean, ActionParameterValidator {
+public class WebhookActionValidator implements WebhookActionBean, ActionValidator {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";

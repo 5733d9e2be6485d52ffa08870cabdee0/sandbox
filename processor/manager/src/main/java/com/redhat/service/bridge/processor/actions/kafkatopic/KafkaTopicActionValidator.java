@@ -4,10 +4,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
-import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
+import com.redhat.service.bridge.processor.actions.ActionValidator;
 
 @ApplicationScoped
-public class KafkaTopicActionValidator implements KafkaTopicActionBean, ActionParameterValidator {
+public class KafkaTopicActionValidator implements KafkaTopicActionBean, ActionValidator {
 
     public static final String INVALID_TOPIC_PARAM_MESSAGE = "The supplied topic parameter is not valid";
 

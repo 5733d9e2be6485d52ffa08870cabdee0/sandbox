@@ -6,10 +6,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
-import com.redhat.service.bridge.processor.actions.ActionParameterValidator;
+import com.redhat.service.bridge.processor.actions.ActionValidator;
 
 @ApplicationScoped
-public class SendToBridgeActionValidator implements SendToBridgeActionBean, ActionParameterValidator {
+public class SendToBridgeActionValidator implements SendToBridgeActionBean, ActionValidator {
 
     public static final String INVALID_BRIDGE_ID_PARAM_MESSAGE =
             "The supplied " + SendToBridgeAction.BRIDGE_ID_PARAM + " parameter is not valid";
