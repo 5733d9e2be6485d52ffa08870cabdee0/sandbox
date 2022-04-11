@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -484,6 +485,7 @@ public class ProcessorAPITest {
                 new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
 
         ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
 
         Response response = TestUtils.updateProcessor(bridge.getId(),
                 processor.getId(),
@@ -506,6 +508,7 @@ public class ProcessorAPITest {
                 new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
 
         ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
 
         Response response = TestUtils.updateProcessor(bridge.getId(),
                 processor.getId(),
@@ -528,6 +531,7 @@ public class ProcessorAPITest {
                 new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
 
         ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
 
         Response response = TestUtils.updateProcessor(bridge.getId(),
                 processor.getId(),
@@ -550,6 +554,7 @@ public class ProcessorAPITest {
                 new ProcessorRequest("myProcessor", filters, null, createKafkaAction()));
 
         ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
 
         Set<BaseFilter> updatedFilters = Set.of(new StringEquals("key1", "value1"), new StringEquals("key2", "value2"));
         Response response = TestUtils.updateProcessor(bridge.getId(),
@@ -598,5 +603,11 @@ public class ProcessorAPITest {
         Response deployment = TestUtils.updateBridge(dto);
         assertThat(deployment.getStatusCode()).isEqualTo(200);
         return bridgeResponse;
+    }
+
+    @Transactional
+    protected void setProcessorAsReady(String processorId) {
+        Processor processor = processorDAO.findById(processorId);
+        processor.setStatus(ManagedResourceStatus.READY);
     }
 }

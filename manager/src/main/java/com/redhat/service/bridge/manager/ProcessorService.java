@@ -11,11 +11,11 @@ import com.redhat.service.bridge.manager.models.Processor;
 
 public interface ProcessorService {
 
-    Processor getProcessor(String processorId, String bridgeId, String customerId);
+    Processor getProcessor(String bridgeId, String processorId, String customerId);
 
     Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest);
 
-    Processor updateProcessor(String processorId, String bridgeId, String customerId, ProcessorRequest processorRequest);
+    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
 

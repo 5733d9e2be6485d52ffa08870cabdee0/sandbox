@@ -81,10 +81,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor getProcessor(String processorId, String bridgeId, String customerId) {
+    public Processor getProcessor(String bridgeId, String processorId, String customerId) {
 
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridge.getId(), bridge.getCustomerId());
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridge.getId(), processorId, bridge.getCustomerId());
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on Bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
@@ -139,12 +139,17 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     @Transactional
-    public Processor updateProcessor(String processorId, String bridgeId, String customerId, ProcessorRequest processorRequest) {
+    public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
         // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
         bridgesService.getReadyBridge(bridgeId, customerId);
 
         // Extract existing definition
-        Processor existingProcessor = getProcessor(processorId, bridgeId, customerId);
+        Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
+        if (!isProcessorActionable(existingProcessor)) {
+            throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
+                    processorId,
+                    customerId));
+        }
         ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
         String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
         BaseAction existingAction = existingDefinition.getRequestedAction();
@@ -154,15 +159,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
         }
+        // See https://issues.redhat.com/browse/MGDOBR-515 for updating Transformation support
         if (!Objects.equals(existingTransformationTemplate, processorRequest.getTransformationTemplate())) {
             throw new BadRequestException("It is not possible to update the Processor's TransformTemplate.");
         }
+        // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
         if (!Objects.equals(existingAction, processorRequest.getAction())) {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
         }
 
         // Create new definition copying existing properties
-        existingProcessor.setSubmittedAt(ZonedDateTime.now());
+        existingProcessor.setModifiedAt(ZonedDateTime.now());
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
 
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
@@ -171,7 +178,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
-        processorDAO.persist(existingProcessor);
         workManager.schedule(existingProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
@@ -230,11 +236,11 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {
-        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(processorId, bridgeId, customerId);
+        Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridgeId, processorId, customerId);
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
-        if (!isProcessorDeletable(processor)) {
+        if (!isProcessorActionable(processor)) {
             throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
         }
 
@@ -249,7 +255,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 processor.getBridge().getId());
     }
 
-    private boolean isProcessorDeletable(Processor processor) {
+    private boolean isProcessorActionable(Processor processor) {
         // bridge could only be deleted if its in READY or FAILED state
         return processor.getStatus() == ManagedResourceStatus.READY || processor.getStatus() == ManagedResourceStatus.FAILED;
     }

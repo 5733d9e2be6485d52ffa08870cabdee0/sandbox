@@ -446,8 +446,9 @@ paths:
     put:
       tags:
       - Processors
-      summary: Update a Processor instance
-      description: Update a Processor instance for the authenticated user.
+      summary: Update a Processor instance Filter definition.
+      description: Update a Processor instance Filter definition for the authenticated
+        user.
       operationId: ProcessorsAPI_updateProcessor
       parameters:
       - name: bridgeId
