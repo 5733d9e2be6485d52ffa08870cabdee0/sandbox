@@ -1,10 +1,17 @@
 package com.redhat.service.bridge.shard.operator.utils;
 
+import java.util.Collections;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.bridge.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
+import com.redhat.service.bridge.shard.operator.resources.ConditionStatus;
+import com.redhat.service.bridge.shard.operator.resources.knative.KnativeBroker;
+import com.redhat.service.bridge.shard.operator.resources.knative.KnativeBrokerConditionType;
+import com.redhat.service.bridge.shard.operator.resources.knative.KnativeBrokerStatus;
+import com.redhat.service.bridge.shard.operator.resources.knative.KnativeCondition;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
 import io.fabric8.kubernetes.api.model.Service;
@@ -88,6 +95,31 @@ public class KubernetesResourcePatcher {
         Deployment deployment = getDeployment(name, namespace);
         DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build();
         updateDeploymentStatus(deployment, deploymentStatus);
+    }
+
+    public void patchReadyKnativeBroker(String name, String namespace) {
+        KnativeBrokerStatus.Address address = new KnativeBrokerStatus.Address();
+        address.setUrl("http://192.168.2.49/ob-bridgesdeployed-1/events"); // TODO change
+
+        KnativeBrokerStatus knativeBrokerStatus = new KnativeBrokerStatus();
+        knativeBrokerStatus.setAddress(address);
+        knativeBrokerStatus.setConditions(Collections.singleton(new KnativeCondition(KnativeBrokerConditionType.BrokerReady, ConditionStatus.True)));
+
+        KnativeBroker knativeBroker = kubernetesClient
+                .resources(KnativeBroker.class)
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+
+        assertThat(knativeBroker).isNotNull();
+
+        knativeBroker.setStatus(knativeBrokerStatus);
+
+        kubernetesClient
+                .resources(KnativeBroker.class)
+                .inNamespace(namespace)
+                .withName(name)
+                .replace(knativeBroker);
     }
 
     public void patchReadyService(String name, String namespace) {

@@ -1,5 +1,7 @@
 package com.redhat.service.bridge.shard.operator.controllers;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.bridge.shard.operator.BridgeIngressService;
 import com.redhat.service.bridge.shard.operator.ManagerSyncService;
+import com.redhat.service.bridge.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.ConditionReason;
 import com.redhat.service.bridge.shard.operator.resources.ConditionType;
@@ -52,6 +55,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Inject
     BridgeErrorService bridgeErrorService;
 
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
+
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
@@ -75,22 +81,29 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return UpdateControl.noUpdate();
         }
 
-        AuthorizationPolicy authorizationPolicy = bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress);
-
         ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
 
-        KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
+        // Nothing to check for ConfigMap
 
-        if (knativeBroker.getStatus() == null || knativeBroker.getStatus().getAddress() == null || "".equals(knativeBroker.getStatus().getAddress())) {
+        KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
+        String path = extractBrokerPath(knativeBroker);
+
+        if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.KnativeBrokerNotReady);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
-        if (!bridgeIngress.getStatus().isReady() || !knativeBroker.getStatus().getAddress().equals(bridgeIngress.getStatus().getEndpoint())) {
-            bridgeIngress.getStatus().setEndpoint(knativeBroker.getStatus().getAddress().getUrl());
+        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress, path);
+
+        // Nothing to check for Authorization Policy
+
+        String endpoint = istioGatewayProvider.getIstioGatewayAddress() + path;
+
+        if (!bridgeIngress.getStatus().isReady() || !endpoint.equals(bridgeIngress.getStatus().getEndpoint())) {
+            bridgeIngress.getStatus().setEndpoint(endpoint);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
@@ -104,17 +117,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Linked resources are automatically deleted
+        // Linked resources are automatically deleted except for Authorization Policy due to https://github.com/istio/istio/issues/37221
+
+        kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
+                .withName(bridgeIngress.getMetadata().getName())
+                .delete();
 
         notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 
         return DeleteControl.defaultDelete();
-    }
-
-    private void notifyDeploymentFailure(BridgeIngress bridgeIngress, String failureReason) {
-        LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeIngress, ManagedResourceStatus.FAILED);
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
@@ -125,5 +137,15 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId()));
+    }
+
+    private String extractBrokerPath(KnativeBroker broker) {
+        try {
+            LOGGER.info(broker.getStatus().getAddress().getUrl());
+            return new URL(broker.getStatus().getAddress().getUrl()).getPath();
+        } catch (MalformedURLException e) {
+            LOGGER.info("Could not extract URL of the broker of BridgeIngress '{}'", broker.getMetadata().getName());
+            return null;
+        }
     }
 }

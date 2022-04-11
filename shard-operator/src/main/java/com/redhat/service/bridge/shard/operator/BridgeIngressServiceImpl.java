@@ -31,9 +31,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @ConfigProperty(name = "event-bridge.ingress.image")
     String ingressImage;
 
-    @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
-    int deploymentTimeout;
-
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -86,13 +83,14 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     @Override
     public void createOrUpdateBridgeIngressSecret(BridgeIngress bridgeIngress, BridgeDTO bridgeDTO) {
         Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress);
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
+                Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
         // TODO: refactor with data from DTO
-        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM, Base64.getEncoder().encodeToString("PLAIN".getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString("PLAIN".getBytes()));
 
         Secret existing = kubernetesClient
                 .secrets()
@@ -122,11 +120,13 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret) {
         ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(bridgeIngress);
 
-        expected.getData().replace("default.topic.partitions", "10");
-        expected.getData().replace("default.topic.replication.factor", "3");
-        expected.getData().replace("bootstrap.servers", new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS))));
-        expected.getData().replace("auth.secret.ref.name", secret.getMetadata().getName());
-        expected.getData().replace("topic.name", new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME))));
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP, "10"); // TODO: move to constant or to DTO
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP, "3"); // TODO: move to constant or to DTO
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP,
+                new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET))));
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP, secret.getMetadata().getName());
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP,
+                new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET))));
 
         ConfigMap existing = kubernetesClient
                 .configMaps()
@@ -158,25 +158,34 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
-        if (existing == null || !expected.getSpec().getConfig().equals(existing.getSpec().getConfig())) {
+        if (existing == null) {
             return kubernetesClient
                     .resources(KnativeBroker.class)
                     .inNamespace(bridgeIngress.getMetadata().getNamespace())
-                    // Best practice would be to generate a new name for the configmap and replace its reference
                     .withName(bridgeIngress.getMetadata().getName())
-                    .createOrReplace(expected);
+                    .create(expected);
+        }
+
+        if (!expected.getSpec().getConfig().equals(existing.getSpec().getConfig())) {
+            // knative broker is immutable. We have to delete the resource -> trigger the reconciler -> recreate.
+            kubernetesClient
+                    .resources(KnativeBroker.class)
+                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
+                    .delete();
+            return null;
         }
 
         return existing;
     }
 
     @Override
-    public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress) {
+    public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress);
         expected.getSpec().setAction("ALLOW");
         expected.getSpec().getRules().get(0).getWhen().get(0).getValues().set(0, bridgeIngress.getSpec().getCustomerId());
-        expected.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().set(0,
-                "/" + bridgeIngress.getMetadata().getNamespace() + "/" + bridgeIngress.getMetadata().getName());
+        expected.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().set(0, path);
+        // add webhook tech account id
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
                 //                .inNamespace(bridgeIngress.getMetadata().getNamespace())

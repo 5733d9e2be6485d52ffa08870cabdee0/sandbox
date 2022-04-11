@@ -16,7 +16,7 @@ public enum ConditionReason {
     DeploymentFailed,
     DeploymentNotAvailable,
     ServiceNotReady,
-    NetworkResourceNotReady,
+    KnativeBrokerNotReady,
     PrometheusUnavailable,
     SecretsNotFound;
 }

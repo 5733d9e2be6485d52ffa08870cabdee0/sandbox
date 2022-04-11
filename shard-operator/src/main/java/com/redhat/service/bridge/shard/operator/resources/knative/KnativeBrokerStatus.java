@@ -27,7 +27,7 @@ public class KnativeBrokerStatus {
         this.address = address;
     }
 
-    public class Address {
+    public static class Address {
         private String url;
 
         public String getUrl() {
