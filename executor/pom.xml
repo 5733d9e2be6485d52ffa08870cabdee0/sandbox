@@ -36,7 +36,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-executor</artifactId>
+      <artifactId>processor-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kie</groupId>

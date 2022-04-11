@@ -13,8 +13,8 @@
 
   <modules>
     <module>core</module>
-    <module>executor</module>
-    <module>manager</module>
+    <module>configuration</module>
+    <module>runtime</module>
   </modules>
 
 </project>

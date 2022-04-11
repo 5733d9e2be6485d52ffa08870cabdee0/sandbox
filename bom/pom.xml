@@ -180,36 +180,36 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-executor</artifactId>
+        <artifactId>processor-configuration</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-executor</artifactId>
+        <artifactId>processor-configuration</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-executor</artifactId>
+        <artifactId>processor-configuration</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-manager</artifactId>
+        <artifactId>processor-runtime</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-manager</artifactId>
+        <artifactId>processor-runtime</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-manager</artifactId>
+        <artifactId>processor-runtime</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

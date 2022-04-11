@@ -10,9 +10,9 @@
     <relativePath>../../build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>processor-executor</artifactId>
+  <artifactId>processor-configuration</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Processor :: Executor</name>
+  <name>Event Bridge :: Processor :: Configuration</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,11 +23,12 @@
       <groupId>com.redhat.service.bridge</groupId>
       <artifactId>processor-core</artifactId>
     </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+      <artifactId>quarkus-jackson</artifactId>
+      <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
@@ -41,11 +42,6 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
