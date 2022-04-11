@@ -117,10 +117,8 @@
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
 
                 <!-- Token authorization configuration-->
-                <bridge.token.username>kermit</bridge.token.username>
-                <bridge.token.password>thefrog</bridge.token.password>
-                <bridge.client.id>event-bridge</bridge.client.id>
-                <bridge.client.secret>secret</bridge.client.secret>
+                <bridge.client.id>kermit</bridge.client.id>
+                <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
 
                 <!--Manager and key-cloak url-->
                 <event-bridge.manager.url></event-bridge.manager.url>

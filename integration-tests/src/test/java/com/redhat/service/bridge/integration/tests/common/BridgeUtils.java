@@ -12,35 +12,29 @@ import static io.restassured.RestAssured.given;
 
 public class BridgeUtils {
 
-    public static final String MANAGER_URL = Utils.getSystemProperty("event-bridge.manager.url");
+    public static final String MANAGER_URL = System.getProperty("event-bridge.manager.url");
+    protected static final String CLIENT_ID = System.getProperty("bridge.client.id");
+    protected static final String CLIENT_SECRET = System.getProperty("bridge.client.secret");
 
-    protected static final String USER_NAME = Utils.getSystemProperty("bridge.token.username");
-    protected static final String PASSWORD = Utils.getSystemProperty("bridge.token.password");
-    protected static final String CLIENT_ID = Utils.getSystemProperty("bridge.client.id");
-    protected static final String CLIENT_SECRET = Utils.getSystemProperty("bridge.client.secret");
-
-    protected static String token;
     protected static String keycloakURL = System.getProperty("keycloak.realm.url");
 
     public static String retrieveBridgeToken() {
-        if (token == null) {
-            String env_token = System.getenv("OB_TOKEN");
-            if (env_token != null) {
-                token = env_token;
-            } else if (keycloakURL != null && !keycloakURL.isEmpty()) {
-                token = getAccessToken();
-            } else {
-                throw new RuntimeException(
-                        "Environment variable token and keycloak.realm.url was not defined for token generation.");
-            }
+        String env_token = System.getenv("OB_TOKEN");
+        if (env_token != null) {
+            return env_token;
+        } else if (keycloakURL != null && !keycloakURL.isEmpty()) {
+            return getAccessToken();
+        } else {
+            throw new RuntimeException(
+                    "Environment variable token and keycloak.realm.url was not defined for token generation.");
         }
-        return token;
     }
 
     private static String getAccessToken() {
-        return given().param("grant_type", "password")
-                .param("username", USER_NAME)
-                .param("password", PASSWORD)
+        if (CLIENT_ID.isEmpty() || CLIENT_SECRET.isEmpty()) {
+            throw new RuntimeException("Client_credentials were not defined for token generation.");
+        }
+        return given().param("grant_type", "client_credentials")
                 .param("client_id", CLIENT_ID)
                 .param("client_secret", CLIENT_SECRET)
                 .contentType("application/x-www-form-urlencoded")
