@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.processor.actions;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
@@ -38,5 +40,17 @@ public class ActionConfiguratorImpl implements ActionConfigurator {
         return instances.stream()
                 .filter(a -> a.accept(actionType))
                 .findFirst();
+    }
+
+    Collection<ActionValidator> getValidators() {
+        return validators.stream().collect(Collectors.toList());
+    }
+
+    Collection<ActionResolver> getResolvers() {
+        return resolvers.stream().collect(Collectors.toList());
+    }
+
+    Collection<ActionConnector> getConnectors() {
+        return connectors.stream().collect(Collectors.toList());
     }
 }
