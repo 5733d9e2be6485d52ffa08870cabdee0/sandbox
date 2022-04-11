@@ -42,7 +42,7 @@ class WebhookActionInvokerBuilderTest {
 
     private ProcessorDTO createProcessorWithParameterlessAction() {
         BaseAction action = new BaseAction();
-        action.setType(WebhookAction.TYPE);
+        action.setType(WebhookActionBean.TYPE);
         Map<String, String> params = new HashMap<>();
         action.setParameters(params);
 
@@ -56,7 +56,7 @@ class WebhookActionInvokerBuilderTest {
 
     private ProcessorDTO createProcessorWithActionForEndpoint(String endpoint) {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
-        processor.getDefinition().getResolvedAction().getParameters().put(WebhookAction.ENDPOINT_PARAM, endpoint);
+        processor.getDefinition().getResolvedAction().getParameters().put(WebhookActionBean.ENDPOINT_PARAM, endpoint);
         return processor;
     }
 

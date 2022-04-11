@@ -62,7 +62,7 @@ class WebhookActionValidatorTest {
 
     @Test
     void isInvalidWithReservedAttributes() {
-        Map<String, String> params = Collections.singletonMap(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
+        Map<String, String> params = Collections.singletonMap(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
         assertIsInvalid("ftp://www.example.com/webhook", WebhookActionValidator.RESERVED_ATTRIBUTES_USAGE_MESSAGE, params);
     }
 
@@ -86,9 +86,9 @@ class WebhookActionValidatorTest {
 
     private BaseAction createActionWithEndpoint(String endpoint) {
         BaseAction b = new BaseAction();
-        b.setType(WebhookAction.TYPE);
+        b.setType(WebhookActionBean.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(WebhookAction.ENDPOINT_PARAM, endpoint);
+        params.put(WebhookActionBean.ENDPOINT_PARAM, endpoint);
         b.setParameters(params);
         return b;
     }

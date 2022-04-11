@@ -4,8 +4,11 @@ import com.redhat.service.bridge.processor.actions.ActionBean;
 
 public interface KafkaTopicActionBean extends ActionBean {
 
+    String TYPE = "KafkaTopic";
+    String TOPIC_PARAM = "topic";
+
     @Override
     default String getType() {
-        return KafkaTopicAction.TYPE;
+        return TYPE;
     }
 }

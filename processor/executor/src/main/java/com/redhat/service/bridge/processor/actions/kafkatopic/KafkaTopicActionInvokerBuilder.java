@@ -32,7 +32,7 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicActionBean, Act
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {
-        String requiredTopic = baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM);
+        String requiredTopic = baseAction.getParameters().get(KafkaTopicActionBean.TOPIC_PARAM);
         if (requiredTopic == null) {
             throw new ActionProviderException(
                     String.format("There is no topic specified in the parameters for Action on Processor '%s' on Bridge '%s'", processor.getId(), processor.getBridgeId()));

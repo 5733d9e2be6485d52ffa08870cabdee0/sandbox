@@ -26,8 +26,8 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
     protected void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
-        String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAM);
-        String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAM);
+        String slackChannel = actionParameters.get(SlackActionBean.CHANNEL_PARAM);
+        String webHookURL = actionParameters.get(SlackActionBean.WEBHOOK_URL_PARAM);
 
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
         definition.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));

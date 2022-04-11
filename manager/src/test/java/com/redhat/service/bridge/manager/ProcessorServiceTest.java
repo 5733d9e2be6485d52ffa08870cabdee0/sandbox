@@ -48,8 +48,8 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
+import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 import com.redhat.service.bridge.rhoas.RhoasTopicAccessType;
 import com.redhat.service.bridge.test.resource.PostgresResource;
 
@@ -133,10 +133,10 @@ public class ProcessorServiceTest {
 
     private BaseAction createKafkaAction() {
         BaseAction a = new BaseAction();
-        a.setType(KafkaTopicAction.TYPE);
+        a.setType(KafkaTopicActionBean.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
         return a;
     }
@@ -439,7 +439,7 @@ public class ProcessorServiceTest {
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
-        assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(r.getAction().getType()).isEqualTo(KafkaTopicActionBean.TYPE);
     }
 
     private JsonNode definitionToJsonNode(ProcessorDefinition definition) {
@@ -626,7 +626,7 @@ public class ProcessorServiceTest {
 
     private BaseAction createSlackAction() {
         BaseAction mcAction = new BaseAction();
-        mcAction.setType(SlackAction.TYPE);
+        mcAction.setType(SlackActionBean.TYPE);
         Map<String, String> parameters = mcAction.getParameters();
         parameters.put("channel", "channel");
         parameters.put("webhookUrl", "webhook_url");

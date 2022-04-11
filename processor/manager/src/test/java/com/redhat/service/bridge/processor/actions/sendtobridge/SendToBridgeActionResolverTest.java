@@ -9,7 +9,7 @@ import com.redhat.service.bridge.infra.exceptions.definitions.user.BridgeLifecyc
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.ActionService;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -96,19 +96,19 @@ class SendToBridgeActionResolverTest {
 
     private void assertValid(BaseAction transformedAction, String expectedEndpoint) {
         assertThat(transformedAction).isNotNull();
-        assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
+        assertThat(transformedAction.getType()).isEqualTo(WebhookActionBean.TYPE);
+        assertThat(transformedAction.getParameters()).containsEntry(WebhookActionBean.ENDPOINT_PARAM, expectedEndpoint);
     }
 
     private BaseAction actionWithoutBridgeId() {
         BaseAction action = new BaseAction();
-        action.setType(SendToBridgeAction.TYPE);
+        action.setType(SendToBridgeActionBean.TYPE);
         return action;
     }
 
     private BaseAction actionWithBridgeId(String bridgeId) {
         BaseAction action = actionWithoutBridgeId();
-        action.getParameters().put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        action.getParameters().put(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
         return action;
     }
 

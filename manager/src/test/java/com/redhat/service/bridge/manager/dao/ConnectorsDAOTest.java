@@ -19,7 +19,7 @@ import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -52,10 +52,10 @@ public class ConnectorsDAOTest {
         Processor p = Fixtures.createProcessor(bridge, ManagedResourceStatus.ACCEPTED);
 
         BaseAction a = new BaseAction();
-        a.setType(KafkaTopicAction.TYPE);
+        a.setType(KafkaTopicActionBean.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);

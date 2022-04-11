@@ -6,16 +6,16 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionValidator;
-import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionBean;
 import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionResolver;
 import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionValidator;
-import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
 import com.redhat.service.bridge.processor.actions.slack.SlackActionConnector;
 import com.redhat.service.bridge.processor.actions.slack.SlackActionResolver;
 import com.redhat.service.bridge.processor.actions.slack.SlackActionValidator;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ActionConfiguratorImplTest {
 
     private static final Map<String, ActionExpectedBeanClasses> EXPECTED_BEANS = Map.of(
-            KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null, null),
-            SendToBridgeAction.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class, null),
-            SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class, SlackActionConnector.class),
-            WebhookAction.TYPE, expect(WebhookActionValidator.class, null, null));
+            KafkaTopicActionBean.TYPE, expect(KafkaTopicActionValidator.class, null, null),
+            SendToBridgeActionBean.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class, null),
+            SlackActionBean.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class, SlackActionConnector.class),
+            WebhookActionBean.TYPE, expect(WebhookActionValidator.class, null, null));
 
     @Inject
     ActionConfiguratorImpl actionConfigurator;

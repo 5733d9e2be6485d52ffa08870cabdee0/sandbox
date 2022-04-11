@@ -6,9 +6,9 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionInvokerBuilder;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
 import com.redhat.service.bridge.processor.actions.webhook.WebhookActionInvokerBuilder;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ActionRuntimeImplTest {
 
     private static final Map<String, Class<? extends ActionInvokerBuilder>> EXPECTED_BEANS = Map.of(
-            KafkaTopicAction.TYPE, KafkaTopicActionInvokerBuilder.class,
-            WebhookAction.TYPE, WebhookActionInvokerBuilder.class);
+            KafkaTopicActionBean.TYPE, KafkaTopicActionInvokerBuilder.class,
+            WebhookActionBean.TYPE, WebhookActionInvokerBuilder.class);
 
     @Inject
     ActionRuntimeImpl actionRuntime;

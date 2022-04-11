@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.ActionService;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -50,20 +50,20 @@ class SlackActionResolverTest {
 
         BaseAction transformedAction = slackActionResolver.resolve(baseAction, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
-        assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(transformedAction.getType()).isEqualTo(KafkaTopicActionBean.TYPE);
 
         Map<String, String> transformedActionParameter = transformedAction.getParameters();
 
         assertThat(transformedActionParameter)
-                .containsEntry(SlackAction.CHANNEL_PARAM, TEST_CHANNEL_PARAM)
-                .containsEntry(SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicAction.TOPIC_PARAM, TEST_PROCESSOR_TOPIC_NAME);
+                .containsEntry(SlackActionBean.CHANNEL_PARAM, TEST_CHANNEL_PARAM)
+                .containsEntry(SlackActionBean.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM)
+                .containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TEST_PROCESSOR_TOPIC_NAME);
     }
 
     private BaseAction buildTestAction() {
         Map<String, String> parameters = Map.of(
-                SlackAction.CHANNEL_PARAM, TEST_CHANNEL_PARAM,
-                SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
+                SlackActionBean.CHANNEL_PARAM, TEST_CHANNEL_PARAM,
+                SlackActionBean.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
 
         BaseAction action = new BaseAction();
         action.setParameters(parameters);
