@@ -126,24 +126,6 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>javadoc</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -178,27 +160,24 @@
         <classifier>javadoc</classifier>
       </dependency>
 
-      <!-- ===== ACTIONS ===== -->
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
 
-      <!-- Common action module - Core -->
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-core</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>processor-core</artifactId>
-        <version>${project.version}</version>
-        <classifier>javadoc</classifier>
-      </dependency>
-      <!-- Common action module - Executor -->
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
         <artifactId>processor-executor</artifactId>
@@ -216,7 +195,7 @@
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
-      <!-- Common action module - Manager -->
+
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
         <artifactId>processor-manager</artifactId>
