@@ -43,7 +43,9 @@ class BridgeErrorServiceTest {
             result = service.getUserErrors(new QueryInfo(page++, pageSize));
             bridgeErrors.addAll(result.getItems());
         } while (result.getSize() == pageSize);
-        assertThat(userExceptionClasses).hasSize(bridgeErrors.size()).withFailMessage(String.format("Exception classes: %s Errors: %s", userExceptionClasses, bridgeErrors));
+        assertThat(userExceptionClasses)
+                .withFailMessage(String.format("Exception classes: %s Errors: %s", userExceptionClasses, bridgeErrors))
+                .hasSize(bridgeErrors.size());
         bridgeErrors.forEach(this::checkId);
     }
 
@@ -63,14 +65,22 @@ class BridgeErrorServiceTest {
 
     private void checkExceptionIsInCatalog(Class<?> clazz) {
         BridgeError bridgeError = service.getError(clazz).get();
-        assertThat(bridgeError).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
-        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isTrue().withFailMessage(String.format("exception %s not found in the user errors", clazz));
+        assertThat(bridgeError)
+                .withFailMessage(String.format("exception %s not found in the errors", clazz))
+                .isNotNull();
+        assertThat(service.getUserError(bridgeError.getId()))
+                .withFailMessage(String.format("exception %s not found in the user errors", clazz))
+                .isNotEmpty();
     }
 
     private void checkExceptionIsNotInCatalog(Class<?> clazz) {
         BridgeError bridgeError = service.getError(clazz).get();
-        assertThat(bridgeError).isNotNull().withFailMessage(String.format("exception %s not found in the errors", clazz));
-        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isFalse().withFailMessage(String.format("exception %s should not be in the user errors", clazz));
+        assertThat(bridgeError)
+                .withFailMessage(String.format("exception %s not found in the errors", clazz))
+                .isNotNull();
+        assertThat(service.getUserError(bridgeError.getId()))
+                .withFailMessage(String.format("exception %s should not be in the user errors", clazz))
+                .isEmpty();
     }
 
 }
