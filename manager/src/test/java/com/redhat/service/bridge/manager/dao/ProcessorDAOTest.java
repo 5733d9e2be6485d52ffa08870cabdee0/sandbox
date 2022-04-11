@@ -186,7 +186,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
-        Processor found = processorDAO.findByIdBridgeIdAndCustomerId(p.getId(), b.getId(), b.getCustomerId());
+        Processor found = processorDAO.findByIdBridgeIdAndCustomerId(b.getId(), p.getId(), b.getCustomerId());
         assertThat(found).isNotNull();
         assertThat(found.getId()).isEqualTo(p.getId());
     }
@@ -196,7 +196,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
-        Processor found = processorDAO.findByIdBridgeIdAndCustomerId("doesntExist", b.getId(), b.getCustomerId());
+        Processor found = processorDAO.findByIdBridgeIdAndCustomerId(b.getId(), "doesntExist", b.getCustomerId());
         assertThat(found).isNull();
     }
 

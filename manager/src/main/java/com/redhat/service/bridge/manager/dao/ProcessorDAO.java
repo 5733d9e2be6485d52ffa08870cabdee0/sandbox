@@ -53,9 +53,9 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return processors.size() == 1 ? processors.get(0) : null;
     }
 
-    public Processor findByIdBridgeIdAndCustomerId(String id, String bridgeId, String customerId) {
+    public Processor findByIdBridgeIdAndCustomerId(String bridgeId, String processorId, String customerId) {
 
-        Parameters p = Parameters.with(Processor.ID_PARAM, id)
+        Parameters p = Parameters.with(Processor.ID_PARAM, processorId)
                 .and(Processor.BRIDGE_ID_PARAM, bridgeId)
                 .and(Bridge.CUSTOMER_ID_PARAM, customerId);
 

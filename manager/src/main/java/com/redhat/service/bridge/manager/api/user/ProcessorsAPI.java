@@ -8,6 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -77,7 +78,7 @@ public class ProcessorsAPI {
     @Path("{bridgeId}/processors/{processorId}")
     public Response getProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId) {
         String customerId = identityResolver.resolve(jwt);
-        Processor processor = processorService.getProcessor(processorId, bridgeId, customerId);
+        Processor processor = processorService.getProcessor(bridgeId, processorId, customerId);
         return Response.ok(processorService.toResponse(processor)).build();
     }
 
@@ -110,9 +111,28 @@ public class ProcessorsAPI {
     @Operation(summary = "Create a Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
     @POST
     @Path("{bridgeId}/processors")
-    public Response addProcessorToBridge(@PathParam("bridgeId") @NotEmpty String bridgeId, @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
+    public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
+        return Response.accepted(processorService.toResponse(processor)).build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Accepted.", responseCode = "202",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Update a Processor instance Filter definition.", description = "Update a Processor instance Filter definition for the authenticated user.")
+    @PUT
+    @Path("{bridgeId}/processors/{processorId}")
+    public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
+            @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
+        String customerId = identityResolver.resolve(jwt);
+        Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
 

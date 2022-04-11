@@ -87,6 +87,12 @@ public class TestUtils {
                 .delete(APIConstants.USER_API_BASE_PATH + id);
     }
 
+    public static Response updateProcessor(String bridgeId, String processorId, ProcessorRequest p) {
+        return jsonRequest()
+                .body(p)
+                .put(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/" + processorId);
+    }
+
     public static Response getBridgesToDeployOrDelete() {
         return jsonRequest()
                 .get(APIConstants.SHARD_API_BASE_PATH);
