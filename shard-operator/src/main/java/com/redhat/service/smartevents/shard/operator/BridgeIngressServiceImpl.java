@@ -12,7 +12,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
@@ -56,7 +55,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Inject
-    NotificationService notificationService;
+    ManagerClient managerClient;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
@@ -146,7 +145,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
             LOGGER.debug("BridgeIngress '{}' was not found. Notifying manager that it has been deleted.", bridgeDTO.getId());
             bridgeDTO.setStatus(ManagedResourceStatus.DELETED);
-            notificationService.notifyBridgeStatusChange(bridgeDTO)
+            managerClient.notifyBridgeStatusChange(bridgeDTO)
                     .subscribe().with(
                             success -> LOGGER.debug("Deleted notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                             failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));

@@ -1,5 +1,6 @@
-package com.redhat.service.bridge.shard.operator;
+package com.redhat.service.smartevents.shard.operator;
 
+import java.util.List;
 import java.util.function.Function;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -8,11 +9,14 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.shard.operator.EventBridgeOidcClient;
+import com.redhat.service.smartevents.shard.operator.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
 import com.redhat.service.smartevents.shard.operator.metrics.MetricsService;
@@ -25,9 +29,9 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
-public class NotificationServiceImpl implements NotificationService {
+public class ManagerClientImpl implements ManagerClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerClientImpl.class);
 
     @Inject
     WebClient webClientManager;
@@ -37,6 +41,37 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Inject
     MetricsService metricsService;
+
+    @Inject
+    ObjectMapper mapper;
+
+    @Override
+    public Uni<Object> fetchAndProcessBridgesToDeployOrDelete(Function<List<BridgeDTO>, Uni<Object>> handler) {
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
+                .onItem().transform(this::getBridges)
+                .onItem().transformToUni(handler::apply);
+    }
+
+    private List<BridgeDTO> getBridges(HttpResponse<Buffer> httpResponse) {
+        return deserializeResponseBody(httpResponse, new TypeReference<>() {
+        });
+    }
+
+    @Override
+    public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete(Function<List<ProcessorDTO>, Uni<Object>> handler) {
+        return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
+                .onItem().transform(this::getProcessors)
+                .onItem().transformToUni(handler::apply);
+    }
+
+    private List<ProcessorDTO> getProcessors(HttpResponse<Buffer> httpResponse) {
+        return deserializeResponseBody(httpResponse, new TypeReference<>() {
+        });
+    }
 
     @Override
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO) {
@@ -56,13 +91,23 @@ public class NotificationServiceImpl implements NotificationService {
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
-    @Override
-    public void updateManagerRequestMetricsOnSuccess(ManagerRequestType requestType, HttpResponse<Buffer> successResponse) {
+    private <T> List<T> deserializeResponseBody(HttpResponse<Buffer> httpResponse, TypeReference<List<T>> typeReference) {
+        if (!isSuccessfulResponse(httpResponse)) {
+            throw new DeserializationException(String.format("Got %d HTTP status code response, skipping deserialization process", httpResponse.statusCode()));
+        }
+        try {
+            return mapper.readValue(httpResponse.bodyAsString(), typeReference);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Failed to deserialize response from Manager", e);
+            throw new DeserializationException("Failed to deserialize response from Manager.", e);
+        }
+    }
+
+    void updateManagerRequestMetricsOnSuccess(ManagerRequestType requestType, HttpResponse<Buffer> successResponse) {
         metricsService.updateManagerRequestMetrics(requestType, ManagerRequestStatus.SUCCESS, String.valueOf(successResponse.statusCode()));
     }
 
-    @Override
-    public void updateManagerRequestMetricsOnFailure(ManagerRequestType requestType, Throwable error) {
+    void updateManagerRequestMetricsOnFailure(ManagerRequestType requestType, Throwable error) {
         String statusCode = null;
         if (error instanceof HTTPResponseException) {
             statusCode = String.valueOf(((HTTPResponseException) error).getStatusCode());

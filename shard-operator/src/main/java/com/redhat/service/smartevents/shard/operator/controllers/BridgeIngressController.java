@@ -10,13 +10,13 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
+import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
@@ -52,7 +52,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     KubernetesClient kubernetesClient;
 
     @Inject
-    NotificationService notificationService;
+    ManagerClient managerClient;
 
     @Inject
     BridgeIngressService bridgeIngressService;
@@ -179,7 +179,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
 
-        notificationService.notifyBridgeStatusChange(dto)
+        managerClient.notifyBridgeStatusChange(dto)
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId()));

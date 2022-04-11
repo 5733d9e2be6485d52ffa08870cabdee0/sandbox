@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
@@ -60,7 +59,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     GlobalConfigurationsProvider globalConfigurationsProvider;
 
     @Inject
-    NotificationService notificationService;
+    ManagerClient managerClient;
 
     @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
@@ -146,7 +145,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
             LOGGER.debug("BridgeExecutor '{}' was not found. Notifying manager that it has been deleted.", processorDTO.getId());
             processorDTO.setStatus(ManagedResourceStatus.DELETED);
-            notificationService.notifyProcessorStatusChange(processorDTO).subscribe().with(
+            managerClient.notifyProcessorStatusChange(processorDTO).subscribe().with(
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
         }

@@ -10,13 +10,13 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
+import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
@@ -50,7 +50,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     KubernetesClient kubernetesClient;
 
     @Inject
-    NotificationService notificationService;
+    ManagerClient managerClient;
 
     @Inject
     BridgeExecutorService bridgeExecutorService;
@@ -160,7 +160,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         ProcessorDTO dto = bridgeExecutor.toDTO();
         dto.setStatus(status);
 
-        notificationService.notifyProcessorStatusChange(dto)
+        managerClient.notifyProcessorStatusChange(dto)
                 .subscribe().with(
                         success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId()));

@@ -14,14 +14,15 @@ import org.junit.jupiter.api.BeforeEach;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
-import com.redhat.service.bridge.shard.operator.NotificationService;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.metrics.MetricsService;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -35,16 +36,13 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
 
     @Inject
-    protected ManagerSyncService managerSyncService;
-
-    @Inject
     protected KubernetesResourcePatcher kubernetesResourcePatcher;
 
     @Inject
     protected ObjectMapper objectMapper;
 
-    @Inject
-    protected NotificationService notificationService;
+    @InjectMock
+    protected MetricsService metricsService;
 
     // TODO: revisit processor tests when they will be integrated
     //    @InjectMock

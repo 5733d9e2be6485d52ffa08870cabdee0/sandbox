@@ -1,8 +1,10 @@
-package com.redhat.service.bridge.shard.operator;
+package com.redhat.service.smartevents.shard.operator;
 
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,16 +13,12 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTP
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.shard.operator.AbstractShardWireMockTest;
-import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
-import com.redhat.service.smartevents.shard.operator.metrics.MetricsService;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -37,10 +35,10 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
-public class NotificationServiceTest extends AbstractShardWireMockTest {
+public class ManagerClientTest extends AbstractShardWireMockTest {
 
-    @InjectMock
-    MetricsService metricsService;
+    @Inject
+    ManagerClient managerClient;
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
@@ -51,7 +49,7 @@ public class NotificationServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
 
-        notificationService.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
@@ -67,7 +65,7 @@ public class NotificationServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addProcessorUpdateRequestListener(latch);
 
-        notificationService.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH + "processors"))
@@ -81,7 +79,7 @@ public class NotificationServiceTest extends AbstractShardWireMockTest {
         ManagerRequestType requestType = ManagerRequestType.FETCH;
         HttpResponse<Buffer> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(200);
-        notificationService.updateManagerRequestMetricsOnSuccess(requestType, response);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnSuccess(requestType, response);
 
         verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.SUCCESS, "200");
     }
@@ -90,7 +88,7 @@ public class NotificationServiceTest extends AbstractShardWireMockTest {
     public void updateManagerRequestMetricsOnFailure() {
         ManagerRequestType requestType = ManagerRequestType.FETCH;
         Throwable error = mock(Throwable.class);
-        notificationService.updateManagerRequestMetricsOnFailure(requestType, error);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(requestType, error);
 
         verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, "null");
     }
@@ -100,7 +98,7 @@ public class NotificationServiceTest extends AbstractShardWireMockTest {
         ManagerRequestType requestType = ManagerRequestType.FETCH;
         HTTPResponseException error = mock(HTTPResponseException.class);
         when(error.getStatusCode()).thenReturn(404);
-        notificationService.updateManagerRequestMetricsOnFailure(requestType, error);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(requestType, error);
 
         verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, "404");
     }
