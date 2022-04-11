@@ -48,10 +48,6 @@
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>processor-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
