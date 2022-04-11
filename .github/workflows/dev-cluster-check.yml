@@ -27,22 +27,18 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean install -Dquickly
-      - name: Configure bearer token for tests
-        env:
-          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
-          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
-        run: |
-          TOKEN=$(curl --location --request POST 'https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "client_id=$DEV_SSO_CLIENT_ID" --data-urlencode "client_secret=$DEV_SSO_CLIENT_SECRET" --data-urlencode 'grant_type=client_credentials' | jq --raw-output '.access_token')
-          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
       - name: Run integration tests
         env:
+          DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=${{ secrets.DEV_CLUSTER_MANAGER_URL }}
+          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
           working-directory: integration-tests
       - name: Publish Test Report
         if: ${{ always() }}
