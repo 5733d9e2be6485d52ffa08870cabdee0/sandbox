@@ -22,7 +22,7 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @ApplicationScoped
-public class WebhookActionInvokerBuilder implements WebhookActionBean, ActionInvokerBuilder {
+public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvokerBuilder {
 
     private WebClient client;
 
@@ -39,10 +39,10 @@ public class WebhookActionInvokerBuilder implements WebhookActionBean, ActionInv
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {
-        String endpoint = Optional.ofNullable(baseAction.getParameters().get(WebhookActionBean.ENDPOINT_PARAM))
+        String endpoint = Optional.ofNullable(baseAction.getParameters().get(WebhookAction.ENDPOINT_PARAM))
                 .orElseThrow(() -> buildNoEndpointException(processor));
-        if (baseAction.getParameters().containsKey(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN_PARAM)
-                && baseAction.getParameters().get(WebhookActionBean.USE_TECHNICAL_BEARER_TOKEN_PARAM).equals("true")) {
+        if (baseAction.getParameters().containsKey(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM)
+                && baseAction.getParameters().get(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM).equals("true")) {
             AbstractOidcClient abstractOidcClient =
                     oidcClients.stream()
                             .filter(x -> Objects.equals(x.getName(), OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME))

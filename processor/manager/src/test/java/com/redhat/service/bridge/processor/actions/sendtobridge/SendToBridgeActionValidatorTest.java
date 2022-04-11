@@ -61,14 +61,14 @@ class SendToBridgeActionValidatorTest {
 
     private BaseAction actionWith(Map<String, String> params) {
         BaseAction b = new BaseAction();
-        b.setType(SendToBridgeActionBean.TYPE);
+        b.setType(SendToBridgeAction.TYPE);
         b.setParameters(params);
         return b;
     }
 
     private Map<String, String> paramsWithBridgeId(String bridgeId) {
         Map<String, String> params = new HashMap<>();
-        params.put(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
+        params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         return params;
     }
 }

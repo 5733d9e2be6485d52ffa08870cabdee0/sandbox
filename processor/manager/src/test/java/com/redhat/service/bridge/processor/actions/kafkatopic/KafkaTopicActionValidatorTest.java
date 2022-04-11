@@ -23,9 +23,9 @@ class KafkaTopicActionValidatorTest {
 
     private ProcessorDTO createProcessorWithActionForTopic(String topicName) {
         BaseAction b = new BaseAction();
-        b.setType(KafkaTopicActionBean.TYPE);
+        b.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicActionBean.TOPIC_PARAM, topicName);
+        params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
         b.setParameters(params);
 
         ProcessorDTO p = new ProcessorDTO();
@@ -45,7 +45,7 @@ class KafkaTopicActionValidatorTest {
     @Test
     void isValid_noTopicIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getDefinition().getResolvedAction().getParameters().remove(KafkaTopicActionBean.TOPIC_PARAM);
+        processor.getDefinition().getResolvedAction().getParameters().remove(KafkaTopicAction.TOPIC_PARAM);
         ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
 
         Assertions.assertThat(validationResult.isValid()).isFalse();
@@ -55,7 +55,7 @@ class KafkaTopicActionValidatorTest {
     @Test
     void isValid_emptyTopicStringIsNotValid() {
         ProcessorDTO processor = createProcessorWithActionForTopic("myTopic");
-        processor.getDefinition().getResolvedAction().getParameters().put(KafkaTopicActionBean.TOPIC_PARAM, "");
+        processor.getDefinition().getResolvedAction().getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
         ValidationResult validationResult = validator.isValid(processor.getDefinition().getResolvedAction());
 
         Assertions.assertThat(validationResult.isValid()).isFalse();

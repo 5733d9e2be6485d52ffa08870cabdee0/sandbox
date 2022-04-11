@@ -10,7 +10,7 @@ import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.processor.actions.AbstractActionConnector;
 
 @ApplicationScoped
-public class SlackActionConnector extends AbstractActionConnector implements SlackActionBean {
+public class SlackActionConnector extends AbstractActionConnector implements SlackAction {
 
     public static final String CONNECTOR_TYPE = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
@@ -26,8 +26,8 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
     protected void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
-        String slackChannel = actionParameters.get(SlackActionBean.CHANNEL_PARAM);
-        String webHookURL = actionParameters.get(SlackActionBean.WEBHOOK_URL_PARAM);
+        String slackChannel = actionParameters.get(SlackAction.CHANNEL_PARAM);
+        String webHookURL = actionParameters.get(SlackAction.WEBHOOK_URL_PARAM);
 
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
         definition.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));

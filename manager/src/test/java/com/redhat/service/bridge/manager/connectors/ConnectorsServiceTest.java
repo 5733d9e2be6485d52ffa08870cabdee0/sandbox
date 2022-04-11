@@ -12,8 +12,8 @@ import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
-import com.redhat.service.bridge.processor.actions.slack.SlackActionBean;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -103,18 +103,18 @@ class ConnectorsServiceTest {
 
     private BaseAction testSlackAction() {
         BaseAction action = new BaseAction();
-        action.setType(SlackActionBean.TYPE);
+        action.setType(SlackAction.TYPE);
         action.setParameters(Map.of(
-                SlackActionBean.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
-                SlackActionBean.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
+                SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
+                SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }
 
     private BaseAction testWebhookAction() {
         BaseAction action = new BaseAction();
-        action.setType(WebhookActionBean.TYPE);
+        action.setType(WebhookAction.TYPE);
         action.setParameters(Map.of(
-                WebhookActionBean.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
+                WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }
 

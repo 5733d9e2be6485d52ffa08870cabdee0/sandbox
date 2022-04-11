@@ -17,8 +17,8 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.dao.ProcessorDAO;
 import com.redhat.service.bridge.manager.models.Bridge;
 import com.redhat.service.bridge.manager.models.Processor;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
-import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -111,20 +111,20 @@ public class TestUtils {
 
     public static BaseAction createKafkaAction() {
         BaseAction r = new BaseAction();
-        r.setType(KafkaTopicActionBean.TYPE);
+        r.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         r.setParameters(params);
         return r;
     }
 
     public static BaseAction createSendToBridgeAction(String bridgeId) {
         BaseAction r = new BaseAction();
-        r.setType(SendToBridgeActionBean.TYPE);
+        r.setType(SendToBridgeAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
-        params.put(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
+        params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         r.setParameters(params);
         return r;
     }

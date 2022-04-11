@@ -2,7 +2,7 @@ package com.redhat.service.bridge.processor.actions.webhook;
 
 import com.redhat.service.bridge.processor.actions.ActionBean;
 
-public interface WebhookActionBean extends ActionBean {
+public interface WebhookAction extends ActionBean {
 
     String TYPE = "Webhook";
     String ENDPOINT_PARAM = "endpoint";

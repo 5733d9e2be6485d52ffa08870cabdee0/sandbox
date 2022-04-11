@@ -27,9 +27,9 @@ import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.TestUtils;
-import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicActionBean;
-import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeActionBean;
-import com.redhat.service.bridge.processor.actions.webhook.WebhookActionBean;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -95,11 +95,11 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
-        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicActionBean.TYPE);
-        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
-        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(KafkaTopicActionBean.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(KafkaTopicActionBean.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -129,11 +129,11 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
-        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeActionBean.TYPE);
-        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(SendToBridgeActionBean.BRIDGE_ID_PARAM, bridgeId);
+        assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
+        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
-        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookActionBean.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookActionBean.ENDPOINT_PARAM, TEST_BRIDGE_WEBHOOK);
+        assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
+        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, TEST_BRIDGE_WEBHOOK);
     }
 
     @Test
