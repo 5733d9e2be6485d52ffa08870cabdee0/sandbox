@@ -126,7 +126,8 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Update a Processor instance Filter definition.", description = "Update a Processor instance Filter definition for the authenticated user.")
+    @Operation(summary = "Update a Processor instance Filter definition or Transformation template.",
+            description = "Update a Processor instance Filter definition or Transformation template for the authenticated user.")
     @PUT
     @Path("{bridgeId}/processors/{processorId}")
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,

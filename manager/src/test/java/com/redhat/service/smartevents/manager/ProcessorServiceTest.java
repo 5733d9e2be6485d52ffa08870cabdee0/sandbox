@@ -465,12 +465,21 @@ public class ProcessorServiceTest {
     public void updateProcessorWithTemplate() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
         Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        String transformationTemplate = processorService.toResponse(processor).getTransformationTemplate();
+        assertThat(transformationTemplate).isNull();
 
-        ProcessorRequest request = new ProcessorRequest(processor.getName(), Collections.emptySet(), "updated", null);
-        assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> processorService.updateProcessor(b.getId(),
+        String updatedTransformationTemplate = "template";
+        ProcessorRequest request = new ProcessorRequest(processor.getName(), null, updatedTransformationTemplate, null);
+        processorService.updateProcessor(b.getId(),
                 processor.getId(),
                 b.getCustomerId(),
-                request));
+                request);
+
+        Processor updatedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
+        ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
+
+        assertThat(updatedResponse.getFilters()).isNull();
+        assertThat(updatedResponse.getTransformationTemplate()).isEqualTo(updatedTransformationTemplate);
     }
 
     @Test
