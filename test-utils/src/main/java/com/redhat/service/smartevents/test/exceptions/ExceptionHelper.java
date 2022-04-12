@@ -8,9 +8,9 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
 public class ExceptionHelper {
-    private static final String ROOT_USER_PACKAGE_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.user";
-    private static final String ROOT_PLATFORM_PACKAGE_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.platform";
-    private static final String INTERNAL_PLATFORM_EXCEPTION_NAME = "com.redhat.service.bridge.infra.exceptions.definitions.platform.InternalPlatformException";
+    private static final String ROOT_USER_PACKAGE_NAME = "com.redhat.service.smartevents.infra.exceptions.definitions.user";
+    private static final String ROOT_PLATFORM_PACKAGE_NAME = "com.redhat.service.smartevents.infra.exceptions.definitions.platform";
+    private static final String INTERNAL_PLATFORM_EXCEPTION_NAME = "com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException";
     private static Collection<Class<?>> userExceptionClasses = new HashSet<>();
     private static Collection<Class<?>> platformExceptionClasses = new HashSet<>();
 
