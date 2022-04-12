@@ -8,11 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
-import com.redhat.service.bridge.actions.InvokableActionProvider;
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
@@ -26,6 +21,11 @@ import com.redhat.service.bridge.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionInvokerBuilder;
+import com.redhat.service.bridge.processor.actions.ActionRuntime;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -51,22 +51,21 @@ public class ExecutorTest {
 
     private MeterRegistry meterRegistry;
 
-    private ActionProviderFactory actionProviderFactoryMock;
+    private ActionRuntime actionRuntime;
 
     private ActionInvoker actionInvokerMock;
 
     @BeforeEach
     void setup() {
-        actionProviderFactoryMock = mock(ActionProviderFactory.class);
         actionInvokerMock = mock(ActionInvoker.class);
-        InvokableActionProvider actionProvider = mock(InvokableActionProvider.class);
 
-        when(actionProvider.getActionInvoker(any(), any())).thenReturn(actionInvokerMock);
+        ActionInvokerBuilder actionInvokerBuilder = mock(ActionInvokerBuilder.class);
+        when(actionInvokerBuilder.build(any(), any())).thenReturn(actionInvokerMock);
 
-        when(actionProviderFactoryMock.getInvokableActionProvider(KafkaTopicAction.TYPE)).thenReturn(actionProvider);
-        when(actionProviderFactoryMock.getInvokableActionProvider(WebhookAction.TYPE)).thenReturn(actionProvider);
-
-        when(actionProviderFactoryMock.getInvokableActionProvider(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
+        actionRuntime = mock(ActionRuntime.class);
+        when(actionRuntime.getInvokerBuilder(KafkaTopicAction.TYPE)).thenReturn(actionInvokerBuilder);
+        when(actionRuntime.getInvokerBuilder(WebhookAction.TYPE)).thenReturn(actionInvokerBuilder);
+        when(actionRuntime.getInvokerBuilder(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
                 .thenThrow(new ActionProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
@@ -84,13 +83,13 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
+        verify(actionRuntime).getInvokerBuilder(KafkaTopicAction.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 
@@ -109,13 +108,13 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getInvokableActionProvider(WebhookAction.TYPE);
+        verify(actionRuntime).getInvokerBuilder(WebhookAction.TYPE);
         verify(actionInvokerMock, times(1)).onEvent(any());
     }
 
@@ -129,7 +128,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
@@ -148,13 +147,13 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
-        verify(actionProviderFactoryMock).getInvokableActionProvider(KafkaTopicAction.TYPE);
+        verify(actionRuntime).getInvokerBuilder(KafkaTopicAction.TYPE);
         verify(actionInvokerMock).onEvent(any());
     }
 
@@ -170,7 +169,7 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionProviderFactoryMock, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
 
         CloudEvent cloudEvent = createCloudEvent();
 

@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.bridge.actions.ActionProvider;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.BadRequestException;
@@ -40,6 +38,7 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
 import com.redhat.service.bridge.manager.workers.WorkManager;
+import com.redhat.service.bridge.processor.actions.ActionConfigurator;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -62,7 +61,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    ActionProviderFactory actionProviderFactory;
+    ActionConfigurator actionConfigurator;
 
     @Inject
     ConnectorsService connectorService;
@@ -108,12 +107,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         BaseAction requestedAction = processorRequest.getAction();
-        ActionProvider actionProvider = actionProviderFactory.getActionProvider(requestedAction.getType());
 
-        BaseAction resolvedAction = actionProviderFactory.resolve(requestedAction,
-                bridge.getId(),
-                customerId,
-                newProcessor.getId());
+        BaseAction resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
+                .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
+                .orElse(requestedAction);
 
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
@@ -126,7 +123,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(resolvedAction, newProcessor, actionProvider);
+        connectorService.createConnectorEntity(newProcessor, requestedAction);
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",

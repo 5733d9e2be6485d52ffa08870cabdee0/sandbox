@@ -8,9 +8,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.bridge.actions.ActionInvoker;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
-import com.redhat.service.bridge.actions.InvokableActionProvider;
 import com.redhat.service.bridge.executor.filters.FilterEvaluator;
 import com.redhat.service.bridge.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
@@ -18,6 +15,8 @@ import com.redhat.service.bridge.infra.models.dto.ProcessorDTO;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluator;
 import com.redhat.service.bridge.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.bridge.infra.utils.CloudEventUtils;
+import com.redhat.service.bridge.processor.actions.ActionInvoker;
+import com.redhat.service.bridge.processor.actions.ActionRuntime;
 
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -37,7 +36,8 @@ public class Executor {
     private Timer actionTimer;
     private Timer transformationTimer;
 
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory, ActionProviderFactory actionProviderFactory,
+    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory,
+            ActionRuntime actionRuntime,
             MeterRegistry registry) {
         this.processor = processor;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
@@ -45,8 +45,7 @@ public class Executor {
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
         BaseAction action = processor.getDefinition().getResolvedAction();
-        InvokableActionProvider actionProvider = actionProviderFactory.getInvokableActionProvider(action.getType());
-        this.actionInvoker = actionProvider.getActionInvoker(processor, action);
+        this.actionInvoker = actionRuntime.getInvokerBuilder(action.getType()).build(processor, action);
 
         initMetricFields(processor, registry);
     }

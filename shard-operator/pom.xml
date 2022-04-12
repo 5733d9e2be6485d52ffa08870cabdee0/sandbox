@@ -96,7 +96,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
+      <artifactId>processor-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -7,14 +7,13 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.bridge.actions.webhook.WebhookAction;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
-import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
 import com.redhat.service.bridge.manager.dao.ConnectorsDAO;
 import com.redhat.service.bridge.manager.models.ConnectorEntity;
 import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.providers.ResourceNamesProvider;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
+import com.redhat.service.bridge.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -35,12 +34,6 @@ class ConnectorsServiceTest {
     private static final String TEST_ACTION_WEBHOOK = "https://test.example.com/webhook";
 
     @Inject
-    SlackAction slackAction;
-
-    @Inject
-    WebhookAction webhookAction;
-
-    @Inject
     ConnectorsService connectorsService;
 
     @Inject
@@ -52,7 +45,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        connectorsService.createConnectorEntity(testWebhookAction(), testProcessor(), webhookAction);
+        connectorsService.createConnectorEntity(testProcessor(), testWebhookAction());
 
         verify(connectorsDAOMock, never()).persist(any(ConnectorEntity.class));
     }
@@ -60,7 +53,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
+        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -68,7 +61,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnectorFromConnectorEntity() {
-        connectorsService.createConnectorEntity(testKafkaAction(), testProcessor(), slackAction);
+        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -108,13 +101,12 @@ class ConnectorsServiceTest {
         return processor;
     }
 
-    private BaseAction testKafkaAction() {
+    private BaseAction testSlackAction() {
         BaseAction action = new BaseAction();
-        action.setType(KafkaTopicAction.TYPE);
+        action.setType(SlackAction.TYPE);
         action.setParameters(Map.of(
-                SlackAction.CHANNEL_PARAMETER, TEST_ACTION_CHANNEL,
-                SlackAction.WEBHOOK_URL_PARAMETER, TEST_ACTION_WEBHOOK,
-                KafkaTopicAction.TOPIC_PARAM, testActionTopic()));
+                SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
+                SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }
 

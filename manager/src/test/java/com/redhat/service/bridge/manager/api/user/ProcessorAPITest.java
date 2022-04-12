@@ -14,7 +14,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.bridge.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.bridge.infra.api.APIConstants;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
@@ -25,8 +24,6 @@ import com.redhat.service.bridge.infra.models.filters.ValuesIn;
 import com.redhat.service.bridge.manager.RhoasService;
 import com.redhat.service.bridge.manager.TestConstants;
 import com.redhat.service.bridge.manager.WorkerSchedulerProfile;
-import com.redhat.service.bridge.manager.actions.connectors.SlackAction;
-import com.redhat.service.bridge.manager.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.bridge.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.bridge.manager.api.models.responses.BridgeResponse;
@@ -39,6 +36,9 @@ import com.redhat.service.bridge.manager.models.Processor;
 import com.redhat.service.bridge.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.bridge.manager.utils.Fixtures;
 import com.redhat.service.bridge.manager.utils.TestUtils;
+import com.redhat.service.bridge.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.bridge.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.bridge.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -307,8 +307,8 @@ public class ProcessorAPITest {
         BaseAction action = createKafkaAction();
         action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAMETER, "");
-        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "https://example.com");
+        params.put(SlackAction.CHANNEL_PARAM, "");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "https://example.com");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
@@ -323,8 +323,8 @@ public class ProcessorAPITest {
         BaseAction action = createKafkaAction();
         action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAMETER, "channel");
-        params.put(SlackAction.WEBHOOK_URL_PARAMETER, "");
+        params.put(SlackAction.CHANNEL_PARAM, "channel");
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));

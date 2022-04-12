@@ -8,12 +8,12 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.bridge.actions.ActionProvider;
-import com.redhat.service.bridge.actions.ActionProviderFactory;
 import com.redhat.service.bridge.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.bridge.infra.models.actions.BaseAction;
 import com.redhat.service.bridge.infra.validations.ValidationResult;
 import com.redhat.service.bridge.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.bridge.processor.actions.ActionConfigurator;
+import com.redhat.service.bridge.processor.actions.ActionValidator;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {
@@ -25,7 +25,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
     static final String TYPE_PARAM = "type";
 
     @Inject
-    ActionProviderFactory actionProviderFactory;
+    ActionConfigurator actionConfigurator;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -47,9 +47,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        ActionProvider actionProvider;
+        ActionValidator actionValidator;
         try {
-            actionProvider = actionProviderFactory.getActionProvider(baseAction.getType());
+            actionValidator = actionConfigurator.getValidator(baseAction.getType());
         } catch (ActionProviderException e) {
             context.disableDefaultConstraintViolation();
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
@@ -58,7 +58,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        ValidationResult v = actionProvider.getParameterValidator().isValid(baseAction);
+        ValidationResult v = actionValidator.isValid(baseAction);
 
         if (!v.isValid()) {
             String message = v.getMessage();

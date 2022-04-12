@@ -126,24 +126,6 @@
 
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>javadoc</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
         <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -174,6 +156,60 @@
       <dependency>
         <groupId>com.redhat.service.bridge</groupId>
         <artifactId>test-utils</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-runtime</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-runtime</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.bridge</groupId>
+        <artifactId>processor-runtime</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

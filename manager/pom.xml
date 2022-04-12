@@ -68,7 +68,7 @@
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
+      <artifactId>processor-configuration</artifactId>
     </dependency>
     <dependency>
       <groupId>com.redhat.service.bridge</groupId>
