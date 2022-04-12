@@ -38,7 +38,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     // This must be equal to the Processor.class.getName()
-    @ConsumeEvent(value = "com.redhat.service.bridge.manager.models.Processor", blocking = true)
+    @ConsumeEvent(value = "com.redhat.service.smartevents.manager.models.Processor", blocking = true)
     public Processor handleWork(Work work) {
         return super.handleWork(work);
     }

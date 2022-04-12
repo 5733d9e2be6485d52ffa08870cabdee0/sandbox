@@ -41,7 +41,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     // This must be equal to the Bridge.class.getName()
-    @ConsumeEvent(value = "com.redhat.service.bridge.manager.models.Bridge", blocking = true)
+    @ConsumeEvent(value = "com.redhat.service.smartevents.manager.models.Bridge", blocking = true)
     public Bridge handleWork(Work work) {
         return super.handleWork(work);
     }
