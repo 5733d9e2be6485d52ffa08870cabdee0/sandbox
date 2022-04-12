@@ -88,7 +88,7 @@ public class TemplateProviderImpl implements TemplateProvider {
         AuthorizationPolicy authorizationPolicy = loadYaml(AuthorizationPolicy.class, BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH);
         updateMetadata(bridgeIngress, authorizationPolicy.getMetadata());
         authorizationPolicy.getMetadata().setNamespace("istio-system"); // https://github.com/istio/istio/issues/37221
-        authorizationPolicy.getMetadata().setOwnerReferences(null); // TODO: we have to manually delete this in the delete hook of the reconciler
+        authorizationPolicy.getMetadata().setOwnerReferences(null); // due to https://github.com/istio/istio/issues/37221
         return authorizationPolicy;
     }
 

@@ -11,6 +11,14 @@ public class AuthorizationPolicySpecRuleWhen {
 
     private List<String> values;
 
+    public AuthorizationPolicySpecRuleWhen() {
+    }
+
+    public AuthorizationPolicySpecRuleWhen(String key, List<String> values) {
+        this.key = key;
+        this.values = values;
+    }
+
     public String getKey() {
         return key;
     }

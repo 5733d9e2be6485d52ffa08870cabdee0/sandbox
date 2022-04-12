@@ -8,9 +8,6 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.redhat.service.bridge.infra.exceptions.BridgeErrorService;
 import com.redhat.service.bridge.infra.models.dto.BridgeDTO;
 import com.redhat.service.bridge.infra.models.dto.ManagedResourceStatus;
@@ -23,7 +20,6 @@ import com.redhat.service.bridge.shard.operator.resources.ConditionType;
 import com.redhat.service.bridge.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.bridge.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.bridge.shard.operator.utils.EventSourceFactory;
-
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -35,11 +31,13 @@ import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @ControllerConfiguration
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress> {
+                                                EventSourceInitializer<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -90,7 +88,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
+                        bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.KnativeBrokerNotReady);
             return UpdateControl.updateStatus(bridgeIngress);
@@ -119,6 +117,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Linked resources are automatically deleted except for Authorization Policy due to https://github.com/istio/istio/issues/37221
 
+        // Knative broker needs the dependent secret in order to be deleted properly https://coreos.slack.com/archives/CEXRYS5QC/p1649752951251439?thread_ts=1649752173.045369&cid=CEXRYS5QC
+        kubernetesClient.resources(KnativeBroker.class)
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .delete();
+
+        // Since the authorizationPolicy has to be in the istio-system namespace due to https://github.com/istio/istio/issues/37221
+        // we can not set the owner reference. We have to delete the resource manually.
         kubernetesClient.resources(AuthorizationPolicy.class)
                 .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
                 .withName(bridgeIngress.getMetadata().getName())

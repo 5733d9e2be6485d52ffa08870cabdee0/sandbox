@@ -1,6 +1,8 @@
 package com.redhat.service.bridge.shard.operator;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,6 +18,7 @@ import com.redhat.service.bridge.shard.operator.providers.GlobalConfigurationsPr
 import com.redhat.service.bridge.shard.operator.providers.TemplateProvider;
 import com.redhat.service.bridge.shard.operator.resources.BridgeIngress;
 import com.redhat.service.bridge.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.bridge.shard.operator.resources.istio.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.bridge.shard.operator.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -183,12 +186,17 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
         AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress);
         expected.getSpec().setAction("ALLOW");
-        expected.getSpec().getRules().get(0).getWhen().get(0).getValues().set(0, bridgeIngress.getSpec().getCustomerId());
-        expected.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().set(0, path);
-        // add webhook tech account id
+        expected.getSpec().getRules().forEach(x -> x.getTo().get(0).getOperation().getPaths().set(0, path));
+
+        AuthorizationPolicySpecRuleWhen userAuthPolicy = new AuthorizationPolicySpecRuleWhen("request.auth.claims[account_id]", Collections.singletonList(bridgeIngress.getSpec().getCustomerId()));
+        AuthorizationPolicySpecRuleWhen serviceAccountsAuthPolicy = new AuthorizationPolicySpecRuleWhen("request.auth.claims[rh-user-id]",
+                Arrays.asList(bridgeIngress.getSpec().getCustomerId(),
+                        globalConfigurationsProvider.getSsoWebhookClientAccountId()));
+
+        expected.getSpec().getRules().get(0).setWhen(Collections.singletonList(userAuthPolicy));
+        expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
-                //                .inNamespace(bridgeIngress.getMetadata().getNamespace())
                 .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
@@ -196,7 +204,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             return kubernetesClient
                     .resources(AuthorizationPolicy.class)
-                    //                    .inNamespace(bridgeIngress.getMetadata().getNamespace())
                     .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
                     .withName(bridgeIngress.getMetadata().getName())
                     .createOrReplace(expected);

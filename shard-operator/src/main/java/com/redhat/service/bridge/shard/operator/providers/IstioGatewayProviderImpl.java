@@ -42,6 +42,10 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
         if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
             gatewayAddress = extractOpenshiftGatewayAddress(openShiftClient);
         } else {
+            if (gatewayIP.isEmpty()) {
+                LOGGER.error("'broker.gateway.ip' config property must be set on k8s platform.");
+                Quarkus.asyncExit(1);
+            }
             gatewayAddress = extractK8sGatewayAddress(openShiftClient);
         }
         if (gatewayAddress == null) {
@@ -51,7 +55,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     }
 
     private String extractOpenshiftGatewayAddress(OpenShiftClient openShiftClient) {
-        Route route = openShiftClient.routes().inNamespace("istio-gateway").withName("broker-gateway").get();
+        Route route = openShiftClient.routes().inNamespace("knative-eventing").withName("broker-gateway").get();
         if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
             String endpoint = route.getSpec().getHost();
             return route.getSpec().getTls() != null ? NetworkingConstants.HTTPS_SCHEME + endpoint : NetworkingConstants.HTTP_SCHEME + endpoint;
@@ -63,7 +67,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
         Service service = kubernetesClient.services().inNamespace("istio-system").withName("istio-ingressgateway").get();
         if (service != null) {
             Optional<ServicePort> first = service.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
-            if (first.isPresent()) {
+            if (first.isPresent() && gatewayIP.isPresent()) {
                 return NetworkingConstants.HTTP_SCHEME + gatewayIP.get() + ":" + first.get().getNodePort();
             }
         }

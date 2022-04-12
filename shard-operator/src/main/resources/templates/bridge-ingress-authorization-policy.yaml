@@ -22,6 +22,17 @@ spec:
             paths:
               - ""
       when:
-        - key: request.auth.claims[sub]
+        - key: request.auth.claims[account_id] # user
           values:
-            - ""
+            - ""                               # customerId
+    - to:
+        - operation:
+            methods:
+              - POST
+            paths:
+              - ""
+      when:
+        - key: request.auth.claims[rh-user-id] # service account
+          values:
+            - ""                               # customerId
+            - ""                               # webhook technical accountId
