@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>manager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Smart Events :: Manager</name>
+  <name>SmartEvents :: Manager</name>
 
   <dependencies>
     <dependency>

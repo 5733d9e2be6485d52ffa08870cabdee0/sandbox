@@ -8,8 +8,8 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Smart Events :: Processor</name>
-  <description>Parent module for Smart Event processor</description>
+  <name>SmartEvents :: Processor</name>
+  <description>Parent module for SmartEvents processor</description>
 
   <modules>
     <module>core</module>

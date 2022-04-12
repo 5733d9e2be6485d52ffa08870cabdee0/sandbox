@@ -8,8 +8,8 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>RHOSE - Smart Events</name>
-  <description>Parent module for RHOSE - Smart Events</description>
+  <name>RHOSE - SmartEvents</name>
+  <description>Parent module for RHOSE - SmartEvents</description>
 
   <inceptionYear>2021</inceptionYear>
   <organization>

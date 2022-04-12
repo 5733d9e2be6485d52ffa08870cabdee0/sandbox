@@ -7,8 +7,8 @@
   <artifactId>ansible-gateway</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Smart Events Use Cases :: Ansible Gateway</name>
-  <description>Ansible gateway for Smart Events</description>
+  <name>SmartEvents Use Cases :: Ansible Gateway</name>
+  <description>Ansible gateway for SmartEvents</description>
 
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>

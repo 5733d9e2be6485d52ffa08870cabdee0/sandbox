@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>integration-tests</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Smart Events :: Integration Tests</name>
+  <name>SmartEvents :: Integration Tests</name>
 
   <properties>
     <parallel>false</parallel>

@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>ingress</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Smart Events :: Ingress</name>
+  <name>SmartEvents :: Ingress</name>
 
   <dependencies>
     <dependency>

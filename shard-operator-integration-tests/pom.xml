@@ -12,7 +12,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>shard-operator-integration-tests</artifactId>
-  <name>Smart Events :: Shard Operator Integration Tests (Cucumber)</name>
+  <name>SmartEvents :: Shard Operator Integration Tests (Cucumber)</name>
 
   <properties>
     <parallel>false</parallel>

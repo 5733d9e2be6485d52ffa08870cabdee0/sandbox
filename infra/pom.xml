@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>infra</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Smart Events :: Infra</name>
+  <name>SmartEvents :: Infra</name>
 
   <dependencies>
     <dependency>

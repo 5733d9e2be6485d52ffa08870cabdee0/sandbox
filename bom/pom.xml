@@ -12,7 +12,7 @@
 
   <artifactId>bom</artifactId>
   <packaging>pom</packaging>
-  <name>Smart Events :: BOM</name>
+  <name>SmartEvents :: BOM</name>
 
   <dependencyManagement>
     <dependencies>

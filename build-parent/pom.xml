@@ -10,8 +10,8 @@
   <packaging>pom</packaging>
 
   <artifactId>build-parent</artifactId>
-  <name>Smart Events :: Build Parent</name>
-  <description>Smart Events Dependency Management Project BOM</description>
+  <name>SmartEvents :: Build Parent</name>
+  <description>SmartEvents Dependency Management Project BOM</description>
 
   <properties>
 

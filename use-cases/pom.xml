@@ -8,8 +8,8 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Smart Events Use Cases</name>
-  <description>Use cases for Smart Events</description>
+  <name>SmartEvents Use Cases</name>
+  <description>Use cases for SmartEvents</description>
 
   <modules>
     <module>ansible-tower-integration</module>

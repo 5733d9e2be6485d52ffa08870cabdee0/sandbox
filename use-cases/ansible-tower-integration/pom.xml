@@ -8,7 +8,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Smart Events Use Cases :: Ansible Tower Integration</name>
+  <name>SmartEvents Use Cases :: Ansible Tower Integration</name>
   <description>Simple Quarkus component to integrate with Ansible Tower</description>
 
   <modules>

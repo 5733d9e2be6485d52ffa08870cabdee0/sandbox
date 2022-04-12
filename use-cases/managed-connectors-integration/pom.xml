@@ -7,7 +7,7 @@
   <version>1.0.0-SNAPSHOT</version>
 
 
-  <name>Smart Events Use Cases :: Managed Connectors Integration</name>
+  <name>SmartEvents Use Cases :: Managed Connectors Integration</name>
   <description>Basic interaction with Managed Connectors</description>
 
   <properties>

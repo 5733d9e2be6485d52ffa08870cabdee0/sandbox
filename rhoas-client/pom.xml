@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>rhoas-client</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Smart Events :: RHOAS Client</name>
+  <name>SmartEvents :: RHOAS Client</name>
 
   <dependencies>
     <dependency>
