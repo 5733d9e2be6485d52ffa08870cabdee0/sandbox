@@ -105,6 +105,31 @@ public class ProcessorSteps {
         }
     }
 
+    @When("^update the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" with body:$")
+    public void updateProcessorOfTheBridgeWithBody(String processorName, String testBridgeName, String processorRequestJson) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        processorRequestJson = ContextResolver.resolveWithScenarioContext(context, processorRequestJson);
+        ProcessorContext processorContext = bridgeContext.getProcessor(processorName);
+
+        JsonObject json = new JsonObject(processorRequestJson);
+        String newProcessorName = json.getString("name");
+
+        ProcessorResponse response;
+        try (InputStream resourceStream = new ByteArrayInputStream(processorRequestJson.getBytes(StandardCharsets.UTF_8))) {
+            response = ProcessorResource.updateProcessor(context.getManagerToken(), bridgeContext.getId(), processorContext.getId(), resourceStream);
+        } catch (IOException e) {
+            throw new RuntimeException("Error opening inputstream", e);
+        }
+
+        bridgeContext.removeProcessor(processorName);
+        bridgeContext.newProcessor(newProcessorName, response.getId());
+
+        assertThat(response.getName()).isEqualTo(processorName);
+        assertThat(response.getKind()).isEqualTo("Processor");
+        assertThat(response.getHref()).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+    }
+
     @And("^get Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
     public void getProcessorOfBridgeIsFailingWithHTTPResponseCode(String processorName, String testBridgeName,
             int responseCode) {

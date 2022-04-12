@@ -26,6 +26,21 @@ public class ProcessorResource {
                 .as(ProcessorResponse.class);
     }
 
+    public static Response updateProcessorResponse(String token, String bridgeId, String processorId, InputStream processorRequest) {
+        return ResourceUtils.jsonRequest(token)
+                .body(processorRequest)
+                .put(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + "{bridgeId}/processors/{processorId}", bridgeId, processorId);
+    }
+
+    public static ProcessorResponse updateProcessor(String token, String bridgeId, String processorId, InputStream processorRequest) {
+        return updateProcessorResponse(token, bridgeId, processorId, processorRequest)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(202)
+                .extract()
+                .as(ProcessorResponse.class);
+    }
+
     public static ProcessorResponse getProcessor(String token, String bridgeId, String processorId) {
         return getProcessorResponse(token, bridgeId, processorId)
                 .then()
