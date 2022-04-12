@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -84,7 +83,7 @@ public class ConnectorsDAOTest {
         Processor p = createPersistProcessor(b);
         ConnectorEntity c = createPersistConnector(p, ManagedResourceStatus.READY);
 
-        Assertions.assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
+        assertThat(connectorsDAO.findByProcessorIdAndName(p.getId(), c.getName())).isEqualTo(c);
     }
 
 }

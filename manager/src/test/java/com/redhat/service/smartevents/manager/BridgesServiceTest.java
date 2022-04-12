@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -143,7 +142,7 @@ public class BridgesServiceTest {
         bridge.setStatus(ManagedResourceStatus.PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        Assertions.assertThat(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID)).isEmpty();
+        assertThat(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID)).isEmpty();
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);

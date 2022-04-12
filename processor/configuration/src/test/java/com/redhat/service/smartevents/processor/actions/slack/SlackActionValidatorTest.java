@@ -5,13 +5,14 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 import io.quarkus.test.junit.QuarkusTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 class SlackActionValidatorTest {
@@ -45,16 +46,16 @@ class SlackActionValidatorTest {
 
     private void assertIsValid(BaseAction action) {
         ValidationResult validationResult = validator.isValid(action);
-        Assertions.assertThat(validationResult.isValid()).isTrue();
+        assertThat(validationResult.isValid()).isTrue();
     }
 
     private void assertIsInvalid(BaseAction action, String errorMessage) {
         ValidationResult validationResult = validator.isValid(action);
-        Assertions.assertThat(validationResult.isValid()).isFalse();
+        assertThat(validationResult.isValid()).isFalse();
         if (errorMessage == null) {
-            Assertions.assertThat(validationResult.getMessage()).isNull();
+            assertThat(validationResult.getMessage()).isNull();
         } else {
-            Assertions.assertThat(validationResult.getMessage()).startsWith(errorMessage);
+            assertThat(validationResult.getMessage()).startsWith(errorMessage);
         }
     }
 

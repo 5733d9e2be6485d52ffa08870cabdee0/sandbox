@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
 
-import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
@@ -27,7 +26,7 @@ public class WebhookSiteSteps {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(() -> Assertions.assertThat(WebhookSiteResource.requests())
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests())
                         .map(request -> request.getContent())
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)

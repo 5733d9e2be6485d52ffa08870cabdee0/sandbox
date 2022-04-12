@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -92,7 +91,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
 
-        Assertions.assertThat(processorDAO.findByBridgeIdAndName("doesNotExist", p.getName())).isNull();
+        assertThat(processorDAO.findByBridgeIdAndName("doesNotExist", p.getName())).isNull();
     }
 
     @Test
@@ -100,7 +99,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         createProcessor(b, "foo");
 
-        Assertions.assertThat(processorDAO.findByBridgeIdAndName(b.getId(), "doesNotExist")).isNull();
+        assertThat(processorDAO.findByBridgeIdAndName(b.getId(), "doesNotExist")).isNull();
     }
 
     @Test
