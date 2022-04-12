@@ -3,12 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.bridge</groupId>
+  <groupId>com.redhat.service.smartevents</groupId>
   <artifactId>ansible-tower-integration</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge Use Cases :: Ansible Tower Integration</name>
+  <name>SmartEvents Use Cases :: Ansible Tower Integration</name>
   <description>Simple Quarkus component to integrate with Ansible Tower</description>
 
   <modules>

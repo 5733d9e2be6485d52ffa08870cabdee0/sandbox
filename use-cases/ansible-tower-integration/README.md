@@ -4,7 +4,7 @@ This document describes how to setup and run a single-machine system to demonstr
 and Ansible Tower.
 
 This system allows to trigger [Ansible Tower job templates](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html)
-from events flowing through OpenBridge pipelines.
+from events flowing through SmartEvents pipelines.
 
 ## Architecture
 
@@ -16,14 +16,14 @@ The diagram above gives a high level picture of the components that build this d
 2. A local Ansible Tower instance, run via [Vagrant](https://www.vagrantup.com/).
 3. A local OpenBridge instance configured with a bridge and at least one processor to match events that must trigger
    Ansible Tower job templates. How to configure it is described in the section below.
-4. The Ansible Gateway: a Quarkus application that acts as bridge between OpenBridge and the Ansible Tower installation.
+4. The Ansible Gateway: a Quarkus application that acts as bridge between SmartEvents and the Ansible Tower installation.
 In the real world it is supposed to be deployed inside the customer infrastructure.
 
 The flow of information is the following:
 
 1. Events are published to the local OpenBridge instance via its REST APIs. In this document we are using [curl](https://curl.se/)
 but whatever speaks REST can be used (e.g. [Postman](https://www.postman.com/)).
-2. The OpenBridge instance processes events and, if some of them match, specific new events formatted as `{"job_template_id": $ID}`
+2. The SmartEvents instance processes events and, if some of them match, specific new events formatted as `{"job_template_id": $ID}`
 are sent to a predetermined Kafka topic (in our case `ansible-gateway-in`). These events specify the ID (as integer) of the job template we want to trigger.
 3. The Ansible Gateway listens for new events on the topic described above and, once a new one comes, it triggers the
 corresponding job template in Ansible Tower via its REST APIs.
@@ -93,7 +93,7 @@ at `https://localhost:10443/`. With the credentials found above, log into the we
 The final step requires to follow the instructions shown after the first login to **obtain a
 development subscription** and configure the license. Once completed, the Ansible Tower dashboard will be finally reachable.
 
-### OpenBridge
+### SmartEvents
 
 To start the infrastructure, take a look at [this](/dev) folder
 
@@ -283,5 +283,5 @@ curl --request POST 'http://<your_bridge_ingress_endpoint>/events' \
      }'
 ```
 
-If everything goes well, once each of these requests is successfully received by OpenBridge, a new job instance of type `Demo Job Template` should
+If everything goes well, once each of these requests is successfully received by SmartEvents, a new job instance of type `Demo Job Template` should
 appear in the Jobs page of Ansible Tower dashboard. Verify by opening the page first and then sending new events.

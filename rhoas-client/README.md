@@ -9,9 +9,9 @@ Here is the list of the implemented beans:
 
 |Class|Description|
 |-----|-----------|
-|[KafkasMgmtV1Client](src/main/java/com/redhat/service/bridge/rhoas/KafkasMgmtV1Client.java)|Wraps `kafka-management-sdk` sync API calls in reactive async way.|
-|[KafkaInstanceAdminClient](src/main/java/com/redhat/service/bridge/rhoas/KafkaInstanceAdminClient.java)|Wraps `kafka-instance-sdk` sync API calls in reactive async way.|
-|[RhoasClient](src/main/java/com/redhat/service/bridge/rhoas/RhoasClient.java)|Implements complex coarse-grained operations combining the base clients' calls. Fully reactive async.|
+|[KafkasMgmtV1Client](src/main/java/com/redhat/service/smartevents/rhoas/KafkasMgmtV1Client.java)|Wraps `kafka-management-sdk` sync API calls in reactive async way.|
+|[KafkaInstanceAdminClient](src/main/java/com/redhat/service/smartevents/rhoas/KafkaInstanceAdminClient.java)|Wraps `kafka-instance-sdk` sync API calls in reactive async way.|
+|[RhoasClient](src/main/java/com/redhat/service/smartevents/rhoas/RhoasClient.java)|Implements complex coarse-grained operations combining the base clients' calls. Fully reactive async.|
 
 ## Configuration
 

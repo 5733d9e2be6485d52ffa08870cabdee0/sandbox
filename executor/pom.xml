@@ -2,7 +2,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>executor</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Executor</name>
+  <name>SmartEvents :: Executor</name>
 
   <dependencies>
     <dependency>
@@ -31,11 +31,11 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>processor-runtime</artifactId>
     </dependency>
     <dependency>

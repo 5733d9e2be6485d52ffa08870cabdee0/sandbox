@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.bridge</groupId>
-  <artifactId>event-bridge</artifactId>
+  <groupId>com.redhat.service.smartevents</groupId>
+  <artifactId>smart-events</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge</name>
-  <description>Parent module for event bridge</description>
+  <name>SmartEvents</name>
+  <description>Parent module for SmartEvents</description>
 
   <inceptionYear>2021</inceptionYear>
   <organization>

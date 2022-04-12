@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -12,7 +12,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>shard-operator-integration-tests</artifactId>
-  <name>Event Bridge :: Shard Operator Integration Tests (Cucumber)</name>
+  <name>SmartEvents :: Shard Operator Integration Tests (Cucumber)</name>
 
   <properties>
     <parallel>false</parallel>
@@ -21,7 +21,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator</artifactId>
     </dependency>
 

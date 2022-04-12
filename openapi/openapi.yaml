@@ -1,8 +1,8 @@
 ---
 openapi: 3.0.3
 info:
-  title: Red Hat Openshift Smart Events Fleet Manager
-  description: The api exposed by the fleet manager of the RHOSE service.
+  title: Red Hat Openshift SmartEvents Fleet Manager
+  description: The api exposed by the fleet manager of the SmartEvents service.
   contact:
     name: Development Team
     email: openbridge-dev@redhat.com

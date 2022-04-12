@@ -2,16 +2,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>event-bridge</artifactId>
-    <groupId>com.redhat.service.bridge</groupId>
+    <artifactId>smart-events</artifactId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <packaging>pom</packaging>
 
   <artifactId>build-parent</artifactId>
-  <name>Event Bridge :: Build Parent</name>
-  <description>Event Bridge Dependency Management Project BOM</description>
+  <name>SmartEvents :: Build Parent</name>
+  <description>SmartEvents Dependency Management Project BOM</description>
 
   <properties>
 
@@ -85,7 +85,7 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
