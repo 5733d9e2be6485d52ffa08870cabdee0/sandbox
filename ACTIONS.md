@@ -8,7 +8,15 @@ It is possible to [Transform](TRANSFORMATIONS.md) the original `Event` structure
 ## Parameters of an Action
 
 Each `Action` has 2 parameters to specify:
-E
+- `type`: the type of the `Action`. This must be one of the supported `Action` types listed below
+  - Attempting to use an unknown `Action` type will result in an Error from the Bridge API.
+- `parameters`: A key/value map of configuration parameters for the `Action`
+  - Only string for the `key` and `value` of the parameters are supported.
+  - The required parameters are `Action` specific and documented in the list of supported `Actions`
+
+## Supported Action Types
+
+The following `Actions` are currently supported by Event Bridge:
 
 ### KafkaTopic
 
