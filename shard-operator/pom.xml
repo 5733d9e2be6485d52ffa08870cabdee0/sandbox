@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>com.redhat.service.rhose</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -44,7 +44,7 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.rhose</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
@@ -61,7 +61,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.redhat.service.rhose</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>
@@ -95,7 +95,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.rhose</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>processor-core</artifactId>
       <scope>test</scope>
     </dependency>

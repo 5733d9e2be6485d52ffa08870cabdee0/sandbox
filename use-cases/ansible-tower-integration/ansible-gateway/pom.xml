@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.rhose</groupId>
+  <groupId>com.redhat.service.smartevents</groupId>
   <artifactId>ansible-gateway</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
