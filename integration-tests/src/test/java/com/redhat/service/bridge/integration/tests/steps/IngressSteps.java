@@ -70,7 +70,7 @@ public class IngressSteps {
         sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), 200);
     }
 
-    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
+    void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
         String testCloudEventId = getCloudEventId(cloudEvent);
         context.getBridge(testBridgeName).storeCloudEventInContext(testCloudEventId);
 
