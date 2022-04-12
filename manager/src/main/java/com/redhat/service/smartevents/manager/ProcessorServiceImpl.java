@@ -148,17 +148,13 @@ public class ProcessorServiceImpl implements ProcessorService {
                     customerId));
         }
         ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
-        String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
         BaseAction existingAction = existingDefinition.getRequestedAction();
         BaseAction existingResolvedAction = existingDefinition.getResolvedAction();
 
-        // Validate update. Only Filters are supported at present.
+        // Validate update.
+        // Name cannot be updated.
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
-        }
-        // See https://issues.redhat.com/browse/MGDOBR-515 for updating Transformation support
-        if (!Objects.equals(existingTransformationTemplate, processorRequest.getTransformationTemplate())) {
-            throw new BadRequestException("It is not possible to update the Processor's TransformTemplate.");
         }
         // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
         if (!Objects.equals(existingAction, processorRequest.getAction())) {
@@ -170,7 +166,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
 
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
-        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, existingTransformationTemplate, existingAction, existingResolvedAction);
+        String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
+        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
         existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
 
         // Processor and Work should always be created in the same transaction

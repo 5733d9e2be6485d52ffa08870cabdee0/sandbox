@@ -503,7 +503,7 @@ public class ProcessorAPITest {
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("key", "value"));
         Response createResponse = TestUtils.addProcessorToBridge(
                 bridge.getId(),
-                new ProcessorRequest("myProcessor", filters, null, TestUtils.createKafkaAction()));
+                new ProcessorRequest("myProcessor", filters, "template", TestUtils.createKafkaAction()));
 
         ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
         setProcessorAsReady(processor.getId());
@@ -512,7 +512,39 @@ public class ProcessorAPITest {
                 processor.getId(),
                 new ProcessorRequest(processor.getName(),
                         filters,
-                        processor.getTransformationTemplate() + "-updated",
+                        "template-updated",
+                        processor.getAction()));
+        assertThat(response.getStatusCode()).isEqualTo(202);
+
+        ProcessorResponse updated = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+
+        assertThat(updated.getName()).isEqualTo("myProcessor");
+        assertThat(updated.getFilters().size()).isEqualTo(1);
+        BaseFilter<?> updatedFilter = updated.getFilters().iterator().next();
+        assertThat(updatedFilter.getKey()).isEqualTo("key");
+        assertThat(updatedFilter.getValue()).isEqualTo("value");
+        assertThat(updated.getTransformationTemplate()).isEqualTo("template-updated");
+        assertRequestedAction(updated);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithMalformedTemplate() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", null, null, TestUtils.createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(),
+                        null,
+                        "template {this.is.broken",
                         processor.getAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
