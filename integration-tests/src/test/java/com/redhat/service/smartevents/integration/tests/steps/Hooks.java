@@ -85,6 +85,10 @@ public class Hooks {
                         case FAILED:
                             try {
                                 BridgeResource.deleteBridge(token, bridgeId);
+                                Awaitility.await()
+                                        .atMost(Duration.ofMinutes(4))
+                                        .pollInterval(Duration.ofSeconds(5))
+                                        .until(() -> BridgeResource.getBridgeList(token).getItems().stream().noneMatch(b -> b.getId().equals(bridgeId)));
                             } catch (Exception e) {
                                 LOGGER.warn(e, () -> "Unable to delete bridge with id " + bridgeId);
                             }
