@@ -529,6 +529,28 @@ public class ProcessorAPITest {
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void updateProcessorWithMalformedTemplate() {
+        Bridge bridge = Fixtures.createBridge();
+        bridgeDAO.persist(bridge);
+
+        Response createResponse = TestUtils.addProcessorToBridge(
+                bridge.getId(),
+                new ProcessorRequest("myProcessor", null, null, TestUtils.createKafkaAction()));
+
+        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        setProcessorAsReady(processor.getId());
+
+        Response response = TestUtils.updateProcessor(bridge.getId(),
+                processor.getId(),
+                new ProcessorRequest(processor.getName(),
+                        null,
+                        "template {this.is.broken",
+                        processor.getAction()));
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void updateProcessorWithAction() {
         Bridge bridge = Fixtures.createBridge();
         bridgeDAO.persist(bridge);
