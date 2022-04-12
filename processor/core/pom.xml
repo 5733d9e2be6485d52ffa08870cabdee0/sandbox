@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.rhose</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../../build-parent/pom.xml</relativePath>
@@ -12,7 +12,7 @@
 
   <artifactId>processor-core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Processor :: Core</name>
+  <name>Smart Events :: Processor :: Core</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,7 +20,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>infra</artifactId>
     </dependency>
   </dependencies>

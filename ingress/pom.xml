@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.rhose</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>ingress</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Ingress</name>
+  <name>Smart Events :: Ingress</name>
 
   <dependencies>
     <dependency>
@@ -58,7 +58,7 @@
 
 
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>infra</artifactId>
     </dependency>
 

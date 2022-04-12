@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.bridge</groupId>
+  <groupId>com.redhat.service.rhose</groupId>
   <artifactId>use-cases</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge Use Cases</name>
-  <description>Use cases for event bridge</description>
+  <name>Smart Events Use Cases</name>
+  <description>Use cases for Smart Events</description>
 
   <modules>
     <module>ansible-tower-integration</module>

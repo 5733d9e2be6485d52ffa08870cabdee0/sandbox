@@ -2,7 +2,7 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.rhose</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>manager</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Manager</name>
+  <name>Smart Events :: Manager</name>
 
   <dependencies>
     <dependency>
@@ -63,15 +63,15 @@
       <artifactId>quarkus-scheduler</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>processor-configuration</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>rhoas-client</artifactId>
     </dependency>
     <dependency>
@@ -123,7 +123,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.rhose</groupId>
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>

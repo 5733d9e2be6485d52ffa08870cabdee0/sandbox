@@ -30,7 +30,7 @@ export WEBHOOK_URL=<slack URL>
 # You can generate the offline token here https://console.redhat.com/openshift/token/show
 export OFFLINE_TOKEN=<offline_token>
 
-mvn compile exec:java -Dexec.mainClass=com.redhat.service.ManagedConnectorServiceApplication -Dexec.args="$OFFLINE_TOKEN $COS_BASE_PATH $KAFKA_BASE_PATH $SERVICEACCOUNT_ID $SERVICEACCOUNT_SECRET $WEBHOOK_URL"
+mvn compile exec:java -Dexec.mainClass=com.redhat.service.rhose.ManagedConnectorServiceApplication -Dexec.args="$OFFLINE_TOKEN $COS_BASE_PATH $KAFKA_BASE_PATH $SERVICEACCOUNT_ID $SERVICEACCOUNT_SECRET $WEBHOOK_URL"
 
 kcat -t slacktopic -b "$KAFKA_BASE_PATH" \
 -X security.protocol=SASL_SSL -X sasl.mechanisms=PLAIN \

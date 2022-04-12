@@ -68,7 +68,7 @@ data:
   .dockerconfigjson: <base64_encoded_secret>
 ```
 
-**IMPORTANT:** ask the Managed Connector team or the OpenBridge devs for the content of `.dockerconfigjson`.
+**IMPORTANT:** ask the Managed Connector team or the SmartEvents devs for the content of `.dockerconfigjson`.
 
 ### Step 3: Camel K operator
 
