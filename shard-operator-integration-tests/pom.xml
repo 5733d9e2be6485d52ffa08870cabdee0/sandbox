@@ -16,6 +16,7 @@
 
   <properties>
     <parallel>false</parallel>
+    <parallel.concurrency.number>3</parallel.concurrency.number>
   </properties>
 
   <dependencies>
@@ -98,7 +99,11 @@
                     See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
                 -->
                 <!--cucumber.filter.tags>${tags}</cucumber.filter.tags--> 
+
+                <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+                <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+                <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
                 <test.logs>${project.build.directory}/logs</test.logs>
               </systemProperties>
             </configuration>

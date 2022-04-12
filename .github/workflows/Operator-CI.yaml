@@ -2,6 +2,7 @@ name: Shard Operator - CI
 on:
   pull_request:
     paths:
+      - '.github/workflows/Operator-CI.yaml'
       - 'shard-operator/**'
       - 'shard-operator-integration-tests/**'
 jobs:
@@ -60,7 +61,7 @@ jobs:
       - name: Run integration tests
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber
+          maven-command: clean verify -Pcucumber -Dparallel
           working-directory: shard-operator-integration-tests
       - name: Archive test logs
         if: always()

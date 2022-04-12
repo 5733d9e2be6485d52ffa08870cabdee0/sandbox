@@ -13,9 +13,11 @@
   <artifactId>integration-tests</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Event Bridge :: Integration Tests</name>
+  
 
   <properties>
     <parallel>false</parallel>
+    <parallel.concurrency.number>3</parallel.concurrency.number>
   </properties>
 
   <dependencies>
@@ -115,6 +117,8 @@
                 
                 <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+                <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+                <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
 
                 <!-- Token authorization configuration-->
                 <bridge.client.id>kermit</bridge.client.id>

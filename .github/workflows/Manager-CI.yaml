@@ -146,7 +146,7 @@ jobs:
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Devent-bridge.manager.url=http://localhost:80/manager
+          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager
           working-directory: integration-tests
       - name: Print operator log
         if: always()
