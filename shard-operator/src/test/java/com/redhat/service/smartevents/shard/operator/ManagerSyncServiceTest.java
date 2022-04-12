@@ -90,12 +90,23 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateProvisioningRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
-        wireMockServer.verify(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
-                .withRequestBody(equalToJson(expectedJsonUpdateAvailableRequest, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+
+        // For some reason the latch occasionally triggers sooner than the request is available on wiremock. So wireMockServer.verify is unreliable and waiting loop is implemented.
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(
+                        () -> {
+                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+                                    .withRequestBody(equalToJson(expectedJsonUpdateProvisioningRequest, true, true))
+                                    .withHeader("Content-Type", equalTo("application/json")));
+                            assertThat(findAll).hasSize(1);
+
+                            findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(APIConstants.SHARD_API_BASE_PATH))
+                                    .withRequestBody(equalToJson(expectedJsonUpdateAvailableRequest, true, true))
+                                    .withHeader("Content-Type", equalTo("application/json")));
+                            assertThat(findAll).hasSize(1);
+                        });
     }
 
     @Test
