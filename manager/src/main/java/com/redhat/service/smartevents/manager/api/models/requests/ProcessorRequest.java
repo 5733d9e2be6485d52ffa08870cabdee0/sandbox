@@ -9,8 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.actions.Source;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
-import com.redhat.service.smartevents.manager.api.user.validators.templates.ValidTransformationTemplate;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidGateway;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
 
+@ValidGateway
 public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")
@@ -69,5 +71,13 @@ public class ProcessorRequest {
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 }

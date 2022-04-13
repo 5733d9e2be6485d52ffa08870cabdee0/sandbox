@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.api.user.validators.actions;
+package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Target({ ElementType.PARAMETER })
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = ActionParamValidatorContainer.class)
-public @interface ValidActionParams {
+@Constraint(validatedBy = GatewayConstraintValidator.class)
+public @interface ValidGateway {
 
     String message() default "The supplied Action parameters are not valid";
 

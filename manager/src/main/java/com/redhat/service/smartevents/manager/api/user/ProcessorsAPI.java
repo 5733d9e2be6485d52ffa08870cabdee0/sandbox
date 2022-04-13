@@ -36,7 +36,6 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.smartevents.manager.api.user.validators.actions.ValidActionParams;
 import com.redhat.service.smartevents.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
@@ -110,7 +109,7 @@ public class ProcessorsAPI {
     @Operation(summary = "Create a Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
     @POST
     @Path("{bridgeId}/processors")
-    public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @ValidActionParams @Valid ProcessorRequest processorRequest) {
+    public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -130,7 +129,7 @@ public class ProcessorsAPI {
     @PUT
     @Path("{bridgeId}/processors/{processorId}")
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
-            @ValidActionParams @Valid ProcessorRequest processorRequest) {
+            @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
