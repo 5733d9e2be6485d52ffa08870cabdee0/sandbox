@@ -46,7 +46,7 @@ public class ManagerClientImpl implements ManagerClient {
     ObjectMapper mapper;
 
     @Override
-    public Uni<Object> fetchAndProcessBridgesToDeployOrDelete(Function<List<BridgeDTO>, Uni<Object>> handler) {
+    public Uni<Object> fetchBridgesToDeployOrDelete(Function<List<BridgeDTO>, Uni<Object>> handler) {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))
@@ -60,7 +60,7 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<Object> fetchAndProcessProcessorsToDeployOrDelete(Function<List<ProcessorDTO>, Uni<Object>> handler) {
+    public Uni<Object> fetchProcessorsToDeployOrDelete(Function<List<ProcessorDTO>, Uni<Object>> handler) {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.FETCH, success))
                 .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(ManagerRequestType.FETCH, failure))

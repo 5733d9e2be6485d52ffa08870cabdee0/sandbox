@@ -49,11 +49,11 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     protected Uni<Object> doBridgeActions() {
-        return managerClient.fetchAndProcessBridgesToDeployOrDelete(BRIDGE_HANDLER);
+        return managerClient.fetchBridgesToDeployOrDelete(BRIDGE_HANDLER);
     }
 
     protected Uni<Object> doProcessorActions() {
-        return managerClient.fetchAndProcessProcessorsToDeployOrDelete(PROCESSOR_HANDLER);
+        return managerClient.fetchProcessorsToDeployOrDelete(PROCESSOR_HANDLER);
     }
 
     protected class BridgeHandler implements Function<List<BridgeDTO>, Uni<Object>> {

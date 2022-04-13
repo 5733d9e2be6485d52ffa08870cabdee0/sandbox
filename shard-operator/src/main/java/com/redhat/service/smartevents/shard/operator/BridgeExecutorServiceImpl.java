@@ -142,8 +142,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                         .delete(BridgeExecutor.fromDTO(processorDTO, namespace, executorImage));
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
-            LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
-            LOGGER.debug("BridgeExecutor '{}' was not found. Notifying manager that it has been deleted.", processorDTO.getId());
+            LOGGER.info("BridgeExecutor '{}' was not found. Notifying manager that it has been deleted.", processorDTO.getId());
             processorDTO.setStatus(ManagedResourceStatus.DELETED);
             managerClient.notifyProcessorStatusChange(processorDTO).subscribe().with(
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
