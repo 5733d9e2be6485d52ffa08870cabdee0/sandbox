@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluator;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
@@ -44,7 +44,7 @@ public class Executor {
 
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
-        BaseAction action = processor.getDefinition().getResolvedAction();
+        Action action = processor.getDefinition().getResolvedAction();
         this.actionInvoker = actionRuntime.getInvokerBuilder(action.getType()).build(processor, action);
 
         initMetricFields(processor, registry);

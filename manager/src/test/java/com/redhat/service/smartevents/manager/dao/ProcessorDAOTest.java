@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -59,7 +59,7 @@ public class ProcessorDAOTest {
         p.setPublishedAt(ZonedDateTime.now());
         p.setShardId(TestConstants.SHARD_ID);
 
-        BaseAction a = new BaseAction();
+        Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();

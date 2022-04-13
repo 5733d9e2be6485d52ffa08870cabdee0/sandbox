@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.processor.actions.ActionService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
@@ -56,58 +56,58 @@ class SendToBridgeActionResolverTest {
 
     @Test
     void testActionWithoutBridgeId() {
-        BaseAction inputAction = actionWithoutBridgeId();
-        BaseAction transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        Action inputAction = actionWithoutBridgeId();
+        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
         assertValid(transformedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
-        BaseAction inputAction = actionWithoutBridgeId();
-        BaseAction transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, OTHER_BRIDGE_ID, "");
+        Action inputAction = actionWithoutBridgeId();
+        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, OTHER_BRIDGE_ID, "");
         assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithSameBridgeId() {
-        BaseAction inputAction = actionWithBridgeId(BRIDGE_ID);
-        BaseAction transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        Action inputAction = actionWithBridgeId(BRIDGE_ID);
+        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
         assertValid(transformedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithOtherBridgeId() {
-        BaseAction inputAction = actionWithBridgeId(OTHER_BRIDGE_ID);
-        BaseAction transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        Action inputAction = actionWithBridgeId(OTHER_BRIDGE_ID);
+        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
         assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithUnavailableBridgeId() {
-        BaseAction inputAction = actionWithBridgeId(UNAVAILABLE_BRIDGE_ID);
+        Action inputAction = actionWithBridgeId(UNAVAILABLE_BRIDGE_ID);
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
     }
 
     @Test
     void testActionWithUnknownBridgeId() {
-        BaseAction inputAction = actionWithBridgeId(UNKNOWN_BRIDGE_ID);
+        Action inputAction = actionWithBridgeId(UNKNOWN_BRIDGE_ID);
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
     }
 
-    private void assertValid(BaseAction transformedAction, String expectedEndpoint) {
+    private void assertValid(Action transformedAction, String expectedEndpoint) {
         assertThat(transformedAction).isNotNull();
         assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
     }
 
-    private BaseAction actionWithoutBridgeId() {
-        BaseAction action = new BaseAction();
+    private Action actionWithoutBridgeId() {
+        Action action = new Action();
         action.setType(SendToBridgeAction.TYPE);
         return action;
     }
 
-    private BaseAction actionWithBridgeId(String bridgeId) {
-        BaseAction action = actionWithoutBridgeId();
+    private Action actionWithBridgeId(String bridgeId) {
+        Action action = actionWithoutBridgeId();
         action.getParameters().put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         return action;
     }

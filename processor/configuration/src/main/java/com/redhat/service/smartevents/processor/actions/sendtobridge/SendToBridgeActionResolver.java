@@ -9,7 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.processor.actions.ActionResolver;
 import com.redhat.service.smartevents.processor.actions.ActionService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
@@ -26,7 +26,7 @@ public class SendToBridgeActionResolver implements ActionResolver {
     }
 
     @Override
-    public BaseAction resolve(BaseAction action, String customerId, String bridgeId, String processorId) {
+    public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         Map<String, String> parameters = new HashMap<>();
@@ -37,7 +37,7 @@ public class SendToBridgeActionResolver implements ActionResolver {
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);
         }
 
-        BaseAction transformedAction = new BaseAction();
+        Action transformedAction = new Action();
         transformedAction.setType(WebhookAction.TYPE);
         transformedAction.setParameters(parameters);
 

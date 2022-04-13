@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
@@ -23,7 +23,7 @@ class KafkaTopicActionValidatorTest {
     KafkaTopicActionValidator validator;
 
     private ProcessorDTO createProcessorWithActionForTopic(String topicName) {
-        BaseAction b = new BaseAction();
+        Action b = new Action();
         b.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);

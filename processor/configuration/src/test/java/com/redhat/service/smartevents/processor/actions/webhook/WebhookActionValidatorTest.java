@@ -8,7 +8,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -68,7 +68,7 @@ class WebhookActionValidatorTest {
     }
 
     private void assertIsValid(String endpoint) {
-        BaseAction action = createActionWithEndpoint(endpoint);
+        Action action = createActionWithEndpoint(endpoint);
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isTrue();
     }
@@ -78,15 +78,15 @@ class WebhookActionValidatorTest {
     }
 
     private void assertIsInvalid(String endpoint, String errorMessage, Map<String, String> params) {
-        BaseAction action = createActionWithEndpoint(endpoint);
+        Action action = createActionWithEndpoint(endpoint);
         params.forEach((k, v) -> action.getParameters().put(k, v));
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).startsWith(errorMessage);
     }
 
-    private BaseAction createActionWithEndpoint(String endpoint) {
-        BaseAction b = new BaseAction();
+    private Action createActionWithEndpoint(String endpoint) {
+        Action b = new Action();
         b.setType(WebhookAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, endpoint);

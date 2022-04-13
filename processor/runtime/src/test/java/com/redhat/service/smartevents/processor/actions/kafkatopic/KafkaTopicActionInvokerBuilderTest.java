@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
@@ -72,7 +72,7 @@ class KafkaTopicActionInvokerBuilderTest {
     }
 
     private ProcessorDTO createProcessorWithActionForTopic(String topicName) {
-        BaseAction b = new BaseAction();
+        Action b = new Action();
         b.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);

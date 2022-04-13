@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -51,7 +51,7 @@ public class ConnectorsDAOTest {
     private Processor createPersistProcessor(Bridge bridge) {
         Processor p = Fixtures.createProcessor(bridge, ManagedResourceStatus.ACCEPTED);
 
-        BaseAction a = new BaseAction();
+        Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();

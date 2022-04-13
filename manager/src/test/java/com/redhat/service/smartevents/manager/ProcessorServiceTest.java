@@ -31,7 +31,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
@@ -131,8 +131,8 @@ public class ProcessorServiceTest {
         return connector;
     }
 
-    private BaseAction createKafkaAction() {
-        BaseAction a = new BaseAction();
+    private Action createKafkaAction() {
+        Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -536,7 +536,7 @@ public class ProcessorServiceTest {
     public void toResponse() {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, ManagedResourceStatus.READY);
-        BaseAction action = Fixtures.createKafkaAction();
+        Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
         p.setDefinition(definitionToJsonNode(definition));
@@ -569,7 +569,7 @@ public class ProcessorServiceTest {
     void createConnectorSuccess() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
 
-        BaseAction slackAction = createSlackAction();
+        Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         //Emulate successful External Connector creation
@@ -607,7 +607,7 @@ public class ProcessorServiceTest {
     public void createConnectorFailureOnKafkaTopicCreation() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
 
-        BaseAction slackAction = createSlackAction();
+        Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenThrow(
@@ -626,7 +626,7 @@ public class ProcessorServiceTest {
     public void createConnectorFailureOnExternalConnectorCreation() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
 
-        BaseAction slackAction = createSlackAction();
+        Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         doThrow(new InternalPlatformException(RhoasServiceImpl.createFailureErrorMessageFor("errorDeletingConnector"), new RuntimeException("error")))
@@ -737,8 +737,8 @@ public class ProcessorServiceTest {
         assertThatExceptionOfType(ProcessorLifecycleException.class).isThrownBy(() -> processorService.deleteProcessor(bridge.getId(), processor.getId(), bridge.getCustomerId()));
     }
 
-    private BaseAction createSlackAction() {
-        BaseAction mcAction = new BaseAction();
+    private Action createSlackAction() {
+        Action mcAction = new Action();
         mcAction.setType(SlackAction.TYPE);
         Map<String, String> parameters = mcAction.getParameters();
         parameters.put("channel", "channel");

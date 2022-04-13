@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
@@ -53,7 +53,7 @@ public class ActionParamValidatorContainerTest {
 
     private ProcessorRequest buildTestRequest() {
         ProcessorRequest p = new ProcessorRequest();
-        BaseAction b = new BaseAction();
+        Action b = new Action();
         b.setType(TEST_ACTION_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);

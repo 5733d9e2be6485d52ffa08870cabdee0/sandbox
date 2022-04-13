@@ -23,7 +23,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -106,9 +106,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-        BaseAction requestedAction = processorRequest.getAction();
+        Action requestedAction = processorRequest.getAction();
 
-        BaseAction resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
+        Action resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
                 .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
                 .orElse(requestedAction);
 
@@ -148,8 +148,8 @@ public class ProcessorServiceImpl implements ProcessorService {
                     customerId));
         }
         ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
-        BaseAction existingAction = existingDefinition.getRequestedAction();
-        BaseAction existingResolvedAction = existingDefinition.getResolvedAction();
+        Action existingAction = existingDefinition.getRequestedAction();
+        Action existingResolvedAction = existingDefinition.getResolvedAction();
 
         // Validate update.
         // Name cannot be updated.

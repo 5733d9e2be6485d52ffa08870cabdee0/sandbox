@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.api.models.responses.BaseResponse;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 
@@ -36,7 +36,7 @@ public class ProcessorResponse extends BaseResponse {
     private String transformationTemplate;
 
     @JsonProperty("action")
-    private BaseAction action;
+    private Action action;
 
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;
@@ -78,11 +78,11 @@ public class ProcessorResponse extends BaseResponse {
         this.transformationTemplate = transformationTemplate;
     }
 
-    public BaseAction getAction() {
+    public Action getAction() {
         return action;
     }
 
-    public void setAction(BaseAction action) {
+    public void setAction(Action action) {
         this.action = action;
     }
 }

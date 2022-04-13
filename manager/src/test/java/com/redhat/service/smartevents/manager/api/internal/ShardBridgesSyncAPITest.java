@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -113,7 +113,7 @@ public class ShardBridgesSyncAPITest {
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
-        BaseAction action = TestUtils.createSendToBridgeAction(bridgeId);
+        Action action = TestUtils.createSendToBridgeAction(bridgeId);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, null, action));
 
         final List<ProcessorDTO> processors = new ArrayList<>();

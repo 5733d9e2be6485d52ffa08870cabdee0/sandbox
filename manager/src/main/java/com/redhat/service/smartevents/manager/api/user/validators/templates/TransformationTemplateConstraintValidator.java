@@ -9,10 +9,9 @@ import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator
 
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 
 @ApplicationScoped
-public class TransformationTemplateValidatorContainer implements ConstraintValidator<ValidTransformationTemplate, ProcessorRequest> {
+public class TransformationTemplateConstraintValidator implements ConstraintValidator<ValidTransformationTemplate, String> {
 
     static final String TRANSFORMATION_TEMPLATE_MALFORMED_ERROR = "Transformation template malformed: {error}";
     static final String ERROR_PARAM = "error";
@@ -21,8 +20,7 @@ public class TransformationTemplateValidatorContainer implements ConstraintValid
     TransformationEvaluatorFactory transformationEvaluatorFactory;
 
     @Override
-    public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
-        String transformationTemplate = value.getTransformationTemplate();
+    public boolean isValid(String transformationTemplate, ConstraintValidatorContext context) {
         if (transformationTemplate == null) {
             return true;
         }

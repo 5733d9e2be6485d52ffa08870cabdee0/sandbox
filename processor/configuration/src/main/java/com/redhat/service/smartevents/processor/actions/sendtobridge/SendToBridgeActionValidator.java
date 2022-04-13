@@ -4,7 +4,7 @@ import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.actions.ActionValidator;
 
@@ -16,7 +16,7 @@ public class SendToBridgeActionValidator implements SendToBridgeAction,
             "The supplied " + BRIDGE_ID_PARAM + " parameter is not valid";
 
     @Override
-    public ValidationResult isValid(BaseAction action) {
+    public ValidationResult isValid(Action action) {
         if (action.getParameters() != null) {
             Map<String, String> parameters = action.getParameters();
             return !parameters.containsKey(BRIDGE_ID_PARAM) || !parameters.get(BRIDGE_ID_PARAM).isEmpty()

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.actions.ActionValidator;
 
@@ -17,7 +17,7 @@ public class SlackActionValidator implements SlackAction, ActionValidator {
             "The supplied " + WEBHOOK_URL_PARAM + " parameter is not valid";
 
     @Override
-    public ValidationResult isValid(BaseAction action) {
+    public ValidationResult isValid(Action action) {
         Map<String, String> parameters = action.getParameters();
 
         if (!parameters.containsKey(CHANNEL_PARAM) || parameters.get(CHANNEL_PARAM).isEmpty()) {

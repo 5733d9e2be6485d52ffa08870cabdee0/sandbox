@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Target({ ElementType.PARAMETER })
+@Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = TransformationTemplateValidatorContainer.class)
+@Constraint(validatedBy = TransformationTemplateConstraintValidator.class)
 public @interface ValidTransformationTemplate {
 
     String message() default "The supplied transformation template is not valid";
