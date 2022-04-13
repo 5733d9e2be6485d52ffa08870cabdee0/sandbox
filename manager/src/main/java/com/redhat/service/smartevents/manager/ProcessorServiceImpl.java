@@ -283,12 +283,17 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public ProcessorDTO toDTO(Processor processor) {
         ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
+
+        String topicName = definition.getRequestedSource() != null
+                ? resourceNamesProvider.getProcessorTopicName(processor.getId())
+                : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
+                topicName);
         return new ProcessorDTO(processor.getId(),
                 processor.getName(),
                 definition,
