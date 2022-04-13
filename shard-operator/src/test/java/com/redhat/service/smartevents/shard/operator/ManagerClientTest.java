@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -8,6 +9,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
@@ -103,4 +105,19 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, "404");
     }
 
+    @Test
+    public void fetchBridgesToDeployOrDelete() throws JsonProcessingException {
+        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1", "myName-1", "myEndpoint", "myCustomerId", ManagedResourceStatus.PROVISIONING, TestSupport.KAFKA_CONNECTION_DTO);
+        stubBridgesToDeployOrDelete(List.of(dto));
+
+        assertThat(managerClient.fetchBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
+    }
+
+    @Test
+    public void fetchProcessorsToDeployOrDelete() throws JsonProcessingException {
+        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
+        stubProcessorsToDeployOrDelete(List.of(processor));
+
+        assertThat(managerClient.fetchProcessorsToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
+    }
 }
