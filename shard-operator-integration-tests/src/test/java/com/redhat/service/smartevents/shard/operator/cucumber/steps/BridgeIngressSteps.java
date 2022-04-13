@@ -10,6 +10,7 @@ import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -35,6 +36,11 @@ public class BridgeIngressSteps {
         Secret secret = new SecretBuilder()
                 .withMetadata(
                         new ObjectMetaBuilder()
+                                .withLabels(
+                                        new LabelsBuilder()
+                                                .withManagedByOperator()
+                                                .withComponent(BridgeIngress.COMPONENT_NAME)
+                                                .build())
                                 .withNamespace(bridgeIngress.getMetadata().getNamespace())
                                 .withName(bridgeIngress.getMetadata().getName())
                                 .build())
