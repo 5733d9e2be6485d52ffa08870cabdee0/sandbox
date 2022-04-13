@@ -29,16 +29,6 @@ sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR
 sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/patches/deploy-config.yaml
 sleep 10
 
-echo "Deploying all resources"
-kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
-
-status=$?
-if [ $status -ne 0 ]; then
-  echo "Some resources fail to deploy (concurrency issues), redeploying"
-  sleep 5
-  kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
-fi
-
 echo "Replace manager configuration with RHOAS info"
 sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$( getManagedKafkaBootstrapServerHost )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$( getManagedKafkaOpsSAClientId )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
@@ -52,6 +42,16 @@ sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$( getManagedKa
 sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$( getManagedKafkaMcSAClientId )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$( getManagedKafkaMcSAClientSecret )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1${OPENSHIFT_OFFLINE_TOKEN}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
+
+echo "Deploying all resources"
+kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
+
+status=$?
+if [ $status -ne 0 ]; then
+  echo "Some resources fail to deploy (concurrency issues), redeploying"
+  sleep 5
+  kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
+fi
 
 echo "Wait for Keycloak to start"
 kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
