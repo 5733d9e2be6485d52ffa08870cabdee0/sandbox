@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions;
+package com.redhat.service.smartevents.processor;
 
 import java.util.Map;
 
@@ -6,6 +6,9 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.processor.actions.ActionConnector;
+import com.redhat.service.smartevents.processor.actions.ActionResolver;
+import com.redhat.service.smartevents.processor.actions.ActionValidator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicActionValidator;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
@@ -23,7 +26,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class ActionConfiguratorImplTest {
+class GatewayConfiguratorImplTest {
 
     private static final Map<String, ActionExpectedBeanClasses> EXPECTED_BEANS = Map.of(
             KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null, null),
@@ -32,7 +35,7 @@ class ActionConfiguratorImplTest {
             WebhookAction.TYPE, expect(WebhookActionValidator.class, null, null));
 
     @Inject
-    ActionConfiguratorImpl actionConfigurator;
+    GatewayConfiguratorImpl actionConfigurator;
 
     @Test
     void testExpectedBeans() {
@@ -40,43 +43,43 @@ class ActionConfiguratorImplTest {
             String type = entry.getKey();
             ActionExpectedBeanClasses expected = entry.getValue();
 
-            assertThat(actionConfigurator.getValidator(type))
-                    .as("ActionConfigurator.getValidator(\"%s\") should not return null", type)
+            assertThat(actionConfigurator.getActionValidator(type))
+                    .as("GatewayConfigurator.getValidator(\"%s\") should not return null", type)
                     .isNotNull();
-            assertThat(actionConfigurator.getResolver(type))
-                    .as("ActionConfigurator.getResolver(\"%s\") should not return null", type)
+            assertThat(actionConfigurator.getActionResolver(type))
+                    .as("GatewayConfigurator.getResolver(\"%s\") should not return null", type)
                     .isNotNull();
-            assertThat(actionConfigurator.getConnector(type))
-                    .as("ActionConfigurator.getConnector(\"%s\") should not return null", type)
+            assertThat(actionConfigurator.getActionConnector(type))
+                    .as("GatewayConfigurator.getConnector(\"%s\") should not return null", type)
                     .isNotNull();
 
-            assertThat(actionConfigurator.getValidator(type))
-                    .as("ActionConfigurator.getValidator(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
+            assertThat(actionConfigurator.getActionValidator(type))
+                    .as("GatewayConfigurator.getValidator(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
                     .isInstanceOf(expected.validatorClass);
 
             if (expected.resolverClass == null) {
-                assertThat(actionConfigurator.getResolver(type))
-                        .as("ActionConfigurator.getResolver(\"%s\") should be empty", type)
+                assertThat(actionConfigurator.getActionResolver(type))
+                        .as("GatewayConfigurator.getResolver(\"%s\") should be empty", type)
                         .isNotPresent();
             } else {
-                assertThat(actionConfigurator.getResolver(type))
-                        .as("ActionConfigurator.getResolver(\"%s\") should not be empty", type)
+                assertThat(actionConfigurator.getActionResolver(type))
+                        .as("GatewayConfigurator.getResolver(\"%s\") should not be empty", type)
                         .isPresent();
-                assertThat(actionConfigurator.getResolver(type))
-                        .as("ActionConfigurator.getResolver(\"%s\") should contain instance of %s", type, expected.resolverClass.getSimpleName())
+                assertThat(actionConfigurator.getActionResolver(type))
+                        .as("GatewayConfigurator.getResolver(\"%s\") should contain instance of %s", type, expected.resolverClass.getSimpleName())
                         .containsInstanceOf(expected.resolverClass);
             }
 
             if (expected.connectorClass == null) {
-                assertThat(actionConfigurator.getConnector(type))
-                        .as("ActionConfigurator.getConnector(\"%s\") should be empty", type)
+                assertThat(actionConfigurator.getActionConnector(type))
+                        .as("GatewayConfigurator.getConnector(\"%s\") should be empty", type)
                         .isNotPresent();
             } else {
-                assertThat(actionConfigurator.getConnector(type))
-                        .as("ActionConfigurator.getConnector(\"%s\") should not be empty", type)
+                assertThat(actionConfigurator.getActionConnector(type))
+                        .as("GatewayConfigurator.getConnector(\"%s\") should not be empty", type)
                         .isPresent();
-                assertThat(actionConfigurator.getConnector(type))
-                        .as("ActionConfigurator.getConnector(\"%s\") should contain instance of %s", type, expected.connectorClass.getSimpleName())
+                assertThat(actionConfigurator.getActionConnector(type))
+                        .as("GatewayConfigurator.getConnector(\"%s\") should contain instance of %s", type, expected.connectorClass.getSimpleName())
                         .containsInstanceOf(expected.connectorClass);
             }
         }
@@ -84,17 +87,17 @@ class ActionConfiguratorImplTest {
 
     @Test
     void testUnexpectedBeans() {
-        for (ActionValidator validator : actionConfigurator.getValidators()) {
+        for (ActionValidator validator : actionConfigurator.getActionValidators()) {
             assertThat(EXPECTED_BEANS)
                     .as("Found unexpected validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
                     .containsKey(validator.getType());
         }
-        for (ActionResolver resolver : actionConfigurator.getResolvers()) {
+        for (ActionResolver resolver : actionConfigurator.getActionResolvers()) {
             assertThat(EXPECTED_BEANS)
                     .as("Found unexpected resolver bean for type %s of class %s. Add it to this test.", resolver.getType(), resolver.getClass())
                     .containsKey(resolver.getType());
         }
-        for (ActionConnector connector : actionConfigurator.getConnectors()) {
+        for (ActionConnector connector : actionConfigurator.getActionConnectors()) {
             assertThat(EXPECTED_BEANS)
                     .as("Found unexpected connector bean for type %s of class %s. Add it to this test.", connector.getType(), connector.getClass())
                     .containsKey(connector.getType());

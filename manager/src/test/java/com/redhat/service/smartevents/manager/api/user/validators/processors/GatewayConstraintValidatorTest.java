@@ -15,7 +15,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionPr
 import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.ActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -43,7 +43,7 @@ public class GatewayConstraintValidatorTest {
     GatewayConstraintValidator container;
 
     @InjectMock
-    ActionConfigurator actionConfiguratorMock;
+    GatewayConfigurator gatewayConfiguratorMock;
 
     ActionValidator actionValidatorMock;
 
@@ -67,9 +67,9 @@ public class GatewayConstraintValidatorTest {
         actionValidatorMock = mock(ActionValidator.class);
         when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
 
-        reset(actionConfiguratorMock);
-        when(actionConfiguratorMock.getValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
-        when(actionConfiguratorMock.getValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new ActionProviderException("No action provider found"));
+        reset(gatewayConfiguratorMock);
+        when(gatewayConfiguratorMock.getActionValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
+        when(gatewayConfiguratorMock.getActionValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new ActionProviderException("No action provider found"));
 
         validatorContext = mock(HibernateConstraintValidatorContext.class);
         builderMock = mock(HibernateConstraintViolationBuilder.class);
@@ -82,7 +82,7 @@ public class GatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isTrue();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
 
@@ -92,7 +92,7 @@ public class GatewayConstraintValidatorTest {
         p.setAction(null);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock, never()).getValidator(any());
+        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
 
@@ -102,7 +102,7 @@ public class GatewayConstraintValidatorTest {
         p.getAction().setParameters(null);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock, never()).getValidator(any());
+        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
 
@@ -112,7 +112,7 @@ public class GatewayConstraintValidatorTest {
         p.getAction().getParameters().clear();
 
         assertThat(container.isValid(p, validatorContext)).isTrue();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
 
@@ -124,7 +124,7 @@ public class GatewayConstraintValidatorTest {
         p.getAction().setType(doesNotExistType);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(doesNotExistType);
+        verify(gatewayConfiguratorMock).getActionValidator(doesNotExistType);
         verify(actionValidatorMock, never()).isValid(any());
 
         verify(validatorContext).disableDefaultConstraintViolation();
@@ -141,7 +141,7 @@ public class GatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
@@ -161,7 +161,7 @@ public class GatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);

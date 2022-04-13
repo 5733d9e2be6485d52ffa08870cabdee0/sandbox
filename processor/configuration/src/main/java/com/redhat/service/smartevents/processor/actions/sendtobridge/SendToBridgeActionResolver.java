@@ -10,15 +10,15 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
 import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.ActionResolver;
-import com.redhat.service.smartevents.processor.actions.ActionService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
 public class SendToBridgeActionResolver implements ActionResolver {
 
     @Inject
-    ActionService actionService;
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @Override
     public String getType() {
@@ -31,7 +31,7 @@ public class SendToBridgeActionResolver implements ActionResolver {
 
         Map<String, String> parameters = new HashMap<>();
         try {
-            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(actionService.getBridgeEndpoint(destinationBridgeId, customerId)));
+            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(gatewayConfiguratorService.getBridgeEndpoint(destinationBridgeId, customerId)));
             parameters.put(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
         } catch (MalformedURLException e) {
             throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);

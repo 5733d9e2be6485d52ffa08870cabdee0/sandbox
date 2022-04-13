@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -24,6 +25,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Processo
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.infra.models.actions.Source;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -38,7 +40,8 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.actions.ActionResolver;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -61,7 +64,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    ActionConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Inject
     ConnectorsService connectorService;
@@ -102,28 +105,35 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         Processor newProcessor = new Processor();
-
-        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-
-        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Action requestedAction = processorRequest.getAction();
-
-        Action resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
-                .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
-                .orElse(requestedAction);
-
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
 
-        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+
+        boolean isSourceProcessor = processorRequest.getSource() != null;
+
+        Action resolvedAction = isSourceProcessor
+                ? resolveAction(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+
+        ProcessorDefinition definition = isSourceProcessor
+                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+
         newProcessor.setDefinition(definitionToJsonNode(definition));
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(newProcessor, requestedAction);
+        if (isSourceProcessor) {
+            connectorService.createConnectorEntity(newProcessor, definition.getRequestedSource());
+        } else {
+            connectorService.createConnectorEntity(newProcessor, definition.getRequestedAction());
+        }
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
@@ -132,6 +142,22 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+    }
+
+    private Action resolveAction(Source source, String customerId, String bridgeId, String processorId) {
+        Action resolvedAction = gatewayConfigurator.getSourceResolver(source.getType())
+                .resolve(source, customerId, bridgeId, processorId);
+        return resolveAction(resolvedAction, customerId, bridgeId, processorId);
+    }
+
+    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        Optional<ActionResolver> optActionResolver = gatewayConfigurator.getActionResolver(action.getType());
+        if (optActionResolver.isEmpty()) {
+            return action;
+        }
+        Action resolvedAction = optActionResolver.get()
+                .resolve(action, customerId, bridgeId, processorId);
+        return resolveAction(resolvedAction, customerId, bridgeId, processorId);
     }
 
     @Override

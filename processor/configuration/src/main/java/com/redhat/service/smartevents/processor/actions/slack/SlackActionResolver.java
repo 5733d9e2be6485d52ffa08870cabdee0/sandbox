@@ -6,15 +6,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.ActionResolver;
-import com.redhat.service.smartevents.processor.actions.ActionService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
 public class SlackActionResolver implements ActionResolver {
 
     @Inject
-    ActionService actionService;
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @Override
     public String getType() {
@@ -31,7 +31,7 @@ public class SlackActionResolver implements ActionResolver {
 
         resolvedAction.setType(KafkaTopicAction.TYPE);
 
-        newParameters.put(KafkaTopicAction.TOPIC_PARAM, actionService.getConnectorTopicName(processorId));
+        newParameters.put(KafkaTopicAction.TOPIC_PARAM, gatewayConfiguratorService.getConnectorTopicName(processorId));
 
         return resolvedAction;
     }

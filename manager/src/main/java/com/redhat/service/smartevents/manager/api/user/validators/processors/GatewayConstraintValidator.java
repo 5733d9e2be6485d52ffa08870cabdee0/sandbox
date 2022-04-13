@@ -16,7 +16,7 @@ import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.actions.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.ActionValidator;
 
 @ApplicationScoped
@@ -35,7 +35,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
     static final String TYPE_PARAM = "type";
 
     @Inject
-    ActionConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -62,7 +62,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
 
         ActionValidator actionValidator;
         try {
-            actionValidator = actionConfigurator.getValidator(action.getType());
+            actionValidator = gatewayConfigurator.getActionValidator(action.getType());
         } catch (ActionProviderException e) {
             addConstraintViolation(context, ACTION_TYPE_NOT_RECOGNISED_ERROR, Map.of(TYPE_PARAM, action.getType()));
             return false;
