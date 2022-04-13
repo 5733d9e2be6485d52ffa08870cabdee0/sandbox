@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -42,7 +43,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
-@ControllerConfiguration
+@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
         EventSourceInitializer<BridgeIngress> {
 
