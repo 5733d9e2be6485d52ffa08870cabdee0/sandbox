@@ -74,7 +74,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(4); // Four updates to the manager are expected (2 PROVISIONING + 2 READY)
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.doBridgeActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String firstBridgeName = BridgeIngress.resolveResourceName(bridge1.getId());
@@ -118,7 +118,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.doBridgeActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.SHARD_API_BASE_PATH);
@@ -144,7 +144,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addBridgeUpdateRequestListener(latch);
 
-        managerSyncService.doBridgeActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateDeprovisioningRequest, APIConstants.SHARD_API_BASE_PATH);
@@ -165,7 +165,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 provisioning + 1 ready)
         addProcessorUpdateRequestListener(latch);
-        managerSyncService.doProcessorActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
@@ -208,7 +208,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        managerSyncService.doProcessorActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
@@ -238,7 +238,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1);
         addProcessorUpdateRequestListener(latch);
 
-        managerSyncService.doProcessorActions().await().atMost(Duration.ofSeconds(5));
+        managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");

@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.util.List;
-import java.util.function.Function;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -12,9 +11,9 @@ import io.vertx.mutiny.ext.web.client.HttpResponse;
 
 public interface ManagerClient {
 
-    Uni<Object> fetchAndProcessBridgesToDeployOrDelete(Function<List<BridgeDTO>, Uni<Object>> handler);
+    Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete();
 
-    Uni<Object> fetchAndProcessProcessorsToDeployOrDelete(Function<List<ProcessorDTO>, Uni<Object>> handler);
+    Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete();
 
     Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO);
 
