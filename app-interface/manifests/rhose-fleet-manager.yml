@@ -22,6 +22,8 @@ objects:
           labels:
             app-component: rhose-fleet-manager
         spec:
+          serviceAccount: registry-rhose-appsre
+          serviceAccountName: registry-rhose-appsre
           containers:
             - image: ${FLEET_MANAGER_IMAGE}:${FLEET_MANAGER_IMAGE_TAG}
               imagePullPolicy: IfNotPresent

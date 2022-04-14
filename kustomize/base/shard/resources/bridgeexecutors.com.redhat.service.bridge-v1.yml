@@ -41,27 +41,27 @@ spec:
                       type: string
                     errorCode:
                       type: string
+                    reason:
+                      enum:
+                      - DeploymentProgressing
+                      - ServiceNotReady
+                      - PrometheusUnavailable
+                      - SecretsNotFound
+                      - DeploymentAvailable
+                      - DeploymentFailed
+                      - NetworkResourceNotReady
+                      - DeploymentNotAvailable
+                      type: string
+                    status:
+                      enum:
+                      - Unknown
+                      - "True"
+                      - "False"
+                      type: string
                     type:
                       enum:
                       - Ready
                       - Augmentation
-                      type: string
-                    reason:
-                      enum:
-                      - DeploymentNotAvailable
-                      - DeploymentFailed
-                      - ServiceNotReady
-                      - SecretsNotFound
-                      - PrometheusUnavailable
-                      - DeploymentAvailable
-                      - DeploymentProgressing
-                      - NetworkResourceNotReady
-                      type: string
-                    status:
-                      enum:
-                      - "True"
-                      - Unknown
-                      - "False"
                       type: string
                     message:
                       type: string

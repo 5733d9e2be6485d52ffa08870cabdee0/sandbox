@@ -1,4 +1,4 @@
-# Demo of Event Bridge
+# Demo of SmartEvents
 
 If running this demo against your local machine, please ensure you have completed all steps in the local dev
 setup documentation: [dev/README.md](dev/README.md)
@@ -31,7 +31,7 @@ Each request will need a [Bearer](https://quarkus.io/guides/security#openid-conn
 export OB_TOKEN="Bearer $(curl --insecure -X POST $KEYCLOAK_URL/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')"
 ```
 
-This token will last 10 hours. Each time you get a `401 Unauthorized` from EventBridge, run the command above again.
+This token will last 10 hours. Each time you get a `401 Unauthorized` from SmartEvents, run the command above again.
 
 If you target any remote environment (dev or stable) you will have to use a token from sso.redhat.com. Export your token from [here](https://console.redhat.com/openshift/token) and run the following command 
 
@@ -42,7 +42,7 @@ export OB_TOKEN="Bearer $(curl -s --insecure -X POST https://sso.redhat.com/auth
 
 ## Testing your Setup
 
-This is a good time to test your setup. To do this we will invoke the `/api/v1/bridges` endpoint of EventBridge to the
+This is a good time to test your setup. To do this we will invoke the `/api/v1/bridges` endpoint of SmartEvents to the
 currently running Bridge Instances. This _will_ return an empty list, but it will demonstrate that the Fleet Manager is
 working.
 

@@ -50,11 +50,11 @@ jobs:
         with:
           filters: |
             general: &general
-              - actions/**
               - infra/**
               - bom/**
               - build-parent/**
               - rhoas-client/**
+              - processor/**
             manager:
               - *general
               - manager/**

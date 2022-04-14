@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -13,7 +13,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>shard-operator</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Shard Operator</name>
+  <name>SmartEvents :: Shard Operator</name>
 
   <dependencies>
     <dependency>
@@ -45,7 +45,7 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra</artifactId>
     </dependency>
     <dependency>
@@ -62,7 +62,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>test-utils</artifactId>
       <scope>test</scope>
     </dependency>
@@ -96,8 +96,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
-      <artifactId>actions</artifactId>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>processor-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

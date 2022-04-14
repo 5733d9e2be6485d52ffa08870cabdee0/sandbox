@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -12,15 +12,16 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>shard-operator-integration-tests</artifactId>
-  <name>Event Bridge :: Shard Operator Integration Tests (Cucumber)</name>
+  <name>SmartEvents :: Shard Operator Integration Tests (Cucumber)</name>
 
   <properties>
     <parallel>false</parallel>
+    <parallel.concurrency.number>3</parallel.concurrency.number>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>shard-operator</artifactId>
     </dependency>
 
@@ -98,7 +99,11 @@
                     See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
                 -->
                 <!--cucumber.filter.tags>${tags}</cucumber.filter.tags--> 
+
+                <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+                <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+                <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
                 <test.logs>${project.build.directory}/logs</test.logs>
               </systemProperties>
             </configuration>

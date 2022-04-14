@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <parent>
-    <groupId>com.redhat.service.bridge</groupId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <artifactId>build-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../build-parent/pom.xml</relativePath>
@@ -12,15 +12,16 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>integration-tests</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Event Bridge :: Integration Tests</name>
+  <name>SmartEvents :: Integration Tests</name>
 
   <properties>
     <parallel>false</parallel>
+    <parallel.concurrency.number>3</parallel.concurrency.number>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.redhat.service.bridge</groupId>
+      <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>manager</artifactId>
       <scope>compile</scope>
     </dependency>
@@ -115,12 +116,12 @@
                 
                 <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
                 <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+                <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+                <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
 
                 <!-- Token authorization configuration-->
-                <bridge.token.username>kermit</bridge.token.username>
-                <bridge.token.password>thefrog</bridge.token.password>
-                <bridge.client.id>event-bridge</bridge.client.id>
-                <bridge.client.secret>secret</bridge.client.secret>
+                <bridge.client.id>kermit</bridge.client.id>
+                <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
 
                 <!--Manager and key-cloak url-->
                 <event-bridge.manager.url></event-bridge.manager.url>

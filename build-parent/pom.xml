@@ -2,16 +2,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>event-bridge</artifactId>
-    <groupId>com.redhat.service.bridge</groupId>
+    <artifactId>smart-events</artifactId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <packaging>pom</packaging>
 
   <artifactId>build-parent</artifactId>
-  <name>Event Bridge :: Build Parent</name>
-  <description>Event Bridge Dependency Management Project BOM</description>
+  <name>SmartEvents :: Build Parent</name>
+  <description>SmartEvents Dependency Management Project BOM</description>
 
   <properties>
 
@@ -52,6 +52,8 @@
     <version.io.quarkiverse.operatorsdk>3.0.6</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
+    <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
+    <version.com.redhat.cloud-connectors>0.19.0-beta1</version.com.redhat.cloud-connectors>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
@@ -83,7 +85,7 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
@@ -133,7 +135,7 @@
       <dependency>
         <groupId>com.redhat.cloud</groupId>
         <artifactId>connector-management-sdk</artifactId>
-        <version>${version.com.redhat.cloud}</version>
+        <version>${version.com.redhat.cloud-connectors}</version>
       </dependency>
       <dependency>
         <groupId>com.redhat.cloud</groupId>
