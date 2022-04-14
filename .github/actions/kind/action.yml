@@ -29,6 +29,6 @@ runs:
     - name: Add ${{ inputs.kind-node-hostname }} host to machine hosts
       shell: bash
       run: echo "127.0.0.1 ${{ inputs.kind-node-hostname }}" | sudo tee -a /etc/hosts
-    - name: Debug hosts
-      shell: bash
-      run: cat /etc/hosts
+    # - name: Debug hosts
+    #   shell: bash
+    #   run: cat /etc/hosts
