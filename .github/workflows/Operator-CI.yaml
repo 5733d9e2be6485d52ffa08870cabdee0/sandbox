@@ -9,6 +9,8 @@ jobs:
   event-bridge-build:
     env:
       NAMESPACE: mynamespace
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true

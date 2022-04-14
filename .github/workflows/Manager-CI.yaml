@@ -21,8 +21,7 @@ jobs:
       FLEET_SHARD_MINIKUBE_CONTAINER_NAME: openbridge/fleet-shard:${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: openbridge/executor:${{ github.sha }}
       INGRESS_CONTAINER_NAME: openbridge/ingress:${{ github.sha }}
-      # KIND_MAIN_NODE_HOSTNAME is used for SendToBridge action, so that we can access the bridge ingress from a processor pod
-      # This hostname will be use as hostname for the ingress and is set in the hosts file of the machine
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
       KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
     concurrency:
       group: event-bridge-manager-pr-${{ github.head_ref }}
