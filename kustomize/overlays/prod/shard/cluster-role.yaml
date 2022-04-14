@@ -1,25 +1,25 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: shard-operator
+  name: shard-operator-knative
 rules:
   - apiGroups:
       - com.redhat.service.bridge
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - apiextensions.k8s.io
     resources:
       - customresourcedefinitions
     verbs:
-      - get
-      - list
+      - "get"
+      - "list"
   - apiGroups:
       - ""
-      - extensions
-      - apps
+      - "extensions"
+      - "apps"
     resources:
       - deployments
       - services
@@ -34,12 +34,6 @@ rules:
     verbs:
       - '*'
   - apiGroups:
-      - route.openshift.io
-    resources:
-      - routes/custom-host
-    verbs:
-      - create
-  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
@@ -51,3 +45,16 @@ rules:
       - ingresses
     verbs:
       - get
+  - apiGroups:
+      - eventing.knative.dev
+    resources:
+      - brokers
+      - triggers
+    verbs:
+      - "*"
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - requestauthentications
+    verbs:
+      - "*"

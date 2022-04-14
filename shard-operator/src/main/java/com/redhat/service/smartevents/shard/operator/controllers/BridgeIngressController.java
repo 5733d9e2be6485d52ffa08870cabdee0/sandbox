@@ -149,6 +149,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     private String extractBrokerPath(KnativeBroker broker) {
+        if (broker == null || broker.getStatus() == null || broker.getStatus().getAddress().getUrl() == null) {
+            return null;
+        }
         try {
             LOGGER.info(broker.getStatus().getAddress().getUrl());
             return new URL(broker.getStatus().getAddress().getUrl()).getPath();

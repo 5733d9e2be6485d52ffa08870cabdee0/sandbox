@@ -9,7 +9,7 @@ spec:
   replicas: 1
   template:
     spec:
-      serviceAccountName: shard-operator
+      serviceAccountName: shard-operator-knative
       containers:
         - image: event-bridge-shard-operator
           imagePullPolicy: IfNotPresent

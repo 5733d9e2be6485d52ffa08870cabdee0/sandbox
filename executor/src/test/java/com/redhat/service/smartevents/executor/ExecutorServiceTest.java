@@ -4,18 +4,17 @@ import java.net.URI;
 
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.reactive.messaging.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -59,7 +58,9 @@ public class ExecutorServiceTest {
                 .withType("myType")
                 .build();
 
-        executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
+        IncomingKafkaRecord<Integer, String> record = mock(IncomingKafkaRecord.class);
+
+        executorsService.processBridgeEvent(record); // TODO: fix
 
         verify(executor, times(1)).onEvent(any(CloudEvent.class));
     }
