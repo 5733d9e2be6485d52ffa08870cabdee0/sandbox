@@ -1,11 +1,13 @@
 package com.redhat.service.smartevents.shard.operator.networking;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;
@@ -107,7 +109,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         }
         String host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
         if (host == null) {
-            host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname();
+            host = Optional.ofNullable(System.getenv("INGRESS_OVERRIDE_HOSTNAME")).orElse(ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname());
         }
         String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath().replace(PATH_REGEX, "");
         endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
