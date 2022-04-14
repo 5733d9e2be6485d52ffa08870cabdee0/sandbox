@@ -59,7 +59,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         LOGGER.debug("Creating Kafka Topic for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
-        rhoasService.createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        rhoasService.createTopicAndGrantAccessFor(connectorEntity.getTopicName(), connectorTopicAccessType(connectorEntity));
 
         // Step 2 - Create Connector
         LOGGER.debug("Creating Managed Connector for '{}' [{}]",
@@ -180,7 +180,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         LOGGER.debug("Deleting Kafka Topic for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
-        rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), connectorTopicAccessType(connectorEntity));
 
         return doDeleteDependencies(connectorEntity);
     }
@@ -191,6 +191,16 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         connectorEntity.setStatus(ManagedResourceStatus.DELETED);
         connectorEntity.setDependencyStatus(ManagedResourceStatus.DELETED);
         return connectorEntity;
+    }
+
+    private static boolean isSourceConnector(ConnectorEntity connectorEntity) {
+        return connectorEntity.getConnectorType().contains("_source_");
+    }
+
+    private static RhoasTopicAccessType connectorTopicAccessType(ConnectorEntity connectorEntity) {
+        return isSourceConnector(connectorEntity)
+                ? RhoasTopicAccessType.CONSUMER
+                : RhoasTopicAccessType.PRODUCER;
     }
 
 }
