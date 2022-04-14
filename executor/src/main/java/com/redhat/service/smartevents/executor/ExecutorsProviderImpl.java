@@ -11,8 +11,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEEL;
+import com.redhat.service.smartevents.executor.impl.CloudEventExecutorImpl;
+import com.redhat.service.smartevents.executor.impl.PlainEventExecutorImpl;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
+import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -41,8 +45,13 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
 
     @PostConstruct
     void init() {
-        ProcessorDTO dto = readProcessor(processorDefinition);
-        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, registry);
+        ProcessorDTO processor = readProcessor(processorDefinition);
+        Action action = processor.getDefinition().getResolvedAction();
+        ActionInvoker actionInvoker = actionRuntime.getInvokerBuilder(action.getType())
+                .build(processor, action);
+        this.executor = actionInvoker.requiresCloudEvent()
+                ? new CloudEventExecutorImpl(processor, filterEvaluatorFactory, transformationEvaluatorFactory, actionInvoker, registry)
+                : new PlainEventExecutorImpl(processor, actionInvoker);
     }
 
     @Override

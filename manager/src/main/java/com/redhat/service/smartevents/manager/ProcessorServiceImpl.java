@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -41,7 +40,6 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionResolver;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -118,7 +116,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         boolean isSourceProcessor = processorRequest.getSource() != null;
 
         Action resolvedAction = isSourceProcessor
-                ? resolveAction(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
         ProcessorDefinition definition = isSourceProcessor
@@ -144,20 +142,15 @@ public class ProcessorServiceImpl implements ProcessorService {
         return newProcessor;
     }
 
-    private Action resolveAction(Source source, String customerId, String bridgeId, String processorId) {
-        Action resolvedAction = gatewayConfigurator.getSourceResolver(source.getType())
-                .resolve(source, customerId, bridgeId, processorId);
-        return resolveAction(resolvedAction, customerId, bridgeId, processorId);
+    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        return gatewayConfigurator.getActionResolver(action.getType())
+                .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
+                .orElse(action);
     }
 
-    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
-        Optional<ActionResolver> optActionResolver = gatewayConfigurator.getActionResolver(action.getType());
-        if (optActionResolver.isEmpty()) {
-            return action;
-        }
-        Action resolvedAction = optActionResolver.get()
-                .resolve(action, customerId, bridgeId, processorId);
-        return resolveAction(resolvedAction, customerId, bridgeId, processorId);
+    private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+        return gatewayConfigurator.getSourceResolver(source.getType())
+                .resolve(source, customerId, bridgeId, processorId);
     }
 
     @Override

@@ -10,10 +10,6 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
-
-import io.cloudevents.CloudEvent;
-
 @ApplicationScoped
 public class ExecutorsService {
 
@@ -30,10 +26,9 @@ public class ExecutorsService {
     @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processBridgeEvent(final Message<String> message) {
         try {
-            CloudEvent cloudEvent = CloudEventUtils.decode(message.getPayload());
             Executor executor = executorsProvider.getExecutor();
             try {
-                executor.onEvent(cloudEvent);
+                executor.onEvent(message.getPayload());
             } catch (Throwable t) {
                 // Inner Throwable catch is to provide more specific context around which Executor failed to handle the Event, rather than a generic failure
                 LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.", executor.getProcessor().getId(),

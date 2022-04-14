@@ -8,6 +8,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.executor.impl.CloudEventExecutorImpl;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
@@ -34,11 +35,11 @@ public class ExecutorServiceTest {
     @InjectMock
     ExecutorsProvider executorsProvider;
 
-    Executor executor;
+    CloudEventExecutorImpl executor;
 
     @BeforeEach
     public void before() {
-        executor = mock(Executor.class);
+        executor = mock(CloudEventExecutorImpl.class);
 
         BridgeDTO bridgeDTO = mock(BridgeDTO.class);
         when(bridgeDTO.getId()).thenReturn(BRIDGE_ID);
@@ -61,6 +62,6 @@ public class ExecutorServiceTest {
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
-        verify(executor, times(1)).onEvent(any(CloudEvent.class));
+        verify(executor, times(1)).onEvent(any(String.class));
     }
 }
