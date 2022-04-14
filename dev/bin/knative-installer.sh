@@ -15,10 +15,11 @@ else
   reset=''
 fi
 
+CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 # The Knative Core APIs, like Broker or Trigger
-eventing_core_url=https://raw.githubusercontent.com/openshift/knative-eventing/release-v1.1/openshift/release/knative-eventing-ci.yaml
+eventing_core_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-eventing.yaml
 # Knative Kafka offering: All Kafka centric APIs
-eventing_kafka_url=https://gist.githubusercontent.com/matzew/82280d23baa6cfd6c332c2325f5785c9/raw/848e2d9b36b39c491a60ba24f4ce167201a218ef/knative-kafka.yaml
+eventing_kafka_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-kafka.yaml
 
 function header_text {
   echo "$header$*$reset"
