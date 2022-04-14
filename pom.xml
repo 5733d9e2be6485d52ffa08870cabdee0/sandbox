@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.bridge</groupId>
-  <artifactId>event-bridge</artifactId>
+  <groupId>com.redhat.service.smartevents</groupId>
+  <artifactId>smart-events</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Bridge</name>
-  <description>Parent module for event bridge</description>
+  <name>SmartEvents</name>
+  <description>Parent module for SmartEvents</description>
 
   <inceptionYear>2021</inceptionYear>
   <organization>
@@ -33,13 +33,13 @@
     <module>build-parent</module>
     <module>bom</module>
     <module>test-utils</module>
+    <module>processor</module>
     <module>manager</module>
     <module>executor</module>
     <module>shard-operator</module>
     <module>shard-operator-integration-tests</module>
     <module>integration-tests</module>
     <module>infra</module>
-    <module>actions</module>
     <module>use-cases</module>
     <module>rhoas-client</module>
   </modules>

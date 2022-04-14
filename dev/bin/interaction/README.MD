@@ -1,4 +1,4 @@
-# Shell scripts to interact with OpenBridge
+# Shell scripts to interact with SmartEvents
 
 Start by making a copy of the `environment-example` file called `environment` and modify it accordingly, it won't be pushed into the repository.
 

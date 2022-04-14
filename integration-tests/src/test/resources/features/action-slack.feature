@@ -20,7 +20,7 @@ Feature: Slack Action tests
       }
     }
     """
-    And the Processor "slackProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "slackProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
     And the Processor "slackProcessor" of the Bridge "mybridge" has action of type "Slack"
 
     And send a cloud event to the Ingress of the Bridge "mybridge":
