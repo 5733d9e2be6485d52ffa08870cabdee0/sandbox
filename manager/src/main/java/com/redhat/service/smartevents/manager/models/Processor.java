@@ -17,6 +17,7 @@ import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.TypeDef;
 
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
@@ -51,7 +52,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 })
 @Entity
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class Processor extends ManagedDefinedResource {
+public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
 

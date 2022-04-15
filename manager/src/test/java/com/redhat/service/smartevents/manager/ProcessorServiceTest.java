@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.ConnectorState;
@@ -180,7 +179,7 @@ public class ProcessorServiceTest {
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
 
-        ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+        ProcessorDefinition definition = processor.getDefinition();
         assertThat(definition.getTransformationTemplate()).isEqualTo("{}");
     }
 
@@ -197,7 +196,7 @@ public class ProcessorServiceTest {
         processor1.setStatus(ManagedResourceStatus.ACCEPTED);
         processor1.setDependencyStatus(ManagedResourceStatus.READY);
         processor1.setSubmittedAt(ZonedDateTime.now());
-        processor1.setDefinition(new TextNode("definition"));
+        processor1.setDefinition(new ProcessorDefinition());
         processorDAO.persist(processor1);
 
         final Processor processor2 = new Processor();
@@ -208,7 +207,7 @@ public class ProcessorServiceTest {
         processor2.setStatus(ManagedResourceStatus.READY);
         processor2.setDependencyStatus(ManagedResourceStatus.READY);
         processor2.setSubmittedAt(ZonedDateTime.now());
-        processor2.setDefinition(new TextNode("definition"));
+        processor2.setDefinition(new ProcessorDefinition());
         processorDAO.persist(processor2);
 
         final Processor processor3 = new Processor();
@@ -219,7 +218,7 @@ public class ProcessorServiceTest {
         processor3.setStatus(ManagedResourceStatus.DEPROVISION);
         processor3.setDependencyStatus(ManagedResourceStatus.DELETED);
         processor3.setSubmittedAt(ZonedDateTime.now());
-        processor3.setDefinition(new TextNode("definition"));
+        processor3.setDefinition(new ProcessorDefinition());
         processorDAO.persist(processor3);
 
         List<Processor> processors =
@@ -544,7 +543,7 @@ public class ProcessorServiceTest {
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
-        p.setDefinition(definitionToJsonNode(definition));
+        p.setDefinition(definition);
 
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();

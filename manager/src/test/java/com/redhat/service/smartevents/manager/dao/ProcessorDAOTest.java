@@ -69,7 +69,7 @@ public class ProcessorDAOTest {
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
-        p.setDefinition(mapper.valueToTree(definition));
+        p.setDefinition(definition);
 
         processorDAO.persist(p);
         return p;

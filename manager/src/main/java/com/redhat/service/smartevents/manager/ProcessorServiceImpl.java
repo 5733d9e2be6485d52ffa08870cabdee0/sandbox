@@ -127,7 +127,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
                 : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
 
-        newProcessor.setDefinition(definitionToJsonNode(definition));
+        newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
@@ -170,7 +170,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorId,
                     customerId));
         }
-        ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
+        ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
 
@@ -191,7 +191,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
         ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
-        existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
+        existingProcessor.setDefinition(updatedDefinition);
 
         // Processor and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -279,7 +279,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
+        ProcessorDefinition definition = processor.getDefinition() != null ? processor.getDefinition() : null;
 
         String topicName = definition.getRequestedSource() != null
                 ? resourceNamesProvider.getProcessorTopicName(processor.getId())
@@ -311,7 +311,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
 
         if (processor.getDefinition() != null) {
-            ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+            ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
