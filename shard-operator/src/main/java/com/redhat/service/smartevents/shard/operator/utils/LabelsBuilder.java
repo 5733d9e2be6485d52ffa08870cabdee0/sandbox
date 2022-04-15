@@ -27,6 +27,7 @@ public final class LabelsBuilder {
     public static final String VERSION_LABEL = "app.kubernetes.io/version";
     public static final String INSTANCE_LABEL = "app.kubernetes.io/instance";
     public static final String CUSTOMER_ID_LABEL = "bridge.services.redhat.com/customerId";
+    public static final String RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.OPERATOR_NAME;
 
     /**
      * Customer Identification label.

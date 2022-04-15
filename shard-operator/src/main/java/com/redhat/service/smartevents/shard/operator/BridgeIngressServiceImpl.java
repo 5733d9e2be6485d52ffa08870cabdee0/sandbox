@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
@@ -52,6 +53,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Inject
     GlobalConfigurationsProvider globalConfigurationsProvider;
+
+    @Inject
+    ManagerClient managerClient;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
@@ -139,6 +143,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
+            LOGGER.debug("BridgeIngress '{}' was not found. Notifying manager that it has been deleted.", bridgeDTO.getId());
+            bridgeDTO.setStatus(ManagedResourceStatus.DELETED);
+            managerClient.notifyBridgeStatusChange(bridgeDTO)
+                    .subscribe().with(
+                            success -> LOGGER.debug("Deleted notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
+                            failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
         }
     }
 

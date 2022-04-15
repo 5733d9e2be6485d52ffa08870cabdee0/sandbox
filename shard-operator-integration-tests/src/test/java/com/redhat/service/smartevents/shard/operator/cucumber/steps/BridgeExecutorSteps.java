@@ -10,6 +10,7 @@ import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -35,6 +36,11 @@ public class BridgeExecutorSteps {
         Secret secret = new SecretBuilder()
                 .withMetadata(
                         new ObjectMetaBuilder()
+                                .withLabels(
+                                        new LabelsBuilder()
+                                                .withManagedByOperator()
+                                                .withComponent(BridgeExecutor.COMPONENT_NAME)
+                                                .build())
                                 .withNamespace(bridgeExecutor.getMetadata().getNamespace())
                                 .withName(bridgeExecutor.getMetadata().getName())
                                 .build())

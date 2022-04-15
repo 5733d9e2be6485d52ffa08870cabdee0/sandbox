@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.integration.tests.steps;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.awaitility.Awaitility;
@@ -22,6 +23,8 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.Scenario;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Cucumber hooks for setup and cleanup
@@ -68,14 +71,18 @@ public class Hooks {
                                 token,
                                 bridgeId);
                         if (processorList.getSize() > 0) {
-                            processorList.getItems().stream().forEach(
-                                    p -> ProcessorResource.deleteProcessor(token, bridgeId,
-                                            p.getId()));
-                            Awaitility.await()
-                                    .atMost(Duration.ofMinutes(2))
-                                    .pollInterval(Duration.ofSeconds(5))
-                                    .until(() -> ProcessorResource.getProcessorList(token, bridgeId)
-                                            .getSize() == 0);
+                            processorList.getItems().parallelStream().forEach(
+                                    p -> {
+                                        String processorId = p.getId();
+                                        ProcessorResource.deleteProcessor(token, bridgeId, processorId);
+                                        Awaitility.await()
+                                                .atMost(Duration.ofMinutes(4))
+                                                .pollInterval(Duration.ofSeconds(5))
+                                                .untilAsserted(
+                                                        () -> assertThat(ProcessorResource.getProcessorList(token, bridgeId).getItems())
+                                                                .as("waiting until Processor `%s` of the Bridge `%s` is deleted", processorId, bridgeId)
+                                                                .noneMatch(processor -> Objects.equals(processor.getId(), processorId)));
+                                    });
                         }
                     }
                     switch (bridge.getStatus()) {
@@ -88,7 +95,9 @@ public class Hooks {
                                 Awaitility.await()
                                         .atMost(Duration.ofMinutes(4))
                                         .pollInterval(Duration.ofSeconds(5))
-                                        .until(() -> BridgeResource.getBridgeList(token).getItems().stream().noneMatch(b -> b.getId().equals(bridgeId)));
+                                        .untilAsserted(
+                                                () -> assertThat(BridgeResource.getBridgeList(token).getItems()).as("waiting until Bridge `%s` is deleted", bridgeId)
+                                                        .noneMatch(b -> Objects.equals(b.getId(), bridgeId)));
                             } catch (Exception e) {
                                 LOGGER.warn(e, () -> "Unable to delete bridge with id " + bridgeId);
                             }

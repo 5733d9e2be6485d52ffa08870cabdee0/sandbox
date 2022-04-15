@@ -11,7 +11,8 @@ Feature: BridgeIngress deploy and undeploy
     kind: BridgeIngress
     metadata:
       name: my-bridge-ingress
-      app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+      labels:
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
     spec:
       image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       bridgeName: my-bridge
@@ -33,7 +34,8 @@ Feature: BridgeIngress deploy and undeploy
     kind: BridgeIngress
     metadata:
       name: my-deleted-bridge-ingress
-      app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+      labels:
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
     spec:
       image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       bridgeName: my-bridge

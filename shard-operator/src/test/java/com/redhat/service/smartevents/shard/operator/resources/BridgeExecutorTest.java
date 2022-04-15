@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +17,9 @@ public class BridgeExecutorTest {
 
         assertThat(bridgeExecutor.getMetadata().getNamespace()).isEqualTo("ns");
         assertThat(bridgeExecutor.getMetadata().getName()).isEqualTo(BridgeExecutor.OB_RESOURCE_NAME_PREFIX + TestSupport.PROCESSOR_ID);
+        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.CREATED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
+        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.MANAGED_BY_LABEL)).isEqualTo(LabelsBuilder.OPERATOR_NAME);
+        assertThat(bridgeExecutor.getMetadata().getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(BridgeExecutor.COMPONENT_NAME);
 
         assertThat(bridgeExecutor.getSpec().getProcessorName()).isEqualTo(dto.getName());
         assertThat(bridgeExecutor.getSpec().getId()).isEqualTo(dto.getId());

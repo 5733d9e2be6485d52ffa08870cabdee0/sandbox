@@ -16,13 +16,14 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Prom
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
-import com.redhat.service.smartevents.shard.operator.ManagerSyncService;
+import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
@@ -40,7 +41,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
-@ControllerConfiguration
+@ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         EventSourceInitializer<BridgeExecutor> {
 
@@ -50,7 +51,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     KubernetesClient kubernetesClient;
 
     @Inject
-    ManagerSyncService managerSyncService;
+    ManagerClient managerClient;
 
     @Inject
     BridgeExecutorService bridgeExecutorService;
@@ -160,7 +161,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         ProcessorDTO dto = bridgeExecutor.toDTO();
         dto.setStatus(status);
 
-        managerSyncService.notifyProcessorStatusChange(dto)
+        managerClient.notifyProcessorStatusChange(dto)
                 .subscribe().with(
                         success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId()));

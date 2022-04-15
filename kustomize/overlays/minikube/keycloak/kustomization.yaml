@@ -9,5 +9,5 @@ secretGenerator:
   - event-bridge-fm-realm-sample.json
 resources:
   - namespace.yaml
-  - ../../../base/keycloak
   - nodeport.yaml
+  - keycloak.yaml
