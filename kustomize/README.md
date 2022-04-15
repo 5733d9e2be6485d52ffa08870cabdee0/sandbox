@@ -15,6 +15,7 @@ In this deployment scenario developer provides operator image, Kustomize deploy 
 As a prerequisite the developer needs to adjust
 
 - `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` 
+- `INGRESS_OVERRIDE_HOSTNAME` in `overlays/minikube/shard/patches/deploy-config.yaml` 
 - `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
 - `overlays/minikube/shard/patches/deploy-config.yaml` to contain the offline token for the webhook robot account. It can be retrieved with the command below
 - `overlays/minikube/manager/kustomization.yaml` to contain Managed Kafka bootstrap server URLs and client credentials as well as Managed Connectors bootstrap server URLs and client credentials
