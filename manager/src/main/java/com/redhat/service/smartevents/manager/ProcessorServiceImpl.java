@@ -131,11 +131,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        if (processorType == ProcessorType.SOURCE) {
-            connectorService.createConnectorEntity(newProcessor, definition.getRequestedSource());
-        } else {
-            connectorService.createConnectorEntity(newProcessor, definition.getRequestedAction());
-        }
+        connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
@@ -281,7 +277,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorDTO toDTO(Processor processor) {
         ProcessorDefinition definition = processor.getDefinition() != null ? processor.getDefinition() : null;
 
-        String topicName = definition.getRequestedSource() != null
+        String topicName = processor.getType() == ProcessorType.SOURCE
                 ? resourceNamesProvider.getProcessorTopicName(processor.getId())
                 : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
 
@@ -291,7 +287,9 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 topicName);
-        return new ProcessorDTO(processor.getId(),
+        return new ProcessorDTO(
+                processor.getType(),
+                processor.getId(),
                 processor.getName(),
                 definition,
                 processor.getBridge().getId(),
@@ -304,6 +302,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorResponse toResponse(Processor processor) {
         ProcessorResponse processorResponse = new ProcessorResponse();
 
+        processorResponse.setType(processor.getType());
         processorResponse.setId(processor.getId());
         processorResponse.setName(processor.getName());
         processorResponse.setStatus(processor.getStatus());

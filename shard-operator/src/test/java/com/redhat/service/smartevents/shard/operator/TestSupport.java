@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 public class TestSupport {
@@ -64,6 +65,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        return new ProcessorDTO(ProcessorType.SINK, PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 }
