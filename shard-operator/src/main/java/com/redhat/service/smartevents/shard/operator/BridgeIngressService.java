@@ -19,4 +19,6 @@ public interface BridgeIngressService {
     Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress, Secret secret);
 
     Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
+
+    String getIngressImage();
 }

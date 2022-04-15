@@ -184,4 +184,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .withName(bridgeExecutor.getMetadata().getName())
                 .get();
     }
+
+    @Override
+    public String getExecutorImage() {
+        return executorImage;
+    }
 }
