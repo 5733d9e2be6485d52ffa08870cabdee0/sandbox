@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.infra.models.actions;
+package com.redhat.service.smartevents.infra.models.gateways;
 
 import java.util.HashMap;
 import java.util.Map;

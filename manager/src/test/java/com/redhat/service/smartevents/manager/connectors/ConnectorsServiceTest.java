@@ -7,7 +7,8 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -96,6 +97,7 @@ class ConnectorsServiceTest {
 
     private Processor testProcessor() {
         Processor processor = new Processor();
+        processor.setType(ProcessorType.SINK);
         processor.setId(TEST_PROCESSOR_ID);
         processor.setName(TEST_PROCESSOR_NAME);
         return processor;

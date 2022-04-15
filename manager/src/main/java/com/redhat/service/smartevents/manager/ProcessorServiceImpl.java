@@ -23,13 +23,14 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.Action;
-import com.redhat.service.smartevents.infra.models.actions.Source;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -102,7 +103,12 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
+        ProcessorType processorType = processorRequest.getSource() != null
+                ? ProcessorType.SOURCE
+                : ProcessorType.SINK;
+
         Processor newProcessor = new Processor();
+        newProcessor.setType(processorType);
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -113,13 +119,11 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
-        boolean isSourceProcessor = processorRequest.getSource() != null;
-
-        Action resolvedAction = isSourceProcessor
+        Action resolvedAction = processorType == ProcessorType.SOURCE
                 ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
-        ProcessorDefinition definition = isSourceProcessor
+        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
                 : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
 
@@ -127,7 +131,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        if (isSourceProcessor) {
+        if (processorType == ProcessorType.SOURCE) {
             connectorService.createConnectorEntity(newProcessor, definition.getRequestedSource());
         } else {
             connectorService.createConnectorEntity(newProcessor, definition.getRequestedAction());

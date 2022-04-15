@@ -12,7 +12,7 @@ public enum ManagedResourceStatus {
     FAILED("failed");
 
     @JsonValue
-    String status;
+    final String status;
 
     ManagedResourceStatus(String status) {
         this.status = status;

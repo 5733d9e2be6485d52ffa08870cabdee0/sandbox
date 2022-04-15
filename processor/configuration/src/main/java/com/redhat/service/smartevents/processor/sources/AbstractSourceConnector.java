@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.models.actions.Source;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public abstract class AbstractSourceConnector implements SourceConnector {
 

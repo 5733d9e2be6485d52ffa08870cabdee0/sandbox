@@ -31,12 +31,13 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
@@ -189,6 +190,7 @@ public class ProcessorServiceTest {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
 
         final Processor processor1 = new Processor();
+        processor1.setType(ProcessorType.SINK);
         processor1.setName("My Processor");
         processor1.setBridge(b);
         processor1.setShardId(TestConstants.SHARD_ID);
@@ -199,6 +201,7 @@ public class ProcessorServiceTest {
         processorDAO.persist(processor1);
 
         final Processor processor2 = new Processor();
+        processor2.setType(ProcessorType.SINK);
         processor2.setName("My Processor 2");
         processor2.setBridge(b);
         processor2.setShardId(TestConstants.SHARD_ID);
@@ -209,6 +212,7 @@ public class ProcessorServiceTest {
         processorDAO.persist(processor2);
 
         final Processor processor3 = new Processor();
+        processor3.setType(ProcessorType.SINK);
         processor3.setName("My Processor 3");
         processor3.setBridge(b);
         processor3.setShardId(TestConstants.SHARD_ID);
@@ -280,6 +284,7 @@ public class ProcessorServiceTest {
     @Test
     public void updateProcessorStatus_processorDoesNotExist() {
         Processor p = new Processor();
+        p.setType(ProcessorType.SINK);
         p.setBridge(createPersistBridge(ManagedResourceStatus.READY));
         p.setId("foo");
 
