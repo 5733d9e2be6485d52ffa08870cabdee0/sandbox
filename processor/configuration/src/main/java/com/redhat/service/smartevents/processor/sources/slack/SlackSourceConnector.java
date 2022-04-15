@@ -7,10 +7,10 @@ import javax.enterprise.context.ApplicationScoped;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.processor.sources.AbstractSourceConnector;
+import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
 
 @ApplicationScoped
-public class SlackSourceConnector extends AbstractSourceConnector implements SlackSource {
+public class SlackSourceConnector extends AbstractGatewayConnector<Source> implements SlackSource {
 
     public static final String CONNECTOR_TYPE = "slack_source_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";

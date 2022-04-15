@@ -21,8 +21,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.actions.ActionConnector;
-import com.redhat.service.smartevents.processor.sources.SourceConnector;
+import com.redhat.service.smartevents.processor.GatewayConnector;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -54,18 +53,18 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     private void createConnectorEntity(Processor processor, Action action) {
-        Optional<ActionConnector> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
+        Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
         if (optActionConnector.isEmpty()) {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        ActionConnector actionConnector = optActionConnector.get();
+        GatewayConnector<Action> actionConnector = optActionConnector.get();
         persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.connectorPayload(action, topicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
     private void createConnectorEntity(Processor processor, Source source) {
-        SourceConnector sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
+        GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.connectorPayload(source, topicName));
     }

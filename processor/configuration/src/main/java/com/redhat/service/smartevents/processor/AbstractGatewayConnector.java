@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources;
+package com.redhat.service.smartevents.processor;
 
 import javax.inject.Inject;
 
@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 
-public abstract class AbstractSourceConnector implements SourceConnector {
+public abstract class AbstractGatewayConnector<T extends Gateway> implements GatewayConnector<T> {
 
     public static final String PROCESSORS_PARAMETER = "processors";
     public static final String LOG_PROCESSOR_PARENT_PARAMETER = "log";
@@ -24,10 +24,10 @@ public abstract class AbstractSourceConnector implements SourceConnector {
     @Inject
     ObjectMapper mapper;
 
-    protected abstract void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition);
+    protected abstract void addConnectorSpecificPayload(T gateway, String topicName, ObjectNode definition);
 
     @Override
-    public JsonNode connectorPayload(Source source, String topicName) {
+    public JsonNode connectorPayload(T gateway, String topicName) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {
@@ -36,7 +36,7 @@ public abstract class AbstractSourceConnector implements SourceConnector {
             definition.set(PROCESSORS_PARAMETER, processors);
         }
 
-        addConnectorSpecificPayload(source, topicName, definition);
+        addConnectorSpecificPayload(gateway, topicName, definition);
 
         return definition;
     }

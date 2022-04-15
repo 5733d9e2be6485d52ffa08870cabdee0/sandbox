@@ -6,11 +6,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
-public class SendToBridgeActionValidator implements SendToBridgeAction,
-        ActionValidator {
+public class SendToBridgeActionValidator implements SendToBridgeAction, GatewayValidator<Action> {
 
     public static final String INVALID_BRIDGE_ID_PARAM_MESSAGE =
             "The supplied " + BRIDGE_ID_PARAM + " parameter is not valid";

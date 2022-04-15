@@ -16,7 +16,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -45,7 +45,7 @@ public class GatewayConstraintValidatorTest {
     @InjectMock
     GatewayConfigurator gatewayConfiguratorMock;
 
-    ActionValidator actionValidatorMock;
+    GatewayValidator actionValidatorMock;
 
     HibernateConstraintValidatorContext validatorContext;
 
@@ -64,7 +64,7 @@ public class GatewayConstraintValidatorTest {
 
     @BeforeEach
     public void beforeEach() {
-        actionValidatorMock = mock(ActionValidator.class);
+        actionValidatorMock = mock(GatewayValidator.class);
         when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
 
         reset(gatewayConfiguratorMock);

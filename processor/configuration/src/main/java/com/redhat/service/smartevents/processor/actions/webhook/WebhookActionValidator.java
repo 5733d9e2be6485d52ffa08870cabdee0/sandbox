@@ -7,10 +7,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
-public class WebhookActionValidator implements WebhookAction, ActionValidator {
+public class WebhookActionValidator implements WebhookAction, GatewayValidator<Action> {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";

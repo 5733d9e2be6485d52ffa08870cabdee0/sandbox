@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
 public class GatewayConstraintValidator implements ConstraintValidator<ValidGateway, ProcessorRequest> {
@@ -60,7 +60,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
             return false;
         }
 
-        ActionValidator actionValidator;
+        GatewayValidator<Action> actionValidator;
         try {
             actionValidator = gatewayConfigurator.getActionValidator(action.getType());
         } catch (ActionProviderException e) {

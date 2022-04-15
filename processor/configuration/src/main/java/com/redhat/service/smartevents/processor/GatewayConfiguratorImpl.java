@@ -9,86 +9,92 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.processor.actions.ActionBean;
-import com.redhat.service.smartevents.processor.actions.ActionConnector;
-import com.redhat.service.smartevents.processor.actions.ActionResolver;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
-import com.redhat.service.smartevents.processor.sources.SourceBean;
-import com.redhat.service.smartevents.processor.sources.SourceConnector;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
-import com.redhat.service.smartevents.processor.sources.SourceValidator;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 @ApplicationScoped
 public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Inject
-    Instance<ActionValidator> actionValidators;
+    Instance<GatewayValidator<Action>> actionValidators;
     @Inject
-    Instance<ActionResolver> actionResolvers;
+    Instance<GatewayResolver<Action>> actionResolvers;
     @Inject
-    Instance<ActionConnector> actionConnectors;
+    Instance<GatewayConnector<Action>> actionConnectors;
     @Inject
-    Instance<SourceValidator> sourceValidators;
+    Instance<GatewayValidator<Source>> sourceValidators;
     @Inject
-    Instance<SourceResolver> sourceResolvers;
+    Instance<GatewayResolver<Source>> sourceResolvers;
     @Inject
-    Instance<SourceConnector> sourceConnectors;
+    Instance<GatewayConnector<Source>> sourceConnectors;
 
     @Override
-    public ActionValidator getActionValidator(String actionType) {
+    public GatewayValidator<Action> getActionValidator(String actionType) {
         return getOptionalActionBean(actionValidators, actionType)
                 .orElseThrow(() -> new ActionProviderException(String.format("No validator found for action type '%s'", actionType)));
     }
 
     @Override
-    public Optional<ActionResolver> getActionResolver(String actionType) {
+    public Optional<GatewayResolver<Action>> getActionResolver(String actionType) {
         return getOptionalActionBean(actionResolvers, actionType);
     }
 
     @Override
-    public Optional<ActionConnector> getActionConnector(String actionType) {
+    public Optional<GatewayConnector<Action>> getActionConnector(String actionType) {
         return getOptionalActionBean(actionConnectors, actionType);
     }
 
-    private static <T extends ActionBean> Optional<T> getOptionalActionBean(Instance<T> instances, String sourceType) {
+    private static <T extends GatewayBean<Action>> Optional<T> getOptionalActionBean(Instance<T> instances, String sourceType) {
         return instances.stream()
                 .filter(a -> a.accept(sourceType))
                 .findFirst();
     }
 
     @Override
-    public SourceValidator getSourceValidator(String sourceType) {
+    public GatewayValidator<Source> getSourceValidator(String sourceType) {
         return getOptionalSourceBean(sourceValidators, sourceType)
                 .orElseThrow(() -> new ActionProviderException(String.format("No validator found for source type '%s'", sourceType)));
     }
 
     @Override
-    public SourceResolver getSourceResolver(String sourceType) {
+    public GatewayResolver<Source> getSourceResolver(String sourceType) {
         return getOptionalSourceBean(sourceResolvers, sourceType)
                 .orElseThrow(() -> new ActionProviderException(String.format("No resolver found for source type '%s'", sourceType)));
     }
 
     @Override
-    public SourceConnector getSourceConnector(String sourceType) {
+    public GatewayConnector<Source> getSourceConnector(String sourceType) {
         return getOptionalSourceBean(sourceConnectors, sourceType)
                 .orElseThrow(() -> new ActionProviderException(String.format("No connector found for source type '%s'", sourceType)));
     }
 
-    private static <T extends SourceBean> Optional<T> getOptionalSourceBean(Instance<T> instances, String sourceType) {
+    private static <T extends GatewayBean<Source>> Optional<T> getOptionalSourceBean(Instance<T> instances, String sourceType) {
         return instances.stream()
                 .filter(a -> a.accept(sourceType))
                 .findFirst();
     }
 
-    Collection<ActionValidator> getActionValidators() {
+    Collection<GatewayValidator<Action>> getActionValidators() {
         return actionValidators.stream().collect(Collectors.toList());
     }
 
-    Collection<ActionResolver> getActionResolvers() {
+    Collection<GatewayResolver<Action>> getActionResolvers() {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 
-    Collection<ActionConnector> getActionConnectors() {
+    Collection<GatewayConnector<Action>> getActionConnectors() {
         return actionConnectors.stream().collect(Collectors.toList());
+    }
+
+    Collection<GatewayValidator<Source>> getSourceValidators() {
+        return sourceValidators.stream().collect(Collectors.toList());
+    }
+
+    Collection<GatewayResolver<Source>> getSourceResolvers() {
+        return sourceResolvers.stream().collect(Collectors.toList());
+    }
+
+    Collection<GatewayConnector<Source>> getSourceConnectors() {
+        return sourceConnectors.stream().collect(Collectors.toList());
     }
 }

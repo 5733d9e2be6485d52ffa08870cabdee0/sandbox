@@ -6,10 +6,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.sources.SourceValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
-public class SlackSourceValidator implements SlackSource, SourceValidator {
+public class SlackSourceValidator implements SlackSource, GatewayValidator<Source> {
     public static final String INVALID_CHANNEL_MESSAGE =
             "The supplied " + CHANNEL_PARAM + " parameter is not valid";
 

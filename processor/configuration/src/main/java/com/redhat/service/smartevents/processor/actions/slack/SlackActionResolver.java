@@ -7,19 +7,14 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.actions.ActionResolver;
+import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
-public class SlackActionResolver implements ActionResolver {
+public class SlackActionResolver implements SlackAction, GatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
-
-    @Override
-    public String getType() {
-        return SlackAction.TYPE;
-    }
 
     @Override
     public Action resolve(Action action, String customerId, String bridgeId, String processorId) {

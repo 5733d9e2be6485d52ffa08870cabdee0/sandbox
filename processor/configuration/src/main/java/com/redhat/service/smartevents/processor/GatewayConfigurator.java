@@ -3,12 +3,8 @@ package com.redhat.service.smartevents.processor;
 import java.util.Optional;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.processor.actions.ActionConnector;
-import com.redhat.service.smartevents.processor.actions.ActionResolver;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
-import com.redhat.service.smartevents.processor.sources.SourceConnector;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
-import com.redhat.service.smartevents.processor.sources.SourceValidator;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public interface GatewayConfigurator {
 
@@ -19,7 +15,7 @@ public interface GatewayConfigurator {
      * @return the validator bean
      * @throws ActionProviderException if bean is not found
      */
-    ActionValidator getActionValidator(String actionType);
+    GatewayValidator<Action> getActionValidator(String actionType);
 
     /**
      * Get resolver bean for specific action type.
@@ -29,7 +25,7 @@ public interface GatewayConfigurator {
      * @param actionType desired action type
      * @return {@link Optional} containing the bean if present, empty otherwise.
      */
-    Optional<ActionResolver> getActionResolver(String actionType);
+    Optional<GatewayResolver<Action>> getActionResolver(String actionType);
 
     /**
      * Get connector bean for specific action type.
@@ -39,7 +35,7 @@ public interface GatewayConfigurator {
      * @param actionType desired action type
      * @return {@link Optional} containing the bean if present, empty otherwise.
      */
-    Optional<ActionConnector> getActionConnector(String actionType);
+    Optional<GatewayConnector<Action>> getActionConnector(String actionType);
 
     /**
      * Get validator bean for specific source type. Required for every source.
@@ -48,7 +44,7 @@ public interface GatewayConfigurator {
      * @return the validator bean
      * @throws ActionProviderException if bean is not found
      */
-    SourceValidator getSourceValidator(String sourceType);
+    GatewayValidator<Source> getSourceValidator(String sourceType);
 
     /**
      * Get resolver bean for specific source type. Required for every source.
@@ -57,7 +53,7 @@ public interface GatewayConfigurator {
      * @return the resolver bean
      * @throws ActionProviderException if bean is not found
      */
-    SourceResolver getSourceResolver(String sourceType);
+    GatewayResolver<Source> getSourceResolver(String sourceType);
 
     /**
      * Get connector bean for specific source type. Required for every source.
@@ -66,5 +62,5 @@ public interface GatewayConfigurator {
      * @return the connector bean
      * @throws ActionProviderException if bean is not found
      */
-    SourceConnector getSourceConnector(String sourceType);
+    GatewayConnector<Source> getSourceConnector(String sourceType);
 }

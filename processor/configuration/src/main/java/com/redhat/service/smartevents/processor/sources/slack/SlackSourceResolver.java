@@ -11,19 +11,14 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionPr
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
+import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.input.InputAction;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
 
 @ApplicationScoped
-public class SlackSourceResolver implements SourceResolver {
+public class SlackSourceResolver implements SlackSource, GatewayResolver<Source> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
-
-    @Override
-    public String getType() {
-        return SlackSource.TYPE;
-    }
 
     @Override
     public Action resolve(Source source, String customerId, String bridgeId, String processorId) {
