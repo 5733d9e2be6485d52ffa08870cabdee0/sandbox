@@ -1,11 +1,40 @@
 #!/bin/sh
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+processor_name=$TODAY_PROCESSOR_NAME
+processor_type='slack'
 
-PROCESSOR_NAME=${1:-$TODAY_PROCESSOR_NAME}
+usage() {
+    echo 'Usage: create-processor.sh [OPTIONS]'
+    echo
+    echo 'Options:'
+    echo '  -n                  Processor name. Default is the generated $TODAY_PROCESSOR_NAME'
+    echo '  -t                  Processor type. Default is `slack`. Available values: slack, webhook'
+    echo
+    echo 'Examples:'
+    echo '  # Create default slack processor'
+    echo '  sh create-processor.sh'
+    echo
+    echo '  # Create processor_name processor of type webhook type'
+    echo '  sh create-processor.sh -n processor_name -t webhook'
+}
 
-export PROCESSOR_CONNECTOR_PAYLOAD='{
-   "name": '"\"$PROCESSOR_NAME\""',
+while getopts "t:n:h" i
+do
+    case "$i"
+    in
+        n) processor_name="${OPTARG}" ;;
+        t) processor_type="${OPTARG}" ;;
+        h) usage; exit 0 ;;
+        :) usage; exit 1 ;; # If expected argument omitted:
+        *) usage; exit 1 ;; # If unknown (any other) option
+    esac
+done
+shift "$((OPTIND-1))"
+
+if [ "${processor_type}" = 'slack' ]; then
+  processor_payload='{
+   "name": '"\"$processor_name\""',
    "action": {
       "type": "Slack",
       "parameters": {
@@ -22,9 +51,9 @@ export PROCESSOR_CONNECTOR_PAYLOAD='{
   ],
   "transformationTemplate": "{\"test\": \"{data.myMessage}\"}"
 }'
-
-export PROCESSOR_WEBHOOK_PAYLOAD='{
-   "name": '"\"$PROCESSOR_NAME\""',
+elif [ "${processor_type}" = 'webhook' ]; then
+  processor_payload='{
+   "name": '"\"$processor_name\""',
    "action": {
       "type": "Webhook",
       "parameters": {
@@ -40,9 +69,15 @@ export PROCESSOR_WEBHOOK_PAYLOAD='{
   ],
   "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
 }'
+else
+  echo "Unknown processor type: ${processor_type}"
+  usage
+  exit 1
+fi
 
-printf "\n\nCreating the processor with name $PROCESSOR_NAME\n"
-PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$PROCESSOR_CONNECTOR_PAYLOAD" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
 
-printf "\n\nProcessor Created: $PROCESSOR_NAME\n"
+printf "\n\nCreating the ${processor_type} processor with name $processor_name\n"
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$processor_payload" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
+
+printf "\n\nProcessor ${processor_type} created: $processor_name\n"
 echo "export PROCESSOR_ID=$PROCESSOR_ID"

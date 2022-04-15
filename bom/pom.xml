@@ -3,8 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>event-bridge</artifactId>
-    <groupId>com.redhat.service.bridge</groupId>
+    <artifactId>smart-events</artifactId>
+    <groupId>com.redhat.service.smartevents</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
@@ -12,168 +12,204 @@
 
   <artifactId>bom</artifactId>
   <packaging>pom</packaging>
-  <name>Event Bridge :: BOM</name>
+  <name>SmartEvents :: BOM</name>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>executor</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>manager</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>shard-operator</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>shard-operator</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>shard-operator</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>integration-tests</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>ingress</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>infra</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
-        <artifactId>actions</artifactId>
-        <version>${project.version}</version>
-        <classifier>javadoc</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>rhoas-client</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>
 
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>test-utils</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>test-utils</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>com.redhat.service.bridge</groupId>
+        <groupId>com.redhat.service.smartevents</groupId>
         <artifactId>test-utils</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-configuration</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-runtime</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-runtime</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>com.redhat.service.smartevents</groupId>
+        <artifactId>processor-runtime</artifactId>
         <version>${project.version}</version>
         <classifier>javadoc</classifier>
       </dependency>

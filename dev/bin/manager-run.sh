@@ -4,7 +4,7 @@
 # Run Fleet Manager locally in dev mode
 #
 # Env vars:
-# - MANAGED_CONNECTORS_CLUSTER_ID: cluster where managed connectors will be deployed (required only if MC actions are used, default="empty")
+# - MANAGED_CONNECTORS_NAMESPACE_ID: namespace where managed connectors will be deployed (required only if MC actions are used, default="empty")
 # - MANAGED_CONNECTORS_CONTROL_PLANE_URL: endpoint of the MC Control plane. (required only if MC actions are used, default="empty")
 # - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
 ########
@@ -45,7 +45,7 @@ mvn \
   -Devent-bridge.rhoas.sso.mas.client-secret=${admin_client_secret} \
   -Dminikubeip=${MINIKUBE_IP} \
   -Drhoas.ops-account.client-id=${ops_client_id} \
-  -Dmanaged-connectors.cluster.id=${MANAGED_CONNECTORS_CLUSTER_ID} \
+  -Dmanaged-connectors.namespace.id=${MANAGED_CONNECTORS_NAMESPACE_ID} \
   -Dmanaged-connectors.kafka.bootstrap.servers=${bootstrap_server_host} \
   -Dmanaged-connectors.kafka.client.id=${mc_client_id} \
   -Dmanaged-connectors.kafka.client.secret=${mc_client_secret} \

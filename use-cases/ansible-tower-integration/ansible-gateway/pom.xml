@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.service.bridge</groupId>
+  <groupId>com.redhat.service.smartevents</groupId>
   <artifactId>ansible-gateway</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Event Bridge Use Cases :: Ansible Gateway</name>
-  <description>Ansible gateway for event bridge</description>
+  <name>SmartEvents Use Cases :: Ansible Gateway</name>
+  <description>Ansible gateway for SmartEvents</description>
 
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>

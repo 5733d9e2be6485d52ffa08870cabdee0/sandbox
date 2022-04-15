@@ -12,7 +12,7 @@ on:
       - '.github/**'
       - 'kustomize/**'
       - 'dev/**'
-
+      - 'app-interface/**'
 jobs:
   event-bridge-build:
     env:
@@ -50,11 +50,11 @@ jobs:
         with:
           filters: |
             general: &general
-              - actions/**
               - infra/**
               - bom/**
               - build-parent/**
               - rhoas-client/**
+              - processor/**
             manager:
               - *general
               - manager/**

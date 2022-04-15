@@ -22,12 +22,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Compile, Measure Coverage and Validate Formating
         uses: ./.github/actions/maven
         with:
@@ -37,8 +43,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+          PR_BASE: ${{ github.BASE_REF }}
+          PR_BRANCH: ${{ github.HEAD_REF }}
+          PR_KEY: ${{ github.event.number }}
         with:
-          maven-command: -B sonar:sonar -Dsonar.projectKey=5733d9e2be6485d52ffa08870cabdee0_sandbox -Dsonar.organization=5733d9e2be6485d52ffa08870cabdee0 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
+          maven-command: |
+            -B sonar:sonar -Dsonar.projectKey=5733d9e2be6485d52ffa08870cabdee0_sandbox \
+            -Dsonar.organization=5733d9e2be6485d52ffa08870cabdee0 \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.pullrequest.key=$PR_KEY \
+            -Dsonar.pullrequest.branch=$PR_BRANCH \
+            -Dsonar.pullrequest.base=$PR_BASE
+
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
