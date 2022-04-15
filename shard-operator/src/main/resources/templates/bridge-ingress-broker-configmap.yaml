@@ -12,8 +12,8 @@ metadata:
       uid: ""
   name: ""
 data:
-  default.topic.partitions: "10"
-  default.topic.replication.factor: "3"
+  default.topic.partitions: ""
+  default.topic.replication.factor: ""
   bootstrap.servers: ""
   auth.secret.ref.name: ""
   topic.name: ""

@@ -45,6 +45,7 @@ rules:
       - security.istio.io
     resources:
       - requestauthentications
+      - authorizationpolicies
     verbs:
       - "*"
   # add here the core resources we need to manage
