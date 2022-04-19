@@ -477,6 +477,7 @@ public class ProcessorServiceTest {
 
         Processor updatedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
+        assertThat(updatedResponse.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
 
         assertThat(updatedResponse.getFilters()).isNull();
         assertThat(updatedResponse.getTransformationTemplate()).isEqualTo(updatedTransformationTemplate);
@@ -510,12 +511,31 @@ public class ProcessorServiceTest {
 
         Processor updatedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
+        assertThat(updatedResponse.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
 
         assertThat(updatedResponse.getFilters().size()).isEqualTo(1);
         BaseFilter updatedFilter = updatedResponse.getFilters().iterator().next();
         assertThat(updatedFilter.getKey()).isEqualTo("key");
         assertThat(updatedFilter.getValue()).isEqualTo("value");
         assertThat(updatedResponse.getTransformationTemplate()).isNull();
+    }
+
+    @Test
+    public void updateProcessorWithNoChange() {
+        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        String transformationTemplate = processorService.toResponse(processor).getTransformationTemplate();
+        assertThat(transformationTemplate).isNull();
+
+        ProcessorRequest request = new ProcessorRequest(processor.getName(), null, null, null);
+        processorService.updateProcessor(b.getId(),
+                processor.getId(),
+                b.getCustomerId(),
+                request);
+
+        Processor updatedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
+        assertThat(updatedProcessor.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(processor).isEqualTo(updatedProcessor);
     }
 
     @Test
