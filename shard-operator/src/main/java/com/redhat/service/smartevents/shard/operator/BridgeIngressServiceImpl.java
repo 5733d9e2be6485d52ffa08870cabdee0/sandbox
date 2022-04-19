@@ -142,8 +142,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                         .delete(BridgeIngress.fromDTO(bridgeDTO, namespace, ingressImage));
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
-            LOGGER.warn("BridgeIngress '{}' not deleted", bridgeDTO);
-            LOGGER.debug("BridgeIngress '{}' was not found. Notifying manager that it has been deleted.", bridgeDTO.getId());
+            LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
             bridgeDTO.setStatus(ManagedResourceStatus.DELETED);
             managerClient.notifyBridgeStatusChange(bridgeDTO)
                     .subscribe().with(
