@@ -37,4 +37,4 @@ Feature: Webhook Action tests
         }
     }
     """
-    Then Webhook site contains request with text "hello world by ${bridge.mybridge.cloud-event.webhook-test.id}" within 1 minute
+    Then Webhook site contains request with text "hello world by ${cloud-event.webhook-test.id}" within 1 minute

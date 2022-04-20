@@ -35,7 +35,7 @@ Feature: Tests of Processor Transformation template
     }
     """
     
-    Then Slack channel contains message with text "hello world by ${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
+    Then Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
 
 
   Scenario: Transformation template is properly updated
@@ -65,7 +65,7 @@ Feature: Tests of Processor Transformation template
       }
     }
     """
-    And Slack channel contains message with text "hello world by ${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
+    And Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
 
     When update the Processor "myProcessor" of the Bridge "mybridge" with body:
     """
@@ -94,4 +94,4 @@ Feature: Tests of Processor Transformation template
     }
     """
 
-    Then Slack channel contains message with text "hello world by updated template ${bridge.mybridge.cloud-event.second-event-id.id}" within 1 minute
+    Then Slack channel contains message with text "hello world by updated template ${cloud-event.second-event-id.id}" within 1 minute
