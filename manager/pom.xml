@@ -142,9 +142,30 @@
       <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>logger-java-log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
     <plugins>
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>
@@ -172,6 +193,11 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <properties>
+            <configurationParameters>
+              junit.jupiter.extensions.autodetection.enabled = true
+            </configurationParameters>
+          </properties>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <container.image.localstack>${container.image.localstack}</container.image.localstack>
@@ -189,6 +215,11 @@
               <goal>verify</goal>
             </goals>
             <configuration>
+              <properties>
+                <configurationParameters>
+                  junit.jupiter.extensions.autodetection.enabled = true
+                </configurationParameters>
+              </properties>
               <systemPropertyVariables>
                 <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
