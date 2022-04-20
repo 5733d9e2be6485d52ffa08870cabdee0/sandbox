@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 
 public abstract class AbstractActionConnector implements ActionConnector {
 
@@ -24,10 +24,10 @@ public abstract class AbstractActionConnector implements ActionConnector {
     @Inject
     ObjectMapper mapper;
 
-    protected abstract void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition);
+    protected abstract void addConnectorSpecificPayload(Action action, String topicName, ObjectNode definition);
 
     @Override
-    public JsonNode connectorPayload(BaseAction action, String topicName) {
+    public JsonNode connectorPayload(Action action, String topicName) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {

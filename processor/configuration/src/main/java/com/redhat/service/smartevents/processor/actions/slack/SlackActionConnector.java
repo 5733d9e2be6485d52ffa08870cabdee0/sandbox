@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.processor.actions.AbstractActionConnector;
 
 @ApplicationScoped
@@ -23,7 +23,7 @@ public class SlackActionConnector extends AbstractActionConnector implements Sla
     }
 
     @Override
-    protected void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition) {
+    protected void addConnectorSpecificPayload(Action action, String topicName, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
         String slackChannel = actionParameters.get(CHANNEL_PARAM);

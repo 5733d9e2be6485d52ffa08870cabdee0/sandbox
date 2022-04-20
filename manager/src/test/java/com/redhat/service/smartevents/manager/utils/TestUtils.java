@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -115,8 +115,8 @@ public class TestUtils {
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
-    public static BaseAction createKafkaAction() {
-        BaseAction r = new BaseAction();
+    public static Action createKafkaAction() {
+        Action r = new Action();
         r.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -125,8 +125,8 @@ public class TestUtils {
         return r;
     }
 
-    public static BaseAction createSendToBridgeAction(String bridgeId) {
-        BaseAction r = new BaseAction();
+    public static Action createSendToBridgeAction(String bridgeId) {
+        Action r = new Action();
         r.setType(SendToBridgeAction.TYPE);
 
         Map<String, String> params = new HashMap<>();

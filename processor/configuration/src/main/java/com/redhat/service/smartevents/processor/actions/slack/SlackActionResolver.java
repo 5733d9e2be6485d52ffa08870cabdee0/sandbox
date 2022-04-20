@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.processor.actions.ActionResolver;
 import com.redhat.service.smartevents.processor.actions.ActionService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
@@ -22,9 +22,9 @@ public class SlackActionResolver implements ActionResolver {
     }
 
     @Override
-    public BaseAction resolve(BaseAction action, String customerId, String bridgeId, String processorId) {
+    public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
 
-        BaseAction resolvedAction = new BaseAction();
+        Action resolvedAction = new Action();
 
         Map<String, String> newParameters = resolvedAction.getParameters();
         newParameters.putAll(action.getParameters());

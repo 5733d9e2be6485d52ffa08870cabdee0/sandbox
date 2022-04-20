@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -78,7 +78,7 @@ public class ExecutorTest {
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
@@ -100,10 +100,10 @@ public class ExecutorTest {
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction requestedAction = new BaseAction();
+        Action requestedAction = new Action();
         requestedAction.setType("SendToBridge");
 
-        BaseAction resolvedAction = new BaseAction();
+        Action resolvedAction = new Action();
         resolvedAction.setType(WebhookAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
@@ -123,7 +123,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "notTheValue"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
@@ -142,7 +142,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
@@ -162,7 +162,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";

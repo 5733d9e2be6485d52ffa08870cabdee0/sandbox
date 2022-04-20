@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -41,7 +41,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, BaseAction action) {
+    public void createConnectorEntity(Processor processor, Action action) {
         Optional<ActionConnector> optActionConnector = actionConfigurator.getConnector(action.getType());
         if (optActionConnector.isEmpty()) {
             return;

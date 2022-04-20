@@ -4,22 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseAction {
+public class Gateway {
 
-    @NotNull(message = "An Action Type must be specified")
     @JsonProperty("type")
     private String type;
 
-    @NotEmpty(message = "Action parameters must be supplied")
     @JsonProperty("parameters")
     private Map<String, String> parameters = new HashMap<>();
 
@@ -47,7 +42,7 @@ public class BaseAction {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BaseAction that = (BaseAction) o;
+        Gateway that = (Gateway) o;
         return Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
     }
 

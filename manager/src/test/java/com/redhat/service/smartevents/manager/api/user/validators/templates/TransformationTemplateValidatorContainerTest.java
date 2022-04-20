@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -35,9 +35,9 @@ public class TransformationTemplateValidatorContainerTest {
     HibernateConstraintViolationBuilder builderMock;
 
     private ProcessorRequest buildTestRequest(String transformationTemplate) {
-        BaseAction b = new BaseAction();
-        b.setType(TEST_ACTION_TYPE);
-        return new ProcessorRequest(TEST_PROCESSOR_NAME, null, transformationTemplate, b);
+        Action action = new Action();
+        action.setType(TEST_ACTION_TYPE);
+        return new ProcessorRequest(TEST_PROCESSOR_NAME, null, transformationTemplate, action);
     }
 
     @BeforeEach

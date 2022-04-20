@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
 import com.redhat.service.smartevents.infra.auth.OidcClientConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionInvokerBuilder;
@@ -39,11 +39,11 @@ public class WebhookActionInvokerBuilder implements WebhookAction,
     }
 
     @Override
-    public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {
-        String endpoint = Optional.ofNullable(baseAction.getParameters().get(ENDPOINT_PARAM))
+    public ActionInvoker build(ProcessorDTO processor, Action action) {
+        String endpoint = Optional.ofNullable(action.getParameters().get(ENDPOINT_PARAM))
                 .orElseThrow(() -> buildNoEndpointException(processor));
-        if (baseAction.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN_PARAM)
-                && baseAction.getParameters().get(USE_TECHNICAL_BEARER_TOKEN_PARAM).equals("true")) {
+        if (action.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN_PARAM)
+                && action.getParameters().get(USE_TECHNICAL_BEARER_TOKEN_PARAM).equals("true")) {
             AbstractOidcClient abstractOidcClient =
                     oidcClients.stream()
                             .filter(x -> Objects.equals(x.getName(), OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME))

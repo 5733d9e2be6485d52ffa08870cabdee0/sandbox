@@ -13,7 +13,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionInvokerBuilder;
@@ -32,8 +32,8 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicAction,
     AdminClient adminClient;
 
     @Override
-    public ActionInvoker build(ProcessorDTO processor, BaseAction baseAction) {
-        String requiredTopic = baseAction.getParameters().get(TOPIC_PARAM);
+    public ActionInvoker build(ProcessorDTO processor, Action action) {
+        String requiredTopic = action.getParameters().get(TOPIC_PARAM);
         if (requiredTopic == null) {
             throw new ActionProviderException(
                     String.format("There is no topic specified in the parameters for Action on Processor '%s' on Bridge '%s'", processor.getId(), processor.getBridgeId()));
