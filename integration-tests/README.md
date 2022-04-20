@@ -54,4 +54,4 @@ Curently there is a possibility to use these placeholders in feature files:
 
 - ${env.`<System property name>`} to use System property
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
-- ${bridge.`<Bridge name>`.cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
+- ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)

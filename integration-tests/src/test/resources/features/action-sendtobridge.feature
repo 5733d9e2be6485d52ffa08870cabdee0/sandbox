@@ -59,4 +59,4 @@ Feature: SendToBridge Action tests
     }
     """
     
-    Then Slack channel contains message with text "hello world by ${bridge.bridge1.cloud-event.my-id.id}" within 1 minute
+    Then Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
