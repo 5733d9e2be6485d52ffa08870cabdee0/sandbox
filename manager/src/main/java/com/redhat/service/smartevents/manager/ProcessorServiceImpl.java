@@ -23,11 +23,11 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
@@ -38,7 +38,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -61,7 +61,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     ObjectMapper mapper;
 
     @Inject
-    ActionConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Inject
     ConnectorsService connectorService;
@@ -108,7 +108,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
         Action requestedAction = processorRequest.getAction();
 
-        Action resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
+        Action resolvedAction = gatewayConfigurator.getActionResolver(requestedAction.getType())
                 .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
                 .orElse(requestedAction);
 

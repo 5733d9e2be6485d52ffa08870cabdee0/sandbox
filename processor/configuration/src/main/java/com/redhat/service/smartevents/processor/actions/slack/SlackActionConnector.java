@@ -6,11 +6,11 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.actions.Action;
-import com.redhat.service.smartevents.processor.actions.AbstractActionConnector;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
 
 @ApplicationScoped
-public class SlackActionConnector extends AbstractActionConnector implements SlackAction {
+public class SlackActionConnector extends AbstractGatewayConnector<Action> implements SlackAction {
 
     public static final String CONNECTOR_TYPE = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";

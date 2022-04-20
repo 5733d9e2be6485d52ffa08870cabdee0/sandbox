@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
-import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluator;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;

@@ -10,8 +10,8 @@ import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.ProcessorContext;

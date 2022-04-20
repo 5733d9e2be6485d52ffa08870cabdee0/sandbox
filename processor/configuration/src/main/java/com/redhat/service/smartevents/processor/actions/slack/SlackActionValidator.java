@@ -4,12 +4,12 @@ import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
-public class SlackActionValidator implements SlackAction, ActionValidator {
+public class SlackActionValidator implements SlackAction, GatewayValidator<Action> {
     public static final String INVALID_CHANNEL_MESSAGE =
             "The supplied " + CHANNEL_PARAM + " parameter is not valid";
 

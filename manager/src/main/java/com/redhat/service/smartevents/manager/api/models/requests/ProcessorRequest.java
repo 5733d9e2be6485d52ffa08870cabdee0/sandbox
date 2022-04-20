@@ -7,8 +7,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.models.actions.Action;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 public class ProcessorRequest {
 

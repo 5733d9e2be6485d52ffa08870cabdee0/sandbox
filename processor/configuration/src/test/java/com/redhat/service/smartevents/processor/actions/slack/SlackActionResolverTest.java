@@ -7,8 +7,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.Action;
-import com.redhat.service.smartevents.processor.actions.ActionService;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,14 +34,14 @@ class SlackActionResolverTest {
     SlackActionResolver slackActionResolver;
 
     @InjectMock
-    ActionService actionServiceMock;
+    GatewayConfiguratorService gatewayConfiguratorServiceMock;
 
     @BeforeEach
     void beforeEach() {
-        reset(actionServiceMock);
+        reset(gatewayConfiguratorServiceMock);
 
-        when(actionServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
-        when(actionServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
     }
 
     @Test

@@ -9,11 +9,11 @@ import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {
@@ -25,7 +25,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
     static final String TYPE_PARAM = "type";
 
     @Inject
-    ActionConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -47,9 +47,9 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             return false;
         }
 
-        ActionValidator actionValidator;
+        GatewayValidator<Action> actionValidator;
         try {
-            actionValidator = actionConfigurator.getValidator(action.getType());
+            actionValidator = gatewayConfigurator.getActionValidator(action.getType());
         } catch (ActionProviderException e) {
             context.disableDefaultConstraintViolation();
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
