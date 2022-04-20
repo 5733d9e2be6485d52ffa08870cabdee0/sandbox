@@ -37,7 +37,7 @@ class SendToBridgeActionResolverTest {
     private static final String UNKNOWN_BRIDGE_ID = "br-unknown";
 
     @Inject
-    SendToBridgeActionResolver transformer;
+    SendToBridgeActionResolver resolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
@@ -57,47 +57,47 @@ class SendToBridgeActionResolverTest {
     @Test
     void testActionWithoutBridgeId() {
         Action inputAction = actionWithoutBridgeId();
-        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
-        assertValid(transformedAction, BRIDGE_WEBHOOK);
+        Action resolvedAction = resolver.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        assertValid(resolvedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
         Action inputAction = actionWithoutBridgeId();
-        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, OTHER_BRIDGE_ID, "");
-        assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
+        Action resolvedAction = resolver.resolve(inputAction, TEST_CUSTOMER_ID, OTHER_BRIDGE_ID, "");
+        assertValid(resolvedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithSameBridgeId() {
         Action inputAction = actionWithBridgeId(BRIDGE_ID);
-        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
-        assertValid(transformedAction, BRIDGE_WEBHOOK);
+        Action resolvedAction = resolver.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        assertValid(resolvedAction, BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithOtherBridgeId() {
         Action inputAction = actionWithBridgeId(OTHER_BRIDGE_ID);
-        Action transformedAction = transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
-        assertValid(transformedAction, OTHER_BRIDGE_WEBHOOK);
+        Action resolvedAction = resolver.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, "");
+        assertValid(resolvedAction, OTHER_BRIDGE_WEBHOOK);
     }
 
     @Test
     void testActionWithUnavailableBridgeId() {
         Action inputAction = actionWithBridgeId(UNAVAILABLE_BRIDGE_ID);
-        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
+        assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> resolver.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
     }
 
     @Test
     void testActionWithUnknownBridgeId() {
         Action inputAction = actionWithBridgeId(UNKNOWN_BRIDGE_ID);
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> transformer.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> resolver.resolve(inputAction, TEST_CUSTOMER_ID, BRIDGE_ID, ""));
     }
 
-    private void assertValid(Action transformedAction, String expectedEndpoint) {
-        assertThat(transformedAction).isNotNull();
-        assertThat(transformedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(transformedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
+    private void assertValid(Action resolvedAction, String expectedEndpoint) {
+        assertThat(resolvedAction).isNotNull();
+        assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
+        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
     }
 
     private Action actionWithoutBridgeId() {
