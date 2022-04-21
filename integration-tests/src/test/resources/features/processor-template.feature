@@ -81,6 +81,8 @@ Feature: Tests of Processor Transformation template
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    # Need to wait until original Processor pod is completely terminated, see https://issues.redhat.com/browse/MGDOBR-613
+    And wait for 10 seconds
     And send a cloud event to the Ingress of the Bridge "mybridge":
     """
     {
