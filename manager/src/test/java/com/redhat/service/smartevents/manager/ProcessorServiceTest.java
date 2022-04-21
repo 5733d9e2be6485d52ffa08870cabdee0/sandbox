@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,14 +59,21 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -86,6 +92,7 @@ class ProcessorServiceTest {
 
     public static final String TEST_NON_EXISTING_BRIDGE_ID = "non-existing-bridge-id";
     public static final String TEST_NOT_READY_BRIDGE_ID = "not-ready-bridge-id";
+    public static final String TEST_NON_EXISTING_PROCESSOR_ID = "non-existing-processor-id";
 
     @Inject
     ProcessorService processorService;
@@ -124,21 +131,41 @@ class ProcessorServiceTest {
         //        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         reset(rhoasService);
         reset(bridgesServiceMock);
-        when(bridgesServiceMock.getReadyBridge(TEST_NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+
+        Bridge bridge = createReadyBridge();
+        Processor processor = createReadyProcessor();
+
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID))
+                .thenReturn(bridge);
+        when(bridgesServiceMock.getBridge(not(eq(DEFAULT_BRIDGE_ID))))
                 .thenThrow(new ItemNotFoundException("Bridge not found"));
+
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(bridge);
+        when(bridgesServiceMock.getBridge(not(eq(DEFAULT_BRIDGE_ID)), eq(DEFAULT_CUSTOMER_ID)))
+                .thenThrow(new ItemNotFoundException("Bridge not found"));
+        when(bridgesServiceMock.getBridge(any(), not(eq(DEFAULT_CUSTOMER_ID))))
+                .thenThrow(new ItemNotFoundException("Bridge not found"));
+
+        when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(bridge);
         when(bridgesServiceMock.getReadyBridge(TEST_NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
                 .thenThrow(new BridgeLifecycleException("Bridge not ready"));
-        when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
-                .thenReturn(createReadyBridge());
+        when(bridgesServiceMock.getReadyBridge(not(or(eq(DEFAULT_BRIDGE_ID), eq(TEST_NOT_READY_BRIDGE_ID))), eq(DEFAULT_CUSTOMER_ID)))
+                .thenThrow(new ItemNotFoundException("Bridge not found"));
 
-        when(processorDAO.findByBridgeIdAndName(DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_PROCESSOR_NAME))
-                .thenReturn(createReadyProcessor());
+        when(processorDAO.findById(DEFAULT_PROCESSOR_ID))
+                .thenReturn(processor);
+        when(processorDAO.findByBridgeIdAndName(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_NAME))
+                .thenReturn(processor);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(processor);
     }
 
     private Bridge createReadyBridge() {
         Bridge b = Fixtures.createBridge();
         b.setId(DEFAULT_BRIDGE_ID);
-        b.setStatus(ManagedResourceStatus.READY);
+        b.setStatus(READY);
         return b;
     }
 
@@ -151,6 +178,7 @@ class ProcessorServiceTest {
 
     private Processor createReadyProcessor() {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), READY);
+        processor.setId(TestConstants.DEFAULT_PROCESSOR_ID);
         return processor;
     }
 
@@ -190,7 +218,7 @@ class ProcessorServiceTest {
 
     @Test
     void createProcessor_processorWithSameNameAlreadyExists() {
-        ProcessorRequest r = new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, createKafkaAction());
+        ProcessorRequest r = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaAction());
         assertThatExceptionOfType(AlreadyExistingItemException.class)
                 .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, r));
     }
@@ -203,7 +231,7 @@ class ProcessorServiceTest {
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getName()).isEqualTo(r.getName());
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(processor.getStatus()).isEqualTo(ACCEPTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
 
@@ -232,16 +260,16 @@ class ProcessorServiceTest {
         Processor processor1 = new Processor();
         processor1.setName(processor1Name);
         processor1.setShardId(TestConstants.SHARD_ID);
-        processor1.setStatus(ManagedResourceStatus.ACCEPTED);
-        processor1.setDependencyStatus(ManagedResourceStatus.READY);
+        processor1.setStatus(ACCEPTED);
+        processor1.setDependencyStatus(READY);
 
         String processor2Name = "My Processor 2";
 
         Processor processor2 = new Processor();
         processor2.setName(processor2Name);
         processor2.setShardId(TestConstants.SHARD_ID);
-        processor2.setStatus(ManagedResourceStatus.DEPROVISION);
-        processor2.setDependencyStatus(ManagedResourceStatus.DELETED);
+        processor2.setStatus(DEPROVISION);
+        processor2.setDependencyStatus(DELETED);
 
         when(processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID))
                 .thenReturn(List.of(processor1, processor2));
@@ -253,109 +281,81 @@ class ProcessorServiceTest {
     }
 
     @Test
-    public void updateProcessorStatus() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
+    void updateProcessorStatus() {
+        ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(FAILED);
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
+        Processor updated = processorService.updateProcessorStatus(updateDto);
 
-        ProcessorDTO dto = processorService.toDTO(processor);
-        dto.setStatus(ManagedResourceStatus.FAILED);
-
-        Processor updated = processorService.updateProcessorStatus(dto);
-        assertThat(updated.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+        assertThat(updated.getStatus()).isEqualTo(FAILED);
     }
 
     @Test
-    public void testUpdateProcessorStatusReadyPublishedAt() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
+    void testUpdateProcessorStatusReadyPublishedAt() {
+        ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
 
-        processor.setStatus(ManagedResourceStatus.PROVISIONING);
-        processorService.updateProcessorStatus(processorService.toDTO(processor));
+        Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
 
-        Processor retrievedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
-        assertThat(retrievedProcessor.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
-        assertThat(retrievedProcessor.getPublishedAt()).isNull();
-
-        // Once ready it should have its published date set
-        processor.setStatus(ManagedResourceStatus.READY);
-        processorService.updateProcessorStatus(processorService.toDTO(processor));
-
-        Processor publishedProcessor = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
-        assertThat(publishedProcessor.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        ZonedDateTime publishedAt = publishedProcessor.getPublishedAt();
-        assertThat(publishedAt).isNotNull();
+        assertThat(publishedProcessor.getStatus()).isEqualTo(READY);
+        assertThat(publishedProcessor.getPublishedAt()).isNotNull();
 
         //Check calls to set PublishedAt at idempotent
-        processorService.updateProcessorStatus(processorService.toDTO(processor));
+        Processor publishedProcessor2 = processorService.updateProcessorStatus(updateDto);
 
-        Processor publishedProcessor2 = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
-        assertThat(publishedProcessor2.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedAt);
+        assertThat(publishedProcessor2.getStatus()).isEqualTo(READY);
+        assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedProcessor.getPublishedAt());
     }
 
     @Test
-    public void updateProcessorStatus_bridgeDoesNotExist() {
+    void updateProcessorStatus_bridgeDoesNotExist() {
         ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridgeId("foo");
+        processor.setBridgeId(TEST_NON_EXISTING_BRIDGE_ID);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
     }
 
     @Test
-    public void updateProcessorStatus_processorDoesNotExist() {
-        Processor p = new Processor();
-        p.setBridge(createPersistBridge(ManagedResourceStatus.READY));
-        p.setId("foo");
+    void updateProcessorStatus_processorDoesNotExist() {
+        ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setId(TEST_NON_EXISTING_PROCESSOR_ID);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
 
-        ProcessorDTO processor = processorService.toDTO(p);
-
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }
 
     @Test
-    public void getProcessor() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
-
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
-
-        Processor found = processorService.getProcessor(b.getId(), processor.getId(), b.getCustomerId());
+    void getProcessor() {
+        Processor found = processorService.getProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID);
         assertThat(found).isNotNull();
-        assertThat(found.getId()).isEqualTo(processor.getId());
-        assertThat(found.getBridge().getId()).isEqualTo(b.getId());
-        assertThat(found.getBridge().getCustomerId()).isEqualTo(b.getCustomerId());
+        assertThat(found.getId()).isEqualTo(DEFAULT_PROCESSOR_ID);
+        assertThat(found.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
+        assertThat(found.getBridge().getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
     }
 
     @Test
-    public void getProcessor_bridgeDoesNotExist() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
-
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
-
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor("doesNotExist", processor.getId(), b.getCustomerId()));
+    void getProcessor_bridgeDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.getProcessor(TEST_NON_EXISTING_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
     }
 
     @Test
-    public void getProcessor_processorDoesNotExist() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
-
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
-
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessor(b.getId(), "doesNotExist", b.getCustomerId()));
+    void getProcessor_processorDoesNotExist() {
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.getProcessor(DEFAULT_BRIDGE_ID, TEST_NON_EXISTING_PROCESSOR_ID, DEFAULT_CUSTOMER_ID));
     }
 
     @Test
     public void getProcessors() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -371,7 +371,7 @@ class ProcessorServiceTest {
 
     @Test
     public void getProcessors_noProcessorsOnBridge() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
         ListResult<Processor> results = processorService.getProcessors(b.getId(), DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
@@ -380,18 +380,20 @@ class ProcessorServiceTest {
 
     @Test
     public void getProcessors_bridgeDoesNotExist() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.getProcessors("doesNotExist", DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
     }
 
     @Test
     public void deleteProcessor_processorDoesNotExist() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.deleteProcessor(b.getId(), "doesNotExist", b.getCustomerId()));
+        Bridge b = createPersistBridge(READY);
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> processorService.deleteProcessor(b.getId(), "doesNotExist", b.getCustomerId()));
     }
 
     @Test
     public void testGetProcessorsCount() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
         ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
 
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
@@ -403,14 +405,14 @@ class ProcessorServiceTest {
 
     @Test
     public void testDeleteProcessor() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, READY);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), b.getCustomerId());
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+            assertThat(p.getDependencyStatus()).isEqualTo(DELETED);
             assertThat(p.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
 
             assertShardAsksForProcessorToBeDeletedIncludes(processor);
@@ -419,14 +421,14 @@ class ProcessorServiceTest {
 
     @Test
     public void testDeleteProcessor_whenProcessorStatusIsFailed() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.FAILED);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, FAILED);
 
         processorService.deleteProcessor(b.getId(), processor.getId(), b.getCustomerId());
         await().atMost(5, SECONDS).untilAsserted(() -> {
             Processor p = processorDAO.findById(processor.getId());
             assertThat(p).isNotNull();
-            assertThat(p.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+            assertThat(p.getDependencyStatus()).isEqualTo(DELETED);
             assertThat(p.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
 
             assertShardAsksForProcessorToBeDeletedIncludes(processor);
@@ -456,7 +458,7 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWhenProcessorNotExists() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
 
         ProcessorRequest request = new ProcessorRequest("myProcessor", Collections.emptySet(), null, null);
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessor(b.getId(),
@@ -467,7 +469,7 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWhenProcessorNotInReadyState() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
         Processor processor = createPersistProcessor(b, ManagedResourceStatus.PROVISIONING);
 
         ProcessorRequest request = new ProcessorRequest(processor.getName(), Collections.emptySet(), null, null);
@@ -479,8 +481,8 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWithName() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, READY);
 
         ProcessorRequest request = new ProcessorRequest(processor.getName() + "-updated", Collections.emptySet(), null, null);
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> processorService.updateProcessor(b.getId(),
@@ -491,8 +493,8 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWithTemplate() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, READY);
         String transformationTemplate = processorService.toResponse(processor).getTransformationTemplate();
         assertThat(transformationTemplate).isNull();
 
@@ -513,8 +515,8 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWithAction() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, READY);
 
         ProcessorRequest request = new ProcessorRequest(processor.getName(), Collections.emptySet(), null, createKafkaAction());
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> processorService.updateProcessor(b.getId(),
@@ -525,8 +527,8 @@ class ProcessorServiceTest {
 
     @Test
     public void updateProcessorWithFilter() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(b, ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(b, READY);
         Set<BaseFilter> filters = processorService.toResponse(processor).getFilters();
         assertThat(filters).isNull();
 
@@ -568,7 +570,7 @@ class ProcessorServiceTest {
 
     @Test
     public void testMGDOBR_80() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("name", "myName"));
         filters.add(new StringEquals("surename", "mySurename"));
@@ -583,7 +585,7 @@ class ProcessorServiceTest {
     @Test
     public void toResponse() {
         Bridge b = Fixtures.createBridge();
-        Processor p = Fixtures.createProcessor(b, ManagedResourceStatus.READY);
+        Processor p = Fixtures.createProcessor(b, READY);
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
@@ -615,7 +617,7 @@ class ProcessorServiceTest {
 
     @Test
     void createConnectorSuccess() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
 
         Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
@@ -640,7 +642,7 @@ class ProcessorServiceTest {
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();
-            assertThat(connector.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+            assertThat(connector.getStatus()).isEqualTo(READY);
         });
 
         verify(rhoasService, atLeast(1)).createTopicAndGrantAccessFor(anyString(), eq(RhoasTopicAccessType.PRODUCER));
@@ -653,7 +655,7 @@ class ProcessorServiceTest {
 
     @Test
     public void createConnectorFailureOnKafkaTopicCreation() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
 
         Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
@@ -672,7 +674,7 @@ class ProcessorServiceTest {
 
     @Test
     public void createConnectorFailureOnExternalConnectorCreation() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge b = createPersistBridge(READY);
 
         Action slackAction = createSlackAction();
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
@@ -718,8 +720,8 @@ class ProcessorServiceTest {
 
     @Test
     public void testDeleteConnectorFailureOnKafkaTopicDeletion() {
-        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(bridge, ManagedResourceStatus.READY);
+        Bridge bridge = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(bridge, READY);
         createPersistentConnector(processor, READY);
 
         //Emulate successful External Connector creation
@@ -752,8 +754,8 @@ class ProcessorServiceTest {
 
     @Test
     public void testDeleteConnectorFailureOnExternalConnectorDestruction() {
-        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
-        Processor processor = createPersistProcessor(bridge, ManagedResourceStatus.READY);
+        Bridge bridge = createPersistBridge(READY);
+        Processor processor = createPersistProcessor(bridge, READY);
         createPersistentConnector(processor, READY);
 
         //Emulate successful External Connector creation
@@ -780,7 +782,7 @@ class ProcessorServiceTest {
 
     @Test
     public void testDeleteProcess_whenProcessorIsNotReady() {
-        Bridge bridge = createPersistBridge(ManagedResourceStatus.READY);
+        Bridge bridge = createPersistBridge(READY);
         Processor processor = createPersistProcessor(bridge, ManagedResourceStatus.PROVISIONING);
         assertThatExceptionOfType(ProcessorLifecycleException.class).isThrownBy(() -> processorService.deleteProcessor(bridge.getId(), processor.getId(), bridge.getCustomerId()));
     }
@@ -816,7 +818,7 @@ class ProcessorServiceTest {
             Processor p = processorDAO.findById(processor.getId());
 
             assertThat(p).isNotNull();
-            assertThat(p.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+            assertThat(p.getStatus()).isEqualTo(FAILED);
         });
     }
 
