@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.api.user.validators.actions;
+package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,14 +33,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-public class ActionParamValidatorContainerTest {
+public class GatewayConstraintValidatorTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
     public static String TEST_PARAM_NAME = "test-param-name";
     public static String TEST_PARAM_VALUE = "test-param-value";
 
     @Inject
-    ActionParamValidatorContainer container;
+    GatewayConstraintValidator container;
 
     @InjectMock
     GatewayConfigurator gatewayConfiguratorMock;
@@ -129,7 +129,7 @@ public class ActionParamValidatorContainerTest {
 
         verify(validatorContext).disableDefaultConstraintViolation();
         verify(validatorContext).buildConstraintViolationWithTemplate(anyString());
-        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, doesNotExistType);
+        verify(validatorContext).addMessageParameter(GatewayConstraintValidator.TYPE_PARAM, doesNotExistType);
         verify(builderMock).addConstraintViolation();
     }
 
@@ -168,9 +168,9 @@ public class ActionParamValidatorContainerTest {
 
         verify(validatorContext).disableDefaultConstraintViolation();
         verify(validatorContext).buildConstraintViolationWithTemplate(messageCap.capture());
-        verify(validatorContext).addMessageParameter(ActionParamValidatorContainer.TYPE_PARAM, TEST_ACTION_TYPE);
+        verify(validatorContext).addMessageParameter(GatewayConstraintValidator.TYPE_PARAM, TEST_ACTION_TYPE);
         verify(builderMock).addConstraintViolation();
 
-        assertThat(messageCap.getValue()).isEqualTo(ActionParamValidatorContainer.ACTION_PARAMETERS_NOT_VALID_ERROR);
+        assertThat(messageCap.getValue()).isEqualTo(GatewayConstraintValidator.ACTION_PARAMETERS_NOT_VALID_ERROR);
     }
 }
