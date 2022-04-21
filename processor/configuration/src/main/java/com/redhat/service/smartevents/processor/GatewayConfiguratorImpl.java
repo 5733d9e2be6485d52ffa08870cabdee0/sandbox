@@ -8,7 +8,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 
@@ -31,7 +31,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     @Override
     public GatewayValidator<Action> getActionValidator(String actionType) {
         return getOptionalActionBean(actionValidators, actionType)
-                .orElseThrow(() -> new ActionProviderException(String.format("No validator found for action type '%s'", actionType)));
+                .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for action type '%s'", actionType)));
     }
 
     @Override
@@ -53,19 +53,19 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     @Override
     public GatewayValidator<Source> getSourceValidator(String sourceType) {
         return getOptionalSourceBean(sourceValidators, sourceType)
-                .orElseThrow(() -> new ActionProviderException(String.format("No validator found for source type '%s'", sourceType)));
+                .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for source type '%s'", sourceType)));
     }
 
     @Override
     public GatewayResolver<Source> getSourceResolver(String sourceType) {
         return getOptionalSourceBean(sourceResolvers, sourceType)
-                .orElseThrow(() -> new ActionProviderException(String.format("No resolver found for source type '%s'", sourceType)));
+                .orElseThrow(() -> new GatewayProviderException(String.format("No resolver found for source type '%s'", sourceType)));
     }
 
     @Override
     public GatewayConnector<Source> getSourceConnector(String sourceType) {
         return getOptionalSourceBean(sourceConnectors, sourceType)
-                .orElseThrow(() -> new ActionProviderException(String.format("No connector found for source type '%s'", sourceType)));
+                .orElseThrow(() -> new GatewayProviderException(String.format("No connector found for source type '%s'", sourceType)));
     }
 
     private static <T extends GatewayBean<Source>> Optional<T> getOptionalSourceBean(Instance<T> instances, String sourceType) {

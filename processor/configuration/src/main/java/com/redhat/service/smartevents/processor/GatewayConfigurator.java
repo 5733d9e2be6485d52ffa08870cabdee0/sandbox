@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.processor;
 
 import java.util.Optional;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 
@@ -13,7 +13,7 @@ public interface GatewayConfigurator {
      *
      * @param actionType desired action type
      * @return the validator bean
-     * @throws ActionProviderException if bean is not found
+     * @throws GatewayProviderException if bean is not found
      */
     GatewayValidator<Action> getActionValidator(String actionType);
 
@@ -42,7 +42,7 @@ public interface GatewayConfigurator {
      *
      * @param sourceType desired source type
      * @return the validator bean
-     * @throws ActionProviderException if bean is not found
+     * @throws GatewayProviderException if bean is not found
      */
     GatewayValidator<Source> getSourceValidator(String sourceType);
 
@@ -51,7 +51,7 @@ public interface GatewayConfigurator {
      *
      * @param sourceType desired source type
      * @return the resolver bean
-     * @throws ActionProviderException if bean is not found
+     * @throws GatewayProviderException if bean is not found
      */
     GatewayResolver<Source> getSourceResolver(String sourceType);
 
@@ -60,7 +60,7 @@ public interface GatewayConfigurator {
      *
      * @param sourceType desired source type
      * @return the connector bean
-     * @throws ActionProviderException if bean is not found
+     * @throws GatewayProviderException if bean is not found
      */
     GatewayConnector<Source> getSourceConnector(String sourceType);
 }

@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -50,7 +50,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
         GatewayValidator<Action> actionValidator;
         try {
             actionValidator = gatewayConfigurator.getActionValidator(action.getType());
-        } catch (ActionProviderException e) {
+        } catch (GatewayProviderException e) {
             context.disableDefaultConstraintViolation();
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
             hibernateContext.addMessageParameter(TYPE_PARAM, action.getType());

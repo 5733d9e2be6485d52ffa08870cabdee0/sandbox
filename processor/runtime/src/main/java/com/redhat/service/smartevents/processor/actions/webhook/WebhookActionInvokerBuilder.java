@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
 import com.redhat.service.smartevents.infra.auth.OidcClientConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
@@ -54,9 +54,9 @@ public class WebhookActionInvokerBuilder implements WebhookAction,
         return new WebhookActionInvoker(endpoint, client);
     }
 
-    private ActionProviderException buildNoEndpointException(ProcessorDTO processor) {
+    private GatewayProviderException buildNoEndpointException(ProcessorDTO processor) {
         String message = String.format("There is no endpoint specified in the parameters for Action on Processor '%s' on Bridge '%s'",
                 processor.getId(), processor.getBridgeId());
-        return new ActionProviderException(message);
+        return new GatewayProviderException(message);
     }
 }

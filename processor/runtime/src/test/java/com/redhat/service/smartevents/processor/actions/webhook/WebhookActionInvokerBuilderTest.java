@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -36,7 +36,7 @@ class WebhookActionInvokerBuilderTest {
     @Test
     void testInvokerException() {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
-        assertThatExceptionOfType(ActionProviderException.class)
+        assertThatExceptionOfType(GatewayProviderException.class)
                 .isThrownBy(() -> builder.build(processor, processor.getDefinition().getResolvedAction()));
     }
 
