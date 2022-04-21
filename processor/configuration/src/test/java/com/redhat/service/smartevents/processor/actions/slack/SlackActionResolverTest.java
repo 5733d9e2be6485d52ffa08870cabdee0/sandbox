@@ -66,6 +66,7 @@ class SlackActionResolverTest {
                 SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
 
         Action action = new Action();
+        action.setType(SlackAction.TYPE);
         action.setParameters(parameters);
         return action;
     }

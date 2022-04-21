@@ -32,6 +32,15 @@ class WebhookActionValidatorTest {
     }
 
     @Test
+    void isInvalidWithNullParametersMap() {
+        Action action = new Action();
+        action.setType(WebhookAction.TYPE);
+        action.setParameters(null);
+        ValidationResult validationResult = validator.isValid(action);
+        assertThat(validationResult.isValid()).isFalse();
+    }
+
+    @Test
     void isInvalidWithNullParameter() {
         assertIsInvalid(null, WebhookActionValidator.MISSING_ENDPOINT_PARAM_MESSAGE);
     }
@@ -86,11 +95,11 @@ class WebhookActionValidatorTest {
     }
 
     private Action createActionWithEndpoint(String endpoint) {
-        Action b = new Action();
-        b.setType(WebhookAction.TYPE);
+        Action action = new Action();
+        action.setType(WebhookAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, endpoint);
-        b.setParameters(params);
-        return b;
+        action.setParameters(params);
+        return action;
     }
 }
