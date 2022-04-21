@@ -7,8 +7,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 public class ProcessorRequest {
 
@@ -25,21 +25,21 @@ public class ProcessorRequest {
     @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
     @Valid
-    private BaseAction baseAction;
+    private Action action;
 
     public ProcessorRequest() {
     }
 
-    public ProcessorRequest(String name, BaseAction baseAction) {
+    public ProcessorRequest(String name, Action action) {
         this.name = name;
-        this.baseAction = baseAction;
+        this.action = action;
     }
 
-    public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, BaseAction baseAction) {
+    public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, Action action) {
         this.name = name;
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
-        this.baseAction = baseAction;
+        this.action = action;
     }
 
     public String getName() {
@@ -58,11 +58,11 @@ public class ProcessorRequest {
         return transformationTemplate;
     }
 
-    public BaseAction getAction() {
-        return baseAction;
+    public Action getAction() {
+        return action;
     }
 
-    public void setAction(BaseAction baseAction) {
-        this.baseAction = baseAction;
+    public void setAction(Action action) {
+        this.action = action;
     }
 }

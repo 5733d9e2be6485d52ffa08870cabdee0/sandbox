@@ -4,10 +4,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
-import com.redhat.service.smartevents.processor.actions.ActionService;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 
 @ApplicationScoped
-public class ActionServiceImpl implements ActionService {
+public class GatewayConfiguratorServiceImpl implements GatewayConfiguratorService {
 
     @Inject
     BridgesService bridgesService;

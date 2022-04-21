@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -44,12 +44,12 @@ class SlackActionValidatorTest {
         assertIsValid(actionWith(params));
     }
 
-    private void assertIsValid(BaseAction action) {
+    private void assertIsValid(Action action) {
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isTrue();
     }
 
-    private void assertIsInvalid(BaseAction action, String errorMessage) {
+    private void assertIsInvalid(Action action, String errorMessage) {
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
         if (errorMessage == null) {
@@ -59,8 +59,8 @@ class SlackActionValidatorTest {
         }
     }
 
-    private BaseAction actionWith(Map<String, String> params) {
-        BaseAction b = new BaseAction();
+    private Action actionWith(Map<String, String> params) {
+        Action b = new Action();
         b.setType(SlackAction.TYPE);
         b.setParameters(params);
         return b;

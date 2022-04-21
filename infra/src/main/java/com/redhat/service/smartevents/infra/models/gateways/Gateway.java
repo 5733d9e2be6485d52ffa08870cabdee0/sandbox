@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.infra.models.actions;
+package com.redhat.service.smartevents.infra.models.gateways;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,15 +11,23 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A Gateway represents the touching point between a Processor and
+ * the external world. Events pass through it to flow in and out.
+ * It is intended to be the common concept between {@link Source},
+ * the gateway from which events get in the Processor, and
+ * {@link Action}, the gateway from which events exit the Processor
+ * towards the external world.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BaseAction {
+public class Gateway {
 
-    @NotNull(message = "An Action Type must be specified")
+    @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
     private String type;
 
-    @NotEmpty(message = "Action parameters must be supplied")
+    @NotEmpty(message = "Gateway parameters must be supplied")
     @JsonProperty("parameters")
     private Map<String, String> parameters = new HashMap<>();
 
@@ -47,7 +55,7 @@ public class BaseAction {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BaseAction that = (BaseAction) o;
+        Gateway that = (Gateway) o;
         return Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
     }
 

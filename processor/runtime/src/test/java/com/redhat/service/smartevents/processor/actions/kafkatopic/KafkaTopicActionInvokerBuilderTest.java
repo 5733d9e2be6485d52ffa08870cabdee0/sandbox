@@ -13,9 +13,9 @@ import org.apache.kafka.common.KafkaFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
@@ -58,7 +58,7 @@ class KafkaTopicActionInvokerBuilderTest {
     @Test
     void getActionInvoker_requestedTopicDoesNotExist() {
         ProcessorDTO p = createProcessorWithActionForTopic("thisTopicDoesNotExist");
-        assertThatExceptionOfType(ActionProviderException.class).isThrownBy(() -> builder.build(p, p.getDefinition().getResolvedAction()));
+        assertThatExceptionOfType(GatewayProviderException.class).isThrownBy(() -> builder.build(p, p.getDefinition().getResolvedAction()));
         verify(kafkaAdmin).listTopics();
     }
 
@@ -72,7 +72,7 @@ class KafkaTopicActionInvokerBuilderTest {
     }
 
     private ProcessorDTO createProcessorWithActionForTopic(String topicName) {
-        BaseAction b = new BaseAction();
+        Action b = new Action();
         b.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);

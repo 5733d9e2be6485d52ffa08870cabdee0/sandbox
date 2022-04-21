@@ -8,12 +8,12 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
 public class ActionParamValidatorContainer implements ConstraintValidator<ValidActionParams, ProcessorRequest> {
@@ -25,7 +25,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
     static final String TYPE_PARAM = "type";
 
     @Inject
-    ActionConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -38,27 +38,27 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
          * - The parameters supplied to configure the Action are valid.
          */
 
-        BaseAction baseAction = value.getAction();
-        if (baseAction == null) {
+        Action action = value.getAction();
+        if (action == null) {
             return false;
         }
 
-        if (baseAction.getParameters() == null) {
+        if (action.getParameters() == null) {
             return false;
         }
 
-        ActionValidator actionValidator;
+        GatewayValidator<Action> actionValidator;
         try {
-            actionValidator = actionConfigurator.getValidator(baseAction.getType());
-        } catch (ActionProviderException e) {
+            actionValidator = gatewayConfigurator.getActionValidator(action.getType());
+        } catch (GatewayProviderException e) {
             context.disableDefaultConstraintViolation();
             HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
-            hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+            hibernateContext.addMessageParameter(TYPE_PARAM, action.getType());
             hibernateContext.buildConstraintViolationWithTemplate(ACTION_TYPE_NOT_RECOGNISED_ERROR).addConstraintViolation();
             return false;
         }
 
-        ValidationResult v = actionValidator.isValid(baseAction);
+        ValidationResult v = actionValidator.isValid(action);
 
         if (!v.isValid()) {
             String message = v.getMessage();
@@ -66,7 +66,7 @@ public class ActionParamValidatorContainer implements ConstraintValidator<ValidA
             if (message == null) {
                 message = ACTION_PARAMETERS_NOT_VALID_ERROR;
                 HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
-                hibernateContext.addMessageParameter(TYPE_PARAM, baseAction.getType());
+                hibernateContext.addMessageParameter(TYPE_PARAM, action.getType());
             } else {
                 message = InterpolationHelper.escapeMessageParameter(message);
             }

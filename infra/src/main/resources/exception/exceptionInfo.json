@@ -36,9 +36,9 @@
     "type": "USER"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException",
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException",
     "id": 7,
-    "reason": "Something failed related with action execution or resolution",
+    "reason": "Something failed related with gateway execution or resolution",
     "type": "USER"
   },
   {

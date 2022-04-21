@@ -7,7 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 
 @ApplicationScoped
 public class ActionRuntimeImpl implements ActionRuntime {
@@ -20,7 +20,7 @@ public class ActionRuntimeImpl implements ActionRuntime {
         return invokerBuilders.stream()
                 .filter(a -> a.accept(actionType))
                 .findFirst()
-                .orElseThrow(() -> new ActionProviderException(String.format("No invoker builder found for action type '%s'", actionType)));
+                .orElseThrow(() -> new GatewayProviderException(String.format("No invoker builder found for action type '%s'", actionType)));
     }
 
     Collection<ActionInvokerBuilder> getInvokerBuilders() {

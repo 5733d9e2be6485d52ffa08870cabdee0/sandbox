@@ -11,12 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -43,9 +43,9 @@ public class ActionParamValidatorContainerTest {
     ActionParamValidatorContainer container;
 
     @InjectMock
-    ActionConfigurator actionConfiguratorMock;
+    GatewayConfigurator gatewayConfiguratorMock;
 
-    ActionValidator actionValidatorMock;
+    GatewayValidator actionValidatorMock;
 
     HibernateConstraintValidatorContext validatorContext;
 
@@ -53,23 +53,23 @@ public class ActionParamValidatorContainerTest {
 
     private ProcessorRequest buildTestRequest() {
         ProcessorRequest p = new ProcessorRequest();
-        BaseAction b = new BaseAction();
-        b.setType(TEST_ACTION_TYPE);
+        Action action = new Action();
+        action.setType(TEST_ACTION_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        b.setParameters(params);
-        p.setAction(b);
+        action.setParameters(params);
+        p.setAction(action);
         return p;
     }
 
     @BeforeEach
     public void beforeEach() {
-        actionValidatorMock = mock(ActionValidator.class);
+        actionValidatorMock = mock(GatewayValidator.class);
         when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
 
-        reset(actionConfiguratorMock);
-        when(actionConfiguratorMock.getValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
-        when(actionConfiguratorMock.getValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new ActionProviderException("No action provider found"));
+        reset(gatewayConfiguratorMock);
+        when(gatewayConfiguratorMock.getActionValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
+        when(gatewayConfiguratorMock.getActionValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));
 
         validatorContext = mock(HibernateConstraintValidatorContext.class);
         builderMock = mock(HibernateConstraintViolationBuilder.class);
@@ -82,7 +82,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isTrue();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
 
@@ -92,7 +92,7 @@ public class ActionParamValidatorContainerTest {
         p.setAction(null);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock, never()).getValidator(any());
+        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
 
@@ -102,7 +102,7 @@ public class ActionParamValidatorContainerTest {
         p.getAction().setParameters(null);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock, never()).getValidator(any());
+        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
         verify(actionValidatorMock, never()).isValid(any());
     }
 
@@ -112,7 +112,7 @@ public class ActionParamValidatorContainerTest {
         p.getAction().getParameters().clear();
 
         assertThat(container.isValid(p, validatorContext)).isTrue();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
     }
 
@@ -124,7 +124,7 @@ public class ActionParamValidatorContainerTest {
         p.getAction().setType(doesNotExistType);
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(doesNotExistType);
+        verify(gatewayConfiguratorMock).getActionValidator(doesNotExistType);
         verify(actionValidatorMock, never()).isValid(any());
 
         verify(validatorContext).disableDefaultConstraintViolation();
@@ -141,7 +141,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
@@ -161,7 +161,7 @@ public class ActionParamValidatorContainerTest {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isFalse();
-        verify(actionConfiguratorMock).getValidator(TEST_ACTION_TYPE);
+        verify(gatewayConfiguratorMock).getActionValidator(TEST_ACTION_TYPE);
         verify(actionValidatorMock).isValid(any());
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);
