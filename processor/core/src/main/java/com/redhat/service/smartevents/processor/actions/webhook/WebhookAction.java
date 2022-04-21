@@ -1,9 +1,8 @@
 package com.redhat.service.smartevents.processor.actions.webhook;
 
-import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayBean;
 
-public interface WebhookAction extends GatewayBean<Action> {
+public interface WebhookAction extends GatewayBean {
 
     String TYPE = "Webhook";
     String ENDPOINT_PARAM = "endpoint";

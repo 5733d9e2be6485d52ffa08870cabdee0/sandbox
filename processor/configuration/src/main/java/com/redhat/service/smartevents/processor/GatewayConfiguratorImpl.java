@@ -30,45 +30,39 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Override
     public GatewayValidator<Action> getActionValidator(String actionType) {
-        return getOptionalActionBean(actionValidators, actionType)
+        return getOptionalBean(actionValidators, actionType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for action type '%s'", actionType)));
     }
 
     @Override
     public Optional<GatewayResolver<Action>> getActionResolver(String actionType) {
-        return getOptionalActionBean(actionResolvers, actionType);
+        return getOptionalBean(actionResolvers, actionType);
     }
 
     @Override
     public Optional<GatewayConnector<Action>> getActionConnector(String actionType) {
-        return getOptionalActionBean(actionConnectors, actionType);
-    }
-
-    private static <T extends GatewayBean<Action>> Optional<T> getOptionalActionBean(Instance<T> instances, String sourceType) {
-        return instances.stream()
-                .filter(a -> a.accept(sourceType))
-                .findFirst();
+        return getOptionalBean(actionConnectors, actionType);
     }
 
     @Override
     public GatewayValidator<Source> getSourceValidator(String sourceType) {
-        return getOptionalSourceBean(sourceValidators, sourceType)
+        return getOptionalBean(sourceValidators, sourceType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for source type '%s'", sourceType)));
     }
 
     @Override
     public GatewayResolver<Source> getSourceResolver(String sourceType) {
-        return getOptionalSourceBean(sourceResolvers, sourceType)
+        return getOptionalBean(sourceResolvers, sourceType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No resolver found for source type '%s'", sourceType)));
     }
 
     @Override
     public GatewayConnector<Source> getSourceConnector(String sourceType) {
-        return getOptionalSourceBean(sourceConnectors, sourceType)
+        return getOptionalBean(sourceConnectors, sourceType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No connector found for source type '%s'", sourceType)));
     }
 
-    private static <T extends GatewayBean<Source>> Optional<T> getOptionalSourceBean(Instance<T> instances, String sourceType) {
+    private static <T extends GatewayBean> Optional<T> getOptionalBean(Instance<T> instances, String sourceType) {
         return instances.stream()
                 .filter(a -> a.accept(sourceType))
                 .findFirst();

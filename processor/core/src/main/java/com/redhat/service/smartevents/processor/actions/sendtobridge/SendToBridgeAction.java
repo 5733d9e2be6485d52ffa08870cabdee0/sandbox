@@ -1,9 +1,8 @@
 package com.redhat.service.smartevents.processor.actions.sendtobridge;
 
-import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayBean;
 
-public interface SendToBridgeAction extends GatewayBean<Action> {
+public interface SendToBridgeAction extends GatewayBean {
 
     String TYPE = "SendToBridge";
     String BRIDGE_ID_PARAM = "bridgeId";
