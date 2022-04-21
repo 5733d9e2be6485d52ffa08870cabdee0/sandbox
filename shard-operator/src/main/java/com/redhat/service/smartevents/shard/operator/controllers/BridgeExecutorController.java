@@ -85,6 +85,13 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             return UpdateControl.noUpdate();
         }
 
+        // Check if the image of the executor has to be updated
+        String image = bridgeExecutorService.getExecutorImage();
+        if (!image.equals(bridgeExecutor.getSpec().getImage())) {
+            bridgeExecutor.getSpec().setImage(image);
+            return UpdateControl.updateResource(bridgeExecutor);
+        }
+
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
         if (!Readiness.isDeploymentReady(deployment)) {
             LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),

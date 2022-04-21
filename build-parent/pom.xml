@@ -59,6 +59,9 @@
 
     <version.jacoco.maven.plugin>0.8.7</version.jacoco.maven.plugin>
 
+    <version.com.epam.reportportal>5.1.1</version.com.epam.reportportal>
+    <version.com.epam.reportportal.logger-java-log4j>5.1.4</version.com.epam.reportportal.logger-java-log4j>
+
     <container.image.localstack>localstack/localstack:${version.org.localstack}</container.image.localstack>
     <container.image.keycloak>quay.io/keycloak/keycloak:${version.org.keycloak}</container.image.keycloak>
 
@@ -201,6 +204,19 @@
         <artifactId>cucumber-picocontainer</artifactId>
         <scope>test</scope>
         <version>${version.io.cucumber}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.epam.reportportal</groupId>
+        <artifactId>agent-java-junit5</artifactId>
+        <version>${version.com.epam.reportportal}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.epam.reportportal</groupId>
+        <artifactId>logger-java-log4j</artifactId>
+        <version>${version.com.epam.reportportal.logger-java-log4j}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
