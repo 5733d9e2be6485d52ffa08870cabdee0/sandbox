@@ -16,7 +16,7 @@
 
   <properties>
     <parallel>false</parallel>
-    <parallel.concurrency.number>3</parallel.concurrency.number>
+    <parallel.concurrency.number>5</parallel.concurrency.number>
   </properties>
 
   <dependencies>
@@ -97,6 +97,7 @@
             <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
             <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
             <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+            <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
             <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
 
             <!-- Token authorization configuration-->
