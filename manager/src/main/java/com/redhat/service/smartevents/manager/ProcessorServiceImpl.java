@@ -161,13 +161,19 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
         }
 
-        // Create new definition copying existing properties
-        existingProcessor.setModifiedAt(ZonedDateTime.now());
-        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-
+        // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
         ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+
+        // No need to update CRD if the definition is unchanged
+        if (existingDefinition.equals(updatedDefinition)) {
+            return existingProcessor;
+        }
+
+        // Create new definition copying existing properties
+        existingProcessor.setModifiedAt(ZonedDateTime.now());
+        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
 
         // Processor and Work should always be created in the same transaction
