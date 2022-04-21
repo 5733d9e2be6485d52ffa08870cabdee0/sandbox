@@ -9,14 +9,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.ConnectorState;
@@ -40,6 +38,7 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinitio
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
+import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
@@ -50,6 +49,7 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
@@ -62,6 +62,8 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -80,19 +82,13 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 @TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
-public class ProcessorServiceTest {
+class ProcessorServiceTest {
 
-    @Inject
-    BridgeDAO bridgeDAO;
-
-    @Inject
-    ProcessorDAO processorDAO;
+    public static final String TEST_NON_EXISTING_BRIDGE_ID = "non-existing-bridge-id";
+    public static final String TEST_NOT_READY_BRIDGE_ID = "not-ready-bridge-id";
 
     @Inject
     ProcessorService processorService;
-
-    @Inject
-    ConnectorsDAO connectorsDAO;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
@@ -100,16 +96,50 @@ public class ProcessorServiceTest {
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
+    // TRY TO MOCK
+    @Inject
+    BridgeDAO bridgeDAO;
+    @InjectMock
+    ProcessorDAO processorDAO;
+    @Inject
+    ConnectorsDAO connectorsDAO;
+
+    @InjectMock
+    BridgesService bridgesServiceMock;
+    @InjectMock
+    ConnectorsService connectorServiceMock;
+    @InjectMock
+    ShardService shardServiceMock;
+    @InjectMock
+    WorkManager workManagerMock;
+
+    // TRY TO REMOVE
+    @InjectMock
+    ConnectorsApiClient connectorsApiClient;
     @InjectMock
     RhoasService rhoasService;
 
-    @InjectMock
-    ConnectorsApiClient connectorsApiClient;
-
     @BeforeEach
     public void cleanUp() {
-        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
+        //        databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         reset(rhoasService);
+        reset(bridgesServiceMock);
+        when(bridgesServiceMock.getReadyBridge(TEST_NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+                .thenThrow(new ItemNotFoundException("Bridge not found"));
+        when(bridgesServiceMock.getReadyBridge(TEST_NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+                .thenThrow(new BridgeLifecycleException("Bridge not ready"));
+        when(bridgesServiceMock.getReadyBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(createReadyBridge());
+
+        when(processorDAO.findByBridgeIdAndName(DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_PROCESSOR_NAME))
+                .thenReturn(createReadyProcessor());
+    }
+
+    private Bridge createReadyBridge() {
+        Bridge b = Fixtures.createBridge();
+        b.setId(DEFAULT_BRIDGE_ID);
+        b.setStatus(ManagedResourceStatus.READY);
+        return b;
     }
 
     private Bridge createPersistBridge(ManagedResourceStatus status) {
@@ -117,6 +147,11 @@ public class ProcessorServiceTest {
         b.setStatus(status);
         bridgeDAO.persist(b);
         return b;
+    }
+
+    private Processor createReadyProcessor() {
+        Processor processor = Fixtures.createProcessor(createReadyBridge(), READY);
+        return processor;
     }
 
     private Processor createPersistProcessor(Bridge bridge, ManagedResourceStatus status) {
@@ -142,86 +177,79 @@ public class ProcessorServiceTest {
     }
 
     @Test
-    public void createProcessor_bridgeNotActive() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.PROVISIONING);
+    void createProcessor_bridgeNotActive() {
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), new ProcessorRequest()));
+                .isThrownBy(() -> processorService.createProcessor(TEST_NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test
-    public void createProcessor_bridgeDoesNotExist() {
+    void createProcessor_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.createProcessor(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
+                .isThrownBy(() -> processorService.createProcessor(TEST_NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, new ProcessorRequest()));
     }
 
     @Test
-    public void createProcessor_processorWithSameNameAlreadyExists() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ProcessorRequest r = new ProcessorRequest("My Processor", createKafkaAction());
-
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
-
-        assertThatExceptionOfType(AlreadyExistingItemException.class).isThrownBy(() -> processorService.createProcessor(b.getId(), b.getCustomerId(), r));
+    void createProcessor_processorWithSameNameAlreadyExists() {
+        ProcessorRequest r = new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, createKafkaAction());
+        assertThatExceptionOfType(AlreadyExistingItemException.class)
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, r));
     }
 
     @Test
-    public void createProcessor() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+    void createProcessor() {
         ProcessorRequest r = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
 
-        Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
-        TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
+        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, r);
 
-        assertThat(processor.getBridge().getId()).isEqualTo(b.getId());
+        assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getName()).isEqualTo(r.getName());
         assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
         assertThat(processor.getDefinition()).isNotNull();
+
+        ArgumentCaptor<Processor> processorCaptor1 = ArgumentCaptor.forClass(Processor.class);
+        verify(processorDAO).persist(processorCaptor1.capture());
+        assertThat(processorCaptor1.getValue()).isEqualTo(processor);
+
+        ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
+        ArgumentCaptor<Action> actionCaptor2 = ArgumentCaptor.forClass(Action.class);
+        verify(connectorServiceMock).createConnectorEntity(processorCaptor2.capture(), actionCaptor2.capture());
+        assertThat(processorCaptor2.getValue()).isEqualTo(processor);
+        assertThat(actionCaptor2.getValue()).isEqualTo(r.getAction());
+
+        ArgumentCaptor<Processor> processorCaptor3 = ArgumentCaptor.forClass(Processor.class);
+        verify(workManagerMock).schedule(processorCaptor3.capture());
+        assertThat(processorCaptor3.getValue()).isEqualTo(processor);
 
         ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
         assertThat(definition.getTransformationTemplate()).isEqualTo("{}");
     }
 
     @Test
-    @Transactional
-    public void getProcessorByStatuses() {
-        Bridge b = createPersistBridge(ManagedResourceStatus.READY);
+    void getProcessorByStatuses() {
+        String processor1Name = "My Processor";
 
-        final Processor processor1 = new Processor();
-        processor1.setName("My Processor");
-        processor1.setBridge(b);
+        Processor processor1 = new Processor();
+        processor1.setName(processor1Name);
         processor1.setShardId(TestConstants.SHARD_ID);
         processor1.setStatus(ManagedResourceStatus.ACCEPTED);
         processor1.setDependencyStatus(ManagedResourceStatus.READY);
-        processor1.setSubmittedAt(ZonedDateTime.now());
-        processor1.setDefinition(new TextNode("definition"));
-        processorDAO.persist(processor1);
 
-        final Processor processor2 = new Processor();
-        processor2.setName("My Processor 2");
-        processor2.setBridge(b);
+        String processor2Name = "My Processor 2";
+
+        Processor processor2 = new Processor();
+        processor2.setName(processor2Name);
         processor2.setShardId(TestConstants.SHARD_ID);
-        processor2.setStatus(ManagedResourceStatus.READY);
-        processor2.setDependencyStatus(ManagedResourceStatus.READY);
-        processor2.setSubmittedAt(ZonedDateTime.now());
-        processor2.setDefinition(new TextNode("definition"));
-        processorDAO.persist(processor2);
+        processor2.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor2.setDependencyStatus(ManagedResourceStatus.DELETED);
 
-        final Processor processor3 = new Processor();
-        processor3.setName("My Processor 3");
-        processor3.setBridge(b);
-        processor3.setShardId(TestConstants.SHARD_ID);
-        processor3.setStatus(ManagedResourceStatus.DEPROVISION);
-        processor3.setDependencyStatus(ManagedResourceStatus.DELETED);
-        processor3.setSubmittedAt(ZonedDateTime.now());
-        processor3.setDefinition(new TextNode("definition"));
-        processorDAO.persist(processor3);
+        when(processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID))
+                .thenReturn(List.of(processor1, processor2));
 
-        List<Processor> processors =
-                processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(2);
-        processors.forEach((px) -> assertThat(px.getName()).isIn("My Processor", "My Processor 3"));
+        List<Processor> processors = processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+
+        assertThat(processors).hasSize(2);
+        processors.forEach((px) -> assertThat(px.getName()).isIn(processor1Name, processor2Name));
     }
 
     @Test
@@ -333,7 +361,7 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -344,7 +372,7 @@ public class ProcessorServiceTest {
     @Test
     public void getProcessors_noProcessorsOnBridge() {
         Bridge b = createPersistBridge(ManagedResourceStatus.READY);
-        ListResult<Processor> results = processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> results = processorService.getProcessors(b.getId(), DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
@@ -352,7 +380,7 @@ public class ProcessorServiceTest {
 
     @Test
     public void getProcessors_bridgeDoesNotExist() {
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.getProcessors("doesNotExist", DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)));
     }
 
     @Test
@@ -369,7 +397,7 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
-        Long result = processorService.getProcessorsCount(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        Long result = processorService.getProcessorsCount(b.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(1L);
     }
 
@@ -549,7 +577,7 @@ public class ProcessorServiceTest {
         Processor processor = processorService.createProcessor(b.getId(), b.getCustomerId(), r);
         TestUtils.waitForProcessorDependenciesToBeReady(processorDAO, processor);
 
-        assertThat(processorService.getProcessors(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
+        assertThat(processorService.getProcessors(b.getId(), DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100)).getSize()).isEqualTo(1);
     }
 
     @Test
@@ -676,7 +704,7 @@ public class ProcessorServiceTest {
             return null;
         }).when(connectorsApiClient).deleteConnector(any());
 
-        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), DEFAULT_CUSTOMER_ID);
 
         reloadAssertProcessorIsInStatus(processor, DEPROVISION);
 
@@ -710,7 +738,7 @@ public class ProcessorServiceTest {
         doThrow(new InternalPlatformException(RhoasServiceImpl.createFailureErrorMessageFor("errorTopic"), new RuntimeException("error")))
                 .when(rhoasService).deleteTopicAndRevokeAccessFor(anyString(), any());
 
-        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), DEFAULT_CUSTOMER_ID);
 
         reloadAssertProcessorIsInStatus(processor, DEPROVISION);
 
@@ -738,7 +766,7 @@ public class ProcessorServiceTest {
         doThrow(new InternalPlatformException(RhoasServiceImpl.createFailureErrorMessageFor("errorDeletingConnector"), new RuntimeException("error")))
                 .when(connectorsApiClient).deleteConnector(anyString());
 
-        processorService.deleteProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+        processorService.deleteProcessor(bridge.getId(), processor.getId(), DEFAULT_CUSTOMER_ID);
 
         reloadAssertProcessorIsInStatus(processor, DEPROVISION);
 
@@ -798,7 +826,7 @@ public class ProcessorServiceTest {
             ConnectorEntity foundConnector = connectorsDAO.findByProcessorIdAndName(processor.getId(), TestConstants.DEFAULT_CONNECTOR_NAME);
             assertThat(foundConnector).isNull();
 
-            final Processor processorDeleted = processorService.getProcessor(bridge.getId(), processor.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
+            final Processor processorDeleted = processorService.getProcessor(bridge.getId(), processor.getId(), DEFAULT_CUSTOMER_ID);
             assertThat(processorDeleted.getStatus()).isEqualTo(DEPROVISION);
         });
     }

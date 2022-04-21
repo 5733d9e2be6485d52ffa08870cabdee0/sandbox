@@ -135,7 +135,7 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(r);
 
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(2);
+        assertThat(processors).hasSize(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
     }
 
