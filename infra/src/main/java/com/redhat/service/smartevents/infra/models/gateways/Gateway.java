@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,9 +15,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Gateway {
 
+    @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
     private String type;
 
+    @NotEmpty(message = "Gateway parameters must be supplied")
     @JsonProperty("parameters")
     private Map<String, String> parameters = new HashMap<>();
 
