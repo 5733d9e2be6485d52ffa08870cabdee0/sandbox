@@ -11,6 +11,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * A Gateway represents the touching point between a Processor and
+ * the external world. Events pass through it to flow in and out.
+ * It is intended to be the common concept between {@link Source},
+ * the gateway from which events get in the Processor, and
+ * {@link Action}, the gateway from which events exit the Processor
+ * towards the external world.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Gateway {
