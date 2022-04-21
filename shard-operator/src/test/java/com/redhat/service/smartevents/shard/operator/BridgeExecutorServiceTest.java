@@ -8,9 +8,7 @@ import javax.inject.Inject;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
@@ -26,11 +24,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -48,9 +44,6 @@ public class BridgeExecutorServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @InjectMock
-    ManagerClient managerClient;
 
     @BeforeEach
     public void setup() {
@@ -83,34 +76,6 @@ public class BridgeExecutorServiceTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR).length()).isGreaterThan(0);
-    }
-
-    @Test
-    public void testBridgeExecutorCreationWithMatchingExisting() {
-        ArgumentCaptor<ProcessorDTO> processorDTOCaptor = ArgumentCaptor.forClass(ProcessorDTO.class);
-
-        // Given
-        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
-
-        // When
-        bridgeExecutorService.createBridgeExecutor(dto);
-
-        // Then
-        BridgeExecutor bridgeExecutor = kubernetesClient
-                .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
-                .get();
-        assertThat(bridgeExecutor).isNotNull();
-
-        // Attempt to update the Processor with the same definition
-        bridgeExecutorService.createBridgeExecutor(dto);
-
-        verify(managerClient).notifyProcessorStatusChange(processorDTOCaptor.capture());
-
-        ProcessorDTO captured = processorDTOCaptor.getValue();
-        assertThat(captured.getId()).isEqualTo(dto.getId());
-        assertThat(captured.getStatus()).isEqualTo(ManagedResourceStatus.READY);
     }
 
     @Test

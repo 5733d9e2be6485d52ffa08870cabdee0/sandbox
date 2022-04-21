@@ -9,10 +9,8 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -26,11 +24,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -48,9 +44,6 @@ public class BridgeIngressServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @InjectMock
-    ManagerClient managerClient;
 
     @BeforeEach
     public void setup() {
@@ -79,31 +72,6 @@ public class BridgeIngressServiceTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR).length()).isGreaterThan(0);
-    }
-
-    @Test
-    public void testBridgeExecutorCreationWithMatchingExisting() {
-        ArgumentCaptor<BridgeDTO> bridgeDTOCaptor = ArgumentCaptor.forClass(BridgeDTO.class);
-
-        // Given
-        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
-
-        // When
-        bridgeIngressService.createBridgeIngress(dto);
-        waitUntilBridgeIngressExists(dto);
-
-        // Then
-        BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
-        assertThat(bridgeIngress).isNotNull();
-
-        // Attempt to update the Bridge with the same definition
-        bridgeIngressService.createBridgeIngress(dto);
-
-        verify(managerClient).notifyBridgeStatusChange(bridgeDTOCaptor.capture());
-
-        BridgeDTO captured = bridgeDTOCaptor.getValue();
-        assertThat(captured.getId()).isEqualTo(dto.getId());
-        assertThat(captured.getStatus()).isEqualTo(ManagedResourceStatus.READY);
     }
 
     @Test

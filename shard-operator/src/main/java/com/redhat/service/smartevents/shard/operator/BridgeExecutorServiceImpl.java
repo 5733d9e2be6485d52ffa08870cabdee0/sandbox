@@ -81,12 +81,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
-        } else {
-            LOGGER.info("Existing BridgeExecutor '{}' matched the expected specification. No update required. Notifying manager that is it ready.", processorDTO.getId());
-            processorDTO.setStatus(ManagedResourceStatus.READY);
-            managerClient.notifyProcessorStatusChange(processorDTO).subscribe().with(
-                    success -> LOGGER.debug("Ready notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
-                    failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
         }
     }
 
