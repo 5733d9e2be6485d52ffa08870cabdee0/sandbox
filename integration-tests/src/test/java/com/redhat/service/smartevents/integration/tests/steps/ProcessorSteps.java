@@ -151,7 +151,8 @@ public class ProcessorSteps {
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                        processorId)))
+                                        processorId)
+                                .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -210,7 +211,8 @@ public class ProcessorSteps {
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                        processorId)))
+                                        processorId)
+                                .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
