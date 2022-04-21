@@ -33,7 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-public class GatewayConstraintValidatorTest {
+class GatewayConstraintValidatorTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
     public static String TEST_PARAM_NAME = "test-param-name";
@@ -78,7 +78,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid() {
+    void isValid() {
         ProcessorRequest p = buildTestRequest();
 
         assertThat(container.isValid(p, validatorContext)).isTrue();
@@ -87,7 +87,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_nullActionIsNotValid() {
+    void isValid_nullActionIsNotValid() {
         ProcessorRequest p = buildTestRequest();
         p.setAction(null);
 
@@ -97,7 +97,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_actionWithNullParametersIsNotValid() {
+    void isValid_actionWithNullParametersIsNotValid() {
         ProcessorRequest p = buildTestRequest();
         p.getAction().setParameters(null);
 
@@ -107,7 +107,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_actionWithEmptyParamsIsValid() {
+    void isValid_actionWithEmptyParamsIsValid() {
         ProcessorRequest p = buildTestRequest();
         p.getAction().getParameters().clear();
 
@@ -117,7 +117,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_unrecognisedActionTypeIsNotValid() {
+    void isValid_unrecognisedActionTypeIsNotValid() {
         String doesNotExistType = "doesNotExist";
 
         ProcessorRequest p = buildTestRequest();
@@ -134,7 +134,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_messageFromActionValidatorAddedOnFailure() {
+    void isValid_messageFromActionValidatorAddedOnFailure() {
         String testErrorMessage = "This is a test error message returned from action validator";
         when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(testErrorMessage));
 
@@ -154,7 +154,7 @@ public class GatewayConstraintValidatorTest {
     }
 
     @Test
-    public void isValid_noMessageFromValidatorGenericMessageAdded() {
+    void isValid_noMessageFromValidatorGenericMessageAdded() {
 
         when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(null));
 
@@ -171,6 +171,6 @@ public class GatewayConstraintValidatorTest {
         verify(validatorContext).addMessageParameter(GatewayConstraintValidator.TYPE_PARAM, TEST_ACTION_TYPE);
         verify(builderMock).addConstraintViolation();
 
-        assertThat(messageCap.getValue()).isEqualTo(GatewayConstraintValidator.ACTION_PARAMETERS_NOT_VALID_ERROR);
+        assertThat(messageCap.getValue()).isEqualTo(GatewayConstraintValidator.GATEWAY_PARAMETERS_NOT_VALID_ERROR);
     }
 }
