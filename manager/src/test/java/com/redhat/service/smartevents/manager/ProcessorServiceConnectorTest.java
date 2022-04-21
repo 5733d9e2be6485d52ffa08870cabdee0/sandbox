@@ -187,7 +187,7 @@ class ProcessorServiceConnectorTest {
 
         waitForConnectorToBeDeleted(bridge, processor);
 
-        verify(rhoasService).deleteTopicAndRevokeAccessFor(eq(TestConstants.DEFAULT_KAFKA_TOPIC), eq(RhoasTopicAccessType.PRODUCER));
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(TestConstants.DEFAULT_KAFKA_TOPIC, RhoasTopicAccessType.PRODUCER);
         verify(connectorsApiClient).deleteConnector("connectorExternalId");
 
         assertShardAsksForProcessorToBeDeletedIncludes(processor);
@@ -221,7 +221,7 @@ class ProcessorServiceConnectorTest {
 
         waitForProcessorAndConnectorToFail(processor);
 
-        verify(rhoasService, atLeast(1)).deleteTopicAndRevokeAccessFor(eq(TestConstants.DEFAULT_KAFKA_TOPIC), eq(RhoasTopicAccessType.PRODUCER));
+        verify(rhoasService, atLeast(1)).deleteTopicAndRevokeAccessFor(TestConstants.DEFAULT_KAFKA_TOPIC, RhoasTopicAccessType.PRODUCER);
         verify(connectorsApiClient, atLeast(1)).deleteConnector(anyString());
 
         assertShardAsksForProcessorToBeDeletedDoesNotInclude(processor);
