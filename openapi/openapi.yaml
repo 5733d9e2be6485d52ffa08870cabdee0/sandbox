@@ -351,7 +351,7 @@ paths:
                   transformationTemplate:
                     type: string
                   action:
-                    $ref: '#/components/schemas/BaseAction'
+                    $ref: '#/components/schemas/Action'
         "400":
           description: Bad request.
           content:
@@ -424,7 +424,7 @@ paths:
                   transformationTemplate:
                     type: string
                   action:
-                    $ref: '#/components/schemas/BaseAction'
+                    $ref: '#/components/schemas/Action'
         "400":
           description: Bad request.
           content:
@@ -502,7 +502,7 @@ paths:
                   transformationTemplate:
                     type: string
                   action:
-                    $ref: '#/components/schemas/BaseAction'
+                    $ref: '#/components/schemas/Action'
         "400":
           description: Bad request.
           content:
@@ -778,7 +778,7 @@ paths:
       - bearer: []
 components:
   schemas:
-    BaseAction:
+    Action:
       required:
       - type
       - parameters
@@ -919,9 +919,9 @@ components:
         transformationTemplate:
           type: string
         requestedAction:
-          $ref: '#/components/schemas/BaseAction'
+          $ref: '#/components/schemas/Action'
         resolvedAction:
-          $ref: '#/components/schemas/BaseAction'
+          $ref: '#/components/schemas/Action'
     ProcessorRequest:
       required:
       - name
@@ -941,10 +941,8 @@ components:
           type: string
         action:
           allOf:
-          - $ref: '#/components/schemas/BaseAction'
-          - allOf:
-            - $ref: '#/components/schemas/BaseAction'
-            - nullable: false
+          - $ref: '#/components/schemas/Action'
+          - nullable: false
     ProcessorResponse:
       type: object
       properties:
@@ -972,7 +970,7 @@ components:
         transformationTemplate:
           type: string
         action:
-          $ref: '#/components/schemas/BaseAction'
+          $ref: '#/components/schemas/Action'
   securitySchemes:
     bearer:
       type: http
