@@ -19,4 +19,6 @@ public interface BridgeExecutorService {
     Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor, Secret secret);
 
     Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment);
+
+    String getExecutorImage();
 }

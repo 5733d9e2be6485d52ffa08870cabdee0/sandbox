@@ -183,4 +183,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
     }
+
+    @Override
+    public String getIngressImage() {
+        return ingressImage;
+    }
 }
