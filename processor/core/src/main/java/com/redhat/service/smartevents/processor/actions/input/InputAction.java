@@ -6,7 +6,7 @@ public interface InputAction extends GatewayBean {
 
     String TYPE = "Input";
     String ENDPOINT_PARAM = "endpoint";
-    String CLOUD_EVENT_TYPE = "cloudEventType";
+    String CLOUD_EVENT_TYPE_PARAM = "cloudEventType";
 
     @Override
     default String getType() {

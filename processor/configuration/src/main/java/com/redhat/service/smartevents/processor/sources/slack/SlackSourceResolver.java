@@ -28,7 +28,7 @@ public class SlackSourceResolver implements SlackSource, GatewayResolver<Source>
         try {
             resolvedAction.setParameters(Map.of(
                     InputAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
-                    InputAction.CLOUD_EVENT_TYPE, "SlackSource"));
+                    InputAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE));
         } catch (MalformedURLException e) {
             throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
         }
