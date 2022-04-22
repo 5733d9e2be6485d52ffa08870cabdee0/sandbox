@@ -1,38 +1,37 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
-import javax.inject.Inject;
-
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.quarkus.test.junit.QuarkusTest;
+import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactoryQute;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@QuarkusTest
+@ExtendWith(MockitoExtension.class)
 class TransformationTemplateConstraintValidatorTest {
 
-    @Inject
     TransformationTemplateConstraintValidator constraintValidator;
 
+    @Mock
     HibernateConstraintValidatorContext validatorContextMock;
+    @Mock
     HibernateConstraintViolationBuilder builderMock;
 
     @BeforeEach
     public void beforeEach() {
-        validatorContextMock = mock(HibernateConstraintValidatorContext.class);
-        builderMock = mock(HibernateConstraintViolationBuilder.class);
-        when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
-        when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
+        constraintValidator = new TransformationTemplateConstraintValidator();
+        constraintValidator.transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
     }
 
     @Test
@@ -47,6 +46,9 @@ class TransformationTemplateConstraintValidatorTest {
 
     @Test
     void isValidMalformedTemplate() {
+        when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
+        when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
+
         assertThat(constraintValidator.isValid("Hi {key how are you?", validatorContextMock)).isFalse();
 
         ArgumentCaptor<String> messageCap = ArgumentCaptor.forClass(String.class);

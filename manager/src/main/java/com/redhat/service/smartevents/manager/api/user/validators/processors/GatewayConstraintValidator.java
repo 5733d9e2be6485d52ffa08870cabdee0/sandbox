@@ -35,7 +35,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
     static final String TYPE_PARAM = "type";
 
     @Inject
-    GatewayConfigurator actionConfigurator;
+    GatewayConfigurator gatewayConfigurator;
 
     @Override
     public boolean isValid(ProcessorRequest value, ConstraintValidatorContext context) {
@@ -52,8 +52,8 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
         }
 
         return action != null
-                ? isValidGateway(action, context, actionConfigurator::getActionValidator)
-                : isValidGateway(source, context, actionConfigurator::getSourceValidator);
+                ? isValidGateway(action, context, gatewayConfigurator::getActionValidator)
+                : isValidGateway(source, context, gatewayConfigurator::getSourceValidator);
     }
 
     private <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
