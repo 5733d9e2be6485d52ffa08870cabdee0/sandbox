@@ -4,12 +4,15 @@ import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidGateway;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
 
+@ValidGateway
 public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")
@@ -20,12 +23,16 @@ public class ProcessorRequest {
     private Set<@Valid BaseFilter> filters;
 
     @JsonProperty("transformationTemplate")
+    @ValidTransformationTemplate
     private String transformationTemplate;
 
-    @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
     @Valid
     private Action action;
+
+    @JsonProperty("source")
+    @Valid
+    private Source source;
 
     public ProcessorRequest() {
     }
@@ -64,5 +71,13 @@ public class ProcessorRequest {
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 }

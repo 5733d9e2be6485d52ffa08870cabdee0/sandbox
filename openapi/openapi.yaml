@@ -925,7 +925,6 @@ components:
     ProcessorRequest:
       required:
       - name
-      - action
       type: object
       properties:
         name:
@@ -940,9 +939,9 @@ components:
         transformationTemplate:
           type: string
         action:
-          allOf:
-          - $ref: '#/components/schemas/Action'
-          - nullable: false
+          $ref: '#/components/schemas/Action'
+        source:
+          $ref: '#/components/schemas/Source'
     ProcessorResponse:
       type: object
       properties:
@@ -971,6 +970,20 @@ components:
           type: string
         action:
           $ref: '#/components/schemas/Action'
+    Source:
+      required:
+      - type
+      - parameters
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: false
+        parameters:
+          minProperties: 1
+          type: object
+          additionalProperties:
+            type: string
   securitySchemes:
     bearer:
       type: http
