@@ -49,32 +49,26 @@ public class ProcessorServiceImpl implements ProcessorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
-    ProcessorDAO processorDAO;
-
-    @Inject
-    BridgesService bridgesService;
-
+    ObjectMapper mapper;
     @Inject
     MeterRegistry meterRegistry;
 
     @Inject
-    ObjectMapper mapper;
-
-    @Inject
     GatewayConfigurator gatewayConfigurator;
-
-    @Inject
-    ConnectorsService connectorService;
-
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
-
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
     @Inject
-    ShardService shardService;
+    ProcessorDAO processorDAO;
 
+    @Inject
+    BridgesService bridgesService;
+    @Inject
+    ConnectorsService connectorService;
+    @Inject
+    ShardService shardService;
     @Inject
     WorkManager workManager;
 
