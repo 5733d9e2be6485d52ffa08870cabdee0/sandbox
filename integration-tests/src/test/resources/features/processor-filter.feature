@@ -10,12 +10,12 @@ Feature: Tests of Processor Filter update
     Given add a Processor to the Bridge "mybridge" with body:
     """
     {
-     "name": "myProcessor",
+      "name": "myProcessor",
       "action": {
-        "parameters": {
-            "endpoint": "${env.slack.webhook.url}"
-       },
         "type": "Webhook"
+        "parameters": {
+            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+       }
       }
     }
     """
@@ -53,7 +53,6 @@ Feature: Tests of Processor Filter update
       }
     }
     """
-
     Then Webhook site contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
 
 
@@ -62,10 +61,10 @@ Feature: Tests of Processor Filter update
     {
       "name": "myProcessor",
       "action": {
+        "type": "Webhook",
         "parameters": {
-            "endpoint": "${env.slack.webhook.url}"
-       },
-        "type": "Webhook"
+            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+        }
       },
       "filters": [
        {
