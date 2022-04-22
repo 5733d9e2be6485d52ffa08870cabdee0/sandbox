@@ -7,6 +7,7 @@ public class TestConstants {
 
     public static final String SHARD_ID = DEFAULT_CUSTOMER_ID;
 
+    public static final String DEFAULT_PROCESSOR_ID = "myProcessorId";
     public static final String DEFAULT_PROCESSOR_NAME = "processMcProcessor";
 
     public static final String DEFAULT_KAFKA_TOPIC = "myTestTopic";
