@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 public class TestSupport {
@@ -23,6 +24,7 @@ public class TestSupport {
     public static final String BRIDGE_ID = "my-id";
     public static final String BRIDGE_NAME = "my-name";
     public static final String BRIDGE_ENDPOINT = "http://localhost:8080";
+    public static final ProcessorType PROCESSOR_TYPE = ProcessorType.SINK;
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
     public static final String KAFKA_BOOTSTRAP_SERVERS = "mytestkafka:9092";
@@ -64,6 +66,6 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        return new ProcessorDTO(PROCESSOR_TYPE, PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
     }
 }

@@ -51,6 +51,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -229,6 +230,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatus() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -242,6 +244,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -270,6 +273,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -462,6 +466,7 @@ class ProcessorServiceTest {
         assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
         assertThat(r.getName()).isEqualTo(p.getName());
         assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getType()).isEqualTo(p.getType());
         assertThat(r.getId()).isEqualTo(p.getId());
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());

@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -47,6 +48,7 @@ class WebhookActionInvokerBuilderTest {
         action.setParameters(params);
 
         ProcessorDTO processor = new ProcessorDTO();
+        processor.setType(ProcessorType.SINK);
         processor.setId("myProcessor");
         processor.setDefinition(new ProcessorDefinition(null, null, action));
         processor.setBridgeId("myBridge");

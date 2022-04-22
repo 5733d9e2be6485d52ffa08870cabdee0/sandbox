@@ -4,8 +4,12 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 public class ProcessorDTO {
+
+    @JsonProperty("type")
+    private ProcessorType type;
 
     @JsonProperty("id")
     private String id;
@@ -31,7 +35,9 @@ public class ProcessorDTO {
     public ProcessorDTO() {
     }
 
-    public ProcessorDTO(String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
+    public ProcessorDTO(ProcessorType type, String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, ManagedResourceStatus status,
+            KafkaConnectionDTO kafkaConnection) {
+        this.type = type;
         this.id = id;
         this.name = name;
         this.bridgeId = bridgeId;
@@ -39,6 +45,14 @@ public class ProcessorDTO {
         this.status = status;
         this.definition = definition;
         this.kafkaConnection = kafkaConnection;
+    }
+
+    public ProcessorType getType() {
+        return type;
+    }
+
+    public void setType(ProcessorType type) {
+        this.type = type;
     }
 
     public String getId() {

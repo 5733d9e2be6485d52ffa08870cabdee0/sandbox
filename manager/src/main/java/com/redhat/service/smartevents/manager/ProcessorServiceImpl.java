@@ -265,7 +265,9 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
-        return new ProcessorDTO(processor.getId(),
+        return new ProcessorDTO(
+                processor.getType(),
+                processor.getId(),
                 processor.getName(),
                 definition,
                 processor.getBridge().getId(),
@@ -278,6 +280,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorResponse toResponse(Processor processor) {
         ProcessorResponse processorResponse = new ProcessorResponse();
 
+        processorResponse.setType(processor.getType());
         processorResponse.setId(processor.getId());
         processorResponse.setName(processor.getName());
         processorResponse.setStatus(processor.getStatus());

@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -79,6 +80,7 @@ class KafkaTopicActionInvokerBuilderTest {
         b.setParameters(params);
 
         ProcessorDTO p = new ProcessorDTO();
+        p.setType(ProcessorType.SINK);
         p.setId("myProcessor");
         p.setDefinition(new ProcessorDefinition(null, null, b));
         p.setBridgeId("myBridge");

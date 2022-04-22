@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
@@ -18,6 +19,7 @@ class KafkaTopicActionInvokerTest {
 
     private ProcessorDTO createProcessor() {
         ProcessorDTO p = new ProcessorDTO();
+        p.setType(ProcessorType.SINK);
         p.setId("myProcessor");
         p.setBridgeId("myBridge");
         return p;
