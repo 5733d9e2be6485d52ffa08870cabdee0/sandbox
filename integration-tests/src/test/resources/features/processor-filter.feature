@@ -12,7 +12,7 @@ Feature: Tests of Processor Filter update
     {
       "name": "myProcessor",
       "action": {
-        "type": "Webhook"
+        "type": "Webhook",
         "parameters": {
             "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
        }
