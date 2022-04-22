@@ -7,9 +7,22 @@ public enum ProcessorType {
     SINK("sink");
 
     @JsonValue
-    final String jsonValue;
+    final String value;
 
-    ProcessorType(String jsonValue) {
-        this.jsonValue = jsonValue;
+    ProcessorType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public static ProcessorType fromValue(String value) {
+        for (ProcessorType p : values()) {
+            if (p.getValue().equals(value)) {
+                return p;
+            }
+        }
+        throw new IllegalArgumentException(String.format("No ProcessorType with value \"%s\"", value));
     }
 }
