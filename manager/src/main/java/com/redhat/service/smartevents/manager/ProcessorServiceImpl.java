@@ -287,6 +287,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setSource(definition.getRequestedSource());
         }
 
         if (processor.getBridge() != null) {

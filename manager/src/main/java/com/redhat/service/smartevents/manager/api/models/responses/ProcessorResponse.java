@@ -10,6 +10,7 @@ import com.redhat.service.smartevents.infra.api.models.responses.BaseResponse;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessorResponse extends BaseResponse {
@@ -37,6 +38,9 @@ public class ProcessorResponse extends BaseResponse {
 
     @JsonProperty("action")
     private Action action;
+
+    @JsonProperty("source")
+    private Source source;
 
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;
@@ -84,5 +88,13 @@ public class ProcessorResponse extends BaseResponse {
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 }
