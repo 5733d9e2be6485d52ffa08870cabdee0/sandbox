@@ -24,12 +24,14 @@ import com.redhat.service.smartevents.processor.GatewayValidator;
 @ApplicationScoped
 public class GatewayConstraintValidator implements ConstraintValidator<ValidGateway, ProcessorRequest> {
 
+    static final String MISSING_GATEWAY_ERROR = "Processor must have either \"action\" or \"source\"";
+    static final String MULTIPLE_GATEWAY_ERROR = "Processor can't have both \"action\" and \"source\"";
     static final String GATEWAY_TYPE_MISSING_ERROR = "{gatewayClass} type must be specified";
     static final String GATEWAY_TYPE_NOT_RECOGNISED_ERROR = "{gatewayClass} of type '{type}' is not recognised.";
     static final String GATEWAY_PARAMETERS_MISSING_ERROR = "{gatewayClass} parameters must be supplied";
     static final String GATEWAY_PARAMETERS_NOT_VALID_ERROR = "Parameters for {gatewayClass} '{name}' of type '{type}' are not valid.";
 
-    static final String GATEWAY_CLASS = "gatewayClass";
+    static final String GATEWAY_CLASS_PARAM = "gatewayClass";
     static final String TYPE_PARAM = "type";
 
     @Inject
@@ -40,7 +42,12 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
         Action action = value.getAction();
         Source source = value.getSource();
 
-        if (action == null && source == null || action != null && source != null) {
+        if (action == null && source == null) {
+            addConstraintViolation(context, MISSING_GATEWAY_ERROR, Collections.emptyMap());
+            return false;
+        }
+        if (action != null && source != null) {
+            addConstraintViolation(context, MULTIPLE_GATEWAY_ERROR, Collections.emptyMap());
             return false;
         }
 
@@ -52,13 +59,13 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
     private <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
-                    Collections.singletonMap(GATEWAY_CLASS, gateway.getClass().getSimpleName()));
+                    Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
             return false;
         }
 
         if (gateway.getParameters() == null) {
             addConstraintViolation(context, GATEWAY_PARAMETERS_MISSING_ERROR,
-                    Collections.singletonMap(GATEWAY_CLASS, gateway.getClass().getSimpleName()));
+                    Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
             return false;
         }
 
@@ -67,7 +74,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
             validator = validatorGetter.apply(gateway.getType());
         } catch (GatewayProviderException e) {
             addConstraintViolation(context, GATEWAY_TYPE_NOT_RECOGNISED_ERROR,
-                    Map.of(GATEWAY_CLASS, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
+                    Map.of(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
             return false;
         }
 
@@ -77,7 +84,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
             String message = v.getMessage();
             if (message == null) {
                 addConstraintViolation(context, GATEWAY_PARAMETERS_NOT_VALID_ERROR,
-                        Map.of(GATEWAY_CLASS, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
+                        Map.of(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
             } else {
                 addConstraintViolation(context, InterpolationHelper.escapeMessageParameter(message), Collections.emptyMap());
             }
