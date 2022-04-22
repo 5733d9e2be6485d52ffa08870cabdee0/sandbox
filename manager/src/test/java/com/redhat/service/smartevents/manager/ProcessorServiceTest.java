@@ -27,6 +27,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -201,6 +202,7 @@ class ProcessorServiceTest {
         String processor1Name = "My Processor";
 
         Processor processor1 = new Processor();
+        processor1.setType(ProcessorType.SINK);
         processor1.setName(processor1Name);
         processor1.setShardId(TestConstants.SHARD_ID);
         processor1.setStatus(ACCEPTED);
@@ -209,6 +211,7 @@ class ProcessorServiceTest {
         String processor2Name = "My Processor 2";
 
         Processor processor2 = new Processor();
+        processor2.setType(ProcessorType.SINK);
         processor2.setName(processor2Name);
         processor2.setShardId(TestConstants.SHARD_ID);
         processor2.setStatus(DEPROVISION);
