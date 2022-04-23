@@ -335,6 +335,8 @@ paths:
                     type: string
                   href:
                     type: string
+                  type:
+                    $ref: '#/components/schemas/ProcessorType'
                   submitted_at:
                     format: date-time
                     type: string
@@ -352,6 +354,8 @@ paths:
                     type: string
                   action:
                     $ref: '#/components/schemas/Action'
+                  source:
+                    $ref: '#/components/schemas/Source'
         "400":
           description: Bad request.
           content:
@@ -408,6 +412,8 @@ paths:
                     type: string
                   href:
                     type: string
+                  type:
+                    $ref: '#/components/schemas/ProcessorType'
                   submitted_at:
                     format: date-time
                     type: string
@@ -425,6 +431,8 @@ paths:
                     type: string
                   action:
                     $ref: '#/components/schemas/Action'
+                  source:
+                    $ref: '#/components/schemas/Source'
         "400":
           description: Bad request.
           content:
@@ -486,6 +494,8 @@ paths:
                     type: string
                   href:
                     type: string
+                  type:
+                    $ref: '#/components/schemas/ProcessorType'
                   submitted_at:
                     format: date-time
                     type: string
@@ -503,6 +513,8 @@ paths:
                     type: string
                   action:
                     $ref: '#/components/schemas/Action'
+                  source:
+                    $ref: '#/components/schemas/Source'
         "400":
           description: Bad request.
           content:
@@ -894,6 +906,8 @@ components:
     ProcessorDTO:
       type: object
       properties:
+        type:
+          $ref: '#/components/schemas/ProcessorType'
         id:
           type: string
         name:
@@ -920,6 +934,8 @@ components:
           type: string
         requestedAction:
           $ref: '#/components/schemas/Action'
+        requestedSource:
+          $ref: '#/components/schemas/Source'
         resolvedAction:
           $ref: '#/components/schemas/Action'
     ProcessorRequest:
@@ -953,6 +969,8 @@ components:
           type: string
         href:
           type: string
+        type:
+          $ref: '#/components/schemas/ProcessorType'
         submitted_at:
           format: date-time
           type: string
@@ -970,6 +988,13 @@ components:
           type: string
         action:
           $ref: '#/components/schemas/Action'
+        source:
+          $ref: '#/components/schemas/Source'
+    ProcessorType:
+      enum:
+      - SOURCE
+      - SINK
+      type: string
     Source:
       required:
       - type
