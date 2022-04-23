@@ -17,7 +17,6 @@ import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.TypeDef;
 
-import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
