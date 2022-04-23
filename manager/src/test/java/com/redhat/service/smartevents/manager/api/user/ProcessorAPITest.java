@@ -520,7 +520,7 @@ public class ProcessorAPITest {
 
         assertThat(updated.getName()).isEqualTo("myProcessor");
         assertThat(updated.getFilters().size()).isEqualTo(1);
-        BaseFilter<?> updatedFilter = updated.getFilters().iterator().next();
+        BaseFilter updatedFilter = updated.getFilters().iterator().next();
         assertThat(updatedFilter.getKey()).isEqualTo("key");
         assertThat(updatedFilter.getValue()).isEqualTo("value");
         assertThat(updated.getTransformationTemplate()).isEqualTo("template-updated");
