@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayResolver;
-import com.redhat.service.smartevents.processor.actions.input.InputAction;
+import com.redhat.service.smartevents.processor.actions.source.SourceAction;
 
 @ApplicationScoped
 public class SlackSourceResolver implements SlackSource, GatewayResolver<Source> {
@@ -23,12 +23,12 @@ public class SlackSourceResolver implements SlackSource, GatewayResolver<Source>
     @Override
     public Action resolve(Source source, String customerId, String bridgeId, String processorId) {
         Action resolvedAction = new Action();
-        resolvedAction.setType(InputAction.TYPE);
+        resolvedAction.setType(SourceAction.TYPE);
 
         try {
             resolvedAction.setParameters(Map.of(
-                    InputAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
-                    InputAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE));
+                    SourceAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
+                    SourceAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE));
         } catch (MalformedURLException e) {
             throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
         }

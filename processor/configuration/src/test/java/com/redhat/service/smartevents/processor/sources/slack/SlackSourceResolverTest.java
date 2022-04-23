@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.actions.input.InputAction;
+import com.redhat.service.smartevents.processor.actions.source.SourceAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -62,9 +62,9 @@ class SlackSourceResolverTest {
         Action resolvedAction = resolver.resolve(inputSource, CUSTOMER_ID, BRIDGE_ID, PROCESSOR_ID);
 
         assertThat(resolvedAction).isNotNull();
-        assertThat(resolvedAction.getType()).isEqualTo(InputAction.TYPE);
-        assertThat(resolvedAction.getParameters()).containsEntry(InputAction.ENDPOINT_PARAM, BRIDGE_ENDPOINT);
-        assertThat(resolvedAction.getParameters()).containsEntry(InputAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE);
+        assertThat(resolvedAction.getType()).isEqualTo(SourceAction.TYPE);
+        assertThat(resolvedAction.getParameters()).containsEntry(SourceAction.ENDPOINT_PARAM, BRIDGE_ENDPOINT);
+        assertThat(resolvedAction.getParameters()).containsEntry(SourceAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE);
     }
 
     @Test
