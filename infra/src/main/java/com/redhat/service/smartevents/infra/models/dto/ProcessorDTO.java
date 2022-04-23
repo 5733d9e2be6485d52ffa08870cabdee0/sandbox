@@ -32,21 +32,6 @@ public class ProcessorDTO {
     @JsonProperty("kafkaConnection")
     private KafkaConnectionDTO kafkaConnection;
 
-    public ProcessorDTO() {
-    }
-
-    public ProcessorDTO(ProcessorType type, String id, String name, ProcessorDefinition definition, String bridgeId, String customerId, ManagedResourceStatus status,
-            KafkaConnectionDTO kafkaConnection) {
-        this.type = type;
-        this.id = id;
-        this.name = name;
-        this.bridgeId = bridgeId;
-        this.customerId = customerId;
-        this.status = status;
-        this.definition = definition;
-        this.kafkaConnection = kafkaConnection;
-    }
-
     public ProcessorType getType() {
         return type;
     }

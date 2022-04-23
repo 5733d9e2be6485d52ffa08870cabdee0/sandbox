@@ -66,6 +66,15 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_TYPE, PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(PROCESSOR_TYPE);
+        dto.setId(PROCESSOR_ID);
+        dto.setName(PROCESSOR_NAME);
+        dto.setDefinition(definition);
+        dto.setBridgeId(BRIDGE_ID);
+        dto.setCustomerId(CUSTOMER_ID);
+        dto.setStatus(ManagedResourceStatus.ACCEPTED);
+        dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
+        return dto;
     }
 }

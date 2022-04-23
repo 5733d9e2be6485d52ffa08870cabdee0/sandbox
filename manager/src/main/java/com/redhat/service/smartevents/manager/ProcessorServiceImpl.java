@@ -265,15 +265,16 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
-        return new ProcessorDTO(
-                processor.getType(),
-                processor.getId(),
-                processor.getName(),
-                definition,
-                processor.getBridge().getId(),
-                processor.getBridge().getCustomerId(),
-                processor.getStatus(),
-                kafkaConnectionDTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(processor.getType());
+        dto.setId(processor.getId());
+        dto.setName(processor.getName());
+        dto.setDefinition(definition);
+        dto.setBridgeId(processor.getBridge().getId());
+        dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setStatus(processor.getStatus());
+        dto.setKafkaConnection(kafkaConnectionDTO);
+        return dto;
     }
 
     @Override
