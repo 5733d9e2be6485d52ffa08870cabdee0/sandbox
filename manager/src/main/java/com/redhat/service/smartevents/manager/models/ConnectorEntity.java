@@ -13,6 +13,8 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.TypeDef;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
@@ -25,7 +27,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @Table(name = "CONNECTOR")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class ConnectorEntity extends ManagedDefinedResource { // called -Entity to avoid clash with Connector REST API
+public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // called -Entity to avoid clash with Connector REST API
 
     public static final String PROCESSOR_ID_PARAM = "processorId";
 

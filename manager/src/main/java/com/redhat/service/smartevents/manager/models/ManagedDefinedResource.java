@@ -5,22 +5,20 @@ import javax.persistence.MappedSuperclass;
 
 import org.hibernate.annotations.Type;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @MappedSuperclass
-public class ManagedDefinedResource extends ManagedResource {
+public class ManagedDefinedResource<T> extends ManagedResource {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "definition", columnDefinition = JsonTypes.JSON_BIN)
-    protected JsonNode definition;
+    protected T definition;
 
-    public JsonNode getDefinition() {
+    public T getDefinition() {
         return definition;
     }
 
-    public void setDefinition(JsonNode definition) {
+    public void setDefinition(T definition) {
         this.definition = definition;
     }
 

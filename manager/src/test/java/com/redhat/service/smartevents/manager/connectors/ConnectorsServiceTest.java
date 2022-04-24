@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -46,7 +47,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        connectorsService.createConnectorEntity(testProcessor(), testWebhookAction());
+        connectorsService.createConnectorEntity(testProcessor(testWebhookAction()));
 
         verify(connectorsDAOMock, never()).persist(any(ConnectorEntity.class));
     }
@@ -54,7 +55,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnector() {
-        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
+        connectorsService.createConnectorEntity(testProcessor(testSlackAction()));
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -62,7 +63,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doCreateConnectorFromConnectorEntity() {
-        connectorsService.createConnectorEntity(testProcessor(), testSlackAction());
+        connectorsService.createConnectorEntity(testProcessor(testSlackAction()));
 
         verify(connectorsDAOMock).persist(any(ConnectorEntity.class));
     }
@@ -72,7 +73,7 @@ class ConnectorsServiceTest {
     void doNotDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
 
-        connectorsService.deleteConnectorEntity(testProcessor());
+        connectorsService.deleteConnectorEntity(testProcessor(testWebhookAction()));
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
     }
@@ -82,7 +83,7 @@ class ConnectorsServiceTest {
     void doDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity());
 
-        connectorsService.deleteConnectorEntity(testProcessor());
+        connectorsService.deleteConnectorEntity(testProcessor(testSlackAction()));
 
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
     }
@@ -91,15 +92,19 @@ class ConnectorsServiceTest {
         ConnectorEntity connectorEntity = new ConnectorEntity();
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
-        connectorEntity.setProcessor(testProcessor());
+        connectorEntity.setProcessor(testProcessor(testSlackAction()));
         return connectorEntity;
     }
 
-    private Processor testProcessor() {
+    private Processor testProcessor(Action requestedAction) {
+        ProcessorDefinition processorDefinition = new ProcessorDefinition();
+        processorDefinition.setRequestedAction(requestedAction);
+
         Processor processor = new Processor();
         processor.setType(ProcessorType.SINK);
         processor.setId(TEST_PROCESSOR_ID);
         processor.setName(TEST_PROCESSOR_NAME);
+        processor.setDefinition(processorDefinition);
         return processor;
     }
 

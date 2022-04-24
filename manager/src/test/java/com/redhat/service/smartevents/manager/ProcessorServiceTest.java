@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -185,16 +184,15 @@ class ProcessorServiceTest {
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
 
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
-        ArgumentCaptor<Action> actionCaptor2 = ArgumentCaptor.forClass(Action.class);
-        verify(connectorServiceMock, times(1)).createConnectorEntity(processorCaptor2.capture(), actionCaptor2.capture());
+        verify(connectorServiceMock, times(1)).createConnectorEntity(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
-        assertThat(actionCaptor2.getValue()).isEqualTo(request.getAction());
+        assertThat(processorCaptor2.getValue().getDefinition().getRequestedAction()).isEqualTo(request.getAction());
 
         ArgumentCaptor<Processor> processorCaptor3 = ArgumentCaptor.forClass(Processor.class);
         verify(workManagerMock, times(1)).schedule(processorCaptor3.capture());
         assertThat(processorCaptor3.getValue()).isEqualTo(processor);
 
-        ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+        ProcessorDefinition definition = processor.getDefinition();
         assertThat(definition.getTransformationTemplate()).isEqualTo(request.getTransformationTemplate());
     }
 
@@ -458,7 +456,7 @@ class ProcessorServiceTest {
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
-        p.setDefinition(definitionToJsonNode(definition));
+        p.setDefinition(definition);
 
         ProcessorResponse r = processorService.toResponse(p);
         assertThat(r).isNotNull();
@@ -510,15 +508,5 @@ class ProcessorServiceTest {
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
         return a;
-    }
-
-    private JsonNode definitionToJsonNode(ProcessorDefinition definition) {
-        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
-        return processorServiceImpl.definitionToJsonNode(definition);
-    }
-
-    private ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
-        ProcessorServiceImpl processorServiceImpl = (ProcessorServiceImpl) processorService;
-        return processorServiceImpl.jsonNodeToDefinition(jsonNode);
     }
 }

@@ -4,11 +4,10 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
@@ -36,11 +35,7 @@ public class Fixtures {
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
-
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode objectNode = mapper.createObjectNode();
-        objectNode.put("definitionKey", "definitionValue");
-        p.setDefinition(objectNode);
+        p.setDefinition(new ProcessorDefinition());
 
         return p;
     }

@@ -12,7 +12,6 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -43,9 +42,6 @@ public class ProcessorDAOTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    @Inject
-    ObjectMapper mapper;
-
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
@@ -69,7 +65,7 @@ public class ProcessorDAOTest {
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
-        p.setDefinition(mapper.valueToTree(definition));
+        p.setDefinition(definition);
 
         processorDAO.persist(p);
         return p;
