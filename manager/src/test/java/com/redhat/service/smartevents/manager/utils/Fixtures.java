@@ -60,6 +60,7 @@ public class Fixtures {
         c.setPublishedAt(ZonedDateTime.now());
         c.setDefinition(new TextNode("definition"));
         c.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
+        c.setConnectorType("test_sink_0.1");
         c.setConnectorExternalId("connectorExternalId");
 
         return c;
