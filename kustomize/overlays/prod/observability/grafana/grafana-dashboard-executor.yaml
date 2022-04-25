@@ -1067,6 +1067,5 @@ metadata:
 spec:
   customFolderName: event-bridge
   configMapRef:
-    name: grafana-dashboard-manager
-    key: manager.json
-  name: manager.json
+    name: grafana-dashboard-executor
+    key: executor.json
