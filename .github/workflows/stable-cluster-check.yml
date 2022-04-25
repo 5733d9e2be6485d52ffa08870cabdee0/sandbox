@@ -71,3 +71,9 @@ jobs:
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: ./integration-tests/target/cucumber-logs/
