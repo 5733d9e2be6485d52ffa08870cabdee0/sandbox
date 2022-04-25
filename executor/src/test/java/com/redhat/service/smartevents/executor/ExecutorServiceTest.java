@@ -61,6 +61,6 @@ public class ExecutorServiceTest {
 
         executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
 
-        verify(executor, times(1)).onEvent(any(CloudEvent.class));
+        verify(executor, times(1)).onEvent(any(String.class));
     }
 }

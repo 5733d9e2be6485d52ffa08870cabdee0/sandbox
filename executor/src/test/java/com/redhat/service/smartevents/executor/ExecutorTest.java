@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEEL;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
@@ -84,9 +86,9 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
 
-        CloudEvent cloudEvent = createCloudEvent();
+        String cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
@@ -109,9 +111,9 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
 
-        CloudEvent cloudEvent = createCloudEvent();
+        String cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
@@ -129,9 +131,9 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
 
-        CloudEvent cloudEvent = createCloudEvent();
+        String cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
@@ -148,9 +150,9 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
 
-        CloudEvent cloudEvent = createCloudEvent();
+        String cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
@@ -170,9 +172,9 @@ public class ExecutorTest {
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
 
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
 
-        CloudEvent cloudEvent = createCloudEvent();
+        String cloudEvent = createCloudEvent();
 
         executor.onEvent(cloudEvent);
 
@@ -182,10 +184,10 @@ public class ExecutorTest {
         assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME))).isTrue();
     }
 
-    protected CloudEvent createCloudEvent() throws JsonProcessingException {
-        String jsonString = "{\"key\":\"value\"}";
-        return CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject",
-                CloudEventUtils.getMapper().readTree(jsonString));
+    protected String createCloudEvent() throws JsonProcessingException {
+        JsonNode data = CloudEventUtils.getMapper().readTree("{\"key\":\"value\"}");
+        CloudEvent event = CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", data);
+        return CloudEventUtils.encode(event);
     }
 
     protected ProcessorDTO createProcessor(ProcessorDefinition definition) {

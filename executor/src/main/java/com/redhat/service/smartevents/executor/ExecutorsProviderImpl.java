@@ -42,7 +42,7 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     @PostConstruct
     void init() {
         ProcessorDTO dto = readProcessor(processorDefinition);
-        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, registry);
+        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, registry, objectMapper);
     }
 
     @Override
