@@ -55,6 +55,19 @@ Feature: Tests of Processor Filter update
     """
     Then Webhook site contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
 
+    And send a cloud event to the Ingress of the Bridge "mybridge":
+    """
+    {
+    "specversion": "1.0",
+    "type": "StringEquals",
+    "source": "InvalidEvent",
+    "id": "filter-InvalidEvent-test",
+    "data": {
+        "name": "Hello world event notmatching"
+      }
+    }
+    """
+    Then Webhook site does not contains request with text "${cloud-event.filter-InvalidEvent-test.id}" within 1 minute
 
     When update the Processor "myProcessor" of the Bridge "mybridge" with body:
     """
@@ -68,19 +81,22 @@ Feature: Tests of Processor Filter update
       },
       "filters": [
        {
-        "type": "StringEquals",
-        "key": "source",
-        "value": "StorageService"
-        },
-        {
+        "type": "StringBeginsWith",
+        "key": "data.name",
+        "values": [
+                "John",
+                "Marco"
+            ]
+       },
+       {
         "type": "StringContains",
-         "key": "data.name",
-           "values": [
+        "key": "data.name",
+        "values": [
               "John",
               "Marco"
             ]
         }
-     ]
+      ]
     }
     """
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
@@ -97,3 +113,17 @@ Feature: Tests of Processor Filter update
     }
     """
     Then Webhook site contains request with text "${cloud-event.filter-event-test-second.id}" within 1 minute
+
+    And send a cloud event to the Ingress of the Bridge "mybridge":
+    """
+    {
+    "specversion": "1.0",
+    "type": "StringEquals",
+    "source": "StorageService",
+    "id": "filter-InvalidEvent-test-second",
+    "data": {
+        "name": "Hello world event notmatching"
+      }
+    }
+    """
+    Then Webhook site does not contains request with text "${cloud-event.filter-InvalidEvent-test-second.id}" within 1 minute

@@ -32,4 +32,17 @@ public class WebhookSiteSteps {
                                 requestTextWithoutPlaceholders)
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
     }
+
+    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void webhookSiteDoesNotContainsRequest(String requestText, int timeoutMinutes) {
+        String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(timeoutMinutes))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests())
+                        .map(request -> request.getContent())
+                        .as("Searching for request containing text: '%s'",
+                                requestTextWithoutPlaceholders)
+                        .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+    }
 }
