@@ -60,6 +60,18 @@ class ConnectorsApiClientTest {
     }
 
     @Test
+    void doGetConnectorGone() throws ApiException {
+        final ApiException exception = new ApiException("Gone",
+                new IllegalStateException(""),
+                Response.Status.GONE.getStatusCode(),
+                Collections.emptyMap(), "");
+
+        when(connectorsApi.getConnector(any())).thenThrow(exception);
+
+        assertThat(connectorsApiClient.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).isNull();
+    }
+
+    @Test
     void doGetConnectorNotFound() throws ApiException {
         final ApiException exception = new ApiException("Not Found",
                 new IllegalStateException(""),

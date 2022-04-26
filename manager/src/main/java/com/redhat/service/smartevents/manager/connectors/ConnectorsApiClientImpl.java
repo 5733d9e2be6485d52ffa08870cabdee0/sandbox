@@ -67,14 +67,15 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Retrieving Connector with ID '%s'", connectorExternalId));
-            }
+            LOGGER.debug("Retrieving Connector with ID '{}'", connectorExternalId);
             return connectorsAPI.getConnector(connectorExternalId);
         } catch (ApiException e) {
-            if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
-                return null;
+            switch (e.getCode()) {
+                case HttpStatus.SC_NOT_FOUND:
+                case HttpStatus.SC_GONE:
+                    return null;
             }
+            LOGGER.error("Failed to retrieve connector: {}", e.getMessage());
             throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }
