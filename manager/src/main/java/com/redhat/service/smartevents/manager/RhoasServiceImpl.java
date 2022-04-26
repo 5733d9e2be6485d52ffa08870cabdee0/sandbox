@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.CompletionException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -44,9 +45,12 @@ public class RhoasServiceImpl implements RhoasService {
             NewTopicInput newTopicInput = new NewTopicInput()
                     .name(topicName)
                     .settings(new TopicSettings().numPartitions(1));
-            return rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
+            Instant start = Instant.now();
+            Topic atMost = rhoasClient.createTopicAndGrantAccess(newTopicInput, rhoasOpsAccountClientId, accessType)
                     .onFailure().retry().withJitter(rhoasJitter).withBackOff(Duration.parse(rhoasBackoff)).atMost(rhoasMaxRetries)
                     .await().atMost(Duration.ofSeconds(rhoasTimeout));
+            System.out.println("XXXXXXXXXXXXX" + Duration.between(start, Instant.now()).toString());
+            return atMost;
         } catch (CompletionException e) {
             throw new InternalPlatformException(createFailureErrorMessageFor(topicName), e);
         } catch (TimeoutException e) {
