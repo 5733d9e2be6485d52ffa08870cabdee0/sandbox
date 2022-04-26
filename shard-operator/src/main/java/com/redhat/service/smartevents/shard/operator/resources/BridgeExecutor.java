@@ -163,12 +163,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setBridgeId(bridgeId);
             bridgeExecutorSpec.setCustomerId(customerId);
             bridgeExecutorSpec.setProcessorName(processorName);
-
-            if (processorType != null) {
-                bridgeExecutorSpec.setProcessorType(processorType.getValue());
-            } else {
-                throw new IllegalStateException(String.format("No processor type for processorId: '%s'", processorId));
-            }
+            bridgeExecutorSpec.setProcessorType(processorType.getValue());
 
             try {
                 bridgeExecutorSpec.setProcessorDefinition(MAPPER.writeValueAsString(processorDefinition));

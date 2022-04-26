@@ -55,7 +55,7 @@ public class Processor extends ManagedDefinedResource {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
 
-    @Column(name = "type")
+    @Column(name = "type", updatable = false, nullable = false)
     @Enumerated(EnumType.STRING)
     private ProcessorType type;
 
