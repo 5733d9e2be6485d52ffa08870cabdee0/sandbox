@@ -75,6 +75,8 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
             if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
                 return null;
             }
+            //Only log unhandled scenarios
+            LOGGER.error(e.getMessage());
             throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }
@@ -86,6 +88,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             return connectorsAPI.createConnector(true, connectorRequest);
         } catch (ApiException e) {
+            LOGGER.error(e.getMessage());
             throw new ConnectorCreationException("Error while creating the connector on MC Fleet Manager", e);
         }
     }
@@ -129,6 +132,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
                 throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager: " + error);
             }
         } catch (ApiException e) {
+            LOGGER.error(e.getMessage());
             throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager", e);
         }
     }
