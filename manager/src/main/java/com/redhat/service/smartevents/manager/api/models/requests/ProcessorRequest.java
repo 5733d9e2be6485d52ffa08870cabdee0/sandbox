@@ -42,6 +42,11 @@ public class ProcessorRequest {
         this.action = action;
     }
 
+    public ProcessorRequest(String name, Source source) {
+        this.name = name;
+        this.source = source;
+    }
+
     public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, Action action) {
         this.name = name;
         this.filters = filters;
@@ -59,6 +64,10 @@ public class ProcessorRequest {
 
     public Set<BaseFilter> getFilters() {
         return filters;
+    }
+
+    public void setFilters(Set<BaseFilter> filters) {
+        this.filters = filters;
     }
 
     public String getTransformationTemplate() {

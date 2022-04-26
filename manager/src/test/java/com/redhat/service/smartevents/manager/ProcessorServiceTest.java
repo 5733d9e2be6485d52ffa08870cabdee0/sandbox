@@ -2,15 +2,18 @@ package com.redhat.service.smartevents.manager;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
@@ -25,6 +28,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -36,6 +40,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -68,6 +73,7 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 class ProcessorServiceTest {
 
+    public static final String NEW_PROCESSOR_NAME = "My Processor";
     public static final String NON_EXISTING_BRIDGE_ID = "non-existing-bridge-id";
     public static final String NOT_READY_BRIDGE_ID = "not-ready-bridge-id";
     public static final String NON_EXISTING_PROCESSOR_ID = "non-existing-processor-id";
@@ -134,46 +140,56 @@ class ProcessorServiceTest {
                 .thenReturn(3L);
     }
 
-    @Test
-    void testCreateProcessor_bridgeNotActive() {
-        ProcessorRequest request = new ProcessorRequest();
+    private static Stream<Arguments> createProcessorParams() {
+        Object[][] arguments = {
+                { new ProcessorRequest(NEW_PROCESSOR_NAME, createKafkaTopicAction()), ProcessorType.SINK },
+                { new ProcessorRequest(NEW_PROCESSOR_NAME, createSlackSource()), ProcessorType.SOURCE }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    @ParameterizedTest
+    @MethodSource("createProcessorParams")
+    void testCreateProcessor_bridgeNotActive(ProcessorRequest request) {
         assertThatExceptionOfType(BridgeLifecycleException.class)
                 .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
     }
 
-    @Test
-    void testCreateProcessor_bridgeDoesNotExist() {
-        ProcessorRequest request = new ProcessorRequest();
+    @ParameterizedTest
+    @MethodSource("createProcessorParams")
+    void testCreateProcessor_bridgeDoesNotExist(ProcessorRequest request) {
         assertThatExceptionOfType(ItemNotFoundException.class)
                 .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
     }
 
-    @Test
-    void testCreateProcessor_processorWithSameNameAlreadyExists() {
-        ProcessorRequest r = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaAction());
+    @ParameterizedTest
+    @MethodSource("createProcessorParams")
+    void testCreateProcessor_processorWithSameNameAlreadyExists(ProcessorRequest request) {
+        request.setName(DEFAULT_PROCESSOR_NAME);
         assertThatExceptionOfType(AlreadyExistingItemException.class)
-                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, r));
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
     }
 
-    @Test
-    void testCreateProcessor_noFilters() {
-        ProcessorRequest request = new ProcessorRequest("My Processor", null, "{}", createKafkaAction());
-        testCreateProcessor(request);
+    @ParameterizedTest
+    @MethodSource("createProcessorParams")
+    void testCreateProcessor_noFilters(ProcessorRequest request, ProcessorType type) {
+        testCreateProcessor(request, type);
     }
 
-    @Test
-    void testCreateProcessor_multipleFilters() { // tests https://issues.redhat.com/browse/MGDOBR-80
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("name", "myName"));
-        filters.add(new StringEquals("surename", "mySurename"));
-        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
-        testCreateProcessor(request);
+    @ParameterizedTest
+    @MethodSource("createProcessorParams")
+    void testCreateProcessor_multipleFilters(ProcessorRequest request, ProcessorType type) { // tests https://issues.redhat.com/browse/MGDOBR-80
+        request.setFilters(Set.of(
+                new StringEquals("name", "myName"),
+                new StringEquals("surname", "mySurname")));
+        testCreateProcessor(request, type);
     }
 
-    private void testCreateProcessor(ProcessorRequest request) {
+    private void testCreateProcessor(ProcessorRequest request, ProcessorType type) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
+        assertThat(processor.getType()).isEqualTo(type);
         assertThat(processor.getName()).isEqualTo(request.getName());
         assertThat(processor.getStatus()).isEqualTo(ACCEPTED);
         assertThat(processor.getSubmittedAt()).isNotNull();
@@ -198,7 +214,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetProcessorByStatuses() {
-        String processor1Name = "My Processor";
+        String processor1Name = NEW_PROCESSOR_NAME;
 
         Processor processor1 = new Processor();
         processor1.setType(ProcessorType.SINK);
@@ -420,7 +436,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorWithAction() {
-        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, Collections.emptySet(), null, createKafkaAction());
+        ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, Collections.emptySet(), null, createKafkaTopicAction());
         assertThatExceptionOfType(BadRequestException.class)
                 .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
     }
@@ -473,40 +489,49 @@ class ProcessorServiceTest {
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
     }
 
-    private Bridge createReadyBridge() {
-        Bridge b = Fixtures.createBridge();
-        b.setId(DEFAULT_BRIDGE_ID);
-        b.setStatus(READY);
-        return b;
+    private static Bridge createReadyBridge() {
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setId(DEFAULT_BRIDGE_ID);
+        bridge.setStatus(READY);
+        return bridge;
     }
 
-    private Processor createReadyProcessor() {
+    private static Processor createReadyProcessor() {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), READY);
         processor.setId(DEFAULT_PROCESSOR_ID);
         return processor;
     }
 
-    private Processor createProvisioningProcessor() {
+    private static Processor createProvisioningProcessor() {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), PROVISIONING);
         processor.setId(PROVISIONING_PROCESSOR_ID);
         processor.setName(PROVISIONING_PROCESSOR_NAME);
         return processor;
     }
 
-    private Processor createFailedProcessor() {
+    private static Processor createFailedProcessor() {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), FAILED);
         processor.setId(FAILED_PROCESSOR_ID);
         processor.setName(FAILED_PROCESSOR_NAME);
         return processor;
     }
 
-    private Action createKafkaAction() {
-        Action a = new Action();
-        a.setType(KafkaTopicAction.TYPE);
+    private static Action createKafkaTopicAction() {
+        Action action = new Action();
+        action.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setParameters(params);
-        return a;
+        action.setParameters(params);
+        return action;
+    }
+
+    private static Source createSlackSource() {
+        Source source = new Source();
+        source.setType(SlackSource.TYPE);
+        source.setParameters(Map.of(
+                SlackSource.CHANNEL_PARAM, "test-channel",
+                SlackSource.TOKEN_PARAM, "test-token"));
+        return source;
     }
 }
