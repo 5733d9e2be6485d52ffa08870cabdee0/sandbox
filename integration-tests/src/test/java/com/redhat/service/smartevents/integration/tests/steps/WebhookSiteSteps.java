@@ -1,11 +1,14 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.function.BooleanSupplier;
 
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
 import io.cucumber.java.en.Then;
@@ -33,16 +36,16 @@ public class WebhookSiteSteps {
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
     }
 
-    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void webhookSiteDoesNotContainsRequest(String requestText, int timeoutMinutes) {
+    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) seconds$")
+    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutSeconds) throws InterruptedException {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(timeoutMinutes))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(WebhookSiteResource.requests())
-                        .map(request -> request.getContent())
-                        .as("Searching for request containing text: '%s'",
-                                requestTextWithoutPlaceholders)
-                        .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+        BooleanSupplier failureCondition =
+                () -> WebhookSiteResource.requests().stream().map(WebhookSiteRequest::getContent).noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
+        Duration duration = Duration.ofSeconds(timeoutSeconds);
+        Instant timeoutTime = Instant.now().plus(duration);
+        while (timeoutTime.isAfter(Instant.now())) {
+            Thread.sleep(duration.toMillis());
+            assertThat(failureCondition.getAsBoolean()).as("Searching for request containing text: '%s'", requestTextWithoutPlaceholders).isTrue();
+        }
     }
 }
