@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.processor;
 
-import java.util.Collections;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -21,6 +20,10 @@ import com.redhat.service.smartevents.processor.actions.slack.SlackActionResolve
 import com.redhat.service.smartevents.processor.actions.slack.SlackActionValidator;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSourceConnector;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSourceResolver;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSourceValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -35,7 +38,8 @@ class GatewayConfiguratorImplTest {
             SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class, SlackActionConnector.class),
             WebhookAction.TYPE, expect(WebhookActionValidator.class, null, null));
 
-    private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Collections.emptyMap();
+    private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
+            SlackSource.TYPE, expect(SlackSourceValidator.class, SlackSourceResolver.class, SlackSourceConnector.class));
 
     @Inject
     GatewayConfiguratorImpl configurator;

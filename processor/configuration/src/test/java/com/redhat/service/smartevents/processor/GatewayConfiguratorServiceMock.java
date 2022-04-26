@@ -1,8 +1,6 @@
-package com.redhat.service.smartevents.processor.actions;
+package com.redhat.service.smartevents.processor;
 
 import javax.enterprise.context.ApplicationScoped;
-
-import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 
 @ApplicationScoped
 public class GatewayConfiguratorServiceMock implements GatewayConfiguratorService {

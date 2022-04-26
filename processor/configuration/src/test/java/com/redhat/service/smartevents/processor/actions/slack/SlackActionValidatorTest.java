@@ -21,11 +21,31 @@ class SlackActionValidatorTest {
     SlackActionValidator validator;
 
     @Test
+    void isInvalidWithNoParameters() {
+        Map<String, String> params = new HashMap<>();
+        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
+    }
+
+    @Test
+    void isInvalidWithMissingChannelParameter() {
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.WEBHOOK_URL_PARAM, "w");
+        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
+    }
+
+    @Test
     void isInvalidWithEmptyChannelParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "");
         params.put(SlackAction.WEBHOOK_URL_PARAM, "w");
         assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
+    }
+
+    @Test
+    void isInvalidWithMissingWebhookURLParameter() {
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackAction.CHANNEL_PARAM, "c");
+        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_WEBHOOK_URL_MESSAGE);
     }
 
     @Test
@@ -60,9 +80,9 @@ class SlackActionValidatorTest {
     }
 
     private Action actionWith(Map<String, String> params) {
-        Action b = new Action();
-        b.setType(SlackAction.TYPE);
-        b.setParameters(params);
-        return b;
+        Action action = new Action();
+        action.setType(SlackAction.TYPE);
+        action.setParameters(params);
+        return action;
     }
 }
