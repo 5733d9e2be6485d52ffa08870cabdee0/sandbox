@@ -51,19 +51,26 @@ public class Fixtures {
         return b;
     }
 
-    public static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status) {
-        ConnectorEntity c = new ConnectorEntity();
-        c.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
-        c.setProcessor(p);
-        c.setStatus(status);
-        c.setSubmittedAt(ZonedDateTime.now());
-        c.setPublishedAt(ZonedDateTime.now());
-        c.setDefinition(new TextNode("definition"));
-        c.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
-        c.setConnectorType("test_sink_0.1");
-        c.setConnectorExternalId("connectorExternalId");
+    public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatus status) {
+        return createConnector(p, status, "test_source_0.1");
+    }
 
-        return c;
+    public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatus status) {
+        return createConnector(p, status, "test_sink_0.1");
+    }
+
+    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, String connectorType) {
+        ConnectorEntity connector = new ConnectorEntity();
+        connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connector.setProcessor(p);
+        connector.setStatus(status);
+        connector.setSubmittedAt(ZonedDateTime.now());
+        connector.setPublishedAt(ZonedDateTime.now());
+        connector.setDefinition(new TextNode("definition"));
+        connector.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
+        connector.setConnectorType(connectorType);
+        connector.setConnectorExternalId("connectorExternalId");
+        return connector;
     }
 
 }

@@ -104,7 +104,7 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -174,7 +174,7 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);

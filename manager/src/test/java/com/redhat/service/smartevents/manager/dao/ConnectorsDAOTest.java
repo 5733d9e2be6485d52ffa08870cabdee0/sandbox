@@ -68,7 +68,7 @@ public class ConnectorsDAOTest {
     }
 
     private ConnectorEntity createPersistConnector(Processor p, ManagedResourceStatus status) {
-        ConnectorEntity c = Fixtures.createConnector(p, status);
+        ConnectorEntity c = Fixtures.createSinkConnector(p, status);
         connectorsDAO.persist(c);
         return c;
     }

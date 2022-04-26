@@ -148,7 +148,7 @@ public class ProcessorDAOTest {
         withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
-        ConnectorEntity provisionedConnector = Fixtures.createConnector(withProvisionedConnectors,
+        ConnectorEntity provisionedConnector = Fixtures.createSinkConnector(withProvisionedConnectors,
                 ManagedResourceStatus.READY);
         provisionedConnector.setName("connectorProvisioned");
         processorDAO.getEntityManager().merge(provisionedConnector);
@@ -159,7 +159,7 @@ public class ProcessorDAOTest {
         nonProvisioned.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
-        ConnectorEntity nonProvisionedConnector = Fixtures.createConnector(nonProvisioned,
+        ConnectorEntity nonProvisionedConnector = Fixtures.createSinkConnector(nonProvisioned,
                 ManagedResourceStatus.READY);
         nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
@@ -170,7 +170,7 @@ public class ProcessorDAOTest {
         toBeDeleted.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
-        ConnectorEntity toBeDeletedConnector = Fixtures.createConnector(toBeDeleted,
+        ConnectorEntity toBeDeletedConnector = Fixtures.createSinkConnector(toBeDeleted,
                 ManagedResourceStatus.ACCEPTED);
         toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
