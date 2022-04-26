@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.processor.actions.source;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,20 +22,28 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 
 public class SourceActionInvoker implements ActionInvoker {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SourceActionInvoker.class);
+    public static final String CLOUD_EVENT_SOURCE = "RHOAS";
 
+    private static final Logger LOG = LoggerFactory.getLogger(SourceActionInvoker.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Supplier<String> UUID_GENERATOR = () -> UUID.randomUUID().toString();
 
     private final String endpoint;
     private final String cloudEventType;
     private final WebClient client;
     private final AbstractOidcClient oidcClient;
+    private final Supplier<String> idGenerator;
 
     public SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, AbstractOidcClient oidcClient) {
+        this(endpoint, cloudEventType, client, oidcClient, UUID_GENERATOR);
+    }
+
+    SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, AbstractOidcClient oidcClient, Supplier<String> idGenerator) {
         this.endpoint = endpoint;
         this.cloudEventType = cloudEventType;
         this.client = client;
         this.oidcClient = oidcClient;
+        this.idGenerator = idGenerator;
     }
 
     @Override
@@ -56,8 +65,9 @@ public class SourceActionInvoker implements ActionInvoker {
     private JsonObject getPayload(String event) {
         try {
             ObjectNode cloudEvent = MAPPER.createObjectNode();
-            cloudEvent.set("id", new TextNode(UUID.randomUUID().toString()));
-            cloudEvent.set("source", new TextNode("RHOAS"));
+            cloudEvent.set("id", new TextNode(idGenerator.get()));
+            // TODO: set a source that reflects the actual processor pod
+            cloudEvent.set("source", new TextNode(CLOUD_EVENT_SOURCE));
             cloudEvent.set("specversion", new TextNode("1.0"));
             cloudEvent.set("type", new TextNode(cloudEventType));
             cloudEvent.set("data", MAPPER.readTree(event));
