@@ -1,7 +1,10 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.function.BooleanSupplier;
 
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
@@ -31,5 +34,18 @@ public class WebhookSiteSteps {
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+    }
+
+    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) seconds$")
+    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutSeconds) throws InterruptedException {
+        String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        BooleanSupplier failureCondition =
+                () -> WebhookSiteResource.requests().stream().map(WebhookSiteRequest::getContent).noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
+        Duration duration = Duration.ofSeconds(timeoutSeconds);
+        Instant timeoutTime = Instant.now().plus(duration);
+        while (timeoutTime.isAfter(Instant.now())) {
+            Thread.sleep(duration.toMillis());
+            assertThat(failureCondition.getAsBoolean()).as("Searching for request containing text: '%s'", requestTextWithoutPlaceholders).isTrue();
+        }
     }
 }
