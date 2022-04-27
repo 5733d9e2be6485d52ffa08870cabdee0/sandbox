@@ -34,6 +34,8 @@ spec:
               value: ""
             - name: WEBHOOK_CLIENT_SECRET
               value: ""
+            - name: EVENT_BRIDGE_LOGGING_JSON
+              value: ""
           envFrom:
             - secretRef:
                 name: ""
