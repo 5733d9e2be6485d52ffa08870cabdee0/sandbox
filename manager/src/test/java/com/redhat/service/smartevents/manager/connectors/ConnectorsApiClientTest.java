@@ -18,6 +18,7 @@ import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorGetException;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 
@@ -162,6 +163,7 @@ class ConnectorsApiClientTest {
 
     private Processor testProcessor() {
         Processor processor = new Processor();
+        processor.setType(ProcessorType.SINK);
         processor.setId(TEST_PROCESSOR_ID);
         processor.setName(TEST_PROCESSOR_NAME);
         return processor;

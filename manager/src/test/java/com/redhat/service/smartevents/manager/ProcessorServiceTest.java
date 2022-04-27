@@ -27,6 +27,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -50,6 +51,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -201,6 +203,7 @@ class ProcessorServiceTest {
         String processor1Name = "My Processor";
 
         Processor processor1 = new Processor();
+        processor1.setType(ProcessorType.SINK);
         processor1.setName(processor1Name);
         processor1.setShardId(TestConstants.SHARD_ID);
         processor1.setStatus(ACCEPTED);
@@ -209,6 +212,7 @@ class ProcessorServiceTest {
         String processor2Name = "My Processor 2";
 
         Processor processor2 = new Processor();
+        processor2.setType(ProcessorType.SINK);
         processor2.setName(processor2Name);
         processor2.setShardId(TestConstants.SHARD_ID);
         processor2.setStatus(DEPROVISION);
@@ -226,6 +230,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatus() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -239,6 +244,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(DEFAULT_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -267,6 +273,7 @@ class ProcessorServiceTest {
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
         ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
@@ -459,6 +466,7 @@ class ProcessorServiceTest {
         assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
         assertThat(r.getName()).isEqualTo(p.getName());
         assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getType()).isEqualTo(p.getType());
         assertThat(r.getId()).isEqualTo(p.getId());
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());

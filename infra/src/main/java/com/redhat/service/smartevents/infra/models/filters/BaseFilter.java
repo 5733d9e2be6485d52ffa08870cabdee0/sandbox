@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = ValuesIn.class, name = ValuesIn.FILTER_TYPE_NAME)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class BaseFilter<T> {
+public abstract class BaseFilter {
 
     public static final String FILTER_TYPE_FIELD = "type";
 
@@ -49,5 +49,5 @@ public abstract class BaseFilter<T> {
 
     @NotNull
     @JsonIgnore
-    public abstract T getValue();
+    public abstract Object getValue();
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
@@ -179,6 +180,7 @@ public class BridgeExecutorControllerTest {
         return BridgeExecutor.fromBuilder()
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .withImageName(TestSupport.EXECUTOR_IMAGE)
+                .withProcessorType(ProcessorType.SINK)
                 .withProcessorId(TestSupport.PROCESSOR_ID)
                 .withProcessorName(TestSupport.PROCESSOR_NAME)
                 .withBridgeId(TestSupport.BRIDGE_ID)

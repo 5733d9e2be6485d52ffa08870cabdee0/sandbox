@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StringBeginsWith extends BaseFilter<List<String>> {
+public class StringBeginsWith extends BaseFilter {
     public static final String FILTER_TYPE_NAME = "StringBeginsWith";
 
     @JsonProperty("values")
