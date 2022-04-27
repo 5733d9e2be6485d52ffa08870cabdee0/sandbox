@@ -4,11 +4,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.function.BooleanSupplier;
 
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
 import io.cucumber.java.en.Then;
