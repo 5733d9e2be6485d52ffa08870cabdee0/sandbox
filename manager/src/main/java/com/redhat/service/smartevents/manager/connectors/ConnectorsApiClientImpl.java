@@ -73,10 +73,12 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
             switch (e.getCode()) {
                 case HttpStatus.SC_NOT_FOUND:
                 case HttpStatus.SC_GONE:
+                    LOGGER.info("Connector could not be found in MC Fleet Manager.");
                     return null;
+                default:
+                    LOGGER.error("Failed to retrieve connector: {}", e.getMessage());
+                    throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
             }
-            LOGGER.error("Failed to retrieve connector: {}", e.getMessage());
-            throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }
 
