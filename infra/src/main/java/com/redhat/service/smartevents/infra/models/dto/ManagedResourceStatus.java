@@ -13,7 +13,6 @@ public enum ManagedResourceStatus {
 
     String status;
 
-
     // We can not annotate the property `status` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
     @JsonValue
     public String serialize() {
