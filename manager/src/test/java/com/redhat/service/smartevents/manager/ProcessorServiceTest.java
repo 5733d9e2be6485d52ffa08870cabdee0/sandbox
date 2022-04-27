@@ -37,6 +37,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -171,7 +172,7 @@ class ProcessorServiceTest {
         testCreateProcessor(request);
     }
 
-    private void testCreateProcessor(ProcessorRequest request) {
+    private Processor testCreateProcessor(ProcessorRequest request) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
@@ -196,6 +197,8 @@ class ProcessorServiceTest {
 
         ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
         assertThat(definition.getTransformationTemplate()).isEqualTo(request.getTransformationTemplate());
+
+        return processor;
     }
 
     @Test
@@ -443,12 +446,45 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testUpdateProcessorWithNoChange() {
+    void testUpdateProcessorWithNoChangeEmpty() {
         ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, null, null, null);
         Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
 
         assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
         assertThat(updatedProcessor).isEqualTo(createReadyProcessor());
+    }
+
+    @Test
+    // See https://issues.redhat.com/browse/MGDOBR-638
+    void testUpdateProcessorWithNoChangeWebhookAction() {
+        Set<BaseFilter> filters = Set.of(new StringEquals("source", "StorageService"));
+        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, createWebhookAction());
+
+        Processor existingProcessor = testCreateProcessor(request);
+        existingProcessor.setStatus(READY);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
+
+        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID, request);
+
+        assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
+        assertThat(updatedProcessor).isEqualTo(existingProcessor);
+    }
+
+    @Test
+    // See https://issues.redhat.com/browse/MGDOBR-638
+    void testUpdateProcessorWithNoChangeKafkaAction() {
+        Set<BaseFilter> filters = Set.of(new StringEquals("source", "StorageService"));
+        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
+
+        Processor existingProcessor = testCreateProcessor(request);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
+
+        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID, request);
+
+        assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
+        assertThat(updatedProcessor).isEqualTo(existingProcessor);
     }
 
     @Test
@@ -509,6 +545,13 @@ class ProcessorServiceTest {
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
+        return a;
+    }
+
+    private Action createWebhookAction() {
+        Action a = new Action();
+        a.setType(WebhookAction.TYPE);
+        a.setParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
         return a;
     }
 
