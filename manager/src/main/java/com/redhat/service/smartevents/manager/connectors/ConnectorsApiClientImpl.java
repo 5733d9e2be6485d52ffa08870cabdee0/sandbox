@@ -90,8 +90,9 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             return connectorsAPI.createConnector(true, connectorRequest);
         } catch (ApiException e) {
-            LOGGER.error(e.getMessage());
-            throw new ConnectorCreationException("Error while creating the connector on MC Fleet Manager", e);
+            String message =
+                    String.format("Failed to create Connector on Connector Namespace '%s' with HTTP Response Code '%s'", mcNamespaceId, e.getCode());
+            throw new ConnectorCreationException(message, e);
         }
     }
 
@@ -131,11 +132,14 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             Error error = connectorsAPI.deleteConnector(id);
             if (error != null) {
-                throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager: " + error);
+                String message =
+                        String.format("Failed to delete Connector with id '%s', from Connector Namespace '%s' with Error Code '%s'", id, mcNamespaceId, error.getCode());
+                throw new ConnectorDeletionException(message);
             }
         } catch (ApiException e) {
-            LOGGER.error(e.getMessage());
-            throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager", e);
+            String message =
+                    String.format("Failed to delete Connector with id '%s', from Connector Namespace '%s' with HTTP Response Code '%s'", id, mcNamespaceId, e.getCode());
+            throw new ConnectorDeletionException(message, e);
         }
     }
 
