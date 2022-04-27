@@ -73,9 +73,11 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
             switch (e.getCode()) {
                 case HttpStatus.SC_NOT_FOUND:
                 case HttpStatus.SC_GONE:
+                    //These "exceptions" are handled by RHOSE API as expected states
                     LOGGER.info("Connector with id '{}' could not be found in Connector Namespace '{}'.", connectorExternalId, mcNamespaceId);
                     return null;
                 default:
+                    //All other exceptions can be reported
                     String message =
                             String.format("Failed to retrieve Connector with id '%s', from Connector Namespace '%s' with HTTP Response Code '%s'", connectorExternalId, mcNamespaceId, e.getCode());
                     throw new ConnectorGetException(message, e);
