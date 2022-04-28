@@ -34,6 +34,8 @@ spec:
               value: ""
             - name: EVENT_BRIDGE_WEBHOOK_TECHNICAL_ACCOUNT_ID
               value: ""
+            - name: EVENT_BRIDGE_LOGGING_JSON
+              value: ""
           envFrom:
             - secretRef:
                 name: ""

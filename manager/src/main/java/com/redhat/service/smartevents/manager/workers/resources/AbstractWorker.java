@@ -86,7 +86,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                         managedResource.getName(),
                         managedResource.getId(),
                         work,
-                        e.getMessage());
+                        e);
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
             }
