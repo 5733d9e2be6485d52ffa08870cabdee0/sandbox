@@ -39,12 +39,12 @@ public class WebhookSiteSteps {
     }
 
     @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
-    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutSeconds, String chronoUnits) throws InterruptedException {
+    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
-        Instant timeoutTime = Instant.now().plus(Duration.ofSeconds(timeoutSeconds));
+        ChronoUnit parsedTimeoutChronoUnits = ChronoUnitConverter.parseChronoUnits(timeoutChronoUnits);
+        Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
         while (timeoutTime.isAfter(Instant.now())) {
-            ChronoUnit parsedChronoUnits = ChronoUnitConverter.parseChronoUnits(chronoUnits);
-            TimeUnit.of(parsedChronoUnits).sleep(timeoutSeconds);
+            TimeUnit.of(ChronoUnit.SECONDS).sleep(1);
             assertThat(WebhookSiteResource.requests())
                     .map(WebhookSiteRequest::getContent)
                     .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
