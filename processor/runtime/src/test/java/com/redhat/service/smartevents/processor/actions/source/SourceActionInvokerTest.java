@@ -9,12 +9,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
-import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.auth.OidcClient;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookSinkMockResource;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -26,7 +28,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.redhat.service.smartevents.processor.actions.source.SourceActionInvoker.CLOUD_EVENT_SOURCE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -45,11 +47,14 @@ class SourceActionInvokerTest extends AbstractWireMockTest {
             "}";
     private static final String TEST_WEBHOOK_PATH = "/webhook";
 
+    @ConfigProperty(name = "test.webhookSinkUrl")
+    String webhookSinkUrl;
+
     @Inject
     Vertx vertx;
 
-    @ConfigProperty(name = "test.webhookSinkUrl")
-    String webhookSinkUrl;
+    @InjectMock
+    OidcClient oidcClientMock;
 
     @Test
     void test() throws InterruptedException {
@@ -59,10 +64,9 @@ class SourceActionInvokerTest extends AbstractWireMockTest {
         addUpdateRequestListener(TEST_WEBHOOK_PATH, RequestMethod.POST, latch);
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
-        AbstractOidcClient abstractOidcClient = mock(AbstractOidcClient.class);
-        when(abstractOidcClient.getToken()).thenReturn("token");
+        when(oidcClientMock.getToken()).thenReturn("token");
 
-        SourceActionInvoker invoker = new SourceActionInvoker(testSinkEndpoint, TEST_CLOUD_EVENT_TYPE, WebClient.create(vertx), abstractOidcClient, () -> TEST_CLOUD_EVENT_ID);
+        SourceActionInvoker invoker = new SourceActionInvoker(testSinkEndpoint, TEST_CLOUD_EVENT_TYPE, WebClient.create(vertx), oidcClientMock, () -> TEST_CLOUD_EVENT_ID);
         invoker.onEvent(TEST_INPUT_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
@@ -71,5 +75,16 @@ class SourceActionInvokerTest extends AbstractWireMockTest {
                 .withRequestBody(equalToJson(TEST_CLOUD_EVENT, true, true))
                 .withHeader("Content-Type", equalTo("application/json"))
                 .withHeader("Authorization", equalTo("Bearer token")));
+    }
+
+    @Test
+    void testTokenException() {
+        String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
+        when(oidcClientMock.getToken()).thenReturn(null);
+
+        SourceActionInvoker invoker = new SourceActionInvoker(testSinkEndpoint, TEST_CLOUD_EVENT_TYPE, WebClient.create(vertx), oidcClientMock, () -> TEST_CLOUD_EVENT_ID);
+
+        assertThatExceptionOfType(TechnicalBearerTokenNotConfiguredException.class)
+                .isThrownBy(() -> invoker.onEvent(TEST_INPUT_EVENT));
     }
 }

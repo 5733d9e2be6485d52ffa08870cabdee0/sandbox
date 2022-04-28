@@ -6,7 +6,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.auth.OidcClient;
 import com.redhat.service.smartevents.infra.auth.OidcClientConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 
@@ -17,7 +17,7 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 public abstract class AbstractWebClientInvokerBuilder implements ActionInvokerBuilder {
 
     @Inject
-    Instance<AbstractOidcClient> oidcClients;
+    Instance<OidcClient> oidcClients;
 
     @Inject
     Vertx vertx;
@@ -29,7 +29,7 @@ public abstract class AbstractWebClientInvokerBuilder implements ActionInvokerBu
         webClient = WebClient.create(vertx, new WebClientOptions().setLogActivity(true));
     }
 
-    protected AbstractOidcClient getOidcClient() {
+    protected OidcClient getOidcClient() {
         return oidcClients.stream()
                 .filter(x -> Objects.equals(x.getName(), OidcClientConstants.WEBHOOK_OIDC_CLIENT_NAME))
                 .findFirst()

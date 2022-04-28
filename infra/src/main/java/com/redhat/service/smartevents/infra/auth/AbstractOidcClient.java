@@ -15,7 +15,7 @@ import io.quarkus.oidc.client.OidcClientException;
 import io.quarkus.oidc.client.OidcClients;
 import io.quarkus.oidc.client.Tokens;
 
-public abstract class AbstractOidcClient {
+public abstract class AbstractOidcClient implements com.redhat.service.smartevents.infra.auth.OidcClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOidcClient.class);
 

@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.processor.actions.source;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.auth.OidcClient;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -16,7 +16,7 @@ public class SourceActionInvokerBuilder extends AbstractWebClientInvokerBuilder 
     public ActionInvoker build(ProcessorDTO processor, Action action) {
         String endpoint = getOrThrowException(action, ENDPOINT_PARAM);
         String cloudEventType = getOrThrowException(action, CLOUD_EVENT_TYPE_PARAM);
-        AbstractOidcClient abstractOidcClient = getOidcClient();
+        OidcClient abstractOidcClient = getOidcClient();
         return new SourceActionInvoker(endpoint, cloudEventType, webClient, abstractOidcClient);
     }
 

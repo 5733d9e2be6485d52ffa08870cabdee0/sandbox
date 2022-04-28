@@ -10,7 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.auth.OidcClient;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.TechnicalBearerTokenNotConfiguredException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventSerializationException;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
@@ -31,14 +32,14 @@ public class SourceActionInvoker implements ActionInvoker {
     private final String endpoint;
     private final String cloudEventType;
     private final WebClient client;
-    private final AbstractOidcClient oidcClient;
+    private final OidcClient oidcClient;
     private final Supplier<String> idGenerator;
 
-    public SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, AbstractOidcClient oidcClient) {
+    public SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, OidcClient oidcClient) {
         this(endpoint, cloudEventType, client, oidcClient, UUID_GENERATOR);
     }
 
-    SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, AbstractOidcClient oidcClient, Supplier<String> idGenerator) {
+    SourceActionInvoker(String endpoint, String cloudEventType, WebClient client, OidcClient oidcClient, Supplier<String> idGenerator) {
         this.endpoint = endpoint;
         this.cloudEventType = cloudEventType;
         this.client = client;
@@ -48,18 +49,15 @@ public class SourceActionInvoker implements ActionInvoker {
 
     @Override
     public void onEvent(String event) {
-        LOG.info("SourceActionInvoker::onEvent | {} - {} | {}", endpoint, cloudEventType, event);
-
         HttpRequest<Buffer> request = client.postAbs(endpoint);
         String token = oidcClient.getToken();
-        LOG.info("SourceActionInvoker::onEvent | Token: {}", token);
-        if (token != null && !"".equals(token)) {
-            LOG.info("SourceActionInvoker::onEvent | Token configured");
-            request = request.bearerTokenAuthentication(token);
+        if (token == null || token.isEmpty()) {
+            throw new TechnicalBearerTokenNotConfiguredException("The configured OIDC client returned an empty token.");
         }
+        request = request.bearerTokenAuthentication(token);
         request.sendJsonObject(getPayload(event)).subscribe().with(
-                response -> LOG.info("RESPONSE {} {}", response.statusCode(), response.statusMessage()),
-                error -> LOG.error("ERROR", error));
+                response -> LOG.debug("Successfully sent event (response: {} {})", response.statusCode(), response.statusMessage()),
+                error -> LOG.error("Error when sending event", error));
     }
 
     private JsonObject getPayload(String event) {
@@ -73,7 +71,6 @@ public class SourceActionInvoker implements ActionInvoker {
             cloudEvent.set("data", MAPPER.readTree(event));
 
             String payloadString = encode(cloudEvent);
-            LOG.info("PAYLOAD: {}", payloadString);
             return new JsonObject(payloadString);
         } catch (JsonProcessingException e) {
             throw new CloudEventDeserializationException("Failed to wrap cloud event");
