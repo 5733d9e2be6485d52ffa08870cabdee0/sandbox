@@ -11,6 +11,3 @@ data:
   EVENT_BRIDGE_SSO_URL: "https://sso.redhat.com/auth/realms/redhat-external"
   EVENT_BRIDGE_SSO_CLIENT_ID: "cloud-services"
   EVENT_BRIDGE_KAFKA_SECURITY_PROTOCOL: SASL_SSL
-  # TODO: remove the following property after the system is updated to use "event-bridge.resource-prefix" property
-  EVENT_BRIDGE_KAFKA_TOPIC_PREFIX: "ob-stable-"
-  EVENT_BRIDGE_RESOURCE_PREFIX: "ob-stable-"
