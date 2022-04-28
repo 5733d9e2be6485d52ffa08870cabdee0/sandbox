@@ -101,6 +101,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getSsoWebhookClientSecret()).build());
         // CustomerId is available in the Processor definition however this avoids the need to unnecessarily de-serialise the definition for logging in the Executor
         environmentVariables.add(new EnvVarBuilder().withName(Constants.CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeExecutor.getSpec().getCustomerId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.EVENT_BRIDGE_LOGGING_JSON).withValue(globalConfigurationsProvider.isJsonLoggingEnabled().toString()).build());
         try {
             environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {

@@ -10,4 +10,6 @@ public interface GlobalConfigurationsProvider {
     String getSsoWebhookClientSecret();
 
     String getSsoWebhookClientAccountId();
+
+    Boolean isJsonLoggingEnabled();
 }
