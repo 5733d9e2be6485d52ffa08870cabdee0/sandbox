@@ -1,11 +1,14 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,9 +19,9 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
@@ -28,7 +31,9 @@ import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionInvokerBuilder;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -36,21 +41,22 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExecutorTest {
+class ExecutorTest {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
 
     private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
+    public static final String PLAIN_EVENT_JSON = "{\"key\":\"value\"}";
 
     private MeterRegistry meterRegistry;
 
@@ -74,138 +80,156 @@ public class ExecutorTest {
         meterRegistry = new SimpleMeterRegistry();
     }
 
-    @Test
-    public void testOnEventWithFiltersTransformationAndSameRequestedResolvedActions() throws JsonProcessingException {
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithMatchingFiltersAndWithTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "value")));
+        processorDTO.getDefinition().setTransformationTemplate("{\"test\": \"{data.key}\"}");
 
-        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+        String invokedEvent = doValidTestWithInvoke(processorDTO, inputEvent);
 
-        Action action = new Action();
-        action.setType(KafkaTopicAction.TYPE);
-
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
-
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
-
-        String cloudEvent = createCloudEvent();
-
-        executor.onEvent(cloudEvent);
-
-        verify(actionRuntime).getInvokerBuilder(KafkaTopicAction.TYPE);
-        verify(actionInvokerMock).onEvent(any());
+        assertThat(invokedEvent).isEqualTo("{\"test\": \"value\"}");
     }
 
-    @Test
-    public void testOnEventWithFiltersTransformationAndDifferentRequestedResolvedActions() throws JsonProcessingException {
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithMatchingFiltersAndWithoutTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "value")));
 
-        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+        String invokedEvent = doValidTestWithInvoke(processorDTO, inputEvent);
 
-        Action requestedAction = new Action();
-        requestedAction.setType("SendToBridge");
-
-        Action resolvedAction = new Action();
-        resolvedAction.setType(WebhookAction.TYPE);
-
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
-
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
-
-        String cloudEvent = createCloudEvent();
-
-        executor.onEvent(cloudEvent);
-
-        verify(actionRuntime).getInvokerBuilder(WebhookAction.TYPE);
-        verify(actionInvokerMock, times(1)).onEvent(any());
+        assertThatNoException().isThrownBy(() -> CloudEventUtils.decode(invokedEvent));
     }
 
-    @Test
-    public void testOnEventWithNoMatchingFilters() throws JsonProcessingException {
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "notTheValue"));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithNonMatchingFiltersAndWithTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "notTheValue")));
+        processorDTO.getDefinition().setTransformationTemplate("{\"test\": \"{data.key}\"}");
 
-        Action action = new Action();
-        action.setType(KafkaTopicAction.TYPE);
-
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
-
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
-
-        String cloudEvent = createCloudEvent();
-
-        executor.onEvent(cloudEvent);
-
-        verify(actionInvokerMock, never()).onEvent(any());
+        doValidTestWithoutInvoke(processorDTO, inputEvent);
     }
 
-    @Test
-    public void testOnEventWithNullTemplate() throws JsonProcessingException {
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithNonMatchingFiltersAndWithoutTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "notTheValue")));
 
-        Action action = new Action();
-        action.setType(KafkaTopicAction.TYPE);
-
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
-
-        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
-
-        String cloudEvent = createCloudEvent();
-
-        executor.onEvent(cloudEvent);
-
-        verify(actionRuntime).getInvokerBuilder(KafkaTopicAction.TYPE);
-        verify(actionInvokerMock).onEvent(any());
+        doValidTestWithoutInvoke(processorDTO, inputEvent);
     }
 
-    @Test
-    public void testMetricsAreProduced() throws JsonProcessingException {
-        Set<BaseFilter> filters = new HashSet<>();
-        filters.add(new StringEquals("data.key", "value"));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithoutFiltersAndWithTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        processorDTO.getDefinition().setTransformationTemplate("{\"test\": \"{data.key}\"}");
 
-        Action action = new Action();
-        action.setType(KafkaTopicAction.TYPE);
+        String invokedEvent = doValidTestWithInvoke(processorDTO, inputEvent);
 
-        String transformationTemplate = "{\"test\": \"{data.key}\"}";
+        assertThat(invokedEvent).isEqualTo("{\"test\": \"value\"}");
+    }
 
-        ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
+    @ParameterizedTest
+    @MethodSource("validExecutorParams")
+    void testProcessorWithoutFiltersAndWithoutTransformationTemplate(ProcessorDTO processorDTO, String inputEvent) {
+        String invokedEvent = doValidTestWithInvoke(processorDTO, inputEvent);
 
+        assertThatNoException().isThrownBy(() -> CloudEventUtils.decode(invokedEvent));
+    }
+
+    private String doValidTestWithInvoke(ProcessorDTO processorDTO, String inputEvent) {
         Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
+        executor.onEvent(inputEvent);
 
-        String cloudEvent = createCloudEvent();
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
-        executor.onEvent(cloudEvent);
+        verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
+        verify(actionInvokerMock).onEvent(captor.capture());
 
         assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME))).isTrue();
         assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME))).isTrue();
         assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME))).isTrue();
         assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME))).isTrue();
+
+        return captor.getValue();
     }
 
-    protected String createCloudEvent() throws JsonProcessingException {
-        JsonNode data = CloudEventUtils.getMapper().readTree("{\"key\":\"value\"}");
-        CloudEvent event = CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", data);
-        return CloudEventUtils.encode(event);
+    private void doValidTestWithoutInvoke(ProcessorDTO processorDTO, String inputEvent) {
+        Executor executor = new Executor(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry, new ObjectMapper());
+        executor.onEvent(inputEvent);
+
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME))).isTrue();
+        assertThat(meterRegistry.getMeters().stream().anyMatch(x -> x.getId().getName().equals(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME))).isTrue();
+
+        verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
+        verify(actionInvokerMock, never()).onEvent(any());
     }
 
-    protected ProcessorDTO createProcessor(ProcessorDefinition definition) {
-        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
-                "fake:9092",
-                "test",
-                "test",
-                "PLAINTEXT",
-                "ob-bridgeid-1");
+    private static Stream<Arguments> validExecutorParams() {
+        Object[][] arguments = {
+                { createSourceProcessor(), PLAIN_EVENT_JSON },
+                { createSourceProcessor(), createCloudEvent() },
+                { createSinkProcessorWithSameAction(), createCloudEvent() },
+                { createSinkProcessorWithResolvedAction(), createCloudEvent() }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    private static String createCloudEvent() {
+        try {
+            JsonNode data = CloudEventUtils.getMapper().readTree(PLAIN_EVENT_JSON);
+            CloudEvent event = CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", data);
+            return CloudEventUtils.encode(event);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static ProcessorDTO createSourceProcessor() {
+        Source requestedSource = new Source();
+        requestedSource.setType(SlackSource.TYPE);
+
+        Action resolvedAction = new Action();
+        resolvedAction.setType(WebhookAction.TYPE);
+
+        return createProcessor(ProcessorType.SOURCE, new ProcessorDefinition(null, null, requestedSource, resolvedAction));
+    }
+
+    private static ProcessorDTO createSinkProcessorWithSameAction() {
+        Action action = new Action();
+        action.setType(KafkaTopicAction.TYPE);
+
+        return createProcessor(ProcessorType.SINK, new ProcessorDefinition(null, null, action));
+    }
+
+    private static ProcessorDTO createSinkProcessorWithResolvedAction() {
+        Action requestedAction = new Action();
+        requestedAction.setType(SendToBridgeAction.TYPE);
+
+        Action resolvedAction = new Action();
+        resolvedAction.setType(WebhookAction.TYPE);
+
+        return createProcessor(ProcessorType.SINK, new ProcessorDefinition(null, null, requestedAction, resolvedAction));
+    }
+
+    private static ProcessorDTO createProcessor(ProcessorType type, ProcessorDefinition definition) {
         ProcessorDTO dto = new ProcessorDTO();
-        dto.setType(ProcessorType.SINK);
+        dto.setType(type);
         dto.setId("processorId-1");
         dto.setName("processorName-1");
         dto.setDefinition(definition);
         dto.setBridgeId("bridgeId-1");
         dto.setCustomerId("jrota");
         dto.setStatus(ManagedResourceStatus.READY);
-        dto.setKafkaConnection(kafkaConnectionDTO);
+        dto.setKafkaConnection(createKafkaConnection());
         return dto;
+    }
+
+    private static KafkaConnectionDTO createKafkaConnection() {
+        return new KafkaConnectionDTO(
+                "fake:9092",
+                "test",
+                "test",
+                "PLAINTEXT",
+                "ob-bridgeid-1");
     }
 }

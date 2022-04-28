@@ -74,15 +74,21 @@ public class Executor {
 
     private CloudEvent wrapToCloudEvent(String event) {
         try {
-            return CloudEventBuilder.v1()
-                    .withId(UUID.randomUUID().toString())
-                    .withSource(URI.create(CLOUD_EVENT_SOURCE))
-                    .withType(String.format("%sSource", processor.getDefinition().getRequestedSource().getType()))
-                    .withData(JsonCloudEventData.wrap(mapper.readTree(event)))
-                    .build();
-        } catch (JsonProcessingException e) {
-            LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e);
-            throw new CloudEventDeserializationException("Failed to generate event map");
+            // try decoding as CloudEvent as received from Kafka
+            return CloudEventUtils.decode(event);
+        } catch (CloudEventDeserializationException e1) {
+            // if the decode fails, wrap it in a CloudEvent
+            try {
+                return CloudEventBuilder.v1()
+                        .withId(UUID.randomUUID().toString())
+                        .withSource(URI.create(CLOUD_EVENT_SOURCE))
+                        .withType(String.format("%sSource", processor.getDefinition().getRequestedSource().getType()))
+                        .withData(JsonCloudEventData.wrap(mapper.readTree(event)))
+                        .build();
+            } catch (JsonProcessingException e2) {
+                LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e2);
+                throw new CloudEventDeserializationException("Failed to generate event map");
+            }
         }
     }
 
