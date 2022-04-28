@@ -56,7 +56,7 @@ class ConnectorsServiceTest {
     @Test
     @Transactional
     void doNotCreateConnector() {
-        connectorsService.createConnectorEntity(testProcessor(testWebhookAction()));
+        connectorsService.createConnectorEntity(processorWith(webhookAction()));
         verify(connectorsDAOMock, never()).persist(any(ConnectorEntity.class));
     }
 
@@ -75,7 +75,7 @@ class ConnectorsServiceTest {
     @Transactional
     void doNotDeleteConnector() {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
-        connectorsService.deleteConnectorEntity(testProcessor(testWebhookAction()));
+        connectorsService.deleteConnectorEntity(processorWith(webhookAction()));
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
     }
 
@@ -83,20 +83,20 @@ class ConnectorsServiceTest {
     @Transactional
     @MethodSource("connectorProcessors")
     void doDeleteConnector(Processor processor) {
-        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(testConnectorEntity(processor));
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(connectorEntityWith(processor));
         connectorsService.deleteConnectorEntity(processor);
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
     }
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { testProcessor(testSlackAction()), SlackActionConnector.CONNECTOR_TYPE },
-                { testProcessor(testSlackSource()), SlackSourceConnector.CONNECTOR_TYPE }
+                { processorWith(slackAction()), SlackActionConnector.CONNECTOR_TYPE },
+                { processorWith(slackSource()), SlackSourceConnector.CONNECTOR_TYPE }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
-    private static ConnectorEntity testConnectorEntity(Processor processor) {
+    private static ConnectorEntity connectorEntityWith(Processor processor) {
         ConnectorEntity connectorEntity = new ConnectorEntity();
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
@@ -104,7 +104,7 @@ class ConnectorsServiceTest {
         return connectorEntity;
     }
 
-    private static Processor testProcessor(Gateway gateway) {
+    private static Processor processorWith(Gateway gateway) {
         Processor processor = new Processor();
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition();
@@ -122,7 +122,7 @@ class ConnectorsServiceTest {
         return processor;
     }
 
-    private static Action testSlackAction() {
+    private static Action slackAction() {
         Action action = new Action();
         action.setType(SlackAction.TYPE);
         action.setParameters(Map.of(
@@ -131,7 +131,7 @@ class ConnectorsServiceTest {
         return action;
     }
 
-    private static Source testSlackSource() {
+    private static Source slackSource() {
         Source action = new Source();
         action.setType(SlackSource.TYPE);
         action.setParameters(Map.of(
@@ -140,7 +140,7 @@ class ConnectorsServiceTest {
         return action;
     }
 
-    private Action testWebhookAction() {
+    private static Action webhookAction() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
         action.setParameters(Map.of(
