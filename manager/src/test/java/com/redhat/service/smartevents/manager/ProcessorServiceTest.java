@@ -24,7 +24,10 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
+import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -455,29 +458,25 @@ class ProcessorServiceTest {
     }
 
     @Test
-    // See https://issues.redhat.com/browse/MGDOBR-638
     void testUpdateProcessorWithNoChangeWebhookAction() {
-        Set<BaseFilter> filters = Set.of(new StringEquals("source", "StorageService"));
-        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, createWebhookAction());
-
-        Processor existingProcessor = testCreateProcessor(request);
-        existingProcessor.setStatus(READY);
-
-        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
-
-        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID, request);
-
-        assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
-        assertThat(updatedProcessor).isEqualTo(existingProcessor);
+        doTestUpdateProcessorWithNoChange(createWebhookAction());
     }
 
     @Test
-    // See https://issues.redhat.com/browse/MGDOBR-638
     void testUpdateProcessorWithNoChangeKafkaAction() {
-        Set<BaseFilter> filters = Set.of(new StringEquals("source", "StorageService"));
-        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, createKafkaAction());
+        doTestUpdateProcessorWithNoChange(createKafkaAction());
+    }
+
+    private void doTestUpdateProcessorWithNoChange(Action action) {
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringBeginsWith("source", List.of("Storage")));
+        filters.add(new StringContains("source", List.of("StorageService")));
+        filters.add(new StringEquals("source", "StorageService"));
+        filters.add(new ValuesIn("source", List.of("StorageService")));
+        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, action);
 
         Processor existingProcessor = testCreateProcessor(request);
+        existingProcessor.setStatus(READY);
 
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
 
