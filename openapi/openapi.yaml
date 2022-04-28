@@ -758,6 +758,7 @@ components:
     ManagedResourceStatus:
       enum:
       - accepted
+      - preparing
       - provisioning
       - ready
       - deprovision

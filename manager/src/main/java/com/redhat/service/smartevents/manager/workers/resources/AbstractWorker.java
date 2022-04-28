@@ -19,15 +19,23 @@ import com.redhat.service.smartevents.manager.workers.Worker;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+
 public abstract class AbstractWorker<T extends ManagedResource> implements Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
-    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING);
-    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING);
+    private static final Set<ManagedResourceStatus> PROVISIONING_STARTED = Set.of(ACCEPTED, PREPARING);
+    private static final Set<ManagedResourceStatus> DEPROVISIONING_STARTED = Set.of(DEPROVISION, DELETING);
 
-    protected static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.READY, ManagedResourceStatus.FAILED);
-    protected static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(ManagedResourceStatus.DELETED, ManagedResourceStatus.FAILED);
+    protected static final Set<ManagedResourceStatus> PROVISIONING_COMPLETED = Set.of(READY, FAILED);
+    protected static final Set<ManagedResourceStatus> DEPROVISIONING_COMPLETED = Set.of(DELETED, FAILED);
 
     @ConfigProperty(name = "event-bridge.resources.worker.max-retries")
     int maxRetries;
@@ -51,7 +59,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         // Fail when we've had enough
         if (areRetriesExceeded(work, managedResource) || isTimeoutExceeded(work, managedResource)) {
             workManager.complete(work);
-            managedResource.setStatus(ManagedResourceStatus.FAILED);
+            managedResource.setStatus(FAILED);
             persist(managedResource);
             return managedResource;
         }

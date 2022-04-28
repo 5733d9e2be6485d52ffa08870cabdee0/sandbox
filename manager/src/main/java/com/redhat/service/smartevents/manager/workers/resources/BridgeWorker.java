@@ -11,7 +11,6 @@ import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Work;
-import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
@@ -28,9 +27,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Inject
     RhoasService rhoasService;
-
-    @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
@@ -51,6 +47,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 bridge.getName(),
                 bridge.getId());
+        // Transition resource to PREPARING status.
+        // PROVISIONING is handled by the Operator.
+        bridge.setStatus(ManagedResourceStatus.PREPARING);
+
         // This is idempotent as it gets overridden later depending on actual state
         bridge.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         bridge = persist(bridge);

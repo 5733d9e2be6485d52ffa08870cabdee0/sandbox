@@ -13,7 +13,7 @@ import javax.persistence.UniqueConstraint;
         @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
                 query = "from Bridge where shard_id=:shardId and " +
                         "( " +
-                        "  (status='ACCEPTED' and dependencyStatus='READY') " +
+                        "  (status='PREPARING' and dependencyStatus='READY') " +
                         "  or " +
                         "  (status='DEPROVISION' and dependencyStatus='DELETED') " +
                         ")"),

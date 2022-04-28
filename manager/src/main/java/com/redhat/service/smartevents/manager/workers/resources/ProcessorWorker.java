@@ -48,6 +48,10 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 processor.getName(),
                 processor.getId());
+        // Transition resource to PREPARING status.
+        // PROVISIONING is handled by the Operator.
+        processor.setStatus(ManagedResourceStatus.PREPARING);
+        processor = persist(processor);
 
         if (hasZeroConnectors(processor)) {
             LOGGER.debug(

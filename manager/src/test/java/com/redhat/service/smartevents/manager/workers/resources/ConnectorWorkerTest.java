@@ -118,7 +118,7 @@ class ConnectorWorkerTest {
 
         verify(rhoasService).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApi).createConnector(connectorEntity);
-        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
 
         // This emulates a subsequent invocation by WorkManager
@@ -189,12 +189,12 @@ class ConnectorWorkerTest {
         Object[][] arguments = {
                 { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
                 { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PROVISIONING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
                 { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
                 { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PROVISIONING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED }
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED }
         };
         return Stream.of(arguments).map(Arguments::of);
     }

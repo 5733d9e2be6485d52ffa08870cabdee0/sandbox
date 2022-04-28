@@ -117,6 +117,7 @@ public class ProcessorDAOTest {
         Bridge b = createBridge();
         //To be provisioned
         Processor p = createProcessor(b, "foo");
+        p.setStatus(ManagedResourceStatus.PREPARING);
         p.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(p);
 
@@ -144,7 +145,7 @@ public class ProcessorDAOTest {
 
         //To be provisioned
         Processor withProvisionedConnectors = createProcessor(b, "withProvisionedConnectors");
-        withProvisionedConnectors.setStatus(ManagedResourceStatus.ACCEPTED);
+        withProvisionedConnectors.setStatus(ManagedResourceStatus.PREPARING);
         withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
@@ -155,23 +156,23 @@ public class ProcessorDAOTest {
 
         //Not to be provisioned as Connector is not ready
         Processor nonProvisioned = createProcessor(b, "withUnprovisionedConnector");
-        nonProvisioned.setStatus(ManagedResourceStatus.ACCEPTED);
+        nonProvisioned.setStatus(ManagedResourceStatus.PREPARING);
         nonProvisioned.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity nonProvisionedConnector = Fixtures.createSinkConnector(nonProvisioned,
-                ManagedResourceStatus.READY);
+                ManagedResourceStatus.PROVISIONING);
         nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
 
         // Not to be de-provisioned as there's a connector yet to be deleted
         Processor toBeDeleted = createProcessor(b, "notToBeDeletedYet");
         toBeDeleted.setStatus(ManagedResourceStatus.DEPROVISION);
-        toBeDeleted.setDependencyStatus(ManagedResourceStatus.READY);
+        toBeDeleted.setDependencyStatus(ManagedResourceStatus.DELETING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity toBeDeletedConnector = Fixtures.createSinkConnector(toBeDeleted,
-                ManagedResourceStatus.ACCEPTED);
+                ManagedResourceStatus.DELETING);
         toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 
