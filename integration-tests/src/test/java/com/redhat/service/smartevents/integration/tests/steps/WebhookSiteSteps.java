@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.function.BooleanSupplier;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 
+import com.redhat.service.smartevents.integration.tests.common.ChronoUnitConverter;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
@@ -36,16 +38,17 @@ public class WebhookSiteSteps {
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
     }
 
-    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) seconds$")
-    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutSeconds) throws InterruptedException {
+    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
+    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutSeconds, String chronoUnits) throws InterruptedException {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
-        BooleanSupplier failureCondition =
-                () -> WebhookSiteResource.requests().stream().map(WebhookSiteRequest::getContent).noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
-        Duration duration = Duration.ofSeconds(timeoutSeconds);
-        Instant timeoutTime = Instant.now().plus(duration);
+        Instant timeoutTime = Instant.now().plus(Duration.ofSeconds(timeoutSeconds));
         while (timeoutTime.isAfter(Instant.now())) {
-            Thread.sleep(duration.toMillis());
-            assertThat(failureCondition.getAsBoolean()).as("Searching for request containing text: '%s'", requestTextWithoutPlaceholders).isTrue();
+            ChronoUnit parsedChronoUnits = ChronoUnitConverter.parseChronoUnits(chronoUnits);
+            TimeUnit.of(parsedChronoUnits).sleep(timeoutSeconds);
+            assertThat(WebhookSiteResource.requests())
+                    .map(WebhookSiteRequest::getContent)
+                    .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
+                    .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
         }
     }
 }
