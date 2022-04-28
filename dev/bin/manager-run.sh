@@ -6,7 +6,7 @@
 # Env vars:
 # - MANAGED_CONNECTORS_NAMESPACE_ID: namespace where managed connectors will be deployed (required only if MC actions are used, default="empty")
 # - MANAGED_CONNECTORS_CONTROL_PLANE_URL: endpoint of the MC Control plane. (required only if MC actions are used, default="empty")
-# - OPENSHIFT_OFFLINE_TOKEN: Red Hat account offline token (required, get it at https://console.redhat.com/openshift/token)
+# - MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: Red Hat account offline token used by the fleet manager to authenticate to manage connectors (required)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
@@ -54,7 +54,7 @@ mvn \
   -Dmanaged-connectors.auth.server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Dmanaged-connectors.auth.token-path=protocol/openid-connect/token \
   -Dmanaged-connectors.auth.client-id=cloud-services \
-  -Dmanaged-connectors.auth.offline-token=${OPENSHIFT_OFFLINE_TOKEN} \
+  -Dmanaged-connectors.auth.offline-token=${MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN} \
   \
   -Dquarkus.devservices.enabled=false \
   -Dkafka.client.id=${mc_client_id} \
