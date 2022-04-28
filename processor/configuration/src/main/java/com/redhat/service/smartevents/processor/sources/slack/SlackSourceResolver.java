@@ -15,7 +15,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayResolver;
-import com.redhat.service.smartevents.processor.actions.source.SourceAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
 public class SlackSourceResolver implements SlackSource, GatewayResolver<Source> {
@@ -28,21 +28,19 @@ public class SlackSourceResolver implements SlackSource, GatewayResolver<Source>
     @Override
     public Action resolve(Source source, String customerId, String bridgeId, String processorId) {
         Action resolvedAction = new Action();
-        resolvedAction.setType(SourceAction.TYPE);
-
-        try {
-            resolvedAction.setParameters(Map.of(
-                    SourceAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
-                    SourceAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE));
-        } catch (MalformedURLException e) {
-            LOG.error("MalformedURLException when retrieving webhook URL for bridge '{}'", bridgeId, e);
-            throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
-        }
-
+        resolvedAction.setType(WebhookAction.TYPE);
+        resolvedAction.setParameters(Map.of(
+                WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
+                WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true"));
         return resolvedAction;
     }
 
-    private String getBridgeWebhookUrl(String customerId, String bridgeId) throws MalformedURLException {
-        return new URL(gatewayConfiguratorService.getBridgeEndpoint(bridgeId, customerId)).toString();
+    private String getBridgeWebhookUrl(String customerId, String bridgeId) {
+        try {
+            return new URL(gatewayConfiguratorService.getBridgeEndpoint(bridgeId, customerId)).toString();
+        } catch (MalformedURLException e) {
+            LOG.error("MalformedURLException in SlackSourceResolver", e);
+            throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
+        }
     }
 }

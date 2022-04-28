@@ -12,13 +12,12 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.actions.source.SourceAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.processor.sources.slack.SlackSource.CHANNEL_PARAM;
-import static com.redhat.service.smartevents.processor.sources.slack.SlackSource.CLOUD_EVENT_TYPE;
 import static com.redhat.service.smartevents.processor.sources.slack.SlackSource.TOKEN_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -58,23 +57,23 @@ class SlackSourceResolverTest {
 
     @Test
     void testActionWithoutBridgeId() {
-        Source inputSource = testSource();
+        Source inputSource = createSlackSource();
         Action resolvedAction = resolver.resolve(inputSource, CUSTOMER_ID, BRIDGE_ID, PROCESSOR_ID);
 
         assertThat(resolvedAction).isNotNull();
-        assertThat(resolvedAction.getType()).isEqualTo(SourceAction.TYPE);
-        assertThat(resolvedAction.getParameters()).containsEntry(SourceAction.ENDPOINT_PARAM, BRIDGE_ENDPOINT);
-        assertThat(resolvedAction.getParameters()).containsEntry(SourceAction.CLOUD_EVENT_TYPE_PARAM, CLOUD_EVENT_TYPE);
+        assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
+        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, BRIDGE_ENDPOINT);
+        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
     }
 
     @Test
     void testActionWithoutOtherBridgeId() {
-        Source inputSource = testSource();
+        Source inputSource = createSlackSource();
         assertThatExceptionOfType(GatewayProviderException.class)
                 .isThrownBy(() -> resolver.resolve(inputSource, CUSTOMER_ID, OTHER_BRIDGE_ID, PROCESSOR_ID));
     }
 
-    private Source testSource() {
+    private Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
         source.setParameters(Map.of(CHANNEL_PARAM, "channel", TOKEN_PARAM, "token"));
