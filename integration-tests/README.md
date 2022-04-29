@@ -68,12 +68,12 @@ Script has 3 options:
 For remote testing you can execute tests using Maven command:
 
 ```bash
-mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL> -Dbridge.client.id=<CLIENT_ID> -Dbridge.client.secret=<CLIENT_SECRET>
+export OPENSHIFT_OFFLINE_TOKEN=<openshift-offline-token> # To obtain it, go to https://console.redhat.com/openshift/token
+mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL> -Dbridge.client.id=<CLIENT_ID>
+# Example:
+# <CLIENT_ID>="cloud-services"
+# <KEYCLOAK_URL>="https://sso.redhat.com/auth/realms/redhat-external"
 ```
-
-Optionally the `keycloak.realm.url`, `bridge.client.id` and `bridge.client.secret` parameters can be omitted by setting `OB_TOKEN` environment variable with valid SSO token.  
-Just a note, the `OB_TOKEN` value has to be the token value itself, without the `Bearer` prefix.  
-
 
 ### Remote system access configuration
 
