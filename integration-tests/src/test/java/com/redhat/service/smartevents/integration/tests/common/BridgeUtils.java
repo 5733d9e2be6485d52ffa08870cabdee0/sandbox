@@ -15,6 +15,7 @@ public class BridgeUtils {
     public static final String MANAGER_URL = System.getProperty("event-bridge.manager.url");
     protected static final String CLIENT_ID = System.getProperty("bridge.client.id");
     protected static final String CLIENT_SECRET = System.getProperty("bridge.client.secret");
+    protected static final String OB_TOKEN = System.getenv("OB_TOKEN");
     protected static final String OPENSHIFT_OFFLINE_TOKEN = System.getenv("OPENSHIFT_OFFLINE_TOKEN");
 
     protected static String keycloakURL = System.getProperty("keycloak.realm.url");
@@ -22,6 +23,8 @@ public class BridgeUtils {
     public static String retrieveBridgeToken() {
         if (keycloakURL != null && !keycloakURL.isEmpty() && OPENSHIFT_OFFLINE_TOKEN != null) {
             return refreshAccessToken();
+        } else if (OB_TOKEN != null) {
+            return OB_TOKEN;
         } else if (keycloakURL != null && !keycloakURL.isEmpty()) {
             return getAccessToken();
         } else {
