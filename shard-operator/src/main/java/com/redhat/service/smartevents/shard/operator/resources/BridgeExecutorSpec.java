@@ -11,6 +11,8 @@ public class BridgeExecutorSpec {
 
     private String customerId;
 
+    private String processorType;
+
     private String processorName;
 
     private String processorDefinition;
@@ -45,6 +47,14 @@ public class BridgeExecutorSpec {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public String getProcessorType() {
+        return processorType;
+    }
+
+    public void setProcessorType(String processorType) {
+        this.processorType = processorType;
     }
 
     public String getProcessorName() {

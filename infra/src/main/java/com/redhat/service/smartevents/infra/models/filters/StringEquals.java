@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.infra.models.filters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StringEquals extends BaseFilter<String> {
+public class StringEquals extends BaseFilter {
     public static final String FILTER_TYPE_NAME = "StringEquals";
 
     @JsonProperty("value")

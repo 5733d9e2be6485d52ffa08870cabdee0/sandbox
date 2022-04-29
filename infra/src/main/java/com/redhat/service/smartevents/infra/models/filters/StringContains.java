@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StringContains extends BaseFilter<List<String>> {
+public class StringContains extends BaseFilter {
 
     public static final String FILTER_TYPE_NAME = "StringContains";
 

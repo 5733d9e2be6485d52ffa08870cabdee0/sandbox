@@ -22,6 +22,9 @@ public class GlobalConfigurationsProviderImpl implements GlobalConfigurationsPro
     @ConfigProperty(name = "event-bridge.webhook.account-id")
     String webhookAccountId;
 
+    @ConfigProperty(name = "event-bridge.logging.json", defaultValue = "true")
+    Boolean isJsonLoggingEnabled;
+
     @Override
     public String getSsoUrl() {
         return ssoUrl;
@@ -45,5 +48,10 @@ public class GlobalConfigurationsProviderImpl implements GlobalConfigurationsPro
     @Override
     public String getSsoWebhookClientAccountId() {
         return webhookAccountId;
+    }
+
+    @Override
+    public Boolean isJsonLoggingEnabled() {
+        return isJsonLoggingEnabled;
     }
 }

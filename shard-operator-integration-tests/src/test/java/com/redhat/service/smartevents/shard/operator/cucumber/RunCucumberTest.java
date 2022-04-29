@@ -10,7 +10,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty")
+@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "pretty,com.epam.reportportal.cucumber.ScenarioReporter")
 // For transitive step packages
 //@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "com.redhat.service.bridge.shard.operator.cucumber")
 public class RunCucumberTest {

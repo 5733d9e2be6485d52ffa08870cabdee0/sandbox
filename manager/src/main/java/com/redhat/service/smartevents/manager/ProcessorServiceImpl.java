@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -106,6 +107,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
                 .orElse(requestedAction);
 
+        newProcessor.setType(ProcessorType.SINK);
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -263,19 +265,23 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
-        return new ProcessorDTO(processor.getId(),
-                processor.getName(),
-                definition,
-                processor.getBridge().getId(),
-                processor.getBridge().getCustomerId(),
-                processor.getStatus(),
-                kafkaConnectionDTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(processor.getType());
+        dto.setId(processor.getId());
+        dto.setName(processor.getName());
+        dto.setDefinition(definition);
+        dto.setBridgeId(processor.getBridge().getId());
+        dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setStatus(processor.getStatus());
+        dto.setKafkaConnection(kafkaConnectionDTO);
+        return dto;
     }
 
     @Override
     public ProcessorResponse toResponse(Processor processor) {
         ProcessorResponse processorResponse = new ProcessorResponse();
 
+        processorResponse.setType(processor.getType());
         processorResponse.setId(processor.getId());
         processorResponse.setName(processor.getName());
         processorResponse.setStatus(processor.getStatus());
@@ -287,6 +293,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setSource(definition.getRequestedSource());
         }
 
         if (processor.getBridge() != null) {

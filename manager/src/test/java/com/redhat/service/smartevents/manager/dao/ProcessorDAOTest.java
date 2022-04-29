@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -52,6 +53,7 @@ public class ProcessorDAOTest {
 
     private Processor createProcessor(Bridge bridge, String name) {
         Processor p = new Processor();
+        p.setType(ProcessorType.SINK);
         p.setBridge(bridge);
         p.setName(name);
         p.setStatus(ManagedResourceStatus.ACCEPTED);

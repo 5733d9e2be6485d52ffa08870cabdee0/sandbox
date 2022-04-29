@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ValuesIn extends BaseFilter<List<Object>> {
+public class ValuesIn extends BaseFilter {
     public static final String FILTER_TYPE_NAME = "ValuesIn";
 
     @JsonProperty("values")

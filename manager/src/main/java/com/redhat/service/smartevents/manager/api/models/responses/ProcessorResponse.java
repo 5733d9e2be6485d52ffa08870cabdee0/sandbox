@@ -10,6 +10,8 @@ import com.redhat.service.smartevents.infra.api.models.responses.BaseResponse;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessorResponse extends BaseResponse {
@@ -17,6 +19,9 @@ public class ProcessorResponse extends BaseResponse {
     public ProcessorResponse() {
         super("Processor");
     }
+
+    @JsonProperty("type")
+    private ProcessorType type;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
     @JsonProperty("submitted_at")
@@ -37,6 +42,17 @@ public class ProcessorResponse extends BaseResponse {
 
     @JsonProperty("action")
     private Action action;
+
+    @JsonProperty("source")
+    private Source source;
+
+    public ProcessorType getType() {
+        return type;
+    }
+
+    public void setType(ProcessorType type) {
+        this.type = type;
+    }
 
     public ZonedDateTime getSubmittedAt() {
         return submittedAt;
@@ -84,5 +100,13 @@ public class ProcessorResponse extends BaseResponse {
 
     public void setAction(Action action) {
         this.action = action;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 }

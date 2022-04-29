@@ -51,7 +51,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.connectorPayload(action, topicName));
     }
 
-    @Transactional(Transactional.TxType.MANDATORY)
     private void persistConnectorEntity(Processor processor, String topicName, String connectorType, JsonNode connectorPayload) {
         String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
 
