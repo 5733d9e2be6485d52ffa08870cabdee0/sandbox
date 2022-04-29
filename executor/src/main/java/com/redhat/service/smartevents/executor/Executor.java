@@ -31,11 +31,10 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 
-import static com.redhat.service.smartevents.processor.actions.source.SourceActionInvoker.CLOUD_EVENT_SOURCE;
-
 public class Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
+    private static final String CLOUD_EVENT_SOURCE = "RHOSE";
 
     private final ProcessorDTO processor;
     private final FilterEvaluator filterEvaluator;
