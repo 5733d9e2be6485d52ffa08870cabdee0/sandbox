@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.Produces;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -18,15 +19,9 @@ import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 import io.micrometer.core.instrument.MeterRegistry;
 
 @ApplicationScoped
-public class ExecutorsProviderImpl implements ExecutorsProvider {
+public class ExecutorFactory {
 
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
-
-    @Inject
-    ActionRuntime actionRuntime;
-
-    @Inject
-    MeterRegistry registry;
 
     @ConfigProperty(name = "event-bridge.processor.definition")
     String processorDefinition;
@@ -37,24 +32,26 @@ public class ExecutorsProviderImpl implements ExecutorsProvider {
     @Inject
     TransformationEvaluatorFactory transformationEvaluatorFactory;
 
-    private Executor executor;
+    @Inject
+    ActionRuntime actionRuntime;
+
+    @Inject
+    MeterRegistry meterRegistry;
+
+    private ProcessorDTO processorDTO;
 
     @PostConstruct
     void init() {
-        ProcessorDTO dto = readProcessor(processorDefinition);
-        this.executor = new Executor(dto, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, registry, objectMapper);
-    }
-
-    @Override
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    private ProcessorDTO readProcessor(String processorDefinition) {
         try {
-            return objectMapper.readValue(processorDefinition, ProcessorDTO.class);
+            processorDTO = objectMapper.readValue(processorDefinition, ProcessorDTO.class);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot deserialize processor definition.");
         }
+    }
+
+    @Produces
+    @ApplicationScoped
+    public Executor buildExecutor() {
+        return new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
     }
 }
