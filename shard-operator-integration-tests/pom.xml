@@ -17,6 +17,8 @@
   <properties>
     <parallel>false</parallel>
     <parallel.concurrency.number>3</parallel.concurrency.number>
+
+    <sonar.exclusion>**/RunCucumberTest.java</sonar.exclusion>
   </properties>
 
   <dependencies>
