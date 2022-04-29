@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
@@ -56,6 +57,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
     public static BridgeExecutor fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
         return new Builder()
                 .withNamespace(namespace)
+                .withProcessorType(processorDTO.getType())
                 .withProcessorId(processorDTO.getId())
                 .withBridgeId(processorDTO.getBridgeId())
                 .withCustomerId(processorDTO.getCustomerId())
@@ -67,6 +69,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
     public ProcessorDTO toDTO() {
         ProcessorDTO processorDTO = new ProcessorDTO();
+        processorDTO.setType(ProcessorType.fromValue(this.getSpec().getProcessorType()));
         processorDTO.setId(this.getSpec().getId());
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
         processorDTO.setBridgeId(this.getSpec().getBridgeId());
@@ -95,6 +98,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         private String processorId;
         private String bridgeId;
         private String customerId;
+        private ProcessorType processorType;
         private String processorName;
         private ProcessorDefinition processorDefinition;
 
@@ -127,6 +131,11 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             return this;
         }
 
+        public BridgeExecutor.Builder withProcessorType(final ProcessorType processorType) {
+            this.processorType = processorType;
+            return this;
+        }
+
         public BridgeExecutor.Builder withProcessorName(final String processorName) {
             this.processorName = processorName;
             return this;
@@ -154,6 +163,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setBridgeId(bridgeId);
             bridgeExecutorSpec.setCustomerId(customerId);
             bridgeExecutorSpec.setProcessorName(processorName);
+            bridgeExecutorSpec.setProcessorType(processorType.getValue());
 
             try {
                 bridgeExecutorSpec.setProcessorDefinition(MAPPER.writeValueAsString(processorDefinition));

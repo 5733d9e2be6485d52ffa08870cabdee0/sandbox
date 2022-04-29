@@ -100,7 +100,7 @@ public class BridgeIngressControllerTest {
     }
 
     @Test
-    void testBridgeIngressDeployment_deploymentReplicaFailure() throws Exception {
+    void testBridgeIngressDeployment_deploymentReplicaFailure() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -119,7 +119,7 @@ public class BridgeIngressControllerTest {
     }
 
     @Test
-    void testBridgeIngressDeployment_deploymentTimeoutFailure() throws Exception {
+    void testBridgeIngressDeployment_deploymentTimeoutFailure() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -135,6 +135,22 @@ public class BridgeIngressControllerTest {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+    }
+
+    @Test
+    void testBridgeIngressNewImage() {
+        // Given
+        BridgeIngress bridgeIngress = buildBridgeIngress();
+        String oldImage = "oldImage";
+        bridgeIngress.getSpec().setImage(oldImage);
+        deployBridgeIngressSecret(bridgeIngress);
+
+        // When
+        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
+
+        //Then
+        assertThat(updateControl.isUpdateResource()).isTrue();
+        assertThat(updateControl.getResource().getSpec().getImage()).isEqualTo(TestSupport.INGRESS_IMAGE); // Should be restored
     }
 
     private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {

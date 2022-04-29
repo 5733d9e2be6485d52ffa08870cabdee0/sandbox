@@ -67,15 +67,21 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(String.format("Retrieving Connector with ID '%s'", connectorExternalId));
-            }
+            LOGGER.debug("Retrieving Connector with ID '{}'", connectorExternalId);
             return connectorsAPI.getConnector(connectorExternalId);
         } catch (ApiException e) {
-            if (e.getCode() == HttpStatus.SC_NOT_FOUND) {
-                return null;
+            switch (e.getCode()) {
+                case HttpStatus.SC_NOT_FOUND:
+                case HttpStatus.SC_GONE:
+                    //These "exceptions" are handled by RHOSE API as expected states
+                    LOGGER.info("Connector with id '{}' could not be found in Connector Namespace '{}'.", connectorExternalId, mcNamespaceId);
+                    return null;
+                default:
+                    //All other exceptions can be reported
+                    String message =
+                            String.format("Failed to retrieve Connector with id '%s', from Connector Namespace '%s' with HTTP Response Code '%s'", connectorExternalId, mcNamespaceId, e.getCode());
+                    throw new ConnectorGetException(message, e);
             }
-            throw new ConnectorGetException("Error while retrieving the connector on MC Fleet Manager", e);
         }
     }
 
@@ -86,7 +92,9 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             return connectorsAPI.createConnector(true, connectorRequest);
         } catch (ApiException e) {
-            throw new ConnectorCreationException("Error while creating the connector on MC Fleet Manager", e);
+            String message =
+                    String.format("Failed to create Connector on Connector Namespace '%s' with HTTP Response Code '%s'", mcNamespaceId, e.getCode());
+            throw new ConnectorCreationException(message, e);
         }
     }
 
@@ -126,10 +134,14 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         try {
             Error error = connectorsAPI.deleteConnector(id);
             if (error != null) {
-                throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager: " + error);
+                String message =
+                        String.format("Failed to delete Connector with id '%s', from Connector Namespace '%s' with Error Code '%s'", id, mcNamespaceId, error.getCode());
+                throw new ConnectorDeletionException(message);
             }
         } catch (ApiException e) {
-            throw new ConnectorDeletionException("Error while deleting the connector on MC Fleet Manager", e);
+            String message =
+                    String.format("Failed to delete Connector with id '%s', from Connector Namespace '%s' with HTTP Response Code '%s'", id, mcNamespaceId, e.getCode());
+            throw new ConnectorDeletionException(message, e);
         }
     }
 

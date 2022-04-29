@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.processor.actions.slack;
 
-import com.redhat.service.smartevents.processor.actions.ActionBean;
+import com.redhat.service.smartevents.processor.GatewayBean;
 
-public interface SlackAction extends ActionBean {
+public interface SlackAction extends GatewayBean {
 
     String TYPE = "Slack";
     String CHANNEL_PARAM = "channel";

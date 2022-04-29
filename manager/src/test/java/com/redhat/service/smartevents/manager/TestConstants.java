@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+
 public class TestConstants {
     public static final String DEFAULT_BRIDGE_ID = "myId";
     public static final String DEFAULT_CUSTOMER_ID = "kekkobar";
@@ -7,6 +9,8 @@ public class TestConstants {
 
     public static final String SHARD_ID = DEFAULT_CUSTOMER_ID;
 
+    public static final ProcessorType DEFAULT_PROCESSOR_TYPE = ProcessorType.SINK;
+    public static final String DEFAULT_PROCESSOR_ID = "myProcessorId";
     public static final String DEFAULT_PROCESSOR_NAME = "processMcProcessor";
 
     public static final String DEFAULT_KAFKA_TOPIC = "myTestTopic";

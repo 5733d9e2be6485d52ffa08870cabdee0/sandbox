@@ -10,14 +10,15 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEEL;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactoryQute;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
@@ -66,7 +67,7 @@ public class ExecutorTest {
         when(actionRuntime.getInvokerBuilder(KafkaTopicAction.TYPE)).thenReturn(actionInvokerBuilder);
         when(actionRuntime.getInvokerBuilder(WebhookAction.TYPE)).thenReturn(actionInvokerBuilder);
         when(actionRuntime.getInvokerBuilder(not(or(eq(KafkaTopicAction.TYPE), eq(WebhookAction.TYPE)))))
-                .thenThrow(new ActionProviderException("Unknown action type"));
+                .thenThrow(new GatewayProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
     }
@@ -78,7 +79,7 @@ public class ExecutorTest {
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, action));
@@ -100,10 +101,10 @@ public class ExecutorTest {
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
 
-        BaseAction requestedAction = new BaseAction();
+        Action requestedAction = new Action();
         requestedAction.setType("SendToBridge");
 
-        BaseAction resolvedAction = new BaseAction();
+        Action resolvedAction = new Action();
         resolvedAction.setType(WebhookAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, transformationTemplate, requestedAction, resolvedAction));
@@ -123,7 +124,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "notTheValue"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
@@ -142,7 +143,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         ProcessorDTO processorDTO = createProcessor(new ProcessorDefinition(filters, null, action));
@@ -162,7 +163,7 @@ public class ExecutorTest {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("data.key", "value"));
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
 
         String transformationTemplate = "{\"test\": \"{data.key}\"}";
@@ -194,6 +195,15 @@ public class ExecutorTest {
                 "test",
                 "PLAINTEXT",
                 "ob-bridgeid-1");
-        return new ProcessorDTO("processorId-1", "processorName-1", definition, "bridgeId-1", "jrota", ManagedResourceStatus.READY, kafkaConnectionDTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(ProcessorType.SINK);
+        dto.setId("processorId-1");
+        dto.setName("processorName-1");
+        dto.setDefinition(definition);
+        dto.setBridgeId("bridgeId-1");
+        dto.setCustomerId("jrota");
+        dto.setStatus(ManagedResourceStatus.READY);
+        dto.setKafkaConnection(kafkaConnectionDTO);
+        return dto;
     }
 }

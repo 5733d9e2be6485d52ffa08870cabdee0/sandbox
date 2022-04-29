@@ -100,6 +100,8 @@ public class BridgeExecutorServiceTest {
                             assertThat(deployment).isNotNull();
                             assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(60);
                             List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
+                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
+                                    .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR)).findFirst().get().getValue().length())
                                     .isGreaterThan(0);
                             assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR)).findFirst().get().getValue()

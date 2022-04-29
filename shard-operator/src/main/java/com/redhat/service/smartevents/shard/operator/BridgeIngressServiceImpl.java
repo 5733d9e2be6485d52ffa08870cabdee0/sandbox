@@ -94,8 +94,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         List<EnvVar> environmentVariables = new ArrayList<>();
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_URL_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(GlobalConfigurationsConstants.SSO_CLIENT_ID_CONFIG_ENV_VAR).withValue(globalConfigurationsProvider.getSsoClientId()).build());
-        environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getCustomerId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeIngress.getSpec().getCustomerId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_INGRESS_WEBHOOK_TECHNICAL_ACCOUNT_ID).withValue(globalConfigurationsProvider.getSsoWebhookClientAccountId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.EVENT_BRIDGE_LOGGING_JSON).withValue(globalConfigurationsProvider.isJsonLoggingEnabled().toString()).build());
 
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(environmentVariables);
         expected.getSpec().getTemplate().getSpec().getContainers().get(0).getEnvFrom().get(0).getSecretRef().setName(secret.getMetadata().getName());
@@ -182,5 +183,10 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .inNamespace(bridgeIngress.getMetadata().getNamespace())
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
+    }
+
+    @Override
+    public String getIngressImage() {
+        return ingressImage;
     }
 }

@@ -1,0 +1,80 @@
+name: Check stable cluster
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  run-integration-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.STABLE_CLUSTER_MANAGER_URL }}"
+          echo "::add-mask::${{ secrets.STABLE_SSO_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.STABLE_SSO_CLIENT_SECRET }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
+          echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Get sandbox version (step 1)
+        id: sandboxVersion1
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.images[] | select(.name == "event-bridge-manager").newTag' './kustomize/overlays/stable/kustomization.yaml'
+      - name: Get sandbox version (step 2)
+        id: sandboxVersion2
+        run: |
+          echo "::set-output name=SANDBOX_VERSION::$(echo ${{ steps.sandboxVersion1.outputs.result }} | sed 's/\([a-z0-9]*\)-jvm/\1/')"
+      - name: Checkout specific sandbox_version
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ steps.sandboxVersion2.outputs.SANDBOX_VERSION }}"
+      - name: Compile sandbox repo
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install -Dquickly
+      - name: Run integration tests
+        env:
+          STABLE_CLUSTER_MANAGER_URL: ${{ secrets.STABLE_CLUSTER_MANAGER_URL }}
+          STABLE_SSO_CLIENT_ID: ${{ secrets.STABLE_SSO_CLIENT_ID }}
+          STABLE_SSO_CLIENT_SECRET: ${{ secrets.STABLE_SSO_CLIENT_SECRET }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET
+          working-directory: integration-tests
+      - name: Send mail with link to failing job
+        uses: dawidd6/action-send-mail@v3
+        if: ${{ failure() }}
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.CI_MAIL_USERNAME }}
+          password: ${{ secrets.CI_MAIL_PASSWORD }}
+          subject: Stable cluster CI - Check failed
+          to: openbridge-dev@redhat.com
+          from: Stable cluster CI
+          body: Stable cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stable-cluster-check.yml and implement a proper fix.
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1.0.10
+        with:
+          skip_publishing: true
+          check_name: Test Results
+          fail_on_test_failures: true
+          fail_if_no_tests: false

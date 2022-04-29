@@ -7,8 +7,9 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -17,8 +18,8 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 
 public class Fixtures {
 
-    public static BaseAction createKafkaAction() {
-        BaseAction action = new BaseAction();
+    public static Action createKafkaAction() {
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
@@ -28,6 +29,7 @@ public class Fixtures {
 
     public static Processor createProcessor(Bridge b, ManagedResourceStatus status) {
         Processor p = new Processor();
+        p.setType(ProcessorType.SINK);
         p.setName(TestConstants.DEFAULT_PROCESSOR_NAME);
         p.setStatus(status);
         p.setPublishedAt(ZonedDateTime.now());

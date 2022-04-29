@@ -23,12 +23,13 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
@@ -38,7 +39,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-import com.redhat.service.smartevents.processor.actions.ActionConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -49,32 +50,26 @@ public class ProcessorServiceImpl implements ProcessorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
     @Inject
-    ProcessorDAO processorDAO;
-
-    @Inject
-    BridgesService bridgesService;
-
+    ObjectMapper mapper;
     @Inject
     MeterRegistry meterRegistry;
 
     @Inject
-    ObjectMapper mapper;
-
-    @Inject
-    ActionConfigurator actionConfigurator;
-
-    @Inject
-    ConnectorsService connectorService;
-
+    GatewayConfigurator gatewayConfigurator;
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
-
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
     @Inject
-    ShardService shardService;
+    ProcessorDAO processorDAO;
 
+    @Inject
+    BridgesService bridgesService;
+    @Inject
+    ConnectorsService connectorService;
+    @Inject
+    ShardService shardService;
     @Inject
     WorkManager workManager;
 
@@ -106,12 +101,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-        BaseAction requestedAction = processorRequest.getAction();
+        Action requestedAction = processorRequest.getAction();
 
-        BaseAction resolvedAction = actionConfigurator.getResolver(requestedAction.getType())
+        Action resolvedAction = gatewayConfigurator.getActionResolver(requestedAction.getType())
                 .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
                 .orElse(requestedAction);
 
+        newProcessor.setType(ProcessorType.SINK);
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -148,8 +144,8 @@ public class ProcessorServiceImpl implements ProcessorService {
                     customerId));
         }
         ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
-        BaseAction existingAction = existingDefinition.getRequestedAction();
-        BaseAction existingResolvedAction = existingDefinition.getResolvedAction();
+        Action existingAction = existingDefinition.getRequestedAction();
+        Action existingResolvedAction = existingDefinition.getResolvedAction();
 
         // Validate update.
         // Name cannot be updated.
@@ -161,13 +157,19 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
         }
 
-        // Create new definition copying existing properties
-        existingProcessor.setModifiedAt(ZonedDateTime.now());
-        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-
+        // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
         ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+
+        // No need to update CRD if the definition is unchanged
+        if (existingDefinition.equals(updatedDefinition)) {
+            return existingProcessor;
+        }
+
+        // Create new definition copying existing properties
+        existingProcessor.setModifiedAt(ZonedDateTime.now());
+        existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
 
         // Processor and Work should always be created in the same transaction
@@ -263,19 +265,23 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
-        return new ProcessorDTO(processor.getId(),
-                processor.getName(),
-                definition,
-                processor.getBridge().getId(),
-                processor.getBridge().getCustomerId(),
-                processor.getStatus(),
-                kafkaConnectionDTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(processor.getType());
+        dto.setId(processor.getId());
+        dto.setName(processor.getName());
+        dto.setDefinition(definition);
+        dto.setBridgeId(processor.getBridge().getId());
+        dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setStatus(processor.getStatus());
+        dto.setKafkaConnection(kafkaConnectionDTO);
+        return dto;
     }
 
     @Override
     public ProcessorResponse toResponse(Processor processor) {
         ProcessorResponse processorResponse = new ProcessorResponse();
 
+        processorResponse.setType(processor.getType());
         processorResponse.setId(processor.getId());
         processorResponse.setName(processor.getName());
         processorResponse.setStatus(processor.getStatus());
@@ -287,6 +293,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setSource(definition.getRequestedSource());
         }
 
         if (processor.getBridge() != null) {

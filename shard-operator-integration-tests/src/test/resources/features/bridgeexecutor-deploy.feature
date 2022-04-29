@@ -18,6 +18,7 @@ Feature: BridgeExecutor deploy and undeploy
       id: my-bridge-executor-id
       bridgeId: my-bridge-id
       customerId: customer
+      processorType: sink
       processorDefinition: mybridge-processor-definition
       processorName: mybridge-processor
     """
@@ -42,6 +43,7 @@ Feature: BridgeExecutor deploy and undeploy
       id: my-bridge-executor-id
       bridgeId: my-bridge-id
       customerId: customer
+      processorType: sink
       processorDefinition: mybridge-processor-definition
       processorName: mybridge-processor
     """

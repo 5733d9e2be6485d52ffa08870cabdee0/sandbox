@@ -5,14 +5,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 public class TestSupport {
@@ -23,6 +24,7 @@ public class TestSupport {
     public static final String BRIDGE_ID = "my-id";
     public static final String BRIDGE_NAME = "my-name";
     public static final String BRIDGE_ENDPOINT = "http://localhost:8080";
+    public static final ProcessorType PROCESSOR_TYPE = ProcessorType.SINK;
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
     public static final String KAFKA_BOOTSTRAP_SERVERS = "mytestkafka:9092";
@@ -55,7 +57,7 @@ public class TestSupport {
 
         String transformationTemplate = "{\"test\": {key}}";
 
-        BaseAction a = new BaseAction();
+        Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -64,6 +66,15 @@ public class TestSupport {
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 
-        return new ProcessorDTO(PROCESSOR_ID, PROCESSOR_NAME, definition, BRIDGE_ID, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(PROCESSOR_TYPE);
+        dto.setId(PROCESSOR_ID);
+        dto.setName(PROCESSOR_NAME);
+        dto.setDefinition(definition);
+        dto.setBridgeId(BRIDGE_ID);
+        dto.setCustomerId(CUSTOMER_ID);
+        dto.setStatus(ManagedResourceStatus.ACCEPTED);
+        dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
+        return dto;
     }
 }

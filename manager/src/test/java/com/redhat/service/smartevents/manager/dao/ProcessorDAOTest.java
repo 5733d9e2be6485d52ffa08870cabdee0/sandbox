@@ -15,9 +15,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -52,6 +53,7 @@ public class ProcessorDAOTest {
 
     private Processor createProcessor(Bridge bridge, String name) {
         Processor p = new Processor();
+        p.setType(ProcessorType.SINK);
         p.setBridge(bridge);
         p.setName(name);
         p.setStatus(ManagedResourceStatus.ACCEPTED);
@@ -59,7 +61,7 @@ public class ProcessorDAOTest {
         p.setPublishedAt(ZonedDateTime.now());
         p.setShardId(TestConstants.SHARD_ID);
 
-        BaseAction a = new BaseAction();
+        Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
@@ -135,7 +137,7 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(r);
 
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors.size()).isEqualTo(2);
+        assertThat(processors).hasSize(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
     }
 

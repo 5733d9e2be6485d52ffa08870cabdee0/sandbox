@@ -27,6 +27,14 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Report portal properties -->
+    <rp.endpoint>http://127.0.0.1:8080</rp.endpoint>
+    <rp.uuid>8c5b8aae-48ea-4984-a229-4ca8c7bfc0e9</rp.uuid>
+    <rp.launch>sandbox</rp.launch>
+    <rp.project>default_personal</rp.project>
+    <rp.attributes>type:dummy</rp.attributes>
+    <rp.enable>false</rp.enable>
   </properties>
 
   <modules>

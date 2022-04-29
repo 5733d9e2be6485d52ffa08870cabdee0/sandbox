@@ -1,9 +1,10 @@
 package com.redhat.service.smartevents.processor.actions;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.GatewayBean;
 
-public interface ActionInvokerBuilder extends ActionBean {
+public interface ActionInvokerBuilder extends GatewayBean {
 
-    ActionInvoker build(ProcessorDTO processor, BaseAction baseAction);
+    ActionInvoker build(ProcessorDTO processor, Action action);
 }

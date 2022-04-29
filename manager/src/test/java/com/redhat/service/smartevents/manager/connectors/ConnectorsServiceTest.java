@@ -7,7 +7,8 @@ import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -96,13 +97,14 @@ class ConnectorsServiceTest {
 
     private Processor testProcessor() {
         Processor processor = new Processor();
+        processor.setType(ProcessorType.SINK);
         processor.setId(TEST_PROCESSOR_ID);
         processor.setName(TEST_PROCESSOR_NAME);
         return processor;
     }
 
-    private BaseAction testSlackAction() {
-        BaseAction action = new BaseAction();
+    private Action testSlackAction() {
+        Action action = new Action();
         action.setType(SlackAction.TYPE);
         action.setParameters(Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
@@ -110,8 +112,8 @@ class ConnectorsServiceTest {
         return action;
     }
 
-    private BaseAction testWebhookAction() {
-        BaseAction action = new BaseAction();
+    private Action testWebhookAction() {
+        Action action = new Action();
         action.setType(WebhookAction.TYPE);
         action.setParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));

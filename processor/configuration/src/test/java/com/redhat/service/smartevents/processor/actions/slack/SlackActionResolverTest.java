@@ -7,8 +7,8 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
-import com.redhat.service.smartevents.processor.actions.ActionService;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,21 +34,21 @@ class SlackActionResolverTest {
     SlackActionResolver slackActionResolver;
 
     @InjectMock
-    ActionService actionServiceMock;
+    GatewayConfiguratorService gatewayConfiguratorServiceMock;
 
     @BeforeEach
     void beforeEach() {
-        reset(actionServiceMock);
+        reset(gatewayConfiguratorServiceMock);
 
-        when(actionServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
-        when(actionServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
     }
 
     @Test
     void testTransform() {
-        BaseAction baseAction = buildTestAction();
+        Action action = buildTestAction();
 
-        BaseAction transformedAction = slackActionResolver.resolve(baseAction, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
+        Action transformedAction = slackActionResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
         assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
 
@@ -60,12 +60,13 @@ class SlackActionResolverTest {
                 .containsEntry(KafkaTopicAction.TOPIC_PARAM, TEST_PROCESSOR_TOPIC_NAME);
     }
 
-    private BaseAction buildTestAction() {
+    private Action buildTestAction() {
         Map<String, String> parameters = Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_CHANNEL_PARAM,
                 SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
 
-        BaseAction action = new BaseAction();
+        Action action = new Action();
+        action.setType(SlackAction.TYPE);
         action.setParameters(parameters);
         return action;
     }
