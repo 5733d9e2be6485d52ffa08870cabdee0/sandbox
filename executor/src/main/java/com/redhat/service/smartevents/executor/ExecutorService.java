@@ -55,7 +55,6 @@ public class ExecutorService {
         try {
             executor.onEvent(toCloudEvent.apply(message.getPayload()));
         } catch (Exception e) {
-            e.printStackTrace();
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.",
                     executor.getProcessor().getId(), executor.getProcessor().getBridgeId(), e);
         }
