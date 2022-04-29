@@ -6,20 +6,21 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
 
 @ApplicationScoped
 public class SlackActionConnector extends AbstractGatewayConnector<Action> implements SlackAction {
 
-    public static final String CONNECTOR_TYPE = "slack_sink_0.1";
+    public static final ConnectorType CONNECTOR_TYPE = ConnectorType.SINK;
+    public static final String CONNECTOR_TYPE_ID = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
     public static final String CONNECTOR_WEBHOOK_URL_PARAMETER = "slack_webhook_url";
     public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
-    @Override
-    public String getConnectorType() {
-        return CONNECTOR_TYPE;
+    public SlackActionConnector() {
+        super(CONNECTOR_TYPE, CONNECTOR_TYPE_ID);
     }
 
     @Override

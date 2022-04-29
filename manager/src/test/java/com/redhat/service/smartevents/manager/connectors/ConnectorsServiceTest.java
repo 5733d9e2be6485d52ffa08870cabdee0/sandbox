@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -63,12 +64,12 @@ class ConnectorsServiceTest {
     @ParameterizedTest
     @Transactional
     @MethodSource("connectorProcessors")
-    void doCreateConnector(Processor processor, String expectedConnectorType) {
+    void doCreateConnector(Processor processor, String expectedConnectorTypeId) {
         connectorsService.createConnectorEntity(processor);
         ArgumentCaptor<ConnectorEntity> captor = ArgumentCaptor.forClass(ConnectorEntity.class);
         verify(connectorsDAOMock).persist(captor.capture());
         ConnectorEntity entity = captor.getValue();
-        assertThat(entity.getConnectorType()).isEqualTo(expectedConnectorType);
+        assertThat(entity.getConnectorTypeId()).isEqualTo(expectedConnectorTypeId);
     }
 
     @Test
@@ -90,14 +91,15 @@ class ConnectorsServiceTest {
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { processorWith(slackAction()), SlackActionConnector.CONNECTOR_TYPE },
-                { processorWith(slackSource()), SlackSourceConnector.CONNECTOR_TYPE }
+                { processorWith(slackAction()), SlackActionConnector.CONNECTOR_TYPE_ID },
+                { processorWith(slackSource()), SlackSourceConnector.CONNECTOR_TYPE_ID }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
     private static ConnectorEntity connectorEntityWith(Processor processor) {
         ConnectorEntity connectorEntity = new ConnectorEntity();
+        connectorEntity.setType(processor.getType() == ProcessorType.SOURCE ? ConnectorType.SOURCE : ConnectorType.SINK);
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
         connectorEntity.setProcessor(processor);

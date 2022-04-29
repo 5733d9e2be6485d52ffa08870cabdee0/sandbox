@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -59,7 +60,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.connectorPayload(action, topicName));
+        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId(), actionConnector.connectorPayload(action, topicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
@@ -67,20 +68,21 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     public void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.connectorPayload(source, topicName));
+        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId(), sourceConnector.connectorPayload(source, topicName));
     }
 
-    private void persistConnectorEntity(Processor processor, String topicName, String connectorType, JsonNode connectorPayload) {
+    private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
         String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 
+        newConnectorEntity.setType(connectorType);
         newConnectorEntity.setName(newConnectorName);
         newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
-        newConnectorEntity.setConnectorType(connectorType);
+        newConnectorEntity.setConnectorTypeId(connectorTypeId);
         newConnectorEntity.setDefinition(connectorPayload);
 
         connectorsDAO.persist(newConnectorEntity);

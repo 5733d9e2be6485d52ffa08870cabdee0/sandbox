@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 
 public abstract class AbstractGatewayConnector<T extends Gateway> implements GatewayConnector<T> {
@@ -24,7 +25,25 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
     @Inject
     ObjectMapper mapper;
 
+    private final ConnectorType connectorType;
+    private final String connectorTypeId;
+
+    protected AbstractGatewayConnector(ConnectorType connectorType, String connectorTypeId) {
+        this.connectorType = connectorType;
+        this.connectorTypeId = connectorTypeId;
+    }
+
     protected abstract void addConnectorSpecificPayload(T gateway, String topicName, ObjectNode definition);
+
+    @Override
+    public ConnectorType getConnectorType() {
+        return connectorType;
+    }
+
+    @Override
+    public String getConnectorTypeId() {
+        return connectorTypeId;
+    }
 
     @Override
     public JsonNode connectorPayload(T gateway, String topicName) {

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -52,15 +53,16 @@ public class Fixtures {
     }
 
     public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatus status) {
-        return createConnector(p, status, "test_source_0.1");
+        return createConnector(p, status, ConnectorType.SOURCE, "test_source_0.1");
     }
 
     public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatus status) {
-        return createConnector(p, status, "test_sink_0.1");
+        return createConnector(p, status, ConnectorType.SINK, "test_sink_0.1");
     }
 
-    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, String connectorType) {
+    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, ConnectorType type, String connectorTypeId) {
         ConnectorEntity connector = new ConnectorEntity();
+        connector.setType(type);
         connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
         connector.setProcessor(p);
         connector.setStatus(status);
@@ -68,7 +70,7 @@ public class Fixtures {
         connector.setPublishedAt(ZonedDateTime.now());
         connector.setDefinition(new TextNode("definition"));
         connector.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
-        connector.setConnectorType(connectorType);
+        connector.setConnectorTypeId(connectorTypeId);
         connector.setConnectorExternalId("connectorExternalId");
         return connector;
     }

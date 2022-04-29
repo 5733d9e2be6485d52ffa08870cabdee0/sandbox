@@ -18,6 +18,7 @@ import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorGetException;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -37,7 +38,7 @@ class ConnectorsApiClientTest {
 
     private static final String TEST_CONNECTOR_ID = "test-connector-id";
     private static final String TEST_CONNECTOR_NAME = "test-connector-name";
-    private static final String TEST_CONNECTOR_TYPE = "test-connector-type";
+    private static final String TEST_CONNECTOR_TYPE_ID = "test-connector-type";
     private static final String TEST_CONNECTOR_EXTERNAL_ID = "test-connector-ext-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
@@ -112,7 +113,7 @@ class ConnectorsApiClientTest {
 
         assertThat(connectorRequest.getName()).isEqualTo(TEST_CONNECTOR_NAME);
         assertThat(connectorRequest.getNamespaceId()).isEqualTo(mcNamespaceId);
-        assertThat(connectorRequest.getConnectorTypeId()).isEqualTo(TEST_CONNECTOR_TYPE);
+        assertThat(connectorRequest.getConnectorTypeId()).isEqualTo(TEST_CONNECTOR_TYPE_ID);
         assertThat(connectorRequest.getServiceAccount().getClientId()).isEqualTo(serviceAccountId);
         assertThat(connectorRequest.getServiceAccount().getClientSecret()).isEqualTo(serviceAccountSecret);
     }
@@ -165,9 +166,10 @@ class ConnectorsApiClientTest {
 
     private ConnectorEntity testConnectorEntity() {
         ConnectorEntity connectorEntity = new ConnectorEntity();
+        connectorEntity.setType(ConnectorType.SINK);
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setName(TEST_CONNECTOR_NAME);
-        connectorEntity.setConnectorType(TEST_CONNECTOR_TYPE);
+        connectorEntity.setConnectorTypeId(TEST_CONNECTOR_TYPE_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
         connectorEntity.setProcessor(testProcessor());
         return connectorEntity;

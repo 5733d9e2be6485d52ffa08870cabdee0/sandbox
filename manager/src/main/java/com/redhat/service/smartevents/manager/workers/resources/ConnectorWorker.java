@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
@@ -193,12 +194,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         return connectorEntity;
     }
 
-    private static boolean isSourceConnector(ConnectorEntity connectorEntity) {
-        return connectorEntity.getConnectorType().contains("_source_");
-    }
-
     private static RhoasTopicAccessType connectorTopicAccessType(ConnectorEntity connectorEntity) {
-        return isSourceConnector(connectorEntity)
+        return connectorEntity.getType() == ConnectorType.SOURCE
                 ? RhoasTopicAccessType.CONSUMER
                 : RhoasTopicAccessType.PRODUCER;
     }
