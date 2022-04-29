@@ -50,23 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BridgeResponse'
-                  page:
-                    format: int64
-                    type: integer
-                  size:
-                    format: int64
-                    type: integer
-                  total:
-                    format: int64
-                    type: integer
+                $ref: '#/components/schemas/BridgeListResponse'
         "400":
           description: Bad request.
           content:
@@ -102,26 +86,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  href:
-                    type: string
-                  submitted_at:
-                    format: date-time
-                    type: string
-                  published_at:
-                    format: date-time
-                    type: string
-                  status:
-                    $ref: '#/components/schemas/ManagedResourceStatus'
-                  endpoint:
-                    type: string
+                $ref: '#/components/schemas/BridgeResponse'
         "400":
           description: Bad request.
           content:
@@ -157,26 +122,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  href:
-                    type: string
-                  submitted_at:
-                    format: date-time
-                    type: string
-                  published_at:
-                    format: date-time
-                    type: string
-                  status:
-                    $ref: '#/components/schemas/ManagedResourceStatus'
-                  endpoint:
-                    type: string
+                $ref: '#/components/schemas/BridgeResponse'
         "400":
           description: Bad request.
           content:
@@ -265,23 +211,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ProcessorResponse'
-                  page:
-                    format: int64
-                    type: integer
-                  size:
-                    format: int64
-                    type: integer
-                  total:
-                    format: int64
-                    type: integer
+                $ref: '#/components/schemas/ProcessorListResponse'
         "400":
           description: Bad request.
           content:
@@ -325,37 +255,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  href:
-                    type: string
-                  type:
-                    $ref: '#/components/schemas/ProcessorType'
-                  submitted_at:
-                    format: date-time
-                    type: string
-                  published_at:
-                    format: date-time
-                    type: string
-                  status:
-                    $ref: '#/components/schemas/ManagedResourceStatus'
-                  filters:
-                    uniqueItems: true
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BaseFilter'
-                  transformationTemplate:
-                    type: string
-                  action:
-                    $ref: '#/components/schemas/Action'
-                  source:
-                    $ref: '#/components/schemas/Source'
+                $ref: '#/components/schemas/ProcessorResponse'
         "400":
           description: Bad request.
           content:
@@ -402,37 +302,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  href:
-                    type: string
-                  type:
-                    $ref: '#/components/schemas/ProcessorType'
-                  submitted_at:
-                    format: date-time
-                    type: string
-                  published_at:
-                    format: date-time
-                    type: string
-                  status:
-                    $ref: '#/components/schemas/ManagedResourceStatus'
-                  filters:
-                    uniqueItems: true
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BaseFilter'
-                  transformationTemplate:
-                    type: string
-                  action:
-                    $ref: '#/components/schemas/Action'
-                  source:
-                    $ref: '#/components/schemas/Source'
+                $ref: '#/components/schemas/ProcessorResponse'
         "400":
           description: Bad request.
           content:
@@ -484,37 +354,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  href:
-                    type: string
-                  type:
-                    $ref: '#/components/schemas/ProcessorType'
-                  submitted_at:
-                    format: date-time
-                    type: string
-                  published_at:
-                    format: date-time
-                    type: string
-                  status:
-                    $ref: '#/components/schemas/ManagedResourceStatus'
-                  filters:
-                    uniqueItems: true
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BaseFilter'
-                  transformationTemplate:
-                    type: string
-                  action:
-                    $ref: '#/components/schemas/Action'
-                  source:
-                    $ref: '#/components/schemas/Source'
+                $ref: '#/components/schemas/ProcessorResponse'
         "400":
           description: Bad request.
           content:
@@ -600,23 +440,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  kind:
-                    type: string
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ErrorResponse'
-                  page:
-                    format: int64
-                    type: integer
-                  size:
-                    format: int64
-                    type: integer
-                  total:
-                    format: int64
-                    type: integer
+                $ref: '#/components/schemas/ErrorListResponse'
         "400":
           description: Bad request.
           content:
@@ -649,17 +473,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    format: int32
-                    type: integer
-                  code:
-                    type: string
-                  reason:
-                    type: string
-                  type:
-                    $ref: '#/components/schemas/BridgeErrorType'
+                $ref: '#/components/schemas/BridgeError'
         "400":
           description: Bad request.
           content:
@@ -830,11 +644,41 @@ components:
           $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
           $ref: '#/components/schemas/KafkaConnectionDTO'
+    BridgeError:
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        code:
+          type: string
+        reason:
+          type: string
+        type:
+          $ref: '#/components/schemas/BridgeErrorType'
     BridgeErrorType:
       enum:
       - USER
       - PLATFORM
       type: string
+    BridgeListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BridgeResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
     BridgeRequest:
       required:
       - name
@@ -865,6 +709,24 @@ components:
           $ref: '#/components/schemas/ManagedResourceStatus'
         endpoint:
           type: string
+    ErrorListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
     ErrorResponse:
       type: object
       properties:
@@ -938,6 +800,24 @@ components:
           $ref: '#/components/schemas/Source'
         resolvedAction:
           $ref: '#/components/schemas/Action'
+    ProcessorListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessorResponse'
+        page:
+          format: int64
+          type: integer
+        size:
+          format: int64
+          type: integer
+        total:
+          format: int64
+          type: integer
     ProcessorRequest:
       required:
       - name
