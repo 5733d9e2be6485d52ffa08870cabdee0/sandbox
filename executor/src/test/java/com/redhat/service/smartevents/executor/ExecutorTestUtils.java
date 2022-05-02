@@ -24,23 +24,24 @@ public class ExecutorTestUtils {
 
     public static final String PLAIN_EVENT_JSON = "{\"key\":\"value\"}";
 
+    public static final URI CLOUD_EVENT_SOURCE = URI.create("mySource");
+    public static final String CLOUD_EVENT_TYPE = "TestEvent";
+    public static final String CLOUD_EVENT_ID = "myId";
+    public static final String CLOUD_EVENT_SUBJECT = "subject";
+
     public static CloudEvent createCloudEvent() {
         try {
             JsonNode data = CloudEventUtils.getMapper().readTree(PLAIN_EVENT_JSON);
-            return CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", data);
+            return CloudEventUtils.builderFor(CLOUD_EVENT_ID, SpecVersion.V1, CLOUD_EVENT_SOURCE, CLOUD_EVENT_SUBJECT, data)
+                    .withType(CLOUD_EVENT_TYPE)
+                    .build();
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
     }
 
     public static String createCloudEventString() {
-        try {
-            JsonNode data = CloudEventUtils.getMapper().readTree(PLAIN_EVENT_JSON);
-            CloudEvent event = CloudEventUtils.build("myId", SpecVersion.V1, URI.create("mySource"), "subject", data);
-            return CloudEventUtils.encode(event);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
+        return CloudEventUtils.encode(createCloudEvent());
     }
 
     public static ProcessorDTO createSourceProcessor() {

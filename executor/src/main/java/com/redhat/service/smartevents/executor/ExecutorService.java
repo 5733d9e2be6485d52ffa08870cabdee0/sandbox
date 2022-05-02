@@ -3,9 +3,7 @@ package com.redhat.service.smartevents.executor;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -32,8 +30,9 @@ public class ExecutorService {
      */
     public static final String EVENTS_IN_CHANNEL = "events-in";
 
+    public static final String CLOUD_EVENT_SOURCE = "RHOSE";
+
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorService.class);
-    private static final String CLOUD_EVENT_SOURCE = "RHOSE";
 
     @Inject
     Executor executor;
@@ -41,19 +40,14 @@ public class ExecutorService {
     @Inject
     ObjectMapper mapper;
 
-    private Function<String, CloudEvent> toCloudEvent;
-
-    @PostConstruct
-    void init() {
-        toCloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
-                ? this::wrapToCloudEvent
-                : CloudEventUtils::decode;
-    }
-
     @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processEvent(final Message<String> message) {
         try {
-            executor.onEvent(toCloudEvent.apply(message.getPayload()));
+            String eventPayload = message.getPayload();
+            CloudEvent cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
+                    ? wrapToCloudEvent(eventPayload)
+                    : CloudEventUtils.decode(eventPayload);
+            executor.onEvent(cloudEvent);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.",
                     executor.getProcessor().getId(), executor.getProcessor().getBridgeId(), e);
