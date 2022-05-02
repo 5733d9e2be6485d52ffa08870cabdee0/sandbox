@@ -23,7 +23,7 @@ public class BridgeUtils {
     public static String retrieveBridgeToken() {
         if (keycloakURL != null && !keycloakURL.isEmpty() && OPENSHIFT_OFFLINE_TOKEN != null) {
             return refreshAccessToken();
-        } else if (OB_TOKEN != null) {
+        } else if (OB_TOKEN != null && !OB_TOKEN.isEmpty()) {
             return OB_TOKEN;
         } else if (keycloakURL != null && !keycloakURL.isEmpty()) {
             return getAccessToken();
