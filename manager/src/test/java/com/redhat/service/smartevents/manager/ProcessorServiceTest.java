@@ -24,7 +24,10 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
+import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -37,6 +40,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -171,7 +175,7 @@ class ProcessorServiceTest {
         testCreateProcessor(request);
     }
 
-    private void testCreateProcessor(ProcessorRequest request) {
+    private Processor testCreateProcessor(ProcessorRequest request) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
@@ -196,6 +200,8 @@ class ProcessorServiceTest {
 
         ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
         assertThat(definition.getTransformationTemplate()).isEqualTo(request.getTransformationTemplate());
+
+        return processor;
     }
 
     @Test
@@ -443,12 +449,41 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testUpdateProcessorWithNoChange() {
+    void testUpdateProcessorWithNoChangeEmpty() {
         ProcessorRequest request = new ProcessorRequest(DEFAULT_PROCESSOR_NAME, null, null, null);
         Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
 
         assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
         assertThat(updatedProcessor).isEqualTo(createReadyProcessor());
+    }
+
+    @Test
+    void testUpdateProcessorWithNoChangeWebhookAction() {
+        doTestUpdateProcessorWithNoChange(createWebhookAction());
+    }
+
+    @Test
+    void testUpdateProcessorWithNoChangeKafkaAction() {
+        doTestUpdateProcessorWithNoChange(createKafkaAction());
+    }
+
+    private void doTestUpdateProcessorWithNoChange(Action action) {
+        Set<BaseFilter> filters = new HashSet<>();
+        filters.add(new StringBeginsWith("source", List.of("Storage")));
+        filters.add(new StringContains("source", List.of("StorageService")));
+        filters.add(new StringEquals("source", "StorageService"));
+        filters.add(new ValuesIn("source", List.of("StorageService")));
+        ProcessorRequest request = new ProcessorRequest("My Processor", filters, null, action);
+
+        Processor existingProcessor = testCreateProcessor(request);
+        existingProcessor.setStatus(READY);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID)).thenReturn(existingProcessor);
+
+        Processor updatedProcessor = processorService.updateProcessor(DEFAULT_BRIDGE_ID, existingProcessor.getId(), DEFAULT_CUSTOMER_ID, request);
+
+        assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
+        assertThat(updatedProcessor).isEqualTo(existingProcessor);
     }
 
     @Test
@@ -509,6 +544,13 @@ class ProcessorServiceTest {
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setParameters(params);
+        return a;
+    }
+
+    private Action createWebhookAction() {
+        Action a = new Action();
+        a.setType(WebhookAction.TYPE);
+        a.setParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
         return a;
     }
 
