@@ -74,7 +74,7 @@ jobs:
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
         with:
-          skip_publishing: true
+          skip_publishing: false
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
