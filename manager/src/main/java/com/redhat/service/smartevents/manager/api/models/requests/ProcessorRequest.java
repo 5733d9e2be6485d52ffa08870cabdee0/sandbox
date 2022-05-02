@@ -5,10 +5,12 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidGateway;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
 
@@ -54,6 +56,17 @@ public class ProcessorRequest {
         this.action = action;
     }
 
+    @JsonIgnore
+    public ProcessorType getType() {
+        if (getSource() != null) {
+            return ProcessorType.SOURCE;
+        }
+        if (getAction() != null) {
+            return ProcessorType.SINK;
+        }
+        return null;
+    }
+
     public String getName() {
         return name;
     }
@@ -72,6 +85,10 @@ public class ProcessorRequest {
 
     public String getTransformationTemplate() {
         return transformationTemplate;
+    }
+
+    public void setTransformationTemplate(String transformationTemplate) {
+        this.transformationTemplate = transformationTemplate;
     }
 
     public Action getAction() {

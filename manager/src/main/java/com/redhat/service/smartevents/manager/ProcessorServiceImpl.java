@@ -92,9 +92,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
-        ProcessorType processorType = processorRequest.getSource() != null
-                ? ProcessorType.SOURCE
-                : ProcessorType.SINK;
+        ProcessorType processorType = processorRequest.getType();
 
         Processor newProcessor = new Processor();
         newProcessor.setType(processorType);
@@ -158,6 +156,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
+        Source existingSource = existingDefinition.getRequestedSource();
 
         // Validate update.
         // Name cannot be updated.
@@ -168,11 +167,16 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingAction, processorRequest.getAction())) {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
         }
+        if (!Objects.equals(existingSource, processorRequest.getSource())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source.");
+        }
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingSource, existingResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
 
         // No need to update CRD if the definition is unchanged
         if (existingDefinition.equals(updatedDefinition)) {
