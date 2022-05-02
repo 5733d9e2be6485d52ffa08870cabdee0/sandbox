@@ -6,7 +6,7 @@
 # Env vars:
 # - MANAGED_CONNECTORS_NAMESPACE_ID: namespace where managed connectors will be deployed (required only if MC actions are used, default="empty")
 # - MANAGED_CONNECTORS_CONTROL_PLANE_URL: endpoint of the MC Control plane. (required only if MC actions are used, default="empty")
-# - MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: Red Hat account offline token used by the fleet manager to authenticate to manage connectors (required)
+# - MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: Red Hat account offline token used by the fleet manager to authenticate to managed connectors (required)
 ########
 
 SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
