@@ -1,11 +1,16 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 
+import com.redhat.service.smartevents.integration.tests.common.ChronoUnitConverter;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
 import io.cucumber.java.en.Then;
@@ -31,5 +36,19 @@ public class WebhookSiteSteps {
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+    }
+
+    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
+    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
+        String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        ChronoUnit parsedTimeoutChronoUnits = ChronoUnitConverter.parseChronoUnits(timeoutChronoUnits);
+        Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
+        while (timeoutTime.isAfter(Instant.now())) {
+            TimeUnit.of(ChronoUnit.SECONDS).sleep(1);
+            assertThat(WebhookSiteResource.requests())
+                    .map(WebhookSiteRequest::getContent)
+                    .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
+                    .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
+        }
     }
 }

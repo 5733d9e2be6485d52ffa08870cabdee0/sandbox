@@ -1,3 +1,0 @@
-resources:
-  - event-bridge.role.yaml
-  - event-bridge.servicemonitor.yaml
