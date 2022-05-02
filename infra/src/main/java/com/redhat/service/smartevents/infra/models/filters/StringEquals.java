@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.infra.models.filters;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StringEquals extends BaseFilter {
@@ -20,5 +22,22 @@ public class StringEquals extends BaseFilter {
     @Override
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StringEquals)) {
+            return false;
+        }
+        StringEquals that = (StringEquals) o;
+        return Objects.equals(getValue(), that.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getValue());
     }
 }
