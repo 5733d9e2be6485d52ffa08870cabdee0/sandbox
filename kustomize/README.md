@@ -2,6 +2,29 @@
 
 This directory contains the GitOps project used for the deployment of the platform.
 
+## How do we deploy to `dev` and `stable` environments
+
+We have 2 environments: `dev` and `stable`. The idea is that when the platform is running fine on `dev`, then it is ready to be promoted to `stable`.
+This kustomize project is organized as following:
+- `base`: this layer should contain the resources that are in common to every platform (k8s and ocp).
+- `base-openshift`: this layer should contain the resources that are in common to the ocp environments we have (`dev` and `stable`).
+- `overlays/dev`: this overlay should contain only the configurations specific to the `dev` environment (for example the secrets).
+- `overlays/stable`: this overlay should contain only the configurations specific to the `stable` environment.
+- `overlays/minikube`: this overlay should contain only the configurations specific to the `minikube/k8s` environments.
+
+The kustomize project defines the `what`, but we manage `when` the changes are applied to every specific environment with the `dev` and `stable` branches of this repository. 
+
+The ArgoCD service on the `dev` cluster is watching the branch `dev` of this repository and applies the overlay `dev`.  
+On the other side, the ArgoCD service on the `stable` cluster is watching the branch `stable` of this repository and applies the overlay `stable`. 
+
+The workflow for the developer is the following: 
+
+1) The developer wants to modify the services and opens a pull request from his/her fork to the `main` branch of this repository. The kustomize project and all its overlays **must be modified if needed**, according to the changes to the codebase (for example, a new configuration is added). 
+2) When the pull request of the developer has been merged, the new images are built and a new pull request named `[COMMIT_ID] Update kustomization images` is automatically opened targeting the `main` branch.
+3) Merge the PR for the update of the images. 
+4) When the developer wants to update the `dev` environment, he/she has to open a new PR from `main` to `dev` (it results in a fast-forward pull request). When the PR is merged, the changes are applied to `dev`.
+5) When the developer wants to update the `stable` environment, he/she has to open a new PR from `dev` to `stable` (it results in a fast-forward pull request). When the PR is merged, the changes are applied to `stable`.
+
 ## Local Minikube deployment
 
 Requirements:
