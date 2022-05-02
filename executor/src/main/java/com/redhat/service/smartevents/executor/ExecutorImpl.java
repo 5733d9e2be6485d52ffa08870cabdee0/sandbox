@@ -12,6 +12,7 @@ import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluator;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
@@ -28,6 +29,7 @@ public class ExecutorImpl implements Executor {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorImpl.class);
 
     private final ProcessorDTO processor;
+    private final boolean isSourceProcessor;
     private final FilterEvaluator filterEvaluator;
     private final TransformationEvaluator transformationEvaluator;
     private final ActionInvoker actionInvoker;
@@ -44,6 +46,7 @@ public class ExecutorImpl implements Executor {
             ActionRuntime actionRuntime,
             MeterRegistry registry) {
         this.processor = processor;
+        this.isSourceProcessor = processor.getType() == ProcessorType.SOURCE;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
         this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
 
@@ -75,7 +78,8 @@ public class ExecutorImpl implements Executor {
         }
         LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
         // Transformation
-        String eventToSend = applyTransformations(eventMap);
+        // transformations are currently supported only for sink processors
+        String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);
         // Action
         actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
     }
