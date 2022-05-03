@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
@@ -35,6 +36,7 @@ import static com.redhat.service.smartevents.manager.api.user.validators.process
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_TYPE_NOT_RECOGNISED_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.MISSING_GATEWAY_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.TYPE_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.not;
@@ -196,6 +198,24 @@ class GatewayConstraintValidatorTest {
         verifyGetValidatorCall(gateway, times(1), gateway.getType());
         verifyIsValidCall(gateway, times(1));
         verifyErrorMessage(GATEWAY_PARAMETERS_NOT_VALID_ERROR, gateway, true);
+    }
+
+    @ParameterizedTest
+    @MethodSource("gateways")
+    void isValid_sourceWithTransformationIsNotValid(Gateway gateway) {
+        ProcessorRequest p = buildTestRequest(gateway);
+        p.setTransformationTemplate("template");
+
+        if (p.getType() == ProcessorType.SOURCE) {
+            assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
+            verifyGetValidatorCall(gateway, never(), ArgumentMatchers::anyString);
+            verifyIsValidCall(gateway, never());
+            verifyErrorMessage(SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR);
+        } else {
+            assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
+            verifyGetValidatorCall(gateway, times(1), gateway.getType());
+            verifyIsValidCall(gateway, times(1));
+        }
     }
 
     private void verifyGetValidatorCall(Gateway gateway, VerificationMode mode, String argument) {
