@@ -14,6 +14,11 @@ fi
 
 UPSTREAM_REPO_LOCATION=/tmp/upstream
 git clone https://$AUTHOR:$GITHUB_TOKEN@github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox.git $UPSTREAM_REPO_LOCATION > /dev/null 2>&1
+# peek branches 
+git checkout --track origin/dev
+git checkout --track origin/stable
+git checkout main
+
 cd $UPSTREAM_REPO_LOCATION
 
 # If the deployment targets `stable`, then the feature must be on dev first.
