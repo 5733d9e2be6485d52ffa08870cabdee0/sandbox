@@ -163,6 +163,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
         }
+        if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Type.");
+        }
         // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
         if (!Objects.equals(existingAction, processorRequest.getAction())) {
             throw new BadRequestException("It is not possible to update the Processor's Action.");

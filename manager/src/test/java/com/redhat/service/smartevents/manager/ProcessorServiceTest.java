@@ -457,6 +457,11 @@ class ProcessorServiceTest {
     @ParameterizedTest
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithGateway(ProcessorRequest request) {
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(existingProcessor);
+
         if (request.getType() == ProcessorType.SOURCE) {
             Source dummyNewSource = new Source();
             dummyNewSource.setType("DummySource");
@@ -466,6 +471,31 @@ class ProcessorServiceTest {
             dummyNewAction.setType("DummyAction");
             request.setAction(dummyNewAction);
         }
+
+        assertThatExceptionOfType(BadRequestException.class)
+                .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @ParameterizedTest
+    @MethodSource("updateProcessorParams")
+    void testUpdateProcessorWithGatewayWithOppositeType(ProcessorRequest request) {
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(existingProcessor);
+
+        if (request.getType() == ProcessorType.SOURCE) {
+            Action dummyNewAction = new Action();
+            dummyNewAction.setType("DummyAction");
+            request.setAction(dummyNewAction);
+            request.setSource(null);
+        } else if (request.getType() == ProcessorType.SINK) {
+            Source dummyNewSource = new Source();
+            dummyNewSource.setType("DummySource");
+            request.setSource(dummyNewSource);
+            request.setAction(null);
+        }
+
         assertThatExceptionOfType(BadRequestException.class)
                 .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
     }
