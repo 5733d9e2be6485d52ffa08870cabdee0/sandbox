@@ -30,6 +30,10 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the dev branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "dev"
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
