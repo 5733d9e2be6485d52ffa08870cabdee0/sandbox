@@ -11,8 +11,13 @@ public enum ManagedResourceStatus {
     DELETED("deleted"),
     FAILED("failed");
 
-    @JsonValue
     String status;
+
+    // We can not annotate the property `status` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    @JsonValue
+    public String serialize() {
+        return status;
+    }
 
     ManagedResourceStatus(String status) {
         this.status = status;

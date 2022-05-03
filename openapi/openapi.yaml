@@ -895,13 +895,13 @@ components:
           type: string
     ManagedResourceStatus:
       enum:
-      - ACCEPTED
-      - PROVISIONING
-      - READY
-      - DEPROVISION
-      - DELETING
-      - DELETED
-      - FAILED
+      - accepted
+      - provisioning
+      - ready
+      - deprovision
+      - deleting
+      - deleted
+      - failed
       type: string
     ProcessorDTO:
       type: object
