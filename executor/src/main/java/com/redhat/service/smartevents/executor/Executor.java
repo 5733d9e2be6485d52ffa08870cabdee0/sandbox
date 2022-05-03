@@ -1,107 +1,12 @@
 package com.redhat.service.smartevents.executor;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
-import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.transformations.TransformationEvaluator;
-import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
-import com.redhat.service.smartevents.processor.actions.ActionInvoker;
-import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 
 import io.cloudevents.CloudEvent;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
 
-public class Executor {
+public interface Executor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
+    ProcessorDTO getProcessor();
 
-    private final ProcessorDTO processor;
-    private final FilterEvaluator filterEvaluator;
-    private final TransformationEvaluator transformationEvaluator;
-    private final ActionInvoker actionInvoker;
-    private Timer processorProcessingTime;
-    private Timer filterTimer;
-    private Timer actionTimer;
-    private Timer transformationTimer;
-
-    public Executor(ProcessorDTO processor, FilterEvaluatorFactory filterEvaluatorFactory, TransformationEvaluatorFactory transformationFactory,
-            ActionRuntime actionRuntime,
-            MeterRegistry registry) {
-        this.processor = processor;
-        this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
-
-        this.transformationEvaluator = transformationFactory.build(processor.getDefinition().getTransformationTemplate());
-
-        Action action = processor.getDefinition().getResolvedAction();
-        this.actionInvoker = actionRuntime.getInvokerBuilder(action.getType()).build(processor, action);
-
-        initMetricFields(processor, registry);
-    }
-
-    public void onEvent(CloudEvent cloudEvent) {
-        processorProcessingTime.record(() -> process(cloudEvent));
-    }
-
-    @SuppressWarnings("unchecked")
-    private void process(CloudEvent cloudEvent) {
-        LOG.info("Received event with id '{}' for Processor with name '{}' on Bridge '{}", cloudEvent.getId(), processor.getName(), processor.getBridgeId());
-
-        Map<String, Object> cloudEventData = CloudEventUtils.getMapper().convertValue(cloudEvent, Map.class);
-
-        // Filter evaluation
-        if (Boolean.TRUE.equals(filterTimer.record(() -> filterEvaluator.evaluateFilters(cloudEventData)))) {
-            LOG.info("Filters of processor '{}' matched for event with id '{}'", processor.getId(), cloudEvent.getId());
-
-            // Transformation
-            String eventToSend = transformationTimer.record(() -> transformationEvaluator.render(cloudEventData));
-
-            // Action
-            actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
-        } else {
-            LOG.debug("Filters of processor '{}' did not match for event with id '{}'", processor.getId(), cloudEvent.getId());
-            // DO NOTHING;
-        }
-    }
-
-    public ProcessorDTO getProcessor() {
-        return processor;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Executor executor = (Executor) o;
-        return Objects.equals(processor, executor.processor);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(processor);
-    }
-
-    private void initMetricFields(ProcessorDTO processor, MeterRegistry registry) {
-        List<Tag> tags = Arrays.asList(
-                Tag.of(MetricsConstants.BRIDGE_ID_TAG, processor.getBridgeId()), Tag.of(MetricsConstants.PROCESSOR_ID_TAG, processor.getId()));
-        this.processorProcessingTime = registry.timer(MetricsConstants.PROCESSOR_PROCESSING_TIME_METRIC_NAME, tags);
-        this.filterTimer = registry.timer(MetricsConstants.FILTER_PROCESSING_TIME_METRIC_NAME, tags);
-        this.actionTimer = registry.timer(MetricsConstants.ACTION_PROCESSING_TIME_METRIC_NAME, tags);
-        this.transformationTimer = registry.timer(MetricsConstants.TRANSFORMATION_PROCESSING_TIME_METRIC_NAME, tags);
-    }
+    void onEvent(CloudEvent event);
 }

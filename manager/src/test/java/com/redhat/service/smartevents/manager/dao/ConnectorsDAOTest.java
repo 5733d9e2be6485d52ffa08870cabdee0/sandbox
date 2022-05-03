@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -40,9 +39,6 @@ public class ConnectorsDAOTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    @Inject
-    ObjectMapper mapper;
-
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
@@ -59,7 +55,7 @@ public class ConnectorsDAOTest {
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
-        p.setDefinition(mapper.valueToTree(definition));
+        p.setDefinition(definition);
 
         processorDAO.persist(p);
         return p;
@@ -72,7 +68,7 @@ public class ConnectorsDAOTest {
     }
 
     private ConnectorEntity createPersistConnector(Processor p, ManagedResourceStatus status) {
-        ConnectorEntity c = Fixtures.createConnector(p, status);
+        ConnectorEntity c = Fixtures.createSinkConnector(p, status);
         connectorsDAO.persist(c);
         return c;
     }

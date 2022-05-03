@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -12,6 +14,9 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.TypeDef;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -25,9 +30,13 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @Table(name = "CONNECTOR")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class ConnectorEntity extends ManagedDefinedResource { // called -Entity to avoid clash with Connector REST API
+public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // called -Entity to avoid clash with Connector REST API
 
     public static final String PROCESSOR_ID_PARAM = "processorId";
+
+    @Column(name = "type", updatable = false, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ConnectorType type;
 
     // ID returned by MC service
     @Column(name = "connector_external_id")
@@ -37,14 +46,22 @@ public class ConnectorEntity extends ManagedDefinedResource { // called -Entity 
     @JoinColumn(name = "processor_id")
     private Processor processor;
 
-    @Column(name = "connector_type")
-    private String connectorType;
+    @Column(name = "connector_type_id")
+    private String connectorTypeId;
 
     @Column(name = "topic_name")
     private String topicName;
 
     @Column(name = "error")
     private String error;
+
+    public ConnectorType getType() {
+        return type;
+    }
+
+    public void setType(ConnectorType type) {
+        this.type = type;
+    }
 
     public String getConnectorExternalId() {
         return connectorExternalId;
@@ -62,12 +79,12 @@ public class ConnectorEntity extends ManagedDefinedResource { // called -Entity 
         this.processor = processor;
     }
 
-    public String getConnectorType() {
-        return connectorType;
+    public String getConnectorTypeId() {
+        return connectorTypeId;
     }
 
-    public void setConnectorType(String connectorType) {
-        this.connectorType = connectorType;
+    public void setConnectorTypeId(String connectorType) {
+        this.connectorTypeId = connectorType;
     }
 
     public String getTopicName() {
@@ -111,7 +128,8 @@ public class ConnectorEntity extends ManagedDefinedResource { // called -Entity 
     public String toString() {
         return "ConnectorEntity{" +
                 "connectorExternalId='" + connectorExternalId + '\'' +
-                ", connectorType='" + connectorType + '\'' +
+                ", type='" + type + '\'' +
+                ", connectorTypeId='" + connectorTypeId + '\'' +
                 ", topicName='" + topicName + '\'' +
                 ", error='" + error + '\'' +
                 ", definition=" + definition +

@@ -107,9 +107,9 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
 
         createConnectorRequest.setNamespaceId(mcNamespaceId);
 
-        String connectorType = connectorEntity.getConnectorType();
+        String connectorTypeId = connectorEntity.getConnectorTypeId();
         JsonNode payload = connectorEntity.getDefinition();
-        createConnectorRequest.setConnectorTypeId(connectorType);
+        createConnectorRequest.setConnectorTypeId(connectorTypeId);
         createConnectorRequest.setConnector(payload);
 
         ServiceAccount serviceAccount = new ServiceAccount();

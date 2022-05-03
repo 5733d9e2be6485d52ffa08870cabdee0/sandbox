@@ -12,7 +12,6 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -43,9 +42,6 @@ public class ProcessorDAOTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
-    @Inject
-    ObjectMapper mapper;
-
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
@@ -69,7 +65,7 @@ public class ProcessorDAOTest {
         a.setParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
-        p.setDefinition(mapper.valueToTree(definition));
+        p.setDefinition(definition);
 
         processorDAO.persist(p);
         return p;
@@ -152,7 +148,7 @@ public class ProcessorDAOTest {
         withProvisionedConnectors.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
-        ConnectorEntity provisionedConnector = Fixtures.createConnector(withProvisionedConnectors,
+        ConnectorEntity provisionedConnector = Fixtures.createSinkConnector(withProvisionedConnectors,
                 ManagedResourceStatus.READY);
         provisionedConnector.setName("connectorProvisioned");
         processorDAO.getEntityManager().merge(provisionedConnector);
@@ -163,7 +159,7 @@ public class ProcessorDAOTest {
         nonProvisioned.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
-        ConnectorEntity nonProvisionedConnector = Fixtures.createConnector(nonProvisioned,
+        ConnectorEntity nonProvisionedConnector = Fixtures.createSinkConnector(nonProvisioned,
                 ManagedResourceStatus.READY);
         nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
@@ -174,7 +170,7 @@ public class ProcessorDAOTest {
         toBeDeleted.setDependencyStatus(ManagedResourceStatus.READY);
         processorDAO.getEntityManager().merge(nonProvisioned);
 
-        ConnectorEntity toBeDeletedConnector = Fixtures.createConnector(toBeDeleted,
+        ConnectorEntity toBeDeletedConnector = Fixtures.createSinkConnector(toBeDeleted,
                 ManagedResourceStatus.ACCEPTED);
         toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);

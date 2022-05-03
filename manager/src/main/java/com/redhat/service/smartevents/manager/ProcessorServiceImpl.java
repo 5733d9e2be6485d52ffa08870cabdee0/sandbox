@@ -13,9 +13,6 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -28,6 +25,7 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -49,8 +47,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
-    @Inject
-    ObjectMapper mapper;
     @Inject
     MeterRegistry meterRegistry;
 
@@ -96,30 +92,33 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
 
+        ProcessorType processorType = processorRequest.getType();
+
         Processor newProcessor = new Processor();
-
-        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-
-        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Action requestedAction = processorRequest.getAction();
-
-        Action resolvedAction = gatewayConfigurator.getActionResolver(requestedAction.getType())
-                .map(resolver -> resolver.resolve(requestedAction, customerId, bridge.getId(), newProcessor.getId()))
-                .orElse(requestedAction);
-
-        newProcessor.setType(ProcessorType.SINK);
+        newProcessor.setType(processorType);
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
 
-        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, requestedAction, resolvedAction);
-        newProcessor.setDefinition(definitionToJsonNode(definition));
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+
+        Action resolvedAction = processorType == ProcessorType.SOURCE
+                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+
+        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
+                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+
+        newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(newProcessor, requestedAction);
+        connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
@@ -128,6 +127,17 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+    }
+
+    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        return gatewayConfigurator.getActionResolver(action.getType())
+                .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
+                .orElse(action);
+    }
+
+    private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+        return gatewayConfigurator.getSourceResolver(source.getType())
+                .resolve(source, customerId, bridgeId, processorId);
     }
 
     @Override
@@ -143,24 +153,33 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorId,
                     customerId));
         }
-        ProcessorDefinition existingDefinition = jsonNodeToDefinition(existingProcessor.getDefinition());
+        ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
+        Source existingSource = existingDefinition.getRequestedSource();
 
         // Validate update.
         // Name cannot be updated.
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
         }
+        if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Type.");
+        }
         // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
         if (!Objects.equals(existingAction, processorRequest.getAction())) {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
+        }
+        if (!Objects.equals(existingSource, processorRequest.getSource())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source.");
         }
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        ProcessorDefinition updatedDefinition = new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingSource, existingResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
 
         // No need to update CRD if the definition is unchanged
         if (existingDefinition.equals(updatedDefinition)) {
@@ -170,7 +189,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now());
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-        existingProcessor.setDefinition(definitionToJsonNode(updatedDefinition));
+        existingProcessor.setDefinition(updatedDefinition);
 
         // Processor and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -258,18 +277,21 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        ProcessorDefinition definition = processor.getDefinition() != null ? jsonNodeToDefinition(processor.getDefinition()) : null;
+        String topicName = processor.getType() == ProcessorType.SOURCE
+                ? resourceNamesProvider.getProcessorTopicName(processor.getId())
+                : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId()));
+                topicName);
         ProcessorDTO dto = new ProcessorDTO();
         dto.setType(processor.getType());
         dto.setId(processor.getId());
         dto.setName(processor.getName());
-        dto.setDefinition(definition);
+        dto.setDefinition(processor.getDefinition());
         dto.setBridgeId(processor.getBridge().getId());
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setStatus(processor.getStatus());
@@ -289,7 +311,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
 
         if (processor.getDefinition() != null) {
-            ProcessorDefinition definition = jsonNodeToDefinition(processor.getDefinition());
+            ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
@@ -301,17 +323,5 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         return processorResponse;
-    }
-
-    JsonNode definitionToJsonNode(ProcessorDefinition definition) {
-        return mapper.valueToTree(definition);
-    }
-
-    ProcessorDefinition jsonNodeToDefinition(JsonNode jsonNode) {
-        try {
-            return mapper.treeToValue(jsonNode, ProcessorDefinition.class);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Can't convert JsonNode to ProcessorDefinition", e);
-        }
     }
 }

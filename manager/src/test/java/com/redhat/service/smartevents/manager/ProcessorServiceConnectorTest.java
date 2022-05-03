@@ -269,7 +269,7 @@ class ProcessorServiceConnectorTest {
     }
 
     private ConnectorEntity createPersistentConnector(Processor processor, ManagedResourceStatus status) {
-        ConnectorEntity connector = Fixtures.createConnector(processor, status);
+        ConnectorEntity connector = Fixtures.createSinkConnector(processor, status);
         connectorsDAO.persist(connector);
         return connector;
     }

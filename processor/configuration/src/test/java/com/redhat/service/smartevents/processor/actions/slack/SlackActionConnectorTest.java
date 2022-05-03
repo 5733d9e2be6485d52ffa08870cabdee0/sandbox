@@ -44,7 +44,7 @@ class SlackActionConnectorTest {
 
     @Test
     void testConnectorType() {
-        assertThat(connector.getConnectorType()).isEqualTo(SlackActionConnector.CONNECTOR_TYPE);
+        assertThat(connector.getConnectorTypeId()).isEqualTo(SlackActionConnector.CONNECTOR_TYPE_ID);
     }
 
     @Test

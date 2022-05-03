@@ -6,20 +6,21 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
 
 @ApplicationScoped
 public class SlackSourceConnector extends AbstractGatewayConnector<Source> implements SlackSource {
 
-    public static final String CONNECTOR_TYPE = "slack_source_0.1";
+    public static final ConnectorType CONNECTOR_TYPE = ConnectorType.SOURCE;
+    public static final String CONNECTOR_TYPE_ID = "slack_source_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
     public static final String CONNECTOR_TOKEN_PARAMETER = "slack_token";
     public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
-    @Override
-    public String getConnectorType() {
-        return CONNECTOR_TYPE;
+    public SlackSourceConnector() {
+        super(CONNECTOR_TYPE, CONNECTOR_TYPE_ID);
     }
 
     @Override
