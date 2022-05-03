@@ -1,8 +1,12 @@
 # Actions
 
-In SmartEvents, an `Action` is the ability to "do something" when an `Event` is matched by a [Filter](FILTERS.md) of a `Processor`
+In SmartEvents, an `Action` is the ability to "do something" when an `Event` is matched by a [Filter](FILTERS.md) of a `Processor`.
 
-When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` you must specify the `Action` that should be invoked, should the [Filter](FILTERS.md) of the `Processor` match. 
+Processors containing actions are called **"sink processors"**.
+
+It is **not possible** to create a processor containing an `Action` and a [Source](SOURCES.md) at the same time.
+
+When a new sink `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` you must specify the `Action` that should be invoked, should the [Filter](FILTERS.md) of the `Processor` match.
 It is possible to [Transform](TRANSFORMATIONS.md) the original `Event` structure before your `Action` is invoked, otherwise the `Event` will be passed to your `Action` unchanged.
 
 ## Parameters of an Action
