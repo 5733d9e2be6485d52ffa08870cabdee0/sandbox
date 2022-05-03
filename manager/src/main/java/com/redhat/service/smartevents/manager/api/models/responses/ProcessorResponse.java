@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.manager.api.models.responses;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +16,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema
 public class ProcessorResponse extends BaseResponse {
 
     public ProcessorResponse() {
