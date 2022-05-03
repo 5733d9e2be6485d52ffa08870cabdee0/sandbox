@@ -36,27 +36,27 @@ objects:
                   cpu: 2
                   memory: 4096Mi
               env:
-                - name: DATABASE_HOST
+                - name: EVENT_BRIDGE_DB_HOST
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.host
-                - name: DATABASE_PORT
+                - name: EVENT_BRIDGE_DB_PORT
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.port
-                - name: DATABASE_USERNAME
+                - name: EVENT_BRIDGE_DB_USERNAME
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.user
-                - name: DATABASE_PASSWORD
+                - name: EVENT_BRIDGE_DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.password
-                - name: DATABASE_NAME
+                - name: EVENT_BRIDGE_DB_SCHEMA
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
