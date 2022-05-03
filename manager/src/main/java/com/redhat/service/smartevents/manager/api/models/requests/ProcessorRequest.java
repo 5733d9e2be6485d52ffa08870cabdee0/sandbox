@@ -64,7 +64,7 @@ public class ProcessorRequest {
         if (getAction() != null) {
             return ProcessorType.SINK;
         }
-        return null;
+        throw new IllegalStateException("ProcessorRequest with unknown type");
     }
 
     public String getName() {
