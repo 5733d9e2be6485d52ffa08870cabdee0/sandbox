@@ -5,15 +5,13 @@ images:
 - name: event-bridge-shard-operator
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
   newTag: ocp-d223508ca498bad44e26356fda6da03a4f2a78a9-jvm
-namespace: event-bridge-prod
 patchesStrategicMerge:
 - manager/patches/deploy.yaml
 - manager/patches/deploy-config.yaml
 - manager/patches/postgres-config.yaml
 - shard/patches/deploy-config.yaml
 resources:
-- ../../base
+- ../base
 - manager
-- secrets
 - shard
 - observability

@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.infra.models.filters;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,5 +24,22 @@ public class StringContains extends BaseFilter {
     @Override
     public List<String> getValue() {
         return values;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StringContains)) {
+            return false;
+        }
+        StringContains that = (StringContains) o;
+        return Objects.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }
