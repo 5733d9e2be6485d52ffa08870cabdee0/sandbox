@@ -31,7 +31,7 @@ fi
 
 # If the commit is already on TARGET_BRANCH, the feature has been already merged and deployed.
 if [ $(git branch --contains $SHA_COMMIT | grep -c "$TARGET_BRANCH") -ne 0 ]; then
-  printf "\U274C $SHA_COMMIT is already on $TARGET_BRANCH branch!"
+  printf "\U2705 $SHA_COMMIT is already on $TARGET_BRANCH branch!"
 else
   git checkout -b $TARGET_BRANCH > /dev/null 2>&1
   git rebase $SHA_COMMIT > /dev/null 2>&1
