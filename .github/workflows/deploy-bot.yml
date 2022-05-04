@@ -9,7 +9,7 @@ jobs:
     name: Rebase and Push to env
 
     # If the target is this bot and the pull request has been merged
-    if: contains(github.event.comment.body, '/deploy') && github.event_name == 'issue_comment' && github.event.pull_request.merged == 'true'
+    if: contains(github.event.comment.body, '/deploy') && github.event_name == 'issue_comment' && github.event.issue.pull_request.merged_at != null
 
     runs-on: ubuntu-latest
     permissions: write-all
