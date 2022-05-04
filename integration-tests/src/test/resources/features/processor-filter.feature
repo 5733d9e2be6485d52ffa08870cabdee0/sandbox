@@ -91,7 +91,7 @@ Feature: Tests of Processor Filter update
 
   Scenario: Messages are sent to Processor with matching filter
 
-    And add a Processor to the Bridge "mybridge" with body:
+    Given add a Processor to the Bridge "mybridge" with body:
     """
     {
       "name": "myProcessor",
