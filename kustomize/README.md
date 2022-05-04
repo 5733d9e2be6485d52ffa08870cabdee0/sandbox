@@ -17,7 +17,7 @@ The kustomize project defines the `what`, but we manage `when` the changes are a
 The ArgoCD service on the `dev` cluster is watching the branch `dev` of this repository and applies the overlay `dev`.  
 On the other side, the ArgoCD service on the `stable` cluster is watching the branch `stable` of this repository and applies the overlay `stable`. 
 
-A `deployer bot` has been implemented to make easy and transparent the deployment to a specific environment. There is only one command available: "/deploy <target_env>". For example, if you want to deploy to dev you will add a comment "/deploy dev" in the pull request that has been merged. If you want to deploy to stable, you will comment with "/deploy stable".
+A `deployer bot` has been implemented to make easy and transparent the deployment to a specific environment. There is only one command available: `/deploy <target_env>`. For example, if you want to deploy to `dev` you will add a comment `/deploy dev` in the pull request that has been merged. If you want to deploy to `stable`, you will comment with `/deploy stable.
 
 The workflow for the developer is the following: 
 
