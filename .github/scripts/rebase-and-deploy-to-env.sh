@@ -17,9 +17,9 @@ git clone https://$AUTHOR:$GITHUB_TOKEN@github.com/5733d9e2be6485d52ffa08870cabd
 
 cd $UPSTREAM_REPO_LOCATION
 # peek branches 
-git checkout --track origin/dev > /dev/null 2>&1
-git checkout --track origin/stable > /dev/null 2>&1
-git checkout main > /dev/null 2>&1
+git checkout --track origin/dev 1>&2
+git checkout --track origin/stable 1>&2
+git checkout main 1>&2
 
 # If the deployment targets `stable`, then the feature must be on dev first.
 if [[ "$TARGET_BRANCH" == "stable" ]]; then
@@ -33,9 +33,9 @@ fi
 if [ $(git branch --contains $SHA_COMMIT | grep -c "$TARGET_BRANCH") -ne 0 ]; then
   printf "\U2705 $SHA_COMMIT is already on $TARGET_BRANCH branch!"
 else
-  git checkout $TARGET_BRANCH > /dev/null 2>&1
-  git rebase $SHA_COMMIT > /dev/null 2>&1
-  git push origin $TARGET_BRANCH > /dev/null 2>&1
+  git checkout $TARGET_BRANCH 1>&2
+  git rebase $SHA_COMMIT 1>&2
+  git push origin $TARGET_BRANCH 1>&2
   printf "\U2705 $SHA_COMMIT was not on $TARGET_BRANCH branch. $TARGET_BRANCH branch has been rebased and pushed to the upstream repository. The deployment is on the way!"
 fi
 
