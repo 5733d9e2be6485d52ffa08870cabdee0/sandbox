@@ -31,7 +31,7 @@ header_text "Initializing Knative Eventing Core APIs"
 kubectl apply --filename $eventing_core_url
 
 header_text "Waiting for Knative Eventing Core to become ready"
-kubectl wait deployment --all --timeout=-1s --for=condition=Available -n knative-eventing
+kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Initializing Knative Eventing Kafka APIs"
 kubectl apply --filename $eventing_kafka_url
@@ -46,7 +46,7 @@ kubectl patch deployment \
 ]}]'
 
 header_text "Waiting for Knative Eventing Kafka to become ready"
-kubectl wait deployment --all --timeout=-1s --for=condition=Available -n knative-eventing
+kubectl wait deployment --all --timeout=900s --for=condition=Available -n knative-eventing
 
 header_text "Registering 'Kafka' as default Knative Eventing Broker"
 cat <<-EOF | kubectl apply -f -
