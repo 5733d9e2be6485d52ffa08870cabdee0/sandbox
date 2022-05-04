@@ -23,8 +23,8 @@ The workflow for the developer is the following:
 
 1) The developer wants to modify the services and opens a pull request from his/her fork to the `main` branch of this repository. The kustomize project and all its overlays **must be modified if needed**, according to the changes to the codebase (for example, a new configuration is added). 
 2) When the pull request of the developer has been merged
-  - if the merged pull request does trigger the build of at least one image -> use the `deployer bot` in the "update kustomization images" pull request
-  - if the merged pull request does not trigger any build of the images -> use the `deployer bot` directly in the pull request itself. (this is the case for integration tests and kustomize configuration only PR for example).
+    - if the merged pull request does trigger the build of at least one image -> use the `deployer bot` in the "update kustomization images" pull request
+    - if the merged pull request does not trigger any build of the images -> use the `deployer bot` directly in the pull request itself. (this is the case for integration tests and kustomize configuration only PR for example).
 
 ## Local Minikube deployment
 
