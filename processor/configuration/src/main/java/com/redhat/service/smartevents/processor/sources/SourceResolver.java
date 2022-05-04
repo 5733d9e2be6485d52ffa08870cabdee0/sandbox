@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources.slack;
+package com.redhat.service.smartevents.processor.sources;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,9 +18,9 @@ import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class SlackSourceResolver implements SlackSource, GatewayResolver<Source> {
+public class SourceResolver implements GatewayResolver<Source> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SlackSourceResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SourceResolver.class);
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
@@ -42,5 +42,15 @@ public class SlackSourceResolver implements SlackSource, GatewayResolver<Source>
             LOG.error("MalformedURLException in SlackSourceResolver", e);
             throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
         }
+    }
+
+    @Override
+    public String getType() {
+        return null;
+    }
+
+    @Override
+    public boolean accept(String gatewayType) {
+        return true;
     }
 }
