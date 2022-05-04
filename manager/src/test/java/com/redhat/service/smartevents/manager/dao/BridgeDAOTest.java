@@ -44,6 +44,7 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being completed
+        bridge.setStatus(ManagedResourceStatus.PREPARING);
         bridge.setDependencyStatus(ManagedResourceStatus.READY);
         bridgeDAO.persist(bridge);
 

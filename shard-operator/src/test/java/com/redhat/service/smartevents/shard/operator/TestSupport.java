@@ -40,7 +40,7 @@ public class TestSupport {
             KAFKA_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.ACCEPTED, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.PREPARING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
@@ -73,7 +73,7 @@ public class TestSupport {
         dto.setDefinition(definition);
         dto.setBridgeId(BRIDGE_ID);
         dto.setCustomerId(CUSTOMER_ID);
-        dto.setStatus(ManagedResourceStatus.ACCEPTED);
+        dto.setStatus(ManagedResourceStatus.PREPARING);
         dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
         return dto;
     }

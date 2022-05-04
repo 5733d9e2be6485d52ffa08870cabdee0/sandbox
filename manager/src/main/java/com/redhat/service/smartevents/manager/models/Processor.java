@@ -35,7 +35,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "p.bridge.status='READY' and " +
                         "p.shardId=:shardId and " +
                         "(" +
-                        "  (p.status='ACCEPTED' and p.dependencyStatus='READY') " +
+                        "  (p.status='PREPARING' and p.dependencyStatus='READY') " +
                         "  or " +
                         "  (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
                         ")"),
