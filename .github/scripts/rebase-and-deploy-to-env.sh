@@ -17,9 +17,9 @@ git clone https://$AUTHOR:$GITHUB_TOKEN@github.com/5733d9e2be6485d52ffa08870cabd
 
 cd $UPSTREAM_REPO_LOCATION
 # peek branches 
-git checkout --track origin/dev
-git checkout --track origin/stable
-git checkout main
+git checkout --track origin/dev > /dev/null 2>&1
+git checkout --track origin/stable > /dev/null 2>&1
+git checkout main > /dev/null 2>&1
 
 # If the deployment targets `stable`, then the feature must be on dev first.
 if [[ "$TARGET_BRANCH" == "stable" ]]; then
