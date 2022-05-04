@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.manager.metrics;
 import io.micrometer.core.instrument.Tag;
 
 /*
-    Constant for the user operation we are capturing metrics for.
+    Constants for the logical user API operations we are report SLI data for.
  */
 public enum MetricsOperation {
     PROVISION("provision"),
