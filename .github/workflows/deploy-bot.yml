@@ -1,0 +1,78 @@
+name: "Deploy BOT"
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  rebase-and-push:
+    name: Rebase and Push to env
+
+    # If the target is this bot and the pull request has been merged
+    if: contains(github.event.comment.body, '/deploy') && github.event_name == 'issue_comment' && github.event.pull_request.merged == 'true'
+
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check User Permission
+        uses: actions-cool/check-user-permission@v2.0.1
+        id: checkUser
+        with:
+          require: 'write'
+          check-contributor: true
+      - name: Comment on PR if the user has no permission to deploy
+        if: steps.checkUser.outputs.require-result == 'false'
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'You do not have the rights to perform this operation'
+            })
+      - uses: actions/github-script@v3
+        if: steps.checkUser.outputs.require-result == 'true'
+        id: get-pr
+        with:
+          script: |
+            const request = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            }
+            core.info(`Getting PR #${request.pull_number} from ${request.owner}/${request.repo}`)
+            try {
+              const result = await github.pulls.get(request)
+              return result.data
+            } catch (err) {
+              core.setFailed(`Request failed with error ${err}`)
+            }
+
+      - name: Rebase and deploy
+        if: steps.checkUser.outputs.require-result == 'true'
+        id: rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHOR: ${{ github.actor }}
+        run: |
+          export TARGET_BRANCH=$(printf "${{ github.event.comment.body }}" | cut -d ' ' -f2)
+          export SHA_COMMIT="${{ fromJSON(steps.get-pr.outputs.result).merge_commit_sha }}"
+          chmod +x ./.github/scripts/rebase-and-deploy-to-env.sh
+          echo ::set-output name=output::$(./.github/scripts/rebase-and-deploy-to-env.sh)
+      - name: Comment on PR
+        if: steps.checkUser.outputs.require-result == 'true'
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '${{ steps.rebase.outputs.output }}'
+            })
