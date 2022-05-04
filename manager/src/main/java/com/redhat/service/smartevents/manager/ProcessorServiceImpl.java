@@ -9,6 +9,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -36,8 +39,6 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -120,9 +121,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
-                    newProcessor.getId(),
-                    newProcessor.getBridge().getCustomerId(),
-                    newProcessor.getBridge().getId());
+                newProcessor.getId(),
+                newProcessor.getBridge().getCustomerId(),
+                newProcessor.getBridge().getId());
 
         return newProcessor;
     }
@@ -148,8 +149,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
         if (!isProcessorActionable(existingProcessor)) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
-                                                                processorId,
-                                                                customerId));
+                    processorId,
+                    customerId));
         }
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
@@ -195,9 +196,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
-                    existingProcessor.getId(),
-                    existingProcessor.getBridge().getCustomerId(),
-                    existingProcessor.getBridge().getId());
+                existingProcessor.getId(),
+                existingProcessor.getBridge().getCustomerId(),
+                existingProcessor.getBridge().getId());
 
         return existingProcessor;
     }
@@ -215,7 +216,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                                                          processorDTO.getCustomerId()));
+                    processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
 
@@ -265,9 +266,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         metricsService.onOperationStart(processor, MetricsOperation.DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
-                    processor.getId(),
-                    processor.getBridge().getCustomerId(),
-                    processor.getBridge().getId());
+                processor.getId(),
+                processor.getBridge().getCustomerId(),
+                processor.getBridge().getId());
     }
 
     private boolean isProcessorActionable(Processor processor) {
