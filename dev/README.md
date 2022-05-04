@@ -38,7 +38,7 @@ Here is a list of the **required** environment variable:
 |:--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | `MANAGED_CONNECTORS_NAMESPACE_ID` | ID of the namespace where Managed Connectors are deployed, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
 | `MANAGED_CONNECTORS_CONTROL_PLANE_URL` | URL of the MC control plane, required to use Managed Connectors based actions. Skip it if you don't need MC actions. |
-| `OPENSHIFT_OFFLINE_TOKEN`       | OpenShift offline token. To obtain it, go to https://console.redhat.com/openshift/token                                             |
+| `MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN`       | Red Hat account offline token used by the fleet manager to authenticate to managed connectors. To obtain it, go to https://console.redhat.com/openshift/token                                             |
 
 ### Configuration via "localconfig" file
 

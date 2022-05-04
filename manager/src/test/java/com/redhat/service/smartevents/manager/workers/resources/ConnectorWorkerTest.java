@@ -92,10 +92,14 @@ class ConnectorWorkerTest {
     void handleWorkProvisioningWithKnownResourceMultiplePasses(
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
+            boolean useSourceConnectorEntity,
+            RhoasTopicAccessType expectedTopicAccessType,
             ManagedResourceStatus expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, resourceStatus);
+        ConnectorEntity connectorEntity = useSourceConnectorEntity
+                ? Fixtures.createSourceConnector(processor, resourceStatus)
+                : Fixtures.createSinkConnector(processor, resourceStatus);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -112,15 +116,15 @@ class ConnectorWorkerTest {
 
         ConnectorEntity refreshed = worker.handleWork(work);
 
-        verify(rhoasService).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasService).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApi).createConnector(connectorEntity);
-        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
 
         // This emulates a subsequent invocation by WorkManager
         refreshed = worker.handleWork(work);
 
-        verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
 
         assertThat(refreshed.getStatus()).isEqualTo(expectedResourceStatus);
@@ -139,10 +143,14 @@ class ConnectorWorkerTest {
     @MethodSource("provideArgsForDeleteTest")
     void handleWorkDeletingWithKnownResourceMultiplePasses(
             ManagedResourceStatus resourceStatus,
-            ConnectorState connectorState) {
+            ConnectorState connectorState,
+            boolean useSourceConnectorEntity,
+            RhoasTopicAccessType expectedTopicAccessType) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, resourceStatus);
+        ConnectorEntity connectorEntity = useSourceConnectorEntity
+                ? Fixtures.createSourceConnector(processor, resourceStatus)
+                : Fixtures.createSinkConnector(processor, resourceStatus);
         connectorEntity.setPublishedAt(null);//The publishedAt date is set by the Worker so reset that set by the Fixture
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -168,7 +176,7 @@ class ConnectorWorkerTest {
             refreshed = worker.handleWork(work);
         }
 
-        verify(rhoasService).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+        verify(rhoasService).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         assertThat(connectorsDAO.findById(connectorEntity.getId())).isNull();
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
@@ -178,20 +186,34 @@ class ConnectorWorkerTest {
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {
-        return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.READY, ManagedResourceStatus.READY),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, ManagedResourceStatus.FAILED),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.READY, ManagedResourceStatus.READY),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ConnectorState.FAILED, ManagedResourceStatus.FAILED));
+        Object[][] arguments = {
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED }
+        };
+        return Stream.of(arguments).map(Arguments::of);
     }
 
     private static Stream<Arguments> provideArgsForDeleteTest() {
-        return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.READY),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED),
-                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.READY),
-                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.FAILED),
-                Arguments.of(ManagedResourceStatus.DELETING, ConnectorState.DELETED));
+        Object[][] arguments = {
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DELETING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DELETING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DELETING, ConnectorState.DELETED, true, RhoasTopicAccessType.CONSUMER },
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatus.DEPROVISION, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatus.DELETING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatus.DELETING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER },
+                { ManagedResourceStatus.DELETING, ConnectorState.DELETED, false, RhoasTopicAccessType.PRODUCER }
+        };
+        return Stream.of(arguments).map(Arguments::of);
     }
 }

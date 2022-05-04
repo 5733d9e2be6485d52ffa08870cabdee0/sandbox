@@ -4,12 +4,17 @@ import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidGateway;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
 
+@ValidGateway
 public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")
@@ -20,26 +25,46 @@ public class ProcessorRequest {
     private Set<@Valid BaseFilter> filters;
 
     @JsonProperty("transformationTemplate")
+    @ValidTransformationTemplate
     private String transformationTemplate;
 
-    @NotNull(message = "An Action is required for a Processor")
     @JsonProperty("action")
     @Valid
-    private BaseAction baseAction;
+    private Action action;
+
+    @JsonProperty("source")
+    @Valid
+    private Source source;
 
     public ProcessorRequest() {
     }
 
-    public ProcessorRequest(String name, BaseAction baseAction) {
+    public ProcessorRequest(String name, Action action) {
         this.name = name;
-        this.baseAction = baseAction;
+        this.action = action;
     }
 
-    public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, BaseAction baseAction) {
+    public ProcessorRequest(String name, Source source) {
+        this.name = name;
+        this.source = source;
+    }
+
+    public ProcessorRequest(String name, Set<BaseFilter> filters, String transformationTemplate, Action action) {
         this.name = name;
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
-        this.baseAction = baseAction;
+        this.action = action;
+    }
+
+    @JsonIgnore
+    public ProcessorType getType() {
+        if (getSource() != null) {
+            return ProcessorType.SOURCE;
+        }
+        if (getAction() != null) {
+            return ProcessorType.SINK;
+        }
+        throw new IllegalStateException("ProcessorRequest with unknown type");
     }
 
     public String getName() {
@@ -54,15 +79,31 @@ public class ProcessorRequest {
         return filters;
     }
 
+    public void setFilters(Set<BaseFilter> filters) {
+        this.filters = filters;
+    }
+
     public String getTransformationTemplate() {
         return transformationTemplate;
     }
 
-    public BaseAction getAction() {
-        return baseAction;
+    public void setTransformationTemplate(String transformationTemplate) {
+        this.transformationTemplate = transformationTemplate;
     }
 
-    public void setAction(BaseAction baseAction) {
-        this.baseAction = baseAction;
+    public Action getAction() {
+        return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = action;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public void setSource(Source source) {
+        this.source = source;
     }
 }

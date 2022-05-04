@@ -3,12 +3,14 @@ package com.redhat.service.smartevents.integration.tests.steps;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
+import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
@@ -16,19 +18,19 @@ import com.redhat.service.smartevents.integration.tests.resources.webhook.site.W
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 
-import io.cucumber.core.logging.Logger;
-import io.cucumber.core.logging.LoggerFactory;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
 import io.cucumber.java.Scenario;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Cucumber hooks for setup and cleanup
  */
 public class Hooks {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Hooks.class);
+    private static final String DISABLE_CLEANUP = Utils.getSystemProperty("cleanup.disable");
 
     private TestContext context;
 
@@ -55,46 +57,55 @@ public class Hooks {
 
     @After
     public void cleanUp() {
-        String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
-        // Remove all bridges/processors created
-        context.getAllBridges().values()
-                .stream()
-                .filter(bridgeContext -> !bridgeContext.isDeleted())
-                .forEach(bridgeContext -> {
-                    final String bridgeId = bridgeContext.getId();
-                    BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
-                    if (bridge.getStatus() == ManagedResourceStatus.READY) {
-                        ProcessorListResponse processorList = ProcessorResource.getProcessorList(
-                                token,
-                                bridgeId);
-                        if (processorList.getSize() > 0) {
-                            processorList.getItems().stream().forEach(
-                                    p -> ProcessorResource.deleteProcessor(token, bridgeId,
-                                            p.getId()));
-                            Awaitility.await()
-                                    .atMost(Duration.ofMinutes(2))
-                                    .pollInterval(Duration.ofSeconds(5))
-                                    .until(() -> ProcessorResource.getProcessorList(token, bridgeId)
-                                            .getSize() == 0);
-                        }
-                    }
-                    switch (bridge.getStatus()) {
-                        case ACCEPTED:
-                        case PROVISIONING:
-                        case READY:
-                        case FAILED:
-                            try {
-                                BridgeResource.deleteBridge(token, bridgeId);
-                                Awaitility.await()
-                                        .atMost(Duration.ofMinutes(4))
-                                        .pollInterval(Duration.ofSeconds(5))
-                                        .until(() -> BridgeResource.getBridgeList(token).getItems().stream().noneMatch(b -> b.getId().equals(bridgeId)));
-                            } catch (Exception e) {
-                                LOGGER.warn(e, () -> "Unable to delete bridge with id " + bridgeId);
+        if (!Boolean.parseBoolean(DISABLE_CLEANUP)) {
+            String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
+            // Remove all bridges/processors created
+            context.getAllBridges().values()
+                    .parallelStream()
+                    .filter(bridgeContext -> !bridgeContext.isDeleted())
+                    .forEach(bridgeContext -> {
+                        final String bridgeId = bridgeContext.getId();
+                        BridgeResponse bridge = BridgeResource.getBridgeDetails(token, bridgeId);
+                        if (bridge.getStatus() == ManagedResourceStatus.READY) {
+                            ProcessorListResponse processorList = ProcessorResource.getProcessorList(
+                                    token,
+                                    bridgeId);
+                            if (processorList.getSize() > 0) {
+                                processorList.getItems().parallelStream().forEach(
+                                        p -> {
+                                            String processorId = p.getId();
+                                            ProcessorResource.deleteProcessor(token, bridgeId, processorId);
+                                            Awaitility.await()
+                                                    .atMost(Duration.ofMinutes(4))
+                                                    .pollInterval(Duration.ofSeconds(5))
+                                                    .untilAsserted(
+                                                            () -> assertThat(ProcessorResource.getProcessorList(token, bridgeId).getItems())
+                                                                    .as("waiting until Processor `%s` of the Bridge `%s` is deleted", processorId, bridgeId)
+                                                                    .noneMatch(processor -> Objects.equals(processor.getId(), processorId)));
+                                        });
                             }
-                        default:
-                            break;
-                    }
-                });
+                        }
+                        switch (bridge.getStatus()) {
+                            case ACCEPTED:
+                            case PROVISIONING:
+                            case READY:
+                            case FAILED:
+                                try {
+                                    BridgeResource.deleteBridge(token, bridgeId);
+                                    Awaitility.await()
+                                            .atMost(Duration.ofMinutes(4))
+                                            .pollInterval(Duration.ofSeconds(5))
+                                            .untilAsserted(
+                                                    () -> assertThat(BridgeResource.getBridgeList(token).getItems()).as("waiting until Bridge `%s` is deleted", bridgeId)
+                                                            .noneMatch(b -> Objects.equals(b.getId(), bridgeId)));
+                                } catch (Exception e) {
+                                    throw new RuntimeException("Unable to delete bridge with id " + bridgeId, e);
+                                }
+                            default:
+                                break;
+                        }
+                    });
+
+        }
     }
 }

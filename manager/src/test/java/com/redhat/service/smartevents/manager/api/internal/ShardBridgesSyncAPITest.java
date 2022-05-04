@@ -12,13 +12,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
@@ -92,7 +92,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
@@ -113,7 +113,7 @@ public class ShardBridgesSyncAPITest {
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
-        BaseAction action = TestUtils.createSendToBridgeAction(bridgeId);
+        Action action = TestUtils.createSendToBridgeAction(bridgeId);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, null, action));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
@@ -126,7 +126,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
@@ -223,13 +223,13 @@ public class ShardBridgesSyncAPITest {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         assertThat(bridge.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
         assertThat(bridge.getCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(bridge.getEndpoint()).isNull();
     }
 
@@ -274,7 +274,7 @@ public class ShardBridgesSyncAPITest {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);

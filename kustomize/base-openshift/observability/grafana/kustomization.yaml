@@ -1,0 +1,7 @@
+resources:
+  - grafana-dashboard-executor.yaml
+  - grafana-dashboard-ingress.yaml
+  - grafana-dashboard-manager.yaml
+  - grafana-ds.yaml
+  - grafana-sub.yaml
+  - grafana-serviceaccount-role-binding.yaml

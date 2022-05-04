@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.integration.tests.context;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import io.cucumber.java.Scenario;
 
@@ -15,7 +14,6 @@ public class BridgeContext {
     private String id;
 
     private Map<String, ProcessorContext> processors = new HashMap<>();
-    private Map<String, String> cloudEvents = new HashMap<>();
 
     private String endPoint;
 
@@ -70,27 +68,5 @@ public class BridgeContext {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
-    }
-
-    /**
-     * @param testCloudEventId ID of the new Cloud event sent so you are able to
-     *        easily reference it in your tests without having to
-     *        care about the uniqueness of the name
-     */
-    public void storeCloudEventInContext(String testCloudEventId) {
-        if (cloudEvents.containsKey(testCloudEventId)) {
-            throw new RuntimeException("Cloud event with id " + testCloudEventId + " is already created in context.");
-        }
-        String systemCloudEventId = UUID.randomUUID().toString();
-        scenario.log("Bridge '" + this.name + "': Store cloud event with test id '" + testCloudEventId + "' and system id '"
-                + systemCloudEventId + "'");
-        cloudEvents.put(testCloudEventId, systemCloudEventId);
-    }
-
-    public String getCloudEventSystemId(String testCloudEventId) {
-        if (!cloudEvents.containsKey(testCloudEventId)) {
-            throw new RuntimeException("Cloud event with id " + testCloudEventId + " not found.");
-        }
-        return cloudEvents.get(testCloudEventId);
     }
 }

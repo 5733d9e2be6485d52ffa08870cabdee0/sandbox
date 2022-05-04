@@ -91,6 +91,13 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return UpdateControl.noUpdate();
         }
 
+        // Check if the image of the ingress has to be updated
+        String image = bridgeIngressService.getIngressImage();
+        if (!image.equals(bridgeIngress.getSpec().getImage())) {
+            bridgeIngress.getSpec().setImage(image);
+            return UpdateControl.updateResource(bridgeIngress);
+        }
+
         Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
 
         if (!Readiness.isDeploymentReady(deployment)) {

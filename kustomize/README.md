@@ -2,6 +2,30 @@
 
 This directory contains the GitOps project used for the deployment of the platform.
 
+## How do we deploy to `dev` and `stable` environments
+
+We have 2 environments: `dev` and `stable`. The idea is that when the platform is running fine on `dev`, then it is ready to be promoted to `stable`.
+This kustomize project is organized as following:
+- `base`: this layer should contain the resources that are in common to every platform (k8s and ocp).
+- `base-openshift`: this layer should contain the resources that are in common to the ocp environments we have (`dev` and `stable`).
+- `overlays/dev`: this overlay should contain only the configurations specific to the `dev` environment (for example the secrets).
+- `overlays/stable`: this overlay should contain only the configurations specific to the `stable` environment.
+- `overlays/minikube`: this overlay should contain only the configurations specific to the `minikube/k8s` environments.
+
+The kustomize project defines the `what`, but we manage `when` the changes are applied to every specific environment with the `dev` and `stable` branches of this repository. 
+
+The ArgoCD service on the `dev` cluster is watching the branch `dev` of this repository and applies the overlay `dev`.  
+On the other side, the ArgoCD service on the `stable` cluster is watching the branch `stable` of this repository and applies the overlay `stable`. 
+
+A `deployer bot` has been implemented to make easy and transparent the deployment to a specific environment. There is only one command available: `/deploy <target_env>`. For example, if you want to deploy to `dev` you will add a comment `/deploy dev` in the pull request that has been merged. If you want to deploy to `stable`, you have to comment with `/deploy stable`.
+
+The workflow for the developer is the following: 
+
+1) The developer wants to modify the services and opens a pull request from his/her fork to the `main` branch of this repository. The kustomize project and all its overlays **must be modified if needed**, according to the changes to the codebase (for example, a new configuration is added). 
+2) When the pull request of the developer has been merged
+    - if the merged pull request does trigger the build of at least one image -> use the `deployer bot` in the "update kustomization images" pull request
+    - if the merged pull request does not trigger any build of the images -> use the `deployer bot` directly in the pull request itself. (this is the case for integration tests and kustomize configuration only PR for example).
+
 ## Local Minikube deployment
 
 Requirements:
@@ -15,6 +39,8 @@ In this deployment scenario developer provides operator image, Kustomize deploy 
 As a prerequisite the developer needs to adjust
 
 - `EVENT_BRIDGE_SSO_URL` in `overlays/minikube/shard/patches/deploy-config.yaml` 
+- `INGRESS_OVERRIDE_HOSTNAME` in `overlays/minikube/shard/patches/deploy-config.yaml`  
+  It is mainly used by Kind (default hostname is `kind-control-plane`), so you can remove that line if you are using minikube or set the Minikube IP, both will work.
 - `overlays/minikube/manager/patches/deploy-config.yaml` to contain proper Minikube IP address. IP address can be retrieved using `minikube ip`. Port value should stay as defined as it references Keycloak Nodeport.
 - `overlays/minikube/shard/patches/deploy-config.yaml` to contain the offline token for the webhook robot account. It can be retrieved with the command below
 - `overlays/minikube/manager/kustomization.yaml` to contain Managed Kafka bootstrap server URLs and client credentials as well as Managed Connectors bootstrap server URLs and client credentials

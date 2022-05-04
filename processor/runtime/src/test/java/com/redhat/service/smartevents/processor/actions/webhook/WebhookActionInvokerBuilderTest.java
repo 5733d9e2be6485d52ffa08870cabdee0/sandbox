@@ -7,10 +7,11 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -36,17 +37,18 @@ class WebhookActionInvokerBuilderTest {
     @Test
     void testInvokerException() {
         ProcessorDTO processor = createProcessorWithParameterlessAction();
-        assertThatExceptionOfType(ActionProviderException.class)
+        assertThatExceptionOfType(GatewayProviderException.class)
                 .isThrownBy(() -> builder.build(processor, processor.getDefinition().getResolvedAction()));
     }
 
     private ProcessorDTO createProcessorWithParameterlessAction() {
-        BaseAction action = new BaseAction();
+        Action action = new Action();
         action.setType(WebhookAction.TYPE);
         Map<String, String> params = new HashMap<>();
         action.setParameters(params);
 
         ProcessorDTO processor = new ProcessorDTO();
+        processor.setType(ProcessorType.SINK);
         processor.setId("myProcessor");
         processor.setDefinition(new ProcessorDefinition(null, null, action));
         processor.setBridgeId("myBridge");

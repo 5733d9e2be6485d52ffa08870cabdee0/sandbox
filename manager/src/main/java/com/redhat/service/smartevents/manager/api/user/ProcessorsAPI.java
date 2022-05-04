@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -36,8 +35,6 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.smartevents.manager.api.user.validators.actions.ValidActionParams;
-import com.redhat.service.smartevents.manager.api.user.validators.templates.ValidTransformationTemplate;
 import com.redhat.service.smartevents.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
@@ -66,7 +63,7 @@ public class ProcessorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -84,7 +81,8 @@ public class ProcessorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorListResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ProcessorListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -101,7 +99,7 @@ public class ProcessorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -111,7 +109,7 @@ public class ProcessorsAPI {
     @Operation(summary = "Create a Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
     @POST
     @Path("{bridgeId}/processors")
-    public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
+    public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.createProcessor(bridgeId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -119,7 +117,7 @@ public class ProcessorsAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ProcessorResponse.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProcessorResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -131,7 +129,7 @@ public class ProcessorsAPI {
     @PUT
     @Path("{bridgeId}/processors/{processorId}")
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
-            @ValidActionParams @ValidTransformationTemplate @Valid ProcessorRequest processorRequest) {
+            @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();

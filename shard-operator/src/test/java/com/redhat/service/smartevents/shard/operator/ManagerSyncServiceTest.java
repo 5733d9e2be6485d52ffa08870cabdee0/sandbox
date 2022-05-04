@@ -54,8 +54,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     }
 
     private void doBridgeDeployment() throws JsonProcessingException, InterruptedException {
-        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.ACCEPTED, 1);
-        BridgeDTO bridge2 = makeBridgeDTO(ManagedResourceStatus.ACCEPTED, 2);
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 1);
+        BridgeDTO bridge2 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 2);
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =

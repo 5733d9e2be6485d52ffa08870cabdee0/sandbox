@@ -1,19 +1,5 @@
-images:
-- name: event-bridge-manager
-  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: 3f9af612c1d92f9c32cba64d79a628770beb8c27-jvm
-- name: event-bridge-shard-operator
-  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: ocp-ad43f1d62bf95eb5199e1b788aa062a61b2195f3-jvm
 namespace: event-bridge-stable
-patchesStrategicMerge:
-- manager/patches/deploy.yaml
-- manager/patches/deploy-config.yaml
-- manager/patches/postgres-config.yaml
-- shard/patches/deploy-config.yaml
 resources:
-- ../../base
-- manager
+- ../../base-openshift
 - secrets
-- shard
 - observability

@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.processor.actions.webhook;
 
-import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.infra.auth.OidcClient;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
 import io.vertx.core.json.JsonObject;
@@ -12,13 +12,13 @@ public class WebhookActionInvoker implements ActionInvoker {
 
     private final String endpoint;
     private final WebClient client;
-    private final AbstractOidcClient oidcClient;
+    private final OidcClient oidcClient;
 
     public WebhookActionInvoker(String endpoint, WebClient client) {
         this(endpoint, client, null);
     }
 
-    public WebhookActionInvoker(String endpoint, WebClient client, AbstractOidcClient oidcClient) {
+    public WebhookActionInvoker(String endpoint, WebClient client, OidcClient oidcClient) {
         this.endpoint = endpoint;
         this.client = client;
         this.oidcClient = oidcClient;
