@@ -82,19 +82,18 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
             }
-
         } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = deleteDependencies(work, managedResource);
                 complete = isDeprovisioningComplete(updated);
             } catch (Exception e) {
                 LOGGER.info("Failed to delete dependencies for '{}' [{}].\n"
-                        + "Work status: {}\n"
-                        + "{}",
-                        managedResource.getName(),
-                        managedResource.getId(),
-                        work,
-                        e);
+                                    + "Work status: {}\n"
+                                    + "{}",
+                            managedResource.getName(),
+                            managedResource.getId(),
+                            work,
+                            e);
                 // Something has gone wrong. We need to retry.
                 workManager.recordAttempt(work);
             }
@@ -114,7 +113,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     @Transactional
     protected T persist(T managedResource) {
-        managedResource.setModifiedAt(ZonedDateTime.now());
         return getDao().getEntityManager().merge(managedResource);
     }
 
@@ -155,5 +153,4 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected abstract boolean isProvisioningComplete(T managedResource);
 
     protected abstract boolean isDeprovisioningComplete(T managedResource);
-
 }

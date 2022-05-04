@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,6 +9,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
+import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +31,6 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
@@ -45,9 +43,6 @@ public class BridgesServiceImpl implements BridgesService {
     ProcessorService processorService;
 
     @Inject
-    MeterRegistry meterRegistry;
-
-    @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
@@ -58,6 +53,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     WorkManager workManager;
+
+    @Inject
+    MetricsService metricsService;
 
     @Override
     @Transactional
@@ -75,6 +73,7 @@ public class BridgesServiceImpl implements BridgesService {
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
+        metricsService.onOperationStart(bridge, MetricsOperation.PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
@@ -131,7 +130,9 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge deletion and related Work creation should always be in the same transaction
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setDeletedAt(ZonedDateTime.now());
         workManager.schedule(bridge);
+        metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -163,14 +164,13 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
+            metricsService.onOperationComplete(bridge, MetricsOperation.DELETE);
+        } else if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY)) {
+            if (Objects.isNull(bridge.getPublishedAt())) {
+                bridge.setPublishedAt(ZonedDateTime.now());
+                metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
+            }
         }
-        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(bridge.getPublishedAt())) {
-            bridge.setPublishedAt(ZonedDateTime.now());
-        }
-
-        // Update metrics
-        meterRegistry.counter("manager.bridge.status.change",
-                Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
         LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
@@ -206,5 +206,4 @@ public class BridgesServiceImpl implements BridgesService {
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         return response;
     }
-
 }

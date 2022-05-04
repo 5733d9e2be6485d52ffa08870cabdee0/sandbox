@@ -145,8 +145,8 @@ class ProcessorServiceTest {
 
     private static Stream<Arguments> createProcessorParams() {
         Object[][] arguments = {
-                { new ProcessorRequest(NEW_PROCESSOR_NAME, createKafkaTopicAction()), ProcessorType.SINK },
-                { new ProcessorRequest(NEW_PROCESSOR_NAME, createSlackSource()), ProcessorType.SOURCE }
+                {new ProcessorRequest(NEW_PROCESSOR_NAME, createKafkaTopicAction()), ProcessorType.SINK},
+                {new ProcessorRequest(NEW_PROCESSOR_NAME, createSlackSource()), ProcessorType.SOURCE}
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -596,6 +596,7 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), PROVISIONING);
         processor.setId(PROVISIONING_PROCESSOR_ID);
         processor.setName(PROVISIONING_PROCESSOR_NAME);
+        processor.setPublishedAt(null);
         return processor;
     }
 

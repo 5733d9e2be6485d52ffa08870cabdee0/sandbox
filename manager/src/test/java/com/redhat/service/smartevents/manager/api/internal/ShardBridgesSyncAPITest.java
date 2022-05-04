@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,9 @@ public class ShardBridgesSyncAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    MetricsService metricsService;
 
     @InjectMock
     JsonWebToken jwt;
@@ -197,8 +201,8 @@ public class ShardBridgesSyncAPITest {
                 .extract()
                 .body()
                 .asString();
-        assertThat(metrics).contains("manager_processor_status_change_total");
-        assertThat(metrics).contains("manager_bridge_status_change_total");
+
+        metricsService.getMetricNames().forEach(metric -> assertThat(metrics).contains(metric));
     }
 
     @Test
@@ -261,7 +265,6 @@ public class ShardBridgesSyncAPITest {
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isZero();
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.DEPROVISION)).count()).isEqualTo(1);
         });
-
     }
 
     @Test
