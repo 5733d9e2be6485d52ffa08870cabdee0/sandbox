@@ -6,8 +6,13 @@ public enum ConnectorType {
     SOURCE("source"),
     SINK("sink");
 
-    @JsonValue
     final String value;
+
+    // We can not annotate the property `status` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    @JsonValue
+    public String serialize() {
+        return value;
+    }
 
     ConnectorType(String value) {
         this.value = value;
