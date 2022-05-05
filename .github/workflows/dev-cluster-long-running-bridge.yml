@@ -21,6 +21,7 @@ jobs:
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
           echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
           echo "::add-mask::${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}"
@@ -40,6 +41,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
           REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT: ${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}
         uses: ./.github/actions/maven
         with:
