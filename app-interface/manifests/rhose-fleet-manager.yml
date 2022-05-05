@@ -61,6 +61,11 @@ objects:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.name
+                - name: SHARD_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: SHARD_ID
               ports:
                 - containerPort: 8080
               livenessProbe:
@@ -102,4 +107,7 @@ parameters:
     displayName: the client id to connect to the fleet-manager's SSO
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
-    displayName: the client id to connect to the fleet-manager's SSO
+    displayName: the aws rds secret
+  - name: FLEET_MANAGER_SECRET_NAME
+    value: fleet-manager
+    displayName: the fleet-manager vault secret
