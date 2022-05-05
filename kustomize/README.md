@@ -17,13 +17,14 @@ The kustomize project defines the `what`, but we manage `when` the changes are a
 The ArgoCD service on the `dev` cluster is watching the branch `dev` of this repository and applies the overlay `dev`.  
 On the other side, the ArgoCD service on the `stable` cluster is watching the branch `stable` of this repository and applies the overlay `stable`. 
 
+A `deployer bot` has been implemented to make easy and transparent the deployment to a specific environment. There is only one command available: `/deploy <target_env>`. For example, if you want to deploy to `dev` you will add a comment `/deploy dev` in the pull request that has been merged. If you want to deploy to `stable`, you have to comment with `/deploy stable`.
+
 The workflow for the developer is the following: 
 
 1) The developer wants to modify the services and opens a pull request from his/her fork to the `main` branch of this repository. The kustomize project and all its overlays **must be modified if needed**, according to the changes to the codebase (for example, a new configuration is added). 
-2) When the pull request of the developer has been merged, the new images are built and a new pull request named `[COMMIT_ID] Update kustomization images` is automatically opened targeting the `main` branch.
-3) Merge the PR for the update of the images. 
-4) When the developer wants to update the `dev` environment, he/she has to open a new PR from `main` to `dev` (it results in a fast-forward pull request). When the PR is merged, the changes are applied to `dev`.
-5) When the developer wants to update the `stable` environment, he/she has to open a new PR from `dev` to `stable` (it results in a fast-forward pull request). When the PR is merged, the changes are applied to `stable`.
+2) When the pull request of the developer has been merged
+    - if the merged pull request does trigger the build of at least one image -> use the `deployer bot` in the "update kustomization images" pull request
+    - if the merged pull request does not trigger any build of the images -> use the `deployer bot` directly in the pull request itself. (this is the case for integration tests and kustomize configuration only PR for example).
 
 ## Local Minikube deployment
 

@@ -50,9 +50,11 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
+        // Transition resource to PREPARING status.
+        // There is no work handled by the Operator. Connectors move from PREPARING to READY.
+        connectorEntity.setStatus(ManagedResourceStatus.PREPARING);
 
         // This is idempotent as it gets overridden later depending on actual state
-        connectorEntity.setStatus(ManagedResourceStatus.PROVISIONING);
         connectorEntity.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         connectorEntity = persist(connectorEntity);
 

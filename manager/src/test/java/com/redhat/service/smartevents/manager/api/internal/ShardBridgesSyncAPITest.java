@@ -92,7 +92,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
@@ -126,7 +126,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
@@ -223,13 +223,13 @@ public class ShardBridgesSyncAPITest {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         assertThat(bridge.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
         assertThat(bridge.getCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(bridge.getEndpoint()).isNull();
     }
 
@@ -274,7 +274,7 @@ public class ShardBridgesSyncAPITest {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);

@@ -30,5 +30,7 @@ How to trigger pipelines and use the bots:
 
 - <b>Rebase the pull request</b>  
   Comment with: `/rebase`.
+- <b>Deploy BOT</b>
+  Comment with `/deploy <dev,stable> when the PR has been merged to deploy to a target environment.
 
 </details>
