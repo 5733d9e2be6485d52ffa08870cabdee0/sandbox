@@ -873,8 +873,8 @@ components:
           $ref: '#/components/schemas/Source'
     ProcessorType:
       enum:
-      - SOURCE
-      - SINK
+      - source
+      - sink
       type: string
     Source:
       required:
