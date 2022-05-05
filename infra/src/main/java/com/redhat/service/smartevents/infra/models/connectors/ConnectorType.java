@@ -8,7 +8,7 @@ public enum ConnectorType {
 
     final String value;
 
-    // We can not annotate the property `status` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    // We can not annotate the property `value` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
     @JsonValue
     public String serialize() {
         return value;
