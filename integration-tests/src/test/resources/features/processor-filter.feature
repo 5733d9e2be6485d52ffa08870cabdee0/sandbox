@@ -123,7 +123,7 @@ Feature: Tests of Processor Filter update
       "source": "StorageService",
       "id": "filter-test",
       "data": {
-          "name": "world"
+          "name": "World"
         }
     }
     """
@@ -138,7 +138,7 @@ Feature: Tests of Processor Filter update
       "source": "invalid",
       "id": "filter-invalidtest",
       "data": {
-          "name": "world"
+          "name": "World Filter not matching"
         }
     }
     """
