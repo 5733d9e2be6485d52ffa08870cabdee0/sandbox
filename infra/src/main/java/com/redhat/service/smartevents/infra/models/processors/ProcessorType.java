@@ -6,8 +6,13 @@ public enum ProcessorType {
     SOURCE("source"),
     SINK("sink");
 
-    @JsonValue
     final String value;
+
+    // We can not annotate the property `value` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    @JsonValue
+    public String serialize() {
+        return value;
+    }
 
     ProcessorType(String value) {
         this.value = value;
