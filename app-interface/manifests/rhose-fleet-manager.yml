@@ -36,6 +36,21 @@ objects:
                   cpu: 2
                   memory: 4096Mi
               env:
+                - name: AWS_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_REGION
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_SECRET_ACCESS_KEY
                 - name: EVENT_BRIDGE_DB_HOST
                   valueFrom:
                     secretKeyRef:
@@ -61,36 +76,131 @@ objects:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.name
-                - name: SHARD_ID
+                - name: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: SHARD_ID
-                - name: EVENT_BRIDGE_SSO_URL
+                      key: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
+                - name: EVENT_BRIDGE_KAFKA_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: EVENT_BRIDGE_SSO_URL
+                      key: EVENT_BRIDGE_KAFKA_CLIENT_ID
+                - name: EVENT_BRIDGE_KAFKA_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_KAFKA_CLIENT_SECRET
+                - name: EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST
+                - name: EVENT_BRIDGE_RHOAS_MGMT_API_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_MGMT_API_HOST
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET
+                - name: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL
+                - name: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID
                 - name: EVENT_BRIDGE_SSO_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: EVENT_BRIDGE_SSO_CLIENT_ID
-                - name: AWS_REGION
+                - name: EVENT_BRIDGE_SSO_URL
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: AWS_REGION
-                - name: AWS_ACCESS_KEY_ID
+                      key: EVENT_BRIDGE_SSO_URL
+                - name: MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: AWS_ACCESS_KEY_ID
-                - name: AWS_SECRET_ACCESS_KEY
+                      key: MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS
+                - name: MANAGED_CONNECTORS_KAFKA_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: AWS_SECRET_ACCESS_KEY
+                      key: MANAGED_CONNECTORS_KAFKA_CLIENT_ID
+                - name: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
+                - name: MC_AUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_CLIENT_ID
+                - name: MC_AUTH_OFFLINE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_OFFLINE_TOKEN
+                - name: MC_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_SERVER_URL
+                - name: MC_AUTH_TOKEN_PATH
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_TOKEN_PATH
+                - name: MC_CLUSTER_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_CLUSTER_ID
+                - name: MC_NAMESPACE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_NAMESPACE_ID
+                - name: MC_SERVICES_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_SERVICES_URL
+                - name: MC_TOPIC_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_TOPIC_NAME
+                - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: RHOAS_OPS_ACCOUNT_CLIENT_ID
+                - name: SHARD_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: SHARD_ID
               ports:
                 - containerPort: 8080
               livenessProbe:
