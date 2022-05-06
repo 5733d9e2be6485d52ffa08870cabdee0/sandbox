@@ -17,7 +17,8 @@ public class ContextResolver {
     private static final List<Resolver> RESOLVERS = Arrays.asList(
             new BridgeIdResolver(),
             new CloudEventIdResolver(),
-            new SystemPropertyResolver());
+            new SystemPropertyResolver(),
+            new UuidResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
         if (isPlaceholderFound(content)) {

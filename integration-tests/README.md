@@ -42,10 +42,11 @@ Test identifier is a specific resource identifier used in a scenario (for exampl
 
 It is possible to use various placeholders in feature files, allowing dynamic acess to runtime values and system identifiers. The placeholders use format `${placeholder-value}`.
 
-Curently there is a possibility to use these placeholders in feature files:
+Currently, there is a possibility to use these placeholders in feature files:
 - ${env.`<System property name>`} to use a System property
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
+- ${uuid.`<Uuid name>`} TODO
 
 ## Test execution
 
