@@ -103,6 +103,8 @@ public class TestCaseFileLogger implements EventListener {
      */
     private void handleTestCaseFinished(TestCaseFinished event) {
         mainLogWriter.writeln(String.format("Test case '%s' finished with result '%s' in %s", event.getTestCase().getName(), event.getResult().getStatus(), event.getResult().getDuration()));
+
+        testCaseWriters.get(event.getTestCase().getId()).close();
     }
 
     /**
@@ -142,6 +144,15 @@ public class TestCaseFileLogger implements EventListener {
                 writer.flush();
             } catch (IOException e) {
                 throw new RuntimeException("failed to write to output stream", e);
+            }
+        }
+
+        public synchronized void close() {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to close output stream", e);
+
             }
         }
 
