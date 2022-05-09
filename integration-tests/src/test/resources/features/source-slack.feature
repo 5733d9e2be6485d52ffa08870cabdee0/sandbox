@@ -22,8 +22,8 @@ Feature: Slack Source tests
       "filters": [
         {
           "key": "data.text",
-          "type": "StringEquals",
-          "value": "Slack Event Source Feature trigger"
+          "type": "StringContains",
+          "values": ["Slack Event Source Feature trigger"]
         }
       ]
     }
@@ -56,7 +56,7 @@ Feature: Slack Source tests
     And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "Slack"
 
 
-    And create message with text "Slack Event Source Feature trigger" on slack channel
+    And create message with text "Slack Event Source Feature trigger ${uuid.slack.source.trigger}" on slack channel
 
-    Then Slack channel contains message with text "Message Slack Event Source Feature trigger was observed" within 1 minute
+    Then Slack channel contains message with text "Message Slack Event Source Feature trigger ${uuid.slack.source.trigger} was observed" within 1 minute
 

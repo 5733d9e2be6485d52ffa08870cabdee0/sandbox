@@ -36,11 +36,6 @@ public class SlackSteps {
     @And("^create message with text \"([^\"]*)\" on slack channel$")
     public void createMessageOnSlackChannel(String messageText) {
         String messageTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, messageText);
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(1))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(
-                        () -> assertThat(SlackResource.postToSlackWebhookUrl(messageTextWithoutPlaceholders)).isEqualTo(200));
-
+        assertThat(SlackResource.postToSlackWebhookUrl(messageTextWithoutPlaceholders)).isEqualTo(200);
     }
 }
