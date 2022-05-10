@@ -17,7 +17,7 @@ public class AwsSqsSourceValidator implements AwsSqsSource, GatewayValidator<Sou
 
     public static final Pattern AWS_REGION_PATTERN = Pattern.compile("[a-z]+-[a-z]+-[0-9]");
     public static final Pattern AWS_QUEUE_URL_PATTERN = Pattern.compile("^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$");
-    public static final Pattern GENERIC_QUEUE_URL_PATTERN = Pattern.compile("^(https?://[^/]*)(/[^/]+)*/([^/]+)$");
+    public static final Pattern GENERIC_QUEUE_URL_PATTERN = Pattern.compile("^(https?://[^/]*)(/?.*)/([^/]+)$");
 
     public static final String INVALID_AWS_REGION_PARAM_MESSAGE = "Invalid \"" + AWS_REGION_PARAM + "\" parameter";
 
