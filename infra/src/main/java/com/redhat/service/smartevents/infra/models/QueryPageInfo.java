@@ -13,8 +13,7 @@ import static com.redhat.service.smartevents.infra.api.APIConstants.SIZE_DEFAULT
 import static com.redhat.service.smartevents.infra.api.APIConstants.SIZE_MAX;
 import static com.redhat.service.smartevents.infra.api.APIConstants.SIZE_MIN;
 
-// TODO add sorting info to this class in future
-public class QueryInfo {
+public class QueryPageInfo {
 
     @DefaultValue(PAGE_DEFAULT)
     @Min(PAGE_MIN)
@@ -26,10 +25,10 @@ public class QueryInfo {
     @QueryParam(PAGE_SIZE)
     private int pageSize;
 
-    public QueryInfo() {
+    public QueryPageInfo() {
     }
 
-    public QueryInfo(int pageNumber, int pageSize) {
+    public QueryPageInfo(int pageNumber, int pageSize) {
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
     }
