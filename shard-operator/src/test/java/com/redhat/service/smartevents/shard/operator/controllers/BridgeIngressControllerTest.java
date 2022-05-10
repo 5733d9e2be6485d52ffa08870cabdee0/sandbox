@@ -75,7 +75,7 @@ public class BridgeIngressControllerTest {
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.KnativeBrokerNotReady);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable); // TODO: replace with KnativeBrokerNotReady
         });
     }
 
