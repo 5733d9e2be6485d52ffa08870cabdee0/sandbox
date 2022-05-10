@@ -230,6 +230,12 @@
         <version>${version.com.epam.reportportal.logger-java-log4j}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-jacoco</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

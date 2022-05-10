@@ -7,7 +7,7 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 
@@ -78,7 +78,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         params.map().forEach((key, value) -> namedQuery.setParameter(key, value.toString()));
     }
 
-    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryInfo queryInfo) {
+    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryPageInfo queryInfo) {
 
         /*
          * Unfortunately we can't rely on Panaches in-built Paging due the fetched join in our query

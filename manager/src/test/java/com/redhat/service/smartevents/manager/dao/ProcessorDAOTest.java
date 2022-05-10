@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -205,7 +205,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isEqualTo(2L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
@@ -216,7 +216,7 @@ public class ProcessorDAOTest {
     @Test
     public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(0, 100));
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryResourceInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isZero();
         assertThat(listResult.getTotal()).isZero();
@@ -228,7 +228,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(1, 1));
+        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryResourceInfo(1, 1));
         assertThat(listResult.getPage()).isEqualTo(1L);
         assertThat(listResult.getSize()).isEqualTo(1L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
