@@ -5,7 +5,6 @@ images:
 - name: event-bridge-shard-operator
   newName: quay.io/jrota/shard-operator-knative
   newTag: "0.2"
-namespace: event-bridge-knative
 patchesStrategicMerge:
 - manager/patches/deploy.yaml
 - manager/patches/deploy-config.yaml
