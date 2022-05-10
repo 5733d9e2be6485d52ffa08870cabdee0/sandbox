@@ -1,13 +1,18 @@
 package com.redhat.service.smartevents.manager.dao;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 
@@ -21,6 +26,11 @@ import static java.util.Collections.emptyList;
 @Transactional
 public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
+    private static final int FILTER_NONE = 0;
+    private static final int FILTER_BY_NAME = 1;
+    private static final int FILTER_BY_STATUS = 2;
+    private static final int FILTER_BY_TYPE = 4;
+
     /*
      * NOTE: the Processor queries that use a left join on the filters **MUST** be wrapped by the method `removeDuplicates`!
      * see https://developer.jboss.org/docs/DOC-15782#
@@ -28,6 +38,18 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
      */
 
     private static final String IDS_PARAM = "ids";
+
+    private static class ProcessorResults {
+
+        List<String> ids;
+
+        long total;
+
+        ProcessorResults(List<String> ids, long total) {
+            this.ids = ids;
+            this.total = total;
+        }
+    }
 
     public Processor findByBridgeIdAndName(String bridgeId, String name) {
         Parameters p = Parameters.with(Processor.NAME_PARAM, name).and(Processor.BRIDGE_ID_PARAM, bridgeId);
@@ -78,7 +100,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         params.map().forEach((key, value) -> namedQuery.setParameter(key, value.toString()));
     }
 
-    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryPageInfo queryInfo) {
+    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
 
         /*
          * Unfortunately we can't rely on Panaches in-built Paging due the fetched join in our query
@@ -90,19 +112,40 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
          * - Select the Processors in the list of ids, performing the fetch join of the Bridge
          */
 
+        // We don't consider filtering here; so this could be short-cut more but the additional code doesn't really make it worthwhile
         Parameters p = Parameters.with(Bridge.CUSTOMER_ID_PARAM, customerId).and(Processor.BRIDGE_ID_PARAM, bridgeId);
         Long processorCount = countProcessorsOnBridge(p);
         if (processorCount == 0L) {
             return new ListResult<>(emptyList(), queryInfo.getPageNumber(), processorCount);
         }
 
-        int firstResult = getFirstResult(queryInfo.getPageNumber(), queryInfo.getPageSize());
-        TypedQuery<String> idsQuery = getEntityManager().createNamedQuery("PROCESSOR.idsByBridgeIdAndCustomerId", String.class);
-        addParamsToNamedQuery(p, idsQuery);
-        List<String> ids = idsQuery.setMaxResults(queryInfo.getPageSize()).setFirstResult(firstResult).getResultList();
+        ProcessorResults results = getProcessorIds(customerId, bridgeId, queryInfo);
+        List<Processor> processors = find("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, results.ids)).list();
+        return new ListResult<>(processors, queryInfo.getPageNumber(), results.total);
+    }
 
-        List<Processor> processors = getEntityManager().createNamedQuery("PROCESSOR.findByIds", Processor.class).setParameter(IDS_PARAM, ids).getResultList();
-        return new ListResult<>(processors, queryInfo.getPageNumber(), processorCount);
+    private ProcessorResults getProcessorIds(String customerId, String bridgeId, QueryProcessorResourceInfo queryInfo) {
+        Parameters parameters = Parameters.with("customerId", customerId).and("bridgeId", bridgeId);
+        PanacheQuery<Processor> query = find("#PROCESSOR.findByBridgeIdAndCustomerIdNoFilter", parameters);
+
+        String filterName = queryInfo.getFilterInfo().getFilterName();
+        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        ProcessorType filterType = queryInfo.getFilterInfo().getFilterType();
+        if (Objects.nonNull(filterName)) {
+            query.filter("byName", Parameters.with("name", filterName + "%"));
+        }
+        if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
+            query.filter("byStatus", Parameters.with("status", filterStatus));
+        }
+        if (Objects.nonNull(filterType)) {
+            query.filter("byType", Parameters.with("ptype", filterType));
+        }
+
+        long total = query.count();
+        List<Processor> processors = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+        List<String> ids = processors.stream().map(Processor::getId).collect(Collectors.toList());
+
+        return new ProcessorResults(ids, total);
     }
 
     public Long countByBridgeIdAndCustomerId(String bridgeId, String customerId) {
@@ -110,11 +153,4 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return countProcessorsOnBridge(p);
     }
 
-    private int getFirstResult(int requestedPage, int requestedPageSize) {
-        if (requestedPage <= 0) {
-            return 0;
-        }
-
-        return requestedPage * requestedPageSize;
-    }
 }

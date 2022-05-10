@@ -48,6 +48,9 @@ import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,6 +109,154 @@ public class ProcessorAPITest {
         assertThat(listResponse.getTotal()).isEqualTo(2L);
 
         listResponse.getItems().forEach((i) -> assertThat(i.getId()).isIn(p.getId(), p2.getId()));
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByName() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByName(bridgeResponse.getId(), "myProcessor2").as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByStatus() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+
+        setProcessorStatus(p1.getId(), ACCEPTED);
+        setProcessorStatus(p2.getId(), READY);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByStatus(bridgeResponse.getId(), READY).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByMultipleStatuses() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+
+        setProcessorStatus(p1.getId(), ACCEPTED);
+        setProcessorStatus(p2.getId(), READY);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByStatus(bridgeResponse.getId(), ACCEPTED, READY).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(2L);
+        assertThat(listResponse.getTotal()).isEqualTo(2L);
+
+        listResponse.getItems().forEach((i) -> assertThat(i.getId()).isIn(p1.getId(), p2.getId()));
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByStatusWithIncorrectValue() {
+        // See JAX-RS 2.1 Specification, Section 3.2.
+        // HTTP-404 is correct if the QueryString contains an invalid value.
+        // If the field or property is annotated with @MatrixParam, @QueryParam or @PathParam then an implementation
+        // MUST generate an instance of NotFoundException (404 status) that wraps the thrown exception...
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.listProcessorsFilterByStatusWithAnyValue(bridgeResponse.getId(), "banana").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByType() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByType(bridgeResponse.getId(), SOURCE).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByTypeWithIncorrectValue() {
+        // See JAX-RS 2.1 Specification, Section 3.2.
+        // HTTP-404 is correct if the QueryString contains an invalid value.
+        // If the field or property is annotated with @MatrixParam, @QueryParam or @PathParam then an implementation
+        // MUST generate an instance of NotFoundException (404 status) that wraps the thrown exception...
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.listProcessorsFilterByTypeWithAnyValue(bridgeResponse.getId(), "banana").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByNameAndStatus() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+
+        setProcessorStatus(p1.getId(), ACCEPTED);
+        setProcessorStatus(p2.getId(), READY);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndStatus(bridgeResponse.getId(), "myProcessor", READY).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByNameAndType() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndType(bridgeResponse.getId(), "myProcessor", SOURCE).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void listProcessorsFilterByStatusAndType() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
+
+        setProcessorStatus(p1.getId(), READY);
+        setProcessorStatus(p2.getId(), READY);
+
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByStatusAndType(bridgeResponse.getId(), READY, SOURCE).as(ProcessorListResponse.class);
+        assertThat(listResponse.getPage()).isZero();
+        assertThat(listResponse.getSize()).isEqualTo(1L);
+        assertThat(listResponse.getTotal()).isEqualTo(1L);
+
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
     }
 
     @Test
@@ -404,10 +555,10 @@ public class ProcessorAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void testDeleteProcessor() {
         Bridge bridge = Fixtures.createBridge();
-        bridge.setStatus(ManagedResourceStatus.READY);
+        bridge.setStatus(READY);
         bridgeDAO.persist(bridge);
 
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, READY);
         processorDAO.persist(processor);
 
         TestUtils.deleteProcessor(bridge.getId(), processor.getId()).then().statusCode(202);
@@ -632,7 +783,7 @@ public class ProcessorAPITest {
         //Emulate Shard updating Bridge status
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridgeResponse.getId());
-        dto.setStatus(ManagedResourceStatus.READY);
+        dto.setStatus(READY);
         dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
         dto.setEndpoint("https://foo.bridges.redhat.com");
 
@@ -641,9 +792,13 @@ public class ProcessorAPITest {
         return bridgeResponse;
     }
 
+    private void setProcessorAsReady(String processorId) {
+        setProcessorStatus(processorId, READY);
+    }
+
     @Transactional
-    protected void setProcessorAsReady(String processorId) {
+    protected void setProcessorStatus(String processorId, ManagedResourceStatus status) {
         Processor processor = processorDAO.findById(processorId);
-        processor.setStatus(ManagedResourceStatus.READY);
+        processor.setStatus(status);
     }
 }
