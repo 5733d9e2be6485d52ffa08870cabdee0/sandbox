@@ -22,7 +22,7 @@ Feature: Slack Source tests
       "filters": [
         {
           "key": "data.text",
-          "type": "StringContains",
+          "type": "StringBeginsWith",
           "values": ["Slack Event Source Feature trigger"]
         }
       ]
