@@ -1,4 +1,4 @@
-namespace: event-bridge-prod
+namespace: event-bridge-knative
 resources:
 - ../../base-openshift
 - secrets
