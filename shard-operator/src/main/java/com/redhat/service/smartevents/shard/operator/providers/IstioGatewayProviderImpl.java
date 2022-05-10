@@ -55,7 +55,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     }
 
     private String extractOpenshiftGatewayAddress(OpenShiftClient openShiftClient) {
-        Route route = openShiftClient.routes().inNamespace("istio-system").withName("knative-eventing-broker-gateway-525eca1d5089dbdc").get();
+        Route route = openShiftClient.routes().inNamespace("istio-system").withName("knative-eventing-my-app-gateway-525eca1d5089dbdc").get();
         if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
             String endpoint = route.getSpec().getHost();
             return route.getSpec().getTls() != null ? NetworkingConstants.HTTPS_SCHEME + endpoint : NetworkingConstants.HTTP_SCHEME + endpoint;
