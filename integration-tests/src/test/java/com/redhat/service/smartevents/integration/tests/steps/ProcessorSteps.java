@@ -10,8 +10,8 @@ import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.ProcessorContext;
@@ -151,7 +151,8 @@ public class ProcessorSteps {
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                        processorId)))
+                                        processorId)
+                                .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -165,7 +166,7 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\" and parameters:$")
     public void processorOfBridgeHasActionOfTypeAndParameters(String processorName, String testBridgeName,
             String actionType, DataTable parametersDatatable) {
-        BaseAction action = getProcessorAction(processorName, testBridgeName);
+        Action action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
             String parameterTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, value);
@@ -176,7 +177,7 @@ public class ProcessorSteps {
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\"$")
     public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName,
             String actionType) {
-        BaseAction action = getProcessorAction(processorName, testBridgeName);
+        Action action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
     }
 
@@ -210,7 +211,8 @@ public class ProcessorSteps {
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                        processorId)))
+                                        processorId)
+                                .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
@@ -221,7 +223,7 @@ public class ProcessorSteps {
                                 .statusCode(404));
     }
 
-    public BaseAction getProcessorAction(String processorName, String testBridgeName) {
+    public Action getProcessorAction(String processorName, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 

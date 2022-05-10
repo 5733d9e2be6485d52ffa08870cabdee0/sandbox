@@ -20,6 +20,8 @@ jobs:
       FLEET_MANAGER_CONTAINER_NAME: openbridge/fleet-manager:${{ github.sha }}
       FLEET_SHARD_MINIKUBE_CONTAINER_NAME: openbridge/fleet-shard:${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: openbridge/executor:${{ github.sha }}
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
     concurrency:
       group: event-bridge-manager-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -48,6 +50,8 @@ jobs:
           ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Set up KinD
         uses: ./.github/actions/kind
+        with:
+          kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
       - uses: imranismail/setup-kustomize@v1
       - name: Use built Fleet manager and operator images
         run: |

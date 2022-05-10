@@ -8,36 +8,31 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ActionProviderException;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
-import com.redhat.service.smartevents.processor.actions.ActionResolver;
-import com.redhat.service.smartevents.processor.actions.ActionService;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
+import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class SendToBridgeActionResolver implements ActionResolver {
+public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayResolver<Action> {
 
     @Inject
-    ActionService actionService;
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @Override
-    public String getType() {
-        return SendToBridgeAction.TYPE;
-    }
-
-    @Override
-    public BaseAction resolve(BaseAction action, String customerId, String bridgeId, String processorId) {
+    public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         Map<String, String> parameters = new HashMap<>();
         try {
-            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(actionService.getBridgeEndpoint(destinationBridgeId, customerId)));
+            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(gatewayConfiguratorService.getBridgeEndpoint(destinationBridgeId, customerId)));
             parameters.put(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
         } catch (MalformedURLException e) {
-            throw new ActionProviderException("Can't find events webhook for bridge " + destinationBridgeId);
+            throw new GatewayProviderException("Can't find events webhook for bridge " + destinationBridgeId);
         }
 
-        BaseAction transformedAction = new BaseAction();
+        Action transformedAction = new Action();
         transformedAction.setType(WebhookAction.TYPE);
         transformedAction.setParameters(parameters);
 

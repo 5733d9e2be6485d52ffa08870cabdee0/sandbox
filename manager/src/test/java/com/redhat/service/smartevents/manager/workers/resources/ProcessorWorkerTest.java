@@ -78,7 +78,7 @@ public class ProcessorWorkerTest {
 
     @Transactional
     @ParameterizedTest
-    @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PROVISIONING" })
+    @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PREPARING" })
     void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
@@ -104,7 +104,7 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -137,12 +137,12 @@ public class ProcessorWorkerTest {
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, true),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, true),
                 Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, false),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, false));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, false),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, true),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, false));
     }
 
     @Transactional
@@ -174,7 +174,7 @@ public class ProcessorWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);

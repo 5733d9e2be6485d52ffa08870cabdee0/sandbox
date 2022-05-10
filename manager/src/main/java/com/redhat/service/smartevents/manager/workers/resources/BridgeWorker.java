@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.util.Collections;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -11,10 +13,11 @@ import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Work;
-import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.vertx.ConsumeEvent;
 
@@ -30,10 +33,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     RhoasService rhoasService;
 
     @Inject
-    InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+    ResourceNamesProvider resourceNamesProvider;
 
     @Inject
-    ResourceNamesProvider resourceNamesProvider;
+    MeterRegistry meterRegistry;
 
     @Override
     protected PanacheRepositoryBase<Bridge, String> getDao() {
@@ -51,6 +54,14 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 bridge.getName(),
                 bridge.getId());
+        // Transition resource to PREPARING status.
+        // PROVISIONING is handled by the Operator.
+        bridge.setStatus(ManagedResourceStatus.PREPARING);
+
+        // Update metrics
+        meterRegistry.counter("manager.bridge.status.change",
+                Collections.singletonList(Tag.of("status", bridge.getStatus().toString()))).increment();
+
         // This is idempotent as it gets overridden later depending on actual state
         bridge.setDependencyStatus(ManagedResourceStatus.PROVISIONING);
         bridge = persist(bridge);

@@ -49,6 +49,7 @@
     <version.org.localstack>0.13.3</version.org.localstack>
     <version.org.keycloak>15.1.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
+    <version.io.quarkiverse.loggingjson.quarkiverse-logging-json>1.1.1</version.io.quarkiverse.loggingjson.quarkiverse-logging-json>
     <version.io.quarkiverse.operatorsdk>3.0.6</version.io.quarkiverse.operatorsdk>
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
@@ -58,6 +59,9 @@
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
     <version.jacoco.maven.plugin>0.8.7</version.jacoco.maven.plugin>
+
+    <version.com.epam.reportportal>5.1.1</version.com.epam.reportportal>
+    <version.com.epam.reportportal.logger-java-log4j>5.1.4</version.com.epam.reportportal.logger-java-log4j>
 
     <container.image.localstack>localstack/localstack:${version.org.localstack}</container.image.localstack>
     <container.image.keycloak>quay.io/keycloak/keycloak:${version.org.keycloak}</container.image.keycloak>
@@ -152,6 +156,11 @@
         <artifactId>aws-secretsmanager-caching-java</artifactId>
         <version>${version.com.amazonaws.secretsmanager}</version>
       </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.loggingjson</groupId>
+        <artifactId>quarkus-logging-json</artifactId>
+        <version>${version.io.quarkiverse.loggingjson.quarkiverse-logging-json}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.testcontainers</groupId>
@@ -201,6 +210,25 @@
         <artifactId>cucumber-picocontainer</artifactId>
         <scope>test</scope>
         <version>${version.io.cucumber}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.epam.reportportal</groupId>
+        <artifactId>agent-java-junit5</artifactId>
+        <version>${version.com.epam.reportportal}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.epam.reportportal</groupId>
+        <artifactId>agent-java-cucumber6</artifactId>
+        <version>${version.com.epam.reportportal}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.epam.reportportal</groupId>
+        <artifactId>logger-java-log4j</artifactId>
+        <version>${version.com.epam.reportportal.logger-java-log4j}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

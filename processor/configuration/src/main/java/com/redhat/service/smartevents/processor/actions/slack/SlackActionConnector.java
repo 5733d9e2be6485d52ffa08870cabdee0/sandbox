@@ -6,24 +6,25 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
-import com.redhat.service.smartevents.processor.actions.AbstractActionConnector;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
 
 @ApplicationScoped
-public class SlackActionConnector extends AbstractActionConnector implements SlackAction {
+public class SlackActionConnector extends AbstractGatewayConnector<Action> implements SlackAction {
 
-    public static final String CONNECTOR_TYPE = "slack_sink_0.1";
+    public static final ConnectorType CONNECTOR_TYPE = ConnectorType.SINK;
+    public static final String CONNECTOR_TYPE_ID = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
     public static final String CONNECTOR_WEBHOOK_URL_PARAMETER = "slack_webhook_url";
     public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
-    @Override
-    public String getConnectorType() {
-        return CONNECTOR_TYPE;
+    public SlackActionConnector() {
+        super(CONNECTOR_TYPE, CONNECTOR_TYPE_ID);
     }
 
     @Override
-    protected void addConnectorSpecificPayload(BaseAction action, String topicName, ObjectNode definition) {
+    protected void addConnectorSpecificPayload(Action action, String topicName, ObjectNode definition) {
         Map<String, String> actionParameters = action.getParameters();
 
         String slackChannel = actionParameters.get(CHANNEL_PARAM);

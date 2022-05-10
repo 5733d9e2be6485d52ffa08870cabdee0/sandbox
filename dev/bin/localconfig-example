@@ -3,9 +3,11 @@
 # without the need of exporting them every time, like offline tokens etc.
 # If you want to use it, make a copy of this named "localconfig" in this same folder.
 
+# The following keys are needed to create Managed Connector source and sinks
 MANAGED_CONNECTORS_NAMESPACE_ID=mc-namespace-id
 MANAGED_CONNECTORS_CONTROL_PLANE_URL=https://managedconnector-controlplane.com
-OPENSHIFT_OFFLINE_TOKEN=my-offline-token
+MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=my-offline-token
+
 # RHOAS_USERNAME=
 
 # optional

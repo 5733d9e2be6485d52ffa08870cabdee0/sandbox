@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -18,6 +20,7 @@ import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
+import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.IngressResource;
 
 import io.cucumber.java.en.And;
@@ -61,52 +64,49 @@ public class IngressSteps {
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")
-    public void sendCloudEventToIngressOfBridgeWithPath(String testBridgeName, String cloudEvent) {
-        sendAndCheckCloudEvent(testBridgeName, cloudEvent, "", 200);
+    public void sendCloudEventToIngressOfBridge(String testBridgeName, String cloudEvent) {
+        String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
+        cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
+
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent);
+    }
+
+    @When("^send a cloud event to the endpoint URL \"([^\"]*)\":$")
+    public void ingressOfBridgeIsAvailableWithinMinutes(String endpoint, String cloudEvent) {
+        endpoint = ContextResolver.resolveWithScenarioContext(context, endpoint);
+        cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
+
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent);
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*):$")
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeaders(String testBridgeName, String path, String headers, String cloudEvent) {
-        sendAndCheckCloudEventWithHeaders(testBridgeName, cloudEvent, path, parseHeaders(headers), 200);
+        String endpoint = String.format("%s/%s", BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName), path);
+        Headers parsedHeaders = parseHeaders(headers);
+
+        String testCloudEventId = getCloudEventIdFromHeaders(parsedHeaders);
+        context.storeCloudEventInContext(testCloudEventId);
+
+        parsedHeaders = adjustCloudEventHeaderParameters(parsedHeaders, context.getCloudEventSystemId(testCloudEventId));
+
+        sendAndCheckCloudEvent(endpoint, cloudEvent, parsedHeaders);
     }
 
-    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, int responseCode) {
+    private void adjustSendAndCheckCloudEvent(String endpoint, String cloudEvent) {
         String testCloudEventId = getCloudEventId(cloudEvent);
-        context.getBridge(testBridgeName).storeCloudEventInContext(testCloudEventId);
+        context.storeCloudEventInContext(testCloudEventId);
 
-        cloudEvent = adjustCloudEventParameters(cloudEvent, context.getBridge(testBridgeName).getCloudEventSystemId(testCloudEventId));
+        cloudEvent = adjustCloudEventParameters(cloudEvent, context.getCloudEventSystemId(testCloudEventId));
 
-        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, new Headers(), responseCode);
+        sendAndCheckCloudEvent(endpoint, cloudEvent, new Headers());
     }
 
-    private void sendAndCheckCloudEventWithHeaders(String testBridgeName, String cloudEvent, String path, Headers headers, int responseCode) {
-        List<Header> patchedHeaders = new ArrayList<>();
-        for (Header header : headers.asList()) {
-            if (header.getName().equals("ce-id")) {
-                // Replace test Cluster ID with system one and store the ID in context
-                String testCloudEventId = header.getValue();
-                context.getBridge(testBridgeName).storeCloudEventInContext(testCloudEventId);
-                patchedHeaders.add(new Header(header.getName(), context.getBridge(testBridgeName).getCloudEventSystemId(testCloudEventId)));
-            } else {
-                patchedHeaders.add(header);
-            }
-        }
-        // Add optional timestamp header
-        patchedHeaders.add(new Header("ce-time", Instant.now().toString()));
-
-        sendAndCheckCloudEvent(testBridgeName, cloudEvent, path, new Headers(patchedHeaders), responseCode);
-    }
-
-    private void sendAndCheckCloudEvent(String testBridgeName, String cloudEvent, String path, Headers headers,
-            int responseCode) {
-        String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
-        endpoint = endpoint + "/" + path;
-
+    private void sendAndCheckCloudEvent(String endpoint, String cloudEvent, Headers headers) {
         String token = context.getManagerToken();
         try (InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8))) {
             IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
                     .then()
-                    .statusCode(responseCode);
+                    .statusCode(200);
         } catch (IOException e) {
             throw new RuntimeException("Error with inputstream", e);
         }
@@ -122,6 +122,15 @@ public class IngressSteps {
         }
     }
 
+    private String getCloudEventIdFromHeaders(Headers headers) {
+        for (Header header : headers.asList()) {
+            if (header.getName().equals("ce-id")) {
+                return header.getValue();
+            }
+        }
+        throw new RuntimeException("Cloud event id not found in headers: " + headers);
+    }
+
     private String adjustCloudEventParameters(String cloudEvent, String newCloudEventId) {
         ObjectNode ce;
         try {
@@ -132,6 +141,23 @@ public class IngressSteps {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing cloud event JSON content", e);
         }
+    }
+
+    private Headers adjustCloudEventHeaderParameters(Headers headers, String newCloudEventId) {
+        Map<String, Header> patchedHeaders = new HashMap<>();
+
+        patchedHeaders.put("ce-id", new Header("ce-id", newCloudEventId));
+        // Add optional timestamp header
+        patchedHeaders.put("ce-time", new Header("ce-time", Instant.now().toString()));
+
+        // Add all other headers
+        for (Header header : headers.asList()) {
+            if (!patchedHeaders.containsKey(header.getName())) {
+                patchedHeaders.put(header.getName(), header);
+            }
+        }
+
+        return new Headers(patchedHeaders.values().toArray(new Header[0]));
     }
 
     private Headers parseHeaders(String headers) {

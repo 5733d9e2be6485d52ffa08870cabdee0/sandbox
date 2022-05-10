@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator.providers;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -27,6 +28,7 @@ public class TemplateProviderTest {
             .build();
 
     private static final BridgeExecutor BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()
+            .withProcessorType(ProcessorType.SINK)
             .withProcessorName("id")
             .withNamespace("ns")
             .withImageName("image:latest")

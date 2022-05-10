@@ -17,6 +17,8 @@
   <properties>
     <parallel>false</parallel>
     <parallel.concurrency.number>3</parallel.concurrency.number>
+
+    <sonar.exclusion>**/RunCucumberTest.java</sonar.exclusion>
   </properties>
 
   <dependencies>
@@ -57,9 +59,26 @@
       <artifactId>openshift-client</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-cucumber6</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
     <plugins>
       <!-- Skip Surefire plugin as this module contains only integration tests. -->
       <plugin>

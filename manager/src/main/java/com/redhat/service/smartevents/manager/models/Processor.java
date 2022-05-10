@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -14,6 +16,9 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.TypeDef;
+
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
@@ -30,7 +35,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "p.bridge.status='READY' and " +
                         "p.shardId=:shardId and " +
                         "(" +
-                        "  (p.status='ACCEPTED' and p.dependencyStatus='READY') " +
+                        "  (p.status='PREPARING' and p.dependencyStatus='READY') " +
                         "  or " +
                         "  (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
                         ")"),
@@ -47,9 +52,13 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 })
 @Entity
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class Processor extends ManagedDefinedResource {
+public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
+
+    @Column(name = "type", updatable = false, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProcessorType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bridge_id")
@@ -60,6 +69,14 @@ public class Processor extends ManagedDefinedResource {
 
     @Column(name = "shard_id")
     private String shardId;
+
+    public ProcessorType getType() {
+        return type;
+    }
+
+    public void setType(ProcessorType type) {
+        this.type = type;
+    }
 
     public Bridge getBridge() {
         return bridge;

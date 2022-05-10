@@ -99,6 +99,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR).withValue(globalConfigurationsProvider.getSsoUrl()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_ID_ENV_VAR).withValue(globalConfigurationsProvider.getSsoWebhookClientId()).build());
         environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR).withValue(globalConfigurationsProvider.getSsoWebhookClientSecret()).build());
+        // CustomerId is available in the Processor definition however this avoids the need to unnecessarily de-serialise the definition for logging in the Executor
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.CUSTOMER_ID_CONFIG_ENV_VAR).withValue(bridgeExecutor.getSpec().getCustomerId()).build());
+        environmentVariables.add(new EnvVarBuilder().withName(Constants.EVENT_BRIDGE_LOGGING_JSON).withValue(globalConfigurationsProvider.isJsonLoggingEnabled().toString()).build());
         try {
             environmentVariables.add(new EnvVarBuilder().withName(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR).withValue(objectMapper.writeValueAsString(bridgeExecutor.toDTO())).build());
         } catch (JsonProcessingException e) {
@@ -142,8 +145,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                         .delete(BridgeExecutor.fromDTO(processorDTO, namespace, executorImage));
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
-            LOGGER.warn("BridgeExecutor '{}' not deleted", processorDTO);
-            LOGGER.debug("BridgeExecutor '{}' was not found. Notifying manager that it has been deleted.", processorDTO.getId());
+            LOGGER.warn("BridgeExecutor '{}' not deleted. Notifying manager that it has been deleted.", processorDTO.getId());
             processorDTO.setStatus(ManagedResourceStatus.DELETED);
             managerClient.notifyProcessorStatusChange(processorDTO).subscribe().with(
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
@@ -183,5 +185,10 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .inNamespace(bridgeExecutor.getMetadata().getNamespace())
                 .withName(bridgeExecutor.getMetadata().getName())
                 .get();
+    }
+
+    @Override
+    public String getExecutorImage() {
+        return executorImage;
     }
 }

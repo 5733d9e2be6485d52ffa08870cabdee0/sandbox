@@ -45,7 +45,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     protected Uni<Object> doBridges() {
         return managerClient.fetchBridgesToDeployOrDelete()
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
-                    if (y.getStatus().equals(ManagedResourceStatus.ACCEPTED)) { // Bridges to deploy
+                    if (y.getStatus().equals(ManagedResourceStatus.PREPARING)) { // Bridges to deploy
                         y.setStatus(ManagedResourceStatus.PROVISIONING);
                         return managerClient.notifyBridgeStatusChange(y)
                                 .subscribe().with(
@@ -73,7 +73,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     protected Uni<Object> doProcessors() {
         return managerClient.fetchProcessorsToDeployOrDelete()
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
-                    if (ManagedResourceStatus.ACCEPTED.equals(y.getStatus())) {
+                    if (ManagedResourceStatus.PREPARING.equals(y.getStatus())) {
                         y.setStatus(ManagedResourceStatus.PROVISIONING);
                         return managerClient.notifyProcessorStatusChange(y)
                                 .subscribe().with(
