@@ -46,7 +46,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 - ${env.`<System property name>`} to use a System property
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
-- ${uuid.`<Uuid name>`} TODO
+- ${uuid.`<Uuid name>`} to use unique identifier. Useful to distinguish historical data produced by the same test for example.
 
 ## Test execution
 
