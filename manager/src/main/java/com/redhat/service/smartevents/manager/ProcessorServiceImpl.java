@@ -261,6 +261,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setDeletedAt(ZonedDateTime.now());
+
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
         metricsService.onOperationStart(processor, MetricsOperation.DELETE);
