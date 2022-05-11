@@ -201,6 +201,44 @@
         <event-bridge.k8s.platform>openshift</event-bridge.k8s.platform>
       </properties>
     </profile>
+    <profile>
+      <id>attach-kubernetes-resources</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-artifacts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${project.build.directory}/kubernetes/openshift.yml</file>
+                      <type>yml</type>
+                      <classifier>kubernetes</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>${project.build.directory}/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml</file>
+                      <type>yml</type>
+                      <classifier>crd-bridgeexecutors</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>${project.build.directory}/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml</file>
+                      <type>yml</type>
+                      <classifier>crd-bridgeingresses</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
 </project>

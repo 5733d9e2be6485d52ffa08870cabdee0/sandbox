@@ -1,55 +1,51 @@
-name: Check stable cluster
+name: Check long running bridge instance on development cluster
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
 jobs:
-  run-integration-tests:
+  run-periodical-slack-check:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          ref: "stable"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Add mask
         run: |
-          echo "::add-mask::${{ secrets.STABLE_CLUSTER_MANAGER_URL }}"
-          echo "::add-mask::${{ secrets.STABLE_SSO_CLIENT_ID }}"
-          echo "::add-mask::${{ secrets.STABLE_SSO_CLIENT_SECRET }}"
+          echo "::add-mask::${{ secrets.DEV_CLUSTER_MANAGER_URL }}"
+          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_SECRET }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
           echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
           echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
+          echo "::add-mask::${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
-      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the stable branch again
-        uses: actions/checkout@v2
-        with:
-          ref: "stable"
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
           maven-command: clean install -Dquickly
-      - name: Run integration tests
+      - name: Run periodical slack check
         env:
-          STABLE_CLUSTER_MANAGER_URL: ${{ secrets.STABLE_CLUSTER_MANAGER_URL }}
-          STABLE_SSO_CLIENT_ID: ${{ secrets.STABLE_SSO_CLIENT_ID }}
-          STABLE_SSO_CLIENT_SECRET: ${{ secrets.STABLE_SSO_CLIENT_SECRET }}
+          DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT: ${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET
+          maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT
           working-directory: integration-tests
       - name: Send mail with link to failing job
         uses: dawidd6/action-send-mail@v3
@@ -59,21 +55,15 @@ jobs:
           server_port: 465
           username: ${{ secrets.CI_MAIL_USERNAME }}
           password: ${{ secrets.CI_MAIL_PASSWORD }}
-          subject: Stable cluster CI - Check failed
+          subject: Dev cluster long running Bridge CI - Check failed
           to: openbridge-dev@redhat.com
-          from: Stable cluster CI
-          body: Stable cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stable-cluster-check.yml and implement a proper fix.
+          from: Dev cluster CI
+          body: Dev cluster long running Bridge CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-long-running-bridge.yml and implement a proper fix.
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
         with:
-          skip_publishing: false
+          skip_publishing: true
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
-      - name: Upload test logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: log
-          path: ./integration-tests/target/cucumber-logs/

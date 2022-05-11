@@ -6,8 +6,12 @@ public enum ConnectorType {
     SOURCE("source"),
     SINK("sink");
 
-    @JsonValue
     final String value;
+
+    @JsonValue
+    public String serialize() {
+        return value;
+    }
 
     ConnectorType(String value) {
         this.value = value;
