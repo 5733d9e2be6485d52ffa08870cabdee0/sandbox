@@ -13,7 +13,7 @@ public class WebhookSiteResource {
     private static final String ENDPOINT_UUID = Utils.getSystemProperty("webhook.site.uuid");
 
     public static List<WebhookSiteRequest> requests() {
-        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests", ENDPOINT_UUID)
+        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting=newest", ENDPOINT_UUID)
                 .then()
                 .extract()
                 .body()
