@@ -43,7 +43,7 @@ public class MetricsServiceImplTest {
     String operatonDurationMetricName;
 
     private List<Tag> createdExpectedTags(ManagedResource managedResource, MetricsOperation operation) {
-        return List.of(Tag.of(MetricsServiceImpl.INSTANCE_TAG, managedResource.getClass().getSimpleName().toLowerCase()), operation.getMetricTag());
+        return List.of(Tag.of(MetricsServiceImpl.RESOURCE_TAG, managedResource.getClass().getSimpleName().toLowerCase()), operation.getMetricTag());
     }
 
     @BeforeEach

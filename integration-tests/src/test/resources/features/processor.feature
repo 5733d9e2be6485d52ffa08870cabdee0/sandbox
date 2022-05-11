@@ -27,6 +27,6 @@ Feature: Processor tests
 
     Then the Processor "myProcessor" of the Bridge "mybridge" is not existing within 2 minutes
 
-    And the Manager metric 'managed_services_api_rhose_instance_operation_success_count_total{instance="bridge",operation="provision",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_instance_operation_success_count_total{instance="processor",operation="provision",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_instance_operation_success_count_total{instance="processor",operation="delete",}' count is at least 1
+    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{resource="bridge",operation="provision",}' count is at least 1
+    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{resource="processor",operation="provision",}' count is at least 1
+    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{resource="processor",operation="delete",}' count is at least 1

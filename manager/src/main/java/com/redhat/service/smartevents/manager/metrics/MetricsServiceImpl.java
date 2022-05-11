@@ -22,7 +22,7 @@ public class MetricsServiceImpl implements MetricsService {
     /*
      * Constant for the metric tag for the resource instance we're operating on e.g. Processor/Bridge.
      */
-    static final String INSTANCE_TAG = "instance";
+    static final String RESOURCE_TAG = "resource";
 
     @Inject
     MeterRegistry meterRegistry;
@@ -67,7 +67,7 @@ public class MetricsServiceImpl implements MetricsService {
     }
 
     private List<Tag> buildTags(ManagedResource managedResource, MetricsOperation operation) {
-        Tag instanceTag = Tag.of(INSTANCE_TAG, managedResource.getClass().getSimpleName().toLowerCase());
+        Tag instanceTag = Tag.of(RESOURCE_TAG, managedResource.getClass().getSimpleName().toLowerCase());
         return List.of(instanceTag, operation.getMetricTag());
     }
 
