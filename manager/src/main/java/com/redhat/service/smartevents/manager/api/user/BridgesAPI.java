@@ -89,7 +89,7 @@ public class BridgesAPI {
     public Response createBridge(@Valid BridgeRequest bridgeRequest) {
         String customerId = identityResolver.resolve(jwt);
         String organisationId = identityResolver.resolveOrganisationId(jwt);
-        Bridge bridge = bridgesService.createBridge(customerId, bridgeRequest, organisationId);
+        Bridge bridge = bridgesService.createBridge(customerId, organisationId, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 

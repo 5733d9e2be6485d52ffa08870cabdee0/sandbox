@@ -75,6 +75,7 @@ public class ProcessorDAOTest {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setOrganisationId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setStatus(ManagedResourceStatus.READY);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());

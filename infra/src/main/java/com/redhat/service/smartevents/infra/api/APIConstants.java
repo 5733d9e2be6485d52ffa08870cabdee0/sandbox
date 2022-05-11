@@ -36,6 +36,11 @@ public class APIConstants {
     public static final String ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM = "rh-user-id";
 
     /**
+     * Organisation id attribute claim key for a service account token.
+     */
+    public static final String ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM = "rh-org-id";
+
+    /**
      * The page query parameter name
      */
     public static final String PAGE = "page";
