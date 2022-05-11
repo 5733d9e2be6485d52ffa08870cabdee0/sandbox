@@ -96,13 +96,13 @@ Depending on the `delete_after_read` attribute, the original file will be delete
 
 Every parameter is mandatory if not stated explicitly
 
-* `bucket_name_or_arn` - Bucket name or ARN.
-* `region` - The region in which S3 client needs to work. When using this parameter, the configuration will expect the lowercase name of the region (for example ap-east-1) You’ll need to use the name Region.EU_WEST_1.id().
-* `access_key ` - Amazon AWS Access Key.
-* `secret_key` - Amazon AWS Secret Key.
-* `ignore_body` - If it is true, the S3 Object Body will be ignored completely, if it is set to false the S3 Object will be put in the body. Be aware there's a 1 MB maximum limitation in the maximum file size supported while using this parameter.
-* `delete_after_read` - Delete objects from S3 after they have been retrieved.
-* `prefix` (optional) - The prefix which is used in the com.amazonaws.services.s3.model.ListObjectsRequest to only consume objects we are interested in.
+* `aws_bucket_name_or_arn` - Bucket name or ARN.
+* `aws_region` - The region in which S3 client needs to work. When using this parameter, the configuration will expect the lowercase name of the region (for example ap-east-1) You’ll need to use the name Region.EU_WEST_1.id().
+* `aws_access_key ` - Amazon AWS Access Key.
+* `aws_secret_key` - Amazon AWS Secret Key.
+* `aws_ignore_body` - If it is true, the S3 Object Body will be ignored completely, if it is set to false the S3 Object will be put in the body. Be aware there's a 1 MB maximum limitation in the maximum file size supported while using this parameter.
+* `aws_delete_after_read` - Delete objects from S3 after they have been retrieved.
+* `aws_prefix` (optional) - The prefix which is used in the com.amazonaws.services.s3.model.ListObjectsRequest to only consume objects we are interested in.
 
 #### Example of generated event
 

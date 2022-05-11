@@ -85,7 +85,7 @@ class AwsS3SourceConnectorTest {
 
         JsonNode payload = connector.connectorPayload(source, TEST_TOPIC_NAME);
 
-        assertThat(payload.asText()).doesNotContain("prefix");
+        assertThat(payload.asText()).doesNotContain("aws_prefix");
     }
 
     @Test
@@ -98,6 +98,6 @@ class AwsS3SourceConnectorTest {
 
         JsonNode payload = connector.connectorPayload(source, TEST_TOPIC_NAME);
 
-        assertThat(payload.asText()).doesNotContain("prefix");
+        assertThat(payload.asText()).doesNotContain("aws_prefix");
     }
 }

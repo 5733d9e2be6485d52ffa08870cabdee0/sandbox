@@ -53,8 +53,8 @@ elif [ "${source_type}" = 'awss3' ]; then
             "aws_region": '"\"$S3_REGION\""',
             "aws_access_key" : '"\"$S3_ACCESS_KEY\""',
             "aws_secret_key" : '"\"$S3_SECRET_KEY\""' ,
-            "ignore_body" : true ,
-            "delete_after_read" : false
+            "aws_ignore_body" : true ,
+            "aws_delete_after_read" : false
       }
    }
 }'
