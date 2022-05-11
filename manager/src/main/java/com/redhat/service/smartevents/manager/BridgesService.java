@@ -11,7 +11,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 
 public interface BridgesService {
 
-    Bridge createBridge(String customerId, BridgeRequest bridgeRequest);
+    Bridge createBridge(String customerId, BridgeRequest bridgeRequest, String organisationId);
 
     Bridge getBridge(String id);
 
