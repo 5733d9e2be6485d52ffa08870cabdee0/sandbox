@@ -59,6 +59,26 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
     }
 
     @Test
+    void testBasicAuth() throws InterruptedException {
+        wireMockServer.stubFor(post(urlEqualTo(TEST_WEBHOOK_PATH)).willReturn(aResponse().withStatus(200)));
+
+        CountDownLatch latch = new CountDownLatch(1);
+        addUpdateRequestListener(TEST_WEBHOOK_PATH, RequestMethod.POST, latch);
+
+        String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
+
+        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), "username", "password");
+        invoker.onEvent(TEST_EVENT);
+
+        assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
+
+        wireMockServer.verify(postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
+                .withRequestBody(equalToJson(TEST_EVENT, true, true))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withHeader("Authorization", equalTo("Basic dXNlcm5hbWU6cGFzc3dvcmQ=")));
+    }
+
+    @Test
     void testBearerToken() throws InterruptedException {
         wireMockServer.stubFor(post(urlEqualTo(TEST_WEBHOOK_PATH)).willReturn(aResponse().withStatus(200)));
 
