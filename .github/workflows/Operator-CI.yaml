@@ -53,6 +53,7 @@ jobs:
           istioctl manifest apply -y --set profile=default
           kubectl apply -f kustomize/overlays/minikube/istio/gateway.yaml
           kubectl apply -f kustomize/overlays/minikube/istio/virtual-service-kafka-broker.yaml
+          kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
       - name: Deploy Shard operator
         run: |
           kubectl create namespace $NAMESPACE
