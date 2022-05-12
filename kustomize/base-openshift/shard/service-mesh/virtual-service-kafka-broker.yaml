@@ -5,7 +5,7 @@ metadata:
   namespace: knative-eventing
 spec:
   gateways:
-    - my-app-gateway
+    - broker-gateway
   hosts:
     - '*'
   http:
