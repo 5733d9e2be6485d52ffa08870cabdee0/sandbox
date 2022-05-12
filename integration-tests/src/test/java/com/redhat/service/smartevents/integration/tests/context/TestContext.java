@@ -15,6 +15,7 @@ public class TestContext {
 
     private Map<String, BridgeContext> bridges = new HashMap<>();
     private Map<String, String> cloudEvents = new HashMap<>();
+    private Map<String, String> uuids = new HashMap<>();
 
     private Scenario scenario;
 
@@ -64,6 +65,15 @@ public class TestContext {
 
     public Map<String, BridgeContext> getAllBridges() {
         return this.bridges;
+    }
+
+    public String getUuid(String uuidName) {
+        if (!this.uuids.containsKey(uuidName)) {
+            String uuidValue = UUID.randomUUID().toString();
+            scenario.log("Generating new uuid '" + uuidName + "' value '" + uuidValue + "'");
+            this.uuids.put(uuidName, uuidValue);
+        }
+        return this.uuids.get(uuidName);
     }
 
     public Scenario getScenario() {
