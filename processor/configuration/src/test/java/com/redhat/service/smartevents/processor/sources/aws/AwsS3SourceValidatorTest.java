@@ -3,21 +3,15 @@ package com.redhat.service.smartevents.processor.sources.aws;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayValidator;
 import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
-import io.quarkus.test.junit.QuarkusTest;
-
-@QuarkusTest
 class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
 
-    @Inject
-    AwsS3SourceValidator validator;
+    private final AwsS3SourceValidator validator = new AwsS3SourceValidator();
 
     @Override
     protected GatewayValidator<Source> getValidator() {

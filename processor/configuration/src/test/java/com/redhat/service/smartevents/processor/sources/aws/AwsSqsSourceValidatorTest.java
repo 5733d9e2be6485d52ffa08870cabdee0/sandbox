@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,8 +13,6 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayValidator;
 import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
-
-import io.quarkus.test.junit.QuarkusTest;
 
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_QUEUE_URL_PARAM;
@@ -27,11 +23,9 @@ import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceV
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidator.missingParameterMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@QuarkusTest
 class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
 
-    @Inject
-    AwsSqsSourceValidator validator;
+    AwsSqsSourceValidator validator = new AwsSqsSourceValidator();
 
     @Override
     protected GatewayValidator<Source> getValidator() {
