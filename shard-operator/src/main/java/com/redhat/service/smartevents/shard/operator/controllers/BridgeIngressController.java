@@ -16,7 +16,8 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
+import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
@@ -54,10 +55,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     BridgeIngressService bridgeIngressService;
 
     @Inject
-    BridgeErrorService bridgeErrorService;
+    NetworkingService networkingService;
 
     @Inject
-    IstioGatewayProvider istioGatewayProvider;
+    BridgeErrorService bridgeErrorService;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -67,6 +68,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
 
         return eventSources;
     }
@@ -101,10 +103,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Nothing to check for Authorization Policy
 
-        String endpoint = istioGatewayProvider.getIstioGatewayAddress() + path;
+        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress);
 
-        if (!bridgeIngress.getStatus().isReady() || !endpoint.equals(bridgeIngress.getStatus().getEndpoint())) {
-            bridgeIngress.getStatus().setEndpoint(endpoint);
+        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
+            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);

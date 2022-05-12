@@ -13,12 +13,10 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressServiceImpl;
 import com.redhat.service.smartevents.shard.operator.app.Platform;
 import com.redhat.service.smartevents.shard.operator.app.PlatformConfigProvider;
-import com.redhat.service.smartevents.shard.operator.utils.NetworkingConstants;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupEvent;
@@ -27,10 +25,15 @@ import io.quarkus.runtime.StartupEvent;
 public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
 
-    private String gatewayAddress;
+    private Service gatewayService;
 
-    @ConfigProperty(name = "broker.gateway.ip")
-    Optional<String> gatewayIP;
+    private Integer gatewayServiceHttp2Port;
+
+    @ConfigProperty(name = "event-bridge.istio.broker.name")
+    Optional<String> name;
+
+    @ConfigProperty(name = "event-bridge.istio.broker.namespace")
+    Optional<String> namespace;
 
     @Inject
     OpenShiftClient openShiftClient;
@@ -39,43 +42,45 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     PlatformConfigProvider platformConfigProvider;
 
     void setup(@Observes StartupEvent event) {
+        if (name.isEmpty() || namespace.isEmpty()) {
+            exit("'event-bridge.istio.broker.name' and 'event-bridge.istio.broker.namespace' config property must be set on k8s platform.");
+        }
+
         if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
-            gatewayAddress = extractOpenshiftGatewayAddress(openShiftClient);
+            gatewayService = extractOpenshiftGatewayService(openShiftClient);
         } else {
-            if (gatewayIP.isEmpty()) {
-                LOGGER.error("'broker.gateway.ip' config property must be set on k8s platform.");
-                Quarkus.asyncExit(1);
-            }
-            gatewayAddress = extractK8sGatewayAddress(openShiftClient);
+            gatewayService = extractK8sGatewayService(openShiftClient);
         }
-        if (gatewayAddress == null) {
-            LOGGER.error("Could not retrieve the istio gateway address. Please make sure it was properly deployed.");
-            Quarkus.asyncExit(1);
+        if (gatewayService == null) {
+            exit("Could not retrieve the istio gateway service. Please make sure it was properly deployed.");
         }
+        Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
+        if (http2Port.isEmpty()) {
+            exit("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
+        }
+        gatewayServiceHttp2Port = http2Port.get().getPort();
     }
 
-    private String extractOpenshiftGatewayAddress(OpenShiftClient openShiftClient) {
-        Route route = openShiftClient.routes().inNamespace("istio-system").withName("knative-eventing-my-app-gateway-525eca1d5089dbdc").get();
-        if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
-            String endpoint = route.getSpec().getHost();
-            return route.getSpec().getTls() != null ? NetworkingConstants.HTTPS_SCHEME + endpoint : NetworkingConstants.HTTP_SCHEME + endpoint;
-        }
-        return null;
+    private Service extractOpenshiftGatewayService(OpenShiftClient openShiftClient) {
+        return openShiftClient.services().inNamespace(namespace.get()).withName(name.get()).get();
     }
 
-    private String extractK8sGatewayAddress(KubernetesClient kubernetesClient) {
-        Service service = kubernetesClient.services().inNamespace("istio-system").withName("istio-ingressgateway").get();
-        if (service != null) {
-            Optional<ServicePort> first = service.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
-            if (first.isPresent() && gatewayIP.isPresent()) {
-                return NetworkingConstants.HTTP_SCHEME + gatewayIP.get() + ":" + first.get().getNodePort();
-            }
-        }
-        return null;
+    private Service extractK8sGatewayService(KubernetesClient kubernetesClient) {
+        return kubernetesClient.services().inNamespace(namespace.get()).withName(name.get()).get();
     }
 
     @Override
-    public String getIstioGatewayAddress() {
-        return gatewayAddress;
+    public Service getIstioGatewayService() {
+        return gatewayService;
+    }
+
+    @Override
+    public Integer getIstioGatewayServicePort() {
+        return gatewayServiceHttp2Port;
+    }
+
+    private void exit(String message) {
+        LOGGER.error(message);
+        Quarkus.asyncExit(1);
     }
 }

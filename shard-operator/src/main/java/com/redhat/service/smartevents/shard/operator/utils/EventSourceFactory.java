@@ -10,9 +10,12 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
+import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
+import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
@@ -94,6 +97,24 @@ public class EventSourceFactory {
                         .runnableInformer(0);
 
         return new InformerEventSource<>(serviceMonitorInformer, Mappers.fromOwnerReference());
+    }
+
+    public static EventSource buildRoutesInformer(OpenShiftClient client, String componentName) {
+        SharedIndexInformer<Route> routesInformer =
+                client.routes().inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(routesInformer, Mappers.fromOwnerReference());
+    }
+
+    public static EventSource buildIngressesInformer(KubernetesClient kubernetesClient, String componentName) {
+        SharedIndexInformer<Ingress> ingressesInformer =
+                kubernetesClient.network().v1().ingresses().inAnyNamespace()
+                        .withLabels(buildLabels(componentName))
+                        .runnableInformer(0);
+
+        return new InformerEventSource<>(ingressesInformer, Mappers.fromOwnerReference());
     }
 
     private static Map<String, String> buildLabels(String componentName) {

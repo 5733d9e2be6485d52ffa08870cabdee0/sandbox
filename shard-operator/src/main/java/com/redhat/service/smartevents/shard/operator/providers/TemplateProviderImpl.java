@@ -15,14 +15,18 @@ import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.utils.Serialization;
+import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 
 @ApplicationScoped
 public class TemplateProviderImpl implements TemplateProvider {
 
     private static final String TEMPLATES_DIR = "/templates";
+    private static final String BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH = TEMPLATES_DIR + "/bridge-ingress-openshift-route.yaml";
+    private static final String BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH = TEMPLATES_DIR + "/bridge-ingress-kubernetes-ingress.yaml";
     private static final String BRIDGE_INGRESS_SECRET_PATH = TEMPLATES_DIR + "/bridge-ingress-secret.yaml";
     private static final String BRIDGE_INGRESS_CONFIGMAP_PATH = TEMPLATES_DIR + "/bridge-ingress-broker-configmap.yaml";
     private static final String BRIDGE_INGRESS_BROKER_PATH = TEMPLATES_DIR + "/bridge-ingress-broker.yaml";
@@ -46,6 +50,20 @@ public class TemplateProviderImpl implements TemplateProvider {
         Service service = loadYaml(Service.class, BRIDGE_EXECUTOR_SERVICE_PATH);
         updateMetadata(bridgeExecutor, service.getMetadata());
         return service;
+    }
+
+    @Override
+    public Route loadBridgeIngressOpenshiftRouteTemplate(BridgeIngress bridgeIngress) {
+        Route route = loadYaml(Route.class, BRIDGE_INGRESS_OPENSHIFT_ROUTE_PATH);
+        updateMetadata(bridgeIngress, route.getMetadata());
+        return route;
+    }
+
+    @Override
+    public Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress) {
+        Ingress ingress = loadYaml(Ingress.class, BRIDGE_INGRESS_KUBERNETES_INGRESS_PATH);
+        updateMetadata(bridgeIngress, ingress.getMetadata());
+        return ingress;
     }
 
     @Override

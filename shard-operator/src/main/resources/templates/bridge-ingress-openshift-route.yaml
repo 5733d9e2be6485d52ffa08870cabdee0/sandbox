@@ -1,0 +1,24 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ""
+  namespace: ""
+  labels:
+    app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
+    app.kubernetes.io/component: ingress # used to specify the component
+  ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
+    - apiVersion: ""
+      kind: ""
+      name: ""
+      uid: ""
+spec:
+  to:
+    kind: Service
+    name: ""
+  port:
+    targetPort: http2
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

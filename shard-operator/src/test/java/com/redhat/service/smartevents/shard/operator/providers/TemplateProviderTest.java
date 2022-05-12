@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
+import com.redhat.service.smartevents.shard.operator.networking.KubernetesNetworkingService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -13,7 +14,9 @@ import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.CustomResource;
+import io.fabric8.openshift.api.model.Route;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,6 +68,31 @@ public class TemplateProviderTest {
     }
 
     // TODO: add test for ingress secret/configmap/istio/knative resource
+
+    @Test
+    public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS);
+
+        assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
+        assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
+        assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
+        assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
+    }
+
+    @Test
+    public void bridgeIngressKubernetesIngressTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS);
+
+        assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
+        assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);
+        assertThat(ingress.getMetadata().getAnnotations().get(KubernetesNetworkingService.NGINX_REWRITE_TARGET_ANNOTATION)).isEqualTo(KubernetesNetworkingService.REWRITE_TARGET_PLACEHOLDER);
+
+        assertThat(ingress.getSpec().getRules().size()).isEqualTo(1);
+        assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().size()).isEqualTo(1);
+        assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPathType()).isEqualTo("Prefix");
+    }
 
     private void assertLabels(ObjectMeta meta, String component) {
         assertThat(meta.getLabels().get(LabelsBuilder.COMPONENT_LABEL)).isEqualTo(component);

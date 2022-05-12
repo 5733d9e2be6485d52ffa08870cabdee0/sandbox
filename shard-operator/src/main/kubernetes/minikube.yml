@@ -29,6 +29,10 @@ rules:
     verbs:
       - '*'
   - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
