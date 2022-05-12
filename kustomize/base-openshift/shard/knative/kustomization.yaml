@@ -1,0 +1,3 @@
+resources:
+  - knative-eventing.yaml
+  - knative-kafka.yaml

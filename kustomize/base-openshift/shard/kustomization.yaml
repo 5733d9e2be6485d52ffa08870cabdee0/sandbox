@@ -1,2 +1,4 @@
 resources:
   - cluster-role.yaml
+  - service-mesh
+  - knative

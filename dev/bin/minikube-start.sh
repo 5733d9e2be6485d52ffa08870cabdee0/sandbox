@@ -51,6 +51,7 @@ if [ "${disable_extra_components}" != 'true' ]; then
   istioctl manifest apply --set profile=default
   kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/gateway.yaml
   kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/virtual-service-kafka-broker.yaml
+  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
 fi
 
 set +x
