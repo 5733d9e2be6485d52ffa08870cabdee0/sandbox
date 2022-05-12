@@ -31,7 +31,7 @@ public class WebhookSiteSteps {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(WebhookSiteResource.requests())
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests("newest"))
                         .map(request -> request.getContent())
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
@@ -45,7 +45,7 @@ public class WebhookSiteSteps {
         Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
         while (timeoutTime.isAfter(Instant.now())) {
             TimeUnit.of(ChronoUnit.SECONDS).sleep(1);
-            assertThat(WebhookSiteResource.requests())
+            assertThat(WebhookSiteResource.requests("newest"))
                     .map(WebhookSiteRequest::getContent)
                     .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
                     .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));

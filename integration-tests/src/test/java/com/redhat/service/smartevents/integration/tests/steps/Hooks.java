@@ -41,7 +41,7 @@ public class Hooks {
     @BeforeAll
     public static void webhookSiteRequestHistoryIsCleared() {
         final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        WebhookSiteResource.requests()
+        WebhookSiteResource.requests("oldest")
                 .stream()
                 .filter(request -> {
                     final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -105,7 +105,6 @@ public class Hooks {
                                 break;
                         }
                     });
-
         }
     }
 }
