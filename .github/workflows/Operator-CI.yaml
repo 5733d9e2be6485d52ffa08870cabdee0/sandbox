@@ -50,7 +50,7 @@ jobs:
           ./dev/bin/knative-installer.sh
           curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.13.2 TARGET_ARCH=x86_64 sh -
           export PATH=$PWD/istio-1.13.2/bin:$PATH
-          istioctl manifest apply -y --set profile=default
+          istioctl manifest apply -y --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
           kubectl apply -f kustomize/overlays/minikube/istio/gateway.yaml
           kubectl apply -f kustomize/overlays/minikube/istio/virtual-service-kafka-broker.yaml
           kubectl apply -f kustomize/overlays/minikube/istio/jwt-request-authentication.yaml
