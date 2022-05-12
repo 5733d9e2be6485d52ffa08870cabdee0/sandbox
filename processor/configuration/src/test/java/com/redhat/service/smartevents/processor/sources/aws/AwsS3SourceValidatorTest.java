@@ -8,29 +8,38 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.validations.ValidationResult;
+import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @QuarkusTest
-class AwsS3SourceValidatorTest {
+class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
 
     @Inject
     AwsS3SourceValidator validator;
 
+    @Override
+    protected GatewayValidator<Source> getValidator() {
+        return validator;
+    }
+
+    @Override
+    protected String getSourceType() {
+        return AwsS3Source.TYPE;
+    }
+
     @Test
     void isInvalidWithNoParametersOnlyFirstMessage() {
         Map<String, String> params = new HashMap<>();
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_BUCKET_NAME_OR_ARN_PARAMETER_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_BUCKET_NAME_OR_ARN_PARAMETER_MESSAGE);
     }
 
     @Test
     void isInvalidWithMissingRegionParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_REGION_PARAMETER_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_REGION_PARAMETER_MESSAGE);
     }
 
     @Test
@@ -38,7 +47,7 @@ class AwsS3SourceValidatorTest {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
         params.put(AwsS3Source.REGION_PARAMETER, "test-region");
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_ACCESS_KEY_PARAMETER_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_ACCESS_KEY_PARAMETER_MESSAGE);
     }
 
     @Test
@@ -47,7 +56,7 @@ class AwsS3SourceValidatorTest {
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
         params.put(AwsS3Source.REGION_PARAMETER, "test-region");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_SECRET_KEY_PARAMETER_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_SECRET_KEY_PARAMETER_MESSAGE);
     }
 
     @Test
@@ -57,7 +66,7 @@ class AwsS3SourceValidatorTest {
         params.put(AwsS3Source.REGION_PARAMETER, "test-region");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "test-access-key");
         params.put(AwsS3Source.SECRET_KEY_PARAMETER, "test-secret-key");
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_IGNORE_BODY_PARAMETER_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_IGNORE_BODY_PARAMETER_MESSAGE);
     }
 
     @Test
@@ -68,23 +77,6 @@ class AwsS3SourceValidatorTest {
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "test-access-key");
         params.put(AwsS3Source.SECRET_KEY_PARAMETER, "test-secret-key");
         params.put(AwsS3Source.IGNORE_BODY_PARAMETER, Boolean.TRUE.toString());
-        assertIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_DELETE_AFTER_READ_PARAMETER_MESSAGE);
-    }
-
-    private void assertIsInvalid(Source Source, String errorMessage) {
-        ValidationResult validationResult = validator.isValid(Source);
-        assertThat(validationResult.isValid()).isFalse();
-        if (errorMessage == null) {
-            assertThat(validationResult.getMessage()).isNull();
-        } else {
-            assertThat(validationResult.getMessage()).startsWith(errorMessage);
-        }
-    }
-
-    private static Source sourceWith(Map<String, String> params) {
-        Source source = new Source();
-        source.setType(AwsS3Source.TYPE);
-        source.setParameters(params);
-        return source;
+        assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_DELETE_AFTER_READ_PARAMETER_MESSAGE);
     }
 }
