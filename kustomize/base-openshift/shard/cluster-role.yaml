@@ -31,6 +31,12 @@ rules:
   - apiGroups:
       - route.openshift.io
     resources:
+      - routes/custom-host
+    verbs:
+      - create
+  - apiGroups:
+      - route.openshift.io
+    resources:
       - routes
     verbs:
       - '*'
