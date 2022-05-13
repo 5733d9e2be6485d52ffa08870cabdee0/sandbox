@@ -12,16 +12,18 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayResolver;
+import com.redhat.service.smartevents.processor.ResolvedGateway;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayResolver<Action> {
+public class SendToBridgeActionResolver implements SendToBridgeAction,
+                                                   GatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
 
     @Override
-    public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
+    public ResolvedGateway<Action> resolve(Action action, String customerId, String bridgeId, String processorId) {
         String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         Map<String, String> parameters = new HashMap<>();
@@ -36,7 +38,7 @@ public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayRe
         transformedAction.setType(WebhookAction.TYPE);
         transformedAction.setParameters(parameters);
 
-        return transformedAction;
+        return new ResolvedGateway<>(action, transformedAction);
     }
 
     private String getBridgeWebhookUrl(String bridgeEndpoint) throws MalformedURLException {

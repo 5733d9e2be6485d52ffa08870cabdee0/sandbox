@@ -25,7 +25,7 @@ public interface GatewayConfigurator {
      * @param actionType desired action type
      * @return {@link Optional} containing the bean if present, empty otherwise.
      */
-    Optional<GatewayResolver<Action>> getActionResolver(String actionType);
+    GatewayResolver<Action> getActionResolver(String actionType);
 
     /**
      * Get connector bean for specific action type.

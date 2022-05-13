@@ -10,6 +10,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.manager.vault.VaultService;
+import com.redhat.service.smartevents.processor.ResolvedGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,13 +108,13 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
-        Action resolvedAction = processorType == ProcessorType.SOURCE
+        ResolvedGateway resolvedGateway = processorType == ProcessorType.SOURCE
                 ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedGateway)
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedGateway);
 
         newProcessor.setDefinition(definition);
 
@@ -122,20 +124,35 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
-                newProcessor.getId(),
-                newProcessor.getBridge().getCustomerId(),
-                newProcessor.getBridge().getId());
+                    newProcessor.getId(),
+                    newProcessor.getBridge().getCustomerId(),
+                    newProcessor.getBridge().getId());
 
         return newProcessor;
     }
 
-    private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
-        return gatewayConfigurator.getActionResolver(action.getType())
-                .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
-                .orElse(action);
+    @Inject
+    VaultService vaultService;
+
+    private ProcessorDefinition createSourceDefinition(Processor processor) {
+        ResolvedGateway<Source> resolvedGateway = resolveSource();
+
     }
 
-    private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
+    private ProcessorDefinition createSinkDefinition(Processor processor) {
+
+    }
+
+    private ProcessorDefinition createProcessorDefinition(ProcessorType processorType) {
+        return processor.getType() == ProcessorType.SOURCE ? createSourceDefinition(processor) : createSinkDefinition(processor);
+    }
+
+    private ResolvedGateway<Action> resolveAction(Action action, String customerId, String bridgeId, String processorId) {
+        return gatewayConfigurator.getActionResolver(action.getType())
+                .resolve(action, customerId, bridgeId, processorId);
+    }
+
+    private ResolvedGateway<Source> resolveSource(Source source, String customerId, String bridgeId, String processorId) {
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
     }
@@ -150,8 +167,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
         if (!isProcessorActionable(existingProcessor)) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
-                    processorId,
-                    customerId));
+                                                                processorId,
+                                                                customerId));
         }
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
@@ -196,9 +213,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(existingProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
-                existingProcessor.getId(),
-                existingProcessor.getBridge().getCustomerId(),
-                existingProcessor.getBridge().getId());
+                    existingProcessor.getId(),
+                    existingProcessor.getBridge().getCustomerId(),
+                    existingProcessor.getBridge().getId());
 
         return existingProcessor;
     }
@@ -216,7 +233,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getCustomerId()));
+                                                          processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
         p.setModifiedAt(ZonedDateTime.now());
@@ -230,7 +247,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Update metrics
         meterRegistry.counter("manager.processor.status.change",
-                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
+                              Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         return p;
     }
@@ -265,9 +282,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(processor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
-                processor.getId(),
-                processor.getBridge().getCustomerId(),
-                processor.getBridge().getId());
+                    processor.getId(),
+                    processor.getBridge().getCustomerId(),
+                    processor.getBridge().getId());
     }
 
     private boolean isProcessorActionable(Processor processor) {

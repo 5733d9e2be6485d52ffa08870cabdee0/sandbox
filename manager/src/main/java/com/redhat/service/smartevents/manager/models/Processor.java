@@ -70,6 +70,9 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
     @Column(name = "shard_id")
     private String shardId;
 
+    @Column(name = "vault_reference")
+    private String vaultReference;
+
     public ProcessorType getType() {
         return type;
     }
