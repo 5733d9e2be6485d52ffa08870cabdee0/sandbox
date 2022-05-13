@@ -44,7 +44,7 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
                 try {
                     return String.format("list contains (%s, %s)", ObjectMapperFactory.get().writeValueAsString(filter.getValue()), filter.getKey());
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    throw new IllegalArgumentException("Value " + filter.getValue() + " cannot be converted to string", e);
                 }
             default:
                 throw new IllegalArgumentException("Filter type " + filter.getType() + " is not supported by FEELTemplateFactory.");
