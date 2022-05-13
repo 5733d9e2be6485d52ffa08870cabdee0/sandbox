@@ -6,7 +6,6 @@ import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -15,6 +14,7 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
