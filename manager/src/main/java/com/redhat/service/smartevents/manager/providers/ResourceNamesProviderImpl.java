@@ -41,4 +41,9 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     public String getProcessorTopicName(String processorId) {
         return String.format("%s%s-%s", validatedResourcePrefix, PROCESSOR_SHORTNAME, processorId);
     }
+
+    @Override
+    public String getProcessorSecretName(String processorId) {
+        return getProcessorTopicName(processorId);
+    }
 }

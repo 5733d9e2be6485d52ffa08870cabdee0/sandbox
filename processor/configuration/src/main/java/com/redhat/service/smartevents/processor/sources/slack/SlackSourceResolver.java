@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.processor.SensitiveParamGatewayResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.GatewayResolver;
+import com.redhat.service.smartevents.processor.SensitiveParamGatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped

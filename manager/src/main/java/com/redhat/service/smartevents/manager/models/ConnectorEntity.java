@@ -12,11 +12,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.hibernate.annotations.TypeDef;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;

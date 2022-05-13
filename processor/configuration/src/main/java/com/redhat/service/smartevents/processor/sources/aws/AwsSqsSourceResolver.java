@@ -12,7 +12,6 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.SensitiveParamGatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 

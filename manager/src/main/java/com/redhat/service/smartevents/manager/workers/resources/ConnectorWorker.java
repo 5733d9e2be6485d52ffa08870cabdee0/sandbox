@@ -9,11 +9,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
@@ -21,6 +20,7 @@ import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
+import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Work;
@@ -53,8 +53,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     @Override
     public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
-                    connectorEntity.getName(),
-                    connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
         // Transition resource to PREPARING status.
         // There is no work handled by the Operator. Connectors move from PREPARING to READY.
         connectorEntity.setStatus(ManagedResourceStatus.PREPARING);
@@ -65,22 +65,22 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         // Step 1 - Create Kafka Topic
         LOGGER.debug("Creating Kafka Topic for '{}' [{}]",
-                     connectorEntity.getName(),
-                     connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
         rhoasService.createTopicAndGrantAccessFor(connectorEntity.getTopicName(), connectorTopicAccessType(connectorEntity));
 
         // Step 2 - Create Connector
         LOGGER.debug("Creating Managed Connector for '{}' [{}]",
-                     connectorEntity.getName(),
-                     connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
         Optional<Connector> optConnector = Optional.of(connectorEntity)
                 .filter(ce -> Objects.nonNull(ce.getConnectorExternalId()) && !ce.getConnectorExternalId().isBlank())
                 .map(ConnectorEntity::getConnectorExternalId)
                 .map(connectorsApi::getConnector);
         if (optConnector.isEmpty()) {
             LOGGER.debug("Managed Connector for '{}' [{}] not found. Provisioning...",
-                         connectorEntity.getName(),
-                         connectorEntity.getId());
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
             // This is an asynchronous operation so exit and wait for it's READY state to be detected on the next poll.
             return deployConnector(connectorEntity);
         }
@@ -90,14 +90,14 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         ConnectorStatusStatus status = connector.getStatus();
         if (Objects.isNull(status)) {
             LOGGER.debug("Managed Connector status for '{}' [{}] is undetermined.",
-                         connectorEntity.getName(),
-                         connectorEntity.getId());
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
             return connectorEntity;
         }
         if (status.getState() == ConnectorState.READY) {
             LOGGER.debug("Managed Connector for '{}' [{}] is ready.",
-                         connectorEntity.getName(),
-                         connectorEntity.getId());
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
 
             // Connector is ready. We can proceed with the deployment of the Processor in the Shard
             // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
@@ -109,8 +109,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
         if (status.getState() == ConnectorState.FAILED) {
             LOGGER.debug("Creating Managed Connector for '{}' [{}] failed.",
-                         connectorEntity.getName(),
-                         connectorEntity.getId());
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
@@ -139,8 +139,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     @Override
     public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
-                    connectorEntity.getName(),
-                    connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
 
         // This is idempotent as it gets overridden later depending on actual state
         connectorEntity.setStatus(ManagedResourceStatus.DELETING);
@@ -163,15 +163,15 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
         if (status.getState() == ConnectorState.DELETED) {
             LOGGER.debug("Managed Connector for '{}' [{}] has status 'DELETED'. Continuing with deletion of Kafka Topic..",
-                         connectorEntity.getName(),
-                         connectorEntity.getId());
+                    connectorEntity.getName(),
+                    connectorEntity.getId());
             return deleteTopic(connectorEntity);
         }
 
         // Step 2 - Delete Connector
         LOGGER.debug("Deleting Managed Connector for '{}' [{}]",
-                     connectorEntity.getName(),
-                     connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
         connectorsApi.deleteConnector(connectorEntity.getConnectorExternalId());
 
         return connectorEntity;
@@ -187,8 +187,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
         // Step 1 - Delete Kafka Topic
         LOGGER.debug("Deleting Kafka Topic for '{}' [{}]",
-                     connectorEntity.getName(),
-                     connectorEntity.getId());
+                connectorEntity.getName(),
+                connectorEntity.getId());
         rhoasService.deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), connectorTopicAccessType(connectorEntity));
 
         return doDeleteDependencies(connectorEntity);

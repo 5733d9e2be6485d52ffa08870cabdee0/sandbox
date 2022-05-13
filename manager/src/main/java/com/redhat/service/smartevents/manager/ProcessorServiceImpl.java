@@ -12,9 +12,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.infra.models.VaultSecret;
-import com.redhat.service.smartevents.manager.vault.VaultService;
-import com.redhat.service.smartevents.processor.ResolvedGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +22,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -41,8 +39,10 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.ResolvedGateway;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -119,9 +119,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(newProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
-                    newProcessor.getId(),
-                    newProcessor.getBridge().getCustomerId(),
-                    newProcessor.getBridge().getId());
+                newProcessor.getId(),
+                newProcessor.getBridge().getCustomerId(),
+                newProcessor.getBridge().getId());
 
         return newProcessor;
     }
@@ -133,7 +133,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         ResolvedGateway<Source> resolvedGateway = gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, bridge.getCustomerId(), bridge.getId(), processor.getId());
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(), resolvedGateway.getSanitizedResolvedAction());
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(),
+                resolvedGateway.getSanitizedResolvedAction());
         if (resolvedGateway.containsSensitiveParameters()) {
             storeSensitiveParameters(processor, resolvedGateway);
         }
@@ -142,7 +143,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     /*
-        Stores the sensitive parameters as a secret an AWS Secrets Manager.
+     * Stores the sensitive parameters as a secret an AWS Secrets Manager.
      */
     private void storeSensitiveParameters(Processor processor, ResolvedGateway resolvedGateway) {
         String secretName = resourceNamesProvider.getProcessorSecretName(processor.getId());
@@ -161,7 +162,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         ResolvedGateway<Action> resolvedGateway = gatewayConfigurator.getActionResolver(action.getType())
                 .resolve(action, bridge.getCustomerId(), bridge.getId(), processor.getId());
 
-        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(), resolvedGateway.getSanitizedResolvedAction());
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(),
+                resolvedGateway.getSanitizedResolvedAction());
         if (resolvedGateway.containsSensitiveParameters()) {
             storeSensitiveParameters(processor, resolvedGateway);
         }
@@ -183,8 +185,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
         if (!isProcessorActionable(existingProcessor)) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
-                                                                processorId,
-                                                                customerId));
+                    processorId,
+                    customerId));
         }
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
@@ -229,9 +231,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(existingProcessor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
-                    existingProcessor.getId(),
-                    existingProcessor.getBridge().getCustomerId(),
-                    existingProcessor.getBridge().getId());
+                existingProcessor.getId(),
+                existingProcessor.getBridge().getCustomerId(),
+                existingProcessor.getBridge().getId());
 
         return existingProcessor;
     }
@@ -249,7 +251,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                                                          processorDTO.getCustomerId()));
+                    processorDTO.getCustomerId()));
         }
         p.setStatus(processorDTO.getStatus());
         p.setModifiedAt(ZonedDateTime.now());
@@ -263,7 +265,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Update metrics
         meterRegistry.counter("manager.processor.status.change",
-                              Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
+                Collections.singletonList(Tag.of("status", processorDTO.getStatus().toString()))).increment();
 
         return p;
     }
@@ -298,9 +300,9 @@ public class ProcessorServiceImpl implements ProcessorService {
         workManager.schedule(processor);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
-                    processor.getId(),
-                    processor.getBridge().getCustomerId(),
-                    processor.getBridge().getId());
+                processor.getId(),
+                processor.getBridge().getCustomerId(),
+                processor.getBridge().getId());
     }
 
     private boolean isProcessorActionable(Processor processor) {
@@ -331,8 +333,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setKafkaConnection(kafkaConnectionDTO);
 
         /*
-            If the Processor has sensitive values, fetch them from the Vault and expose them to the
-            Shard.
+         * If the Processor has sensitive values, fetch them from the Vault and expose them to the
+         * Shard.
          */
         if (processor.getVaultReference() != null) {
             //TODO - parameterise timeout

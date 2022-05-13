@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.openshift.cloud.api.connector.models.ConnectorState;
@@ -104,7 +105,7 @@ class ProcessorServiceConnectorTest {
         externalConnector.setStatus(externalConnectorStatus);
 
         when(connectorsApiClient.getConnector(any())).thenReturn(externalConnector);
-        when(connectorsApiClient.createConnector(any(ConnectorEntity.class))).thenCallRealMethod();
+        when(connectorsApiClient.createConnector(any(ConnectorEntity.class), any(JsonNode.class))).thenCallRealMethod();
         when(connectorsApiClient.createConnector(any(ConnectorRequest.class))).thenReturn(externalConnector);
         when(rhoasService.createTopicAndGrantAccessFor(anyString(), any())).thenReturn(new Topic());
 
@@ -116,7 +117,6 @@ class ProcessorServiceConnectorTest {
                     resourceNamesProvider.getProcessorConnectorName(processor.getId()));
 
             assertThat(connector).isNotNull();
-            assertThat(connector.getError()).isNullOrEmpty();
             assertThat(connector.getStatus()).isEqualTo(READY);
         });
 

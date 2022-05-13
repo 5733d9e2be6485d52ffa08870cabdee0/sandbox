@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
 public class SendToBridgeActionResolver implements SendToBridgeAction,
-                                                   GatewayResolver<Action> {
+        GatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

@@ -9,10 +9,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.infra.models.VaultSecret;
-import com.redhat.service.smartevents.manager.vault.VaultService;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -22,6 +20,7 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;

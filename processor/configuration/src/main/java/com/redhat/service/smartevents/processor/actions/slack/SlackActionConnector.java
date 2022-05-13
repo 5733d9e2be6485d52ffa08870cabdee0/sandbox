@@ -1,13 +1,11 @@
 package com.redhat.service.smartevents.processor.actions.slack;
 
 import java.util.Map;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.AbstractGatewayConnector;

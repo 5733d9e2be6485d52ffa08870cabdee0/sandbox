@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 
 @ApplicationScoped
 public class SlackActionResolver implements SlackAction,
-                                            GatewayResolver<Action> {
+        GatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

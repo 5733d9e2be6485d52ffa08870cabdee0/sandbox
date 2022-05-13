@@ -35,8 +35,9 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public Optional<GatewayResolver<Action>> getActionResolver(String actionType) {
-        return getOptionalBean(actionResolvers, actionType);
+    public GatewayResolver<Action> getActionResolver(String actionType) {
+        //TODO
+        return getOptionalBean(actionResolvers, actionType).get();
     }
 
     @Override

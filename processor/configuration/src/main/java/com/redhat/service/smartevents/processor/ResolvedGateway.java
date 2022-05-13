@@ -25,14 +25,14 @@ public class ResolvedGateway<T extends Gateway> {
     }
 
     /*
-        Returns the original requested Gateway from the user with all sensitive parameters sanitized
+     * Returns the original requested Gateway from the user with all sensitive parameters sanitized
      */
     public T getSanitizedRequest() {
         return sanitizedUserRequest;
     }
 
     /*
-        Returns the resolved Action for the Gateway, with all parameters except those that are sensitive
+     * Returns the resolved Action for the Gateway, with all parameters except those that are sensitive
      */
     public Action getSanitizedResolvedAction() {
         return sanitizedResolvedAction;

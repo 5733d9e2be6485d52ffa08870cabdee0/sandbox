@@ -42,9 +42,9 @@ public abstract class SensitiveParamGatewayResolver<T extends Gateway> implement
                 sensitiveParameters.put(param, value);
 
                 /*
-                    Apply a default mask to the sensitive value submitted by the user so we
-                    1. Don't store sensitive values in plaintext in the DB
-                    2. Don't return sensitive values in plaintext from the API
+                 * Apply a default mask to the sensitive value submitted by the user so we
+                 * 1. Don't store sensitive values in plaintext in the DB
+                 * 2. Don't return sensitive values in plaintext from the API
                  */
                 gateway.getParameters().put(param, DEFAULT_SENSITIVE_PARAMETER_VALUE_MASK);
 
