@@ -24,14 +24,19 @@ public class SlackSourceConnector extends AbstractGatewayConnector<Source> imple
     }
 
     @Override
-    protected void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition) {
-        Map<String, String> sourceParameters = source.getParameters();
+    protected void addConnectorSpecificPayload(Source gateway, String topicName, Map<String, String> sensitiveParameters, ObjectNode definition) {
+        Map<String, String> sourceParameters = gateway.getParameters();
 
         String slackChannel = sourceParameters.get(CHANNEL_PARAM);
-        String slackToken = sourceParameters.get(TOKEN_PARAM);
+        String slackToken = sensitiveParameters.get(TOKEN_PARAM);
 
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
         definition.set(CONNECTOR_TOKEN_PARAMETER, new TextNode(slackToken));
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
+    }
+
+    @Override
+    protected boolean expectsSensitiveParameters() {
+        return true;
     }
 }

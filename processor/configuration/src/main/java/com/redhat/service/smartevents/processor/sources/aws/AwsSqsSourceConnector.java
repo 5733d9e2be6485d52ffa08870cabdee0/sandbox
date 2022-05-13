@@ -37,15 +37,16 @@ public class AwsSqsSourceConnector extends AbstractGatewayConnector<Source> impl
     }
 
     @Override
-    protected void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition) {
-        Map<String, String> sourceParameters = source.getParameters();
+    protected void addConnectorSpecificPayload(Source gateway, String topicName, Map<String, String> sensitiveParameters, ObjectNode definition) {
+
+        Map<String, String> sourceParameters = gateway.getParameters();
         String queueUrl = sourceParameters.get(AWS_QUEUE_URL_PARAM);
 
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
 
         definition.set(CONNECTOR_AWS_QUEUE_URL_PARAMETER, new TextNode(queueUrl));
-        definition.set(CONNECTOR_AWS_ACCESS_KEY_PARAMETER, new TextNode(sourceParameters.get(AWS_ACCESS_KEY_ID_PARAM)));
-        definition.set(CONNECTOR_AWS_SECRET_KEY_PARAMETER, new TextNode(sourceParameters.get(AWS_SECRET_ACCESS_KEY_PARAM)));
+        definition.set(CONNECTOR_AWS_ACCESS_KEY_PARAMETER, new TextNode(sensitiveParameters.get(AWS_ACCESS_KEY_ID_PARAM)));
+        definition.set(CONNECTOR_AWS_SECRET_KEY_PARAMETER, new TextNode(sensitiveParameters.get(AWS_SECRET_ACCESS_KEY_PARAM)));
 
         Matcher awsQueueUrlMatcher = AWS_QUEUE_URL_PATTERN.matcher(queueUrl);
         if (awsQueueUrlMatcher.find()) {
@@ -60,5 +61,10 @@ public class AwsSqsSourceConnector extends AbstractGatewayConnector<Source> impl
                 definition.set(CONNECTOR_AWS_URI_ENDPOINT_OVERRIDE_PARAMETER, new TextNode(genericQueueUrlMatcher.group(1)));
             }
         }
+    }
+
+    @Override
+    protected boolean expectsSensitiveParameters() {
+        return true;
     }
 }

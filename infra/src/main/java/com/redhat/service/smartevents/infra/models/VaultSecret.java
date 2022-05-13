@@ -3,15 +3,20 @@ package com.redhat.service.smartevents.infra.models;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EventBridgeSecret {
+public class VaultSecret {
 
     private String id;
     private Map<String, String> values;
 
-    public EventBridgeSecret() {
+    public VaultSecret() {
     }
 
-    public EventBridgeSecret(String id) {
+    public VaultSecret(String id, Map<String, String> values) {
+        this.id = id;
+        this.values = values;
+    }
+
+    public VaultSecret(String id) {
         this.id = id;
     }
 
@@ -19,7 +24,7 @@ public class EventBridgeSecret {
         return id;
     }
 
-    public EventBridgeSecret setId(String id) {
+    public VaultSecret setId(String id) {
         this.id = id;
         return this;
     }
@@ -28,12 +33,12 @@ public class EventBridgeSecret {
         return values;
     }
 
-    public EventBridgeSecret setValues(Map<String, String> values) {
+    public VaultSecret setValues(Map<String, String> values) {
         this.values = values;
         return this;
     }
 
-    public EventBridgeSecret value(String key, String value) {
+    public VaultSecret value(String key, String value) {
         if (this.values == null) {
             this.values = new HashMap<>();
         }

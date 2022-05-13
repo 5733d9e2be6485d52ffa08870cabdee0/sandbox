@@ -121,6 +121,14 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
         return id.equals(processor.id);
     }
 
+    public String getVaultReference() {
+        return vaultReference;
+    }
+
+    public void setVaultReference(String vaultReference) {
+        this.vaultReference = vaultReference;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(id);

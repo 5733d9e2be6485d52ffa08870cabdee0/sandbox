@@ -1,11 +1,13 @@
 package com.redhat.service.smartevents.processor.actions.slack;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.AbstractGatewayConnector;
@@ -24,8 +26,8 @@ public class SlackActionConnector extends AbstractGatewayConnector<Action> imple
     }
 
     @Override
-    protected void addConnectorSpecificPayload(Action action, String topicName, ObjectNode definition) {
-        Map<String, String> actionParameters = action.getParameters();
+    protected void addConnectorSpecificPayload(Action gateway, String topicName, Map<String, String> sensitiveParameters, ObjectNode definition) {
+        Map<String, String> actionParameters = gateway.getParameters();
 
         String slackChannel = actionParameters.get(CHANNEL_PARAM);
         String webHookURL = actionParameters.get(WEBHOOK_URL_PARAM);
@@ -33,5 +35,10 @@ public class SlackActionConnector extends AbstractGatewayConnector<Action> imple
         definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(slackChannel));
         definition.set(CONNECTOR_WEBHOOK_URL_PARAMETER, new TextNode(webHookURL));
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
+    }
+
+    @Override
+    protected boolean expectsSensitiveParameters() {
+        return false;
     }
 }

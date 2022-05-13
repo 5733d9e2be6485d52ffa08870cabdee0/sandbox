@@ -12,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.TypeDef;
 
@@ -30,7 +31,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @Table(name = "CONNECTOR")
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // called -Entity to avoid clash with Connector REST API
+public class ConnectorEntity extends ManagedResource { // called -Entity to avoid clash with Connector REST API
 
     public static final String PROCESSOR_ID_PARAM = "processorId";
 
@@ -51,9 +52,6 @@ public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // calle
 
     @Column(name = "topic_name")
     private String topicName;
-
-    @Column(name = "error")
-    private String error;
 
     public ConnectorType getType() {
         return type;
@@ -95,14 +93,6 @@ public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // calle
         this.topicName = topicName;
     }
 
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
     /*
      * See: https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
      * In the context of JPA equality, our id is our unique business key as we generate it via UUID.
@@ -131,8 +121,6 @@ public class ConnectorEntity extends ManagedDefinedResource<JsonNode> { // calle
                 ", type='" + type + '\'' +
                 ", connectorTypeId='" + connectorTypeId + '\'' +
                 ", topicName='" + topicName + '\'' +
-                ", error='" + error + '\'' +
-                ", definition=" + definition +
                 ", id='" + id + '\'' +
                 ", status=" + status +
                 ", dependencyStatus=" + dependencyStatus +

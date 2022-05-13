@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.processor.ResolvedGateway;
 import org.slf4j.Logger;
@@ -71,6 +74,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     WorkManager workManager;
 
+    @Inject
+    VaultService vaultService;
+
     @Transactional
     @Override
     public Processor getProcessor(String bridgeId, String processorId, String customerId) {
@@ -104,18 +110,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
 
-        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-
-        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-
-        ResolvedGateway resolvedGateway = processorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
-
-        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedGateway)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedGateway);
-
+        ProcessorDefinition definition = createProcessorDefinition(processorRequest, newProcessor);
         newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
@@ -131,30 +126,51 @@ public class ProcessorServiceImpl implements ProcessorService {
         return newProcessor;
     }
 
-    @Inject
-    VaultService vaultService;
+    private ProcessorDefinition createSourceDefinition(ProcessorRequest processorRequest, Processor processor) {
+        Source source = processorRequest.getSource();
+        Bridge bridge = processor.getBridge();
 
-    private ProcessorDefinition createSourceDefinition(Processor processor) {
-        ResolvedGateway<Source> resolvedGateway = resolveSource();
+        ResolvedGateway<Source> resolvedGateway = gatewayConfigurator.getSourceResolver(source.getType())
+                .resolve(source, bridge.getCustomerId(), bridge.getId(), processor.getId());
 
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(), resolvedGateway.getSanitizedResolvedAction());
+        if (resolvedGateway.containsSensitiveParameters()) {
+            storeSensitiveParameters(processor, resolvedGateway);
+        }
+
+        return definition;
     }
 
-    private ProcessorDefinition createSinkDefinition(Processor processor) {
+    /*
+        Stores the sensitive parameters as a secret an AWS Secrets Manager.
+     */
+    private void storeSensitiveParameters(Processor processor, ResolvedGateway resolvedGateway) {
+        String secretName = resourceNamesProvider.getProcessorSecretName(processor.getId());
+        processor.setVaultReference(secretName);
 
+        VaultSecret eventBridgeSecret = new VaultSecret(secretName, resolvedGateway.getSensitiveParameters());
+        //TODO - remote call within boundaries of DB TX. Re-work layout
+        //TODO - parameterise wait time
+        vaultService.createOrReplace(eventBridgeSecret).await().atMost(Duration.of(5, ChronoUnit.SECONDS));
     }
 
-    private ProcessorDefinition createProcessorDefinition(ProcessorType processorType) {
-        return processor.getType() == ProcessorType.SOURCE ? createSourceDefinition(processor) : createSinkDefinition(processor);
+    private ProcessorDefinition createSinkDefinition(ProcessorRequest processorRequest, Processor processor) {
+        Action action = processorRequest.getAction();
+        Bridge bridge = processor.getBridge();
+
+        ResolvedGateway<Action> resolvedGateway = gatewayConfigurator.getActionResolver(action.getType())
+                .resolve(action, bridge.getCustomerId(), bridge.getId(), processor.getId());
+
+        ProcessorDefinition definition = new ProcessorDefinition(processorRequest.getFilters(), processorRequest.getTransformationTemplate(), resolvedGateway.getSanitizedRequest(), resolvedGateway.getSanitizedResolvedAction());
+        if (resolvedGateway.containsSensitiveParameters()) {
+            storeSensitiveParameters(processor, resolvedGateway);
+        }
+
+        return definition;
     }
 
-    private ResolvedGateway<Action> resolveAction(Action action, String customerId, String bridgeId, String processorId) {
-        return gatewayConfigurator.getActionResolver(action.getType())
-                .resolve(action, customerId, bridgeId, processorId);
-    }
-
-    private ResolvedGateway<Source> resolveSource(Source source, String customerId, String bridgeId, String processorId) {
-        return gatewayConfigurator.getSourceResolver(source.getType())
-                .resolve(source, customerId, bridgeId, processorId);
+    private ProcessorDefinition createProcessorDefinition(ProcessorRequest request, Processor processor) {
+        return processor.getType() == ProcessorType.SOURCE ? createSourceDefinition(request, processor) : createSinkDefinition(request, processor);
     }
 
     @Override
@@ -313,6 +329,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setStatus(processor.getStatus());
         dto.setKafkaConnection(kafkaConnectionDTO);
+
+        /*
+            If the Processor has sensitive values, fetch them from the Vault and expose them to the
+            Shard.
+         */
+        if (processor.getVaultReference() != null) {
+            //TODO - parameterise timeout
+            VaultSecret processorSecret = vaultService.get(processor.getVaultReference()).await().atMost(Duration.of(5, ChronoUnit.SECONDS));
+            dto.getDefinition().getResolvedAction().getParameters().putAll(processorSecret.getValues());
+        }
+
         return dto;
     }
 

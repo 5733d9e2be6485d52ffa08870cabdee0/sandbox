@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.connectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorRequest;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -16,7 +17,7 @@ public interface ConnectorsApiClient {
 
     Connector createConnector(ConnectorRequest connectorRequest);
 
-    Connector createConnector(ConnectorEntity connectorEntity);
+    Connector createConnector(ConnectorEntity connectorEntity, JsonNode connectorDefinition);
 
     void deleteConnector(String id);
 

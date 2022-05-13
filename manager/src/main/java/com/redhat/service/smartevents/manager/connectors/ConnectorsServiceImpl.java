@@ -1,14 +1,16 @@
 package com.redhat.service.smartevents.manager.connectors;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.redhat.service.smartevents.infra.models.VaultSecret;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
@@ -27,8 +29,6 @@ import com.redhat.service.smartevents.processor.GatewayConnector;
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsServiceImpl.class);
-
     @Inject
     ConnectorsDAO connectorsDAO;
 
@@ -41,6 +41,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Inject
     GatewayConfigurator gatewayConfigurator;
 
+    @Inject
+    VaultService vaultService;
+
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
@@ -52,7 +55,35 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         }
     }
 
-    @Transactional(Transactional.TxType.MANDATORY)
+    private VaultSecret getSensitiveParameters(Processor processor) {
+        return processor.getVaultReference() == null ? null : vaultService.get(processor.getVaultReference()).await().atMost(Duration.of(5, ChronoUnit.SECONDS));
+    }
+
+    private JsonNode createConnectorPayload(Processor processor, ConnectorEntity connectorEntity, Action action) {
+        GatewayConnector<Action> gatewayConnector = gatewayConfigurator.getActionConnector(action.getType()).get();
+        Optional<VaultSecret> vaultSecret = Optional.ofNullable(getSensitiveParameters(processor));
+        return gatewayConnector.connectorPayload(action, connectorEntity.getTopicName(), vaultSecret);
+    }
+
+    private JsonNode createConnectorPayload(Processor processor, ConnectorEntity connectorEntity, Source source) {
+        GatewayConnector<Source> gatewayConnector = gatewayConfigurator.getSourceConnector(source.getType());
+        Optional<VaultSecret> vaultSecret = Optional.ofNullable(getSensitiveParameters(processor));
+        return gatewayConnector.connectorPayload(source, connectorEntity.getTopicName(), vaultSecret);
+    }
+
+    @Transactional
+    @Override
+    public JsonNode createConnectorDefinition(String connectorId) {
+        ConnectorEntity connector = connectorsDAO.findById(connectorId);
+        Processor processor = connector.getProcessor();
+
+        if (processor.getType() == ProcessorType.SINK) {
+            return createConnectorPayload(processor, connector, processor.getDefinition().getResolvedAction());
+        }
+
+        return createConnectorPayload(processor, connector, processor.getDefinition().getRequestedSource());
+    }
+
     private void createConnectorEntity(Processor processor, Action action) {
         Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
         if (optActionConnector.isEmpty()) {
@@ -60,18 +91,16 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId(), actionConnector.connectorPayload(action, topicName));
+        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId());
     }
 
-    @Transactional(Transactional.TxType.MANDATORY)
-    // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, Source source) {
+    private void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId(), sourceConnector.connectorPayload(source, topicName));
+        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId());
     }
 
-    private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
+    private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId) {
         String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
@@ -83,7 +112,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
         newConnectorEntity.setConnectorTypeId(connectorTypeId);
-        newConnectorEntity.setDefinition(connectorPayload);
 
         connectorsDAO.persist(newConnectorEntity);
     }

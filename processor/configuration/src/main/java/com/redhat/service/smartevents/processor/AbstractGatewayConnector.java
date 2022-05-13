@@ -1,7 +1,12 @@
 package com.redhat.service.smartevents.processor;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +38,9 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
         this.connectorTypeId = connectorTypeId;
     }
 
-    protected abstract void addConnectorSpecificPayload(T gateway, String topicName, ObjectNode definition);
+    protected abstract void addConnectorSpecificPayload(T gateway, String topicName, Map<String, String> sensitiveParameters, ObjectNode definition);
+
+    protected abstract boolean expectsSensitiveParameters();
 
     @Override
     public ConnectorType getConnectorType() {
@@ -46,7 +53,7 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
     }
 
     @Override
-    public JsonNode connectorPayload(T gateway, String topicName) {
+    public JsonNode connectorPayload(T gateway, String topicName, Optional<VaultSecret> vaultSecret) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {
@@ -55,8 +62,16 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
             definition.set(PROCESSORS_PARAMETER, processors);
         }
 
-        addConnectorSpecificPayload(gateway, topicName, definition);
+        Map<String, String> sensitiveParameters;
+        if (expectsSensitiveParameters()) {
+            // TODO - tidy up exception message
+            VaultSecret secret = vaultSecret.orElseThrow(() -> new IllegalStateException("Expected Vault parameters are not present"));
+            sensitiveParameters = secret.getValues();
+        } else {
+            sensitiveParameters = new HashMap<>();
+        }
 
+        addConnectorSpecificPayload(gateway, topicName, sensitiveParameters, definition);
         return definition;
     }
 

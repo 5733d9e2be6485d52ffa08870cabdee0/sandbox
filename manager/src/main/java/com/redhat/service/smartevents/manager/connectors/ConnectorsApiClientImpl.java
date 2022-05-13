@@ -99,18 +99,16 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     }
 
     @Override
-    public Connector createConnector(ConnectorEntity connectorEntity) {
+    public Connector createConnector(ConnectorEntity connectorEntity, JsonNode connectorDefinition) {
         ConnectorRequest createConnectorRequest = new ConnectorRequest();
 
         String newConnectorName = connectorEntity.getName();
         createConnectorRequest.setName(newConnectorName);
-
         createConnectorRequest.setNamespaceId(mcNamespaceId);
 
         String connectorTypeId = connectorEntity.getConnectorTypeId();
-        JsonNode payload = connectorEntity.getDefinition();
         createConnectorRequest.setConnectorTypeId(connectorTypeId);
-        createConnectorRequest.setConnector(payload);
+        createConnectorRequest.setConnector(connectorDefinition);
 
         ServiceAccount serviceAccount = new ServiceAccount();
         serviceAccount.setClientId(serviceAccountId);

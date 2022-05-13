@@ -41,4 +41,8 @@ public class ResolvedGateway<T extends Gateway> {
     public Map<String, String> getSensitiveParameters() {
         return sensitiveParameters;
     }
+
+    public boolean containsSensitiveParameters() {
+        return getSensitiveParameters() != null && !getSensitiveParameters().isEmpty();
+    }
 }

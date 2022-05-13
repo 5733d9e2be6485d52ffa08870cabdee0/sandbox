@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.VaultException;
-import com.redhat.service.smartevents.infra.models.EventBridgeSecret;
+import com.redhat.service.smartevents.infra.models.VaultSecret;
 import com.redhat.service.smartevents.test.resource.AWSLocalStackResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -27,7 +27,7 @@ public class AWSVaultServiceImplTest {
     @Test
     public void secretIsStoredAndRetrieved() {
         String id = "secretIsStoredAndRetrieved";
-        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
+        vaultService.createOrReplace(new VaultSecret(id).value(KEY, VALUE)).await().indefinitely();
         String retrieved = vaultService.get(id).await().indefinitely().getValues().get(KEY);
         assertThat(retrieved).isEqualTo(VALUE);
     }
@@ -37,8 +37,8 @@ public class AWSVaultServiceImplTest {
         String id = "secretIsReplaced";
         String newKey = "new-key";
         String newValue = "new-value";
-        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
-        vaultService.createOrReplace(new EventBridgeSecret(id).value(newKey, newValue)).await().indefinitely();
+        vaultService.createOrReplace(new VaultSecret(id).value(KEY, VALUE)).await().indefinitely();
+        vaultService.createOrReplace(new VaultSecret(id).value(newKey, newValue)).await().indefinitely();
         String retrieved = vaultService.get(id).await().indefinitely().getValues().get(newKey);
         assertThat(retrieved).isEqualTo(newValue);
     }
@@ -46,7 +46,7 @@ public class AWSVaultServiceImplTest {
     @Test
     public void secretIsDeleted() {
         String id = "secretIsDeleted";
-        vaultService.createOrReplace(new EventBridgeSecret(id).value(KEY, VALUE)).await().indefinitely();
+        vaultService.createOrReplace(new VaultSecret(id).value(KEY, VALUE)).await().indefinitely();
         vaultService.delete(id).await().indefinitely();
         assertThatExceptionOfType(VaultException.class).isThrownBy(() -> vaultService.get(id).await().indefinitely());
     }
