@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -41,7 +42,7 @@ public class Hooks {
     @BeforeAll
     public static void webhookSiteRequestHistoryIsCleared() {
         final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        WebhookSiteResource.requests("oldest")
+        WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
                 .stream()
                 .filter(request -> {
                     final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
