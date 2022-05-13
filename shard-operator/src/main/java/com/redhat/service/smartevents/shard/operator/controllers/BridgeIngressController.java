@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
@@ -59,6 +60,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     BridgeErrorService bridgeErrorService;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -120,7 +124,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Linked resources are automatically deleted except for Authorization Policy due to https://github.com/istio/istio/issues/37221
+        // Linked resources are automatically deleted except for Authorization Policy and the ingress due to https://github.com/istio/istio/issues/37221
 
         // Knative broker needs the dependent secret in order to be deleted properly https://coreos.slack.com/archives/CEXRYS5QC/p1649752951251439?thread_ts=1649752173.045369&cid=CEXRYS5QC
         kubernetesClient.resources(KnativeBroker.class)
@@ -131,7 +135,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // Since the authorizationPolicy has to be in the istio-system namespace due to https://github.com/istio/istio/issues/37221
         // we can not set the owner reference. We have to delete the resource manually.
         kubernetesClient.resources(AuthorizationPolicy.class)
-                .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                .withName(bridgeIngress.getMetadata().getName())
+                .delete();
+
+        // Since the ingress for the gateway has to be in the istio-system namespace
+        // we can not set the owner reference. We have to delete the resource manually.
+        kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace())
                 .withName(bridgeIngress.getMetadata().getName())
                 .delete();
 

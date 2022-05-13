@@ -8,8 +8,10 @@ import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 
+import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.openshift.api.model.Route;
+import io.fabric8.openshift.api.model.RoutePortBuilder;
 import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
@@ -39,10 +41,16 @@ public class OpenshiftNetworkingService implements NetworkingService {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Route expected = buildRoute(bridgeIngress, service);
 
-        Route existing = client.routes().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        Route existing = client.routes()
+                .inNamespace(service.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
 
         if (existing == null || !expected.getSpec().getTo().getName().equals(existing.getSpec().getTo().getName())) {
-            client.routes().inNamespace(service.getMetadata().getNamespace()).createOrReplace(expected);
+            client.routes()
+                    .inNamespace(service.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
+                    .createOrReplace(expected);
             return buildNetworkingResource(expected);
         }
         return buildNetworkingResource(existing);
@@ -60,6 +68,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
 
     private Route buildRoute(BridgeIngress bridgeIngress, Service service) {
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress);
+        route.getMetadata().setNamespace(service.getMetadata().getNamespace()); // TODO: refactor
+        route.getMetadata().setName(bridgeIngress.getMetadata().getName()); // TODO: refactor
+        route.getMetadata().setOwnerReferences(null); // TODO: refactor
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
         route.getSpec().setHost(String.format("%s.%s", bridgeIngress.getMetadata().getName(), getOpenshiftAppsDomain()));
@@ -67,6 +78,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
                 .withKind("Service")
                 .withName(service.getMetadata().getName())
                 .build());
+        route.getSpec().setPort(new RoutePortBuilder().withTargetPort(new IntOrString("http2")).build());
         return route;
     }
 

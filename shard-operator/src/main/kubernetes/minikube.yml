@@ -32,6 +32,8 @@ rules:
       - networking.k8s.io
     resources:
       - ingresses
+    verbs:
+      - "*"
   - apiGroups:
       - monitoring.coreos.com
     resources:
