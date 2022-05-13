@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.QueryParam;
@@ -14,48 +15,42 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
     @QueryParam(FILTER_PROCESSOR_TYPE)
     private ProcessorType filterType;
 
-    public QueryProcessorFilterInfo() {
-        this(null, (Set<ManagedResourceStatus>) null);
+    public static class QueryProcessorFilterInfoBuilder {
+
+        public static QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder filter() {
+            return new QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder();
+        }
+
+        private String filterName;
+        private Set<ManagedResourceStatus> filterStatus = new HashSet<>();
+        private ProcessorType filterType;
+
+        public QueryProcessorFilterInfoBuilder by(String filterName) {
+            this.filterName = filterName;
+            return this;
+        }
+
+        public QueryProcessorFilterInfoBuilder by(ManagedResourceStatus filterStatus) {
+            this.filterStatus.add(filterStatus);
+            return this;
+        }
+
+        public QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder by(ProcessorType filterType) {
+            this.filterType = filterType;
+            return this;
+        }
+
+        public QueryProcessorFilterInfo build() {
+            return new QueryProcessorFilterInfo(filterName, filterStatus, filterType);
+        }
+
     }
 
-    public QueryProcessorFilterInfo(String filterName) {
-        this(filterName, (Set<ManagedResourceStatus>) null, null);
+    protected QueryProcessorFilterInfo() {
+
     }
 
-    public QueryProcessorFilterInfo(ManagedResourceStatus filterStatus) {
-        this(null, filterStatus, null);
-    }
-
-    public QueryProcessorFilterInfo(String filterName, ManagedResourceStatus filterStatus) {
-        this(filterName, filterStatus, null);
-    }
-
-    public QueryProcessorFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
-        this(filterName, filterStatus, null);
-    }
-
-    public QueryProcessorFilterInfo(String filterName, ProcessorType filterType) {
-        this(filterName, (Set<ManagedResourceStatus>) null, filterType);
-    }
-
-    public QueryProcessorFilterInfo(ManagedResourceStatus filterStatus, ProcessorType filterType) {
-        this(null, filterStatus, filterType);
-    }
-
-    public QueryProcessorFilterInfo(Set<ManagedResourceStatus> filterStatus, ProcessorType filterType) {
-        this(null, filterStatus, filterType);
-    }
-
-    public QueryProcessorFilterInfo(ProcessorType filterType) {
-        this(null, (Set<ManagedResourceStatus>) null, filterType);
-    }
-
-    public QueryProcessorFilterInfo(String filterName, ManagedResourceStatus filterStatus, ProcessorType filterType) {
-        super(filterName, filterStatus);
-        this.filterType = filterType;
-    }
-
-    public QueryProcessorFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus, ProcessorType filterType) {
+    protected QueryProcessorFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus, ProcessorType filterType) {
         super(filterName, filterStatus);
         this.filterType = filterType;
     }

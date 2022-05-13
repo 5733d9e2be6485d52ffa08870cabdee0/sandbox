@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.QueryParam;
@@ -17,23 +18,36 @@ public class QueryFilterInfo {
     @QueryParam(FILTER_STATUS)
     private Set<ManagedResourceStatus> filterStatus;
 
-    public QueryFilterInfo() {
-        this(null, (Set<ManagedResourceStatus>) null);
+    public static class QueryFilterInfoBuilder {
+
+        public static QueryFilterInfoBuilder filter() {
+            return new QueryFilterInfoBuilder();
+        }
+
+        private String filterName;
+        private Set<ManagedResourceStatus> filterStatus = new HashSet<>();
+
+        public QueryFilterInfoBuilder by(String filterName) {
+            this.filterName = filterName;
+            return this;
+        }
+
+        public QueryFilterInfoBuilder by(ManagedResourceStatus filterStatus) {
+            this.filterStatus.add(filterStatus);
+            return this;
+        }
+
+        public QueryFilterInfo build() {
+            return new QueryFilterInfo(filterName, filterStatus);
+        }
+
     }
 
-    public QueryFilterInfo(String filterName) {
-        this(filterName, (Set<ManagedResourceStatus>) null);
+    protected QueryFilterInfo() {
+
     }
 
-    public QueryFilterInfo(ManagedResourceStatus filterStatus) {
-        this(null, filterStatus);
-    }
-
-    public QueryFilterInfo(String filterName, ManagedResourceStatus filterStatus) {
-        this(filterName, Set.of(filterStatus));
-    }
-
-    public QueryFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
+    protected QueryFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
         this.filterName = filterName;
         this.filterStatus = filterStatus;
     }
