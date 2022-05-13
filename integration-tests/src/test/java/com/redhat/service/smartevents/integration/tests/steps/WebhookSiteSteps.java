@@ -10,6 +10,7 @@ import org.awaitility.Awaitility;
 import com.redhat.service.smartevents.integration.tests.common.ChronoUnitConverter;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
@@ -31,7 +32,7 @@ public class WebhookSiteSteps {
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(WebhookSiteResource.requests())
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests(WebhookSiteQuerySorting.NEWEST))
                         .map(request -> request.getContent())
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
@@ -45,7 +46,7 @@ public class WebhookSiteSteps {
         Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
         while (timeoutTime.isAfter(Instant.now())) {
             TimeUnit.of(ChronoUnit.SECONDS).sleep(1);
-            assertThat(WebhookSiteResource.requests())
+            assertThat(WebhookSiteResource.requests(WebhookSiteQuerySorting.NEWEST))
                     .map(WebhookSiteRequest::getContent)
                     .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
                     .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
