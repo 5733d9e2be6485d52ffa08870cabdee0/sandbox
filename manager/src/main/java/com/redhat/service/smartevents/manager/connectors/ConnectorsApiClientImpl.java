@@ -145,7 +145,7 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         }
     }
 
-    void setApiSupplier(Supplier<ConnectorsApi> apiSupplier) {
+    public void setApiSupplier(Supplier<ConnectorsApi> apiSupplier) {
         this.apiSupplier = apiSupplier;
     }
 
