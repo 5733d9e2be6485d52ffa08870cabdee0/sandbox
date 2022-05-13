@@ -36,31 +36,171 @@ objects:
                   cpu: 2
                   memory: 4096Mi
               env:
-                - name: DATABASE_HOST
+                - name: AWS_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_REGION
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_SECRET_ACCESS_KEY
+                - name: EVENT_BRIDGE_DB_HOST
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.host
-                - name: DATABASE_PORT
+                - name: EVENT_BRIDGE_DB_PORT
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.port
-                - name: DATABASE_USERNAME
+                - name: EVENT_BRIDGE_DB_USERNAME
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.user
-                - name: DATABASE_PASSWORD
+                - name: EVENT_BRIDGE_DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.password
-                - name: DATABASE_NAME
+                - name: EVENT_BRIDGE_DB_SCHEMA
                   valueFrom:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.name
+                - name: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
+                - name: EVENT_BRIDGE_KAFKA_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_KAFKA_CLIENT_ID
+                - name: EVENT_BRIDGE_KAFKA_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_KAFKA_CLIENT_SECRET
+                - name: EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST
+                - name: EVENT_BRIDGE_RHOAS_MGMT_API_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_MGMT_API_HOST
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_AUTH_SERVER_URL
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID
+                - name: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET
+                - name: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_AUTH_SERVER_URL
+                - name: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RHOAS_SSO_RED_HAT_CLIENT_ID
+                - name: EVENT_BRIDGE_SSO_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_SSO_CLIENT_ID
+                - name: EVENT_BRIDGE_SSO_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_SSO_URL
+                - name: MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS
+                - name: MANAGED_CONNECTORS_KAFKA_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MANAGED_CONNECTORS_KAFKA_CLIENT_ID
+                - name: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
+                - name: MC_AUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_CLIENT_ID
+                - name: MC_AUTH_OFFLINE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_OFFLINE_TOKEN
+                - name: MC_AUTH_SERVER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_SERVER_URL
+                - name: MC_AUTH_TOKEN_PATH
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_AUTH_TOKEN_PATH
+                - name: MC_CLUSTER_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_CLUSTER_ID
+                - name: MC_NAMESPACE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_NAMESPACE_ID
+                - name: MC_SERVICES_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_SERVICES_URL
+                - name: MC_TOPIC_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: MC_TOPIC_NAME
+                - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: RHOAS_OPS_ACCOUNT_CLIENT_ID
+                - name: SHARD_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: SHARD_ID
               ports:
                 - containerPort: 8080
               livenessProbe:
@@ -94,12 +234,9 @@ parameters:
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
     displayName: the tag of fleet-manager to deploy
-  - name: FLEET_MANAGER_SSO_URL
-    value: "toReplace"
-    displayName: the url to connect to the fleet-manager's SSO
-  - name: FLEET_MANAGER_SSO_CLIENT_ID
-    value: "toReplace"
-    displayName: the client id to connect to the fleet-manager's SSO
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
-    displayName: the client id to connect to the fleet-manager's SSO
+    displayName: the aws rds secret
+  - name: FLEET_MANAGER_SECRET_NAME
+    value: fleet-manager
+    displayName: the fleet-manager vault secret

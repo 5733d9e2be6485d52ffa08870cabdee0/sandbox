@@ -4,11 +4,12 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -17,8 +18,8 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 
 public class Fixtures {
 
-    public static BaseAction createKafkaAction() {
-        BaseAction action = new BaseAction();
+    public static Action createKafkaAction() {
+        Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
@@ -28,17 +29,14 @@ public class Fixtures {
 
     public static Processor createProcessor(Bridge b, ManagedResourceStatus status) {
         Processor p = new Processor();
+        p.setType(ProcessorType.SINK);
         p.setName(TestConstants.DEFAULT_PROCESSOR_NAME);
         p.setStatus(status);
         p.setPublishedAt(ZonedDateTime.now());
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
-
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode objectNode = mapper.createObjectNode();
-        objectNode.put("definitionKey", "definitionValue");
-        p.setDefinition(objectNode);
+        p.setDefinition(new ProcessorDefinition());
 
         return p;
     }
@@ -54,18 +52,27 @@ public class Fixtures {
         return b;
     }
 
-    public static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status) {
-        ConnectorEntity c = new ConnectorEntity();
-        c.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
-        c.setProcessor(p);
-        c.setStatus(status);
-        c.setSubmittedAt(ZonedDateTime.now());
-        c.setPublishedAt(ZonedDateTime.now());
-        c.setDefinition(new TextNode("definition"));
-        c.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
-        c.setConnectorExternalId("connectorExternalId");
+    public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatus status) {
+        return createConnector(p, status, ConnectorType.SOURCE, "test_source_0.1");
+    }
 
-        return c;
+    public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatus status) {
+        return createConnector(p, status, ConnectorType.SINK, "test_sink_0.1");
+    }
+
+    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, ConnectorType type, String connectorTypeId) {
+        ConnectorEntity connector = new ConnectorEntity();
+        connector.setType(type);
+        connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connector.setProcessor(p);
+        connector.setStatus(status);
+        connector.setSubmittedAt(ZonedDateTime.now());
+        connector.setPublishedAt(ZonedDateTime.now());
+        connector.setDefinition(new TextNode("definition"));
+        connector.setTopicName(TestConstants.DEFAULT_KAFKA_TOPIC);
+        connector.setConnectorTypeId(connectorTypeId);
+        connector.setConnectorExternalId("connectorExternalId");
+        return connector;
     }
 
 }

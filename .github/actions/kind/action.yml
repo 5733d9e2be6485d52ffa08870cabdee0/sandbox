@@ -1,5 +1,11 @@
-name: 'Set up KinD'
-description: 'Step to start and configure KinD cluster'
+name: "Set up KinD"
+description: "Step to start and configure KinD cluster"
+
+inputs:
+  kind-node-hostname:
+    description: "Hostname of the main kind node"
+    required: false
+    default: kind-control-plane
 
 runs:
   using: "composite"
@@ -20,3 +26,9 @@ runs:
       run: |
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
         kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+    - name: Add ${{ inputs.kind-node-hostname }} host to machine hosts
+      shell: bash
+      run: echo "127.0.0.1 ${{ inputs.kind-node-hostname }}" | sudo tee -a /etc/hosts
+    # - name: Debug hosts
+    #   shell: bash
+    #   run: cat /etc/hosts

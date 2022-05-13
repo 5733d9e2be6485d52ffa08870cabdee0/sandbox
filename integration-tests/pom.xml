@@ -16,7 +16,7 @@
 
   <properties>
     <parallel>false</parallel>
-    <parallel.concurrency.number>3</parallel.concurrency.number>
+    <parallel.concurrency.number>5</parallel.concurrency.number>
   </properties>
 
   <dependencies>
@@ -72,15 +72,68 @@
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-cucumber6</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
     <plugins>
       <!-- Skip Surefire plugin as this module contains only integration tests. -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <!--
+                Make use of JUnit 5 tags instead
+                See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
+            -->
+            <!--cucumber.filter.tags>${tags}</cucumber.filter.tags-->
+
+            <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
+            <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
+            <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
+            <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
+            <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
+
+            <sonar.exclusion>**/RunCucumberTest.java</sonar.exclusion>
+
+            <!-- Token authorization configuration, usable for local execution, values are taken from https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/blob/main/kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -->
+            <bridge.client.id>kermit</bridge.client.id>
+            <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
+            <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
+
+            <!--Manager and key-cloak url-->
+            <event-bridge.manager.url></event-bridge.manager.url>
+            <keycloak.realm.url></keycloak.realm.url>
+
+            <slack.webhook.url>${env.SLACK_WEBHOOK_URL}</slack.webhook.url>
+            <slack.webhook.token>${env.SLACK_WEBHOOK_TOKEN}</slack.webhook.token>
+            <slack.channel>${env.SLACK_CHANNEL}</slack.channel>
+            <slack.channel.name>mc</slack.channel.name>
+
+            <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
+          </systemProperties>
         </configuration>
       </plugin>
     </plugins>
@@ -104,36 +157,32 @@
             </executions>
             <configuration>
               <includes>
-                <include>**/*Test.java</include>
+                <include>**/RunCucumberTest.java</include>
               </includes>
-              <systemProperties>
-                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                <!--
-                    Make use of JUnit 5 tags instead 
-                    See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
-                -->
-                <!--cucumber.filter.tags>${tags}</cucumber.filter.tags--> 
-                
-                <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
-                <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
-                <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
-                <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
-
-                <!-- Token authorization configuration-->
-                <bridge.client.id>kermit</bridge.client.id>
-                <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
-
-                <!--Manager and key-cloak url-->
-                <event-bridge.manager.url></event-bridge.manager.url>
-                <keycloak.realm.url></keycloak.realm.url>
-
-                <slack.webhook.url>${env.SLACK_WEBHOOK_URL}</slack.webhook.url>
-                <slack.webhook.token>${env.SLACK_WEBHOOK_TOKEN}</slack.webhook.token>
-                <slack.channel>${env.SLACK_CHANNEL}</slack.channel>
-                <slack.channel.name>mc</slack.channel.name>
-
-                <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
-              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>periodical-slack-check</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunPeriodicalSlackActionSuite.java</include>
+              </includes>
             </configuration>
           </plugin>
         </plugins>

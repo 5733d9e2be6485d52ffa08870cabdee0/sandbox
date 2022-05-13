@@ -47,14 +47,14 @@ public class FilterEvaluatorFactoryFEELTest {
 
     @Test
     public void numberInWithTemplate() {
-        String expectedMulti = "if list contains ([2.0, 3.0], data.name) then \"OK\" else \"NOT_OK\"";
+        String expectedMulti = "if list contains ([2.0,3.0], data.name) then \"OK\" else \"NOT_OK\"";
         String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new NumberIn("data.name", Arrays.asList(2d, 3d)));
         assertThat(templateMulti).isEqualTo(expectedMulti);
     }
 
     @Test
     public void stringInWithTemplate() {
-        String expectedMulti = "if list contains ([\"jacopo\", \"rota\"], data.name) then \"OK\" else \"NOT_OK\"";
+        String expectedMulti = "if list contains ([\"jacopo\",\"rota\"], data.name) then \"OK\" else \"NOT_OK\"";
         String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringIn("data.name", Arrays.asList("jacopo", "rota")));
         assertThat(templateMulti).isEqualTo(expectedMulti);
     }

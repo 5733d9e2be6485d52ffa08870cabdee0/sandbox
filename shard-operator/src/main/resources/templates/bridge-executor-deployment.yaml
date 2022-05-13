@@ -26,11 +26,15 @@ spec:
           image: ""
           imagePullPolicy: IfNotPresent
           env:
+            - name: EVENT_BRIDGE_CUSTOMER_ID
+              value: ""
             - name: PROCESSOR_DEFINITION
               value: ""
             - name: WEBHOOK_CLIENT_ID
               value: ""
             - name: WEBHOOK_CLIENT_SECRET
+              value: ""
+            - name: EVENT_BRIDGE_LOGGING_JSON
               value: ""
           envFrom:
             - secretRef:

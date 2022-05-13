@@ -1,11 +1,14 @@
 # Filters
 
 When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` it is possible to specify one or more `Filters` to apply to `Events` sent to your Bridge instance.
-If the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the associated `Processor` are invoked. 
 
-If you do not specify a `Filter` definition for your `Processor`, then your `Processor` will match all `Events` sent to your Bridge Instance.
+For **source processors** (containing a [Source](SOURCES.md)), if the `Filter` you provide matches an `Event` then it is injected in the system.
 
-If there are multiple `Filters` defined for a `Processor`, then all `Filters` must match the `Event` for the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) to be invoked.  
+For **sink processors** (containing an [Action](ACTIONS.md)), if the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the associated `Processor` are invoked.
+
+If you do not specify a `Filter` definition for your `Processor`, then your `Processor` will match all `Events`.
+
+If there are multiple `Filters` defined for a `Processor`, then all `Filters` must match the `Event` in order for the computation to continue.
 
 ## Properties of a Filter
 
@@ -119,9 +122,9 @@ Then an event like
 
 Would evaluate the `Filter` to `true`.
 
-### ValuesIn
+### StringIn
 
-The `ValuesIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
+The `StringIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
 
 Assuming that the `Filter` is the following
 
@@ -130,9 +133,40 @@ Assuming that the `Filter` is the following
 {
   "filters": [
     {
-      "type": "ValuesIn", 
+      "type": "StringIn", 
       "key": "data.any",
-      "values": ["Jac", 2]
+      "values": ["Jac", "opo"]
+    }
+  ]
+}
+```
+
+Then an event like
+```json
+{
+  ...
+  "data": {
+    "any": "Jac"
+  }
+}
+```
+
+Would evaluate the `Filter` to `true`.
+
+### NumberIn
+
+The `NumberIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
+
+Assuming that the `Filter` is the following
+
+```json
+
+{
+  "filters": [
+    {
+      "type": "NumberIn", 
+      "key": "data.any",
+      "values": [3, 2]
     }
   ]
 }
@@ -149,7 +183,6 @@ Then an event like
 ```
 
 Would evaluate the `Filter` to `true`.
-
 
 ## Combining filters
 

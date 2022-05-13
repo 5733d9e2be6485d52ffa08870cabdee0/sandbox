@@ -57,7 +57,8 @@ public class FilterEvaluatorFEELTest {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new NumberIn("source", Arrays.asList(2.2, 3d, 4d))));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2.2))).isTrue();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 3d))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 3.0))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 3))).isTrue();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 4d))).isTrue();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2d))).isFalse();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", 2.22d))).isFalse();
@@ -68,7 +69,7 @@ public class FilterEvaluatorFEELTest {
         FilterEvaluator evaluator = TEMPLATE_FACTORY_FEEL.build(Collections.singleton(new StringIn("source", Arrays.asList("hello", "kekkobar"))));
 
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "kekkobar"))).isTrue();
-        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "jack"))).isTrue();
+        assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "hello"))).isTrue();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "wrong"))).isFalse();
         assertThat(evaluator.evaluateFilters(Collections.singletonMap("source", "kermit"))).isFalse();
     }

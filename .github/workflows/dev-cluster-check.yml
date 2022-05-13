@@ -11,18 +11,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: "dev"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Add mask
         run: |
           echo "::add-mask::${{ secrets.DEV_CLUSTER_MANAGER_URL }}"
-          echo "::add-mask::${{ secrets.DEV_CLUSTER_KEY_CLOAK_URL }}"
-          echo "::add-mask::${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_USERNAME }}"
-          echo "::add-mask::${{ secrets.DEV_CLUSTER_BRIDGE_TOKEN_PASSWORD }}"
+          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_SECRET }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
+          echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
+          echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the dev branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "dev"
       - name: Compile sandbox repo
         uses: ./.github/actions/maven
         with:
@@ -40,11 +51,29 @@ jobs:
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
           working-directory: integration-tests
+      - name: Send mail with link to failing job
+        uses: dawidd6/action-send-mail@v3
+        if: ${{ failure() }}
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.CI_MAIL_USERNAME }}
+          password: ${{ secrets.CI_MAIL_PASSWORD }}
+          subject: Dev cluster CI - Check failed
+          to: openbridge-dev@redhat.com
+          from: Dev cluster CI
+          body: Dev cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml and implement a proper fix.
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
         with:
-          skip_publishing: true
+          skip_publishing: false
           check_name: Test Results
           fail_on_test_failures: true
           fail_if_no_tests: false
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: ./integration-tests/target/cucumber-logs/

@@ -1,0 +1,6 @@
+namespace: event-bridge-prod
+resources:
+- ../../base-openshift
+- secrets
+- observability
+- shard

@@ -1,66 +1,77 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
-
-import javax.inject.Inject;
+import java.util.stream.Stream;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.verification.VerificationMode;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.mockito.ArgumentMatchers.any;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_SOURCE;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_TYPE;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.PLAIN_EVENT_JSON;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createCloudEventString;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithResolvedAction;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithSameAction;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@QuarkusTest
-public class ExecutorServiceTest {
+class ExecutorServiceTest {
 
-    private static final String BRIDGE_ID = "bridgeId";
+    private static final String BROKEN_JSON = "/%=({}[][]";
 
-    @Inject
-    ExecutorsService executorsService;
+    @ParameterizedTest
+    @MethodSource("executorServiceTestArgs")
+    @SuppressWarnings("unchecked")
+    void test(ProcessorDTO processor, String inputEvent, VerificationMode wantedNumberOfOnEventInvocations, URI expectedCloudEventSource, String expectedCloudEventType) {
+        Executor executorMock = mock(Executor.class);
+        when(executorMock.getProcessor()).thenReturn(processor);
 
-    @InjectMock
-    ExecutorsProvider executorsProvider;
+        ExecutorService executorService = new ExecutorService();
+        executorService.executor = executorMock;
+        executorService.mapper = new ObjectMapper();
 
-    Executor executor;
+        Message<String> inputMessage = mock(Message.class);
+        when(inputMessage.getPayload()).thenReturn(inputEvent);
 
-    @BeforeEach
-    public void before() {
-        executor = mock(Executor.class);
+        ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);
 
-        BridgeDTO bridgeDTO = mock(BridgeDTO.class);
-        when(bridgeDTO.getId()).thenReturn(BRIDGE_ID);
+        assertThatNoException().isThrownBy(() -> executorService.processEvent(inputMessage));
+        verify(executorMock, wantedNumberOfOnEventInvocations).onEvent(argumentCaptor.capture());
+        verify(inputMessage).ack();
 
-        ProcessorDTO processorDTO = mock(ProcessorDTO.class);
-        when(processorDTO.getBridgeId()).thenReturn(BRIDGE_ID);
-
-        when(executor.getProcessor()).thenReturn(processorDTO);
-        when(executorsProvider.getExecutor()).thenReturn(executor);
+        if (!argumentCaptor.getAllValues().isEmpty()) {
+            CloudEvent capturedEvent = argumentCaptor.getValue();
+            assertThat(capturedEvent.getSource()).isEqualTo(expectedCloudEventSource);
+            assertThat(capturedEvent.getType()).isEqualTo(expectedCloudEventType);
+        }
     }
 
-    @Test
-    public void handleEvent() {
-        CloudEvent cloudEvent = CloudEventBuilder
-                .v1()
-                .withId("foo")
-                .withSource(URI.create("bar"))
-                .withType("myType")
-                .build();
-
-        executorsService.processBridgeEvent(Message.of(CloudEventUtils.encode(cloudEvent)));
-
-        verify(executor, times(1)).onEvent(any(CloudEvent.class));
+    private static Stream<Arguments> executorServiceTestArgs() {
+        Object[][] arguments = {
+                { createSourceProcessor(), BROKEN_JSON, never(), null, null },
+                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
+                { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null },
+                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null },
+                { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE },
+                { createSinkProcessorWithResolvedAction(), BROKEN_JSON, never(), null, null },
+                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, never(), null, null },
+                { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE }
+        };
+        return Stream.of(arguments).map(Arguments::of);
     }
 }

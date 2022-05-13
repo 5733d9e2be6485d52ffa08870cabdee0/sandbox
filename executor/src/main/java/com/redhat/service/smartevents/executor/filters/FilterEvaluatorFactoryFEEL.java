@@ -27,23 +27,22 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
         return new FilterEvaluatorFEEL(templates);
     }
 
-    protected String getTemplateByFilterType(BaseFilter<?> filter) {
+    protected String getTemplateByFilterType(BaseFilter filter) {
         return String.format(TEMPLATE, getFilterCondition(filter));
     }
 
-    private String getFilterCondition(BaseFilter<?> filter) {
+    private String getFilterCondition(BaseFilter filter) {
         switch (filter.getType()) {
             case StringEquals.FILTER_TYPE_NAME:
                 return String.format("%s = \"%s\"", filter.getKey(), filter.getValue());
             case StringContains.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("(contains (%s, %s))", (StringContains) filter);
+                return getFilterConditionForListValues("(contains (%s, %s))", filter.getKey(), ((StringContains) filter).getValue());
             case StringBeginsWith.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("(starts with (%s, %s))", (StringBeginsWith) filter);
+                return getFilterConditionForListValues("(starts with (%s, %s))", filter.getKey(), ((StringBeginsWith) filter).getValue());
             case NumberIn.FILTER_TYPE_NAME:
             case StringIn.FILTER_TYPE_NAME:
-                //                return String.format("list contains (%s, %s)", filter.getValue(), filter.getKey());
                 try {
-                    return String.format("list contains (%s, %s)", ObjectMapperFactory.get().writeValueAsString(filter.getValue()).replace(",", ", "), filter.getKey());
+                    return String.format("list contains (%s, %s)", ObjectMapperFactory.get().writeValueAsString(filter.getValue()), filter.getKey());
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
@@ -52,12 +51,12 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
         }
     }
 
-    private <T> String getFilterConditionForListValues(String singleFormatTemplate, BaseFilter<List<T>> filter) {
+    private String getFilterConditionForListValues(String singleFormatTemplate, String key, List<?> values) {
         List<String> conditions = new ArrayList<>();
         ObjectMapper objectMapper = ObjectMapperFactory.get();
-        for (T value : filter.getValue()) {
+        for (Object value : values) {
             try {
-                conditions.add(String.format(singleFormatTemplate, filter.getKey(), objectMapper.writeValueAsString(value)));
+                conditions.add(String.format(singleFormatTemplate, key, objectMapper.writeValueAsString(value)));
             } catch (JsonProcessingException e) {
                 throw new IllegalArgumentException("Value " + value + " cannot be converted to string", e);
             }

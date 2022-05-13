@@ -26,7 +26,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
 @TestProfile(WorkerSchedulerProfile.class)
@@ -93,7 +94,8 @@ public class BridgesServiceTest {
         assertThat(retrievedBridge).isNotNull();
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getCustomerId()).isEqualTo(bridge.getCustomerId());
-        assertThat(retrievedBridge.getStatus()).isEqualTo(bridge.getStatus());
+        // Bridges are moved to the PREPARING status by Workers
+        assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(retrievedBridge.getShardId()).isEqualTo(TestConstants.SHARD_ID);
     }
 
@@ -121,7 +123,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(bridge.getEndpoint()).isNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
@@ -136,7 +138,7 @@ public class BridgesServiceTest {
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
 
         // Emulate Shard setting Bridge status to PROVISIONING
         bridge.setStatus(ManagedResourceStatus.PROVISIONING);

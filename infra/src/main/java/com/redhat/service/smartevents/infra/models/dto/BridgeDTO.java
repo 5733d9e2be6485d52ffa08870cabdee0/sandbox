@@ -109,7 +109,7 @@ public class BridgeDTO {
                 ", endpoint='" + endpoint + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", status=" + status + '\'' +
-                ", kafkaConnection=" + kafkaConnection.toString() +
+                ", kafkaConnection=" + kafkaConnection +
                 '}';
     }
 }

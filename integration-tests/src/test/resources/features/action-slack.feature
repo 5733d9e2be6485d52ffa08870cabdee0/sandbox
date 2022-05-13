@@ -39,4 +39,4 @@ Feature: Slack Action tests
     }
     """
 
-    Then Slack channel contains message with text "${bridge.mybridge.cloud-event.my-id.id}" within 1 minute
+    Then Slack channel contains message with text "${cloud-event.my-id.id}" within 1 minute

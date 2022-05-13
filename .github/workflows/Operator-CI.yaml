@@ -9,6 +9,8 @@ jobs:
   event-bridge-build:
     env:
       NAMESPACE: mynamespace
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -24,6 +26,8 @@ jobs:
           cache-key-prefix: ${{ runner.os }}
       - name: Set up KinD
         uses: ./.github/actions/kind
+        with:
+          kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
         # Tests are executed in different PR check, we just need all artifacts in repository
       - name: Build complete repo
         uses: ./.github/actions/maven
@@ -55,6 +59,8 @@ jobs:
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
           # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_INGRESS_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml

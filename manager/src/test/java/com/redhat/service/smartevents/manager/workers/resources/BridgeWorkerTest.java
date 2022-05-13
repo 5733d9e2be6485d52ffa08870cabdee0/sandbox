@@ -102,8 +102,8 @@ public class BridgeWorkerTest {
         return Stream.of(
                 Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false, true),
                 Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, false),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.READY, false, true),
-                Arguments.of(ManagedResourceStatus.PROVISIONING, ManagedResourceStatus.PROVISIONING, true, false));
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, false, true),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, true, false));
     }
 
     @Transactional

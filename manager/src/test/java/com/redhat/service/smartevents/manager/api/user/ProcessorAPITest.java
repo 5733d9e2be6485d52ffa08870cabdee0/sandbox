@@ -15,12 +15,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.filters.StringIn;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
@@ -172,10 +172,10 @@ public class ProcessorAPITest {
     }
 
     private void assertRequestedAction(ProcessorResponse processorResponse) {
-        BaseAction baseAction = processorResponse.getAction();
-        assertThat(baseAction).isNotNull();
-        assertThat(baseAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(baseAction.getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
+        Action action = processorResponse.getAction();
+        assertThat(action).isNotNull();
+        assertThat(action.getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(action.getParameters().get(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -241,7 +241,7 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_unrecognisedActionType() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
+        Action action = TestUtils.createKafkaAction();
         action.setType("thisDoesNotExist");
 
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -257,7 +257,7 @@ public class ProcessorAPITest {
     public void addProcessorToBridge_missingActionParameters() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
+        Action action = TestUtils.createKafkaAction();
         action.getParameters().clear();
         action.getParameters().put("thisIsNotCorrect", "myTopic");
 
@@ -302,7 +302,7 @@ public class ProcessorAPITest {
     public void addProcessorWithEmptyChannelParameterToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
+        Action action = TestUtils.createKafkaAction();
         action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "");
@@ -318,7 +318,7 @@ public class ProcessorAPITest {
     public void addProcessorWithEmptyWebhookURLParameterToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        BaseAction action = TestUtils.createKafkaAction();
+        Action action = TestUtils.createKafkaAction();
         action.setType(SlackAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "channel");
@@ -520,7 +520,7 @@ public class ProcessorAPITest {
 
         assertThat(updated.getName()).isEqualTo("myProcessor");
         assertThat(updated.getFilters().size()).isEqualTo(1);
-        BaseFilter<?> updatedFilter = updated.getFilters().iterator().next();
+        BaseFilter updatedFilter = updated.getFilters().iterator().next();
         assertThat(updatedFilter.getKey()).isEqualTo("key");
         assertThat(updatedFilter.getValue()).isEqualTo("value");
         assertThat(updated.getTransformationTemplate()).isEqualTo("template-updated");

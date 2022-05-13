@@ -4,8 +4,9 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public class ProcessorDefinition {
 
@@ -16,22 +17,32 @@ public class ProcessorDefinition {
     private String transformationTemplate;
 
     @JsonProperty("requestedAction")
-    private BaseAction requestedAction;
+    private Action requestedAction;
+
+    @JsonProperty("requestedSource")
+    private Source requestedSource;
 
     @JsonProperty("resolvedAction")
-    private BaseAction resolvedAction;
+    private Action resolvedAction;
 
     public ProcessorDefinition() {
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction requestedAction) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction) {
         this(filters, transformationTemplate, requestedAction, requestedAction);
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, BaseAction requestedAction, BaseAction resolvedAction) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction, Action resolvedAction) {
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
         this.requestedAction = requestedAction;
+        this.resolvedAction = resolvedAction;
+    }
+
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Source requestedSource, Action resolvedAction) {
+        this.filters = filters;
+        this.transformationTemplate = transformationTemplate;
+        this.requestedSource = requestedSource;
         this.resolvedAction = resolvedAction;
     }
 
@@ -51,19 +62,27 @@ public class ProcessorDefinition {
         this.transformationTemplate = transformationTemplate;
     }
 
-    public BaseAction getRequestedAction() {
+    public Action getRequestedAction() {
         return requestedAction;
     }
 
-    public void setRequestedAction(BaseAction requestedAction) {
+    public void setRequestedAction(Action requestedAction) {
         this.requestedAction = requestedAction;
     }
 
-    public BaseAction getResolvedAction() {
+    public Source getRequestedSource() {
+        return requestedSource;
+    }
+
+    public void setRequestedSource(Source requestedSource) {
+        this.requestedSource = requestedSource;
+    }
+
+    public Action getResolvedAction() {
         return resolvedAction;
     }
 
-    public void setResolvedAction(BaseAction resolvedAction) {
+    public void setResolvedAction(Action resolvedAction) {
         this.resolvedAction = resolvedAction;
     }
 
@@ -77,11 +96,11 @@ public class ProcessorDefinition {
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
         return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(resolvedAction, that.resolvedAction);
+                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, resolvedAction);
+        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
     }
 }

@@ -5,15 +5,17 @@ import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import com.redhat.service.smartevents.infra.models.actions.BaseAction;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.actions.ActionValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
-public class WebhookActionValidator implements WebhookAction, ActionValidator {
+public class WebhookActionValidator implements WebhookAction, GatewayValidator<Action> {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
+    public static final String BASIC_AUTH_CONFIGURATION_MESSAGE = "Basic authentication configuration error. " +
+            "\"" + BASIC_AUTH_USERNAME_PARAM + "\" and \"" + BASIC_AUTH_PASSWORD_PARAM + "\" must be both present and non empty.";
     public static final String INVALID_PROTOCOL_MESSAGE = "The \"endpoint\" protocol must be either \"http\" or \"https\"";
     public static final String RESERVED_ATTRIBUTES_USAGE_MESSAGE = "Some reserved parameters have been added to the request.";
 
@@ -21,18 +23,28 @@ public class WebhookActionValidator implements WebhookAction, ActionValidator {
     private static final String PROTOCOL_HTTPS = "https";
 
     @Override
-    public ValidationResult isValid(BaseAction baseAction) {
-        if (baseAction.getParameters() == null) {
+    public ValidationResult isValid(Action action) {
+        if (action.getParameters() == null) {
             return ValidationResult.invalid();
         }
 
-        String endpoint = baseAction.getParameters().get(ENDPOINT_PARAM);
+        String endpoint = action.getParameters().get(ENDPOINT_PARAM);
         if (endpoint == null || endpoint.isEmpty()) {
             return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
         }
 
-        if (baseAction.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
+        if (action.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
             return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
+        }
+
+        if (action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && !action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)
+                || !action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)) {
+            return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
+        }
+
+        if (action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)
+                && (action.getParameters().get(BASIC_AUTH_USERNAME_PARAM).isEmpty() || action.getParameters().get(BASIC_AUTH_PASSWORD_PARAM).isEmpty())) {
+            return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
         }
 
         URL endpointUrl;

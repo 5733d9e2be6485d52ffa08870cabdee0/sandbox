@@ -5,9 +5,8 @@
 
   <parent>
     <groupId>com.redhat.service.smartevents</groupId>
-    <artifactId>build-parent</artifactId>
+    <artifactId>processor</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../../build-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>processor-runtime</artifactId>
@@ -46,8 +45,43 @@
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>test-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>agent-java-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.reportportal</groupId>
+      <artifactId>logger-java-log4j</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
+  <build>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/filtered-resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+        <configuration>
+        <properties>
+          <configurationParameters>
+            junit.jupiter.extensions.autodetection.enabled = true
+          </configurationParameters>
+        </properties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
