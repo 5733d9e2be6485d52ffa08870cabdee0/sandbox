@@ -5,12 +5,12 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import org.awaitility.Awaitility;
 
 import com.redhat.service.smartevents.integration.tests.common.ChronoUnitConverter;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
