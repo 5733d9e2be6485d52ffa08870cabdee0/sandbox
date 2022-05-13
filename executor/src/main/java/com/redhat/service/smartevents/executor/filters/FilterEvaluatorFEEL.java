@@ -18,8 +18,6 @@ public class FilterEvaluatorFEEL implements FilterEvaluator {
     public boolean evaluateFilters(Map<String, Object> data) {
         if (templates != null) {
             for (String template : templates) {
-                System.out.println(template);
-                System.out.println(data);
                 Object result = feel.evaluate(template, data);
                 if (!result.equals(FilterEvaluatorFactoryFEEL.IS_VALID)) {
                     return false;
