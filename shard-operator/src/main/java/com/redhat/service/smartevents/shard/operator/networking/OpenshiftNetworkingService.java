@@ -37,7 +37,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress) {
+    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Route expected = buildRoute(bridgeIngress, service);
 
@@ -51,9 +51,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
                     .inNamespace(service.getMetadata().getNamespace())
                     .withName(bridgeIngress.getMetadata().getName())
                     .createOrReplace(expected);
-            return buildNetworkingResource(expected);
+            return buildNetworkingResource(expected, path);
         }
-        return buildNetworkingResource(existing);
+        return buildNetworkingResource(existing, path);
     }
 
     @Override
@@ -87,11 +87,11 @@ public class OpenshiftNetworkingService implements NetworkingService {
         return client.config().ingresses().withName(CLUSTER_DOMAIN_RESOURCE_NAME).get().getSpec().getDomain();
     }
 
-    private NetworkResource buildNetworkingResource(Route route) {
+    private NetworkResource buildNetworkingResource(Route route, String path) {
         if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
             String endpoint = route.getSpec().getHost();
             endpoint = route.getSpec().getTls() != null ? NetworkingConstants.HTTPS_SCHEME + endpoint : NetworkingConstants.HTTP_SCHEME + endpoint;
-            endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
+            endpoint = endpoint + path;
             return new NetworkResource(endpoint, true);
         }
 

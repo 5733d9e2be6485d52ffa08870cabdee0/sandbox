@@ -6,7 +6,7 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public interface NetworkingService {
 
-    NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress);
+    NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, String path);
 
     EventSource buildInformerEventSource(String component);
 

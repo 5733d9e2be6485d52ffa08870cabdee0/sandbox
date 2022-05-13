@@ -51,9 +51,9 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress) {
+    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
-        Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort());
+        Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
         Ingress existing = client.network().v1().ingresses()
                 .inNamespace(service.getMetadata().getNamespace())
@@ -86,7 +86,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         }
     }
 
-    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port) {
+    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port, String path) {
         Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
         ingress.getMetadata().setNamespace(service.getMetadata().getNamespace()); // TODO: refactor
         ingress.getMetadata().setName(bridgeIngress.getMetadata().getName()); // TODO: refactor
@@ -101,7 +101,7 @@ public class KubernetesNetworkingService implements NetworkingService {
 
         HTTPIngressPath httpIngressPath = new HTTPIngressPathBuilder()
                 .withBackend(ingressBackend)
-                .withPath("/" + bridgeIngress.getMetadata().getNamespace() + "/" + bridgeIngress.getMetadata().getName())
+                .withPath(path)
                 .withPathType("Exact")
                 .build();
 
@@ -132,7 +132,6 @@ public class KubernetesNetworkingService implements NetworkingService {
             host = Optional.ofNullable(System.getenv("INGRESS_OVERRIDE_HOSTNAME")).orElse(ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname());
         }
         String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath();//.replace(PATH_REGEX, "");
-        endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
         return new NetworkResource(endpoint, true);
     }
 }
