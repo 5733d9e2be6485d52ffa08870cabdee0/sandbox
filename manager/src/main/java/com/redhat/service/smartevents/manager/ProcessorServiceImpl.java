@@ -218,17 +218,25 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
                     processorDTO.getCustomerId()));
         }
-        p.setStatus(processorDTO.getStatus());
 
-        if (processorDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
+        if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {
+            p.setStatus(ManagedResourceStatus.DELETED);
             processorDAO.deleteById(processorDTO.getId());
             metricsService.onOperationComplete(p, MetricsOperation.DELETE);
-        } else if (processorDTO.getStatus().equals(ManagedResourceStatus.READY)) {
-            if (p.getPublishedAt() == null) {
-                p.setPublishedAt(ZonedDateTime.now());
-                metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
-            } else if (p.getModifiedAt() != null) {
-                metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
+            return p;
+        }
+
+        boolean provisioningCallback = p.getStatus() == ManagedResourceStatus.PROVISIONING;
+        p.setStatus(processorDTO.getStatus());
+
+        if (ManagedResourceStatus.READY == processorDTO.getStatus()) {
+            if (provisioningCallback) {
+                if (p.getPublishedAt() == null) {
+                    p.setPublishedAt(ZonedDateTime.now());
+                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
+                } else {
+                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
+                }
             }
         }
 
@@ -261,7 +269,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
-        processor.setDeletedAt(ZonedDateTime.now());
+        processor.setDeletionRequestedAt(ZonedDateTime.now());
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);

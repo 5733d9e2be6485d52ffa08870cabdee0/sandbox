@@ -130,7 +130,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge deletion and related Work creation should always be in the same transaction
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
-        bridge.setDeletedAt(ZonedDateTime.now());
+        bridge.setDeletionRequestedAt(ZonedDateTime.now());
         workManager.schedule(bridge);
         metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
 

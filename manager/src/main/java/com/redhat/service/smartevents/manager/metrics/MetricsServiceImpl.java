@@ -78,7 +78,7 @@ public class MetricsServiceImpl implements MetricsService {
             case MODIFY:
                 return Duration.between(managedResource.getModifiedAt(), ZonedDateTime.now());
             case DELETE:
-                return Duration.between(managedResource.getDeletedAt(), ZonedDateTime.now());
+                return Duration.between(managedResource.getDeletionRequestedAt(), ZonedDateTime.now());
             default:
                 throw new IllegalStateException(String.format("Unable to calculate operation duration for MetricsOperation '%s'", operation));
         }

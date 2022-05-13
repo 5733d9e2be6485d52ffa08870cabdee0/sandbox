@@ -14,3 +14,5 @@ Feature: Bridge tests
 
     And the Manager metric 'managed_services_api_rhose_operation_success_count_total{operation="provision",resource="bridge",}' count is at least 1
     And the Manager metric 'managed_services_api_rhose_operation_success_count_total{operation="delete",resource="bridge",}' count is at least 1
+    And the Manager metric 'managed_services_api_rhose_operation_count_total{operation="provision",resource="bridge",}' count is at least 1
+    And the Manager metric 'managed_services_api_rhose_operation_count_total{operation="delete",resource="bridge",}' count is at least 1

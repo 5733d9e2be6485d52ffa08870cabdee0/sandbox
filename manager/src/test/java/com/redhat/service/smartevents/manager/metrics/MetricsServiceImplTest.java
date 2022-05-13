@@ -85,7 +85,7 @@ public class MetricsServiceImplTest {
         bridge.setSubmittedAt(ZonedDateTime.now().minusMinutes(4));
         bridge.setPublishedAt(ZonedDateTime.now().minusMinutes(3));
         bridge.setModifiedAt(ZonedDateTime.now().minusMinutes(3));
-        bridge.setDeletedAt(ZonedDateTime.now().minusMinutes(1));
+        bridge.setDeletionRequestedAt(ZonedDateTime.now().minusMinutes(1));
         bridge.setStatus(status);
 
         metricsService.onOperationComplete(bridge, metricsOperation);
@@ -104,7 +104,7 @@ public class MetricsServiceImplTest {
         processor.setSubmittedAt(ZonedDateTime.now().minusMinutes(4));
         processor.setPublishedAt(ZonedDateTime.now().minusMinutes(3));
         processor.setModifiedAt(ZonedDateTime.now().minusMinutes(2));
-        processor.setDeletedAt(ZonedDateTime.now().minusMinutes(1));
+        processor.setDeletionRequestedAt(ZonedDateTime.now().minusMinutes(1));
 
         metricsService.onOperationComplete(processor, metricsOperation);
 
