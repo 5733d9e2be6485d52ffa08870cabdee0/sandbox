@@ -16,6 +16,8 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
@@ -49,6 +51,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Inject
     ManagerClient managerClient;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     @Override
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
@@ -94,7 +99,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public void createOrUpdateBridgeIngressSecret(BridgeIngress bridgeIngress, BridgeDTO bridgeDTO) {
-        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress);
+        Secret expected = templateProvider.loadBridgeIngressSecretTemplate(bridgeIngress, TemplateImportConfig.withAll());
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET,
                 Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getBootstrapServers().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientId().getBytes()));
@@ -130,10 +135,10 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret) {
-        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(bridgeIngress);
+        ConfigMap expected = templateProvider.loadBridgeIngressConfigMapTemplate(bridgeIngress, TemplateImportConfig.withAll());
 
-        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP, "1"); // TODO: move to constant or to DTO
-        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP, "3"); // TODO: move to constant or to DTO
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP); // TODO: move to DTO?
+        expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP, GlobalConfigurationsConstants.KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP); // TODO: move to DTO?
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP,
                 new String(Base64.getDecoder().decode(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET))));
         expected.getData().replace(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP, secret.getMetadata().getName());
@@ -160,10 +165,11 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap) {
-        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(bridgeIngress);
+        KnativeBroker expected = templateProvider.loadBridgeIngressBrokerTemplate(bridgeIngress, TemplateImportConfig.withAll());
         expected.getSpec().getConfig().setName(configMap.getMetadata().getName());
         expected.getSpec().getConfig().setNamespace(configMap.getMetadata().getNamespace());
-        expected.getMetadata().getAnnotations().replace("x-kafka.eventing.knative.dev/external.topic", configMap.getData().get("topic.name"));
+        expected.getMetadata().getAnnotations().replace(GlobalConfigurationsConstants.KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME,
+                configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP));
 
         KnativeBroker existing = kubernetesClient.resources(KnativeBroker.class)
                 .inNamespace(bridgeIngress.getMetadata().getNamespace())
@@ -193,7 +199,14 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     @Override
     public AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path) {
-        AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress);
+        AuthorizationPolicy expected = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(bridgeIngress,
+                new TemplateImportConfig().withNameFromParent());
+        /**
+         * https://github.com/istio/istio/issues/37221
+         * In addition to that, we can not set the owner references as it is not in the same namespace of the bridgeIngress.
+         */
+        expected.getMetadata().setNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+
         expected.getSpec().setAction("ALLOW");
         expected.getSpec().getRules().forEach(x -> x.getTo().get(0).getOperation().getPaths().set(0, path));
 
@@ -206,14 +219,14 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getSpec().getRules().get(1).setWhen(Collections.singletonList(serviceAccountsAuthPolicy));
 
         AuthorizationPolicy existing = kubernetesClient.resources(AuthorizationPolicy.class)
-                .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
             return kubernetesClient
                     .resources(AuthorizationPolicy.class)
-                    .inNamespace("istio-system") // https://github.com/istio/istio/issues/37221
+                    .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
                     .withName(bridgeIngress.getMetadata().getName())
                     .createOrReplace(expected);
         }

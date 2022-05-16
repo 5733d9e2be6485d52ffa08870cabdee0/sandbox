@@ -107,7 +107,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Nothing to check for Authorization Policy
 
-        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, path);
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());

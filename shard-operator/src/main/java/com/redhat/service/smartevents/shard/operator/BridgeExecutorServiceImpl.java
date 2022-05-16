@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -86,7 +87,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public Deployment fetchOrCreateBridgeExecutorDeployment(BridgeExecutor bridgeExecutor, Secret secret) {
-        Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor);
+        Deployment expected = templateProvider.loadBridgeExecutorDeploymentTemplate(bridgeExecutor, TemplateImportConfig.withAll());
 
         // Specs
         expected.getSpec().getSelector().setMatchLabels(new LabelsBuilder().withAppInstance(bridgeExecutor.getMetadata().getName()).build());
@@ -122,7 +123,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
-        Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor);
+        Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor, TemplateImportConfig.withAll());
         // Specs
         expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 
@@ -155,7 +156,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void createOrUpdateBridgeExecutorSecret(BridgeExecutor bridgeExecutor, ProcessorDTO processorDTO) {
-        Secret expected = templateProvider.loadBridgeExecutorSecretTemplate(bridgeExecutor);
+        Secret expected = templateProvider.loadBridgeExecutorSecretTemplate(bridgeExecutor, TemplateImportConfig.withAll());
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getBootstrapServers().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getClientId().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getClientSecret().getBytes()));

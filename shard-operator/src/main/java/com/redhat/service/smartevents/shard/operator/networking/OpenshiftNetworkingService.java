@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -37,7 +38,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Route expected = buildRoute(bridgeIngress, service);
 
@@ -67,10 +68,13 @@ public class OpenshiftNetworkingService implements NetworkingService {
     }
 
     private Route buildRoute(BridgeIngress bridgeIngress, Service service) {
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress);
-        route.getMetadata().setNamespace(service.getMetadata().getNamespace()); // TODO: refactor
-        route.getMetadata().setName(bridgeIngress.getMetadata().getName()); // TODO: refactor
-        route.getMetadata().setOwnerReferences(null); // TODO: refactor
+        /**
+         * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
+         */
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress,
+                new TemplateImportConfig()
+                        .withNameFromParent()
+                        .withNamespaceFromParent());
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
         route.getSpec().setHost(String.format("%s.%s", bridgeIngress.getMetadata().getName(), getOpenshiftAppsDomain()));

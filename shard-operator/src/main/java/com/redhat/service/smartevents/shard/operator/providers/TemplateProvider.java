@@ -15,23 +15,23 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 
 public interface TemplateProvider {
-    Secret loadBridgeExecutorSecretTemplate(BridgeExecutor bridgeExecutor);
+    Secret loadBridgeExecutorSecretTemplate(BridgeExecutor bridgeExecutor, TemplateImportConfig config);
 
-    Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor);
+    Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor, TemplateImportConfig config);
 
-    Service loadBridgeExecutorServiceTemplate(BridgeExecutor bridgeExecutor);
+    Service loadBridgeExecutorServiceTemplate(BridgeExecutor bridgeExecutor, TemplateImportConfig config);
 
-    Route loadBridgeIngressOpenshiftRouteTemplate(BridgeIngress bridgeIngress);
+    Route loadBridgeIngressOpenshiftRouteTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
-    Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress);
+    Ingress loadBridgeIngressKubernetesIngressTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
-    ServiceMonitor loadServiceMonitorTemplate(CustomResource resource);
+    ServiceMonitor loadServiceMonitorTemplate(CustomResource resource, TemplateImportConfig config);
 
-    Secret loadBridgeIngressSecretTemplate(BridgeIngress bridgeIngress);
+    Secret loadBridgeIngressSecretTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
-    ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress);
+    ConfigMap loadBridgeIngressConfigMapTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
-    KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress);
+    KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
-    AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress);
+    AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 }

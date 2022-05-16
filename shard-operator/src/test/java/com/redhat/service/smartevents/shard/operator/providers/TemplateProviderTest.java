@@ -44,7 +44,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeExecutorDeploymentTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR);
+        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withAll());
 
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -56,7 +56,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeExecutorServiceTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR);
+        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withAll());
 
         assertOwnerReference(BRIDGE_EXECUTOR, service.getMetadata());
         assertLabels(service.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -72,7 +72,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS);
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, new TemplateImportConfig().withNameFromParent().withNamespaceFromParent());
 
         assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
@@ -83,7 +83,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, new TemplateImportConfig().withNameFromParent().withNamespaceFromParent());
 
         assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
         assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);

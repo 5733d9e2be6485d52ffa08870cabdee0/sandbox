@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -51,7 +52,7 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
@@ -87,10 +88,12 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port, String path) {
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
-        ingress.getMetadata().setNamespace(service.getMetadata().getNamespace()); // TODO: refactor
-        ingress.getMetadata().setName(bridgeIngress.getMetadata().getName()); // TODO: refactor
-        ingress.getMetadata().setOwnerReferences(null); // TODO: refactor
+        /**
+         * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
+         */
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig()
+                .withNameFromParent()
+                .withNamespaceFromParent());
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
