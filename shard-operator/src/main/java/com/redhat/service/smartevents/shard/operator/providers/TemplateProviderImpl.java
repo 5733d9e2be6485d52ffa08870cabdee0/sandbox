@@ -118,12 +118,8 @@ public class TemplateProviderImpl implements TemplateProvider {
 
     private void updateMetadata(CustomResource resource, ObjectMeta meta, TemplateImportConfig config) {
         // Name and namespace
-        if (config.isNameToBeSet()) {
-            meta.setName(resource.getMetadata().getName());
-        }
-        if (config.isNamespaceToBeSet()) {
-            meta.setNamespace(resource.getMetadata().getNamespace());
-        }
+        meta.setName(config.isNameToBeSet() ? resource.getMetadata().getName() : null);
+        meta.setNamespace(config.isNamespaceToBeSet() ? resource.getMetadata().getNamespace() : null);
 
         // Owner reference
         if (config.isOwnerReferencesToBeSet()) {
@@ -131,6 +127,8 @@ public class TemplateProviderImpl implements TemplateProvider {
             meta.getOwnerReferences().get(0).setName(resource.getMetadata().getName());
             meta.getOwnerReferences().get(0).setApiVersion(resource.getApiVersion());
             meta.getOwnerReferences().get(0).setUid(resource.getMetadata().getUid());
+        } else {
+            meta.setOwnerReferences(null);
         }
     }
 }

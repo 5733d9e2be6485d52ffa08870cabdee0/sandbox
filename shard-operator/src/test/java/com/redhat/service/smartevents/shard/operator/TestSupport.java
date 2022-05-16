@@ -19,7 +19,6 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 public class TestSupport {
 
     public static final String CUSTOMER_ID = "myCustomer";
-    public static final String INGRESS_IMAGE = "openbridge/ingress:latest";
     public static final String EXECUTOR_IMAGE = "openbridge/executor:latest";
     public static final String BRIDGE_ID = "my-id";
     public static final String BRIDGE_NAME = "my-name";

@@ -105,7 +105,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         HTTPIngressPath httpIngressPath = new HTTPIngressPathBuilder()
                 .withBackend(ingressBackend)
                 .withPath(path)
-                .withPathType("Exact")
+                .withPathType(NetworkingConstants.K8S_INGRESS_PATH_TYPE)
                 .build();
 
         IngressRule ingressRule = new IngressRuleBuilder()

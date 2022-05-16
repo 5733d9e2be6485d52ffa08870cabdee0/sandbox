@@ -8,9 +8,9 @@ public class TemplateImportConfig {
     public TemplateImportConfig() {
     }
 
-    public TemplateImportConfig(boolean nameToBeLinked, boolean withLinkNamespace, boolean ownerReferencesToBeSet) {
-        this.nameToBeSet = nameToBeLinked;
-        this.namespaceToBeSet = withLinkNamespace;
+    public TemplateImportConfig(boolean nameToBeSet, boolean namespaceToBeSet, boolean ownerReferencesToBeSet) {
+        this.nameToBeSet = nameToBeSet;
+        this.namespaceToBeSet = namespaceToBeSet;
         this.ownerReferencesToBeSet = ownerReferencesToBeSet;
     }
 
@@ -20,12 +20,12 @@ public class TemplateImportConfig {
     }
 
     public TemplateImportConfig withNamespaceFromParent() {
-        this.nameToBeSet = true;
+        this.namespaceToBeSet = true;
         return this;
     }
 
     public TemplateImportConfig withOwnerReferencesFromParent() {
-        this.nameToBeSet = true;
+        this.ownerReferencesToBeSet = true;
         return this;
     }
 
