@@ -7,7 +7,6 @@ import java.util.Collections;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +33,6 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
 
-    @ConfigProperty(name = "event-bridge.ingress.image")
-    String ingressImage;
-
     @Inject
     KubernetesClient kubernetesClient;
 
@@ -59,7 +55,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     public void createBridgeIngress(BridgeDTO bridgeDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(bridgeDTO.getCustomerId());
 
-        BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName(), ingressImage);
+        BridgeIngress expected = BridgeIngress.fromDTO(bridgeDTO, namespace.getMetadata().getName());
 
         BridgeIngress existing = kubernetesClient
                 .resources(BridgeIngress.class)
@@ -85,7 +81,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 kubernetesClient
                         .resources(BridgeIngress.class)
                         .inNamespace(namespace)
-                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace, ingressImage));
+                        .delete(BridgeIngress.fromDTO(bridgeDTO, namespace));
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());

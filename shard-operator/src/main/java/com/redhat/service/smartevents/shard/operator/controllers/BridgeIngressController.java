@@ -166,7 +166,6 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return null;
         }
         try {
-            LOGGER.info(broker.getStatus().getAddress().getUrl());
             return new URL(broker.getStatus().getAddress().getUrl()).getPath();
         } catch (MalformedURLException e) {
             LOGGER.info("Could not extract URL of the broker of BridgeIngress '{}'", broker.getMetadata().getName());

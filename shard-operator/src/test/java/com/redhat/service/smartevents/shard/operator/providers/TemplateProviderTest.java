@@ -25,7 +25,6 @@ public class TemplateProviderTest {
     private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
             .withBridgeName("id")
             .withNamespace("ns")
-            .withImageName("image:latest")
             .withBridgeId("12345")
             .withCustomerId("12456")
             .build();

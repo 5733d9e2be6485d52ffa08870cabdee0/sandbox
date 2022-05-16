@@ -4,8 +4,8 @@ data:
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
   EVENT_BRIDGE_SSO_URL: https://sso.redhat.com/auth/realms/redhat-external
-  EVENT_BRIDGE_ISTIO_BROKER_NAME: istio-ingressgateway
-  EVENT_BRIDGE_ISTIO_NAMESPACE: istio-system
+  EVENT_BRIDGE_ISTIO_GATEWAY_NAME: istio-ingressgateway
+  EVENT_BRIDGE_ISTIO_GATEWAY_NAMESPACE: istio-system
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config

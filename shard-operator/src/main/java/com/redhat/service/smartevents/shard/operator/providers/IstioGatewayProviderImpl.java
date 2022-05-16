@@ -29,10 +29,10 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
 
     private Integer gatewayServiceHttp2Port;
 
-    @ConfigProperty(name = "event-bridge.istio.broker.name")
+    @ConfigProperty(name = "event-bridge.istio.gateway.name")
     Optional<String> name;
 
-    @ConfigProperty(name = "event-bridge.istio.broker.namespace")
+    @ConfigProperty(name = "event-bridge.istio.gateway.namespace")
     Optional<String> namespace;
 
     @Inject
@@ -43,7 +43,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
 
     void setup(@Observes StartupEvent event) {
         if (name.isEmpty() || namespace.isEmpty()) {
-            exit("'event-bridge.istio.broker.name' and 'event-bridge.istio.broker.namespace' config property must be set on k8s platform.");
+            exit("'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform.");
         }
 
         if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {

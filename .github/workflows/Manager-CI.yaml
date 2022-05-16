@@ -61,6 +61,7 @@ jobs:
       - name: Use built Ingress and Executor images
         run: |
           sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
         working-directory: kustomize
       - name: Configure correct Keycloak endpoints for Fleet manager and operator
         run: |

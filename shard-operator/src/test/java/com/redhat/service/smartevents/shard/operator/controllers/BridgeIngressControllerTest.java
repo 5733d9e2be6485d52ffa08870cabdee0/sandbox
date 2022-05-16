@@ -123,7 +123,6 @@ public class BridgeIngressControllerTest {
         return BridgeIngress.fromBuilder()
                 .withBridgeId(TestSupport.BRIDGE_ID)
                 .withBridgeName(TestSupport.BRIDGE_NAME)
-                .withImageName(TestSupport.INGRESS_IMAGE)
                 .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .build();
