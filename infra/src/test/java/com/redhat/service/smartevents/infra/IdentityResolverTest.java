@@ -56,25 +56,25 @@ public class IdentityResolverTest {
     @Test
     public void testOrganisationIdResolver_resolveWithUserToken() {
         JsonWebToken jwt = mock(JsonWebToken.class);
-        when(jwt.getClaim(eq(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(ORGANISATION_ID);
-        when(jwt.containsClaim(eq(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
         assertThat(identityResolver.resolveOrganisationId(jwt)).isEqualTo(ORGANISATION_ID);
     }
 
     @Test
     public void testOrganisationIdResolver_resolveWithServiceAccountToken() {
         JsonWebToken jwt = mock(JsonWebToken.class);
-        when(jwt.containsClaim(eq(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(false);
-        when(jwt.containsClaim(eq(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(true);
-        when(jwt.getClaim(eq(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(ORGANISATION_ID);
         assertThat(identityResolver.resolveOrganisationId(jwt)).isEqualTo(ORGANISATION_ID);
     }
 
     @Test
     public void testValidTokenWithoutOrganisationIdClaims() {
         JsonWebToken jwt = mock(JsonWebToken.class);
-        when(jwt.containsClaim(eq(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(false);
-        when(jwt.containsClaim(eq(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(false);
         assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
     }
 }
