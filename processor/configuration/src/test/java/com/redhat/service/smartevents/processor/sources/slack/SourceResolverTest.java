@@ -1,4 +1,6 @@
-package com.redhat.service.smartevents.processor.sources.aws;
+package com.redhat.service.smartevents.processor.sources.slack;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -11,10 +13,13 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.sources.SourceResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.processor.sources.slack.SlackSource.CHANNEL_PARAM;
+import static com.redhat.service.smartevents.processor.sources.slack.SlackSource.TOKEN_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -25,7 +30,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class AwsSqsSourceResolverTest {
+class SourceResolverTest {
 
     private static final String CUSTOMER_ID = "test-customer";
     private static final String BRIDGE_ID = "br-01";
@@ -35,7 +40,7 @@ class AwsSqsSourceResolverTest {
     private static final String PROCESSOR_ID = "pr-01";
 
     @Inject
-    AwsSqsSourceResolver resolver;
+    SourceResolver resolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
@@ -52,8 +57,8 @@ class AwsSqsSourceResolverTest {
     }
 
     @Test
-    void testActionWithBridgeId() {
-        Source inputSource = createAwsSqsSource();
+    void testActionWithoutBridgeId() {
+        Source inputSource = createSlackSource();
         Action resolvedAction = resolver.resolve(inputSource, CUSTOMER_ID, BRIDGE_ID, PROCESSOR_ID);
 
         assertThat(resolvedAction).isNotNull();
@@ -63,15 +68,16 @@ class AwsSqsSourceResolverTest {
     }
 
     @Test
-    void testActionWithOtherBridgeId() {
-        Source inputSource = createAwsSqsSource();
+    void testActionWithoutOtherBridgeId() {
+        Source inputSource = createSlackSource();
         assertThatExceptionOfType(GatewayProviderException.class)
                 .isThrownBy(() -> resolver.resolve(inputSource, CUSTOMER_ID, OTHER_BRIDGE_ID, PROCESSOR_ID));
     }
 
-    private Source createAwsSqsSource() {
+    private Source createSlackSource() {
         Source source = new Source();
-        source.setType(AwsSqsSource.TYPE);
+        source.setType(SlackSource.TYPE);
+        source.setParameters(Map.of(CHANNEL_PARAM, "channel", TOKEN_PARAM, "token"));
         return source;
     }
 

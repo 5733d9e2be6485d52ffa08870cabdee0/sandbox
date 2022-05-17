@@ -103,9 +103,10 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         if (status.getState() == ConnectorState.FAILED) {
-            LOGGER.debug("Creating Managed Connector for '{}' [{}] failed.",
+            LOGGER.debug("Creating Managed Connector for '{}' [{}] failed. Error: {}",
                     connectorEntity.getName(),
-                    connectorEntity.getId());
+                    connectorEntity.getId(),
+                    status.getError());
 
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);

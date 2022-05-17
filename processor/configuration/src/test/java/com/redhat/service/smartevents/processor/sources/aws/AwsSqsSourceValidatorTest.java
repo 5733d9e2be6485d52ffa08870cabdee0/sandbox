@@ -5,16 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-
-import io.quarkus.test.junit.QuarkusTest;
+import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_QUEUE_URL_PARAM;
@@ -25,8 +23,19 @@ import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceV
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidator.missingParameterMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@QuarkusTest
-class AwsSqsSourceValidatorTest {
+class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
+
+    AwsSqsSourceValidator validator = new AwsSqsSourceValidator();
+
+    @Override
+    protected GatewayValidator<Source> getValidator() {
+        return validator;
+    }
+
+    @Override
+    protected String getSourceType() {
+        return AwsSqsSource.TYPE;
+    }
 
     static final String INVALID_QUEUE_URL = "invalid";
 
@@ -59,9 +68,6 @@ class AwsSqsSourceValidatorTest {
             paramMap(VALID_GENERIC_QUEUE_URL, null, VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY),
             paramMap(VALID_GENERIC_QUEUE_URL, VALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY)
     };
-
-    @Inject
-    AwsSqsSourceValidator validator;
 
     @ParameterizedTest
     @MethodSource("validParams")
@@ -101,12 +107,5 @@ class AwsSqsSourceValidatorTest {
             params.put(AWS_SECRET_ACCESS_KEY_PARAM, awsSecretAccessKey);
         }
         return params;
-    }
-
-    static Source sourceWith(Map<String, String> params) {
-        Source source = new Source();
-        source.setType(AwsSqsSource.TYPE);
-        source.setParameters(params);
-        return source;
     }
 }
