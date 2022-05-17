@@ -25,10 +25,13 @@ import com.redhat.service.smartevents.integration.tests.resources.IngressResourc
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
+import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
 
 public class IngressSteps {
+
+    private static final String CE_JSON_CONTENT_TYPE = "application/cloudevents+json";
 
     private TestContext context;
 
@@ -68,7 +71,7 @@ public class IngressSteps {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
         cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
 
-        adjustSendAndCheckCloudEvent(endpoint, cloudEvent);
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, CE_JSON_CONTENT_TYPE);
     }
 
     @When("^send a cloud event to the endpoint URL \"([^\"]*)\":$")
@@ -76,10 +79,10 @@ public class IngressSteps {
         endpoint = ContextResolver.resolveWithScenarioContext(context, endpoint);
         cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
 
-        adjustSendAndCheckCloudEvent(endpoint, cloudEvent);
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, CE_JSON_CONTENT_TYPE);
     }
 
-    @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*):$")
+    @When("^send a json event to the Ingress of the Bridge \"([^\"]*)\" with path \"([^\"]*)\" and headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*):$")
     public void sendCloudEventToIngressOfBridgeWithPathAndDefaultHeaders(String testBridgeName, String path, String headers, String cloudEvent) {
         String endpoint = String.format("%s/%s", BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName), path);
         Headers parsedHeaders = parseHeaders(headers);
@@ -89,22 +92,22 @@ public class IngressSteps {
 
         parsedHeaders = adjustCloudEventHeaderParameters(parsedHeaders, context.getCloudEventSystemId(testCloudEventId));
 
-        sendAndCheckCloudEvent(endpoint, cloudEvent, parsedHeaders);
+        sendAndCheckCloudEvent(endpoint, cloudEvent, parsedHeaders, ContentType.JSON.toString());
     }
 
-    private void adjustSendAndCheckCloudEvent(String endpoint, String cloudEvent) {
+    private void adjustSendAndCheckCloudEvent(String endpoint, String cloudEvent, String contentType) {
         String testCloudEventId = getCloudEventId(cloudEvent);
         context.storeCloudEventInContext(testCloudEventId);
 
         cloudEvent = adjustCloudEventParameters(cloudEvent, context.getCloudEventSystemId(testCloudEventId));
 
-        sendAndCheckCloudEvent(endpoint, cloudEvent, new Headers());
+        sendAndCheckCloudEvent(endpoint, cloudEvent, new Headers(), contentType);
     }
 
-    private void sendAndCheckCloudEvent(String endpoint, String cloudEvent, Headers headers) {
+    private void sendAndCheckCloudEvent(String endpoint, String cloudEvent, Headers headers, String contentType) {
         String token = context.getManagerToken();
         try (InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8))) {
-            IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers)
+            IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers, contentType)
                     .then()
                     .statusCode(200);
         } catch (IOException e) {
