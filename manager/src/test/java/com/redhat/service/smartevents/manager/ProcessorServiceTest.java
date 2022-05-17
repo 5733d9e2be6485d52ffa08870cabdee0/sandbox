@@ -383,11 +383,13 @@ class ProcessorServiceTest {
         verify(connectorServiceMock).deleteConnectorEntity(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
         assertThat(processorCaptor1.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
 
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
         verify(workManagerMock).schedule(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
         assertThat(processorCaptor2.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
     }
 
     private static Stream<Arguments> updateProcessorParams() {
@@ -596,6 +598,7 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), PROVISIONING);
         processor.setId(PROVISIONING_PROCESSOR_ID);
         processor.setName(PROVISIONING_PROCESSOR_NAME);
+        processor.setPublishedAt(null);
         return processor;
     }
 

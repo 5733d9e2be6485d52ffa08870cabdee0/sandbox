@@ -209,6 +209,7 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(retrievedBridge.getDeletionRequestedAt()).isNotNull();
     }
 
     @Test
@@ -219,6 +220,7 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), bridge.getCustomerId());
         assertThat(retrievedBridge.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(retrievedBridge.getDeletionRequestedAt()).isNotNull();
     }
 
     @Test

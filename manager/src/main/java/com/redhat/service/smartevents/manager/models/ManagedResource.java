@@ -46,6 +46,9 @@ public class ManagedResource {
     @Column(name = "modified_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime modifiedAt;
 
+    @Column(name = "deletion_requested_at", columnDefinition = "TIMESTAMP")
+    private ZonedDateTime deletionRequestedAt;
+
     public String getId() {
         return id;
     }
@@ -102,4 +105,11 @@ public class ManagedResource {
         this.modifiedAt = modifiedAt;
     }
 
+    public ZonedDateTime getDeletionRequestedAt() {
+        return deletionRequestedAt;
+    }
+
+    public void setDeletionRequestedAt(ZonedDateTime deletedAt) {
+        this.deletionRequestedAt = deletedAt;
+    }
 }
