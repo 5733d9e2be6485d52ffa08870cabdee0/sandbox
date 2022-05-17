@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -144,7 +144,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo) {
+    public ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo) {
         return bridgeDAO.findByCustomerId(customerId, queryInfo);
     }
 
