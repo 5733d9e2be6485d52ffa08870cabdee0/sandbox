@@ -56,6 +56,9 @@ public class Bridge extends ManagedResource {
     @Column(name = "organisation_id")
     private String organisationId;
 
+    @Column(name = "owner")
+    private String owner;
+
     public Bridge() {
     }
 
@@ -79,6 +82,10 @@ public class Bridge extends ManagedResource {
         return organisationId;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
@@ -93,6 +100,10 @@ public class Bridge extends ManagedResource {
 
     public void setOrganisationId(String organisationId) {
         this.organisationId = organisationId;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     /*

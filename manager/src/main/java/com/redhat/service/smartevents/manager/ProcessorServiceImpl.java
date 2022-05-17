@@ -82,7 +82,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     @Transactional
-    public Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest) {
+    public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
         /* We cannot deploy Processors to a Bridge that is not Available */
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
@@ -99,6 +99,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
+        newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
 
@@ -305,6 +306,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setDefinition(processor.getDefinition());
         dto.setBridgeId(processor.getBridge().getId());
         dto.setCustomerId(processor.getBridge().getCustomerId());
+        dto.setOwner(processor.getOwner());
         dto.setStatus(processor.getStatus());
         dto.setKafkaConnection(kafkaConnectionDTO);
         return dto;
@@ -320,6 +322,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setStatus(processor.getStatus());
         processorResponse.setPublishedAt(processor.getPublishedAt());
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
+        processorResponse.setOwner(processor.getOwner());
 
         if (processor.getDefinition() != null) {
             ProcessorDefinition definition = processor.getDefinition();

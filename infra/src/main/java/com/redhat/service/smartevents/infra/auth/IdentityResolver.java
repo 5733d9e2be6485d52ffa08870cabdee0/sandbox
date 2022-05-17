@@ -6,4 +6,6 @@ public interface IdentityResolver {
     String resolve(JsonWebToken jwt);
 
     String resolveOrganisationId(JsonWebToken jwt);
+
+    String resolveOwner(JsonWebToken jwt);
 }

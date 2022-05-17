@@ -651,6 +651,8 @@ components:
           type: string
         customerId:
           type: string
+        owner:
+          type: string
         status:
           $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
@@ -718,6 +720,8 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/ManagedResourceStatus'
+        owner:
+          type: string
         endpoint:
           type: string
     ErrorListResponse:
@@ -792,6 +796,8 @@ components:
           type: string
         customerId:
           type: string
+        owner:
+          type: string
         status:
           $ref: '#/components/schemas/ManagedResourceStatus'
         kafkaConnection:
@@ -861,8 +867,6 @@ components:
           type: string
         href:
           type: string
-        type:
-          $ref: '#/components/schemas/ProcessorType'
         submitted_at:
           format: date-time
           type: string
@@ -871,6 +875,10 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/ManagedResourceStatus'
+        owner:
+          type: string
+        type:
+          $ref: '#/components/schemas/ProcessorType'
         filters:
           uniqueItems: true
           type: array

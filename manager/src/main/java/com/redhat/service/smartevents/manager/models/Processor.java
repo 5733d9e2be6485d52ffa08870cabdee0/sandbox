@@ -70,6 +70,9 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
     @Column(name = "shard_id")
     private String shardId;
 
+    @Column(name = "owner")
+    private String owner;
+
     public ProcessorType getType() {
         return type;
     }
@@ -100,6 +103,14 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public void setShardId(String shardId) {
         this.shardId = shardId;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     /*
@@ -136,6 +147,7 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
                 ", bridge=" + bridge +
                 ", connectorEntities=" + connectorEntities +
                 ", shardId='" + shardId + '\'' +
+                ", owner='" + owner + '\'' +
                 '}';
     }
 }

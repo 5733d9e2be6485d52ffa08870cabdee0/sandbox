@@ -250,6 +250,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 "myName-" + suffix,
                 "myEndpoint/events",
                 TestSupport.CUSTOMER_ID,
+                TestSupport.USER_NAME,
                 status,
                 TestSupport.KAFKA_CONNECTION_DTO);
     }

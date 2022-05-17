@@ -21,7 +21,7 @@ public class APIConstants {
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
 
     /**
-     * Account id attribute claim key for a user token.
+     * Account id attribute claim key for an account token.
      */
     public static final String ACCOUNT_ID_USER_ATTRIBUTE_CLAIM = "account_id";
 
@@ -39,6 +39,18 @@ public class APIConstants {
      * Organisation id attribute claim key for a service account token.
      */
     public static final String ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM = "rh-org-id";
+
+    /**
+     * User id attribute claim key for an owner token.
+     * Although the attribute is called 'username' it is consistently referred to as 'owner' in Managed Services.
+     */
+    public static final String USER_NAME_ATTRIBUTE_CLAIM = "username";
+
+    /**
+     * Alternative User id attribute claim key for an owner token.
+     * Although the attribute is called 'preferred_username' it is consistently referred to as 'owner' in Managed Services.
+     */
+    public static final String USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM = "preferred_username";
 
     /**
      * The page query parameter name

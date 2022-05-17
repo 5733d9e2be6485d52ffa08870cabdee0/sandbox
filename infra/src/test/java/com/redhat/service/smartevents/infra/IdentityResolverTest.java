@@ -23,6 +23,7 @@ public class IdentityResolverTest {
 
     private static final String CUSTOMER_ID = "kekkobar";
     private static final String ORGANISATION_ID = "myOrg";
+    private static final String USER_NAME = "userName";
 
     @Inject
     IdentityResolver identityResolver;
@@ -77,4 +78,30 @@ public class IdentityResolverTest {
         when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(false);
         assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
     }
+
+    @Test
+    public void testUserNameResolver_resolveWithUserNameToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(USER_NAME);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
+        assertThat(identityResolver.resolveOwner(jwt)).isEqualTo(USER_NAME);
+    }
+
+    @Test
+    public void testUserNameResolver_resolveWithAlternativeUserNameToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(USER_NAME);
+        assertThat(identityResolver.resolveOwner(jwt)).isEqualTo(USER_NAME);
+    }
+
+    @Test
+    public void testValidTokenWithoutUserNameClaims() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(false);
+        assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
+    }
+
 }

@@ -11,7 +11,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -40,6 +39,20 @@ import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 
+import static com.redhat.service.smartevents.infra.api.APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.infra.api.APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.SHARD_ID;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,24 +82,31 @@ public class ShardBridgesSyncAPITest {
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
-        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_ORGANISATION_ID);
-        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(SHARD_ID);
+        when(jwt.containsClaim(ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_ORGANISATION_ID);
+        when(jwt.containsClaim(ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
+        when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithKafkaAction() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         //Emulate the Shard having deployed the Bridge
-        BridgeDTO bridge =
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY, new KafkaConnectionDTO());
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
+                bridgeResponse.getName(),
+                TEST_BRIDGE_ENDPOINT,
+                DEFAULT_CUSTOMER_ID,
+                DEFAULT_USER_NAME,
+                READY,
+                new KafkaConnectionDTO());
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, null, TestUtils.createKafkaAction()));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, filters, null, TestUtils.createKafkaAction()));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -97,8 +117,8 @@ public class ShardBridgesSyncAPITest {
         });
 
         ProcessorDTO processor = processors.get(0);
-        assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(processor.getName()).isEqualTo(DEFAULT_PROCESSOR_NAME);
+        assertThat(processor.getStatus()).isEqualTo(PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
@@ -109,18 +129,24 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithSendToBridgeAction() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
         //Emulate the Shard having deployed the Bridge
-        BridgeDTO bridge = new BridgeDTO(bridgeId, bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY, new KafkaConnectionDTO());
+        BridgeDTO bridge = new BridgeDTO(bridgeId,
+                bridgeResponse.getName(),
+                TEST_BRIDGE_ENDPOINT,
+                DEFAULT_CUSTOMER_ID,
+                DEFAULT_USER_NAME,
+                READY,
+                new KafkaConnectionDTO());
         TestUtils.updateBridge(bridge);
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
         Action action = TestUtils.createSendToBridgeAction(bridgeId);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, filters, null, action));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, filters, null, action));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -131,8 +157,8 @@ public class ShardBridgesSyncAPITest {
         });
 
         ProcessorDTO processor = processors.get(0);
-        assertThat(processor.getName()).isEqualTo(TestConstants.DEFAULT_PROCESSOR_NAME);
-        assertThat(processor.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(processor.getName()).isEqualTo(DEFAULT_PROCESSOR_NAME);
+        assertThat(processor.getStatus()).isEqualTo(PREPARING);
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
@@ -143,13 +169,18 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void updateProcessorStatus() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        BridgeDTO bridge =
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY, new KafkaConnectionDTO());
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
+                bridgeResponse.getName(),
+                TEST_BRIDGE_ENDPOINT,
+                DEFAULT_CUSTOMER_ID,
+                DEFAULT_USER_NAME,
+                READY,
+                new KafkaConnectionDTO());
         TestUtils.updateBridge(bridge);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -160,7 +191,7 @@ public class ShardBridgesSyncAPITest {
         });
 
         ProcessorDTO processor = processors.get(0);
-        processor.setStatus(ManagedResourceStatus.READY);
+        processor.setStatus(READY);
 
         TestUtils.updateProcessor(processor);
 
@@ -173,13 +204,18 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void metricsAreProduced() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        BridgeDTO bridge =
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), TEST_BRIDGE_ENDPOINT, TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY, new KafkaConnectionDTO());
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
+                bridgeResponse.getName(),
+                TEST_BRIDGE_ENDPOINT,
+                DEFAULT_CUSTOMER_ID,
+                DEFAULT_USER_NAME,
+                READY,
+                new KafkaConnectionDTO());
         TestUtils.updateBridge(bridge);
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -190,7 +226,7 @@ public class ShardBridgesSyncAPITest {
         });
 
         ProcessorDTO processor = processors.get(0);
-        processor.setStatus(ManagedResourceStatus.READY);
+        processor.setStatus(READY);
 
         TestUtils.updateProcessor(processor);
 
@@ -208,7 +244,7 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetEmptyBridgesToDeploy() {
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -220,29 +256,29 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDeploy() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
-        assertThat(bridge.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
-        assertThat(bridge.getCustomerId()).isEqualTo(TestConstants.DEFAULT_CUSTOMER_ID);
-        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(bridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridge.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridge.getStatus()).isEqualTo(PREPARING);
         assertThat(bridge.getEndpoint()).isNull();
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDelete() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -254,7 +290,7 @@ public class ShardBridgesSyncAPITest {
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
 
-        bridge.setStatus(ManagedResourceStatus.READY);
+        bridge.setStatus(READY);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
@@ -265,25 +301,25 @@ public class ShardBridgesSyncAPITest {
             }));
 
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isZero();
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.DEPROVISION)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(DEPROVISION)).count()).isEqualTo(1);
         });
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testNotifyDeployment() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.PREPARING)).count()).isEqualTo(1);
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(PREPARING)).count()).isEqualTo(1);
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
-        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setStatus(PROVISIONING);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -295,9 +331,9 @@ public class ShardBridgesSyncAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testNotifyDeletion() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -309,26 +345,26 @@ public class ShardBridgesSyncAPITest {
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
 
-        bridge.setStatus(ManagedResourceStatus.READY);
+        bridge.setStatus(READY);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
         BridgeResponse bridgeResponse = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
-        assertThat(bridgeResponse.getStatus()).isEqualTo(ManagedResourceStatus.DEPROVISION);
+        assertThat(bridgeResponse.getStatus()).isEqualTo(DEPROVISION);
 
-        bridge.setStatus(ManagedResourceStatus.DELETED);
+        bridge.setStatus(DELETED);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
         TestUtils.getBridge(bridge.getId()).then().statusCode(404);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testUnauthorizedRole() {
         reset(jwt);
-        when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("hacker");
-        when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn("hacker");
+        when(jwt.containsClaim(ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
         TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
         TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
@@ -16,9 +15,14 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinitio
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+
 public class TestSupport {
 
     public static final String CUSTOMER_ID = "myCustomer";
+    public static final String USER_NAME = "myUserName";
     public static final String INGRESS_IMAGE = "openbridge/ingress:latest";
     public static final String EXECUTOR_IMAGE = "openbridge/executor:latest";
     public static final String BRIDGE_ID = "my-id";
@@ -40,15 +44,15 @@ public class TestSupport {
             KAFKA_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.PREPARING, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, PREPARING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.PROVISIONING, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, PROVISIONING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newAvailableBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, ManagedResourceStatus.READY, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, READY, KAFKA_CONNECTION_DTO);
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
@@ -73,7 +77,8 @@ public class TestSupport {
         dto.setDefinition(definition);
         dto.setBridgeId(BRIDGE_ID);
         dto.setCustomerId(CUSTOMER_ID);
-        dto.setStatus(ManagedResourceStatus.PREPARING);
+        dto.setOwner(USER_NAME);
+        dto.setStatus(PREPARING);
         dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
         return dto;
     }
