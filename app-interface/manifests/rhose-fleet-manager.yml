@@ -76,6 +76,11 @@ objects:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.name
+                - name: EVENT_BRIDGE_DB_CA_CERT
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${RDS_SECRET_NAME}
+                      key: db.ca_cert
                 - name: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
                   valueFrom:
                     secretKeyRef:
@@ -215,6 +220,13 @@ objects:
                   port: 8080
                 initialDelaySeconds: 10
                 periodSeconds: 10
+              volumeMounts:
+              - name: rds
+                mountPath: /secrets/rds
+          volumes:
+          - name: rds
+            secret:
+              secretName: ${RDS_SECRET_NAME}
   - apiVersion: v1
     kind: Service
     metadata:
