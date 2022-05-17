@@ -55,7 +55,7 @@ public class TestUtils {
     }
 
     public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
-        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.serialize()).collect(Collectors.joining("&"));
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
     }
 
@@ -65,7 +65,7 @@ public class TestUtils {
     }
 
     public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
-        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.serialize()).collect(Collectors.joining("&"));
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
 
@@ -85,7 +85,7 @@ public class TestUtils {
     }
 
     public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
-        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.serialize()).collect(Collectors.joining("&"));
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?" + queryString);
     }
 
@@ -95,7 +95,7 @@ public class TestUtils {
     }
 
     public static Response listProcessorsFilterByType(String bridgeId, ProcessorType type) {
-        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?type=" + type);
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?type=" + type.serialize());
     }
 
     public static Response listProcessorsFilterByTypeWithAnyValue(String bridgeId, String type) {
@@ -103,19 +103,19 @@ public class TestUtils {
     }
 
     public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
-        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.serialize()).collect(Collectors.joining("&"));
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);
     }
 
     public static Response listProcessorsFilterByNameAndType(String bridgeId, String name, ProcessorType type) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&type=" + type);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&type=" + type.serialize());
     }
 
     public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatus status, ProcessorType type) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?status=" + status + "&type=" + type);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?status=" + status.serialize() + "&type=" + type.serialize());
     }
 
     public static Response getProcessor(String bridgeId, String processorId) {

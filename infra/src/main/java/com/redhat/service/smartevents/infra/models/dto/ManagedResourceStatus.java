@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.infra.models.dto;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ManagedResourceStatus {
@@ -21,6 +24,16 @@ public enum ManagedResourceStatus {
     @JsonValue
     public String serialize() {
         return status;
+    }
+
+    @SuppressWarnings("unused")
+    // Required for JAX-RS deserialisation. See @javax.ws.rs.QueryParam.
+    public static ManagedResourceStatus fromString(String status) {
+        return Arrays
+                .stream(ManagedResourceStatus.values())
+                .filter(s -> Objects.equals(s.status, status))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("ManagedResourceStatus '%s' unknown.", status)));
     }
 
     ManagedResourceStatus(String status) {

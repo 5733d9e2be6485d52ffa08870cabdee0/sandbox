@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ProcessorType {
@@ -12,6 +15,16 @@ public enum ProcessorType {
     @JsonValue
     public String serialize() {
         return value;
+    }
+
+    @SuppressWarnings("unused")
+    // Required for JAX-RS deserialisation. See @javax.ws.rs.QueryParam.
+    public static ProcessorType fromString(String type) {
+        return Arrays
+                .stream(ProcessorType.values())
+                .filter(t -> Objects.equals(t.value, type))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("ProcessorType '%s' unknown.", type)));
     }
 
     ProcessorType(String value) {
