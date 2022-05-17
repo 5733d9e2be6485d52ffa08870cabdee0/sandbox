@@ -4,10 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
+import com.redhat.service.smartevents.shard.operator.cucumber.utils.Utils;
+import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -33,18 +37,7 @@ public class BridgeIngressSteps {
     public void deployBridgeIngressWithDefaultSecret(String bridgeIngressYaml) {
         InputStream resourceStream = new ByteArrayInputStream(bridgeIngressYaml.getBytes(StandardCharsets.UTF_8));
         BridgeIngress bridgeIngress = context.getClient().resources(BridgeIngress.class).inNamespace(context.getNamespace()).load(resourceStream).createOrReplace();
-        Secret secret = new SecretBuilder()
-                .withMetadata(
-                        new ObjectMetaBuilder()
-                                .withLabels(
-                                        new LabelsBuilder()
-                                                .withManagedByOperator()
-                                                .withComponent(BridgeIngress.COMPONENT_NAME)
-                                                .build())
-                                .withNamespace(bridgeIngress.getMetadata().getNamespace())
-                                .withName(bridgeIngress.getMetadata().getName())
-                                .build())
-                .build();
+        Secret secret = buildDefaultSecret(bridgeIngress);
         context.getClient().secrets().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).createOrReplace(secret);
     }
 
@@ -87,5 +80,29 @@ public class BridgeIngressSteps {
                     return bridgeIngress.getStatus().isConditionTypeTrue(ConditionType.valueOf(condition));
                 },
                 String.format("Timeout waiting for BridgeIngress '%s' to be in condition '%s' in namespace '%s'", name, condition, context.getNamespace()));
+    }
+
+    private Secret buildDefaultSecret(BridgeIngress bridgeIngress) {
+        Map<String, String> data = new HashMap<>();
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, Utils.getSystemProperty("it.shard.kafka.bootstrap.servers"));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_USER_SECRET, Utils.getSystemProperty("it.shard.kafka.user"));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PASSWORD_SECRET, Utils.getSystemProperty("it.shard.kafka.password"));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Utils.getSystemProperty("it.shard.kafka.protocol"));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Utils.getSystemProperty("it.shard.kafka.sasl.mechanism"));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Utils.getSystemProperty("it.shard.kafka.topic.name"));
+
+        return new SecretBuilder()
+                .withMetadata(
+                        new ObjectMetaBuilder()
+                                .withLabels(
+                                        new LabelsBuilder()
+                                                .withManagedByOperator()
+                                                .withComponent(BridgeIngress.COMPONENT_NAME)
+                                                .build())
+                                .withNamespace(bridgeIngress.getMetadata().getNamespace())
+                                .withName(bridgeIngress.getMetadata().getName())
+                                .build())
+                .withStringData(data)
+                .build();
     }
 }
