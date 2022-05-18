@@ -28,7 +28,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -530,7 +530,7 @@ class ProcessorServiceTest {
                 new StringBeginsWith("source", List.of("Storage")),
                 new StringContains("source", List.of("StorageService")),
                 new StringEquals("source", "StorageService"),
-                new ValuesIn("source", List.of("StorageService")));
+                new StringIn("source", List.of("StorageService")));
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);

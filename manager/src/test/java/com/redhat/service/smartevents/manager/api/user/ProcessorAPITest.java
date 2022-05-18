@@ -19,7 +19,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -293,7 +293,7 @@ public class ProcessorAPITest {
 
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", Collections.singleton(new ValuesIn("pepe", null)), null, TestUtils.createKafkaAction()));
+                new ProcessorRequest("myProcessor", Collections.singleton(new StringIn("pepe", null)), null, TestUtils.createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
