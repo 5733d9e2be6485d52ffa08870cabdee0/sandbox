@@ -22,13 +22,13 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLi
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -84,7 +84,7 @@ class ProcessorServiceTest {
     public static final String PROVISIONING_PROCESSOR_NAME = "provisioning-processor-name";
     public static final String FAILED_PROCESSOR_ID = "failed-processor-id";
     public static final String FAILED_PROCESSOR_NAME = "failed-processor-name";
-    public static final QueryInfo QUERY_INFO = new QueryInfo(0, 100);
+    public static final QueryPageInfo QUERY_INFO = new QueryPageInfo(0, 100);
 
     @Inject
     ProcessorService processorService;
@@ -383,11 +383,13 @@ class ProcessorServiceTest {
         verify(connectorServiceMock).deleteConnectorEntity(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
         assertThat(processorCaptor1.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
 
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
         verify(workManagerMock).schedule(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
         assertThat(processorCaptor2.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
     }
 
     private static Stream<Arguments> updateProcessorParams() {
@@ -528,7 +530,7 @@ class ProcessorServiceTest {
                 new StringBeginsWith("source", List.of("Storage")),
                 new StringContains("source", List.of("StorageService")),
                 new StringEquals("source", "StorageService"),
-                new ValuesIn("source", List.of("StorageService")));
+                new StringIn("source", List.of("StorageService")));
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);
@@ -596,6 +598,7 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), PROVISIONING);
         processor.setId(PROVISIONING_PROCESSOR_ID);
         processor.setName(PROVISIONING_PROCESSOR_NAME);
+        processor.setPublishedAt(null);
         return processor;
     }
 

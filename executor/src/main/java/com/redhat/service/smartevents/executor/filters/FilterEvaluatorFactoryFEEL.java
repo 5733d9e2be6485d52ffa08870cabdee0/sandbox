@@ -8,11 +8,12 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
+import com.redhat.service.smartevents.infra.models.filters.NumberIn;
 import com.redhat.service.smartevents.infra.models.filters.ObjectMapperFactory;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 
 public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
 
@@ -38,8 +39,13 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
                 return getFilterConditionForListValues("(contains (%s, %s))", filter.getKey(), ((StringContains) filter).getValue());
             case StringBeginsWith.FILTER_TYPE_NAME:
                 return getFilterConditionForListValues("(starts with (%s, %s))", filter.getKey(), ((StringBeginsWith) filter).getValue());
-            case ValuesIn.FILTER_TYPE_NAME:
-                return getFilterConditionForListValues("%s = %s", filter.getKey(), ((ValuesIn) filter).getValue());
+            case NumberIn.FILTER_TYPE_NAME:
+            case StringIn.FILTER_TYPE_NAME:
+                try {
+                    return String.format("list contains (%s, %s)", ObjectMapperFactory.get().writeValueAsString(filter.getValue()), filter.getKey());
+                } catch (JsonProcessingException e) {
+                    throw new IllegalArgumentException("Value " + filter.getValue() + " cannot be converted to string", e);
+                }
             default:
                 throw new IllegalArgumentException("Filter type " + filter.getType() + " is not supported by FEELTemplateFactory.");
         }
@@ -57,5 +63,4 @@ public class FilterEvaluatorFactoryFEEL implements FilterEvaluatorFactory {
         }
         return String.join(" or ", conditions);
     }
-
 }

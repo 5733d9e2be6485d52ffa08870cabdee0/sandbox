@@ -45,7 +45,7 @@
     <version.com.github.tomakehurst.wiremock>2.30.1</version.com.github.tomakehurst.wiremock>
     <version.org.awaitility>4.2.0</version.org.awaitility>
     <version.io.fabric8>5.12.1</version.io.fabric8>
-    <version.org.kie.dmn.feel>7.57.0.Final</version.org.kie.dmn.feel>
+    <version.org.kie.dmn.feel>8.21.0.Beta</version.org.kie.dmn.feel>
     <version.org.localstack>0.13.3</version.org.localstack>
     <version.org.keycloak>15.1.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
@@ -228,6 +228,12 @@
         <groupId>com.epam.reportportal</groupId>
         <artifactId>logger-java-log4j</artifactId>
         <version>${version.com.epam.reportportal.logger-java-log4j}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-jacoco</artifactId>
+        <version>${quarkus.platform.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

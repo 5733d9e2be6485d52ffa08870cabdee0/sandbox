@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
-import java.util.Collections;
 import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -16,8 +15,6 @@ import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.models.Work;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.vertx.ConsumeEvent;
 
@@ -34,9 +31,6 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Inject
     ConnectorWorker connectorWorker;
-
-    @Inject
-    MeterRegistry meterRegistry;
 
     @Override
     protected PanacheRepositoryBase<Processor, String> getDao() {
@@ -58,9 +52,6 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         // PROVISIONING is handled by the Operator.
         processor.setStatus(ManagedResourceStatus.PREPARING);
         processor = persist(processor);
-
-        meterRegistry.counter("manager.processor.status.change",
-                Collections.singletonList(Tag.of("status", processor.getStatus().toString()))).increment();
 
         if (hasZeroConnectors(processor)) {
             LOGGER.debug(
@@ -129,5 +120,4 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     protected ConnectorEntity getConnectorEntity(Processor processor) {
         return connectorsDAO.findByProcessorId(processor.getId());
     }
-
 }

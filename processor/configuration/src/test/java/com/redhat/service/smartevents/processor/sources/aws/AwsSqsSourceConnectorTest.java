@@ -14,6 +14,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -33,11 +36,10 @@ import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceV
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidatorTest.VALID_GENERIC_QUEUE_URL;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidatorTest.VALID_QUEUE_NAME;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidatorTest.paramMap;
-import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidatorTest.sourceWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class AwsSqsSourceConnectorTest {
+class AwsSqsSourceConnectorTest extends AbstractSourceTest<Source> {
 
     private static final String CHANNEL = "channel";
     private static final String TOKEN = "token";
@@ -124,5 +126,16 @@ class AwsSqsSourceConnectorTest {
             payload.append(String.format(PARAMETER_TEMPLATE, CONNECTOR_AWS_URI_ENDPOINT_OVERRIDE_PARAMETER, uriEndpoint));
         }
         return String.format(EXPECTED_PAYLOAD_JSON_TEMPLATE, payload);
+    }
+
+    @Override
+    protected GatewayValidator<Source> getValidator() {
+        // Validator not tested in this test
+        return null;
+    }
+
+    @Override
+    protected String getSourceType() {
+        return AwsSqsSource.TYPE;
     }
 }

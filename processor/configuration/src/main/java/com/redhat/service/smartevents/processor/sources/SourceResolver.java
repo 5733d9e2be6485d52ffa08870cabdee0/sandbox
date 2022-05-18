@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources.aws;
+package com.redhat.service.smartevents.processor.sources;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -6,6 +6,9 @@ import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -15,7 +18,9 @@ import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class AwsSqsSourceResolver implements AwsSqsSource, GatewayResolver<Source> {
+public class SourceResolver implements GatewayResolver<Source> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SourceResolver.class);
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
@@ -34,7 +39,18 @@ public class AwsSqsSourceResolver implements AwsSqsSource, GatewayResolver<Sourc
         try {
             return new URL(gatewayConfiguratorService.getBridgeEndpoint(bridgeId, customerId)).toString();
         } catch (MalformedURLException e) {
+            LOG.error("MalformedURLException in SlackSourceResolver", e);
             throw new GatewayProviderException("Can't find events webhook for bridge " + bridgeId);
         }
+    }
+
+    @Override
+    public String getType() {
+        return null;
+    }
+
+    @Override
+    public boolean accept(String gatewayType) {
+        return true;
     }
 }

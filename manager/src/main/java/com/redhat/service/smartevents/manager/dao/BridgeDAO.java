@@ -1,14 +1,18 @@
 package com.redhat.service.smartevents.manager.dao;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.Bridge;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
@@ -34,10 +38,22 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return find("#BRIDGE.findByIdAndCustomerId", params).firstResult();
     }
 
-    public ListResult<Bridge> findByCustomerId(String customerId, QueryInfo queryInfo) {
+    public ListResult<Bridge> findByCustomerId(String customerId, QueryResourceInfo queryInfo) {
         Parameters parameters = Parameters.with("customerId", customerId);
-        long total = find("#BRIDGE.findByCustomerId", parameters).count();
-        List<Bridge> bridges = find("#BRIDGE.findByCustomerId", parameters).page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+        PanacheQuery<Bridge> query = find("#BRIDGE.findByCustomerId", parameters);
+
+        String filterName = queryInfo.getFilterInfo().getFilterName();
+        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
+        if (Objects.nonNull(filterName)) {
+            query.filter("byName", Parameters.with("name", filterName + "%"));
+        }
+        if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
+            query.filter("byStatus", Parameters.with("status", filterStatus));
+        }
+
+        long total = query.count();
+        List<Bridge> bridges = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
+
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 }

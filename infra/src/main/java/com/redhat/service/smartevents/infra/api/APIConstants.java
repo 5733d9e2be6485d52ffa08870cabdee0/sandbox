@@ -75,6 +75,16 @@ public class APIConstants {
      */
     public static final String SIZE_DEFAULT = "100";
 
+    /**
+     * The name query filter parameter name
+     */
+    public static final String FILTER_NAME = "name";
+
+    /**
+     * The status query filter parameter name
+     */
+    public static final String FILTER_STATUS = "status";
+
     private APIConstants() {
     }
 }

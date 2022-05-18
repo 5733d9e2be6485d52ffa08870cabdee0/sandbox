@@ -4,10 +4,11 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.models.filters.NumberIn;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,9 +46,16 @@ public class FilterEvaluatorFactoryFEELTest {
     }
 
     @Test
-    public void valuesInWithTemplate() {
-        String expectedMulti = "if data.name = \"jacopo\" or data.name = \"rota\" or data.name = 2 then \"OK\" else \"NOT_OK\"";
-        String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new ValuesIn("data.name", Arrays.asList("jacopo", "rota", 2)));
+    public void numberInWithTemplate() {
+        String expectedMulti = "if list contains ([2.0,3.0], data.name) then \"OK\" else \"NOT_OK\"";
+        String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new NumberIn("data.name", Arrays.asList(2d, 3d)));
+        assertThat(templateMulti).isEqualTo(expectedMulti);
+    }
+
+    @Test
+    public void stringInWithTemplate() {
+        String expectedMulti = "if list contains ([\"jacopo\",\"rota\"], data.name) then \"OK\" else \"NOT_OK\"";
+        String templateMulti = TEMPLATE_FACTORY_FEEL.getTemplateByFilterType(new StringIn("data.name", Arrays.asList("jacopo", "rota")));
         assertThat(templateMulti).isEqualTo(expectedMulti);
     }
 }

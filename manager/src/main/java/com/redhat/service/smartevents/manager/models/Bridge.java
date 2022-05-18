@@ -9,6 +9,12 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
+
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
                 query = "from Bridge where shard_id=:shardId and " +
@@ -22,9 +28,17 @@ import javax.persistence.UniqueConstraint;
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
-                query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
+                query = "from Bridge where customer_id=:customerId order by submitted_at desc")
 })
 @Entity
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
+        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.dao.EnumTypeManagedResourceStatus") })
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name"),
+        @Filter(name = "byStatus", condition = "status in (:status)")
+})
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
 public class Bridge extends ManagedResource {
 

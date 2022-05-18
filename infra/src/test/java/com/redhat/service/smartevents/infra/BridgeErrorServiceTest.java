@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -40,7 +40,7 @@ class BridgeErrorServiceTest {
         ListResult<BridgeError> result;
         int page = 0;
         do {
-            result = service.getUserErrors(new QueryInfo(page++, pageSize));
+            result = service.getUserErrors(new QueryPageInfo(page++, pageSize));
             bridgeErrors.addAll(result.getItems());
         } while (result.getSize() == pageSize);
         assertThat(userExceptionClasses)

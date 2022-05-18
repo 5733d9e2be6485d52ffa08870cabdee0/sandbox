@@ -1,9 +1,11 @@
 package com.redhat.service.smartevents.manager.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
@@ -42,6 +44,26 @@ public class TestUtils {
     public static Response getBridges() {
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH);
+    }
+
+    public static Response getBridgesFilterByName(String name) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + "?name=" + name);
+    }
+
+    public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response getBridgesFilterByStatusWithAnyValue(String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
     }
 
     public static Response getBridge(String id) {
