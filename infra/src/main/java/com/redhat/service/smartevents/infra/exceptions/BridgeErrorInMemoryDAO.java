@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.infra.utils.Constants;
 
 import io.quarkus.runtime.Quarkus;
@@ -93,7 +93,7 @@ public class BridgeErrorInMemoryDAO implements BridgeErrorDAO {
     }
 
     @Override
-    public ListResult<BridgeError> findAllErrorsByType(QueryInfo queryInfo, BridgeErrorType type) {
+    public ListResult<BridgeError> findAllErrorsByType(QueryPageInfo queryInfo, BridgeErrorType type) {
         int start = queryInfo.getPageNumber() * queryInfo.getPageSize();
         List<BridgeError> typedErrors = bridgeErrorList.stream()
                 .filter(x -> x.getType().equals(type))

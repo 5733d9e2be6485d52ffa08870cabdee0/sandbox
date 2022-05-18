@@ -19,6 +19,8 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
     public static final String LOG_PROCESSOR_MULTILINE_PARAMETER = "multiLine";
     public static final String LOG_PROCESSOR_SHOWHEADERS_PARAMETER = "showHeaders";
 
+    public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
+
     @ConfigProperty(name = "managed-connectors.log-enabled")
     boolean logEnabled;
 

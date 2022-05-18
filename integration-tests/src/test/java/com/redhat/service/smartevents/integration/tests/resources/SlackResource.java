@@ -13,6 +13,7 @@ public class SlackResource {
     private final static String SLACK_URI = "https://slack.com/api/conversations.history?channel={channel}";
     private final static String SLACK_CHANNEL = Utils.getSystemProperty("slack.channel");
     private final static String SLACK_TOKEN = Utils.getSystemProperty("slack.webhook.token");
+    private final static String SLACK_WEBHOOK = Utils.getSystemProperty("slack.webhook.url");
 
     public static List<String> getListOfSlackMessages() {
         return given()
@@ -24,5 +25,16 @@ public class SlackResource {
                 .getBody()
                 .jsonPath()
                 .getList("messages.text");
+    }
+
+    public static int postToSlackWebhookUrl(final String message) {
+        return given()
+                .auth()
+                .oauth2(SLACK_TOKEN)
+                .contentType(ContentType.JSON)
+                .body("{\"text\": \"" + message + "\"}")
+                .when()
+                .post(SLACK_WEBHOOK)
+                .getStatusCode();
     }
 }

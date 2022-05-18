@@ -29,6 +29,10 @@ paths:
       description: Get the list of Bridge instances for the authenticated user.
       operationId: BridgesAPI_getBridges
       parameters:
+      - name: name
+        in: query
+        schema:
+          type: string
       - name: page
         in: query
         schema:
@@ -44,6 +48,13 @@ paths:
           maximum: 100
           minimum: 1
           type: integer
+      - name: status
+        in: query
+        schema:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedResourceStatus'
       responses:
         "200":
           description: Success.
@@ -873,8 +884,8 @@ components:
           $ref: '#/components/schemas/Source'
     ProcessorType:
       enum:
-      - SOURCE
-      - SINK
+      - source
+      - sink
       type: string
     Source:
       required:

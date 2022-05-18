@@ -134,7 +134,6 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        assertThat(refreshed.getModifiedAt()).isNotNull();
         assertThat(workManager.exists(work)).isTrue();
     }
 
@@ -181,7 +180,6 @@ class ConnectorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        assertThat(refreshed.getModifiedAt()).isNotNull();
         assertThat(workManager.exists(work)).isTrue();
     }
 

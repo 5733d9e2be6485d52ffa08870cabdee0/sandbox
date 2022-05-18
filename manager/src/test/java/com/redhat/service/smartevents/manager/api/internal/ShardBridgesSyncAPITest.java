@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
@@ -55,6 +56,9 @@ public class ShardBridgesSyncAPITest {
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
+
+    @Inject
+    MetricsService metricsService;
 
     @InjectMock
     JsonWebToken jwt;
@@ -197,8 +201,8 @@ public class ShardBridgesSyncAPITest {
                 .extract()
                 .body()
                 .asString();
-        assertThat(metrics).contains("manager_processor_status_change_total");
-        assertThat(metrics).contains("manager_bridge_status_change_total");
+
+        metricsService.getMetricNames().forEach(metric -> assertThat(metrics).contains(metric));
     }
 
     @Test
@@ -261,7 +265,6 @@ public class ShardBridgesSyncAPITest {
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.ACCEPTED)).count()).isZero();
             assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(ManagedResourceStatus.DEPROVISION)).count()).isEqualTo(1);
         });
-
     }
 
     @Test

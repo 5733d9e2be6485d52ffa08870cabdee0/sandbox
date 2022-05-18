@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.sources.SourceResolver;
 
 @ApplicationScoped
 public class GatewayConfiguratorImpl implements GatewayConfigurator {
@@ -23,8 +24,10 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     Instance<GatewayConnector<Action>> actionConnectors;
     @Inject
     Instance<GatewayValidator<Source>> sourceValidators;
+
     @Inject
-    Instance<GatewayResolver<Source>> sourceResolvers;
+    SourceResolver sourceResolver;
+
     @Inject
     Instance<GatewayConnector<Source>> sourceConnectors;
 
@@ -52,8 +55,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Override
     public GatewayResolver<Source> getSourceResolver(String sourceType) {
-        return getOptionalBean(sourceResolvers, sourceType)
-                .orElseThrow(() -> new GatewayProviderException(String.format("No resolver found for source type '%s'", sourceType)));
+        return sourceResolver;
     }
 
     @Override
@@ -82,10 +84,6 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     Collection<GatewayValidator<Source>> getSourceValidators() {
         return sourceValidators.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayResolver<Source>> getSourceResolvers() {
-        return sourceResolvers.stream().collect(Collectors.toList());
     }
 
     Collection<GatewayConnector<Source>> getSourceConnectors() {

@@ -14,6 +14,7 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
@@ -41,7 +42,7 @@ public class Hooks {
     @BeforeAll
     public static void webhookSiteRequestHistoryIsCleared() {
         final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        WebhookSiteResource.requests()
+        WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
                 .stream()
                 .filter(request -> {
                     final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -105,7 +106,6 @@ public class Hooks {
                                 break;
                         }
                     });
-
         }
     }
 }
