@@ -1,10 +1,14 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.awaitility.Awaitility;
 
@@ -40,6 +44,28 @@ public class Hooks {
     }
 
     @BeforeAll
+    public static void setUp() {
+        //Initialize env variables if Local config properties file exists for running tests locally
+        initializeLocalTestConfig();
+        //clear older Webhook site requests
+        webhookSiteRequestHistoryIsCleared();
+    }
+
+    public static void initializeLocalTestConfig() {
+        final String filePath = "src/test/resources/localconfig.properties";
+        File file = new File(filePath);
+        if (file.exists()) {
+            try {
+                InputStream inputStream = Hooks.class.getClassLoader().getResourceAsStream("localconfig.properties");
+                Properties prop = System.getProperties();
+                prop.load(inputStream);
+                System.setProperties(prop);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to set properties.", e);
+            }
+        }
+    }
+
     public static void webhookSiteRequestHistoryIsCleared() {
         final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
         WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)

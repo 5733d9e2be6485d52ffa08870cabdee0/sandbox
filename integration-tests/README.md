@@ -84,6 +84,9 @@ To properly run the tests locally you need to specify environment variables to a
 - `SLACK_CHANNEL` - Slack channel id (different from Slack channel name)
 - `WEBHOOK_SITE_UUID` - UUID to be used for tests interacting with webhook.site
 
+You can define these environment variables in localconfig.properties file under src/test/resources(integration-tests) folder or via the maven command, all environment variables is loaded before running the tests 
+
+Check the [localconfig-example.properties](src/test/resources/localconfig-example.properties) file for an example of how to use it.
 
 ### Keycloak token authentication
 
@@ -95,3 +98,4 @@ By Default test runs with those authentication parameters for Keycloak:
 ```
 
 You can update the parameters needs to configure in `integration-tests/pom.xml` or via the maven command.
+
