@@ -98,4 +98,3 @@ By Default test runs with those authentication parameters for Keycloak:
 ```
 
 You can update the parameters needs to configure in `integration-tests/pom.xml` or via the maven command.
-
