@@ -62,11 +62,11 @@ public class ExecutorService {
 
                 cloudEvent = CloudEventBuilder.v1() // TODO: refactor
                         .withData(message.getPayload().getBytes(StandardCharsets.UTF_8))
-                        .withId(headers.get("id"))
-                        .withSource(new URI(headers.get("source")))
-                        .withType(headers.get("type"))
-                        .withDataSchema(new URI(headers.get("dataschema")))
-                        .withSubject(headers.get("subject"))
+                        .withId(headers.getOrDefault("id", null))
+                        .withSource(new URI(headers.getOrDefault("source", null)))
+                        .withType(headers.getOrDefault("type", null))
+                        .withDataSchema(headers.containsKey("dataschema") ? new URI(headers.get("dataschema")) : null)
+                        .withSubject(headers.getOrDefault("subject", null))
                         .build();
             }
             executor.onEvent(cloudEvent);
