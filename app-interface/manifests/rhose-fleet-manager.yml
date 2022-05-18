@@ -51,6 +51,26 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: AWS_SECRET_ACCESS_KEY
+                - name: CLOUDWATCH_AWS_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${CLOUDWATCH_SECRET_NAME}
+                      key: aws_region
+                - name: CLOUDWATCH_AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${CLOUDWATCH_SECRET_NAME}
+                      key: aws_access_key_id
+                - name: CLOUDWATCH_AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${CLOUDWATCH_SECRET_NAME}
+                      key: aws_secret_access_key
+                - name: CLOUDWATCH_LOG_GROUP_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${CLOUDWATCH_SECRET_NAME}
+                      key: log_group_name
                 - name: EVENT_BRIDGE_DB_HOST
                   valueFrom:
                     secretKeyRef:
@@ -242,6 +262,9 @@ objects:
       selector:
         app-component: rhose-fleet-manager
 parameters:
+  - name: CLOUDWATCH_SECRET_NAME
+    value: rhose-cloudwatch
+    displayName: the cloudWatch secret name
   - name: EVENT_BRIDGE_DB_CONNECTION_PARAMS
     value: ?ssl=true&sslmode=verify-full&sslrootcert=/secrets/rds/db.ca_cert
     description: the connection parameters for secure rds instance
