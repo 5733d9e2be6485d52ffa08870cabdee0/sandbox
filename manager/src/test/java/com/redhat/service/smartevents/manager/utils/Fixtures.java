@@ -45,6 +45,7 @@ public class Fixtures {
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
         b.setStatus(ManagedResourceStatus.READY);
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());

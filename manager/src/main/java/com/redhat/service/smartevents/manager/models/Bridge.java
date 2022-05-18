@@ -53,6 +53,9 @@ public class Bridge extends ManagedResource {
     @Column(name = "shard_id")
     private String shardId;
 
+    @Column(name = "organisation_id")
+    private String organisationId;
+
     public Bridge() {
     }
 
@@ -72,6 +75,10 @@ public class Bridge extends ManagedResource {
         return shardId;
     }
 
+    public String getOrganisationId() {
+        return organisationId;
+    }
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
@@ -82,6 +89,10 @@ public class Bridge extends ManagedResource {
 
     public void setShardId(String shardId) {
         this.shardId = shardId;
+    }
+
+    public void setOrganisationId(String organisationId) {
+        this.organisationId = organisationId;
     }
 
     /*

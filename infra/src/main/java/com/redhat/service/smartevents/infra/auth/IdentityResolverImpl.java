@@ -29,4 +29,22 @@ public class IdentityResolverImpl implements IdentityResolver {
         throw new ForbiddenRequestException(String.format("The token is valid but it does not contain '%s' nor '%s' claim.", APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM,
                 APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM));
     }
+
+    @Override
+    public String resolveOrganisationId(JsonWebToken jwt) {
+        if (jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)) {
+            String organisationId = jwt.getClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM);
+            LOGGER.debug("Organisation Id({}) with a user account successfully fetched from jwt token", organisationId);
+            return organisationId;
+        }
+
+        if (jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)) {
+            String organisationId = jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM);
+            LOGGER.debug("Organisation Id({}) with a service account successfully fetched from jwt token", organisationId);
+            return organisationId;
+        }
+
+        throw new ForbiddenRequestException(String.format("The token is valid but it does not contain '%s' nor '%s' claim..", APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM,
+                APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM));
+    }
 }

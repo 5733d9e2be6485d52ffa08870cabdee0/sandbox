@@ -286,6 +286,7 @@ public class BridgeDAOTest {
         Bridge bridge = new Bridge();
         bridge.setId(id);
         bridge.setCustomerId(DEFAULT_CUSTOMER_ID);
+        bridge.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
         bridge.setName(name);
         bridge.setStatus(ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now());

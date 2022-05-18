@@ -69,7 +69,7 @@ public class BridgesServiceTest {
     @Test
     public void testGetBridges() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryResourceInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
@@ -86,7 +86,7 @@ public class BridgesServiceTest {
     @Test
     public void testGetBridge() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        Bridge bridge = bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         TestUtils.waitForBridgeToBeReady(bridgesService);
@@ -108,7 +108,7 @@ public class BridgesServiceTest {
     @Test
     public void testGetBridgeWithWrongCustomerId() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
@@ -119,7 +119,7 @@ public class BridgesServiceTest {
     @Test
     public void testCreateBridge() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
@@ -129,12 +129,13 @@ public class BridgesServiceTest {
 
         ListResult<Bridge> bridges = bridgesService.getBridges(TestConstants.DEFAULT_CUSTOMER_ID, new QueryResourceInfo(TestConstants.DEFAULT_PAGE, TestConstants.DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
+        assertThat(bridges.getItems().get(0).getOrganisationId()).isEqualTo(TestConstants.DEFAULT_ORGANISATION_ID);
     }
 
     @Test
     public void testUpdateBridgeStatus() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
@@ -154,7 +155,7 @@ public class BridgesServiceTest {
     @Test
     public void testUpdateBridgeStatusReadyPublishedAt() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
@@ -187,7 +188,7 @@ public class BridgesServiceTest {
     @Test
     public void getBridge() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, request);
+        bridgesService.createBridge(TestConstants.DEFAULT_CUSTOMER_ID, TestConstants.DEFAULT_ORGANISATION_ID, request);
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);

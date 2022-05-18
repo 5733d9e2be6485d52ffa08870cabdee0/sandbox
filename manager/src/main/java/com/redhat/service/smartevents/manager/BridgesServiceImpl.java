@@ -59,7 +59,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     @Transactional
-    public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
+    public Bridge createBridge(String customerId, String organisationId, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
@@ -68,6 +68,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
+        bridge.setOrganisationId(organisationId);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
 
         // Bridge and Work creation should always be in the same transaction

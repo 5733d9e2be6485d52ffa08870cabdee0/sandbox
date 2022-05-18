@@ -87,7 +87,9 @@ public class BridgesAPI {
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
     public Response createBridge(@Valid BridgeRequest bridgeRequest) {
-        Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
+        String customerId = identityResolver.resolve(jwt);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        Bridge bridge = bridgesService.createBridge(customerId, organisationId, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 
