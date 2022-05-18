@@ -74,7 +74,9 @@ public class OpenshiftNetworkingService implements NetworkingService {
         Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(bridgeIngress,
                 new TemplateImportConfig()
                         .withNameFromParent()
-                        .withNamespaceFromParent());
+                        .withPrimaryResourceFromParent());
+        // Inherit namespace from service and not from bridgeIngress
+        route.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
         route.getSpec().setHost(String.format("%s.%s", bridgeIngress.getMetadata().getName(), getOpenshiftAppsDomain()));

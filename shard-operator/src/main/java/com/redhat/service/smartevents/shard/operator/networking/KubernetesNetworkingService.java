@@ -93,7 +93,9 @@ public class KubernetesNetworkingService implements NetworkingService {
          */
         Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig()
                 .withNameFromParent()
-                .withNamespaceFromParent());
+                .withPrimaryResourceFromParent());
+        // Inherit the namespace from the service
+        ingress.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()

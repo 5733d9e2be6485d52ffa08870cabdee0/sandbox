@@ -43,7 +43,7 @@ public class TemplateProviderTest {
     @Test
     public void metadataIsUpdated() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withAll());
+        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertThat(deployment.getMetadata().getName()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getName());
         assertThat(deployment.getMetadata().getNamespace()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getNamespace());
@@ -67,7 +67,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeExecutorDeploymentTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withAll());
+        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -79,7 +79,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeExecutorServiceTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withAll());
+        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_EXECUTOR, service.getMetadata());
         assertLabels(service.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -95,7 +95,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, TemplateImportConfig.withAll());
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
@@ -106,7 +106,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, TemplateImportConfig.withAll());
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
         assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);

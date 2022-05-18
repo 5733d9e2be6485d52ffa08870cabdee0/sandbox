@@ -36,7 +36,7 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
             return Optional.empty();
         }
 
-        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withAll());
+        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withDefaults());
         if (expected.getSpec().getSelector() == null) {
             expected.getSpec().setSelector(new LabelSelector());
         }

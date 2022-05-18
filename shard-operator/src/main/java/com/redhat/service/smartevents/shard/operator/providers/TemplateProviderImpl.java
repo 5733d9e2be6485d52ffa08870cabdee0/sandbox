@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator.providers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -9,6 +10,7 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
+import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -129,6 +131,19 @@ public class TemplateProviderImpl implements TemplateProvider {
             meta.getOwnerReferences().get(0).setUid(resource.getMetadata().getUid());
         } else {
             meta.setOwnerReferences(null);
+        }
+
+        // Primary resource
+        if (config.isPrimaryResourceToBeSet()) {
+            Map<String, String> annotations = new LabelsBuilder()
+                    .withPrimaryResourceName(resource.getMetadata().getName())
+                    .withPrimaryResourceNamespace(resource.getMetadata().getNamespace())
+                    .build();
+            if (meta.getAnnotations() == null) {
+                meta.setAnnotations(annotations);
+            } else {
+                meta.getAnnotations().putAll(annotations);
+            }
         }
     }
 }

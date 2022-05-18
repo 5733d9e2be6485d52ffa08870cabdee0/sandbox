@@ -109,6 +109,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
 
+        if (!networkResource.isReady()) {
+            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+            return UpdateControl.updateStatus(bridgeIngress);
+        }
+
+        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
             bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);

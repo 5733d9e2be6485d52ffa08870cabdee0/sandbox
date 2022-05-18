@@ -4,14 +4,16 @@ public class TemplateImportConfig {
     private boolean nameToBeSet = false;
     private boolean namespaceToBeSet = false;
     private boolean ownerReferencesToBeSet = false;
+    private boolean primaryResourceToBeSet = false;
 
     public TemplateImportConfig() {
     }
 
-    public TemplateImportConfig(boolean nameToBeSet, boolean namespaceToBeSet, boolean ownerReferencesToBeSet) {
+    public TemplateImportConfig(boolean nameToBeSet, boolean namespaceToBeSet, boolean ownerReferencesToBeSet, boolean primaryResourceToBeSet) {
         this.nameToBeSet = nameToBeSet;
         this.namespaceToBeSet = namespaceToBeSet;
         this.ownerReferencesToBeSet = ownerReferencesToBeSet;
+        this.primaryResourceToBeSet = primaryResourceToBeSet;
     }
 
     public TemplateImportConfig withNameFromParent() {
@@ -29,6 +31,11 @@ public class TemplateImportConfig {
         return this;
     }
 
+    public TemplateImportConfig withPrimaryResourceFromParent() {
+        this.primaryResourceToBeSet = true;
+        return this;
+    }
+
     public boolean isNameToBeSet() {
         return nameToBeSet;
     }
@@ -41,7 +48,11 @@ public class TemplateImportConfig {
         return ownerReferencesToBeSet;
     }
 
-    public static TemplateImportConfig withAll() {
-        return new TemplateImportConfig(true, true, true);
+    public boolean isPrimaryResourceToBeSet() {
+        return primaryResourceToBeSet;
+    }
+
+    public static TemplateImportConfig withDefaults() {
+        return new TemplateImportConfig(true, true, true, false);
     }
 }
