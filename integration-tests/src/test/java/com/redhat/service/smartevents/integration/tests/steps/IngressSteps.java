@@ -50,7 +50,7 @@ public class IngressSteps {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                         .then()
-                        .statusCode(200));
+                        .statusCode(405));
     }
 
     @And("^the Ingress of Bridge \"([^\"]*)\" is not available within (\\d+) (?:minute|minutes)$")
@@ -109,7 +109,7 @@ public class IngressSteps {
         try (InputStream cloudEventStream = new ByteArrayInputStream(cloudEvent.getBytes(StandardCharsets.UTF_8))) {
             IngressResource.postCloudEventResponse(token, endpoint, cloudEventStream, headers, contentType)
                     .then()
-                    .statusCode(200);
+                    .statusCode(202);
         } catch (IOException e) {
             throw new RuntimeException("Error with inputstream", e);
         }

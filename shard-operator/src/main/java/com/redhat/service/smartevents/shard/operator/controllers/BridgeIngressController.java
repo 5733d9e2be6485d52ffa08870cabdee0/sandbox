@@ -151,10 +151,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Since the ingress for the gateway has to be in the istio-system namespace
         // we can not set the owner reference. We have to delete the resource manually.
-        kubernetesClient.resources(AuthorizationPolicy.class)
-                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace())
-                .withName(bridgeIngress.getMetadata().getName())
-                .delete();
+        networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 

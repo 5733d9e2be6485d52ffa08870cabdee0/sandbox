@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
-import io.smallrye.reactive.messaging.kafka.KafkaRecord;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_SOURCE;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_TYPE;
@@ -49,7 +49,7 @@ class ExecutorServiceTest {
         executorService.executor = executorMock;
         executorService.mapper = new ObjectMapper();
 
-        KafkaRecord<Integer, String> inputMessage = mock(KafkaRecord.class);
+        IncomingKafkaRecord<Integer, String> inputMessage = mock(IncomingKafkaRecord.class);
         when(inputMessage.getPayload()).thenReturn(inputEvent);
 
         ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);

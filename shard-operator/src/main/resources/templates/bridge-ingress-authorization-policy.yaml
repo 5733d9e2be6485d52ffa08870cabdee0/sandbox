@@ -17,6 +17,7 @@ spec:
         - operation:
             methods:
               - POST
+              - OPTIONS
             paths:
               - ""
       when:
@@ -27,6 +28,7 @@ spec:
         - operation:
             methods:
               - POST
+              - OPTIONS
             paths:
               - ""
       when:

@@ -21,12 +21,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.jackson.JsonCloudEventData;
-import io.smallrye.reactive.messaging.kafka.KafkaRecord;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
 
@@ -49,12 +48,27 @@ public class ExecutorService {
     ObjectMapper mapper;
 
     @Incoming(EVENTS_IN_CHANNEL)
-    public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
+    public CompletionStage<Void> processEvent(final IncomingKafkaRecord<Integer, String> message) {
         try {
             String eventPayload = message.getPayload();
-            CloudEvent cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
-                    ? wrapToCloudEvent(eventPayload, message.getHeaders())
-                    : CloudEventUtils.decode(eventPayload);
+            CloudEvent cloudEvent;
+            if (executor.getProcessor().getType() == ProcessorType.SOURCE) {
+                cloudEvent = wrapToCloudEvent(eventPayload, message.getHeaders());
+            } else {
+                Map<String, String> headers = new HashMap<>();
+                for (Header h : message.getHeaders().toArray()) {
+                    headers.put(h.key().substring(3), new String(h.value())); // TODO: refactor
+                }
+
+                cloudEvent = CloudEventBuilder.v1() // TODO: refactor
+                        .withData(message.getPayload().getBytes(StandardCharsets.UTF_8))
+                        .withId(headers.get("id"))
+                        .withSource(new URI(headers.get("source")))
+                        .withType(headers.get("type"))
+                        .withDataSchema(new URI(headers.get("dataschema")))
+                        .withSubject(headers.get("subject"))
+                        .build();
+            }
             executor.onEvent(cloudEvent);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.",
