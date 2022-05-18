@@ -26,11 +26,6 @@ import static java.util.Collections.emptyList;
 @Transactional
 public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
 
-    private static final int FILTER_NONE = 0;
-    private static final int FILTER_BY_NAME = 1;
-    private static final int FILTER_BY_STATUS = 2;
-    private static final int FILTER_BY_TYPE = 4;
-
     /*
      * NOTE: the Processor queries that use a left join on the filters **MUST** be wrapped by the method `removeDuplicates`!
      * see https://developer.jboss.org/docs/DOC-15782#
