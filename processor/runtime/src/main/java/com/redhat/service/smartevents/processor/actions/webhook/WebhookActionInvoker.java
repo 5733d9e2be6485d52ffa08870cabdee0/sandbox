@@ -43,6 +43,7 @@ public class WebhookActionInvoker implements ActionInvoker {
             String token = oidcClient.getToken();
             if (token != null && !"".equals(token)) {
                 request = request.bearerTokenAuthentication(token);
+                request = request.putHeader("content-type", "application/cloudevents+json"); // TODO: refactor
             }
         } else if (basicAuthUsername != null) {
             request.basicAuthentication(basicAuthUsername, basicAuthPassword);

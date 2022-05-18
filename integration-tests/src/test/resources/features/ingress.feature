@@ -35,11 +35,9 @@ Feature: Ingress tests
       }
     }
     """
-    Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
 
   Scenario: Send plain Cloud Event
     When send a json event to the Ingress of the Bridge "mybridge" with path "plain" and headers "ce-id":"my-id","ce-source":"mySource","ce-specversion":"1.0","ce-type":"myType":
     """
     { "data" : "test" }
     """
-    Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1

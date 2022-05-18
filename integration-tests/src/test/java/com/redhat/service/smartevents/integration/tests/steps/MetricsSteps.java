@@ -21,11 +21,6 @@ public class MetricsSteps {
         testMetricAndCount(BridgeUtils.MANAGER_URL + "/q/metrics", metricName, minimalValue);
     }
 
-    @Given("^the Ingress of the Bridge \"([^\"]*)\" metric \'([^\']*)\' count is at least (\\d+)$")
-    public void ingressOfBridgeMetricCountIsAtLeast(String testBridgeName, String metricName, int minimalValue) {
-        testMetricAndCount(BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName) + "/q/metrics", metricName, minimalValue);
-    }
-
     private void testMetricAndCount(String metricsEndpoint, String metricName, int minimalValue) {
         String metrics = ResourceUtils.jsonRequest(context.getManagerToken())
                 .get(metricsEndpoint)
