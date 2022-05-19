@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A Gateway represents the touching point between a Processor and
@@ -33,6 +34,10 @@ public class Gateway {
     @JsonProperty("parameters")
     private Map<String, String> parameters = new HashMap<>();
 
+    @NotEmpty(message = "Gateway parameters must be supplied")
+    @JsonProperty("parameters")
+    private ObjectNode rawParameters;
+
     public String getType() {
         return type;
     }
@@ -47,6 +52,14 @@ public class Gateway {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    public ObjectNode getRawParameters() {
+        return rawParameters;
+    }
+
+    public void setRawParameters(ObjectNode rawParameters) {
+        this.rawParameters = rawParameters;
     }
 
     @Override
