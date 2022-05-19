@@ -160,15 +160,12 @@ public class ProcessorSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .failFast(() -> ProcessorResource
-                        .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                processorId)
+                        .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                         .then()
                         .body("status", Matchers.equalTo("failed")))
-
                 .untilAsserted(
                         () -> ProcessorResource
-                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
-                                        processorId)
+                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                                 .then()
                                 .body("status", Matchers.equalTo(status)));
     }
