@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,8 +22,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayValidator;
 
-@ApplicationScoped
-public class GenericJsonSchemaConnectorValidator implements GatewayValidator<Action> {
+public abstract class GenericJsonSchemaConnectorValidator implements GatewayValidator<Action> {
 
     @Inject
     ObjectMapper objectMapper;
@@ -33,14 +31,18 @@ public class GenericJsonSchemaConnectorValidator implements GatewayValidator<Act
         InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(name);
 
-        if(is == null) {
-            throw new RuntimeException("Cannot find a json schema file for connector " + name);
+        if (is == null) {
+            throw new RuntimeException("Cannot find a json schema file for connector " + jsonFileName(name));
         }
 
         return new BufferedReader(
                 new InputStreamReader(is, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+    }
+
+    private String jsonFileName(String name) {
+        return name + ".json";
     }
 
     protected JsonSchema getJsonSchemaFromJsonNode(JsonNode jsonNode) {
@@ -54,10 +56,9 @@ public class GenericJsonSchemaConnectorValidator implements GatewayValidator<Act
         ObjectNode rawFile;
         try {
 
-            // TODO need to parametrise this depending on the connector type
-            // This file was copied from
+            // The files are copied from MC repository i.e.
             // https://github.com/bf2fc6cc711aee1a0c2a/cos-fleet-catalog-camel/blob/main/etc/kubernetes/manifests/base/connectors/connector-catalog-camel-social/slack_sink_0.1.json#L42
-            String schemaString = getJsonSchemaString(action.getType());
+            String schemaString = getJsonSchemaString(jsonFileName(action.getType()));
             rawFile = objectMapper.readValue(schemaString, ObjectNode.class);
 
         } catch (Exception e) {
@@ -71,20 +72,18 @@ public class GenericJsonSchemaConnectorValidator implements GatewayValidator<Act
         schema.initializeValidators();
         ObjectNode parameters = action.getRawParameters();
 
-        parameters.set("kafka_topic", new TextNode("dummytopic")); // hack as the topic will be set later
+        // hack as the topic will be set later so validation should pass
+        parameters.set("kafka_topic", new TextNode("dummytopic"));
 
         Set<ValidationMessage> errors = schema.validate(parameters);
 
-        if(!errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             String errorsString = errors.stream().map(Objects::toString).collect(Collectors.joining("|"));
             return new ValidationResult(false, errorsString);
         }
 
-        return new ValidationResult(true);
-    }
+        parameters.remove("kafka_topic"); // make sure this hack doesn't leak
 
-    @Override
-    public String getType() {
-        return "Generic";
+        return new ValidationResult(true);
     }
 }

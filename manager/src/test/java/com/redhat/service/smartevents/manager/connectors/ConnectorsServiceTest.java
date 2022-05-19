@@ -21,8 +21,7 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.actions.slack.SlackActionConnector;
+import com.redhat.service.smartevents.processor.actions.slack.SlackConnectorAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSourceConnector;
@@ -91,7 +90,7 @@ class ConnectorsServiceTest {
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { processorWith(slackAction()), SlackActionConnector.CONNECTOR_TYPE_ID },
+                { processorWith(slackAction()), SlackConnectorAction.CONNECTOR_TYPE_ID },
                 { processorWith(slackSource()), SlackSourceConnector.CONNECTOR_TYPE_ID }
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -126,10 +125,10 @@ class ConnectorsServiceTest {
 
     private static Action slackAction() {
         Action action = new Action();
-        action.setType(SlackAction.TYPE);
+        action.setType("slack");
         action.setParameters(Map.of(
-                SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
-                SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
+                "a", TEST_ACTION_CHANNEL,
+                "b", TEST_ACTION_WEBHOOK));
         return action;
     }
 

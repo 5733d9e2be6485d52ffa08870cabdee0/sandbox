@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,11 +29,11 @@ public class Gateway {
     @JsonProperty("type")
     private String type;
 
-    @NotEmpty(message = "Gateway parameters must be supplied")
-    @JsonProperty("parameters")
+    @JsonProperty("parameters_old")
     private Map<String, String> parameters = new HashMap<>();
 
-    @NotEmpty(message = "Gateway parameters must be supplied")
+    // TODO NotEmpty cannot be used on ObjectNode
+    // @NotEmpty(message = "Gateway parameters must be supplied")
     @JsonProperty("parameters")
     private ObjectNode rawParameters;
 

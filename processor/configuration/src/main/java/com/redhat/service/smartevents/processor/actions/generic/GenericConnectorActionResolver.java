@@ -11,7 +11,7 @@ import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
-public class GenericActionResolver implements GatewayResolver<Action> {
+public abstract class GenericConnectorActionResolver implements GatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;
@@ -29,10 +29,5 @@ public class GenericActionResolver implements GatewayResolver<Action> {
         newParameters.put(KafkaTopicAction.TOPIC_PARAM, gatewayConfiguratorService.getConnectorTopicName(processorId));
 
         return resolvedAction;
-    }
-
-    @Override
-    public String getType() {
-        return "Generic";
     }
 }

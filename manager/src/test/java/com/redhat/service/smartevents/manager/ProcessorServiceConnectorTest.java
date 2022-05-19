@@ -28,7 +28,6 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
-import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
@@ -276,7 +275,7 @@ class ProcessorServiceConnectorTest {
 
     private Action createSlackAction() {
         Action mcAction = new Action();
-        mcAction.setType(SlackAction.TYPE);
+        mcAction.setType("Slack");
         Map<String, String> parameters = mcAction.getParameters();
         parameters.put("channel", "channel");
         parameters.put("webhookUrl", "webhook_url");

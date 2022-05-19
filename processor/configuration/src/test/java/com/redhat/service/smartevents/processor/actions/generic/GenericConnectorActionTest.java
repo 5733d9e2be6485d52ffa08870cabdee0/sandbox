@@ -4,18 +4,20 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class GenericActionConnectorTest {
+public class GenericConnectorActionTest {
 
     private static final String TEST_CHANNEL = "test-channel";
     private static final String TEST_WEBHOOK_URL = "https://www.example.com/webhook";
@@ -36,7 +38,7 @@ public class GenericActionConnectorTest {
             "}";
 
     @Inject
-    GenericActionConnector connector;
+    GenericConnectorAction connector;
 
     @Inject
     ObjectMapper mapper;
@@ -47,9 +49,9 @@ public class GenericActionConnectorTest {
 
         Action action = new Action();
         action.setType("Generic");
-        Map<String, String> parametersMap = Map.of("slack_channel", TEST_CHANNEL,
-                                                   "slack_webhook_url",
-                                                   TEST_WEBHOOK_URL);
+        Map<String, String> parametersMap = Map.of(
+                "slack_channel", TEST_CHANNEL,
+                "slack_webhook_url", TEST_WEBHOOK_URL);
 
         action.setRawParameters(mapToJsonObject(parametersMap));
 

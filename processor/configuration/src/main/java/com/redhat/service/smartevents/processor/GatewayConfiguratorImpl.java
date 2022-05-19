@@ -65,7 +65,13 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     private static <T extends GatewayBean> Optional<T> getOptionalBean(Instance<T> instances, String sourceType) {
+        System.out.println("++++ Finding bean with type: " + sourceType);
         return instances.stream()
+                .map(i -> {
+                    System.out.println(i);
+                    System.out.println(i.getType());
+                    return i;
+                })
                 .filter(a -> a.accept(sourceType))
                 .findFirst();
     }

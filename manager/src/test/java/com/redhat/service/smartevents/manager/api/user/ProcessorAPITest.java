@@ -38,7 +38,7 @@ import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
-import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
+import com.redhat.service.smartevents.processor.actions.slack.SlackConnectorAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -460,10 +460,10 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Action action = TestUtils.createKafkaAction();
-        action.setType(SlackAction.TYPE);
+        action.setType(SlackConnectorAction.CONNECTOR_TYPE_ID);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAM, "");
-        params.put(SlackAction.WEBHOOK_URL_PARAM, "https://example.com");
+        params.put("a", "");
+        params.put("b", "https://example.com");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
@@ -476,10 +476,10 @@ public class ProcessorAPITest {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
         Action action = TestUtils.createKafkaAction();
-        action.setType(SlackAction.TYPE);
+        action.setType(SlackConnectorAction.CONNECTOR_TYPE_ID);
         Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAM, "channel");
-        params.put(SlackAction.WEBHOOK_URL_PARAM, "");
+        params.put("a", "channel");
+        params.put("a", "");
         action.setParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));

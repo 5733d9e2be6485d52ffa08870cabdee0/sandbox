@@ -36,10 +36,10 @@ if [ "${action_type}" = 'slack' ]; then
   action_payload='{
    "name": '"\"$action_name\""',
    "action": {
-      "type": "Slack",
+      "type": "slack_sink_0.1",
       "parameters": {
-         "channel": "mc",
-         "webhookUrl": '"\"$SLACK_WEBHOOK_URL\""'
+         "slack_channel": "mc",
+         "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL\""'
       }
    },
   "filters": [
@@ -57,8 +57,8 @@ elif [ "${action_type}" = 'slack-plain' ]; then
    "action": {
       "type": "Slack",
       "parameters": {
-         "channel": "mc",
-         "webhookUrl": '"\"$SLACK_WEBHOOK_URL\""'
+         "slack_channel": "mc",
+         "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL\""'
       }
    }
 }'
