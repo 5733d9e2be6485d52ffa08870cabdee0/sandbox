@@ -44,19 +44,12 @@ public class Hooks {
     }
 
     @BeforeAll
-    public static void setUp() {
-        //Initialize env variables if Local config properties file exists for running tests locally
-        initializeLocalTestConfig();
-        //clear older Webhook site requests
-        webhookSiteRequestHistoryIsCleared();
-    }
-
     public static void initializeLocalTestConfig() {
-        final String filePath = "src/test/resources/localconfig.properties";
-        File file = new File(filePath);
+        final String filename = "localconfig.properties";
+        File file = new File(filename);
         if (file.exists()) {
             try {
-                InputStream inputStream = Hooks.class.getClassLoader().getResourceAsStream("localconfig.properties");
+                InputStream inputStream = Hooks.class.getClassLoader().getResourceAsStream(filename);
                 Properties prop = System.getProperties();
                 prop.load(inputStream);
                 System.setProperties(prop);
@@ -66,6 +59,7 @@ public class Hooks {
         }
     }
 
+    @BeforeAll
     public static void webhookSiteRequestHistoryIsCleared() {
         final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
         WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
