@@ -163,7 +163,7 @@ public class ProcessorSteps {
                         .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
                                 processorId)
                         .then()
-                        .body("status", Matchers.equalTo(status)))
+                        .body("status", Matchers.equalTo("failed")))
 
                 .untilAsserted(
                         () -> ProcessorResource
