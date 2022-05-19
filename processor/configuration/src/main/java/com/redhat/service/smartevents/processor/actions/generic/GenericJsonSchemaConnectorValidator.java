@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,16 +18,13 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-import com.networknt.schema.SpecVersionDetector;
 import com.networknt.schema.ValidationMessage;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayValidator;
-import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
-public class GenericValidationConnectorJsonSchema implements GatewayValidator<Action> {
-
+public class GenericJsonSchemaConnectorValidator implements GatewayValidator<Action> {
 
     @Inject
     ObjectMapper objectMapper;
@@ -36,6 +32,10 @@ public class GenericValidationConnectorJsonSchema implements GatewayValidator<Ac
     protected String getJsonSchemaString(String name) {
         InputStream is = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream(name);
+
+        if(is == null) {
+            throw new RuntimeException("Cannot find a json schema file for connector " + name);
+        }
 
         return new BufferedReader(
                 new InputStreamReader(is, StandardCharsets.UTF_8))
@@ -57,7 +57,7 @@ public class GenericValidationConnectorJsonSchema implements GatewayValidator<Ac
             // TODO need to parametrise this depending on the connector type
             // This file was copied from
             // https://github.com/bf2fc6cc711aee1a0c2a/cos-fleet-catalog-camel/blob/main/etc/kubernetes/manifests/base/connectors/connector-catalog-camel-social/slack_sink_0.1.json#L42
-            String schemaString = getJsonSchemaString("slack_sink_0.1.json");
+            String schemaString = getJsonSchemaString(action.getType());
             rawFile = objectMapper.readValue(schemaString, ObjectNode.class);
 
         } catch (Exception e) {

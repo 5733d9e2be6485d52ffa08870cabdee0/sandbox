@@ -6,7 +6,6 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.actions.generic.GenericValidationConnectorJsonSchema;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -14,10 +13,10 @@ import static com.redhat.service.smartevents.processor.actions.generic.GenericAc
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class GenericValidationConnectorJsonSchemaTest {
+class GenericJsonSchemaConnectorValidatorTest {
 
     @Inject
-    GenericValidationConnectorJsonSchema validator;
+    GenericJsonSchemaConnectorValidator validator;
 
     @Test
     void isValid() {
@@ -53,7 +52,7 @@ class GenericValidationConnectorJsonSchemaTest {
 
     private Action actionWith(Map<String, String> params) {
         Action action = new Action();
-        action.setType("Generic");
+        action.setType("slack_sink_0.1.json");
         action.setParameters(params);
         action.setRawParameters(mapToJsonObject(params));
         return action;
