@@ -4,20 +4,19 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class GenericActionConnectorTest {
+public class GenericActionConnectorTest {
+
     private static final String TEST_CHANNEL = "test-channel";
     private static final String TEST_WEBHOOK_URL = "https://www.example.com/webhook";
     private static final String TEST_TOPIC_NAME = "test-topic";
@@ -49,8 +48,8 @@ class GenericActionConnectorTest {
         Action action = new Action();
         action.setType("Generic");
         Map<String, String> parametersMap = Map.of("slack_channel", TEST_CHANNEL,
-                "slack_webhook_url",
-                TEST_WEBHOOK_URL);
+                                                   "slack_webhook_url",
+                                                   TEST_WEBHOOK_URL);
 
         action.setRawParameters(mapToJsonObject(parametersMap));
 
@@ -60,8 +59,15 @@ class GenericActionConnectorTest {
     }
 
     // TODO probably there's a better way than passing through a String
-    private ObjectNode mapToJsonObject(Map<String, String> parametersMap) throws JsonProcessingException {
-        String parameterString = mapper.writeValueAsString(parametersMap);
-        return mapper.readValue(parameterString, ObjectNode.class);
+    public static ObjectNode mapToJsonObject(Map<String, String> parametersMap) {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            String parameterString = mapper.writeValueAsString(parametersMap);
+            return mapper.readValue(parameterString, ObjectNode.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
