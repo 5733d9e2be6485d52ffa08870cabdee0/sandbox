@@ -106,6 +106,14 @@ public class BridgeSteps {
                         .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
+
+                .failFast(
+                        () -> BridgeResource
+                                .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
+                                .then()
+                                .body("status", Matchers.equalTo("failed"))
+                                .body("endpoint", Matchers.containsString(bridgeContext.getId())))
+
                 .untilAsserted(
                         () -> BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())

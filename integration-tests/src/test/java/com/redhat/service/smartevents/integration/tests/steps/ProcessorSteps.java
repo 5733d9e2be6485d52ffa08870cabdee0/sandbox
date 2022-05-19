@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -158,6 +159,12 @@ public class ProcessorSteps {
                                 .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
+                .failFast(() -> ProcessorResource
+                        .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
+                                processorId)
+                        .then()
+                        .body("status", Matchers.equalTo(status)))
+
                 .untilAsserted(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(),
