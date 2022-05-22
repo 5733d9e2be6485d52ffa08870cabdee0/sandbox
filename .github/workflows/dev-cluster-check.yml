@@ -1,13 +1,12 @@
 name: Check development cluster
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      - sheriffqueue
 jobs:
   run-integration-tests:
     timeout-minutes: 30
     runs-on: ubuntu-latest
-    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,6 +25,7 @@ jobs:
           echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
+          echo "::add-mask::${{ secrets.GCHAT_WEBHOOK_URL }}"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
@@ -51,18 +51,32 @@ jobs:
         with:
           maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
           working-directory: integration-tests
-      - name: Send mail with link to failing job
-        uses: dawidd6/action-send-mail@v3
-        if: ${{ failure() }}
+#      - name: Send mail with link to failing job
+#        uses: dawidd6/action-send-mail@v3
+#        if: ${{ failure() }}
+#        with:
+#          server_address: smtp.gmail.com
+#          server_port: 465
+#          username: ${{ secrets.CI_MAIL_USERNAME }}
+#          password: ${{ secrets.CI_MAIL_PASSWORD }}
+#          subject: Dev cluster CI - Check failed
+#          to: openbridge-dev@redhat.com
+#          from: Dev cluster CI
+#          body: Dev cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml and implement a proper fix.
+      - name: Get Sheriff Name
+        if: ${{ always() }}
+        run: |
+          chmod +x ./.github/scripts/sheriff_queue.sh
+          echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff_queue.sh)"
+          id: findUser
+      - name: google-chat-Notification
+        if: ${{ always() }}
+        uses: javiern8410/actions-google-chat-notification@v1.0.0
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.CI_MAIL_USERNAME }}
-          password: ${{ secrets.CI_MAIL_PASSWORD }}
-          subject: Dev cluster CI - Check failed
-          to: openbridge-dev@redhat.com
-          from: Dev cluster CI
-          body: Dev cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml and implement a proper fix.
+          name: Build
+          url: ${{ secrets.GCHAT_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          custom_text: 'Dev cluster CI check failed. Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml">dev-cluster-check.yml </a> and implement a proper fix'
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10
