@@ -59,8 +59,13 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
+        String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
         GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId(), actionConnector.connectorPayload(action, topicName));
+        persistConnectorEntity(processor,
+                topicName,
+                actionConnector.getConnectorType(),
+                actionConnector.getConnectorTypeId(),
+                actionConnector.connectorPayload(action, topicName, errorHandlerTopicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
@@ -68,7 +73,12 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     public void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId(), sourceConnector.connectorPayload(source, topicName));
+        String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
+        persistConnectorEntity(processor,
+                topicName,
+                sourceConnector.getConnectorType(),
+                sourceConnector.getConnectorTypeId(),
+                sourceConnector.connectorPayload(source, topicName, errorHandlerTopicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {

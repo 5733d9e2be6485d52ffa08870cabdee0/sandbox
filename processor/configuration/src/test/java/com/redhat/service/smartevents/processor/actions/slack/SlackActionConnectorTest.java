@@ -21,6 +21,7 @@ class SlackActionConnectorTest {
     private static final String CHANNEL = "channel";
     private static final String WEBHOOK_URL = "https://www.example.com/webhook";
     private static final String TOPIC_NAME = "topic";
+    private static final String ERROR_HANDLER_TOPIC_NAME = "errorHandlerTopic";
 
     private static final String EXPECTED_PAYLOAD_JSON = "{" +
             "   \"slack_channel\":\"" + CHANNEL + "\"," +
@@ -55,7 +56,7 @@ class SlackActionConnectorTest {
         action.setType(SlackAction.TYPE);
         action.setParameters(Map.of(SlackAction.CHANNEL_PARAM, CHANNEL, SlackAction.WEBHOOK_URL_PARAM, WEBHOOK_URL));
 
-        JsonNode payload = connector.connectorPayload(action, TOPIC_NAME);
+        JsonNode payload = connector.connectorPayload(action, TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
 
         assertThat(payload).isEqualTo(expectedPayload);
     }

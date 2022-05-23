@@ -160,6 +160,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getClientSecret().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERRORS_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getErrorsTopic().getBytes()));
 
         Secret existing = kubernetesClient
                 .secrets()

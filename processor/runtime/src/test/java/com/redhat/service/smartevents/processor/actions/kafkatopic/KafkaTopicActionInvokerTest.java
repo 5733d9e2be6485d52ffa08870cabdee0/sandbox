@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.processor.actions.ActionTestUtils;
 
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
@@ -34,7 +35,7 @@ class KafkaTopicActionInvokerTest {
         ProcessorDTO processor = createProcessor();
 
         KafkaTopicActionInvoker invoker = new KafkaTopicActionInvoker(emitter, processor, topic);
-        invoker.onEvent(event);
+        invoker.onEvent(ActionTestUtils.createCloudEvent(), event);
 
         verify(emitter).send(captor.capture());
 

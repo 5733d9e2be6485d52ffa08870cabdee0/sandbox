@@ -10,5 +10,5 @@ public interface GatewayConnector<T extends Gateway> extends GatewayBean {
 
     String getConnectorTypeId();
 
-    JsonNode connectorPayload(T gateway, String topicName);
+    JsonNode connectorPayload(T gateway, String topicName, String errorHandlerTopicName);
 }

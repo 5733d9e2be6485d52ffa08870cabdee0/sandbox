@@ -21,6 +21,7 @@ class SlackSourceConnectorTest {
     private static final String CHANNEL = "channel";
     private static final String TOKEN = "token";
     private static final String TOPIC_NAME = "topic";
+    private static final String ERROR_HANDLER_TOPIC_NAME = "errorHandlerTopic";
 
     private static final String EXPECTED_PAYLOAD_JSON = "{" +
             "   \"slack_channel\":\"" + CHANNEL + "\"," +
@@ -55,7 +56,7 @@ class SlackSourceConnectorTest {
         source.setType(SlackSource.TYPE);
         source.setParameters(Map.of(SlackSource.CHANNEL_PARAM, CHANNEL, SlackSource.TOKEN_PARAM, TOKEN));
 
-        JsonNode payload = connector.connectorPayload(source, TOPIC_NAME);
+        JsonNode payload = connector.connectorPayload(source, TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
 
         assertThat(payload).isEqualTo(expectedPayload);
     }

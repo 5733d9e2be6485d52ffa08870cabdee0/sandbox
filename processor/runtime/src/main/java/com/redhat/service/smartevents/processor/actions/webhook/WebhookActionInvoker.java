@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.processor.actions.webhook;
 import com.redhat.service.smartevents.infra.auth.OidcClient;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
+import io.cloudevents.CloudEvent;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
@@ -37,7 +38,7 @@ public class WebhookActionInvoker implements ActionInvoker {
     }
 
     @Override
-    public void onEvent(String event) {
+    public void onEvent(CloudEvent originalEvent, String transformedEvent) {
         HttpRequest<Buffer> request = webClient.postAbs(endpoint);
         if (oidcClient != null) {
             String token = oidcClient.getToken();
@@ -47,7 +48,7 @@ public class WebhookActionInvoker implements ActionInvoker {
         } else if (basicAuthUsername != null) {
             request.basicAuthentication(basicAuthUsername, basicAuthPassword);
         }
-        request.sendJsonObjectAndForget(new JsonObject(event));
+        request.sendJsonObjectAndForget(new JsonObject(transformedEvent));
     }
 
     String getEndpoint() {

@@ -32,7 +32,7 @@ public class ExecutorTestUtils {
     public static CloudEvent createCloudEvent() {
         try {
             JsonNode data = CloudEventUtils.getMapper().readTree(PLAIN_EVENT_JSON);
-            return CloudEventUtils.builderFor(CLOUD_EVENT_ID, SpecVersion.V1, CLOUD_EVENT_SOURCE, CLOUD_EVENT_SUBJECT, data)
+            return CloudEventUtils.builderFor(CLOUD_EVENT_ID, SpecVersion.V1, CLOUD_EVENT_SOURCE, CLOUD_EVENT_SUBJECT, CLOUD_EVENT_TYPE, data)
                     .withType(CLOUD_EVENT_TYPE)
                     .build();
         } catch (JsonProcessingException e) {
@@ -90,6 +90,7 @@ public class ExecutorTestUtils {
                 "test",
                 "test",
                 "PLAINTEXT",
-                "ob-bridgeid-1");
+                "ob-bridgeid-1",
+                "ob-bridgeid-1-errors");
     }
 }

@@ -86,7 +86,7 @@ public class IngressAPI {
         LOGGER.debug("New event has been uploaded to endpoint /events/plain");
         validateHeaders(cloudEventSpecVersion, cloudEventSource);
         CloudEvent cloudEvent = CloudEventUtils.build(cloudEventId, SpecVersion.parse(cloudEventSpecVersion),
-                URI.create(cloudEventSource), cloudEventSubject, event);
+                URI.create(cloudEventSource), cloudEventSubject, cloudEventType, event);
         kafkaEventPublisher.sendEvent(cloudEvent);
         return Response.ok().build();
     }

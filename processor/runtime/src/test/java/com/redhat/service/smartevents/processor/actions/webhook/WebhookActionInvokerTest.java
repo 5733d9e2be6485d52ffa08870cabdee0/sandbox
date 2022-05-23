@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
+import com.redhat.service.smartevents.processor.actions.ActionTestUtils;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -49,7 +50,7 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
         WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx));
-        invoker.onEvent(TEST_EVENT);
+        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
@@ -68,7 +69,7 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
 
         WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), "username", "password");
-        invoker.onEvent(TEST_EVENT);
+        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
@@ -90,7 +91,7 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
         when(abstractOidcClient.getToken()).thenReturn("token");
 
         WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), abstractOidcClient);
-        invoker.onEvent(TEST_EVENT);
+        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 

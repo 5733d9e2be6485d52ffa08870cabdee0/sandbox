@@ -59,6 +59,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
+        //TODO {manstis} WIP
+        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
+                RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+
         // ...otherwise the Bridge's dependencies are READY
         bridge.setDependencyStatus(ManagedResourceStatus.READY);
         return persist(bridge);
@@ -81,6 +85,10 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         // If this call throws an exception the Bridge's dependencies will be left in DELETING state...
         rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+                RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+
+        //TODO {manstis} WIP
+        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // ...otherwise the Bridge's dependencies are DELETED

@@ -11,6 +11,7 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     public static final String RESOURCE_PREFIX_PROPERTY = "event-bridge.resource-prefix";
     public static final String BRIDGE_SHORTNAME = "brdg";
     public static final String PROCESSOR_SHORTNAME = "prcs";
+    public static final String ERROR_HANDLER_SUFFIX = "error-handler";
 
     private static final String VALIDATION_REGEX = "^[a-z][a-z0-9-]{0,19}$";
 
@@ -40,5 +41,10 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     @Override
     public String getProcessorTopicName(String processorId) {
         return String.format("%s%s-%s", validatedResourcePrefix, PROCESSOR_SHORTNAME, processorId);
+    }
+
+    @Override
+    public String getErrorHandlerTopicName(String bridgeId) {
+        return String.format("%s-%s", getBridgeTopicName(bridgeId), ERROR_HANDLER_SUFFIX);
     }
 }

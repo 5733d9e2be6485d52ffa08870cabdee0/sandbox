@@ -134,7 +134,7 @@ class ExecutorImplTest {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock).onEvent(captor.capture());
+        verify(actionInvokerMock).onEvent(inputEvent, captor.capture());
 
         return captor.getValue();
     }
@@ -146,7 +146,7 @@ class ExecutorImplTest {
         assertMetricsAreInitialized();
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock, never()).onEvent(any());
+        verify(actionInvokerMock, never()).onEvent(inputEvent, any());
     }
 
     private void assertMetricsAreInitialized() {

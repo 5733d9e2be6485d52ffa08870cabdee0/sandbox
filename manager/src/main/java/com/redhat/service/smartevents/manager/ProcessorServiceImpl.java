@@ -292,13 +292,15 @@ public class ProcessorServiceImpl implements ProcessorService {
         String topicName = processor.getType() == ProcessorType.SOURCE
                 ? resourceNamesProvider.getProcessorTopicName(processor.getId())
                 : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+        String errorTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
 
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                topicName);
+                topicName,
+                errorTopicName);
         ProcessorDTO dto = new ProcessorDTO();
         dto.setType(processor.getType());
         dto.setId(processor.getId());

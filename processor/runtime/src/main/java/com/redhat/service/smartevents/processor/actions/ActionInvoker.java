@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.processor.actions;
 
+import io.cloudevents.CloudEvent;
+
 public interface ActionInvoker {
-    void onEvent(String event);
+    void onEvent(CloudEvent originalEvent, String transformedEvent);
 }

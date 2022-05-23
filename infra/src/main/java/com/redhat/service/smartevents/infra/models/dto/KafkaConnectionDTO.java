@@ -19,15 +19,19 @@ public class KafkaConnectionDTO {
     @JsonProperty("topic")
     private String topic;
 
+    @JsonProperty("errorTopic")
+    private String errorsTopic;
+
     public KafkaConnectionDTO() {
     }
 
-    public KafkaConnectionDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String topic) {
+    public KafkaConnectionDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String topic, String errorsTopic) {
         this.bootstrapServers = bootstrapServers;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.securityProtocol = securityProtocol;
         this.topic = topic;
+        this.errorsTopic = errorsTopic;
     }
 
     public String getBootstrapServers() {
@@ -54,6 +58,10 @@ public class KafkaConnectionDTO {
         return topic;
     }
 
+    public String getErrorsTopic() {
+        return errorsTopic;
+    }
+
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
     }
@@ -70,6 +78,10 @@ public class KafkaConnectionDTO {
         this.topic = topic;
     }
 
+    public void setErrorsTopic(String errorsTopic) {
+        this.errorsTopic = errorsTopic;
+    }
+
     @Override
     public String toString() {
         return "KafkaConnection{" +
@@ -78,6 +90,7 @@ public class KafkaConnectionDTO {
                 ", clientSecret=<REDACTED>" +
                 ", securityProtocol='" + securityProtocol + '\'' +
                 ", topic=" + topic + '\'' +
+                ", errorsTopic=" + errorsTopic + '\'' +
                 '}';
     }
 }

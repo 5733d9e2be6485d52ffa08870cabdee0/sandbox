@@ -81,7 +81,7 @@ public class ExecutorImpl implements Executor {
         // transformations are currently supported only for sink processors
         String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);
         // Action
-        actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
+        actionTimer.record(() -> actionInvoker.onEvent(event, eventToSend));
     }
 
     @SuppressWarnings("unchecked")

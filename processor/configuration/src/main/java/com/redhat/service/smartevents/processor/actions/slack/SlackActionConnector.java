@@ -17,7 +17,6 @@ public class SlackActionConnector extends AbstractGatewayConnector<Action> imple
     public static final String CONNECTOR_TYPE_ID = "slack_sink_0.1";
     public static final String CONNECTOR_CHANNEL_PARAMETER = "slack_channel";
     public static final String CONNECTOR_WEBHOOK_URL_PARAMETER = "slack_webhook_url";
-    public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
 
     public SlackActionConnector() {
         super(CONNECTOR_TYPE, CONNECTOR_TYPE_ID);

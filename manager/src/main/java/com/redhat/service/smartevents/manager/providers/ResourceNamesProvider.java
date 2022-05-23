@@ -8,4 +8,6 @@ public interface ResourceNamesProvider {
 
     String getProcessorTopicName(String processorId);
 
+    String getErrorHandlerTopicName(String bridgeId);
+
 }
