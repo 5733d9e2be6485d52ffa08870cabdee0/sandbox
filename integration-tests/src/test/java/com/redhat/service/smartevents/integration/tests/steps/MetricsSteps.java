@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
+import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.ResourceUtils;
 
@@ -22,7 +23,7 @@ public class MetricsSteps {
     }
 
     private void testMetricAndCount(String metricsEndpoint, String metricName, int minimalValue) {
-        String metrics = ResourceUtils.jsonRequest(context.getManagerToken())
+        String metrics = ResourceUtils.jsonRequest(context.getManagerToken(), Constants.JSON_CONTENT_TYPE)
                 .get(metricsEndpoint)
                 .then()
                 .extract()

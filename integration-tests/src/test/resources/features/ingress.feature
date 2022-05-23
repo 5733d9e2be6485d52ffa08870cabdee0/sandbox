@@ -37,7 +37,7 @@ Feature: Ingress tests
     """
 
   Scenario: Send plain Cloud Event
-    When send a json event to the Ingress of the Bridge "mybridge" with path "plain" and headers "Ce-Id":"my-id","Ce-Source":"mySource","Ce-Specversion":"1.0","Ce-Type":"myType":
+    When send a json event to the Ingress of the Bridge "mybridge" with headers "Ce-Id":"my-id","Ce-Source":"mySource","Ce-Specversion":"1.0","Ce-Type":"myType":
     """
     { "data" : "test" }
     """
