@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.jackson.JsonCloudEventData;
+import io.cloudevents.jackson.JsonFormat;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
@@ -61,7 +62,7 @@ public class ExecutorService {
                 }
 
                 cloudEvent = CloudEventBuilder.v1() // TODO: refactor
-                        .withData(message.getPayload().getBytes(StandardCharsets.UTF_8))
+                        .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
                         .withId(headers.getOrDefault("id", null))
                         .withSource(new URI(headers.getOrDefault("source", null)))
                         .withType(headers.getOrDefault("type", null))

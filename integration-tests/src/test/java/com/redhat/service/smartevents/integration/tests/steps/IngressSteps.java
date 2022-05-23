@@ -127,7 +127,7 @@ public class IngressSteps {
 
     private String getCloudEventIdFromHeaders(Headers headers) {
         for (Header header : headers.asList()) {
-            if (header.getName().equals("ce-id")) {
+            if (header.getName().equals("Ce-Id")) {
                 return header.getValue();
             }
         }
@@ -149,9 +149,9 @@ public class IngressSteps {
     private Headers adjustCloudEventHeaderParameters(Headers headers, String newCloudEventId) {
         Map<String, Header> patchedHeaders = new HashMap<>();
 
-        patchedHeaders.put("ce-id", new Header("ce-id", newCloudEventId));
+        patchedHeaders.put("Ce-Id", new Header("Ce-Id", newCloudEventId));
         // Add optional timestamp header
-        patchedHeaders.put("ce-time", new Header("ce-time", Instant.now().toString()));
+        patchedHeaders.put("Ce-Time", new Header("Ce-Time", Instant.now().toString()));
 
         // Add all other headers
         for (Header header : headers.asList()) {
