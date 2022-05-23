@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:b157ebf9121697d58cc4cf890b125974e0c0bdbe-jvm
-  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:b157ebf9121697d58cc4cf890b125974e0c0bdbe-jvm
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:879c01e88a8accbd471782b9f5840bab331d93c4-jvm
+  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:879c01e88a8accbd471782b9f5840bab331d93c4-jvm
   EVENT_BRIDGE_K8S_PLATFORM: openshift
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge:8080
   EVENT_BRIDGE_SSO_URL: https://sso.redhat.com/auth/realms/redhat-external
