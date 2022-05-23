@@ -35,12 +35,4 @@ public enum ProcessorType {
         return value;
     }
 
-    public static ProcessorType fromValue(String value) {
-        for (ProcessorType p : values()) {
-            if (p.getValue().equals(value)) {
-                return p;
-            }
-        }
-        throw new IllegalArgumentException(String.format("No ProcessorType with value \"%s\"", value));
-    }
 }
