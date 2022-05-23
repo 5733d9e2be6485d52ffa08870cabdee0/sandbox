@@ -13,7 +13,7 @@ public interface ProcessorService {
 
     Processor getProcessor(String bridgeId, String processorId, String customerId);
 
-    Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest);
+    Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
     Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 

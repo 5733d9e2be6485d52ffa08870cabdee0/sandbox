@@ -59,6 +59,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTO
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -155,14 +156,14 @@ class ProcessorServiceTest {
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeNotActive(ProcessorRequest request) {
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeDoesNotExist(ProcessorRequest request) {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
@@ -170,7 +171,7 @@ class ProcessorServiceTest {
     void testCreateProcessor_processorWithSameNameAlreadyExists(ProcessorRequest request) {
         request.setName(DEFAULT_PROCESSOR_NAME);
         assertThatExceptionOfType(AlreadyExistingItemException.class)
-                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
@@ -189,7 +190,7 @@ class ProcessorServiceTest {
     }
 
     private void doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
-        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
+        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request);
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getType()).isEqualTo(type);

@@ -61,6 +61,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
                 .withProcessorId(processorDTO.getId())
                 .withBridgeId(processorDTO.getBridgeId())
                 .withCustomerId(processorDTO.getCustomerId())
+                .withOwner(processorDTO.getOwner())
                 .withImageName(executorImage)
                 .withDefinition(processorDTO.getDefinition())
                 .withProcessorName(processorDTO.getName())
@@ -74,6 +75,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
         processorDTO.setBridgeId(this.getSpec().getBridgeId());
         processorDTO.setCustomerId(this.getSpec().getCustomerId());
+        processorDTO.setOwner(this.getSpec().getOwner());
         processorDTO.setName(this.getSpec().getProcessorName());
 
         if (this.getSpec().getProcessorDefinition() != null) {
@@ -98,6 +100,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         private String processorId;
         private String bridgeId;
         private String customerId;
+        private String owner;
         private ProcessorType processorType;
         private String processorName;
         private ProcessorDefinition processorDefinition;
@@ -128,6 +131,11 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
 
         public BridgeExecutor.Builder withCustomerId(final String customerId) {
             this.customerId = customerId;
+            return this;
+        }
+
+        public BridgeExecutor.Builder withOwner(final String owner) {
+            this.owner = owner;
             return this;
         }
 
@@ -162,6 +170,7 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
             bridgeExecutorSpec.setId(processorId);
             bridgeExecutorSpec.setBridgeId(bridgeId);
             bridgeExecutorSpec.setCustomerId(customerId);
+            bridgeExecutorSpec.setOwner(owner);
             bridgeExecutorSpec.setProcessorName(processorName);
             bridgeExecutorSpec.setProcessorType(processorType.getValue());
 

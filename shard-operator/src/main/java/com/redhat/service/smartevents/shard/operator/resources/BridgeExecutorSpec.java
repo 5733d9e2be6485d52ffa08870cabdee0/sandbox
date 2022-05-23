@@ -11,6 +11,8 @@ public class BridgeExecutorSpec {
 
     private String customerId;
 
+    private String owner;
+
     private String processorType;
 
     private String processorName;
@@ -49,6 +51,14 @@ public class BridgeExecutorSpec {
         this.customerId = customerId;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
     public String getProcessorType() {
         return processorType;
     }
@@ -82,8 +92,13 @@ public class BridgeExecutorSpec {
             return false;
         }
         BridgeExecutorSpec that = (BridgeExecutorSpec) o;
-        return Objects.equals(image, that.image) && Objects.equals(id, that.id) && Objects.equals(bridgeId, that.bridgeId) && Objects.equals(customerId, that.customerId)
-                && Objects.equals(processorName, that.processorName) && Objects.equals(processorDefinition, that.processorDefinition);
+        return Objects.equals(image, that.image)
+                && Objects.equals(id, that.id)
+                && Objects.equals(bridgeId, that.bridgeId)
+                && Objects.equals(customerId, that.customerId)
+                && Objects.equals(owner, that.owner)
+                && Objects.equals(processorName, that.processorName)
+                && Objects.equals(processorDefinition, that.processorDefinition);
     }
 
     @Override

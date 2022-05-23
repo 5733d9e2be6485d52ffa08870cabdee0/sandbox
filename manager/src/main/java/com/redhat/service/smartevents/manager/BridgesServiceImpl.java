@@ -59,7 +59,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     @Transactional
-    public Bridge createBridge(String customerId, String organisationId, BridgeRequest bridgeRequest) {
+    public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
@@ -69,6 +69,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setOrganisationId(organisationId);
+        bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
 
         // Bridge and Work creation should always be in the same transaction
@@ -191,6 +192,7 @@ public class BridgesServiceImpl implements BridgesService {
         dto.setEndpoint(bridge.getEndpoint());
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
+        dto.setOwner(bridge.getOwner());
         dto.setKafkaConnection(kafkaConnectionDTO);
         return dto;
     }
@@ -205,6 +207,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setPublishedAt(bridge.getPublishedAt());
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
+        response.setOwner(bridge.getOwner());
         return response;
     }
 }
