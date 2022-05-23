@@ -1,0 +1,29 @@
+name: Dispatch OpenAPI File Change event
+on:
+  push:
+    branches: 
+      - main
+    paths:
+      - "openapi/*.yaml"
+
+jobs:
+  dispatch:
+    env:
+      APP_SERVICES_CI_TOKEN: ${{ secrets.GH_CI_TOKEN }}
+    strategy:
+      matrix:
+        repo:
+          - "redhat-developer/app-services-sdk-go"
+          - "redhat-developer/app-services-sdk-js"
+          - "redhat-developer/app-services-sdk-java"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Sandbox OpenAPI changed
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ env.APP_SERVICES_CI_TOKEN }}
+          repository: ${{ matrix.repo }}
+          event-type: openapi-spec-change
+          client-payload: '{ "id": "openbridge-mgmt/v1", "download_url":"https://raw.githubusercontent.com/bf2fc6cc711aee1a0c2a/sandbox/main/openapi/openapi.yaml"}'
