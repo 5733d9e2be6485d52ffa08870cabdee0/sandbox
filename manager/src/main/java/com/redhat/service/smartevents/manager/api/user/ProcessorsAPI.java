@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
@@ -36,6 +37,7 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.processor.validation.JsonSchemaService;
 
 import io.quarkus.security.Authenticated;
 
@@ -60,6 +62,9 @@ public class ProcessorsAPI {
 
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    JsonSchemaService jsonSchemaService;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -150,5 +155,23 @@ public class ProcessorsAPI {
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
         processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
         return Response.accepted().build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = ProcessorListResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get the JSON schema for a connector name", description = "Get the JSON schema for a connector name")
+    @GET
+    @Path("/jsonschema/{connectorName}")
+    public Response jsonSchemaForConnector(@NotEmpty @PathParam("connectorName") String connectorName) {
+        JsonNode jsonSchemaForConnectorName = jsonSchemaService.findJsonSchemaJSONForConnectorName(connectorName);
+        return Response.ok(jsonSchemaForConnectorName, MediaType.APPLICATION_JSON_TYPE).build();
     }
 }

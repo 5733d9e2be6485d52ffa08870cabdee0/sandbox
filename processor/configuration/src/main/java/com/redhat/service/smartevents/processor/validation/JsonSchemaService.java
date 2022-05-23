@@ -22,18 +22,18 @@ public class JsonSchemaService {
     @Inject
     ObjectMapper objectMapper;
 
-    protected String getJsonSchemaString(String name) {
+    protected String getJsonSchemaString(String fileName) {
         InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(name);
+                .getResourceAsStream(fileName);
 
         if (is == null) {
-            throw new RuntimeException("Cannot find a json schema file for connector " + jsonFileName(name));
+            throw new RuntimeException("Cannot find Json Schema with fileName " + fileName);
         }
 
         return new BufferedReader(
                 new InputStreamReader(is, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+                        .lines()
+                        .collect(Collectors.joining("\n"));
     }
 
     private String jsonFileName(String name) {
@@ -46,26 +46,36 @@ public class JsonSchemaService {
     }
 
     /**
-     Find the Json Schema file from connector given the connector name.
-     For example, a connector called "slack_sink_0.1" will return the Json Schema stored in the slack_sink_0.1.json
-     The files are originally copied from MC repository i.e.
-     https://github.com/bf2fc6cc711aee1a0c2a/cos-fleet-catalog-camel/blob/main/etc/kubernetes/manifests/base/connectors/connector-catalog-camel-social/slack_sink_0.1.json#L42
+     * Find the Json Schema file from connector given the connector name.
+     * For example, a connector called "slack_sink_0.1" will return the Json Schema stored in the slack_sink_0.1.json
+     * The files are originally copied from MC repository i.e.
+     * https://github.com/bf2fc6cc711aee1a0c2a/cos-fleet-catalog-camel/blob/main/etc/kubernetes/manifests/base/connectors/connector-catalog-camel-social/slack_sink_0.1.json#L42
      */
     public JsonSchema findJsonSchemaForConnectorName(String connectorName) {
-        ObjectNode rawFile;
+        ObjectNode completeJsonSchemaFile;
         try {
 
             String jsonConnectorName = jsonFileName(connectorName);
             String schemaString = getJsonSchemaString(jsonConnectorName);
 
-            rawFile = objectMapper.readValue(schemaString, ObjectNode.class);
+            completeJsonSchemaFile = objectMapper.readValue(schemaString, ObjectNode.class);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         // Managed connector provides a file with the schema inside among other information
-        JsonNode schemaNode = rawFile.findPath("schema");
-        return getJsonSchemaFromJsonNode(schemaNode);
+        JsonNode schemaNode = completeJsonSchemaFile.findPath("schema");
+        JsonSchema jsonSchemaFromJsonNode = getJsonSchemaFromJsonNode(schemaNode);
+
+        System.out.println("jsonSchemaFromJsonNode = " + jsonSchemaFromJsonNode);
+        return jsonSchemaFromJsonNode;
+    }
+
+    /**
+     * Same as findJsonSchemaForConnectorName but returns a valid JSON
+     */
+    public JsonNode findJsonSchemaJSONForConnectorName(String connectorName) {
+        return findJsonSchemaForConnectorName(connectorName).getSchemaNode();
     }
 }
