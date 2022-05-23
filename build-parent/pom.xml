@@ -464,10 +464,18 @@
 
   <profiles>
     <profile>
-      <id>default</id>
+      <!-- Fail the build if code does not follow the standards. -->
+      <id>validate-formatting</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>validate-formatting</name>
+        </property>
       </activation>
+      <properties>
+        <formatter.skip>false</formatter.skip>
+        <formatter.goal>validate</formatter.goal>
+        <impsort.goal>check</impsort.goal>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -488,31 +496,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>productized</id>
-      <activation>
-        <property>
-          <name>productized</name>
-        </property>
-      </activation>
-      <properties>
-        <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
-      </properties>
-    </profile>
-    <profile>
-      <!-- Fail the build if code does not follow the standards. -->
-      <id>validate-formatting</id>
-      <activation>
-        <property>
-          <name>validate-formatting</name>
-        </property>
-      </activation>
-      <properties>
-        <formatter.skip>false</formatter.skip>
-        <formatter.goal>validate</formatter.goal>
-        <impsort.goal>check</impsort.goal>
-      </properties>
     </profile>
     <profile>
       <id>quickly</id>
@@ -538,6 +521,14 @@
       <properties>
         <jacoco.skip>false</jacoco.skip>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
