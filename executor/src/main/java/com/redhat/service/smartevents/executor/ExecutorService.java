@@ -25,7 +25,6 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.jackson.JsonCloudEventData;
-import io.cloudevents.jackson.JsonFormat;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
