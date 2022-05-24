@@ -81,6 +81,8 @@ objects:
                     secretKeyRef:
                       name: ${RDS_SECRET_NAME}
                       key: db.ca_cert
+                - name: EVENT_BRIDGE_DB_CONNECTION_PARAMS
+                  value: ${EVENT_BRIDGE_DB_CONNECTION_PARAMS}
                 - name: EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS
                   valueFrom:
                     secretKeyRef:
@@ -240,15 +242,18 @@ objects:
       selector:
         app-component: rhose-fleet-manager
 parameters:
+  - name: EVENT_BRIDGE_DB_CONNECTION_PARAMS
+    value: ?ssl=true&sslmode=verify-full&sslrootcert=/secrets/rds/db.ca_cert
+    description: the connection parameters for secure rds instance
   - name: FLEET_MANAGER_IMAGE
     value: "quay.io/app-sre/rhose-fleet-manager"
-    displayName: the image of fleet-manager to deploy
+    description: the image of fleet-manager to deploy
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
-    displayName: the tag of fleet-manager to deploy
-  - name: RDS_SECRET_NAME
-    value: rhosedb-rds
-    displayName: the aws rds secret
+    description: the tag of fleet-manager to deploy
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
-    displayName: the fleet-manager vault secret
+    description: the fleet-manager vault secret
+  - name: RDS_SECRET_NAME
+    value: rhosedb-rds
+    description: the aws rds secret

@@ -52,6 +52,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
                 .withNamespace(namespace)
                 .withBridgeName(bridgeDTO.getName())
                 .withCustomerId(bridgeDTO.getCustomerId())
+                .withOwner(bridgeDTO.getOwner())
                 .withBridgeId(bridgeDTO.getId())
                 .build();
     }
@@ -60,6 +61,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         BridgeDTO bridgeDTO = new BridgeDTO();
         bridgeDTO.setId(this.getSpec().getId());
         bridgeDTO.setCustomerId(this.getSpec().getCustomerId());
+        bridgeDTO.setOwner(this.getSpec().getOwner());
         bridgeDTO.setName(this.getSpec().getBridgeName());
         bridgeDTO.setEndpoint(this.getStatus().getEndpoint());
         return bridgeDTO;
@@ -75,6 +77,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         private String namespace;
         private String bridgeName;
         private String customerId;
+        private String owner;
 
         private Builder() {
 
@@ -100,6 +103,11 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             return this;
         }
 
+        public Builder withOwner(final String owner) {
+            this.owner = owner;
+            return this;
+        }
+
         public BridgeIngress build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
@@ -114,6 +122,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
             bridgeIngressSpec.setBridgeName(bridgeName);
             bridgeIngressSpec.setCustomerId(customerId);
+            bridgeIngressSpec.setOwner(owner);
             bridgeIngressSpec.setId(bridgeId);
 
             BridgeIngress bridgeIngress = new BridgeIngress();

@@ -19,7 +19,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -47,6 +47,8 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 
+import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -78,6 +80,10 @@ public class ProcessorAPITest {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
         when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
+        when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
@@ -293,7 +299,7 @@ public class ProcessorAPITest {
 
         Response response = TestUtils.addProcessorToBridge(
                 bridgeResponse.getId(),
-                new ProcessorRequest("myProcessor", Collections.singleton(new ValuesIn("pepe", null)), null, TestUtils.createKafkaAction()));
+                new ProcessorRequest("myProcessor", Collections.singleton(new StringIn("pepe", null)), null, TestUtils.createKafkaAction()));
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

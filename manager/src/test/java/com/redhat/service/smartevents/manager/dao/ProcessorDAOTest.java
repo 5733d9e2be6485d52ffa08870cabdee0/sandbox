@@ -56,6 +56,7 @@ public class ProcessorDAOTest {
         p.setSubmittedAt(ZonedDateTime.now());
         p.setPublishedAt(ZonedDateTime.now());
         p.setShardId(TestConstants.SHARD_ID);
+        p.setOwner(TestConstants.DEFAULT_USER_NAME);
 
         Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
@@ -75,6 +76,8 @@ public class ProcessorDAOTest {
         Bridge b = new Bridge();
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setOrganisationId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setOwner(TestConstants.DEFAULT_USER_NAME);
         b.setStatus(ManagedResourceStatus.READY);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());

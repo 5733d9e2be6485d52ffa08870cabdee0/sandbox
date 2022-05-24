@@ -5,23 +5,23 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ValuesIn extends BaseFilter {
-    public static final String FILTER_TYPE_NAME = "ValuesIn";
+public class StringIn extends BaseFilter {
+    public static final String FILTER_TYPE_NAME = "StringIn";
 
     @JsonProperty("values")
-    private List<Object> values;
+    private List<String> values;
 
-    public ValuesIn() {
+    public StringIn() {
         super(FILTER_TYPE_NAME);
     }
 
-    public ValuesIn(String key, List<Object> values) {
+    public StringIn(String key, List<String> values) {
         super(FILTER_TYPE_NAME, key);
         this.values = values;
     }
 
     @Override
-    public List<Object> getValue() {
+    public List<String> getValue() {
         return values;
     }
 
@@ -30,11 +30,11 @@ public class ValuesIn extends BaseFilter {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ValuesIn)) {
+        if (!(o instanceof StringIn)) {
             return false;
         }
-        ValuesIn valuesIn = (ValuesIn) o;
-        return Objects.equals(values, valuesIn.values);
+        StringIn that = (StringIn) o;
+        return Objects.equals(values, that.values);
     }
 
     @Override

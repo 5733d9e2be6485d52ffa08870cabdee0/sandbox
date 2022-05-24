@@ -25,5 +25,6 @@ public class BridgeIngressTest {
         assertThat(bridgeIngress.getSpec().getBridgeName()).isEqualTo(dto.getName());
         assertThat(bridgeIngress.getSpec().getId()).isEqualTo(dto.getId());
         assertThat(bridgeIngress.getSpec().getCustomerId()).isEqualTo(dto.getCustomerId());
+        assertThat(bridgeIngress.getSpec().getOwner()).isEqualTo(dto.getOwner());
     }
 }

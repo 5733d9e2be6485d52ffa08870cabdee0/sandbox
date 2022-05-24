@@ -36,6 +36,7 @@ public class Fixtures {
         p.setSubmittedAt(ZonedDateTime.now());
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
+        p.setOwner(TestConstants.DEFAULT_USER_NAME);
         p.setDefinition(new ProcessorDefinition());
 
         return p;
@@ -45,6 +46,8 @@ public class Fixtures {
         Bridge b = new Bridge();
         b.setPublishedAt(ZonedDateTime.now());
         b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        b.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
+        b.setOwner(TestConstants.DEFAULT_USER_NAME);
         b.setStatus(ManagedResourceStatus.READY);
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());

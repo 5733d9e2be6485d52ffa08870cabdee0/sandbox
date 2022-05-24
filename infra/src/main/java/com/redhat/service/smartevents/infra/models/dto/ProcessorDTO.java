@@ -26,6 +26,9 @@ public class ProcessorDTO {
     @JsonProperty("customerId")
     private String customerId;
 
+    @JsonProperty("owner")
+    private String owner;
+
     @JsonProperty("status")
     private ManagedResourceStatus status;
 
@@ -80,6 +83,14 @@ public class ProcessorDTO {
         this.customerId = customerId;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
     public ManagedResourceStatus getStatus() {
         return status;
     }
@@ -121,6 +132,7 @@ public class ProcessorDTO {
                 ", definition=" + definition +
                 ", bridgeId='" + bridgeId + '\'' +
                 ", customerId='" + customerId + '\'' +
+                ", owner='" + owner + '\'' +
                 ", status=" + status +
                 ", kafkaConnection=" + kafkaConnection +
                 '}';

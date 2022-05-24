@@ -31,11 +31,13 @@ import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +62,10 @@ public class BridgesAPITest {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
         when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
+        when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
@@ -283,7 +289,12 @@ public class BridgesAPITest {
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), DEFAULT_CUSTOMER_ID, READY,
+                new BridgeDTO(bridgeResponse.getId(),
+                        bridgeResponse.getName(),
+                        bridgeResponse.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
                         new KafkaConnectionDTO()));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);

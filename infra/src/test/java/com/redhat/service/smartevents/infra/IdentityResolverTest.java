@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 public class IdentityResolverTest {
 
     private static final String CUSTOMER_ID = "kekkobar";
+    private static final String ORGANISATION_ID = "myOrg";
+    private static final String USER_NAME = "userName";
 
     @Inject
     IdentityResolver identityResolver;
@@ -45,10 +47,61 @@ public class IdentityResolverTest {
     }
 
     @Test
-    public void testValidTokenWithoutClaims() {
+    public void testValidTokenWithoutAccountIdClaims() {
         JsonWebToken jwt = mock(JsonWebToken.class);
         when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM))).thenReturn(false);
         when(jwt.containsClaim(eq(APIConstants.ACCOUNT_ID_USER_ATTRIBUTE_CLAIM))).thenReturn(false);
         assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
     }
+
+    @Test
+    public void testOrganisationIdResolver_resolveWithUserToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(true);
+        assertThat(identityResolver.resolveOrganisationId(jwt)).isEqualTo(ORGANISATION_ID);
+    }
+
+    @Test
+    public void testOrganisationIdResolver_resolveWithServiceAccountToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(ORGANISATION_ID);
+        assertThat(identityResolver.resolveOrganisationId(jwt)).isEqualTo(ORGANISATION_ID);
+    }
+
+    @Test
+    public void testValidTokenWithoutOrganisationIdClaims() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.ORG_ID_USER_ATTRIBUTE_CLAIM)).thenReturn(false);
+        assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
+    }
+
+    @Test
+    public void testUserNameResolver_resolveWithUserNameToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.getClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(USER_NAME);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
+        assertThat(identityResolver.resolveOwner(jwt)).isEqualTo(USER_NAME);
+    }
+
+    @Test
+    public void testUserNameResolver_resolveWithAlternativeUserNameToken() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(USER_NAME);
+        assertThat(identityResolver.resolveOwner(jwt)).isEqualTo(USER_NAME);
+    }
+
+    @Test
+    public void testValidTokenWithoutUserNameClaims() {
+        JsonWebToken jwt = mock(JsonWebToken.class);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(false);
+        when(jwt.containsClaim(APIConstants.USER_NAME_ALTERNATIVE_ATTRIBUTE_CLAIM)).thenReturn(false);
+        assertThatThrownBy(() -> identityResolver.resolve(jwt)).isInstanceOf(ForbiddenRequestException.class);
+    }
+
 }
