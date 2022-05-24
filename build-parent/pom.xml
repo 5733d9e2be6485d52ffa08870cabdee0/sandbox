@@ -474,14 +474,21 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
 
   <profiles>
+    <profile>
+      <id>productized</id>
+      <activation>
+        <property>
+          <name>productized</name>
+        </property>
+      </activation>
+      <properties>
+        <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
+      </properties>
+    </profile>
     <profile>
       <!-- Fail the build if code does not follow the standards. -->
       <id>validate-formatting</id>
@@ -495,6 +502,14 @@
         <formatter.goal>validate</formatter.goal>
         <impsort.goal>check</impsort.goal>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>quickly</id>
@@ -520,6 +535,14 @@
       <properties>
         <jacoco.skip>false</jacoco.skip>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
