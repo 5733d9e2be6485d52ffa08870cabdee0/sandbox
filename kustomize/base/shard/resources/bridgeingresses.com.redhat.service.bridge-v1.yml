@@ -21,6 +21,8 @@ spec:
             properties:
               id:
                 type: string
+              owner:
+                type: string
               customerId:
                 type: string
               bridgeName:
