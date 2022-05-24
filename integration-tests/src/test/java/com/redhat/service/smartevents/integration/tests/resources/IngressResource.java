@@ -13,7 +13,7 @@ public class IngressResource {
 
     public static Response optionsJsonEmptyEventResponse(String token, String endpoint) {
         try (ByteArrayInputStream cloudEventStream = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))) {
-            return ResourceUtils.jsonRequest(token, ContentType.JSON.toString())
+            return ResourceUtils.newRequest(token, ContentType.JSON.toString())
                     .body(cloudEventStream)
                     .options(endpoint);
         } catch (IOException e) {
@@ -23,7 +23,7 @@ public class IngressResource {
 
     public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream,
             Headers headers, String contentType) {
-        return ResourceUtils.jsonRequest(token, contentType)
+        return ResourceUtils.newRequest(token, contentType)
                 .headers(headers)
                 .body(cloudEventStream)
                 .post(endpoint);

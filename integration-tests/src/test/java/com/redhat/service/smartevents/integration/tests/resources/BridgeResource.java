@@ -21,18 +21,18 @@ public class BridgeResource {
     }
 
     public static Response addBridgeResponse(String token, String bridgeName) {
-        return ResourceUtils.jsonRequest(token, Constants.JSON_CONTENT_TYPE)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(new BridgeRequest(bridgeName))
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token, Constants.JSON_CONTENT_TYPE)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 
     public static BridgeResponse getBridgeDetails(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token, Constants.JSON_CONTENT_TYPE)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId)
                 .then()
                 .log().ifValidationFails()
@@ -51,7 +51,7 @@ public class BridgeResource {
     }
 
     public static Response getBridgeListResponse(String token) {
-        return ResourceUtils.jsonRequest(token, Constants.JSON_CONTENT_TYPE)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
@@ -63,7 +63,7 @@ public class BridgeResource {
     }
 
     public static Response deleteBridgeResponse(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token, Constants.JSON_CONTENT_TYPE)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 }

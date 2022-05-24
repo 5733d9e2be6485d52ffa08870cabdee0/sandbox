@@ -23,7 +23,7 @@ public class MetricsSteps {
     }
 
     private void testMetricAndCount(String metricsEndpoint, String metricName, int minimalValue) {
-        String metrics = ResourceUtils.jsonRequest(context.getManagerToken(), Constants.JSON_CONTENT_TYPE)
+        String metrics = ResourceUtils.newRequest(context.getManagerToken(), Constants.TEXT_PLAIN_CONTENT_TYPE)
                 .get(metricsEndpoint)
                 .then()
                 .extract()
