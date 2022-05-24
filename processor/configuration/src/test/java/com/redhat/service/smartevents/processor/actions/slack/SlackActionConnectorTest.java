@@ -53,7 +53,7 @@ class SlackActionConnectorTest {
 
         Action action = new Action();
         action.setType(SlackAction.TYPE);
-        action.setParameters(Map.of(SlackAction.CHANNEL_PARAM, CHANNEL, SlackAction.WEBHOOK_URL_PARAM, WEBHOOK_URL));
+        action.setMapParameters(Map.of(SlackAction.CHANNEL_PARAM, CHANNEL, SlackAction.WEBHOOK_URL_PARAM, WEBHOOK_URL));
 
         JsonNode payload = connector.connectorPayload(action, TOPIC_NAME);
 

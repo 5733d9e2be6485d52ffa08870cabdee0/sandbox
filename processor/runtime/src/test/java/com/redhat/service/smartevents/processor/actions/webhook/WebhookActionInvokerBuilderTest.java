@@ -90,7 +90,7 @@ class WebhookActionInvokerBuilderTest {
         action.setType(WebhookAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(ENDPOINT_PARAM, TEST_ENDPOINT);
-        action.setParameters(params);
+        action.setMapParameters(params);
 
         ProcessorDTO processor = new ProcessorDTO();
         processor.setType(ProcessorType.SINK);

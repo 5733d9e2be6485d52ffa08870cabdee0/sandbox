@@ -29,7 +29,7 @@ public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvoker
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, Action action) {
-        String endpoint = action.getParameters().get(ENDPOINT_PARAM);
+        String endpoint = action.getParameter(ENDPOINT_PARAM);
 
         WebClientOptions options = isSslVerificationDisabled(action)
                 ? new WebClientOptions().setTrustAll(true).setVerifyHost(false)
@@ -41,8 +41,8 @@ public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvoker
             return new WebhookActionInvoker(endpoint, webClient, getOidcClient());
         }
         if (requiresBasicAuth(action)) {
-            String basicAuthUsername = action.getParameters().get(BASIC_AUTH_USERNAME_PARAM);
-            String basicAuthPassword = action.getParameters().get(BASIC_AUTH_PASSWORD_PARAM);
+            String basicAuthUsername = action.getParameter(BASIC_AUTH_USERNAME_PARAM);
+            String basicAuthPassword = action.getParameter(BASIC_AUTH_PASSWORD_PARAM);
             return new WebhookActionInvoker(endpoint, webClient, basicAuthUsername, basicAuthPassword);
         }
         return new WebhookActionInvoker(endpoint, webClient);
@@ -60,14 +60,14 @@ public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvoker
     }
 
     private static boolean isSslVerificationDisabled(Action action) {
-        return Boolean.parseBoolean(action.getParameters().get(SSL_VERIFICATION_DISABLED));
+        return Boolean.parseBoolean(action.getParameter(SSL_VERIFICATION_DISABLED));
     }
 
     private static boolean requiresBasicAuth(Action action) {
-        return action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM);
+        return action.hasParameter(BASIC_AUTH_USERNAME_PARAM);
     }
 
     private static boolean requiresTechnicalBearerToken(Action action) {
-        return Boolean.parseBoolean(action.getParameters().get(USE_TECHNICAL_BEARER_TOKEN_PARAM));
+        return Boolean.parseBoolean(action.getParameter(USE_TECHNICAL_BEARER_TOKEN_PARAM));
     }
 }

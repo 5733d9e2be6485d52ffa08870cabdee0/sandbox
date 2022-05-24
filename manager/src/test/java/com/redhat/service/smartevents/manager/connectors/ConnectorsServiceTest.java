@@ -127,7 +127,7 @@ class ConnectorsServiceTest {
     private static Action slackAction() {
         Action action = new Action();
         action.setType(SlackAction.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
         return action;
@@ -136,7 +136,7 @@ class ConnectorsServiceTest {
     private static Source slackSource() {
         Source action = new Source();
         action.setType(SlackSource.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, TEST_SOURCE_CHANNEL,
                 SlackSource.TOKEN_PARAM, TEST_SOURCE_TOKEN));
         return action;
@@ -145,7 +145,7 @@ class ConnectorsServiceTest {
     private static Action webhookAction() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }

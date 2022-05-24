@@ -122,10 +122,10 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getRequestedAction().getParameter(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
         assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        assertThat(processor.getDefinition().getResolvedAction().getParameter(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TestConstants.DEFAULT_KAFKA_TOPIC);
     }
 
     @Test
@@ -162,10 +162,10 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getDefinition().getFilters().size()).isEqualTo(1);
         assertThat(processor.getDefinition().getRequestedAction()).isNotNull();
         assertThat(processor.getDefinition().getRequestedAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
-        assertThat(processor.getDefinition().getRequestedAction().getParameters()).containsEntry(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        assertThat(processor.getDefinition().getRequestedAction().getParameter(SendToBridgeAction.BRIDGE_ID_PARAM)).isEqualTo(bridgeId);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
         assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, TEST_BRIDGE_WEBHOOK);
+        assertThat(processor.getDefinition().getResolvedAction().getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_BRIDGE_WEBHOOK);
     }
 
     @Test

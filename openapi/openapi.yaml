@@ -640,7 +640,10 @@ components:
           type: string
           nullable: false
         parameters:
-          minProperties: 1
+          allOf:
+          - $ref: '#/components/schemas/ObjectNode'
+          - minItems: 1
+        mapParameters:
           type: object
           additionalProperties:
             type: string
@@ -796,6 +799,8 @@ components:
       - deleted
       - failed
       type: string
+    ObjectNode:
+      type: array
     ProcessorDTO:
       type: object
       properties:
@@ -920,7 +925,10 @@ components:
           type: string
           nullable: false
         parameters:
-          minProperties: 1
+          allOf:
+          - $ref: '#/components/schemas/ObjectNode'
+          - minItems: 1
+        mapParameters:
           type: object
           additionalProperties:
             type: string

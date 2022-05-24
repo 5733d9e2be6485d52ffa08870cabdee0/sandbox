@@ -89,7 +89,7 @@ class WebhookActionValidatorTest {
     void isInvalidWithNullParametersMap() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
-        action.setParameters(null);
+        action.setMapParameters(new HashMap<>());
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
     }
@@ -126,7 +126,7 @@ class WebhookActionValidatorTest {
     private static Action actionWith(Map<String, String> params) {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 }
