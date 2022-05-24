@@ -26,7 +26,7 @@ class SendToBridgeActionValidatorTest {
 
     @Test
     void isInvalidWithNullParams() {
-        assertIsInvalid(actionWith(NULL_PARAMS), null);
+        assertIsInvalid(actionWith(NULL_PARAMS), SendToBridgeActionValidator.INVALID_BRIDGE_ID_PARAM_MESSAGE);
     }
 
     @Test
@@ -36,7 +36,7 @@ class SendToBridgeActionValidatorTest {
 
     @Test
     void isValidWithEmptyParams() {
-        assertIsValid(actionWith(EMPTY_PARAMS));
+        assertIsInvalid(actionWith(EMPTY_PARAMS), SendToBridgeActionValidator.INVALID_BRIDGE_ID_PARAM_MESSAGE);
     }
 
     @Test
@@ -62,7 +62,7 @@ class SendToBridgeActionValidatorTest {
     private Action actionWith(Map<String, String> params) {
         Action b = new Action();
         b.setType(SendToBridgeAction.TYPE);
-        b.setParameters(params);
+        b.setMapParameters(params);
         return b;
     }
 

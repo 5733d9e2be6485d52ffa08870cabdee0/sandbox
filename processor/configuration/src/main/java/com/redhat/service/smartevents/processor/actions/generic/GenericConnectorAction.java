@@ -15,7 +15,7 @@ public abstract class GenericConnectorAction extends AbstractGatewayConnector<Ac
     @Override
     protected void addConnectorSpecificPayload(Action gateway, String topicName, ObjectNode definition) {
 
-        ObjectNode rawParameters = gateway.getRawParameters();
+        ObjectNode rawParameters = gateway.getParameters();
 
         definition.setAll(rawParameters);
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));

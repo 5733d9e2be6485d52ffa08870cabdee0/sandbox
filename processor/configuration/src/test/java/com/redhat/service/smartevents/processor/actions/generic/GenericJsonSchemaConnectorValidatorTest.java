@@ -11,7 +11,6 @@ import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.processor.actions.generic.GenericConnectorActionTest.mapToJsonObject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -55,8 +54,7 @@ class GenericJsonSchemaConnectorValidatorTest {
     private Action actionWith(Map<String, String> params) {
         Action action = new Action();
         action.setType("slack_sink_0.1");
-        action.setParameters(params);
-        action.setRawParameters(mapToJsonObject(params));
+        action.setMapParameters(params);
         return action;
     }
 }

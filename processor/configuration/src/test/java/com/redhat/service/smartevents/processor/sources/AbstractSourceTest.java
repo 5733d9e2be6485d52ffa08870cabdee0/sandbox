@@ -18,7 +18,7 @@ public abstract class AbstractSourceTest<T extends Gateway> {
     protected Source sourceWith(Map<String, String> params) {
         Source source = new Source();
         source.setType(getSourceType());
-        source.setParameters(params);
+        source.setMapParameters(params);
         return source;
     }
 

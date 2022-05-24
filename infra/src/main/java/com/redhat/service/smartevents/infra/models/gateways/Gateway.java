@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.infra.models.gateways;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -9,7 +8,12 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
+import static com.redhat.service.smartevents.JacksonUtils.mapToObjectNode;
 
 /**
  * A Gateway represents the touching point between a Processor and
@@ -29,13 +33,8 @@ public class Gateway {
     @JsonProperty("type")
     private String type;
 
-    @JsonProperty("parameters_old")
-    private Map<String, String> parameters = new HashMap<>();
-
-    // TODO NotEmpty cannot be used on ObjectNode
-    // @NotEmpty(message = "Gateway parameters must be supplied")
     @JsonProperty("parameters")
-    private ObjectNode rawParameters;
+    private ObjectNode parameters;
 
     public String getType() {
         return type;
@@ -45,20 +44,44 @@ public class Gateway {
         this.type = type;
     }
 
-    public Map<String, String> getParameters() {
+    public ObjectNode getParameters() {
+        if (parameters == null) {
+            ObjectMapper mapper = new ObjectMapper();
+            parameters = mapper.createObjectNode();
+        }
         return parameters;
     }
 
-    public void setParameters(Map<String, String> parameters) {
+    public void setParameters(ObjectNode parameters) {
         this.parameters = parameters;
     }
 
-    public ObjectNode getRawParameters() {
-        return rawParameters;
+    public void setMapParameters(Map<String, String> parameters) {
+        this.parameters = mapToObjectNode(parameters);
     }
 
-    public void setRawParameters(ObjectNode rawParameters) {
-        this.rawParameters = rawParameters;
+    public String getParameter(String key) {
+        JsonNode jsonNode = getParameters().get(key);
+        if (jsonNode == null) {
+            return null;
+        }
+
+        if (jsonNode instanceof TextNode) {
+            return jsonNode.asText();
+        }
+        return jsonNode.toString();
+    }
+
+    public String getParameterOrDefault(String key, String defaultValue) {
+        String obj = getParameter(key);
+        if (obj == null) {
+            return defaultValue;
+        }
+        return obj;
+    }
+
+    public boolean hasParameter(String key) {
+        return getParameters().get(key) != null;
     }
 
     @Override

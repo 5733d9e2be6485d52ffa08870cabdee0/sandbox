@@ -26,7 +26,7 @@ public abstract class GenericJsonSchemaConnectorValidator implements GatewayVali
         JsonSchema schema = jsonSchemaService.findJsonSchemaForConnectorName(action.getType());
 
         schema.initializeValidators();
-        ObjectNode parameters = action.getRawParameters();
+        ObjectNode parameters = action.getParameters();
 
         // hack as the topic will be set later so validation should pass
         parameters.set("kafka_topic", new TextNode("dummytopic"));
