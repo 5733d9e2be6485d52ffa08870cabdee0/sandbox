@@ -27,7 +27,7 @@ public class SlackSteps {
         String messageTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, messageText);
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
-                .pollInterval(Duration.ofSeconds(1))
+                .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> assertThat(SlackResource.getListOfSlackMessages()).as("Searching for message containing text: '%s'", messageTextWithoutPlaceholders)
                                 .anyMatch(msg -> msg.contains(messageTextWithoutPlaceholders)));
