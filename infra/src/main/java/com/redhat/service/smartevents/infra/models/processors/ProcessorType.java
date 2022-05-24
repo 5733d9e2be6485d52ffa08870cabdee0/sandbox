@@ -1,38 +1,28 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum ProcessorType {
+public enum ProcessorType implements BaseEnumeration {
     SOURCE("source"),
     SINK("sink");
 
     final String value;
 
-    // We can not annotate the property `value` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    ProcessorType(String value) {
+        this.value = value;
+    }
+
     @JsonValue
-    public String serialize() {
+    @Override
+    // We can not annotate the property `value` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    public String getValue() {
         return value;
     }
 
     @SuppressWarnings("unused")
     // Required for JAX-RS deserialisation. See @javax.ws.rs.QueryParam.
     public static ProcessorType fromString(String type) {
-        return Arrays
-                .stream(ProcessorType.values())
-                .filter(t -> Objects.equals(t.value, type))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("ProcessorType '%s' unknown.", type)));
-    }
-
-    ProcessorType(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
+        return BaseEnumeration.lookup(values(), type);
     }
 
 }

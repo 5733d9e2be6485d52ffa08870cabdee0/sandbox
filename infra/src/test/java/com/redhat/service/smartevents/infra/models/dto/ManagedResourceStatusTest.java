@@ -14,13 +14,13 @@ public class ManagedResourceStatusTest {
     @ParameterizedTest
     @EnumSource(ManagedResourceStatus.class)
     void testSerialisation(ManagedResourceStatus status) {
-        assertThat(status.serialize()).isEqualTo(status.name().toLowerCase(Locale.ROOT));
+        assertThat(status.getValue()).isEqualTo(status.name().toLowerCase(Locale.ROOT));
     }
 
     @ParameterizedTest
     @EnumSource(ManagedResourceStatus.class)
     void testFromString(ManagedResourceStatus status) {
-        assertThat(ManagedResourceStatus.fromString(status.status)).isEqualTo(status);
+        assertThat(ManagedResourceStatus.fromString(status.value)).isEqualTo(status);
     }
 
     @Test

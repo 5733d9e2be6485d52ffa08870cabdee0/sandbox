@@ -14,7 +14,7 @@ public class ProcessorTypeTest {
     @ParameterizedTest
     @EnumSource(ProcessorType.class)
     void testSerialisation(ProcessorType type) {
-        assertThat(type.serialize()).isEqualTo(type.name().toLowerCase(Locale.ROOT));
+        assertThat(type.getValue()).isEqualTo(type.name().toLowerCase(Locale.ROOT));
     }
 
     @ParameterizedTest
