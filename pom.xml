@@ -52,6 +52,7 @@
 
   <profiles>
     <profile>
+      <!-- add here all the modules that should not be in the productized profile -->
       <id>default</id>
       <activation>
         <property>
