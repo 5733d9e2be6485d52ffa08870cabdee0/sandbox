@@ -201,6 +201,10 @@ paths:
           minLength: 1
           type: string
           nullable: false
+      - name: name
+        in: query
+        schema:
+          type: string
       - name: page
         in: query
         schema:
@@ -216,6 +220,17 @@ paths:
           maximum: 100
           minimum: 1
           type: integer
+      - name: status
+        in: query
+        schema:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ManagedResourceStatus'
+      - name: type
+        in: query
+        schema:
+          $ref: '#/components/schemas/ProcessorType'
       responses:
         "200":
           description: Success.

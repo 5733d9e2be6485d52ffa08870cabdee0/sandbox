@@ -4,26 +4,26 @@ import java.util.Objects;
 
 import javax.ws.rs.BeanParam;
 
-import static com.redhat.service.smartevents.infra.models.QueryFilterInfo.QueryFilterInfoBuilder.filter;
+import static com.redhat.service.smartevents.infra.models.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
 
-public class QueryResourceInfo extends QueryPageInfo {
+public class QueryProcessorResourceInfo extends QueryPageInfo {
 
     @BeanParam
-    private QueryFilterInfo filterInfo;
+    private QueryProcessorFilterInfo filterInfo;
 
-    public QueryResourceInfo() {
+    public QueryProcessorResourceInfo() {
     }
 
-    public QueryResourceInfo(int pageNumber, int pageSize) {
+    public QueryProcessorResourceInfo(int pageNumber, int pageSize) {
         this(pageNumber, pageSize, filter().build());
     }
 
-    public QueryResourceInfo(int pageNumber, int pageSize, QueryFilterInfo filterInfo) {
+    public QueryProcessorResourceInfo(int pageNumber, int pageSize, QueryProcessorFilterInfo filterInfo) {
         super(pageNumber, pageSize);
         this.filterInfo = Objects.requireNonNull(filterInfo);
     }
 
-    public QueryFilterInfo getFilterInfo() {
+    public QueryProcessorFilterInfo getFilterInfo() {
         return filterInfo;
     }
 

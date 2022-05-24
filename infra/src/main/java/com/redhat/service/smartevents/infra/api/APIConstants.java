@@ -97,6 +97,11 @@ public class APIConstants {
      */
     public static final String FILTER_STATUS = "status";
 
+    /**
+     * The (Processor) type query filter parameter name
+     */
+    public static final String FILTER_PROCESSOR_TYPE = "type";
+
     private APIConstants() {
     }
 }
