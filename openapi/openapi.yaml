@@ -19,7 +19,8 @@ tags:
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
 - name: Schema Catalog
-  description: The API that provide the JSON schemas for the actions/sources processors
+  description: The API that provide the catalog of the available action/source processors
+    definition and their JSON schema.
 - name: Shard
   description: The API that allow a shard to retrieve and update resources.
 paths:
@@ -518,8 +519,8 @@ paths:
     get:
       tags:
       - Schema Catalog
-      summary: Get a Processor of a Bridge instance
-      description: Get a Processor of a Bridge instance for the authenticated user.
+      summary: Get processor catalog
+      description: Get the processor catalog with all the available sources and actions.
       operationId: SchemaAPI_getCatalog
       responses:
         "200":

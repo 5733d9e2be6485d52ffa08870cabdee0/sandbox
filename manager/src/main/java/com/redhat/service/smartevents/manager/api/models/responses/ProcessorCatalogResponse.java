@@ -9,7 +9,9 @@ public class ProcessorCatalogResponse {
     private final String kind = "SchemaCatalog";
 
     @JsonProperty("items")
-    private final List<ProcessorSchemaEntryResponse> items;
+    private List<ProcessorSchemaEntryResponse> items;
+
+    public ProcessorCatalogResponse() {}
 
     public ProcessorCatalogResponse(List<ProcessorSchemaEntryResponse> items) {
         this.items = items;

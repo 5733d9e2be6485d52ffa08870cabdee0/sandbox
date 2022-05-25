@@ -32,7 +32,7 @@ import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSche
 
 import io.quarkus.security.Authenticated;
 
-@Tag(name = "Schema Catalog", description = "The API that provide the JSON schemas for the actions/sources processors")
+@Tag(name = "Schema Catalog", description = "The API that provide the catalog of the available action/source processors definition and their JSON schema.")
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -68,7 +68,7 @@ public class SchemaAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get a Processor of a Bridge instance", description = "Get a Processor of a Bridge instance for the authenticated user.")
+    @Operation(summary = "Get processor catalog", description = "Get the processor catalog with all the available sources and actions.")
     @GET
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
