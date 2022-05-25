@@ -67,9 +67,8 @@ jobs:
       - name: Get Sheriff Name
         if: ${{ failure() }}
         run: |
-          chmod +x ./.github/scripts/sheriff-queue.sh
           echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff-queue.sh)"
-          id: findUser
+        id: findUser
       - name: google-chat-Notification
         if: ${{ failure() }}
         uses: javiern8410/actions-google-chat-notification@v1.0.0
