@@ -20,7 +20,6 @@ import com.redhat.service.smartevents.processor.actions.slack.SlackActionResolve
 import com.redhat.service.smartevents.processor.actions.slack.SlackActionValidator;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3SourceConnector;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3SourceValidator;
@@ -29,6 +28,7 @@ import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceConnecto
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidator;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSourceConnector;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSourceResolver;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSourceValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -45,9 +45,9 @@ class GatewayConfiguratorImplTest {
             WebhookAction.TYPE, expect(WebhookActionValidator.class, null, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
-            AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SourceResolver.class, AwsS3SourceConnector.class),
-            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceResolver.class, AwsSqsSourceConnector.class),
-            SlackSource.TYPE, expect(SlackSourceValidator.class, SourceResolver.class, SlackSourceConnector.class));
+            AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SlackSourceResolver.class, AwsS3SourceConnector.class),
+            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SlackSourceResolver.class, AwsSqsSourceConnector.class),
+            SlackSource.TYPE, expect(SlackSourceValidator.class, SlackSourceResolver.class, SlackSourceConnector.class));
 
     @Inject
     GatewayConfiguratorImpl configurator;

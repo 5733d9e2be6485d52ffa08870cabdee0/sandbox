@@ -39,6 +39,7 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayConnector;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -289,10 +290,19 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        String topicName = processor.getType() == ProcessorType.SOURCE
-                ? resourceNamesProvider.getProcessorTopicName(processor.getId())
-                : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+        String topicName;
         String errorTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
+        if (processor.getType() == ProcessorType.SOURCE) {
+            Source source = processor.getDefinition().getRequestedSource();
+            GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
+            if (sourceConnector.hasInternalRouting()) {
+                topicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
+            } else {
+                topicName = resourceNamesProvider.getProcessorTopicName(processor.getId());
+            }
+        } else {
+            topicName = resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+        }
 
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),

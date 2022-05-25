@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 
 @ApplicationScoped
+/**
+ * This is a place-holder to show the entry point into a Sidecar.
+ */
 public class ErrorHandlerBridge {
 
     public static final String ERRORS_IN_CHANNEL = "errors-in";

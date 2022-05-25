@@ -52,7 +52,7 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
     }
 
     @Override
-    public JsonNode connectorPayload(T gateway, String topicName, String errorHandlerTopicName) {
+    public JsonNode connectorPayload(T gateway, String topicName) {
         ObjectNode definition = mapper.createObjectNode();
 
         if (logEnabled) {
@@ -62,6 +62,13 @@ public abstract class AbstractGatewayConnector<T extends Gateway> implements Gat
         }
 
         addConnectorSpecificPayload(gateway, topicName, definition);
+
+        return definition;
+    }
+
+    @Override
+    public JsonNode connectorPayload(T gateway, String topicName, String errorHandlerTopicName) {
+        ObjectNode definition = (ObjectNode) connectorPayload(gateway, topicName);
 
         addErrorHandlerPayload(errorHandlerTopicName, definition);
 
