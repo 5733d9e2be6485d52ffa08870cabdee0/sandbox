@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -18,6 +19,7 @@ import io.quarkus.test.security.TestSecurity;
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
@@ -59,8 +61,9 @@ public class SchemaAPITest {
                 default:
                     fail("entry type does not match 'source' nor 'action'");
             }
-            assertThat(entry.getHref()).contains(entry.getName());
-            assertThat(entry.getHref()).contains(".json");
+            assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
+            assertThat(entry.getHref()).contains(entry.getName()); // The href should contain the name
+            assertThat(entry.getHref()).contains(".json"); // The href points to a json file
         }
     }
 }

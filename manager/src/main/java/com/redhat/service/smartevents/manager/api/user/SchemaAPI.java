@@ -45,8 +45,8 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 public class SchemaAPI {
 
-    private static final String SINKS_DIR_PATH = "/schemas/actions/";
-    private static final String SOURCE_DIR_PATH = "/schemas/sources/";
+    private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
+    private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
@@ -56,8 +56,8 @@ public class SchemaAPI {
 
     @PostConstruct
     void init() throws IOException {
-        sinks = IOUtils.readLines(getClass().getResourceAsStream(SINKS_DIR_PATH), StandardCharsets.UTF_8);
-        sources = IOUtils.readLines(getClass().getResourceAsStream(SOURCE_DIR_PATH), StandardCharsets.UTF_8);
+        sinks = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
+        sources = IOUtils.readLines(getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
     }
 
     @APIResponses(value = {
