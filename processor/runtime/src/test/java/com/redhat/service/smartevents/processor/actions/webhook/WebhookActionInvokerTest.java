@@ -10,11 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
-import com.redhat.service.smartevents.processor.actions.ActionTestUtils;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
@@ -32,11 +33,17 @@ import static org.mockito.Mockito.when;
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = WebhookSinkMockResource.class)
 class WebhookActionInvokerTest extends AbstractWireMockTest {
 
+    public static final String TEST_BRIDGE_ID = "bridgeId";
+    public static final String TEST_PROCESSOR_ID = "processorId";
+    public static final String TEST_ORIGINAL_EVENT_ID = "originalEventId";
     public static final String TEST_EVENT = "{\"specversion\":\"1.0\",\"type\":\"TestType\",\"source\":\"/test/src\",\"id\":\"1234\"}";
     public static final String TEST_WEBHOOK_PATH = "/webhook";
 
     @Inject
     Vertx vertx;
+
+    @InjectMock
+    ErrorPublisher errorPublisher;
 
     @ConfigProperty(name = "test.webhookSinkUrl")
     String webhookSinkUrl;
@@ -49,8 +56,8 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
         addUpdateRequestListener(TEST_WEBHOOK_PATH, RequestMethod.POST, latch);
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
-        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx));
-        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
+        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), errorPublisher);
+        invoker.onEvent(TEST_BRIDGE_ID, TEST_PROCESSOR_ID, TEST_ORIGINAL_EVENT_ID, TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
@@ -68,8 +75,12 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
 
-        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), "username", "password");
-        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
+        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint,
+                WebClient.create(vertx),
+                errorPublisher,
+                "username",
+                "password");
+        invoker.onEvent(TEST_BRIDGE_ID, TEST_PROCESSOR_ID, TEST_ORIGINAL_EVENT_ID, TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
@@ -90,8 +101,11 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
         AbstractOidcClient abstractOidcClient = mock(AbstractOidcClient.class);
         when(abstractOidcClient.getToken()).thenReturn("token");
 
-        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx), abstractOidcClient);
-        invoker.onEvent(ActionTestUtils.createCloudEvent(), TEST_EVENT);
+        WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint,
+                WebClient.create(vertx),
+                errorPublisher,
+                abstractOidcClient);
+        invoker.onEvent(TEST_BRIDGE_ID, TEST_PROCESSOR_ID, TEST_ORIGINAL_EVENT_ID, TEST_EVENT);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 

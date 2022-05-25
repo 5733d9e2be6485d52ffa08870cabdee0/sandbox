@@ -4,6 +4,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -22,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorMetadata;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -29,6 +32,7 @@ import io.cloudevents.jackson.JsonCloudEventData;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
+import static com.redhat.service.smartevents.processor.errorhandler.ErrorMetadata.ErrorType.ERROR;
 
 @ApplicationScoped
 public class ExecutorService {
@@ -48,18 +52,29 @@ public class ExecutorService {
     @Inject
     ObjectMapper mapper;
 
+    @Inject
+    ErrorPublisher errorPublisher;
+
     @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
+        String eventPayload;
+        CloudEvent cloudEvent = null;
         try {
-            String eventPayload = message.getPayload();
-            CloudEvent cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
+            eventPayload = message.getPayload();
+            cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
                     ? wrapToCloudEvent(eventPayload, message.getHeaders())
                     : CloudEventUtils.decode(eventPayload);
+
             executor.onEvent(cloudEvent);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event. The message is acked anyway.",
                     executor.getProcessor().getId(), executor.getProcessor().getBridgeId(), e);
+            String bridgeId = executor.getProcessor().getBridgeId();
+            String processorId = executor.getProcessor().getId();
+            String originalEventId = Objects.nonNull(cloudEvent) ? cloudEvent.getId() : message.getKey().toString();
+            errorPublisher.sendError(new ErrorMetadata(bridgeId, processorId, originalEventId, ERROR), message.getPayload(), e);
         }
+
         return message.ack();
     }
 

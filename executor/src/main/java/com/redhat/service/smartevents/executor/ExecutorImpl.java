@@ -18,11 +18,15 @@ import com.redhat.service.smartevents.infra.transformations.TransformationEvalua
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorMetadata;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
+
+import static com.redhat.service.smartevents.processor.errorhandler.ErrorMetadata.ErrorType.INFORMATION;
 
 public class ExecutorImpl implements Executor {
 
@@ -33,6 +37,7 @@ public class ExecutorImpl implements Executor {
     private final FilterEvaluator filterEvaluator;
     private final TransformationEvaluator transformationEvaluator;
     private final ActionInvoker actionInvoker;
+    private final ErrorPublisher errorPublisher;
 
     private Timer processorProcessingTime;
     private Timer filterTimer;
@@ -44,7 +49,8 @@ public class ExecutorImpl implements Executor {
             FilterEvaluatorFactory filterEvaluatorFactory,
             TransformationEvaluatorFactory transformationFactory,
             ActionRuntime actionRuntime,
-            MeterRegistry registry) {
+            MeterRegistry registry,
+            ErrorPublisher errorPublisher) {
         this.processor = processor;
         this.isSourceProcessor = processor.getType() == ProcessorType.SOURCE;
         this.filterEvaluator = filterEvaluatorFactory.build(processor.getDefinition().getFilters());
@@ -52,6 +58,7 @@ public class ExecutorImpl implements Executor {
 
         Action action = processor.getDefinition().getResolvedAction();
         this.actionInvoker = actionRuntime.getInvokerBuilder(action.getType()).build(processor, action);
+        this.errorPublisher = errorPublisher;
 
         initMetricFields(processor, registry);
     }
@@ -67,13 +74,21 @@ public class ExecutorImpl implements Executor {
     }
 
     private void process(CloudEvent event) {
+        String bridgeId = getProcessor().getBridgeId();
+        String processorId = getProcessor().getId();
+        String originalEventId = event.getId();
+
         Map<String, Object> eventMap = toEventMap(event);
 
         LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}", event.getId(), event.getType(), processor.getName(), processor.getBridgeId());
 
         // Filter evaluation
         if (!matchesFilters(eventMap)) {
-            LOG.debug("Filters of processor '{}' did not match for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
+            String message = String.format("Filters of processor '%s' did not match for event with id '%s' and type '%s'", processorId, originalEventId, event.getType());
+            errorPublisher.sendError(new ErrorMetadata(bridgeId, processorId, originalEventId, INFORMATION),
+                    CloudEventUtils.encode(event),
+                    message);
+            LOG.debug(message);
             return;
         }
         LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
@@ -81,7 +96,7 @@ public class ExecutorImpl implements Executor {
         // transformations are currently supported only for sink processors
         String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);
         // Action
-        actionTimer.record(() -> actionInvoker.onEvent(event, eventToSend));
+        actionTimer.record(() -> actionInvoker.onEvent(bridgeId, processorId, originalEventId, eventToSend));
     }
 
     @SuppressWarnings("unchecked")

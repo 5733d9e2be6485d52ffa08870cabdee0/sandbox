@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.processor.actions.ActionInvokerBuilder;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 
 import io.cloudevents.CloudEvent;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -45,12 +46,17 @@ import static org.mockito.Mockito.when;
 
 class ExecutorImplTest {
 
+    public static final String TEST_BRIDGE_ID = "bridgeId";
+    public static final String TEST_PROCESSOR_ID = "processorId";
+    public static final String TEST_ORIGINAL_EVENT_ID = "originalEventId";
+
     private static final FilterEvaluatorFactory filterEvaluatorFactory = new FilterEvaluatorFactoryFEEL();
     private static final TransformationEvaluatorFactory transformationEvaluatorFactory = new TransformationEvaluatorFactoryQute();
 
     private MeterRegistry meterRegistry;
     private ActionRuntime actionRuntime;
     private ActionInvoker actionInvokerMock;
+    private ErrorPublisher errorPublisherMock;
 
     @BeforeEach
     void setup() {
@@ -66,6 +72,8 @@ class ExecutorImplTest {
                 .thenThrow(new GatewayProviderException("Unknown action type"));
 
         meterRegistry = new SimpleMeterRegistry();
+
+        errorPublisherMock = mock(ErrorPublisher.class);
     }
 
     @ParameterizedTest
@@ -126,7 +134,12 @@ class ExecutorImplTest {
     }
 
     private String doTestWithInvoke(ProcessorDTO processorDTO, CloudEvent inputEvent) {
-        ExecutorImpl executor = new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        ExecutorImpl executor = new ExecutorImpl(processorDTO,
+                filterEvaluatorFactory,
+                transformationEvaluatorFactory,
+                actionRuntime,
+                meterRegistry,
+                errorPublisherMock);
         executor.onEvent(inputEvent);
 
         assertMetricsAreInitialized();
@@ -134,19 +147,24 @@ class ExecutorImplTest {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock).onEvent(inputEvent, captor.capture());
+        verify(actionInvokerMock).onEvent(TEST_BRIDGE_ID, TEST_PROCESSOR_ID, TEST_ORIGINAL_EVENT_ID, captor.capture());
 
         return captor.getValue();
     }
 
     private void doTestWithoutInvoke(ProcessorDTO processorDTO, CloudEvent inputEvent) {
-        ExecutorImpl executor = new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        ExecutorImpl executor = new ExecutorImpl(processorDTO,
+                filterEvaluatorFactory,
+                transformationEvaluatorFactory,
+                actionRuntime,
+                meterRegistry,
+                errorPublisherMock);
         executor.onEvent(inputEvent);
 
         assertMetricsAreInitialized();
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock, never()).onEvent(inputEvent, any());
+        verify(actionInvokerMock, never()).onEvent(TEST_BRIDGE_ID, TEST_PROCESSOR_ID, TEST_ORIGINAL_EVENT_ID, any());
     }
 
     private void assertMetricsAreInitialized() {
