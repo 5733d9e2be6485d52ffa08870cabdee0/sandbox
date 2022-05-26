@@ -162,7 +162,7 @@ public class ProcessorSteps {
                 .failFast(() -> ProcessorResource
                         .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                         .then()
-                        .body("status", Matchers.equalTo("failed")))
+                        .body("status", Matchers.not("failed")))
                 .untilAsserted(
                         () -> ProcessorResource
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
