@@ -24,7 +24,6 @@ import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
-import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
@@ -85,17 +84,6 @@ public class BridgesServiceImpl implements BridgesService {
         metricsService.onOperationStart(bridge, MetricsOperation.PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
-
-        // We don't need to wait for the Bridge to be READY to create the Error Handler.
-        // If this **IS** a problem we can move this to the "updateBridge(...)" method and
-        // create the Processor when the Bridge status changes to READY.
-        // TODO {manstis} Can we move this to the BridgeWorker?
-        Action errorHandlerAction = bridge.getDefinition().getErrorHandler();
-        if (Objects.nonNull(errorHandlerAction)) {
-            String errorHandlerName = String.format("Back-channel for Bridge '%s'", bridge.getId());
-            ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
-            processorService.createErrorHandlingProcessor(bridge.getId(), customerId, owner, errorHandlerProcessor);
-        }
 
         return bridge;
     }

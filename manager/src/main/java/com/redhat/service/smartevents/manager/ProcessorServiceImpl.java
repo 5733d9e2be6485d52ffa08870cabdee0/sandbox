@@ -83,9 +83,28 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
-        /* We cannot deploy Processors to a Bridge that is not Available */
+        // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
+        return doCreateProcessor(bridge, customerId, owner, processorRequest, false);
+    }
+
+    @Override
+    @Transactional
+    public Processor createErrorHandlingProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+
+        ProcessorType processorType = processorRequest.getType();
+        if (processorType != ProcessorType.SINK) {
+            throw new BadRequestException("Unable to create a SOURCE Processor for Error Handling.");
+        }
+
+        return doCreateProcessor(bridge, customerId, owner, processorRequest, true);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    protected Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorRequest processorRequest, boolean isErrorHandler) {
+        String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
@@ -102,7 +121,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
         Action resolvedAction = processorType == ProcessorType.SOURCE
@@ -111,7 +129,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, false);
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, isErrorHandler);
 
         newProcessor.setDefinition(definition);
 
@@ -127,50 +145,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
-    }
 
-    @Override
-    public Processor createErrorHandlingProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
-        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-
-        if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
-            throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
-        }
-
-        ProcessorType processorType = processorRequest.getType();
-        if (processorType != ProcessorType.SINK) {
-            throw new BadRequestException("Unable to create a SOURCE Processor for Error Handling.");
-        }
-
-        Processor newProcessor = new Processor();
-        newProcessor.setType(processorType);
-        newProcessor.setName(processorRequest.getName());
-        newProcessor.setSubmittedAt(ZonedDateTime.now());
-        newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
-        newProcessor.setBridge(bridge);
-        newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
-        newProcessor.setOwner(owner);
-
-        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-
-        Action resolvedAction = resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
-        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, true);
-
-        newProcessor.setDefinition(definition);
-
-        // Processor, Connector and Work should always be created in the same transaction
-        processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(newProcessor);
-        workManager.schedule(newProcessor);
-        metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
-
-        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
-                newProcessor.getId(),
-                newProcessor.getBridge().getCustomerId(),
-                newProcessor.getBridge().getId());
-
-        return newProcessor;
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
@@ -299,6 +274,12 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
+    }
+
+    @Transactional
+    @Override
+    public ListResult<Processor> getAllProcessors(String bridgeId, String customerId) {
+        return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
     }
 
     @Override

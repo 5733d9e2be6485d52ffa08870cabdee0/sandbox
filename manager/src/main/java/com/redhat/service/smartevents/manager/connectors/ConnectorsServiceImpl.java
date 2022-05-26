@@ -55,7 +55,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private void createConnectorEntity(Processor processor, Action action) {
+    protected void createConnectorEntity(Processor processor, Action action) {
         Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
         if (optActionConnector.isEmpty()) {
             return;
@@ -72,7 +72,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, Source source) {
+    protected void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
