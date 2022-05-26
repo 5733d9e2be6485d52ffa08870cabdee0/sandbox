@@ -477,8 +477,6 @@ paths:
           description: Internal error.
           content:
             application/json: {}
-      security:
-      - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
@@ -510,8 +508,6 @@ paths:
           description: Internal error.
           content:
             application/json: {}
-      security:
-      - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
