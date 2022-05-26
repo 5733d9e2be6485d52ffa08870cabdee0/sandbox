@@ -59,7 +59,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
-        //TODO {manstis} WIP
+        // Create back-channel topic
         rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
@@ -87,7 +87,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
-        //TODO {manstis} WIP
+        // Delete back-channel topic
         rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 

@@ -14,7 +14,4 @@ public interface GatewayConnector<T extends Gateway> extends GatewayBean {
 
     JsonNode connectorPayload(T gateway, String topicName, String errorHandlerTopicName);
 
-    default boolean hasInternalRouting() {
-        return false;
-    }
 }

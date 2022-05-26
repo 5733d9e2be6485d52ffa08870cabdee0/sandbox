@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.processor.errorhandler.ErrorMetadata;
@@ -61,9 +62,26 @@ public class ExecutorService {
         CloudEvent cloudEvent = null;
         try {
             eventPayload = message.getPayload();
-            cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
-                    ? wrapToCloudEvent(eventPayload, message.getHeaders())
-                    : CloudEventUtils.decode(eventPayload);
+
+            // Unwrap Event
+            ProcessorType type = executor.getProcessor().getType();
+            if (type == ProcessorType.SOURCE) {
+                // Source processors only handle non-Cloud Events
+                cloudEvent = wrapToCloudEvent(eventPayload,
+                        message.getHeaders(),
+                        executor.getProcessor().getDefinition().getRequestedSource());
+            } else {
+                // Sink processors can possibly handle both types of event. Unfortunately we're
+                // unable to ascertain the nature of the payload therefore, if the payload cannot
+                // be de-serialised as a Cloud Event, fallback to a wrapper.
+                try {
+                    cloudEvent = CloudEventUtils.decode(eventPayload);
+                } catch (CloudEventDeserializationException e) {
+                    cloudEvent = wrapToCloudEvent(eventPayload,
+                            message.getHeaders(),
+                            executor.getProcessor().getDefinition().getRequestedAction());
+                }
+            }
 
             executor.onEvent(cloudEvent);
         } catch (Exception e) {
@@ -78,14 +96,14 @@ public class ExecutorService {
         return message.ack();
     }
 
-    private CloudEvent wrapToCloudEvent(String event, Headers headers) {
+    private CloudEvent wrapToCloudEvent(String event, Headers headers, Gateway gateway) {
         try {
             // JsonCloudEventData.wrap requires an empty JSON
             JsonNode payload = stringEventToJsonOrEmpty(event);
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                     .withId(UUID.randomUUID().toString())
                     .withSource(URI.create(CLOUD_EVENT_SOURCE))
-                    .withType(String.format("%sSource", executor.getProcessor().getDefinition().getRequestedSource().getType()))
+                    .withType(String.format("%sSource", gateway.getType()))
                     .withData(JsonCloudEventData.wrap(payload));
 
             Map<String, Object> extensions = wrapHeadersToExtensionsMap(headers);

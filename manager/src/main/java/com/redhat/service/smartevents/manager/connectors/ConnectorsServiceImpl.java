@@ -48,7 +48,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         if (processor.getType() == ProcessorType.SOURCE) {
             createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
         } else {
-            createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+            if (!(processor.getDefinition().isErrorHandler())) {
+                createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+            }
         }
     }
 
@@ -72,10 +74,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
-        if (sourceConnector.hasInternalRouting()) {
-            return;
-        }
-
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
         persistConnectorEntity(processor,

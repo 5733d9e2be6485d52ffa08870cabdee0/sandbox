@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
+import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
@@ -108,6 +109,7 @@ class ConnectorsServiceTest {
 
     private static Processor processorWith(Gateway gateway) {
         Processor processor = new Processor();
+        processor.setBridge(new Bridge());
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition();
         if (gateway instanceof Action) {

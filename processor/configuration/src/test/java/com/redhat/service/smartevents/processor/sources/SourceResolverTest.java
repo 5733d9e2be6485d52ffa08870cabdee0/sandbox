@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources.slack;
+package com.redhat.service.smartevents.processor.sources;
 
 import java.util.Map;
 
@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class SlackSourceResolverTest {
+class SourceResolverTest {
 
     private static final String CUSTOMER_ID = "test-customer";
     private static final String BRIDGE_ID = "br-01";
@@ -39,7 +40,7 @@ class SlackSourceResolverTest {
     private static final String PROCESSOR_ID = "pr-01";
 
     @Inject
-    SlackSourceResolver resolver;
+    SourceResolver resolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;

@@ -39,7 +39,6 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayConnector;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -112,7 +111,51 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, false);
+
+        newProcessor.setDefinition(definition);
+
+        // Processor, Connector and Work should always be created in the same transaction
+        processorDAO.persist(newProcessor);
+        connectorService.createConnectorEntity(newProcessor);
+        workManager.schedule(newProcessor);
+        metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
+
+        LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
+                newProcessor.getId(),
+                newProcessor.getBridge().getCustomerId(),
+                newProcessor.getBridge().getId());
+
+        return newProcessor;
+    }
+
+    @Override
+    public Processor createErrorHandlingProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+
+        if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
+            throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
+        }
+
+        ProcessorType processorType = processorRequest.getType();
+        if (processorType != ProcessorType.SINK) {
+            throw new BadRequestException("Unable to create a SOURCE Processor for Error Handling.");
+        }
+
+        Processor newProcessor = new Processor();
+        newProcessor.setType(processorType);
+        newProcessor.setName(processorRequest.getName());
+        newProcessor.setSubmittedAt(ZonedDateTime.now());
+        newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
+        newProcessor.setBridge(bridge);
+        newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
+        newProcessor.setOwner(owner);
+
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+
+        Action resolvedAction = resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+        ProcessorDefinition definition = new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, true);
 
         newProcessor.setDefinition(definition);
 
@@ -180,7 +223,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
         ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
                 ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingSource, existingResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction, false);
 
         // No need to update CRD if the definition is unchanged
         if (existingDefinition.equals(updatedDefinition)) {
@@ -292,16 +335,14 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorDTO toDTO(Processor processor) {
         String topicName;
         String errorTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
-        if (processor.getType() == ProcessorType.SOURCE) {
-            Source source = processor.getDefinition().getRequestedSource();
-            GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
-            if (sourceConnector.hasInternalRouting()) {
+        if (processor.getType() == ProcessorType.SINK) {
+            if (processor.getDefinition().isErrorHandler()) {
                 topicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
             } else {
-                topicName = resourceNamesProvider.getProcessorTopicName(processor.getId());
+                topicName = resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
             }
         } else {
-            topicName = resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+            topicName = resourceNamesProvider.getProcessorTopicName(processor.getId());
         }
 
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(

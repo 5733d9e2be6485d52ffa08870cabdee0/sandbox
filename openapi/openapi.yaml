@@ -716,6 +716,8 @@ components:
           minLength: 1
           type: string
           nullable: false
+        errorHandler:
+          $ref: '#/components/schemas/Action'
     BridgeResponse:
       type: object
       properties:
@@ -785,6 +787,8 @@ components:
           type: string
         topic:
           type: string
+        errorTopic:
+          type: string
     ManagedResourceStatus:
       enum:
       - accepted
@@ -833,6 +837,10 @@ components:
           $ref: '#/components/schemas/Source'
         resolvedAction:
           $ref: '#/components/schemas/Action'
+        isErrorHandler:
+          type: boolean
+        errorHandler:
+          type: boolean
     ProcessorListResponse:
       type: object
       properties:

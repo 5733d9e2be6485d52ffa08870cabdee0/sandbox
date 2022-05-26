@@ -82,8 +82,7 @@ class GatewayConstraintValidatorTest {
         lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
 
-        constraintValidator = new GatewayConstraintValidator();
-        constraintValidator.gatewayConfigurator = gatewayConfiguratorMock;
+        constraintValidator = new GatewayConstraintValidator(gatewayConfiguratorMock);
     }
 
     @Test
