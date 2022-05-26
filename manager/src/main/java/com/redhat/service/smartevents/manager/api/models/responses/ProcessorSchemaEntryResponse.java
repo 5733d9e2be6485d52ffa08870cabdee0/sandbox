@@ -15,7 +15,8 @@ public class ProcessorSchemaEntryResponse {
     @JsonProperty("href")
     private String href;
 
-    public ProcessorSchemaEntryResponse(){}
+    public ProcessorSchemaEntryResponse() {
+    }
 
     public ProcessorSchemaEntryResponse(String name, String type, String href) {
         this.name = name;

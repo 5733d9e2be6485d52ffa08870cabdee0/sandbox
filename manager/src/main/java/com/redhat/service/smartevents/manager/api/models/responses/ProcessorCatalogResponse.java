@@ -11,7 +11,8 @@ public class ProcessorCatalogResponse {
     @JsonProperty("items")
     private List<ProcessorSchemaEntryResponse> items;
 
-    public ProcessorCatalogResponse() {}
+    public ProcessorCatalogResponse() {
+    }
 
     public ProcessorCatalogResponse(List<ProcessorSchemaEntryResponse> items) {
         this.items = items;
