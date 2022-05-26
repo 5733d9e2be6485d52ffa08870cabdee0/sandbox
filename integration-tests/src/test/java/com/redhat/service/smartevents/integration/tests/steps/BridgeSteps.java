@@ -107,7 +107,7 @@ public class BridgeSteps {
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .failFast(
-                        () -> BridgeResource
+                        () -> assertthat(BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
                                 .then()
                                 .body("status", Matchers.not("failed"))
