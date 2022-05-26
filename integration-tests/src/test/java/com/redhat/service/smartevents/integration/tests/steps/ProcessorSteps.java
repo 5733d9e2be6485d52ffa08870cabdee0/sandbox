@@ -159,7 +159,7 @@ public class ProcessorSteps {
                                 .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
-                .failFast(() -> ProcessorResource
+                .failFast(() -> assertthat(ProcessorResource
                         .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                         .then()
                         .body("status", Matchers.not("failed")))
