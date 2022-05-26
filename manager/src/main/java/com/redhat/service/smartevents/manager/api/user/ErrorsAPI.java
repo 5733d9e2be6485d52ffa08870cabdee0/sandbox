@@ -36,16 +36,9 @@ import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import io.quarkus.security.Authenticated;
 
 @Tag(name = "Error Catalog", description = "List and get the error definitions from the error catalog.")
-@SecuritySchemes(value = {
-        @SecurityScheme(securitySchemeName = "bearer",
-                type = SecuritySchemeType.HTTP,
-                scheme = "Bearer")
-})
-@SecurityRequirement(name = "bearer")
 @Path(APIConstants.ERROR_API_BASE_PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Authenticated
 public class ErrorsAPI {
 
     @Inject
