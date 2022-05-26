@@ -54,11 +54,11 @@
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
     <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
-    <version.com.redhat.cloud-connectors>0.19.0-beta1</version.com.redhat.cloud-connectors>
+    <version.com.redhat.cloud-connectors>0.20.0</version.com.redhat.cloud-connectors>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
-    <version.jacoco.maven.plugin>0.8.7</version.jacoco.maven.plugin>
+    <version.jacoco.maven.plugin>0.8.8</version.jacoco.maven.plugin>
 
     <version.com.epam.reportportal>5.1.1</version.com.epam.reportportal>
     <version.com.epam.reportportal.logger-java-log4j>5.1.4</version.com.epam.reportportal.logger-java-log4j>
