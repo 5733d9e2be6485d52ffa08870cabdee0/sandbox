@@ -40,7 +40,6 @@ public class SchemaAPITest {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
     }
 
-    // If you add a new action or a new source under /resources/schemas/, you have to update this test.
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors() {
@@ -49,7 +48,8 @@ public class SchemaAPITest {
         ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
 
         assertThat(catalog.getItems()).isNotNull();
-        assertThat(catalog.getItems().size()).isEqualTo(7);
+        assertThat(catalog.getItems().size()).isEqualTo(7)
+                .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test");
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
