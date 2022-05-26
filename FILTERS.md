@@ -122,9 +122,9 @@ Then an event like
 
 Would evaluate the `Filter` to `true`.
 
-### ValuesIn
+### StringIn
 
-The `ValuesIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
+The `StringIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
 
 Assuming that the `Filter` is the following
 
@@ -133,9 +133,40 @@ Assuming that the `Filter` is the following
 {
   "filters": [
     {
-      "type": "ValuesIn", 
+      "type": "StringIn", 
       "key": "data.any",
-      "values": ["Jac", 2]
+      "values": ["Jac", "opo"]
+    }
+  ]
+}
+```
+
+Then an event like
+```json
+{
+  ...
+  "data": {
+    "any": "Jac"
+  }
+}
+```
+
+Would evaluate the `Filter` to `true`.
+
+### NumberIn
+
+The `NumberIn` evaluates to `true` if the **key** value is equal to any of the values specified in the `Filter` **values**.
+
+Assuming that the `Filter` is the following
+
+```json
+
+{
+  "filters": [
+    {
+      "type": "NumberIn", 
+      "key": "data.any",
+      "values": [3, 2]
     }
   ]
 }
@@ -152,7 +183,6 @@ Then an event like
 ```
 
 Would evaluate the `Filter` to `true`.
-
 
 ## Combining filters
 

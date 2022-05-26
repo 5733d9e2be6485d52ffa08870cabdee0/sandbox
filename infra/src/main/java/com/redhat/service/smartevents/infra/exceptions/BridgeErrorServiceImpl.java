@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 
 @ApplicationScoped
 public class BridgeErrorServiceImpl implements BridgeErrorService {
@@ -15,7 +15,7 @@ public class BridgeErrorServiceImpl implements BridgeErrorService {
     BridgeErrorDAO repository;
 
     @Override
-    public ListResult<BridgeError> getUserErrors(QueryInfo queryInfo) {
+    public ListResult<BridgeError> getUserErrors(QueryPageInfo queryInfo) {
         return repository.findAllErrorsByType(queryInfo, BridgeErrorType.USER);
     }
 

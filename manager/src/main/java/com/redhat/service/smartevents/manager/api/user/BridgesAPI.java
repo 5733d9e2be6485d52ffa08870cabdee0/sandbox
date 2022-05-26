@@ -29,7 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
@@ -71,7 +71,7 @@ public class BridgesAPI {
     })
     @Operation(summary = "Get the list of Bridge instances", description = "Get the list of Bridge instances for the authenticated user.")
     @GET
-    public Response getBridges(@Valid @BeanParam QueryInfo queryInfo) {
+    public Response getBridges(@Valid @BeanParam QueryResourceInfo queryInfo) {
         return Response.ok(ListResponse.fill(bridgesService
                 .getBridges(identityResolver.resolve(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
     }
@@ -87,7 +87,10 @@ public class BridgesAPI {
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
     public Response createBridge(@Valid BridgeRequest bridgeRequest) {
-        Bridge bridge = bridgesService.createBridge(identityResolver.resolve(jwt), bridgeRequest);
+        String customerId = identityResolver.resolve(jwt);
+        String organisationId = identityResolver.resolveOrganisationId(jwt);
+        String owner = identityResolver.resolveOwner(jwt);
+        Bridge bridge = bridgesService.createBridge(customerId, organisationId, owner, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
 

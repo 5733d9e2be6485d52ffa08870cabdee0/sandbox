@@ -1,9 +1,12 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import org.eclipse.microprofile.reactive.messaging.Message;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
+import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_SOURCE;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_TYPE;
@@ -45,7 +49,7 @@ class ExecutorServiceTest {
         executorService.executor = executorMock;
         executorService.mapper = new ObjectMapper();
 
-        Message<String> inputMessage = mock(Message.class);
+        KafkaRecord<Integer, String> inputMessage = mock(KafkaRecord.class);
         when(inputMessage.getPayload()).thenReturn(inputEvent);
 
         ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);
@@ -64,6 +68,8 @@ class ExecutorServiceTest {
     private static Stream<Arguments> executorServiceTestArgs() {
         Object[][] arguments = {
                 { createSourceProcessor(), BROKEN_JSON, never(), null, null },
+                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
+                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
                 { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
                 { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null },
                 { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null },
@@ -73,5 +79,31 @@ class ExecutorServiceTest {
                 { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE }
         };
         return Stream.of(arguments).map(Arguments::of);
+    }
+
+    @ParameterizedTest
+    @MethodSource("metadataArgs")
+    void test(Headers headers, Map<String, Object> expectedExtension) {
+        Map<String, Object> cloudEventExtension = ExecutorService.wrapHeadersToExtensionsMap(headers);
+        assertThat(cloudEventExtension).isEqualTo(expectedExtension);
+    }
+
+    private static Stream<Arguments> metadataArgs() {
+        Object[][] arguments = {
+                { headers(), Map.of() },
+                { null, Map.of() },
+                { headers("CamelAwsS3BucketName", "test-connector-1"), Map.of("camelawss3bucketname", "test-connector-1") },
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    private static Headers headers(String... args) {
+        RecordHeaders headers = new RecordHeaders();
+        for (int i = 0; i < args.length - 1; i += 2) {
+            String key = args[i];
+            String value = args[i + 1];
+            headers.add(key, value.getBytes(StandardCharsets.UTF_8));
+        }
+        return headers;
     }
 }

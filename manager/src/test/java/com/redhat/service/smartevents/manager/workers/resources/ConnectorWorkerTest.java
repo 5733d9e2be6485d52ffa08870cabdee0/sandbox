@@ -134,7 +134,6 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        assertThat(refreshed.getModifiedAt()).isNotNull();
         assertThat(workManager.exists(work)).isTrue();
     }
 
@@ -162,7 +161,7 @@ class ConnectorWorkerTest {
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
 
         // Managed Connector will initially be available before it is deleted
-        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, null);
+        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
         ConnectorEntity refreshed = worker.handleWork(work);
 
@@ -181,7 +180,6 @@ class ConnectorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        assertThat(refreshed.getModifiedAt()).isNotNull();
         assertThat(workManager.exists(work)).isTrue();
     }
 

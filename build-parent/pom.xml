@@ -45,7 +45,7 @@
     <version.com.github.tomakehurst.wiremock>2.30.1</version.com.github.tomakehurst.wiremock>
     <version.org.awaitility>4.2.0</version.org.awaitility>
     <version.io.fabric8>5.12.1</version.io.fabric8>
-    <version.org.kie.dmn.feel>7.57.0.Final</version.org.kie.dmn.feel>
+    <version.org.kie.dmn.feel>8.21.0.Beta</version.org.kie.dmn.feel>
     <version.org.localstack>0.13.3</version.org.localstack>
     <version.org.keycloak>15.1.0</version.org.keycloak>
     <version.io.quarkiverse.hibernatetypes>0.2.0</version.io.quarkiverse.hibernatetypes>
@@ -54,11 +54,11 @@
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
     <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
-    <version.com.redhat.cloud-connectors>0.19.0-beta1</version.com.redhat.cloud-connectors>
+    <version.com.redhat.cloud-connectors>0.20.0</version.com.redhat.cloud-connectors>
 
     <version.io.cucumber>7.0.0</version.io.cucumber>
 
-    <version.jacoco.maven.plugin>0.8.7</version.jacoco.maven.plugin>
+    <version.jacoco.maven.plugin>0.8.8</version.jacoco.maven.plugin>
 
     <version.com.epam.reportportal>5.1.1</version.com.epam.reportportal>
     <version.com.epam.reportportal.logger-java-log4j>5.1.4</version.com.epam.reportportal.logger-java-log4j>
@@ -70,6 +70,9 @@
     <formatter.skip>false</formatter.skip>
     <formatter.goal>format</formatter.goal>
     <impsort.goal>sort</impsort.goal>
+
+    <!-- See https://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html-->
+    <argLine></argLine>
   </properties>
 
   <dependencyManagement>
@@ -228,6 +231,12 @@
         <groupId>com.epam.reportportal</groupId>
         <artifactId>logger-java-log4j</artifactId>
         <version>${version.com.epam.reportportal.logger-java-log4j}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-jacoco</artifactId>
+        <version>${quarkus.platform.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -468,14 +477,21 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-      </plugin>
     </plugins>
   </build>
 
   <profiles>
+    <profile>
+      <id>productized</id>
+      <activation>
+        <property>
+          <name>productized</name>
+        </property>
+      </activation>
+      <properties>
+        <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
+      </properties>
+    </profile>
     <profile>
       <!-- Fail the build if code does not follow the standards. -->
       <id>validate-formatting</id>
@@ -489,6 +505,14 @@
         <formatter.goal>validate</formatter.goal>
         <impsort.goal>check</impsort.goal>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>quickly</id>
@@ -514,6 +538,14 @@
       <properties>
         <jacoco.skip>false</jacoco.skip>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

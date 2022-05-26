@@ -1,15 +1,19 @@
 package com.redhat.service.smartevents.manager.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
@@ -19,6 +23,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -44,6 +49,26 @@ public class TestUtils {
                 .get(APIConstants.USER_API_BASE_PATH);
     }
 
+    public static Response getBridgesFilterByName(String name) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + "?name=" + name);
+    }
+
+    public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response getBridgesFilterByStatusWithAnyValue(String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
+    }
+
+    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
+    }
+
     public static Response getBridge(String id) {
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH + id);
@@ -52,6 +77,45 @@ public class TestUtils {
     public static Response listProcessors(String bridgeId, int page, int size) {
         return jsonRequest()
                 .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?size=" + size + "&page=" + page);
+    }
+
+    public static Response listProcessorsFilterByName(String bridgeId, String name) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name);
+    }
+
+    public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?" + queryString);
+    }
+
+    public static Response listProcessorsFilterByStatusWithAnyValue(String bridgeId, String... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s).collect(Collectors.joining("&"));
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors/?" + queryString);
+    }
+
+    public static Response listProcessorsFilterByType(String bridgeId, ProcessorType type) {
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?type=" + type.getValue());
+    }
+
+    public static Response listProcessorsFilterByTypeWithAnyValue(String bridgeId, String type) {
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?type=" + type);
+    }
+
+    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
+        String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);
+    }
+
+    public static Response listProcessorsFilterByNameAndType(String bridgeId, String name, ProcessorType type) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&type=" + type.getValue());
+    }
+
+    public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatus status, ProcessorType type) {
+        return jsonRequest()
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?status=" + status.getValue() + "&type=" + type.getValue());
     }
 
     public static Response getProcessor(String bridgeId, String processorId) {
@@ -133,6 +197,18 @@ public class TestUtils {
         params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
         r.setParameters(params);
         return r;
+    }
+
+    public static Source createSlackSource() {
+        Source s = new Source();
+        s.setType(SlackSource.TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackSource.CHANNEL_PARAM, "channel");
+        params.put(SlackSource.TOKEN_PARAM, "token");
+        params.put(SlackSource.CLOUD_EVENT_TYPE, "ce");
+        s.setParameters(params);
+        return s;
     }
 
     public static Bridge waitForBridgeToBeReady(BridgesService bridgesService) {

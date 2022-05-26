@@ -3,7 +3,8 @@
 PREFIX=$(whoami)
 
 export TODAY_BRIDGE_NAME="$PREFIX-$(date +%Y-%m-%d)-bridge"
-export TODAY_PROCESSOR_NAME="$PREFIX-$(date +%Y-%m-%d)-processor"
+export TODAY_ACTION_NAME="$PREFIX-$(date +%Y-%m-%d)-action"
+export TODAY_SOURCE_NAME="$PREFIX-$(date +%Y-%m-%d)-source"
 
 CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
 

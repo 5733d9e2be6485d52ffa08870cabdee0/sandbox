@@ -22,13 +22,13 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLi
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
-import com.redhat.service.smartevents.infra.models.filters.ValuesIn;
+import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -54,11 +54,13 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -84,7 +86,7 @@ class ProcessorServiceTest {
     public static final String PROVISIONING_PROCESSOR_NAME = "provisioning-processor-name";
     public static final String FAILED_PROCESSOR_ID = "failed-processor-id";
     public static final String FAILED_PROCESSOR_NAME = "failed-processor-name";
-    public static final QueryInfo QUERY_INFO = new QueryInfo(0, 100);
+    public static final QueryProcessorResourceInfo QUERY_INFO = new QueryProcessorResourceInfo(0, 100);
 
     @Inject
     ProcessorService processorService;
@@ -145,7 +147,7 @@ class ProcessorServiceTest {
 
     private static Stream<Arguments> createProcessorParams() {
         Object[][] arguments = {
-                { new ProcessorRequest(NEW_PROCESSOR_NAME, createKafkaTopicAction()), ProcessorType.SINK },
+                { new ProcessorRequest(NEW_PROCESSOR_NAME, createKafkaTopicAction()), SINK },
                 { new ProcessorRequest(NEW_PROCESSOR_NAME, createSlackSource()), ProcessorType.SOURCE }
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -155,14 +157,14 @@ class ProcessorServiceTest {
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeNotActive(ProcessorRequest request) {
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(NOT_READY_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
     @MethodSource("createProcessorParams")
     void testCreateProcessor_bridgeDoesNotExist(ProcessorRequest request) {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
@@ -170,7 +172,7 @@ class ProcessorServiceTest {
     void testCreateProcessor_processorWithSameNameAlreadyExists(ProcessorRequest request) {
         request.setName(DEFAULT_PROCESSOR_NAME);
         assertThatExceptionOfType(AlreadyExistingItemException.class)
-                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request));
+                .isThrownBy(() -> processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request));
     }
 
     @ParameterizedTest
@@ -189,7 +191,7 @@ class ProcessorServiceTest {
     }
 
     private void doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
-        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
+        Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request);
 
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getType()).isEqualTo(type);
@@ -216,11 +218,11 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testGetProcessorByStatuses() {
+    void testGetProcessorWithReadyDependencies() {
         String processor1Name = NEW_PROCESSOR_NAME;
 
         Processor processor1 = new Processor();
-        processor1.setType(ProcessorType.SINK);
+        processor1.setType(SINK);
         processor1.setName(processor1Name);
         processor1.setShardId(TestConstants.SHARD_ID);
         processor1.setStatus(ACCEPTED);
@@ -229,7 +231,7 @@ class ProcessorServiceTest {
         String processor2Name = "My Processor 2";
 
         Processor processor2 = new Processor();
-        processor2.setType(ProcessorType.SINK);
+        processor2.setType(SINK);
         processor2.setName(processor2Name);
         processor2.setShardId(TestConstants.SHARD_ID);
         processor2.setStatus(DEPROVISION);
@@ -383,11 +385,13 @@ class ProcessorServiceTest {
         verify(connectorServiceMock).deleteConnectorEntity(processorCaptor1.capture());
         assertThat(processorCaptor1.getValue()).isEqualTo(processor);
         assertThat(processorCaptor1.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
 
         ArgumentCaptor<Processor> processorCaptor2 = ArgumentCaptor.forClass(Processor.class);
         verify(workManagerMock).schedule(processorCaptor2.capture());
         assertThat(processorCaptor2.getValue()).isEqualTo(processor);
         assertThat(processorCaptor2.getValue().getStatus()).isEqualTo(DEPROVISION);
+        assertThat(processorCaptor1.getValue().getDeletionRequestedAt()).isNotNull();
     }
 
     private static Stream<Arguments> updateProcessorParams() {
@@ -466,7 +470,7 @@ class ProcessorServiceTest {
             Source dummyNewSource = new Source();
             dummyNewSource.setType("DummySource");
             request.setSource(dummyNewSource);
-        } else if (request.getType() == ProcessorType.SINK) {
+        } else if (request.getType() == SINK) {
             Action dummyNewAction = new Action();
             dummyNewAction.setType("DummyAction");
             request.setAction(dummyNewAction);
@@ -489,7 +493,7 @@ class ProcessorServiceTest {
             dummyNewAction.setType("DummyAction");
             request.setAction(dummyNewAction);
             request.setSource(null);
-        } else if (request.getType() == ProcessorType.SINK) {
+        } else if (request.getType() == SINK) {
             Source dummyNewSource = new Source();
             dummyNewSource.setType("DummySource");
             request.setSource(dummyNewSource);
@@ -528,7 +532,7 @@ class ProcessorServiceTest {
                 new StringBeginsWith("source", List.of("Storage")),
                 new StringContains("source", List.of("StorageService")),
                 new StringEquals("source", "StorageService"),
-                new ValuesIn("source", List.of("StorageService")));
+                new StringIn("source", List.of("StorageService")));
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);
@@ -596,6 +600,7 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), PROVISIONING);
         processor.setId(PROVISIONING_PROCESSOR_ID);
         processor.setName(PROVISIONING_PROCESSOR_NAME);
+        processor.setPublishedAt(null);
         return processor;
     }
 

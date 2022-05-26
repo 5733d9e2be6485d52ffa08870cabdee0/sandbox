@@ -91,6 +91,7 @@ public class BridgeIngressServiceTest {
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNotNull();
         assertThat(bridgeIngress.getSpec().getCustomerId()).isEqualTo(patchedCustomerId);
+        assertThat(bridgeIngress.getSpec().getOwner()).isEqualTo(dto.getOwner());
 
         Secret secret = fetchBridgeIngressSecret(dto);
         assertThat(secret).isNotNull();

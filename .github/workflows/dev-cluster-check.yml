@@ -26,6 +26,7 @@ jobs:
           echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
+          echo "::add-mask::${{ secrets.GCHAT_WEBHOOK_URL }}"
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
@@ -63,6 +64,19 @@ jobs:
           to: openbridge-dev@redhat.com
           from: Dev cluster CI
           body: Dev cluster CI check failed. Please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml and implement a proper fix.
+      - name: Get Sheriff Name
+        if: ${{ failure() }}
+        run: |
+          echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff-queue.sh)"
+        id: findUser
+      - name: google-chat-Notification
+        if: ${{ failure() }}
+        uses: javiern8410/actions-google-chat-notification@v1.0.0
+        with:
+          name: Build
+          url: ${{ secrets.GCHAT_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          custom_text: 'Dev cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/dev-cluster-check.yml">dev-cluster-check.yml </a> and implement a proper fix'
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10

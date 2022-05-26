@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.manager;
 import java.util.List;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
@@ -13,7 +13,7 @@ public interface ProcessorService {
 
     Processor getProcessor(String bridgeId, String processorId, String customerId);
 
-    Processor createProcessor(String bridgeId, String customerId, ProcessorRequest processorRequest);
+    Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
     Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
@@ -23,7 +23,7 @@ public interface ProcessorService {
 
     Long getProcessorsCount(String bridgeId, String customerId);
 
-    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryInfo queryInfo);
+    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
 
     void deleteProcessor(String bridgeId, String processorId, String customerId);
 

@@ -15,6 +15,11 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.FilterDefs;
+import org.hibernate.annotations.Filters;
+import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.TypeDef;
 
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -45,12 +50,22 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                 query = "from Processor p join fetch p.bridge where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
         @NamedQuery(name = "PROCESSOR.countByBridgeIdAndCustomerId",
                 query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId"),
-        @NamedQuery(name = "PROCESSOR.idsByBridgeIdAndCustomerId",
-                query = "select p.id from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
+        @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerIdNoFilter",
+                query = "from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt asc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
                 query = "select p from Processor p join fetch p.bridge where p.id in (:ids)")
 })
 @Entity
+@FilterDefs({
+        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
+        @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.dao.EnumTypeManagedResourceStatus") }),
+        @FilterDef(name = "byType", parameters = { @ParamDef(name = "ptype", type = "com.redhat.service.smartevents.manager.dao.EnumTypeProcessorType") })
+})
+@Filters({
+        @Filter(name = "byName", condition = "name like :name"),
+        @Filter(name = "byStatus", condition = "status in (:status)"),
+        @Filter(name = "byType", condition = "type=:ptype")
+})
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
@@ -69,6 +84,9 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     @Column(name = "shard_id")
     private String shardId;
+
+    @Column(name = "owner")
+    private String owner;
 
     public ProcessorType getType() {
         return type;
@@ -100,6 +118,14 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public void setShardId(String shardId) {
         this.shardId = shardId;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     /*
@@ -136,6 +162,7 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
                 ", bridge=" + bridge +
                 ", connectorEntities=" + connectorEntities +
                 ", shardId='" + shardId + '\'' +
+                ", owner='" + owner + '\'' +
                 '}';
     }
 }

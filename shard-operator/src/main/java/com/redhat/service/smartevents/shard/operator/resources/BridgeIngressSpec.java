@@ -13,6 +13,8 @@ public class BridgeIngressSpec {
 
     private String customerId;
 
+    private String owner;
+
     private String bridgeName;
 
     private String id;
@@ -31,6 +33,14 @@ public class BridgeIngressSpec {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public String getBridgeName() {
@@ -58,7 +68,11 @@ public class BridgeIngressSpec {
             return false;
         }
         BridgeIngressSpec that = (BridgeIngressSpec) o;
-        return Objects.equals(image, that.image) && Objects.equals(customerId, that.customerId) && Objects.equals(bridgeName, that.bridgeName) && Objects.equals(id, that.id);
+        return Objects.equals(image, that.image)
+                && Objects.equals(customerId, that.customerId)
+                && Objects.equals(owner, that.owner)
+                && Objects.equals(bridgeName, that.bridgeName)
+                && Objects.equals(id, that.id);
     }
 
     @Override

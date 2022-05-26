@@ -10,6 +10,10 @@ MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=my-offline-token
 
 # RHOAS_USERNAME=
 
+# This will configure the local RHOSE instance to use your username as prefix for Kafka topics and Managed Connectors
+# making it way easier to identify who is using it.
+export EVENT_BRIDGE_RESOURCE_PREFIX=my_username
+
 # optional
 # MANAGED_KAFKA_REGION=
 # MINIKUBE_DRIVER=podman

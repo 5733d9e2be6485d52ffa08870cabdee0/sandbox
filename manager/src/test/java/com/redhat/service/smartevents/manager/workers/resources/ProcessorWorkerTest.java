@@ -160,7 +160,6 @@ public class ProcessorWorkerTest {
         Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        assertThat(refreshed.getModifiedAt()).isNotNull();
         assertThat(workManager.exists(work)).isFalse();
     }
 
@@ -192,7 +191,6 @@ public class ProcessorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(refreshed.getModifiedAt()).isNotNull();
 
         ArgumentCaptor<Work> workArgumentCaptor = ArgumentCaptor.forClass(Work.class);
         verify(connectorWorker).handleWork(workArgumentCaptor.capture());

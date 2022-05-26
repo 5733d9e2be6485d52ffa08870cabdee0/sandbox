@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,20 +17,19 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyE
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryInfo;
+import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
+import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -45,9 +43,6 @@ public class BridgesServiceImpl implements BridgesService {
     ProcessorService processorService;
 
     @Inject
-    MeterRegistry meterRegistry;
-
-    @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
 
     @Inject
@@ -59,9 +54,12 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     WorkManager workManager;
 
+    @Inject
+    MetricsService metricsService;
+
     @Override
     @Transactional
-    public Bridge createBridge(String customerId, BridgeRequest bridgeRequest) {
+    public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
         if (bridgeDAO.findByNameAndCustomerId(bridgeRequest.getName(), customerId) != null) {
             throw new AlreadyExistingItemException(String.format("Bridge with name '%s' already exists for customer with id '%s'", bridgeRequest.getName(), customerId));
         }
@@ -70,11 +68,14 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
+        bridge.setOrganisationId(organisationId);
+        bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
+        metricsService.onOperationStart(bridge, MetricsOperation.PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
@@ -131,7 +132,9 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge deletion and related Work creation should always be in the same transaction
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
+        bridge.setDeletionRequestedAt(ZonedDateTime.now());
         workManager.schedule(bridge);
+        metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -143,7 +146,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public ListResult<Bridge> getBridges(String customerId, QueryInfo queryInfo) {
+    public ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo) {
         return bridgeDAO.findByCustomerId(customerId, queryInfo);
     }
 
@@ -163,14 +166,13 @@ public class BridgesServiceImpl implements BridgesService {
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
+            metricsService.onOperationComplete(bridge, MetricsOperation.DELETE);
+        } else if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY)) {
+            if (Objects.isNull(bridge.getPublishedAt())) {
+                bridge.setPublishedAt(ZonedDateTime.now());
+                metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
+            }
         }
-        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY) && Objects.isNull(bridge.getPublishedAt())) {
-            bridge.setPublishedAt(ZonedDateTime.now());
-        }
-
-        // Update metrics
-        meterRegistry.counter("manager.bridge.status.change",
-                Collections.singletonList(Tag.of("status", bridgeDTO.getStatus().toString()))).increment();
 
         LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
         return bridge;
@@ -190,6 +192,7 @@ public class BridgesServiceImpl implements BridgesService {
         dto.setEndpoint(bridge.getEndpoint());
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
+        dto.setOwner(bridge.getOwner());
         dto.setKafkaConnection(kafkaConnectionDTO);
         return dto;
     }
@@ -204,7 +207,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setPublishedAt(bridge.getPublishedAt());
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
+        response.setOwner(bridge.getOwner());
         return response;
     }
-
 }

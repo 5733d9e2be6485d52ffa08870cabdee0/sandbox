@@ -30,6 +30,14 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
 
+import static com.redhat.service.smartevents.infra.api.APIConstants.USER_API_BASE_PATH;
+import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -54,6 +62,10 @@ public class BridgesAPITest {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         when(jwt.getClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.SHARD_ID);
         when(jwt.containsClaim(APIConstants.ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(TestConstants.DEFAULT_ORGANISATION_ID);
+        when(jwt.containsClaim(APIConstants.ORG_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
+        when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
+        when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
     }
 
     @Test
@@ -62,36 +74,36 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetEmptyBridges() {
         BridgeListResponse response = TestUtils.getBridges().as(BridgeListResponse.class);
         assertThat(response.getItems().size()).isZero();
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(202);
     }
 
     @Test
     public void createBridgeNoAuthentication() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(401);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createInvalidBridge() {
         TestUtils.createBridge(new BridgeRequest())
                 .then().statusCode(400);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridge() {
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -104,8 +116,8 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void getUnexistingBridge() {
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getNonExistingBridge() {
         ErrorResponse response = TestUtils.getBridge("not-the-id").then().statusCode(404).extract().as(ErrorResponse.class);
         assertThat(response.getId()).isEqualTo("4");
         assertThat(response.getCode()).endsWith("4");
@@ -118,28 +130,141 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(202);
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
 
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
-        assertThat(bridgeResponse.getName()).isEqualTo(TestConstants.DEFAULT_BRIDGE_NAME);
-        assertThat(bridgeResponse.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
-        assertThat(bridgeResponse.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridgeResponse.getStatus()).isEqualTo(ACCEPTED);
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
 
         assertThat(bridgeResponse.getEndpoint()).isNull();
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesFilterByName() {
+        Bridge bridge1 = Fixtures.createBridge();
+        bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
+        bridge1.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = Fixtures.createBridge();
+        bridge2.setName(DEFAULT_BRIDGE_NAME + "2");
+        bridge2.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByName(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
+
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
+        BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(bridge1.getStatus());
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesFilterByStatus() {
+        Bridge bridge1 = Fixtures.createBridge();
+        bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
+        bridge1.setStatus(READY);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = Fixtures.createBridge();
+        bridge2.setName(DEFAULT_BRIDGE_NAME + "2");
+        bridge2.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByStatus(ACCEPTED).as(BridgeListResponse.class);
+
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
+        BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse.getName()).isEqualTo(bridge2.getName());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(bridge2.getStatus());
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesFilterByMultipleStatuses() {
+        Bridge bridge1 = Fixtures.createBridge();
+        bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
+        bridge1.setStatus(READY);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = Fixtures.createBridge();
+        bridge2.setName(DEFAULT_BRIDGE_NAME + "2");
+        bridge2.setStatus(ACCEPTED);
+        bridgeDAO.persist(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByStatus(READY, ACCEPTED).as(BridgeListResponse.class);
+
+        // The default sorting is by submission date descending; so Bridge2 will be first
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(2);
+        BridgeResponse bridgeResponse1 = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse1.getName()).isEqualTo(bridge2.getName());
+        assertThat(bridgeResponse1.getStatus()).isEqualTo(bridge2.getStatus());
+        assertThat(bridgeResponse1.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse1.getId());
+        assertThat(bridgeResponse1.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse1.getEndpoint()).isNotNull();
+
+        BridgeResponse bridgeResponse2 = bridgeListResponse.getItems().get(1);
+        assertThat(bridgeResponse2.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse2.getStatus()).isEqualTo(bridge1.getStatus());
+        assertThat(bridgeResponse2.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse2.getId());
+        assertThat(bridgeResponse2.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse2.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    public void testGetBridgesFilterByStatusWithIncorrectValue() {
+        // See JAX-RS 2.1 Specification, Section 3.2. 
+        // HTTP-404 is correct if the QueryString contains an invalid value.
+        // If the field or property is annotated with @MatrixParam, @QueryParam or @PathParam then an implementation
+        // MUST generate an instance of NotFoundException (404 status) that wraps the thrown exception...
+        TestUtils.getBridgesFilterByStatusWithAnyValue("banana").then().statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testGetBridgesFilterByNameAndStatus() {
+        Bridge bridge1 = Fixtures.createBridge();
+        bridge1.setName(DEFAULT_BRIDGE_NAME + "1");
+        bridge1.setStatus(READY);
+        bridgeDAO.persist(bridge1);
+
+        Bridge bridge2 = Fixtures.createBridge();
+        bridge2.setName(DEFAULT_BRIDGE_NAME + "2");
+        bridge2.setStatus(READY);
+        bridgeDAO.persist(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByNameAndStatus(DEFAULT_BRIDGE_NAME + "1", READY).as(BridgeListResponse.class);
+
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
+        BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(bridge1.getStatus());
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridge() {
         Bridge bridge = Fixtures.createBridge();
-        bridge.setStatus(ManagedResourceStatus.READY);
+        bridge.setStatus(READY);
         bridgeDAO.persist(bridge);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
@@ -154,30 +279,35 @@ public class BridgesAPITest {
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteNotExistingBridge() {
         TestUtils.deleteBridge("not-the-id").then().statusCode(404);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
         TestUtils.updateBridge(
-                new BridgeDTO(bridgeResponse.getId(), bridgeResponse.getName(), bridgeResponse.getEndpoint(), TestConstants.DEFAULT_CUSTOMER_ID, ManagedResourceStatus.READY,
+                new BridgeDTO(bridgeResponse.getId(),
+                        bridgeResponse.getName(),
+                        bridgeResponse.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
                         new KafkaConnectionDTO()));
 
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(TestConstants.DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
         TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(400);
     }
 
     @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(202);
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(400);
     }
 }

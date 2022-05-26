@@ -66,6 +66,7 @@ public class BridgeExecutorServiceTest {
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNotNull();
+        assertThat(bridgeExecutor.getSpec().getOwner()).isEqualTo(dto.getOwner());
 
         Secret secret = fetchBridgeExecutorSecret(dto);
         assertThat(secret).isNotNull();
