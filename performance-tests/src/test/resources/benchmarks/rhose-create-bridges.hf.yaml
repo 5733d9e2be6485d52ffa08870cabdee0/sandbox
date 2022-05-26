@@ -1,0 +1,121 @@
+name: rhose-create-bridges
+http:
+- host: <manager URL>
+  name: manager
+  sharedConnections: 5
+  connectionStrategy: ALWAYS_NEW
+- host: https://sso.redhat.com
+  name: sso
+phases:
+- bridgeCreatingUser:
+    always:
+      duration: 3m
+      maxDuration: 10m
+      users: 5
+      scenario:
+      - authenticate:
+        - set: clientId <- cloud-services
+        - set: refreshToken <- <refresh_token>
+        - httpRequest:
+            endpoint: sso
+            POST: /auth/realms/redhat-external/protocol/openid-connect/token
+            body: client_id=${clientId}&grant_type=refresh_token&refresh_token=${refreshToken}
+            headers:
+              content-type: application/x-www-form-urlencoded
+            handler:
+              body:
+                json:
+                  query: .access_token
+                  toVar: accessToken
+      - create:
+        - randomUUID: bridgeNameSuffix
+        - httpRequest:
+            endpoint: manager
+            POST: /api/v1/bridges
+            body: |
+              {
+                "name": "perf-${bridgeNameSuffix}"
+              }
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+            handler:
+              body:
+                json:
+                  query: .id
+                  toVar: bridgeId
+        - log:
+            message: "Id is: {}"
+            vars: [ bridgeId ]
+      - create-poll:
+        - httpRequest:
+            endpoint: manager
+            GET: /api/v1/bridges/${bridgeId}
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+              cache-control: no-cache
+            handler:
+              body:
+                json:
+                  query: .status
+                  toVar: bridgeStatus
+        - log:
+            message: "Status is: {}"
+            vars: [ bridgeStatus ]
+        - breakSequence:
+            stringCondition:
+              fromVar: bridgeStatus
+              equalTo: ready
+            onBreak:
+              newSequence:
+                sequence: delete
+                forceSameIndex: true
+        - fail:
+            stringCondition:
+              fromVar: bridgeStatus
+              equalTo: failed
+            message: "Bridge creation failed"
+        - thinkTime:
+            duration: 5s
+        - restartSequence
+      - delete:
+        - httpRequest:
+            endpoint: manager
+            DELETE: /api/v1/bridges/${bridgeId}
+            headers:
+              authorization: Bearer ${accessToken}
+        - log:
+            message: "Delete id is: {}"
+            vars: [ bridgeId ]
+      - delete-poll:
+        - httpRequest:
+            endpoint: manager
+            GET: /api/v1/bridges/${bridgeId}
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+              cache-control: no-cache
+            handler:
+              status:
+                store:
+                  toVar: reponseStatus
+              body:
+                json:
+                  query: .status
+                  toVar: bridgeStatus
+        - log:
+            message: "Response status is: {}"
+            vars: [ reponseStatus ]
+        - breakSequence:
+            intCondition:
+              fromVar: reponseStatus
+              equalTo: 404
+        - fail:
+            stringCondition:
+              fromVar: bridgeStatus
+              equalTo: failed
+            message: "Bridge deletion failed"
+        - thinkTime:
+            duration: 5s
+        - restartSequence

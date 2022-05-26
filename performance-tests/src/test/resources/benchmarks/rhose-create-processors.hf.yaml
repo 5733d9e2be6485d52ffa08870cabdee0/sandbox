@@ -1,0 +1,128 @@
+name: rhose-create-processors
+http:
+- host: <manager URL>
+  name: manager
+  sharedConnections: 5
+  connectionStrategy: ALWAYS_NEW
+- host: https://sso.redhat.com
+  name: sso
+phases:
+- processorCreatingUser:
+    always:
+      duration: 3m
+      maxDuration: 10m
+      users: 5
+      scenario:
+      - authenticate:
+        - set: clientId <- cloud-services
+        - set: refreshToken <- <refresh_token>
+        - httpRequest:
+            endpoint: sso
+            POST: /auth/realms/redhat-external/protocol/openid-connect/token
+            body: client_id=${clientId}&grant_type=refresh_token&refresh_token=${refreshToken}
+            headers:
+              content-type: application/x-www-form-urlencoded
+            handler:
+              body:
+                json:
+                  query: .access_token
+                  toVar: accessToken
+      - create:
+        - set: bridgeId <- <bridge_id>
+        - randomUUID: processorNameSuffix
+        - httpRequest:
+            endpoint: manager
+            POST: /api/v1/bridges/${bridgeId}/processors
+            body: |
+              {
+                "name": "perf-${processorNameSuffix}",
+                "action": {
+                  "type": "webhook_sink_0.1",
+                  "parameters": {
+                    "endpoint": "https://example.com/my-webhook-endpoint"
+                  }
+                }
+              }
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+            handler:
+              body:
+                json:
+                  query: .id
+                  toVar: processorId
+        - log:
+            message: "Id is: {}"
+            vars: [ bridgeId ]
+      - create-poll:
+        - httpRequest:
+            endpoint: manager
+            GET: /api/v1/bridges/${bridgeId}/processors/${processorId}
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+              cache-control: no-cache
+            handler:
+              body:
+                json:
+                  query: .status
+                  toVar: processorStatus
+        - log:
+            message: "Status is: {}"
+            vars: [ processorStatus ]
+        - breakSequence:
+            stringCondition:
+              fromVar: processorStatus
+              equalTo: ready
+            onBreak:
+              newSequence:
+                sequence: delete
+                forceSameIndex: true
+        - fail:
+            stringCondition:
+              fromVar: processorStatus
+              equalTo: failed
+            message: "Processor creation failed"
+        - thinkTime:
+            duration: 5s
+        - restartSequence
+      - delete:
+        - httpRequest:
+            endpoint: manager
+            DELETE: /api/v1/bridges/${bridgeId}/processors/${processorId}
+            headers:
+              authorization: Bearer ${accessToken}
+        - log:
+            message: "Delete id is: {}"
+            vars: [ processorId ]
+      - delete-poll:
+        - httpRequest:
+            endpoint: manager
+            GET: /api/v1/bridges/${bridgeId}/processors/${processorId}
+            headers:
+              content-type: application/json
+              authorization: Bearer ${accessToken}
+              cache-control: no-cache
+            handler:
+              status:
+                store:
+                  toVar: reponseStatus
+              body:
+                json:
+                  query: .status
+                  toVar: processorStatus
+        - log:
+            message: "Response status is: {}"
+            vars: [ reponseStatus ]
+        - breakSequence:
+            intCondition:
+              fromVar: reponseStatus
+              equalTo: 404
+        - fail:
+            stringCondition:
+              fromVar: processorStatus
+              equalTo: failed
+            message: "Processor deletion failed"
+        - thinkTime:
+            duration: 5s
+        - restartSequence

@@ -10,38 +10,26 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>integration-tests</artifactId>
+  <artifactId>performance-tests</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>SmartEvents :: Integration Tests</name>
-
-  <properties>
-    <parallel>false</parallel>
-    <parallel.concurrency.number>5</parallel.concurrency.number>
-  </properties>
+  <name>SmartEvents :: Performance Tests</name>
 
   <dependencies>
     <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
-      <artifactId>manager</artifactId>
-      <scope>compile</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
+      <artifactId>integration-tests</artifactId>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
     </dependency>
+    
     <dependency>
-      <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-core</artifactId>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-hyperfoil</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
+
     <dependency>
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
@@ -96,24 +84,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <systemProperties>
-            <!--
-                Make use of JUnit 5 tags instead
-                See https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#tags
-            -->
-            <!--cucumber.filter.tags>${tags}</cucumber.filter.tags-->
-
-            <!-- https://github.com/cucumber/cucumber-jvm/tree/main/junit-platform-engine#parallel-execution -->
-            <cucumber.execution.parallel.enabled>${parallel}</cucumber.execution.parallel.enabled>
-            <cucumber.junit-platform.naming-strategy>long</cucumber.junit-platform.naming-strategy>
-            <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
-            <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
-
             <sonar.exclusion>**/RunCucumberTest.java</sonar.exclusion>
 
             <!-- Token authorization configuration, usable for local execution, values are taken from https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/blob/main/kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -->
-            <bridge.client.id>kermit</bridge.client.id>
-            <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
+            <bridge.client.id>cbdc87e2-c891-4bb3-a3bf-0bf83d15404a</bridge.client.id>
+            <bridge.client.secret>6537db31-987d-4bfa-b879-30ef282ff7fe</bridge.client.secret>
             <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
 
             <!--Manager and key-cloak url-->
@@ -151,30 +128,6 @@
             <configuration>
               <includes>
                 <include>**/RunCucumberTest.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>periodical-slack-check</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <includes>
-                <include>**/RunPeriodicalSlackActionSuite.java</include>
               </includes>
             </configuration>
           </plugin>

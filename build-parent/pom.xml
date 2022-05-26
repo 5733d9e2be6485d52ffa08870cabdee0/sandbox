@@ -193,7 +193,6 @@
         <groupId>org.awaitility</groupId>
         <artifactId>awaitility</artifactId>
         <version>${version.org.awaitility}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>io.github.classgraph</groupId>
@@ -205,19 +204,16 @@
       <dependency>
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-java</artifactId>
-        <scope>test</scope>
         <version>${version.io.cucumber}</version>
       </dependency>
       <dependency>
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-junit-platform-engine</artifactId>
-        <scope>test</scope>
         <version>${version.io.cucumber}</version>
       </dependency>
       <dependency>
         <groupId>io.cucumber</groupId>
         <artifactId>cucumber-picocontainer</artifactId>
-        <scope>test</scope>
         <version>${version.io.cucumber}</version>
       </dependency>
 
