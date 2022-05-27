@@ -51,12 +51,12 @@ public class SchemaAPI {
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
 
-    private List<String> sinks;
+    private List<String> actions;
     private List<String> sources;
 
     @PostConstruct
     void init() throws IOException {
-        sinks = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
+        actions = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
         sources = IOUtils.readLines(getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
     }
 
@@ -73,8 +73,8 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                sinks.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), ACTION_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x)).collect(Collectors.toList()));
-        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), SOURCE_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x)).collect(Collectors.toList()));
+        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
