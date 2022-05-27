@@ -13,7 +13,6 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 import com.redhat.service.smartevents.processor.actions.ActionInvokerBuilder;
-import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
@@ -28,9 +27,6 @@ public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvoker
     @Inject
     Vertx vertx;
 
-    @Inject
-    ErrorPublisher errorPublisher;
-
     @Override
     public ActionInvoker build(ProcessorDTO processor, Action action) {
         String endpoint = action.getParameters().get(ENDPOINT_PARAM);
@@ -42,14 +38,14 @@ public class WebhookActionInvokerBuilder implements WebhookAction, ActionInvoker
         WebClient webClient = getWebClient(options);
 
         if (requiresTechnicalBearerToken(action)) {
-            return new WebhookActionInvoker(endpoint, webClient, errorPublisher, getOidcClient());
+            return new WebhookActionInvoker(endpoint, webClient, getOidcClient());
         }
         if (requiresBasicAuth(action)) {
             String basicAuthUsername = action.getParameters().get(BASIC_AUTH_USERNAME_PARAM);
             String basicAuthPassword = action.getParameters().get(BASIC_AUTH_PASSWORD_PARAM);
-            return new WebhookActionInvoker(endpoint, webClient, errorPublisher, basicAuthUsername, basicAuthPassword);
+            return new WebhookActionInvoker(endpoint, webClient, basicAuthUsername, basicAuthPassword);
         }
-        return new WebhookActionInvoker(endpoint, webClient, errorPublisher);
+        return new WebhookActionInvoker(endpoint, webClient);
     }
 
     private WebClient getWebClient(WebClientOptions options) {

@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEE
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.processor.actions.ActionRuntime;
-import com.redhat.service.smartevents.processor.errorhandler.ErrorPublisher;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -39,9 +38,6 @@ public class ExecutorFactory {
     @Inject
     MeterRegistry meterRegistry;
 
-    @Inject
-    ErrorPublisher errorPublisher;
-
     private ProcessorDTO processorDTO;
 
     @PostConstruct
@@ -60,7 +56,6 @@ public class ExecutorFactory {
                 filterEvaluatorFactory,
                 transformationEvaluatorFactory,
                 actionRuntime,
-                meterRegistry,
-                errorPublisher);
+                meterRegistry);
     }
 }

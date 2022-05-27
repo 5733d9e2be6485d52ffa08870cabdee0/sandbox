@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.processor.actions.kafkatopic;
 
+import java.util.Collections;
+
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
@@ -34,7 +36,7 @@ class KafkaTopicActionInvokerTest {
         ProcessorDTO processor = createProcessor();
 
         KafkaTopicActionInvoker invoker = new KafkaTopicActionInvoker(emitter, processor, topic);
-        invoker.onEvent(processor.getBridgeId(), processor.getId(), "eventId", event);
+        invoker.onEvent(event, Collections.emptyMap());
 
         verify(emitter).send(captor.capture());
 

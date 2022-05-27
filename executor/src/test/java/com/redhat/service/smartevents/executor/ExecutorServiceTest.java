@@ -28,6 +28,7 @@ import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSi
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -55,7 +56,7 @@ class ExecutorServiceTest {
         ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);
 
         assertThatNoException().isThrownBy(() -> executorService.processEvent(inputMessage));
-        verify(executorMock, wantedNumberOfOnEventInvocations).onEvent(argumentCaptor.capture());
+        verify(executorMock, wantedNumberOfOnEventInvocations).onEvent(argumentCaptor.capture(), any());
         verify(inputMessage).ack();
 
         if (!argumentCaptor.getAllValues().isEmpty()) {

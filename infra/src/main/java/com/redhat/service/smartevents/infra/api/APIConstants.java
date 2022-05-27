@@ -102,11 +102,25 @@ public class APIConstants {
      */
     public static final String FILTER_PROCESSOR_TYPE = "type";
 
+    /**
+     * Header key for RHOSE's Bridge Id
+     */
     public static final String X_RHOSE_BRIDGE_ID = "x-rhose-bridge-id";
 
+    /**
+     * Header key for RHOSE's Processor Id
+     */
     public static final String X_RHOSE_PROCESSOR_ID = "x-rhose-processor-id";
 
-    public static final String X_RHOSE_ORIGINAL_EVENT_ID = "x-rhose-id";
+    /**
+     * Header key for the original ID of an Event processed by RHOSE.
+     */
+    public static final String X_RHOSE_ORIGINAL_EVENT_ID = "x-rhose-original-event-id";
+
+    /**
+     * Header key for RHOSE's BridgeError code.
+     */
+    public static final String X_RHOSE_ERROR_CODE = "x-rhose-error-id";
 
     private APIConstants() {
     }
