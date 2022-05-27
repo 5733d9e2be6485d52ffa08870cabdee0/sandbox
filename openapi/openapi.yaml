@@ -18,6 +18,9 @@ tags:
 - name: Processors
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
+- name: Schema Catalog
+  description: The API that provide the catalog of the available action/source processors
+    definition and their JSON schema.
 - name: Shard
   description: The API that allow a shard to retrieve and update resources.
 paths:
@@ -508,6 +511,34 @@ paths:
           description: Internal error.
           content:
             application/json: {}
+  /api/v1/schemas:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get processor catalog
+      description: Get the processor catalog with all the available sources and actions.
+      operationId: SchemaAPI_getCatalog
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorCatalogResponse'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+      security:
+      - bearer: []
   /api/v1/shard/bridges:
     get:
       tags:
@@ -792,6 +823,15 @@ components:
       - deleted
       - failed
       type: string
+    ProcessorCatalogResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessorSchemaEntryResponse'
     ProcessorDTO:
       type: object
       properties:
@@ -901,6 +941,17 @@ components:
           $ref: '#/components/schemas/Action'
         source:
           $ref: '#/components/schemas/Source'
+    ProcessorSchemaEntryResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        href:
+          type: string
     ProcessorType:
       enum:
       - source
