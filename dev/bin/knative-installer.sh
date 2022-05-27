@@ -16,9 +16,9 @@ else
 fi
 
 CONFIGURE_SCRIPT_DIR_PATH=`dirname "${BASH_SOURCE[0]}"`
-# The Knative Core APIs, like Broker or Trigger
+# The Knative Core APIs, like Broker or Trigger from midstream
 eventing_core_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-eventing.yaml
-# Knative Kafka offering: All Kafka centric APIs
+# Knative Kafka offering: All Kafka centric APIs from midstream
 eventing_kafka_url=${CONFIGURE_SCRIPT_DIR_PATH}/knative/resources/knative-kafka.yaml
 
 function header_text {
