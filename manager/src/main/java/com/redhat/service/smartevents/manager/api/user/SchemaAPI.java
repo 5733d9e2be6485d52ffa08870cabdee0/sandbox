@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -32,8 +31,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
 
@@ -60,9 +59,6 @@ public class SchemaAPI {
 
     private List<String> actions;
     private List<String> sources;
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @PostConstruct
     void init() throws IOException {
@@ -108,7 +104,7 @@ public class SchemaAPI {
             return Response.status(404).build();
         }
 
-        return Response.ok(getJsonSchemaString(SOURCES_DIR_PATH + name)).build();
+        return Response.ok(getJsonSchemaString(SOURCES_DIR_PATH, name)).build();
     }
 
     @APIResponses(value = {
@@ -125,17 +121,17 @@ public class SchemaAPI {
     @Path("/actions/{name}")
     public Response getActionProcessorSchema(@PathParam("name") String name) {
         if (!actions.contains(name)) {
-            return Response.status(404).build();
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
-        return Response.ok(getJsonSchemaString(ACTIONS_DIR_PATH + name)).build();
+        return Response.ok(getJsonSchemaString(ACTIONS_DIR_PATH, name)).build();
     }
 
-    protected String getJsonSchemaString(String fileName) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+    protected String getJsonSchemaString(String resourceDirectory, String name) {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
 
         if (is == null) {
-            throw new RuntimeException("Cannot find Json Schema with fileName " + fileName);
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' could not be retrieved.", name));
         }
 
         return new BufferedReader(

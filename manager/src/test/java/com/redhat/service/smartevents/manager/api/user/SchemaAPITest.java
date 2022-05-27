@@ -85,5 +85,8 @@ public class SchemaAPITest {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
             assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema));
         }
+
+        String a = "{\"dads\": \"dsajds\"}";
+        assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a));
     }
 }
