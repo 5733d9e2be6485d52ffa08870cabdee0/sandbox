@@ -65,10 +65,11 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_INGRESS_IMAGE:).*|\1 $INGRESS_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
         working-directory: kustomize
-      - name: Configure correct Keycloak endpoints for Fleet manager and operator
+      - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
         run: |
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/istio/jwt-request-authentication.yaml
         working-directory: kustomize
       - name: Configure external Managed Kafka cluster
         shell: bash
