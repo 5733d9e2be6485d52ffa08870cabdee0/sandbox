@@ -78,15 +78,15 @@ public class SchemaAPITest {
     public void getProcessorsSchema() {
         for (String source : availableSources) {
             JsonNode schema = TestUtils.getSourceProcessorsSchema(source + ".json").as(JsonNode.class);
-            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema));
+            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).preloadJsonSchema());
         }
 
         for (String action : availableActions) {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
-            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema));
+            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).preloadJsonSchema());
         }
 
         String a = "{\"dads\": \"dsajds\"}";
-        assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a));
+        assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a).preloadJsonSchema());
     }
 }
