@@ -7,6 +7,9 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
@@ -26,6 +29,9 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
+    private static final List<String> availableActions = List.of("KafkaTopic", "SendToBridge", "Slack", "Webhook");
+    private static final List<String> availableSources = List.of("AwsS3", "AwsSqs", "Slack");
+
     @InjectMock
     JsonWebToken jwt;
 
@@ -43,8 +49,6 @@ public class SchemaAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void listProcessors() {
-        List<String> availableActions = List.of("KafkaTopic", "SendToBridge", "Slack", "Webhook");
-        List<String> availableSources = List.of("AwsS3", "AwsSqs", "Slack");
         ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
 
         assertThat(catalog.getItems()).isNotNull();
@@ -64,6 +68,21 @@ public class SchemaAPITest {
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
             assertThat(entry.getHref()).contains(entry.getName()); // The href should contain the name
             assertThat(entry.getHref()).contains(".json"); // The href points to a json file
+            TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
+        }
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getProcessorsSchema() {
+        for (String source : availableSources) {
+            JsonNode schema = TestUtils.getSourceProcessorsSchema(source + ".json").as(JsonNode.class);
+            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema));
+        }
+
+        for (String action : availableActions) {
+            JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
+            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema));
         }
     }
 }

@@ -1,15 +1,20 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,6 +31,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
@@ -54,6 +61,9 @@ public class SchemaAPI {
     private List<String> sinks;
     private List<String> sources;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @PostConstruct
     void init() throws IOException {
         sinks = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
@@ -78,5 +88,58 @@ public class SchemaAPI {
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
+    }
+
+    @APIResponses(value = {
+            // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get source processor schema", description = "Get the source processor JSON schema.")
+    @GET
+    @Path("/sources/{name}")
+    public Response getSourceProcessorSchema(@PathParam("name") String name) {
+        if (!sources.contains(name)) {
+            return Response.status(404).build();
+        }
+
+        return Response.ok(getJsonSchemaString(SOURCES_DIR_PATH + name)).build();
+    }
+
+    @APIResponses(value = {
+            // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get action processor schema", description = "Get the action processor JSON schema.")
+    @GET
+    @Path("/actions/{name}")
+    public Response getActionProcessorSchema(@PathParam("name") String name) {
+        if (!sinks.contains(name)) {
+            return Response.status(404).build();
+        }
+
+        return Response.ok(getJsonSchemaString(ACTIONS_DIR_PATH + name)).build();
+    }
+
+    protected String getJsonSchemaString(String fileName) {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+
+        if (is == null) {
+            throw new RuntimeException("Cannot find Json Schema with fileName " + fileName);
+        }
+
+        return new BufferedReader(
+                new InputStreamReader(is, StandardCharsets.UTF_8))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
     }
 }

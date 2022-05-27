@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "bridgeId": {
+      "type": "string",
+      "title": "Bridge ID",
+      "description": "The bridgeId of the instance to target.",
+      "example": "f1fbd010-93cf-4be1-aa78-b37ba48858fe"
+    }
+  },
+  "required": [
+    "bridgeId"
+  ]
+}
