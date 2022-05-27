@@ -30,22 +30,27 @@ class AwsS3SourceConnectorTest {
     private static final String TEST_PREFIX = "test-prefix";
 
     private static final String EXPECTED_PAYLOAD_JSON = "{" +
-            "   \"aws_bucket_name_or_arn\":\"" + TEST_BUCKET + "\"," +
-            "   \"aws_region\":\"" + TEST_REGION + "\"," +
-            "   \"aws_access_key\":\"" + TEST_ACCESS_KEY + "\"," +
-            "   \"aws_secret_key\":\"" + TEST_SECRET_KEY + "\"," +
-            "   \"aws_prefix\":\"" + TEST_PREFIX + "\"," +
-            "   \"aws_ignore_body\":" + TEST_IGNORE_BODY + "," +
-            "   \"aws_delete_after_read\":" + TEST_DELETE_AFTER_READ + "," +
-            "   \"kafka_topic\":\"" + TEST_TOPIC_NAME + "\"," +
-            "   \"processors\": [" +
-            "       {" +
-            "           \"log\": {" +
-            "               \"multiLine\":true," +
-            "               \"showHeaders\":true" +
-            "        }" +
-            "     }" +
-            "   ]" +
+            "  \"aws_bucket_name_or_arn\":\"" + TEST_BUCKET + "\"," +
+            "  \"aws_region\":\"" + TEST_REGION + "\"," +
+            "  \"aws_access_key\":\"" + TEST_ACCESS_KEY + "\"," +
+            "  \"aws_secret_key\":\"" + TEST_SECRET_KEY + "\"," +
+            "  \"aws_prefix\":\"" + TEST_PREFIX + "\"," +
+            "  \"aws_ignore_body\":" + TEST_IGNORE_BODY + "," +
+            "  \"aws_delete_after_read\":" + TEST_DELETE_AFTER_READ + "," +
+            "  \"kafka_topic\":\"" + TEST_TOPIC_NAME + "\"," +
+            "  \"processors\": [" +
+            "    {" +
+            "      \"log\": {" +
+            "        \"multiLine\":true," +
+            "        \"showHeaders\":true" +
+            "      }" +
+            "    }" +
+            "  ], " +
+            "  \"error_handler\": {" +
+            "    \"dead_letter_queue\": {" +
+            "      \"topic\": \"errorHandlerTopic\"" +
+            "    }" +
+            "  }" +
             "}";
 
     @Inject

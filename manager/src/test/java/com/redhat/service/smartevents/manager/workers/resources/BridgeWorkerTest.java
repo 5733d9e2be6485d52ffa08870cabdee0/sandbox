@@ -31,6 +31,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,7 @@ public class BridgeWorkerTest {
 
     private static final String TEST_RESOURCE_ID = "123";
     private static final String TEST_TOPIC_NAME = "TopicName";
+    private static final String TEST_ERROR_HANDLER_TOPIC_NAME = "ErrorHandlerTopicName";
 
     @InjectMock
     RhoasService rhoasService;
@@ -120,8 +122,9 @@ public class BridgeWorkerTest {
         Work work = workManager.schedule(bridge);
 
         when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
+        when(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
         if (throwRhosError) {
-            doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(any(), any());
+            doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
         }
 
         Bridge refreshed = worker.handleWork(work);

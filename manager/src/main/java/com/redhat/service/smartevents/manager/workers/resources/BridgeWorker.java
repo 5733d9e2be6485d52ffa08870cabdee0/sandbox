@@ -127,6 +127,8 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
+        // ...otherwise the Bridge's dependencies are DELETED
+        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         return persist(bridge);
     }
 

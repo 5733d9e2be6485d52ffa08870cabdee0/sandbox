@@ -49,16 +49,21 @@ class AwsSqsSourceConnectorTest extends AbstractSourceTest<Source> {
     private static final String PARAMETER_TEMPLATE = "\"%s\":\"%s\",";
     private static final String PARAMETER_TEMPLATE_NO_QUOTES = "\"%s\":%s,";
     private static final String EXPECTED_PAYLOAD_JSON_TEMPLATE = "{" +
-            "   \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + TOPIC_NAME + "\"," +
-            "   %s" +
-            "   \"processors\": [" +
-            "       {" +
-            "           \"log\": {" +
-            "               \"multiLine\":true," +
-            "               \"showHeaders\":true" +
-            "        }" +
-            "     }" +
-            "   ]" +
+            "  \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + TOPIC_NAME + "\"," +
+            "  %s" +
+            "  \"processors\": [" +
+            "    {" +
+            "      \"log\": {" +
+            "        \"multiLine\":true," +
+            "        \"showHeaders\":true" +
+            "      }" +
+            "    }" +
+            "  ], " +
+            "  \"error_handler\": {" +
+            "    \"dead_letter_queue\": {" +
+            "      \"topic\": \"errorHandlerTopic\"" +
+            "    }" +
+            "  }" +
             "}";
 
     static final Object[][] VALID_PARAMS = {

@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactoryFEEL;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.EventRemovedByProcessorFilterException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
@@ -34,6 +35,7 @@ import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSi
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,14 +97,14 @@ class ExecutorImplTest {
     void testProcessorWithNonMatchingFiltersAndWithTransformationTemplate(ProcessorDTO processorDTO) {
         processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "notTheValue")));
         processorDTO.getDefinition().setTransformationTemplate("{\"test\": \"{data.key}\"}");
-        doTestWithoutInvoke(processorDTO, createCloudEvent());
+        doTestWithoutInvokeNonMatchingFilters(processorDTO, createCloudEvent());
     }
 
     @ParameterizedTest
     @MethodSource("executorImplTestArgs")
     void testProcessorWithNonMatchingFiltersAndWithoutTransformationTemplate(ProcessorDTO processorDTO) {
         processorDTO.getDefinition().setFilters(Collections.singleton(new StringEquals("data.key", "notTheValue")));
-        doTestWithoutInvoke(processorDTO, createCloudEvent());
+        doTestWithoutInvokeNonMatchingFilters(processorDTO, createCloudEvent());
     }
 
     @ParameterizedTest
@@ -150,6 +152,21 @@ class ExecutorImplTest {
                 actionRuntime,
                 meterRegistry);
         executor.onEvent(inputEvent, Collections.emptyMap());
+
+        assertMetricsAreInitialized();
+
+        verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
+        verify(actionInvokerMock, never()).onEvent(any(), any());
+    }
+
+    private void doTestWithoutInvokeNonMatchingFilters(ProcessorDTO processorDTO, CloudEvent inputEvent) {
+        ExecutorImpl executor = new ExecutorImpl(processorDTO,
+                filterEvaluatorFactory,
+                transformationEvaluatorFactory,
+                actionRuntime,
+                meterRegistry);
+
+        assertThatThrownBy(() -> executor.onEvent(inputEvent, Collections.emptyMap())).isInstanceOf(EventRemovedByProcessorFilterException.class);
 
         assertMetricsAreInitialized();
 
