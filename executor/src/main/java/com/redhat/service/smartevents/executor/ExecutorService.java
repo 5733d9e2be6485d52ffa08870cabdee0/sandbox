@@ -70,31 +70,12 @@ public class ExecutorService {
 
     @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
-        String eventPayload;
         CloudEvent cloudEvent = null;
-        eventPayload = message.getPayload();
         Headers headers = message.getHeaders();
         Map<String, String> traceHeaders = getTraceHeaders(headers);
 
         try {
-
-            // Unwrap Event
-            ProcessorType type = executor.getProcessor().getType();
-            if (type == ProcessorType.SOURCE) {
-                // Source processors only handle non-Cloud Events
-                cloudEvent = wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
-            } else {
-                // Sink processors can possibly handle both types of event. Unfortunately we're
-                // unable to ascertain the nature of the payload therefore, if the payload cannot
-                // be de-serialised as a Cloud Event, fallback to a wrapper.
-                try {
-                    cloudEvent = CloudEventUtils.decode(eventPayload);
-                    cloudEvent = wrapToCloudEventWithExtensions(cloudEvent, headers);
-                } catch (CloudEventDeserializationException e) {
-                    cloudEvent = wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
-                }
-            }
-
+            cloudEvent = unwrapCloudEvent(message);
             executor.onEvent(cloudEvent, traceHeaders);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event.",
@@ -123,6 +104,27 @@ public class ExecutorService {
         }
 
         return message.ack();
+    }
+
+    private CloudEvent unwrapCloudEvent(KafkaRecord<Integer, String> message) {
+        String eventPayload = message.getPayload();
+        Headers headers = message.getHeaders();
+
+        ProcessorType type = executor.getProcessor().getType();
+        if (type == ProcessorType.SOURCE) {
+            // Source processors only handle non-Cloud Events
+            return wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
+        } else {
+            // Sink processors can possibly handle both types of event. Unfortunately we're
+            // unable to ascertain the nature of the payload therefore, if the payload cannot
+            // be de-serialised as a Cloud Event, fallback to a wrapper.
+            try {
+                CloudEvent wrapped = CloudEventUtils.decode(eventPayload);
+                return wrapToCloudEventWithExtensions(wrapped, headers);
+            } catch (CloudEventDeserializationException e) {
+                return wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
+            }
+        }
     }
 
     private Map<String, String> getTraceHeaders(Headers headers) {

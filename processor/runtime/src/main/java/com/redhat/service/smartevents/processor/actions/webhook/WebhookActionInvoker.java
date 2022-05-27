@@ -64,7 +64,7 @@ public class WebhookActionInvoker implements ActionInvoker {
             request.headers().add(e.getKey(), e.getValue());
         }
 
-        // TODO {manstis} Need to sort out the exception handling.
+        // See https://issues.redhat.com/browse/MGDOBR-777
         // We're unable to block the Vert.X thread to wait for the response.
         // java.lang.IllegalStateException: The current thread cannot be blocked: vert.x-eventloop-thread-1
         request.sendJson(new JsonObject(event))

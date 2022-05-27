@@ -68,21 +68,27 @@ public class ExecutorImpl implements Executor {
     }
 
     private void process(CloudEvent event, Map<String, String> traceHeaders) {
-        String bridgeId = getProcessor().getBridgeId();
-        String processorId = getProcessor().getId();
-        String originalEventId = event.getId();
-
         Map<String, Object> eventMap = toEventMap(event);
 
-        LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}", event.getId(), event.getType(), processor.getName(), processor.getBridgeId());
+        LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}",
+                event.getId(),
+                event.getType(),
+                processor.getName(),
+                processor.getBridgeId());
 
         // Filter evaluation
         if (!matchesFilters(eventMap)) {
-            String message = String.format("Filters of processor '%s' did not match for event with id '%s' and type '%s'", processorId, originalEventId, event.getType());
+            String message = String.format("Filters of processor '%s' did not match for event with id '%s' and type '%s'",
+                    processor.getId(),
+                    event.getId(),
+                    event.getType());
             LOG.debug(message);
             throw new EventRemovedByProcessorFilterException(message);
         }
-        LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
+        LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'",
+                processor.getId(),
+                event.getId(),
+                event.getType());
         // Transformation
         // transformations are currently supported only for sink processors
         String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);

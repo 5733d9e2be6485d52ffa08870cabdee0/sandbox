@@ -37,7 +37,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
         this.gatewayConfigurator = gatewayConfigurator;
     }
 
-    protected <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
+    protected <G extends Gateway> boolean isValidGateway(G gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<G>> validatorGetter) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
                     Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
@@ -50,7 +50,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
             return false;
         }
 
-        GatewayValidator<T> validator;
+        GatewayValidator<G> validator;
         try {
             validator = validatorGetter.apply(gateway.getType());
         } catch (GatewayProviderException e) {
