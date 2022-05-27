@@ -49,6 +49,7 @@ if [ "${disable_extra_components}" != 'true' ]; then
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
   istioctl manifest apply --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
+  sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
   kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/gateway.yaml
   kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/virtual-service-kafka-broker.yaml
   kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
