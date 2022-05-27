@@ -119,13 +119,12 @@ jobs:
         run: |
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME ingress/
           kind load docker-image $INGRESS_CONTAINER_NAME
-      - name: Install Istio and knative
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install knative
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-          curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.13.2 TARGET_ARCH=x86_64 sh -
-          export PATH=$PWD/istio-1.13.2/bin:$PATH
-          istioctl manifest apply -y --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
       - name: Install all resources
         run: kustomize build overlays/minikube | oc apply -f -
         working-directory: kustomize
