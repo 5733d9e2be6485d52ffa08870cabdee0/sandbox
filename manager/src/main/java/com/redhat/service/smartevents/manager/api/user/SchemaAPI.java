@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,7 +19,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -30,7 +30,9 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
@@ -60,10 +62,15 @@ public class SchemaAPI {
     private List<String> actions;
     private List<String> sources;
 
+    @Inject
+    ObjectMapper mapper;
+
     @PostConstruct
     void init() throws IOException {
-        actions = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
-        sources = IOUtils.readLines(getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
+        actions = mapper.readValue(readFile(ACTIONS_DIR_PATH, "catalog.json"), new TypeReference<>() {
+        });
+        sources = mapper.readValue(readFile(SOURCES_DIR_PATH, "catalog.json"), new TypeReference<>() {
+        });
     }
 
     @APIResponses(value = {
@@ -101,10 +108,10 @@ public class SchemaAPI {
     @Path("/sources/{name}")
     public Response getSourceProcessorSchema(@PathParam("name") String name) {
         if (!sources.contains(name)) {
-            return Response.status(404).build();
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
-        return Response.ok(getJsonSchemaString(SOURCES_DIR_PATH, name)).build();
+        return Response.ok(readFile(SOURCES_DIR_PATH, name)).build();
     }
 
     @APIResponses(value = {
@@ -124,14 +131,14 @@ public class SchemaAPI {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
-        return Response.ok(getJsonSchemaString(ACTIONS_DIR_PATH, name)).build();
+        return Response.ok(readFile(ACTIONS_DIR_PATH, name)).build();
     }
 
-    protected String getJsonSchemaString(String resourceDirectory, String name) {
+    private String readFile(String resourceDirectory, String name) {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
 
         if (is == null) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' could not be retrieved.", name));
+            throw new ItemNotFoundException(String.format("Could not find '%s'.", name));
         }
 
         return new BufferedReader(
