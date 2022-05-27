@@ -52,8 +52,9 @@ public class SchemaAPITest {
         ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
 
         assertThat(catalog.getItems()).isNotNull();
-        assertThat(catalog.getItems().size()).isEqualTo(7)
-                .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test");
+        assertThat(catalog.getItems().size())
+                .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test")
+                .isEqualTo(7);
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
