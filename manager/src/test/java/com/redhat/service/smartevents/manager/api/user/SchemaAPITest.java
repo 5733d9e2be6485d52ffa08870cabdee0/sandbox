@@ -9,20 +9,20 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
@@ -115,15 +115,16 @@ public class SchemaAPITest {
     public void getProcessorsSchema() {
         for (String source : availableSources) {
             JsonNode schema = TestUtils.getSourceProcessorsSchema(source + ".json").as(JsonNode.class);
-            assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(0);
+            assertThat(schema.get("required")).isNotNull();
+            assertThat(schema.get("type")).isNotNull();
+            assertThat(schema.get("properties")).isNotNull();
         }
 
         for (String action : availableActions) {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
-            assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(0);
+            assertThat(schema.get("required")).isNotNull();
+            assertThat(schema.get("type")).isNotNull();
+            assertThat(schema.get("properties")).isNotNull();
         }
-
-        String a = "{\"dads\": \"dsajds\"}";
-        assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a).validate(mapper.createObjectNode()).size()).isEqualTo(1);
     }
 }

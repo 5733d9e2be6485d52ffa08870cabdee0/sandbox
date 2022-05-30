@@ -62,7 +62,6 @@
 
     <version.com.epam.reportportal>5.1.1</version.com.epam.reportportal>
     <version.com.epam.reportportal.logger-java-log4j>5.1.4</version.com.epam.reportportal.logger-java-log4j>
-    <version.json-schema-validator>1.0.69</version.json-schema-validator>
 
     <container.image.localstack>localstack/localstack:${version.org.localstack}</container.image.localstack>
     <container.image.keycloak>quay.io/keycloak/keycloak:${version.org.keycloak}</container.image.keycloak>
