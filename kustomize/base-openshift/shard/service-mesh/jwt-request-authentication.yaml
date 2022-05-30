@@ -2,7 +2,8 @@ apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
   name: jwt-rh-sso
-  namespace: istio-system
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: istio-system
 spec:
   jwtRules:
     - issuer: 'https://sso.redhat.com/auth/realms/redhat-external'

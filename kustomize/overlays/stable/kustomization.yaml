@@ -1,6 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 namespace: event-bridge-stable
 resources:
 - ../../base-openshift
 - secrets
 - observability
 - shard
+patchesJson6902:
+  # due to the issue https://github.com/kubernetes-sigs/kustomize/issues/880 we have to patch all the resources here
+  # resources in /kustomize/base-openshift/shard/knative/
+  - target:
+      group: ""
+      version: v1
+      kind: NetworkPolicy
+      name: kafka-broker-receiver
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha1
+      kind: KnativeEventing
+      name: knative-eventing
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha1
+      kind: KnativeKafka
+      name: knative-kafka
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1
+      kind: NetworkPolicy
+      name: eventing-webhook
+    path: patch-with-knative-eventing-namespace.yaml
+  # resources in /kustomize/base-openshift/shard/service-mesh/
+  - target:
+      group: ""
+      version: v1alpha3
+      kind: Gateway
+      name: broker-gateway
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1beta1
+      kind: RequestAuthentication
+      name: jwt-rh-sso
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v2
+      kind: ServiceMeshControlPlane
+      name: basic
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v1
+      kind: ServiceMeshMemberRoll
+      name: default
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha3
+      kind: VirtualService
+      name: broker-virtual-service
+    path: patch-with-knative-eventing-namespace.yaml
