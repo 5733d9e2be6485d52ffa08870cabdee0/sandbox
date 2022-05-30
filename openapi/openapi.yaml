@@ -18,6 +18,9 @@ tags:
 - name: Processors
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
+- name: Schema Catalog
+  description: The API that provide the catalog of the available action/source processors
+    definition and their JSON schema.
 - name: Shard
   description: The API that allow a shard to retrieve and update resources.
 paths:
@@ -892,6 +895,15 @@ components:
       type: string
     ObjectNode:
       type: array
+    ProcessorCatalogResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessorSchemaEntryResponse'
     ProcessorDTO:
       type: object
       properties:
@@ -1001,6 +1013,17 @@ components:
           $ref: '#/components/schemas/Action'
         source:
           $ref: '#/components/schemas/Source'
+    ProcessorSchemaEntryResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        href:
+          type: string
     ProcessorType:
       enum:
       - source
