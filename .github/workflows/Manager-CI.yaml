@@ -63,10 +63,11 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
         working-directory: kustomize
-      - name: Configure correct Keycloak endpoints for Fleet manager and operator
+      - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
         run: |
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/istio/jwt-request-authentication.yaml
         working-directory: kustomize
       - name: Configure external Managed Kafka cluster
         shell: bash
@@ -112,6 +113,12 @@ jobs:
         run: |
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
           kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install knative
+        run: |
+          chmod +x dev/bin/knative-installer.sh
+          ./dev/bin/knative-installer.sh
       - name: Install all resources
         run: kustomize build overlays/minikube | oc apply -f -
         working-directory: kustomize

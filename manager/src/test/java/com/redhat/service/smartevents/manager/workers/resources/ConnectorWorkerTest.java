@@ -161,7 +161,7 @@ class ConnectorWorkerTest {
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
 
         // Managed Connector will initially be available before it is deleted
-        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, null);
+        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
         ConnectorEntity refreshed = worker.handleWork(work);
 

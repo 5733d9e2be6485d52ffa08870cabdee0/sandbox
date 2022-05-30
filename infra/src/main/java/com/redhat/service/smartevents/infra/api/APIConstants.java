@@ -16,6 +16,21 @@ public class APIConstants {
     public static final String ERROR_API_BASE_PATH = "/api/v1/errors/";
 
     /**
+     * Base Path for the source processors schema API
+     */
+    public static final String SOURCES_SCHEMA_API_BASE_PATH = "/api/v1/schemas/sources/";
+
+    /**
+     * Base Path for the actions processors API
+     */
+    public static final String ACTIONS_SCHEMA_API_BASE_PATH = "/api/v1/schemas/actions/";
+
+    /**
+     * Base Path for the schema API
+     */
+    public static final String SCHEMA_API_BASE_PATH = "/api/v1/schemas/";
+
+    /**
      * Base Path for Shard facing API.
      */
     public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
@@ -96,6 +111,11 @@ public class APIConstants {
      * The status query filter parameter name
      */
     public static final String FILTER_STATUS = "status";
+
+    /**
+     * The (Processor) type query filter parameter name
+     */
+    public static final String FILTER_PROCESSOR_TYPE = "type";
 
     private APIConstants() {
     }

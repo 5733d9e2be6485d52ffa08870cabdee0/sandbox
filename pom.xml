@@ -48,8 +48,32 @@
     <module>shard-operator-integration-tests</module>
     <module>integration-tests</module>
     <module>infra</module>
-    <module>use-cases</module>
     <module>rhoas-client</module>
   </modules>
 
+  <profiles>
+    <profile>
+      <!-- add here all the modules that should not be in the productized profile -->
+      <id>default</id>
+      <activation>
+        <property>
+          <name>default</name>
+        </property>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>shard-operator-integration-tests</module>
+        <module>integration-tests</module>
+        <module>use-cases</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>productized</id>
+      <activation>
+        <property>
+          <name>productized</name>
+        </property>
+      </activation>
+    </profile>
+  </profiles>
 </project>

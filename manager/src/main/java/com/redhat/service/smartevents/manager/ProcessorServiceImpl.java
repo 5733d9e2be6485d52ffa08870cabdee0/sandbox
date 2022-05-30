@@ -18,7 +18,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadReque
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -252,7 +252,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryPageInfo queryInfo) {
+    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
         return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }

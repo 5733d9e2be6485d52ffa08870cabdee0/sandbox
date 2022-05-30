@@ -30,7 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
@@ -92,7 +92,7 @@ public class ProcessorsAPI {
     @Operation(summary = "Get the list of Processors of a Bridge instance", description = "Get the list of Processors of a Bridge instance for the authenticated user.")
     @GET
     @Path("{bridgeId}/processors")
-    public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryPageInfo queryInfo) {
+    public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryProcessorResourceInfo queryInfo) {
         return Response.ok(ListResponse.fill(processorService.getProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
                 processorService::toResponse)).build();
     }

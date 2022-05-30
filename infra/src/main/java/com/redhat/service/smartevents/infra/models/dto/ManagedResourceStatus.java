@@ -1,8 +1,9 @@
 package com.redhat.service.smartevents.infra.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.redhat.service.smartevents.infra.models.processors.BaseEnumeration;
 
-public enum ManagedResourceStatus {
+public enum ManagedResourceStatus implements BaseEnumeration {
     // Creation flow: accepted -> preparing -> provisioning -> ready
     ACCEPTED("accepted"),
     PREPARING("preparing"),
@@ -15,15 +16,23 @@ public enum ManagedResourceStatus {
     // When something has gone wrong!
     FAILED("failed");
 
-    String status;
+    final String value;
 
-    // We can not annotate the property `status` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    ManagedResourceStatus(String value) {
+        this.value = value;
+    }
+
     @JsonValue
-    public String serialize() {
-        return status;
+    @Override
+    // We can not annotate the property `value` directly with `@JsonValue`. See https://issues.redhat.com/browse/MGDOBR-595
+    public String getValue() {
+        return value;
     }
 
-    ManagedResourceStatus(String status) {
-        this.status = status;
+    @SuppressWarnings("unused")
+    // Required for JAX-RS deserialisation. See @javax.ws.rs.QueryParam.
+    public static ManagedResourceStatus fromString(String type) {
+        return BaseEnumeration.lookup(values(), type);
     }
+
 }

@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import javax.ws.rs.BeanParam;
 
+import static com.redhat.service.smartevents.infra.models.QueryFilterInfo.QueryFilterInfoBuilder.filter;
+
 public class QueryResourceInfo extends QueryPageInfo {
 
     @BeanParam
@@ -13,7 +15,7 @@ public class QueryResourceInfo extends QueryPageInfo {
     }
 
     public QueryResourceInfo(int pageNumber, int pageSize) {
-        this(pageNumber, pageSize, new QueryFilterInfo());
+        this(pageNumber, pageSize, filter().build());
     }
 
     public QueryResourceInfo(int pageNumber, int pageSize, QueryFilterInfo filterInfo) {
