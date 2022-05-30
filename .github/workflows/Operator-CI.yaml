@@ -44,6 +44,15 @@ jobs:
         run: |
           # KinD needs a specific version to skip external image pull, in case of default 'latest' version KinD would try to fetch the image from external location
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install Knative and deploy istio resources
+        run: |
+          chmod +x dev/bin/knative-installer.sh
+          ./dev/bin/knative-installer.sh
+          kubectl apply -f kustomize/overlays/minikube/istio/gateway.yaml
+          kubectl apply -f kustomize/overlays/minikube/istio/virtual-service-kafka-broker.yaml
+          kubectl apply -f kustomize/overlays/minikube/istio/jwt-request-authentication.yaml
       - name: Deploy Shard operator
         run: |
           kubectl create namespace $NAMESPACE
