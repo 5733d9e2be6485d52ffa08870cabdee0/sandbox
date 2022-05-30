@@ -2,7 +2,8 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: broker-gateway
-  namespace: knative-eventing
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: knative-eventing
 spec:
   selector:
     istio: ingressgateway
