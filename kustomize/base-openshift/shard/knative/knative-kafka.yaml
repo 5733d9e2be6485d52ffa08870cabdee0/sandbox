@@ -1,0 +1,15 @@
+apiVersion: operator.serverless.openshift.io/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: knative-eventing
+spec:
+  broker:
+    enabled: true
+  sink:
+    enabled: false
+  source:
+    enabled: false
+  channel:
+    enabled: false

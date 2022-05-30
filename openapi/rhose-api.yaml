@@ -2,7 +2,7 @@
 openapi: 3.0.3
 info:
   title: Red Hat Openshift SmartEvents Fleet Manager
-  description: The api exposed by the fleet manager of the SmartEvents service.
+  description: The API exposed by the fleet manager of the SmartEvents service.
   contact:
     name: Development Team
     email: openbridge-dev@redhat.com
@@ -18,6 +18,9 @@ tags:
 - name: Processors
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
+- name: Schema Catalog
+  description: The API that provide the catalog of the available action/source processors
+    definition and their JSON schema.
 - name: Shard
   description: The API that allow a shard to retrieve and update resources.
 paths:
@@ -477,8 +480,6 @@ paths:
           description: Internal error.
           content:
             application/json: {}
-      security:
-      - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
@@ -506,6 +507,100 @@ paths:
             application/json: {}
         "401":
           description: Unauthorized.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+  /api/v1/schemas:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get processor catalog
+      description: Get the processor catalog with all the available sources and actions.
+      operationId: SchemaAPI_getCatalog
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessorCatalogResponse'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+      security:
+      - bearer: []
+  /api/v1/schemas/actions/{name}:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get action processor schema
+      description: Get the action processor JSON schema.
+      operationId: SchemaAPI_getActionProcessorSchema
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonNode'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+      security:
+      - bearer: []
+  /api/v1/schemas/sources/{name}:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get source processor schema
+      description: Get the source processor JSON schema.
+      operationId: SchemaAPI_getSourceProcessorSchema
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonNode'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
         "500":
           description: Internal error.
           content:
@@ -774,6 +869,8 @@ components:
           type: string
         reason:
           type: string
+    JsonNode:
+      type: array
     KafkaConnectionDTO:
       type: object
       properties:
@@ -800,6 +897,15 @@ components:
       - deleted
       - failed
       type: string
+    ProcessorCatalogResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessorSchemaEntryResponse'
     ProcessorDTO:
       type: object
       properties:
@@ -913,6 +1019,17 @@ components:
           $ref: '#/components/schemas/Action'
         source:
           $ref: '#/components/schemas/Source'
+    ProcessorSchemaEntryResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        href:
+          type: string
     ProcessorType:
       enum:
       - source

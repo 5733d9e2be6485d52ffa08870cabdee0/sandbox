@@ -1,0 +1,9 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: istio-system
+spec:
+  members:
+    - knative-eventing

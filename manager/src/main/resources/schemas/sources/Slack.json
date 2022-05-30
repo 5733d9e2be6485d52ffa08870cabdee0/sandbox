@@ -1,0 +1,74 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slack_channel",
+    "slack_token"
+  ],
+  "properties": {
+    "slack_channel": {
+      "title": "Channel",
+      "description": "The Slack channel to receive messages from",
+      "type": "string",
+      "example": "#myroom"
+    },
+    "slack_token": {
+      "title": "Token",
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Token",
+          "description": "The token to access Slack. A Slack app is needed. This app needs to have channels:history and channels:read permissions. The Bot User OAuth Access Token is the kind of token needed.",
+          "type": "string",
+          "format": "password"
+        },
+        {
+          "description": "An opaque reference to the slack_token",
+          "type": "object",
+          "properties": {}
+        }
+      ]
+    },
+    "slack_delay": {
+      "title": "Delay",
+      "description": "The delay between polls",
+      "type": "string",
+      "example": "1s"
+    },
+    "kafka_topic": {
+      "title": "Topic Names",
+      "description": "Comma separated list of Kafka topic names",
+      "type": "string"
+    },
+    "data_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "produces": {
+          "$ref": "#/$defs/data_shape/produces"
+        }
+      }
+    },
+    "processors": {}
+  },
+  "$defs": {
+    "data_shape": {
+      "produces": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "default": "application/json",
+            "enum": [
+              "application/json"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

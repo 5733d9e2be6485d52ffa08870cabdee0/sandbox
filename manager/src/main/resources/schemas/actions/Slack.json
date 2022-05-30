@@ -1,0 +1,78 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slack_channel",
+    "slack_webhook_url"
+  ],
+  "properties": {
+    "slack_channel": {
+      "title": "Channel",
+      "description": "The Slack channel to send messages to.",
+      "type": "string",
+      "example": "#myroom"
+    },
+    "slack_webhook_url": {
+      "title": "Webhook URL",
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Webhook URL",
+          "description": "The webhook URL used by the Slack channel to handle incoming messages.",
+          "type": "string",
+          "format": "password"
+        },
+        {
+          "description": "An opaque reference to the slack_webhook_url",
+          "type": "object",
+          "properties": {}
+        }
+      ]
+    },
+    "slack_icon_emoji": {
+      "title": "Icon Emoji",
+      "description": "Use a Slack emoji as an avatar.",
+      "type": "string"
+    },
+    "slack_icon_url": {
+      "title": "Icon URL",
+      "description": "The avatar that the component will use when sending message to a channel or user.",
+      "type": "string"
+    },
+    "slack_username": {
+      "title": "Username",
+      "description": "This is the username that the bot will have when sending messages to a channel or user.",
+      "type": "string"
+    },
+    "data_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consumes": {
+          "$ref": "#/$defs/data_shape/consumes"
+        }
+      }
+    },
+    "processors": {}
+  },
+  "$defs": {
+    "data_shape": {
+      "consumes": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "default": "application/octet-stream",
+            "enum": [
+              "application/octet-stream"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

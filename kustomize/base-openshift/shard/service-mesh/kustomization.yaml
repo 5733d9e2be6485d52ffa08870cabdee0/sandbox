@@ -1,0 +1,6 @@
+resources:
+  - jwt-request-authentication.yaml
+  - gateway.yaml
+  - virtual-service-kafka-broker.yaml
+  - service-mesh-control-plane.yaml
+  - service-mesh-member-roll.yaml

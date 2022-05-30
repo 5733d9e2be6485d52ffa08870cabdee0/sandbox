@@ -1,0 +1,6 @@
+[
+  "KafkaTopic",
+  "SendToBridge",
+  "Slack",
+  "Webhook"
+]

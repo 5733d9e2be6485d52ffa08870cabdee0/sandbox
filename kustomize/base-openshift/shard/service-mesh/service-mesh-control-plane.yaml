@@ -1,0 +1,28 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: istio-system
+spec:
+  addons:
+    grafana:
+      enabled: true
+    jaeger:
+      install:
+        storage:
+          type: Memory
+      name: jaeger
+    kiali:
+      enabled: true
+      name: kiali
+  profiles:
+    - default
+  proxy:
+    accessLogging:
+      file:
+        name: /dev/stdout
+  tracing:
+    sampling: 10000
+    type: Jaeger
+  version: v2.0

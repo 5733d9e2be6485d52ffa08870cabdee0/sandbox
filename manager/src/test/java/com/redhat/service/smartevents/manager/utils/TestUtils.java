@@ -37,7 +37,7 @@ import static org.awaitility.Awaitility.await;
 
 public class TestUtils {
 
-    private static RequestSpecification jsonRequest() {
+    public static RequestSpecification jsonRequest() {
         return given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
@@ -177,6 +177,21 @@ public class TestUtils {
         return jsonRequest()
                 .body(processorDTO)
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
+    }
+
+    public static Response getProcessorsSchemaCatalog() {
+        return jsonRequest()
+                .get(APIConstants.SCHEMA_API_BASE_PATH);
+    }
+
+    public static Response getSourceProcessorsSchema(String name) {
+        return jsonRequest()
+                .get(APIConstants.SOURCES_SCHEMA_API_BASE_PATH + name);
+    }
+
+    public static Response getActionProcessorsSchema(String name) {
+        return jsonRequest()
+                .get(APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + name);
     }
 
     public static Action createKafkaAction() {
