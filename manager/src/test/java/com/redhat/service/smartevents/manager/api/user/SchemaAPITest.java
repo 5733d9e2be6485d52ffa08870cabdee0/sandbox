@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,9 @@ public class SchemaAPITest {
 
     @InjectMock
     JsonWebToken jwt;
+
+    @Inject
+    ObjectMapper mapper;
 
     @BeforeEach
     public void cleanUp() {
@@ -101,15 +107,15 @@ public class SchemaAPITest {
     public void getProcessorsSchema() {
         for (String source : availableSources) {
             JsonNode schema = TestUtils.getSourceProcessorsSchema(source + ".json").as(JsonNode.class);
-            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).preloadJsonSchema());
+            assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(0);
         }
 
         for (String action : availableActions) {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
-            assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).preloadJsonSchema());
+            assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(0);
         }
 
         String a = "{\"dads\": \"dsajds\"}";
-        assertThatNoException().isThrownBy(() -> JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a).preloadJsonSchema());
+        assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(1);
     }
 }
