@@ -116,6 +116,6 @@ public class SchemaAPITest {
         }
 
         String a = "{\"dads\": \"dsajds\"}";
-        assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(schema).validate(mapper.createObjectNode()).size()).isEqualTo(1);
+        assertThat(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4).getSchema(a).validate(mapper.createObjectNode()).size()).isEqualTo(1);
     }
 }
