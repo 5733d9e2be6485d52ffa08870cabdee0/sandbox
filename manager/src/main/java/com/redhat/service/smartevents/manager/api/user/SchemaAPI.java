@@ -56,7 +56,7 @@ public class SchemaAPI {
     private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
-    private static final String CATALOG_FILENAME = "catalog.json";
+    private static final String CATALOG_FILENAME = "catalog";
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
 
