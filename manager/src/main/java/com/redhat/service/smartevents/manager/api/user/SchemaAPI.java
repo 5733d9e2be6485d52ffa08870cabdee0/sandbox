@@ -135,7 +135,7 @@ public class SchemaAPI {
         return Response.ok(readFile(ACTIONS_DIR_PATH, name)).build();
     }
 
-    private String readFile(String resourceDirectory, String name) {
+    protected String readFile(String resourceDirectory, String name) {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
 
         if (is == null) {
