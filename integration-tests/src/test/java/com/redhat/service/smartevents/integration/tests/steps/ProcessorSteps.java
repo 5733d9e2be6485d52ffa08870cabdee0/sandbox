@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.hamcrest.Matchers;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -95,7 +94,7 @@ public class ProcessorSteps {
 
     @Then("add a Processor to the Bridge \"([^\"]*)\" with body is failing with HTTP response code (\\d+):$")
     public void addProcessorToBridgeWithBodyIsFailingWithHTTPResponseCode(String testBridgeName,
-            int responseCode, String processorRequestJson) {
+                                                                          int responseCode, String processorRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 
         try (InputStream resourceStream = new ByteArrayInputStream(
@@ -136,7 +135,7 @@ public class ProcessorSteps {
 
     @And("^get Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
     public void getProcessorOfBridgeIsFailingWithHTTPResponseCode(String processorName, String testBridgeName,
-            int responseCode) {
+                                                                  int responseCode) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
@@ -147,7 +146,7 @@ public class ProcessorSteps {
 
     @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is existing with status \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
     public void processorOfBridgeIsExistingWithStatusWithinMinutes(String processorName, String testBridgeName,
-            String status, int timeoutMinutes) {
+                                                                   String status, int timeoutMinutes) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
@@ -172,7 +171,7 @@ public class ProcessorSteps {
 
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\" and parameters:$")
     public void processorOfBridgeHasActionOfTypeAndParameters(String processorName, String testBridgeName,
-            String actionType, DataTable parametersDatatable) {
+                                                              String actionType, DataTable parametersDatatable) {
         Action action = getProcessorAction(processorName, testBridgeName);
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
@@ -183,8 +182,8 @@ public class ProcessorSteps {
 
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has (action|source) of type \"([^\"]*)\"$")
     public void processorOfBridgeHasActionOfType(String processorName, String testBridgeName,
-            String processorType,
-            String processorTypeValue) {
+                                                 String processorType,
+                                                 String processorTypeValue) {
         final Gateway gateway;
         if (Objects.equals(processorType, "action")) {
             gateway = getProcessorAction(processorName, testBridgeName);
@@ -205,7 +204,7 @@ public class ProcessorSteps {
 
     @When("^delete the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
     public void deleteProcessorOfBridgeIsFailingWithHTTPResponseCode(String processorName, String testBridgeName,
-            int responseCode) {
+                                                                     int responseCode) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
@@ -216,7 +215,7 @@ public class ProcessorSteps {
 
     @Then("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" is not existing within (\\d+) (?:minute|minutes)$")
     public void processorOfBridgeIsNotExistingWithinMinutes(String processorName, String testBridgeName,
-            int timeoutMinutes) {
+                                                            int timeoutMinutes) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
         String processorId = bridgeContext.getProcessor(processorName).getId();
 
