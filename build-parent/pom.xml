@@ -164,11 +164,6 @@
         <artifactId>quarkus-logging-json</artifactId>
         <version>${version.io.quarkiverse.loggingjson.quarkiverse-logging-json}</version>
       </dependency>
-      <dependency>
-        <groupId>com.networknt</groupId>
-        <artifactId>json-schema-validator</artifactId>
-        <version>${version.json-schema-validator}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.testcontainers</groupId>
