@@ -1,11 +1,13 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,9 +31,6 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
-    private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
-    private static final String SOURCES_DIR_PATH = "/schemas/sources/";
-
     @InjectMock
     JsonWebToken jwt;
 
@@ -43,8 +42,10 @@ public class SchemaAPITest {
 
     @Test
     public void testSchemasAreIncludedInCatalog() throws IOException {
-        List<String> actions = IOUtils.readLines(Thread.currentThread().getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
-        List<String> sources = IOUtils.readLines(Thread.currentThread().getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
+        File actionsDir = new File("src/main/resources/schemas/actions/");
+        File sourcesDir = new File("src/main/resources/schemas/sources/");
+        List<String> actions = Arrays.stream(Objects.requireNonNull(actionsDir.listFiles())).map(File::getName).collect(Collectors.toList());
+        List<String> sources = Arrays.stream(Objects.requireNonNull(sourcesDir.listFiles())).map(File::getName).collect(Collectors.toList());
         ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
 
         assertThat(actions).contains("catalog.json");
