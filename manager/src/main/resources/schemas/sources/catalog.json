@@ -1,5 +1,5 @@
 [
-  "AwsS3.json",
-  "AwsSqs.json",
-  "Slack.json"
+  "AwsS3",
+  "AwsSqs",
+  "Slack"
 ]
