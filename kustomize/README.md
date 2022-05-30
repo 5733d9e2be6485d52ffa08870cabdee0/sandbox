@@ -78,6 +78,8 @@ Required Operators:
 
 - Cluster Monitoring
 - Bitnami sealed secrets (via controller deployment below)
+- Openshift Serverless is installed with [this guide](https://docs.openshift.com/container-platform/4.8/serverless/install/install-serverless-operator.html).
+- Service Mesh is installed with [this guide](https://docs.openshift.com/container-platform/4.8/service_mesh/v2x/installing-ossm.html)
 
 ## Sealed Secrets
 
@@ -122,7 +124,7 @@ kubeseal --cert mycert.pem --scope cluster-wide -o yaml -f secret.yaml > grafana
 
 Deployments are managed by ArgoCD (look for the url in the onboarding document).
 
-When a pull request is merged into master, the CD pipeline is triggered and a new docker image is pushed to our quay.io repository. Within 30 minutes, a new pull request should be created to this repository to update the image of the kustomization overlay. When this pull request is merged, ArgoCD detects the changes and applies them to the cluster.
+When a pull request is merged into master, the CD pipeline is triggered and a new docker image is pushed to our quay.io repository. Within 30 minutes, a new pull request should be created to this repository to update the image of the kustomization overlay.
 
 ### Manual deployment to a cluster
 

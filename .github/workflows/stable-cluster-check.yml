@@ -69,14 +69,6 @@ jobs:
         run: |
           echo "::set-output name=USER_NAME::$(./.github/scripts/sheriff-queue.sh)"
         id: findUser
-      - name: google-chat-Notification
-        if: ${{ failure() }}
-        uses: javiern8410/actions-google-chat-notification@v1.0.0
-        with:
-          name: Build
-          url: ${{ secrets.GCHAT_WEBHOOK_URL }}
-          status: ${{ job.status }}
-          custom_text: 'Stable cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stable-cluster-check.yml">stable-cluster-check.yml </a> and implement a proper fix'
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10

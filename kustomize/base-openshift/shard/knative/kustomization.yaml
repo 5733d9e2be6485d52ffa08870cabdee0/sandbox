@@ -1,0 +1,5 @@
+resources:
+  - knative-eventing.yaml
+  - knative-kafka.yaml
+  - webhook-network-policy.yaml
+  - broker-network-policy.yaml

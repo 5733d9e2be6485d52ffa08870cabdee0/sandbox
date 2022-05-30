@@ -28,6 +28,7 @@ echo "Applying IP replacements"
 sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/patches/deploy-config.yaml
 sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME: ).*|\1$(minikube ip)|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/shard/patches/deploy-config.yaml
 sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/patches/deploy-config.yaml
+sed -i -E "s|(.*http://).*(:30007.*)|\1$(minikube ip)\2|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
 sleep 10
 
 echo "Replace manager configuration with RHOAS info"
