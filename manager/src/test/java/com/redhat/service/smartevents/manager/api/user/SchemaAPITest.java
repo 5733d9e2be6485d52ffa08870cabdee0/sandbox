@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.manager.api.user;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +52,13 @@ public class SchemaAPITest {
     }
 
     @Test
-    public void testSchemasAreIncludedInCatalog() throws IOException {
+    public void testAuthentication() {
+        TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void testSchemasAreIncludedInCatalog() {
         File actionsDir = new File("src/main/resources/schemas/actions/");
         File sourcesDir = new File("src/main/resources/schemas/sources/");
         List<String> actions = Arrays.stream(Objects.requireNonNull(actionsDir.listFiles())).map(File::getName).collect(Collectors.toList());
@@ -68,11 +73,6 @@ public class SchemaAPITest {
         assertThat(catalog.getItems().stream().filter(x -> "source".equals(x.getType())).count())
                 .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
                 .isEqualTo(sources.size() - 1);
-    }
-
-    @Test
-    public void testAuthentication() {
-        TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
     }
 
     @Test
