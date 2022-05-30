@@ -9,22 +9,20 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
-
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_ATTRIBUTE_CLAIM;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
@@ -54,6 +52,8 @@ public class SchemaAPITest {
     @Test
     public void testAuthentication() {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
+        TestUtils.getSourceProcessorsSchema("Slack.json").then().statusCode(401);
+        TestUtils.getActionProcessorsSchema("Slack.json").then().statusCode(401);
     }
 
     @Test
@@ -100,6 +100,14 @@ public class SchemaAPITest {
             assertThat(entry.getHref()).contains(".json"); // The href points to a json file
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void getUnexistingProcessorsSchema() {
+        TestUtils.getSourceProcessorsSchema("wrong.json").then().statusCode(404);
+        TestUtils.getSourceProcessorsSchema("KafkaTopic.json").then().statusCode(404);
+        TestUtils.getActionProcessorsSchema("AwsS3.json").then().statusCode(404);
     }
 
     @Test
