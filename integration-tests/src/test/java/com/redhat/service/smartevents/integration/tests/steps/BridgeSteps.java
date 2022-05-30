@@ -110,8 +110,7 @@ public class BridgeSteps {
                         () -> assertthat(BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
                                 .then()
-                                .body("status", Matchers.not("failed"))
-                                .body("endpoint", Matchers.containsString(bridgeContext.getId())))
+                                .body("status", Matchers.not("failed")))
                 .untilAsserted(
                         () -> BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
