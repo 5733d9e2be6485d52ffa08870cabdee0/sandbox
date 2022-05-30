@@ -179,6 +179,11 @@ public class TestUtils {
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
+    public static Response getProcessorsSchemaCatalog() {
+        return jsonRequest()
+                .get(APIConstants.SCHEMA_API_BASE_PATH);
+    }
+
     public static Action createKafkaAction() {
         Action r = new Action();
         r.setType(KafkaTopicAction.TYPE);

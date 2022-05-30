@@ -633,16 +633,13 @@ components:
     Action:
       required:
       - type
-      - parameters
       type: object
       properties:
         type:
           type: string
           nullable: false
         parameters:
-          allOf:
-          - $ref: '#/components/schemas/ObjectNode'
-          - minItems: 1
+          $ref: '#/components/schemas/ObjectNode'
         mapParameters:
           type: object
           additionalProperties:
@@ -918,16 +915,13 @@ components:
     Source:
       required:
       - type
-      - parameters
       type: object
       properties:
         type:
           type: string
           nullable: false
         parameters:
-          allOf:
-          - $ref: '#/components/schemas/ObjectNode'
-          - minItems: 1
+          $ref: '#/components/schemas/ObjectNode'
         mapParameters:
           type: object
           additionalProperties:
