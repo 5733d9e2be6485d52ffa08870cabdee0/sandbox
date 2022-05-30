@@ -46,8 +46,8 @@ public class SchemaAPITest {
     @Test
     public void testAuthentication() {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
-        TestUtils.getSourceProcessorsSchema("Slack.json").then().statusCode(401);
-        TestUtils.getActionProcessorsSchema("Slack.json").then().statusCode(401);
+        TestUtils.getSourceProcessorsSchema("Slack").then().statusCode(401);
+        TestUtils.getActionProcessorsSchema("Slack").then().statusCode(401);
     }
 
     @Test
@@ -91,7 +91,6 @@ public class SchemaAPITest {
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
             assertThat(entry.getHref()).contains(entry.getName()); // The href should contain the name
-            assertThat(entry.getHref()).contains(".json"); // The href points to a json file
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
     }
@@ -99,23 +98,23 @@ public class SchemaAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getUnexistingProcessorsSchema() {
-        TestUtils.getSourceProcessorsSchema("wrong.json").then().statusCode(404);
-        TestUtils.getSourceProcessorsSchema("KafkaTopic.json").then().statusCode(404);
-        TestUtils.getActionProcessorsSchema("AwsS3.json").then().statusCode(404);
+        TestUtils.getSourceProcessorsSchema("wrong").then().statusCode(404);
+        TestUtils.getSourceProcessorsSchema("KafkaTopic").then().statusCode(404);
+        TestUtils.getActionProcessorsSchema("AwsS3").then().statusCode(404);
     }
 
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getProcessorsSchema() {
         for (String source : availableSources) {
-            JsonNode schema = TestUtils.getSourceProcessorsSchema(source + ".json").as(JsonNode.class);
+            JsonNode schema = TestUtils.getSourceProcessorsSchema(source).as(JsonNode.class);
             assertThat(schema.get("required")).isNotNull();
             assertThat(schema.get("type")).isNotNull();
             assertThat(schema.get("properties")).isNotNull();
         }
 
         for (String action : availableActions) {
-            JsonNode schema = TestUtils.getActionProcessorsSchema(action + ".json").as(JsonNode.class);
+            JsonNode schema = TestUtils.getActionProcessorsSchema(action).as(JsonNode.class);
             assertThat(schema.get("required")).isNotNull();
             assertThat(schema.get("type")).isNotNull();
             assertThat(schema.get("properties")).isNotNull();

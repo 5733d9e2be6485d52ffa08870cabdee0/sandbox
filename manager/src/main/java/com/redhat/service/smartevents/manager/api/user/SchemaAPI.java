@@ -87,9 +87,9 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
                         .collect(Collectors.toList()));
-        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
@@ -136,7 +136,7 @@ public class SchemaAPI {
     }
 
     protected String readFile(String resourceDirectory, String name) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
 
         if (is == null) {
             throw new ItemNotFoundException(String.format("Could not find '%s'.", name));
