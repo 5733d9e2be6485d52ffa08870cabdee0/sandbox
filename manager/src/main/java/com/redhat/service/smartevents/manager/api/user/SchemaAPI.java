@@ -1,12 +1,16 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,7 +18,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -26,7 +29,10 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
 
@@ -48,16 +54,22 @@ public class SchemaAPI {
     private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
+    private static final String CATALOG_FILENAME = "catalog.json";
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
 
     private List<String> actions;
     private List<String> sources;
 
+    @Inject
+    ObjectMapper mapper;
+
     @PostConstruct
     void init() throws IOException {
-        actions = IOUtils.readLines(getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
-        sources = IOUtils.readLines(getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
+        actions = mapper.readValue(readFile(ACTIONS_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
+        });
+        sources = mapper.readValue(readFile(SOURCES_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
+        });
     }
 
     @APIResponses(value = {
@@ -79,5 +91,18 @@ public class SchemaAPI {
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
+    }
+
+    protected String readFile(String resourceDirectory, String name) {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
+
+        if (is == null) {
+            throw new ItemNotFoundException(String.format("Could not find '%s'.", name));
+        }
+
+        return new BufferedReader(
+                new InputStreamReader(is, StandardCharsets.UTF_8))
+                        .lines()
+                        .collect(Collectors.joining("\n"));
     }
 }
