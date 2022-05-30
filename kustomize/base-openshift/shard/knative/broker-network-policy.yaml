@@ -3,7 +3,8 @@ kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: kafka-broker-receiver
-  namespace: knative-eventing
+#  Due to https://github.com/kubernetes-sigs/kustomize/issues/880 we have to override it in overlays/<ENV>/kustomization.yaml
+#  namespace: knative-eventing
   labels:
     app: kafka-broker-receiver
 spec:
