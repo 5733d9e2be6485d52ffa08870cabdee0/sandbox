@@ -1,8 +1,11 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +29,9 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
+    private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
+    private static final String SOURCES_DIR_PATH = "/schemas/sources/";
+
     @InjectMock
     JsonWebToken jwt;
 
@@ -33,6 +39,22 @@ public class SchemaAPITest {
     public void cleanUp() {
         when(jwt.getClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(DEFAULT_USER_NAME);
         when(jwt.containsClaim(USER_NAME_ATTRIBUTE_CLAIM)).thenReturn(true);
+    }
+
+    @Test
+    public void testSchemasAreIncludedInCatalog() throws IOException {
+        List<String> actions = IOUtils.readLines(Thread.currentThread().getClass().getResourceAsStream(ACTIONS_DIR_PATH), StandardCharsets.UTF_8);
+        List<String> sources = IOUtils.readLines(Thread.currentThread().getClass().getResourceAsStream(SOURCES_DIR_PATH), StandardCharsets.UTF_8);
+        ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
+
+        assertThat(actions).contains("catalog.json");
+        assertThat(sources).contains("catalog.json");
+        assertThat(catalog.getItems().stream().filter(x -> "action".equals(x.getType())).count())
+                .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
+                .isEqualTo(actions.size() - 1);
+        assertThat(catalog.getItems().stream().filter(x -> "source".equals(x.getType())).count())
+                .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
+                .isEqualTo(sources.size() - 1);
     }
 
     @Test
