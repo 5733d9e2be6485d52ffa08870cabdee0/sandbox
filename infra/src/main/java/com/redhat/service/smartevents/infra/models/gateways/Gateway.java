@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,6 +35,8 @@ public class Gateway {
     private String type;
 
     @JsonProperty("parameters")
+    // ObjectNode is not rendered properly by swagger
+    @Schema(implementation = Object.class)
     private ObjectNode parameters;
 
     public String getType() {
@@ -51,6 +55,8 @@ public class Gateway {
         this.parameters = parameters;
     }
 
+    // mapParameters is included in openapi.yaml. We have to exclude it manually
+    @Schema(hidden = true)
     public void setMapParameters(Map<String, String> parameters) {
         this.parameters = mapToObjectNode(parameters);
     }

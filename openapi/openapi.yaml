@@ -734,11 +734,7 @@ components:
           type: string
           nullable: false
         parameters:
-          $ref: '#/components/schemas/ObjectNode'
-        mapParameters:
           type: object
-          additionalProperties:
-            type: string
     BaseFilter:
       required:
       - key
@@ -893,8 +889,6 @@ components:
       - deleted
       - failed
       type: string
-    ObjectNode:
-      type: array
     ProcessorCatalogResponse:
       type: object
       properties:
@@ -1038,11 +1032,7 @@ components:
           type: string
           nullable: false
         parameters:
-          $ref: '#/components/schemas/ObjectNode'
-        mapParameters:
           type: object
-          additionalProperties:
-            type: string
   securitySchemes:
     bearer:
       type: http
