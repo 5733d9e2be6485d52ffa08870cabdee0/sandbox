@@ -586,7 +586,7 @@ class ProcessorServiceTest {
     private static Processor createReadyProcessorFromRequest(ProcessorRequest request) {
         ProcessorDefinition definition = request.getType() == ProcessorType.SOURCE
                 ? new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getSource(), null)
-                : new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getAction(), null, false);
+                : new ProcessorDefinition(request.getFilters(), request.getTransformationTemplate(), request.getAction(), null);
 
         Processor processor = Fixtures.createProcessor(createReadyBridge(), READY);
         processor.setId(DEFAULT_PROCESSOR_ID);

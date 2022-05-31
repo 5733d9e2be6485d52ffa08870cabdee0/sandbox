@@ -192,7 +192,7 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 resourceNamesProvider.getBridgeTopicName(bridge.getId()),
-                resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()));
+                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());

@@ -47,10 +47,8 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     public void createConnectorEntity(Processor processor) {
         if (processor.getType() == ProcessorType.SOURCE) {
             createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
-        } else {
-            if (!(processor.getDefinition().isErrorHandler())) {
-                createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
-            }
+        } else if (processor.getType() == ProcessorType.SINK) {
+            createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
         }
     }
 
@@ -61,7 +59,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
+        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         GatewayConnector<Action> actionConnector = optActionConnector.get();
         persistConnectorEntity(processor,
                 topicName,
@@ -75,7 +73,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     protected void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        String errorHandlerTopicName = resourceNamesProvider.getErrorHandlerTopicName(processor.getBridge().getId());
+        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         persistConnectorEntity(processor,
                 topicName,
                 sourceConnector.getConnectorType(),

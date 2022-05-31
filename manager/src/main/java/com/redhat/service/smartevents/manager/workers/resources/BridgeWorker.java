@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -70,24 +71,33 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Create back-channel topic
-        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
+        rhoasService.createTopicAndGrantAccessFor(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // We don't need to wait for the Bridge to be READY to create the Error Handler.
         // If this **IS** a problem we can move this to the "BridgeServiceImpl#updateBridge(...)" method and
         // create the Processor when the Bridge status changes to READY. Having creation here is consistent
         // with our Worker mechanism.
-        if (isErrorHandlerProcessorReady(bridge)) {
+        boolean canContinue = createErrorHandlerProcessor(bridge);
+        if (canContinue) {
             bridge.setDependencyStatus(ManagedResourceStatus.READY);
         }
 
         return persist(bridge);
     }
 
-    private boolean isErrorHandlerProcessorReady(Bridge bridge) {
+    /**
+     * Creates error handler processor if required
+     *
+     * @param bridge input bridge
+     * @return true if the work can proceed (either the error handler processor
+     *         is not required or it's created and ready), false otherwise.
+     */
+    private boolean createErrorHandlerProcessor(Bridge bridge) {
         // If an ErrorHandler is not needed, consider it ready
         Action errorHandlerAction = bridge.getDefinition().getErrorHandler();
-        if (Objects.isNull(errorHandlerAction)) {
+        boolean errorHandlerProcessorIsNotRequired = Objects.isNull(errorHandlerAction);
+        if (errorHandlerProcessorIsNotRequired) {
             return true;
         }
 
@@ -95,7 +105,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         String customerId = bridge.getCustomerId();
         ListResult<Processor> processors = processorService.getAllProcessors(bridgeId, customerId);
         // This assumes we can only have one ErrorHandler Processor per Bridge
-        if (processors.getItems().stream().noneMatch(p -> p.getDefinition().isErrorHandler())) {
+        if (processors.getItems().stream().noneMatch(p -> p.getType() == ProcessorType.ERROR_HANDLER)) {
             String errorHandlerName = String.format("Back-channel for Bridge '%s'", bridge.getId());
             ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
             processorService.createErrorHandlingProcessor(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), errorHandlerProcessor);
@@ -124,7 +134,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Delete back-channel topic
-        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId()),
+        rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // ...otherwise the Bridge's dependencies are DELETED

@@ -122,7 +122,7 @@ public class BridgeWorkerTest {
         Work work = workManager.schedule(bridge);
 
         when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
-        when(resourceNamesProvider.getErrorHandlerTopicName(bridge.getId())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
+        when(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
         if (throwRhosError) {
             doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
         }

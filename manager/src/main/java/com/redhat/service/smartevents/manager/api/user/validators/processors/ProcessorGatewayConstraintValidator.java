@@ -13,18 +13,18 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
 @ApplicationScoped
-public class GatewayConstraintValidator extends BaseGatewayConstraintValidator<ValidGateway, ProcessorRequest> {
+public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintValidator<ValidProcessorGateway, ProcessorRequest> {
 
     static final String MISSING_GATEWAY_ERROR = "Processor must have either \"action\" or \"source\"";
     static final String MULTIPLE_GATEWAY_ERROR = "Processor can't have both \"action\" and \"source\"";
     static final String SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR = "Source processors don't support transformations";
 
-    protected GatewayConstraintValidator() {
+    protected ProcessorGatewayConstraintValidator() {
         //CDI proxy
     }
 
     @Inject
-    public GatewayConstraintValidator(GatewayConfigurator gatewayConfigurator) {
+    public ProcessorGatewayConstraintValidator(GatewayConfigurator gatewayConfigurator) {
         super(gatewayConfigurator);
     }
 

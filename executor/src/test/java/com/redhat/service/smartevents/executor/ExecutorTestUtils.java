@@ -68,7 +68,7 @@ public class ExecutorTestUtils {
         Action resolvedAction = new Action();
         resolvedAction.setType(WebhookAction.TYPE);
 
-        return createProcessor(ProcessorType.SINK, new ProcessorDefinition(null, null, requestedAction, resolvedAction, false));
+        return createProcessor(ProcessorType.SINK, new ProcessorDefinition(null, null, requestedAction, resolvedAction));
     }
 
     public static ProcessorDTO createProcessor(ProcessorType type, ProcessorDefinition definition) {

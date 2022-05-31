@@ -25,23 +25,18 @@ public class ProcessorDefinition {
     @JsonProperty("resolvedAction")
     private Action resolvedAction;
 
-    @JsonProperty("isErrorHandler")
-    private boolean isErrorHandler;
-
     public ProcessorDefinition() {
     }
 
-    // This is only used for tests
     public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction) {
-        this(filters, transformationTemplate, requestedAction, requestedAction, false);
+        this(filters, transformationTemplate, requestedAction, requestedAction);
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction, Action resolvedAction, boolean isErrorHandler) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction, Action resolvedAction) {
         this.filters = filters;
         this.transformationTemplate = transformationTemplate;
         this.requestedAction = requestedAction;
         this.resolvedAction = resolvedAction;
-        this.isErrorHandler = isErrorHandler;
     }
 
     public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Source requestedSource, Action resolvedAction) {
@@ -49,7 +44,6 @@ public class ProcessorDefinition {
         this.transformationTemplate = transformationTemplate;
         this.requestedSource = requestedSource;
         this.resolvedAction = resolvedAction;
-        this.isErrorHandler = false;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -92,14 +86,6 @@ public class ProcessorDefinition {
         this.resolvedAction = resolvedAction;
     }
 
-    public boolean isErrorHandler() {
-        return isErrorHandler;
-    }
-
-    public void setErrorHandler(boolean errorHandler) {
-        isErrorHandler = errorHandler;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -109,16 +95,12 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(filters, that.filters)
-                && Objects.equals(transformationTemplate, that.transformationTemplate)
-                && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource)
-                && Objects.equals(resolvedAction, that.resolvedAction)
-                && Objects.equals(isErrorHandler, that.isErrorHandler);
+        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
+                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, isErrorHandler);
+        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
     }
 }

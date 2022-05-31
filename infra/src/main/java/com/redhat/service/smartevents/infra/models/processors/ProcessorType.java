@@ -3,8 +3,9 @@ package com.redhat.service.smartevents.infra.models.processors;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ProcessorType implements BaseEnumeration {
-    SOURCE("source"),
-    SINK("sink");
+    SOURCE(Constants.SOURCE_VALUE),
+    SINK(Constants.SINK_VALUE),
+    ERROR_HANDLER(Constants.ERROR_HANDLER_VALUE);
 
     final String value;
 
@@ -25,4 +26,9 @@ public enum ProcessorType implements BaseEnumeration {
         return BaseEnumeration.lookup(values(), type);
     }
 
+    public static class Constants {
+        public static final String SOURCE_VALUE = "source";
+        public static final String SINK_VALUE = "sink";
+        public static final String ERROR_HANDLER_VALUE = "error-handler";
+    }
 }
