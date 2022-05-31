@@ -125,6 +125,14 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 bridge.getName(),
                 bridge.getId());
+
+        if (processorService.getHiddenProcessors(bridge.getId(), bridge.getCustomerId()).getTotal() > 0) {
+            LOGGER.info("Hidder processors still existing for bridge '{}' [{}]. Topic deletion is delayed.", bridge.getName(), bridge.getId());
+            return bridge;
+        }
+
+        LOGGER.info("Deleting topics for bridge '{}' [{}]...", bridge.getName(), bridge.getId());
+
         // This is idempotent as it gets overridden later depending on actual state
         bridge.setDependencyStatus(ManagedResourceStatus.DELETING);
         bridge = persist(bridge);

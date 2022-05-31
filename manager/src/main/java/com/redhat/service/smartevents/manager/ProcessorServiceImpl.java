@@ -279,6 +279,12 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
+    public ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId) {
+        return processorDAO.findHiddenByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
+    }
+
+    @Transactional
+    @Override
     public ListResult<Processor> getAllProcessors(String bridgeId, String customerId) {
         return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
     }

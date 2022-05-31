@@ -27,6 +27,8 @@ public interface ProcessorService {
 
     ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
 
+    ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId);
+
     ListResult<Processor> getAllProcessors(String bridgeId, String customerId);
 
     void deleteProcessor(String bridgeId, String processorId, String customerId);

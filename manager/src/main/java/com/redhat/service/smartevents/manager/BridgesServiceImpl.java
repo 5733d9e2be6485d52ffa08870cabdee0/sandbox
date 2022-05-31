@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
@@ -125,7 +126,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
-        if (processorsCount > 0) {
+        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(id, customerId);
+
+        if (processorsCount != hiddenProcessors.getTotal()) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
@@ -134,6 +137,10 @@ public class BridgesServiceImpl implements BridgesService {
         if (!isBridgeDeletable(bridge)) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
+
+        // TODO: hidden processor deletion is broken. Must be fixed.
+        hiddenProcessors.getItems().forEach(p -> processorService.deleteProcessor(id, p.getId(), customerId));
+
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction
