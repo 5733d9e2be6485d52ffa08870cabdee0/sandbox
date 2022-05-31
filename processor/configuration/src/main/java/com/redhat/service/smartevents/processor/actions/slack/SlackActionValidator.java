@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.processor.actions.slack;
 
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -18,13 +16,11 @@ public class SlackActionValidator implements SlackAction, GatewayValidator<Actio
 
     @Override
     public ValidationResult isValid(Action action) {
-        Map<String, String> parameters = action.getParameters();
-
-        if (!parameters.containsKey(CHANNEL_PARAM) || parameters.get(CHANNEL_PARAM).isEmpty()) {
+        if (!action.hasParameter(CHANNEL_PARAM) || action.getParameter(CHANNEL_PARAM).isEmpty()) {
             return ValidationResult.invalid(INVALID_CHANNEL_MESSAGE);
         }
 
-        if (!parameters.containsKey(WEBHOOK_URL_PARAM) || parameters.get(WEBHOOK_URL_PARAM).isEmpty()) {
+        if (!action.hasParameter(WEBHOOK_URL_PARAM) || action.getParameter(WEBHOOK_URL_PARAM).isEmpty()) {
             return ValidationResult.invalid(INVALID_WEBHOOK_URL_MESSAGE);
         }
 

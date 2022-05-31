@@ -1,15 +1,20 @@
 package com.redhat.service.smartevents.infra.models.gateways;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
+import static com.redhat.service.smartevents.infra.utils.JacksonUtils.mapToObjectNode;
 
 /**
  * A Gateway represents the touching point between a Processor and
@@ -29,9 +34,10 @@ public class Gateway {
     @JsonProperty("type")
     private String type;
 
-    @NotEmpty(message = "Gateway parameters must be supplied")
     @JsonProperty("parameters")
-    private Map<String, String> parameters = new HashMap<>();
+    // ObjectNode is not rendered properly by swagger
+    @Schema(implementation = Object.class, required = true)
+    private ObjectNode parameters;
 
     public String getType() {
         return type;
@@ -41,12 +47,50 @@ public class Gateway {
         this.type = type;
     }
 
-    public Map<String, String> getParameters() {
+    public ObjectNode getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, String> parameters) {
+    public void setParameters(ObjectNode parameters) {
         this.parameters = parameters;
+    }
+
+    // mapParameters is included in openapi.yaml. We have to exclude it manually
+    @Schema(hidden = true)
+    public void setMapParameters(Map<String, String> parameters) {
+        this.parameters = mapToObjectNode(parameters);
+    }
+
+    public String getParameter(String key) {
+        if (getParameters() == null) {
+            return null;
+        }
+
+        JsonNode jsonNode = getParameters().get(key);
+        if (jsonNode == null) {
+            return null;
+        }
+
+        if (jsonNode instanceof TextNode) {
+            return jsonNode.asText();
+        }
+        return jsonNode.toString();
+    }
+
+    public String getParameterOrDefault(String key, String defaultValue) {
+        if (parameters == null) {
+            return defaultValue;
+        }
+
+        String obj = getParameter(key);
+        if (obj == null) {
+            return defaultValue;
+        }
+        return obj;
+    }
+
+    public boolean hasParameter(String key) {
+        return getParameters().get(key) != null;
     }
 
     @Override

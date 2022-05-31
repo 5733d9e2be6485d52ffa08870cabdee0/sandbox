@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.processor.actions.sendtobridge;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -97,7 +99,7 @@ class SendToBridgeActionResolverTest {
     private void assertValid(Action resolvedAction, String expectedEndpoint) {
         assertThat(resolvedAction).isNotNull();
         assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, expectedEndpoint);
+        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(expectedEndpoint);
     }
 
     private Action actionWithoutBridgeId() {
@@ -108,7 +110,7 @@ class SendToBridgeActionResolverTest {
 
     private Action actionWithBridgeId(String bridgeId) {
         Action action = actionWithoutBridgeId();
-        action.getParameters().put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        action.setMapParameters(Map.of(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId));
         return action;
     }
 

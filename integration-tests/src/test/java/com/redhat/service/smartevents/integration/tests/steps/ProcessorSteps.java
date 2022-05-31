@@ -173,7 +173,7 @@ public class ProcessorSteps {
         assertThat(action.getType()).isEqualTo(actionType);
         parametersDatatable.asMap().forEach((key, value) -> {
             String parameterTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, value);
-            assertThat(action.getParameters()).containsEntry(key, parameterTextWithoutPlaceholders);
+            assertThat(action.getParameter(key)).isEqualTo(parameterTextWithoutPlaceholders);
         });
     }
 

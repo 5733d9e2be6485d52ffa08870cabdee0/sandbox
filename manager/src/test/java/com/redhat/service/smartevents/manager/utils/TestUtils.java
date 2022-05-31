@@ -200,7 +200,7 @@ public class TestUtils {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        r.setParameters(params);
+        r.setMapParameters(params);
         return r;
     }
 
@@ -210,7 +210,7 @@ public class TestUtils {
 
         Map<String, String> params = new HashMap<>();
         params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
-        r.setParameters(params);
+        r.setMapParameters(params);
         return r;
     }
 
@@ -222,7 +222,7 @@ public class TestUtils {
         params.put(SlackSource.CHANNEL_PARAM, "channel");
         params.put(SlackSource.TOKEN_PARAM, "token");
         params.put(SlackSource.CLOUD_EVENT_TYPE, "ce");
-        s.setParameters(params);
+        s.setMapParameters(params);
         return s;
     }
 

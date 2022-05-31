@@ -1,6 +1,5 @@
 package com.redhat.service.smartevents.processor.sources.aws;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -38,14 +37,13 @@ public class AwsSqsSourceConnector extends AbstractGatewayConnector<Source> impl
 
     @Override
     protected void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition) {
-        Map<String, String> sourceParameters = source.getParameters();
-        String queueUrl = sourceParameters.get(AWS_QUEUE_URL_PARAM);
+        String queueUrl = source.getParameter(AWS_QUEUE_URL_PARAM);
 
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
 
         definition.set(CONNECTOR_AWS_QUEUE_URL_PARAMETER, new TextNode(queueUrl));
-        definition.set(CONNECTOR_AWS_ACCESS_KEY_PARAMETER, new TextNode(sourceParameters.get(AWS_ACCESS_KEY_ID_PARAM)));
-        definition.set(CONNECTOR_AWS_SECRET_KEY_PARAMETER, new TextNode(sourceParameters.get(AWS_SECRET_ACCESS_KEY_PARAM)));
+        definition.set(CONNECTOR_AWS_ACCESS_KEY_PARAMETER, new TextNode(source.getParameter(AWS_ACCESS_KEY_ID_PARAM)));
+        definition.set(CONNECTOR_AWS_SECRET_KEY_PARAMETER, new TextNode(source.getParameter(AWS_SECRET_ACCESS_KEY_PARAM)));
 
         Matcher awsQueueUrlMatcher = AWS_QUEUE_URL_PATTERN.matcher(queueUrl);
         if (awsQueueUrlMatcher.find()) {
@@ -54,7 +52,7 @@ public class AwsSqsSourceConnector extends AbstractGatewayConnector<Source> impl
         } else {
             Matcher genericQueueUrlMatcher = GENERIC_QUEUE_URL_PATTERN.matcher(queueUrl);
             if (genericQueueUrlMatcher.find()) {
-                definition.set(CONNECTOR_AWS_REGION_PARAMETER, new TextNode(sourceParameters.getOrDefault(AWS_REGION_PARAM, DEFAULT_AWS_REGION)));
+                definition.set(CONNECTOR_AWS_REGION_PARAMETER, new TextNode(source.getParameterOrDefault(AWS_REGION_PARAM, DEFAULT_AWS_REGION)));
                 definition.set(CONNECTOR_AWS_QUEUE_PARAMETER, new TextNode(genericQueueUrlMatcher.group(3)));
                 definition.set(CONNECTOR_AWS_OVERRIDE_ENDPOINT_PARAMETER, BooleanNode.TRUE);
                 definition.set(CONNECTOR_AWS_URI_ENDPOINT_OVERRIDE_PARAMETER, new TextNode(genericQueueUrlMatcher.group(1)));

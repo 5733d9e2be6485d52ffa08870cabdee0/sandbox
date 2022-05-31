@@ -77,7 +77,7 @@ class KafkaTopicActionInvokerBuilderTest {
         b.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
-        b.setParameters(params);
+        b.setMapParameters(params);
 
         ProcessorDTO p = new ProcessorDTO();
         p.setType(ProcessorType.SINK);

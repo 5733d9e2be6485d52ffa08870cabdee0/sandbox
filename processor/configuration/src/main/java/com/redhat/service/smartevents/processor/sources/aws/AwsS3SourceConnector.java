@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.processor.sources.aws;
 
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,18 +31,16 @@ public class AwsS3SourceConnector extends AbstractGatewayConnector<Source> imple
 
     @Override
     protected void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition) {
-        Map<String, String> sourceParameters = source.getParameters();
-
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
 
-        definition.set(S3_AWS_BUCKET_NAME_OR_ARN_PARAMETER, new TextNode(sourceParameters.get(BUCKET_NAME_OR_ARN_PARAMETER)));
-        definition.set(S3_AWS_REGION_PARAMETER, new TextNode(sourceParameters.get(REGION_PARAMETER)));
-        definition.set(S3_AWS_ACCESS_KEY_PARAMETER, new TextNode(sourceParameters.get(ACCESS_KEY_PARAMETER)));
-        definition.set(S3_AWS_SECRET_KEY_PARAMETER, new TextNode(sourceParameters.get(SECRET_KEY_PARAMETER)));
-        definition.set(S3_AWS_IGNORE_BODY_PARAMETER, valueOf(parseBoolean(sourceParameters.get(IGNORE_BODY_PARAMETER))));
-        definition.set(S3_AWS_DELETE_AFTER_READ_PARAMETER, valueOf(parseBoolean(sourceParameters.get(DELETE_AFTER_READ_PARAMETER))));
+        definition.set(S3_AWS_BUCKET_NAME_OR_ARN_PARAMETER, new TextNode(source.getParameter(BUCKET_NAME_OR_ARN_PARAMETER)));
+        definition.set(S3_AWS_REGION_PARAMETER, new TextNode(source.getParameter(REGION_PARAMETER)));
+        definition.set(S3_AWS_ACCESS_KEY_PARAMETER, new TextNode(source.getParameter(ACCESS_KEY_PARAMETER)));
+        definition.set(S3_AWS_SECRET_KEY_PARAMETER, new TextNode(source.getParameter(SECRET_KEY_PARAMETER)));
+        definition.set(S3_AWS_IGNORE_BODY_PARAMETER, valueOf(parseBoolean(source.getParameter(IGNORE_BODY_PARAMETER))));
+        definition.set(S3_AWS_DELETE_AFTER_READ_PARAMETER, valueOf(parseBoolean(source.getParameter(DELETE_AFTER_READ_PARAMETER))));
 
-        String prefix = sourceParameters.get(PREFIX);
+        String prefix = source.getParameter(PREFIX);
         if (prefix != null && !prefix.isEmpty()) {
             definition.set(S3_AWS_PREFIX_PARAMETER, new TextNode(prefix));
         }

@@ -27,20 +27,19 @@ public class AwsSqsSourceValidator implements AwsSqsSource, GatewayValidator<Sou
 
     @Override
     public ValidationResult isValid(Source source) {
-        Map<String, String> parameters = source.getParameters();
 
         for (var expectedParamEntry : EXPECTED_PARAMS.entrySet()) {
-            if (!parameters.containsKey(expectedParamEntry.getKey()) || parameters.get(expectedParamEntry.getKey()).isEmpty()) {
+            if (!source.hasParameter(expectedParamEntry.getKey()) || source.getParameter(expectedParamEntry.getKey()).isEmpty()) {
                 return ValidationResult.invalid(expectedParamEntry.getValue());
             }
         }
 
-        String queueUrlString = source.getParameters().get(AWS_QUEUE_URL_PARAM);
+        String queueUrlString = source.getParameter(AWS_QUEUE_URL_PARAM);
         if (!AWS_QUEUE_URL_PATTERN.matcher(queueUrlString).find() && !GENERIC_QUEUE_URL_PATTERN.matcher(queueUrlString).find()) {
             return ValidationResult.invalid(malformedUrlMessage(queueUrlString));
         }
 
-        if (parameters.containsKey(AWS_REGION_PARAM) && !AWS_REGION_PATTERN.matcher(parameters.get(AWS_REGION_PARAM)).find()) {
+        if (source.hasParameter(AWS_REGION_PARAM) && !AWS_REGION_PATTERN.matcher(source.getParameter(AWS_REGION_PARAM)).find()) {
             return ValidationResult.invalid(INVALID_AWS_REGION_PARAM_MESSAGE);
         }
 

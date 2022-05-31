@@ -28,22 +28,22 @@ public class WebhookActionValidator implements WebhookAction, GatewayValidator<A
             return ValidationResult.invalid();
         }
 
-        String endpoint = action.getParameters().get(ENDPOINT_PARAM);
+        String endpoint = action.getParameter(ENDPOINT_PARAM);
         if (endpoint == null || endpoint.isEmpty()) {
             return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
         }
 
-        if (action.getParameters().containsKey(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
+        if (action.hasParameter(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
             return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
         }
 
-        if (action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && !action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)
-                || !action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)) {
+        if (action.hasParameter(BASIC_AUTH_USERNAME_PARAM) && !action.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
+                || !action.hasParameter(BASIC_AUTH_USERNAME_PARAM) && action.hasParameter(BASIC_AUTH_PASSWORD_PARAM)) {
             return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
         }
 
-        if (action.getParameters().containsKey(BASIC_AUTH_USERNAME_PARAM) && action.getParameters().containsKey(BASIC_AUTH_PASSWORD_PARAM)
-                && (action.getParameters().get(BASIC_AUTH_USERNAME_PARAM).isEmpty() || action.getParameters().get(BASIC_AUTH_PASSWORD_PARAM).isEmpty())) {
+        if (action.hasParameter(BASIC_AUTH_USERNAME_PARAM) && action.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
+                && (action.getParameter(BASIC_AUTH_USERNAME_PARAM).isEmpty() || action.getParameter(BASIC_AUTH_PASSWORD_PARAM).isEmpty())) {
             return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
         }
 
