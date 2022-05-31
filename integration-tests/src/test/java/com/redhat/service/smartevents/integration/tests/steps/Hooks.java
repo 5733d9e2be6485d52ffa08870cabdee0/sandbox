@@ -49,8 +49,7 @@ public class Hooks {
         final String filename = "localconfig.properties";
         File file = new File(filename);
         if (file.exists()) {
-            try {
-                InputStream inputStream = new FileInputStream(file);
+            try (InputStream inputStream = new FileInputStream(file)) {
                 Properties prop = System.getProperties();
                 prop.load(inputStream);
                 System.setProperties(prop);
