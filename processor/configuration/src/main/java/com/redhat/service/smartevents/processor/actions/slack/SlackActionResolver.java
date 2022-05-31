@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.processor.actions.slack;
 
-import java.util.HashMap;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -21,9 +19,7 @@ public class SlackActionResolver implements SlackAction, GatewayResolver<Action>
     public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
 
         Action resolvedAction = new Action();
-        resolvedAction.setMapParameters(new HashMap<>());
-        resolvedAction.getParameters().setAll(action.getParameters());
-
+        resolvedAction.setParameters(action.getParameters().deepCopy());
         resolvedAction.setType(KafkaTopicAction.TYPE);
 
         String connectorTopicName = gatewayConfiguratorService.getConnectorTopicName(processorId);
