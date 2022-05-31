@@ -2,11 +2,9 @@ package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -25,11 +23,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
@@ -45,6 +40,26 @@ import static com.redhat.service.smartevents.executor.CloudEventExtension.adjust
 public class ExecutorService {
 
     /**
+     * Header key for RHOSE's Bridge Id
+     */
+    public static final String X_RHOSE_BRIDGE_ID = "rhose-bridge-id";
+
+    /**
+     * Header key for RHOSE's Processor Id
+     */
+    public static final String X_RHOSE_PROCESSOR_ID = "rhose-processor-id";
+
+    /**
+     * Header key for the original ID of an Event processed by RHOSE.
+     */
+    public static final String X_RHOSE_ORIGINAL_EVENT_ID = "rhose-original-event-id";
+
+    /**
+     * Header key for RHOSE's BridgeError code.
+     */
+    public static final String X_RHOSE_ERROR_CODE = "rhose-error-id";
+
+    /**
      * Channel used for receiving events.
      */
     public static final String EVENTS_IN_CHANNEL = "events-in";
@@ -52,12 +67,6 @@ public class ExecutorService {
     public static final String CLOUD_EVENT_SOURCE = "RHOSE";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorService.class);
-
-    private static Set<String> RHOSE_HEADERS = Set.of(
-            APIConstants.X_RHOSE_BRIDGE_ID,
-            APIConstants.X_RHOSE_PROCESSOR_ID,
-            APIConstants.X_RHOSE_ORIGINAL_EVENT_ID,
-            APIConstants.X_RHOSE_ERROR_CODE);
 
     @Inject
     Executor executor;
@@ -72,90 +81,57 @@ public class ExecutorService {
     public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
         CloudEvent cloudEvent = null;
         Headers headers = message.getHeaders();
-        Map<String, String> traceHeaders = getTraceHeaders(headers);
 
         try {
-            cloudEvent = unwrapCloudEvent(message);
-            executor.onEvent(cloudEvent, traceHeaders);
+            String eventPayload = message.getPayload();
+
+            cloudEvent = executor.getProcessor().getType() == ProcessorType.SOURCE
+                    ? wrapToCloudEvent(eventPayload, message.getHeaders())
+                    : CloudEventUtils.decode(eventPayload);
+
+            Map<String, String> headersMap = executor.getProcessor().getType() == ProcessorType.SOURCE
+                    ? Collections.emptyMap()
+                    : toHeadersMap(headers);
+
+            executor.onEvent(cloudEvent, headersMap);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event.",
                     executor.getProcessor().getId(), executor.getProcessor().getBridgeId(), e);
-            String bridgeId = executor.getProcessor().getBridgeId();
-            String processorId = executor.getProcessor().getId();
-            String originalEventId = Objects.nonNull(cloudEvent) ? cloudEvent.getId() : message.getKey().toString();
+
+            // create trace headers value map
+            Map<String, String> traceHeaders = new TreeMap<>();
+            traceHeaders.put(X_RHOSE_BRIDGE_ID, executor.getProcessor().getBridgeId());
+            traceHeaders.put(X_RHOSE_PROCESSOR_ID, executor.getProcessor().getId());
+            traceHeaders.put(X_RHOSE_ORIGINAL_EVENT_ID, cloudEvent != null ? cloudEvent.getId() : message.getKey().toString());
+            bridgeErrorService.getError(e).ifPresent(error -> traceHeaders.put(X_RHOSE_ERROR_CODE, error.getCode()));
 
             // Add our Kafka Headers, first removing any pre-existing ones to avoid duplication.
             // This can be replaced with w3c trace-context parameters when we add distributed tracing.
-            headers.remove(APIConstants.X_RHOSE_BRIDGE_ID);
-            headers.remove(APIConstants.X_RHOSE_PROCESSOR_ID);
-            headers.remove(APIConstants.X_RHOSE_ORIGINAL_EVENT_ID);
-            headers.remove(APIConstants.X_RHOSE_ERROR_CODE);
-            headers.add(new RecordHeader(APIConstants.X_RHOSE_BRIDGE_ID, bridgeId.getBytes(StandardCharsets.UTF_8)));
-            headers.add(new RecordHeader(APIConstants.X_RHOSE_PROCESSOR_ID, processorId.getBytes(StandardCharsets.UTF_8)));
-            headers.add(new RecordHeader(APIConstants.X_RHOSE_ORIGINAL_EVENT_ID, originalEventId.getBytes(StandardCharsets.UTF_8)));
-
-            // Add RHOSE's error code, if applicable
-            Optional<BridgeError> be = bridgeErrorService.getError(e);
-            be.ifPresent(err -> headers.add(new RecordHeader(APIConstants.X_RHOSE_ERROR_CODE,
-                    err.getCode().getBytes(StandardCharsets.UTF_8))));
+            headers.remove(X_RHOSE_BRIDGE_ID);
+            headers.remove(X_RHOSE_PROCESSOR_ID);
+            headers.remove(X_RHOSE_ORIGINAL_EVENT_ID);
+            headers.remove(X_RHOSE_ERROR_CODE);
+            traceHeaders.forEach((key, value) -> headers.add(new RecordHeader(key, value.getBytes(StandardCharsets.UTF_8))));
 
             return message.nack(e,
                     Metadata.of(OutgoingKafkaRecordMetadata.builder().withHeaders(new RecordHeaders(headers)).build()));
         }
-
         return message.ack();
     }
 
-    private CloudEvent unwrapCloudEvent(KafkaRecord<Integer, String> message) {
-        String eventPayload = message.getPayload();
-        Headers headers = message.getHeaders();
-
-        ProcessorType type = executor.getProcessor().getType();
-        if (type == ProcessorType.SOURCE) {
-            // Source processors only handle non-Cloud Events
-            return wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
-        } else {
-            // Sink processors can possibly handle both types of event. Unfortunately we're
-            // unable to ascertain the nature of the payload therefore, if the payload cannot
-            // be de-serialised as a Cloud Event, fallback to a wrapper.
-            try {
-                CloudEvent wrapped = CloudEventUtils.decode(eventPayload);
-                return wrapToCloudEventWithExtensions(wrapped, headers);
-            } catch (CloudEventDeserializationException e) {
-                return wrapToCloudEventWithExtensions(eventPayload, headers, getGateway());
-            }
-        }
-    }
-
-    private Map<String, String> getTraceHeaders(Headers headers) {
-        Map<String, String> traceHeaders = new HashMap<>();
-        for (Header header : headers.toArray()) {
-            if (RHOSE_HEADERS.contains(header.key())) {
-                traceHeaders.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
-            }
-        }
-        return traceHeaders;
-    }
-
-    private Gateway getGateway() {
-        ProcessorType type = executor.getProcessor().getType();
-        if (type == ProcessorType.SOURCE) {
-            return executor.getProcessor().getDefinition().getRequestedSource();
-        } else {
-            return executor.getProcessor().getDefinition().getRequestedAction();
-        }
-    }
-
-    private CloudEvent wrapToCloudEventWithExtensions(String event, Headers headers, Gateway gateway) {
+    private CloudEvent wrapToCloudEvent(String event, Headers headers) {
         try {
             // JsonCloudEventData.wrap requires an empty JSON
-            JsonNode payload = stringEventToJsonOrEmpty(event);
+            JsonNode payload = event == null ? mapper.createObjectNode() : mapper.readTree(event);
+
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                     .withId(UUID.randomUUID().toString())
                     .withSource(URI.create(CLOUD_EVENT_SOURCE))
-                    .withType(String.format("%sSource", gateway.getType()))
+                    .withType(String.format("%sSource", executor.getProcessor().getDefinition().getRequestedSource().getType()))
                     .withData(JsonCloudEventData.wrap(payload));
-            addKafkaHeadersAsCloudEventExtensions(headers, cloudEventBuilder);
+
+            toExtensionsMap(headers).forEach(cloudEventBuilder::withExtension);
+
             return cloudEventBuilder.build();
         } catch (JsonProcessingException e2) {
             LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e2);
@@ -163,51 +139,22 @@ public class ExecutorService {
         }
     }
 
-    // When we receive a CloudEvent on the ErrorHandler Processor Kafka has added DLQ headers
-    // including the error details. Make sure we add them into the CloudEvent that is then sent
-    // somewhere else by whatever ActionInvoker.
-    private CloudEvent wrapToCloudEventWithExtensions(CloudEvent event, Headers headers) {
-        CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
-                .withId(event.getId())
-                .withSource(event.getSource())
-                .withType(event.getType())
-                .withData(event.getData());
-        addKafkaHeadersAsCloudEventExtensions(headers, cloudEventBuilder);
-        return cloudEventBuilder.build();
+    public static Map<String, String> toHeadersMap(Headers headers) {
+        if (headers == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> headersMap = new TreeMap<>();
+        for (Header header : headers) {
+            headersMap.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
+        }
+        return headersMap;
     }
 
-    private void addKafkaHeadersAsCloudEventExtensions(Headers headers, CloudEventBuilder cloudEventBuilder) {
-        Map<String, Object> extensions = wrapHeadersToExtensionsMap(headers);
-        for (Map.Entry<String, Object> kv : extensions.entrySet()) {
-            // We currently support only String extensions
-            cloudEventBuilder.withExtension(kv.getKey(), kv.getValue().toString());
+    public static Map<String, String> toExtensionsMap(Headers headers) {
+        Map<String, String> extensionMap = new TreeMap<>();
+        for (Map.Entry<String, String> header : toHeadersMap(headers).entrySet()) {
+            extensionMap.put(adjustExtensionName(header.getKey()), header.getValue());
         }
-    }
-
-    // Add all Kafka Record Headers to Cloud Event extensions, excluding RHOSEs headers.
-    public static Map<String, Object> wrapHeadersToExtensionsMap(Headers kafkaHeaders) {
-        Map<String, Object> resultMap = new HashMap<>();
-        if (kafkaHeaders == null) {
-            return resultMap;
-        }
-
-        for (Header kh : kafkaHeaders) {
-            if (!RHOSE_HEADERS.contains(kh.key())) {
-                String cloudEventsExtensionName = adjustExtensionName(kh.key());
-                String headerValue = new String(kh.value(), StandardCharsets.UTF_8);
-                resultMap.put(cloudEventsExtensionName, headerValue);
-            }
-        }
-        return resultMap;
-    }
-
-    private JsonNode stringEventToJsonOrEmpty(String event) throws JsonProcessingException {
-        JsonNode payload;
-        if (event == null) {
-            payload = mapper.createObjectNode();
-        } else {
-            payload = mapper.readTree(event);
-        }
-        return payload;
+        return extensionMap;
     }
 }

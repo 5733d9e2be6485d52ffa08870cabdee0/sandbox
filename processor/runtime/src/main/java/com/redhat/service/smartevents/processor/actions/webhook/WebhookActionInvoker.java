@@ -47,7 +47,7 @@ public class WebhookActionInvoker implements ActionInvoker {
     }
 
     @Override
-    public void onEvent(String event, Map<String, String> traceHeaders) {
+    public void onEvent(String event, Map<String, String> headers) {
         HttpRequest<Buffer> request = webClient.postAbs(endpoint);
         if (oidcClient != null) {
             String token = oidcClient.getToken();
@@ -60,8 +60,8 @@ public class WebhookActionInvoker implements ActionInvoker {
 
         // Add trace HTTP Headers.
         // This can be replaced with w3c trace-context parameters when we add distributed tracing.
-        for (Map.Entry<String, String> e : traceHeaders.entrySet()) {
-            request.headers().add(e.getKey(), e.getValue());
+        for (Map.Entry<String, String> e : headers.entrySet()) {
+            request.headers().add("x-" + e.getKey(), e.getValue());
         }
 
         // See https://issues.redhat.com/browse/MGDOBR-777

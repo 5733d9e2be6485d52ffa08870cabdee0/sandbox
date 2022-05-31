@@ -99,7 +99,7 @@ class ExecutorServiceTest {
     @ParameterizedTest
     @MethodSource("metadataArgs")
     void test(Headers headers, Map<String, Object> expectedExtension) {
-        Map<String, Object> cloudEventExtension = ExecutorService.wrapHeadersToExtensionsMap(headers);
+        Map<String, String> cloudEventExtension = ExecutorService.toExtensionsMap(headers);
         assertThat(cloudEventExtension).isEqualTo(expectedExtension);
     }
 

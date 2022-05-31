@@ -10,5 +10,5 @@ public interface Executor {
 
     ProcessorDTO getProcessor();
 
-    void onEvent(CloudEvent event, Map<String, String> traceHeaders);
+    void onEvent(CloudEvent event, Map<String, String> headers);
 }
