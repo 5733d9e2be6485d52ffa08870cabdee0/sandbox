@@ -72,7 +72,7 @@ public class ProcessorDAOTest {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setParameters(params);
+        a.setMapParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
         p.setDefinition(definition);

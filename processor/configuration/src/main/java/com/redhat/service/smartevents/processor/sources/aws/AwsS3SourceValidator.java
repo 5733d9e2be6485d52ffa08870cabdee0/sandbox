@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.processor.sources.aws;
 
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -21,29 +19,28 @@ public class AwsS3SourceValidator implements AwsS3Source, GatewayValidator<Sourc
 
     @Override
     public ValidationResult isValid(Source source) {
-        Map<String, String> parameters = source.getParameters();
 
-        if (!parameters.containsKey(BUCKET_NAME_OR_ARN_PARAMETER) || parameters.get(BUCKET_NAME_OR_ARN_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(BUCKET_NAME_OR_ARN_PARAMETER) || source.getParameter(BUCKET_NAME_OR_ARN_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_BUCKET_NAME_OR_ARN_PARAMETER_MESSAGE);
         }
 
-        if (!parameters.containsKey(REGION_PARAMETER) || parameters.get(REGION_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(REGION_PARAMETER) || source.getParameter(REGION_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_REGION_PARAMETER_MESSAGE);
         }
 
-        if (!parameters.containsKey(ACCESS_KEY_PARAMETER) || parameters.get(ACCESS_KEY_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(ACCESS_KEY_PARAMETER) || source.getParameter(ACCESS_KEY_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_ACCESS_KEY_PARAMETER_MESSAGE);
         }
 
-        if (!parameters.containsKey(SECRET_KEY_PARAMETER) || parameters.get(SECRET_KEY_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(SECRET_KEY_PARAMETER) || source.getParameter(SECRET_KEY_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_SECRET_KEY_PARAMETER_MESSAGE);
         }
 
-        if (!parameters.containsKey(IGNORE_BODY_PARAMETER) || parameters.get(IGNORE_BODY_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(IGNORE_BODY_PARAMETER) || source.getParameter(IGNORE_BODY_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_IGNORE_BODY_PARAMETER_MESSAGE);
         }
 
-        if (!parameters.containsKey(DELETE_AFTER_READ_PARAMETER) || parameters.get(DELETE_AFTER_READ_PARAMETER).isEmpty()) {
+        if (!source.hasParameter(DELETE_AFTER_READ_PARAMETER) || source.getParameter(DELETE_AFTER_READ_PARAMETER).isEmpty()) {
             return ValidationResult.invalid(INVALID_DELETE_AFTER_READ_PARAMETER_MESSAGE);
         }
 

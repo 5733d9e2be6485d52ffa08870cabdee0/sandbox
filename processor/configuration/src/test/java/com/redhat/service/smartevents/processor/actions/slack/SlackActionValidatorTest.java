@@ -82,7 +82,7 @@ class SlackActionValidatorTest {
     private Action actionWith(Map<String, String> params) {
         Action action = new Action();
         action.setType(SlackAction.TYPE);
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 }

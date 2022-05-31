@@ -52,12 +52,9 @@ class SlackActionResolverTest {
 
         assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
 
-        Map<String, String> transformedActionParameter = transformedAction.getParameters();
-
-        assertThat(transformedActionParameter)
-                .containsEntry(SlackAction.CHANNEL_PARAM, TEST_CHANNEL_PARAM)
-                .containsEntry(SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM)
-                .containsEntry(KafkaTopicAction.TOPIC_PARAM, TEST_PROCESSOR_TOPIC_NAME);
+        assertThat(transformedAction.getParameter(SlackAction.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL_PARAM);
+        assertThat(transformedAction.getParameter(SlackAction.WEBHOOK_URL_PARAM)).isEqualTo(TEST_WEBHOOK_PARAM);
+        assertThat(transformedAction.getParameter(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TEST_PROCESSOR_TOPIC_NAME);
     }
 
     private Action buildTestAction() {
@@ -67,7 +64,7 @@ class SlackActionResolverTest {
 
         Action action = new Action();
         action.setType(SlackAction.TYPE);
-        action.setParameters(parameters);
+        action.setMapParameters(parameters);
         return action;
     }
 }
