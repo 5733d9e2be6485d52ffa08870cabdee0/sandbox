@@ -1,24 +1,20 @@
 package com.redhat.service.smartevents.processor.actions.sendtobridge;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
+import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
-public class SendToBridgeActionValidator implements SendToBridgeAction, GatewayValidator<Action> {
+public class SendToBridgeActionValidator extends AbstractGatewayValidator<Action> implements SendToBridgeAction {
 
     public static final String INVALID_BRIDGE_ID_PARAM_MESSAGE =
             "The supplied " + BRIDGE_ID_PARAM + " parameter is not valid";
 
-    @Override
-    public ValidationResult isValid(Action action) {
-        if (action.getParameters() != null) {
-            return !action.hasParameter(BRIDGE_ID_PARAM) || !action.getParameter(BRIDGE_ID_PARAM).isEmpty()
-                    ? ValidationResult.valid()
-                    : ValidationResult.invalid(INVALID_BRIDGE_ID_PARAM_MESSAGE);
-        }
-        return ValidationResult.invalid();
+    @Inject
+    public SendToBridgeActionValidator(JsonSchemaService jsonSchemaService) {
+        super(jsonSchemaService);
     }
 }

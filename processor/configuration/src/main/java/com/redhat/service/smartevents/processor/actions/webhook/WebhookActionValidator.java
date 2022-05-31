@@ -4,13 +4,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
+import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
-public class WebhookActionValidator implements WebhookAction, GatewayValidator<Action> {
+public class WebhookActionValidator extends AbstractGatewayValidator<Action> implements WebhookAction {
 
     public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
@@ -22,17 +24,13 @@ public class WebhookActionValidator implements WebhookAction, GatewayValidator<A
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
 
+    @Inject
+    public WebhookActionValidator(JsonSchemaService jsonSchemaService) {
+        super(jsonSchemaService);
+    }
+
     @Override
-    public ValidationResult isValid(Action action) {
-        if (action.getParameters() == null) {
-            return ValidationResult.invalid();
-        }
-
-        String endpoint = action.getParameter(ENDPOINT_PARAM);
-        if (endpoint == null || endpoint.isEmpty()) {
-            return ValidationResult.invalid(MISSING_ENDPOINT_PARAM_MESSAGE);
-        }
-
+    public ValidationResult applyAdditionalValidations(Action action) {
         if (action.hasParameter(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
             return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
         }
@@ -47,6 +45,7 @@ public class WebhookActionValidator implements WebhookAction, GatewayValidator<A
             return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
         }
 
+        String endpoint = action.getParameter(ENDPOINT_PARAM);
         URL endpointUrl;
         try {
             endpointUrl = new URL(endpoint);

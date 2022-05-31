@@ -13,7 +13,7 @@ Feature: Slack Source tests
     {
       "name": "slackSourceProcessor",
       "source": {
-        "type": "Slack",
+        "type": "slack_source_0.1",
         "parameters": {
             "channel": "${env.slack.channel.name}",
             "token": "${env.slack.webhook.token}"
@@ -33,7 +33,7 @@ Feature: Slack Source tests
     {
       "name": "slackForwardProcessor",
       "action": {
-        "type": "Slack",
+        "type": "slack_sink_0.1",
         "parameters": {
             "channel": "${env.slack.channel.name}",
             "webhookUrl": "${env.slack.webhook.url}"

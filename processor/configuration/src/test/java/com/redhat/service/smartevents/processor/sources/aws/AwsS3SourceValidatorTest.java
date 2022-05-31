@@ -3,18 +3,24 @@ package com.redhat.service.smartevents.processor.sources.aws;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
 import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
 class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
 
-    private final AwsS3SourceValidator validator = new AwsS3SourceValidator();
+    @Inject
+    AwsS3SourceValidator validator;
 
     @Override
-    protected GatewayValidator<Source> getValidator() {
+    protected AbstractGatewayValidator<Source> getValidator() {
         return validator;
     }
 
@@ -40,7 +46,7 @@ class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
     void isInvalidWithMissingAccessKey() {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        params.put(AwsS3Source.REGION_PARAMETER, "test-region");
+        params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_ACCESS_KEY_PARAMETER_MESSAGE);
     }
 
@@ -48,7 +54,7 @@ class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
     void isInvalidSecretKey() {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        params.put(AwsS3Source.REGION_PARAMETER, "test-region");
+        params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
         assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_SECRET_KEY_PARAMETER_MESSAGE);
     }
@@ -57,7 +63,7 @@ class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
     void isInvalidIgnoreBody() {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        params.put(AwsS3Source.REGION_PARAMETER, "test-region");
+        params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "test-access-key");
         params.put(AwsS3Source.SECRET_KEY_PARAMETER, "test-secret-key");
         assertValidationIsInvalid(sourceWith(params), AwsS3SourceValidator.INVALID_IGNORE_BODY_PARAMETER_MESSAGE);
@@ -67,7 +73,7 @@ class AwsS3SourceValidatorTest extends AbstractSourceTest<Source> {
     void isInvalidDeleteAfterRead() {
         Map<String, String> params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
-        params.put(AwsS3Source.REGION_PARAMETER, "test-region");
+        params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "test-access-key");
         params.put(AwsS3Source.SECRET_KEY_PARAMETER, "test-secret-key");
         params.put(AwsS3Source.IGNORE_BODY_PARAMETER, Boolean.TRUE.toString());

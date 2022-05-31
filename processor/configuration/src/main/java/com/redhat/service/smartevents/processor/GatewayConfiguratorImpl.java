@@ -17,22 +17,17 @@ import com.redhat.service.smartevents.processor.sources.SourceResolver;
 public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Inject
-    Instance<GatewayValidator<Action>> actionValidators;
+    Instance<AbstractGatewayValidator<Action>> actionValidators;
     @Inject
     Instance<GatewayResolver<Action>> actionResolvers;
     @Inject
-    Instance<GatewayConnector<Action>> actionConnectors;
-    @Inject
-    Instance<GatewayValidator<Source>> sourceValidators;
+    Instance<AbstractGatewayValidator<Source>> sourceValidators;
 
     @Inject
     SourceResolver sourceResolver;
 
-    @Inject
-    Instance<GatewayConnector<Source>> sourceConnectors;
-
     @Override
-    public GatewayValidator<Action> getActionValidator(String actionType) {
+    public AbstractGatewayValidator<Action> getActionValidator(String actionType) {
         return getOptionalBean(actionValidators, actionType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for action type '%s'", actionType)));
     }
@@ -43,12 +38,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public Optional<GatewayConnector<Action>> getActionConnector(String actionType) {
-        return getOptionalBean(actionConnectors, actionType);
-    }
-
-    @Override
-    public GatewayValidator<Source> getSourceValidator(String sourceType) {
+    public AbstractGatewayValidator<Source> getSourceValidator(String sourceType) {
         return getOptionalBean(sourceValidators, sourceType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for source type '%s'", sourceType)));
     }
@@ -58,19 +48,13 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return sourceResolver;
     }
 
-    @Override
-    public GatewayConnector<Source> getSourceConnector(String sourceType) {
-        return getOptionalBean(sourceConnectors, sourceType)
-                .orElseThrow(() -> new GatewayProviderException(String.format("No connector found for source type '%s'", sourceType)));
-    }
-
     private static <T extends GatewayBean> Optional<T> getOptionalBean(Instance<T> instances, String sourceType) {
         return instances.stream()
                 .filter(a -> a.accept(sourceType))
                 .findFirst();
     }
 
-    Collection<GatewayValidator<Action>> getActionValidators() {
+    Collection<AbstractGatewayValidator<Action>> getActionValidators() {
         return actionValidators.stream().collect(Collectors.toList());
     }
 
@@ -78,15 +62,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 
-    Collection<GatewayConnector<Action>> getActionConnectors() {
-        return actionConnectors.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayValidator<Source>> getSourceValidators() {
+    Collection<AbstractGatewayValidator<Source>> getSourceValidators() {
         return sourceValidators.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayConnector<Source>> getSourceConnectors() {
-        return sourceConnectors.stream().collect(Collectors.toList());
     }
 }

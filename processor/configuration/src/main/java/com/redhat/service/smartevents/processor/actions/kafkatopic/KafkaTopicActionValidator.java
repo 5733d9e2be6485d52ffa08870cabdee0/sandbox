@@ -1,25 +1,19 @@
 package com.redhat.service.smartevents.processor.actions.kafkatopic;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
+import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
-public class KafkaTopicActionValidator implements KafkaTopicAction, GatewayValidator<Action> {
+public class KafkaTopicActionValidator extends AbstractGatewayValidator<Action> implements KafkaTopicAction {
 
     public static final String INVALID_TOPIC_PARAM_MESSAGE = "The supplied topic parameter is not valid";
 
-    @Override
-    public ValidationResult isValid(Action action) {
-        if (action.getParameters() != null) {
-            String topic = action.getParameter(TOPIC_PARAM);
-            if (topic == null || topic.isEmpty()) {
-                return ValidationResult.invalid(INVALID_TOPIC_PARAM_MESSAGE);
-            }
-            return ValidationResult.valid();
-        }
-        return ValidationResult.invalid();
+    @Inject
+    public KafkaTopicActionValidator(JsonSchemaService jsonSchemaService) {
+        super(jsonSchemaService);
     }
 }

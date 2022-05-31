@@ -12,7 +12,7 @@ Feature: Slack Action tests
     {
       "name": "slackProcessor",
       "action": {
-        "type": "Slack",
+        "type": "slack_sink_0.1",
         "parameters": {
             "channel": "${env.slack.channel.name}",
             "webhookUrl": "${env.slack.webhook.url}"

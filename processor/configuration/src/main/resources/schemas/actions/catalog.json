@@ -1,6 +1,6 @@
 [
   "KafkaTopic",
   "SendToBridge",
-  "Slack",
+  "slack_sink_0.1",
   "Webhook"
 ]

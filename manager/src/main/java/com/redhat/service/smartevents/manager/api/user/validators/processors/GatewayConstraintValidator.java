@@ -19,8 +19,8 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayValidator;
 
 @ApplicationScoped
 public class GatewayConstraintValidator implements ConstraintValidator<ValidGateway, ProcessorRequest> {
@@ -64,7 +64,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
                 : isValidGateway(source, context, gatewayConfigurator::getSourceValidator);
     }
 
-    private <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
+    private <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, AbstractGatewayValidator<T>> validatorGetter) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
                     Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
@@ -77,7 +77,7 @@ public class GatewayConstraintValidator implements ConstraintValidator<ValidGate
             return false;
         }
 
-        GatewayValidator<T> validator;
+        AbstractGatewayValidator<T> validator;
         try {
             validator = validatorGetter.apply(gateway.getType());
         } catch (GatewayProviderException e) {

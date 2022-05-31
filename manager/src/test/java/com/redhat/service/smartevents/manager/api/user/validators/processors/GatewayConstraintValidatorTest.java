@@ -26,8 +26,8 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
+import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayValidator;
 
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_CLASS_PARAM;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
@@ -60,9 +60,9 @@ class GatewayConstraintValidatorTest {
     @Mock
     GatewayConfigurator gatewayConfiguratorMock;
     @Mock
-    GatewayValidator<Action> actionValidatorMock;
+    AbstractGatewayValidator<Action> actionValidatorMock;
     @Mock
-    GatewayValidator<Source> sourceValidatorMock;
+    AbstractGatewayValidator<Source> sourceValidatorMock;
     @Mock
     HibernateConstraintValidatorContext validatorContextMock;
     @Mock

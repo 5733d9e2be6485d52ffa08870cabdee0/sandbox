@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
-    private static final List<String> availableActions = List.of("KafkaTopic", "SendToBridge", "Slack", "Webhook");
-    private static final List<String> availableSources = List.of("AwsS3", "AwsSqs", "Slack");
+    private static final List<String> availableActions = List.of("KafkaTopic", "SendToBridge", "slack_sink_0.1", "Webhook");
+    private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @InjectMock
     JsonWebToken jwt;
@@ -100,7 +100,7 @@ public class SchemaAPITest {
     public void getUnexistingProcessorsSchema() {
         TestUtils.getSourceProcessorsSchema("wrong").then().statusCode(404);
         TestUtils.getSourceProcessorsSchema("KafkaTopic").then().statusCode(404);
-        TestUtils.getActionProcessorsSchema("AwsS3").then().statusCode(404);
+        TestUtils.getActionProcessorsSchema("aws_s3_source_0.1").then().statusCode(404);
     }
 
     @Test

@@ -20,7 +20,6 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;
 
@@ -39,7 +38,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     GatewayConfiguratorService gatewayConfiguratorService;
 
     @Inject
-    GatewayConfigurator gatewayConfigurator;
+    GatewayConnector gatewayConnector;
 
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
@@ -54,21 +53,15 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     private void createConnectorEntity(Processor processor, Action action) {
-        Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
-        if (optActionConnector.isEmpty()) {
-            return;
-        }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId(), actionConnector.connectorPayload(action, topicName));
+        persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor, Source source) {
-        GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId(), sourceConnector.connectorPayload(source, topicName));
+        persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
