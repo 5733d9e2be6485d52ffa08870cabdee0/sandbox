@@ -90,7 +90,7 @@ public class KafkaConnectionDTO {
                 ", clientSecret=<REDACTED>" +
                 ", securityProtocol='" + securityProtocol + '\'' +
                 ", topic=" + topic + '\'' +
-                ", errorsTopic=" + errorTopic + '\'' +
+                ", errorTopic=" + errorTopic + '\'' +
                 '}';
     }
 }
