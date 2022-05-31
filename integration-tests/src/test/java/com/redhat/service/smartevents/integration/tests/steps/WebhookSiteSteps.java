@@ -26,7 +26,7 @@ public class WebhookSiteSteps {
         this.context = context;
     }
 
-    @Then("^Webhook site contains request with text \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    @Then("^Webhook site contains request with text \"(.*)\" within (\\d+) (?:minute|minutes)$")
     public void webhookSiteContainsRequest(String requestText, int timeoutMinutes) {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
         Awaitility.await()

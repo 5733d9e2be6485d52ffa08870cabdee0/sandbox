@@ -1,6 +1,13 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -11,6 +18,7 @@ import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
+import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -25,6 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BridgeSteps {
 
     private static final int BRIDGE_NAME_CREATE_RETRY = 20;
+    private static final String NAME_REGEX = "\"name\": \"([^\"]+)\"";
+    private static final Pattern NAME_PATTERN = Pattern.compile(NAME_REGEX);
+    private static final String NAME_REPLACE_TEMPLATE = "\"name\": \"%s\"";
 
     private TestContext context;
 
@@ -41,6 +52,28 @@ public class BridgeSteps {
 
     @When("^create a new Bridge \"([^\"]*)\"$")
     public void createNewBridge(String testBridgeName) {
+        createNewBridgeWithSupplier(testBridgeName, (context, systemBridgeName) -> BridgeResource.addBridge(context.getManagerToken(), systemBridgeName));
+    }
+
+    @When("^create a new Bridge with body:$")
+    public void createNewBridgeWithBody(String bridgeRequestJson) {
+        String resolvedBridgeRequestJson = ContextResolver.resolveWithScenarioContext(context, bridgeRequestJson);
+        Matcher nameMatcher = NAME_PATTERN.matcher(resolvedBridgeRequestJson);
+        if (!nameMatcher.find()) {
+            throw new RuntimeException("Can't find name in bridge request");
+        }
+        String testBridgeName = nameMatcher.group(1);
+        createNewBridgeWithSupplier(testBridgeName, (context, systemBridgeName) -> {
+            String updatedBridgeRequestJson = resolvedBridgeRequestJson.replaceAll(NAME_REGEX, String.format(NAME_REPLACE_TEMPLATE, systemBridgeName));
+            try (InputStream resourceStream = new ByteArrayInputStream(updatedBridgeRequestJson.getBytes(StandardCharsets.UTF_8))) {
+                return BridgeResource.addBridge(context.getManagerToken(), resourceStream);
+            } catch (IOException e) {
+                throw new RuntimeException("Error with inputstream", e);
+            }
+        });
+    }
+
+    private void createNewBridgeWithSupplier(String testBridgeName, BiFunction<TestContext, String, BridgeResponse> bridgeCreator) {
         String systemBridgeName = Utils.generateId("test-" + testBridgeName);
         int creationRetry = 1;
         while (creationRetry <= BRIDGE_NAME_CREATE_RETRY && isBridgeExisting(systemBridgeName)) {
@@ -52,7 +85,7 @@ public class BridgeSteps {
                     "Cannot create and initiate a random bridge name correctly. Please cleanup the environment...");
         }
 
-        BridgeResponse response = BridgeResource.addBridge(context.getManagerToken(), systemBridgeName);
+        BridgeResponse response = bridgeCreator.apply(context, systemBridgeName);
         assertThat(response.getName()).isEqualTo(systemBridgeName);
         assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
         assertThat(response.getEndpoint()).isNull();
