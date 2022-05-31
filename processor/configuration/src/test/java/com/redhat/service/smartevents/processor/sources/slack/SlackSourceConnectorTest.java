@@ -59,7 +59,7 @@ class SlackSourceConnectorTest {
 
         Source source = new Source();
         source.setType(SlackSource.TYPE);
-        source.setParameters(Map.of(SlackSource.CHANNEL_PARAM, CHANNEL, SlackSource.TOKEN_PARAM, TOKEN));
+        source.setMapParameters(Map.of(SlackSource.CHANNEL_PARAM, CHANNEL, SlackSource.TOKEN_PARAM, TOKEN));
 
         JsonNode payload = connector.connectorPayload(source, TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
 

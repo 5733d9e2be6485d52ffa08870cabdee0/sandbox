@@ -136,7 +136,7 @@ class ProcessorGatewayConstraintValidatorTest {
     @ParameterizedTest
     @MethodSource("gateways")
     void isValid_gatewayWithEmptyParamsIsValid(Gateway gateway) {
-        gateway.getParameters().clear();
+        gateway.setMapParameters(new HashMap<>());
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
@@ -266,7 +266,7 @@ class ProcessorGatewayConstraintValidatorTest {
         action.setType(TEST_ACTION_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 
@@ -275,7 +275,7 @@ class ProcessorGatewayConstraintValidatorTest {
         source.setType(TEST_SOURCE_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        source.setParameters(params);
+        source.setMapParameters(params);
         return source;
     }
 

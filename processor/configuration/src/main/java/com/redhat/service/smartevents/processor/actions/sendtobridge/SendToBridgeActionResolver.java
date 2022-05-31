@@ -22,11 +22,13 @@ public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayRe
 
     @Override
     public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
-        String destinationBridgeId = action.getParameters().getOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
+        String destinationBridgeId = action.getParameterOrDefault(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
 
         Map<String, String> parameters = new HashMap<>();
         try {
-            parameters.put(WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(gatewayConfiguratorService.getBridgeEndpoint(destinationBridgeId, customerId)));
+            String bridgeEndpoint = gatewayConfiguratorService.getBridgeEndpoint(destinationBridgeId, customerId);
+            String bridgeWebhookUrl = getBridgeWebhookUrl(bridgeEndpoint);
+            parameters.put(WebhookAction.ENDPOINT_PARAM, bridgeWebhookUrl);
             parameters.put(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
         } catch (MalformedURLException e) {
             throw new GatewayProviderException("Can't find events webhook for bridge " + destinationBridgeId);
@@ -34,7 +36,7 @@ public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayRe
 
         Action transformedAction = new Action();
         transformedAction.setType(WebhookAction.TYPE);
-        transformedAction.setParameters(parameters);
+        transformedAction.setMapParameters(parameters);
 
         return transformedAction;
     }

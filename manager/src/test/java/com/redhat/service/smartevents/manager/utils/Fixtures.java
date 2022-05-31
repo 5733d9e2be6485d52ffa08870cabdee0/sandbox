@@ -24,7 +24,7 @@ public class Fixtures {
         action.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 

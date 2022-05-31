@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.processor.sources.slack;
 
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,10 +22,8 @@ public class SlackSourceConnector extends AbstractGatewayConnector<Source> imple
 
     @Override
     protected void addConnectorSpecificPayload(Source source, String topicName, ObjectNode definition) {
-        Map<String, String> sourceParameters = source.getParameters();
-
-        definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(sourceParameters.get(CHANNEL_PARAM)));
-        definition.set(CONNECTOR_TOKEN_PARAMETER, new TextNode(sourceParameters.get(TOKEN_PARAM)));
+        definition.set(CONNECTOR_CHANNEL_PARAMETER, new TextNode(source.getParameter(CHANNEL_PARAM)));
+        definition.set(CONNECTOR_TOKEN_PARAMETER, new TextNode(source.getParameter(TOKEN_PARAM)));
         definition.set(CONNECTOR_TOPIC_PARAMETER, new TextNode(topicName));
     }
 }

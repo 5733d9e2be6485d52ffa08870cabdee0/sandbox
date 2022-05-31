@@ -25,7 +25,7 @@ class KafkaTopicActionValidatorTest {
         action.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, topicName);
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 
@@ -39,7 +39,7 @@ class KafkaTopicActionValidatorTest {
     void isInvalid_nullParametersMapIsNotValid() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
-        action.setParameters(null);
+        action.setMapParameters(new HashMap<>());
         ValidationResult validationResult = validator.isValid(action);
         assertThat(validationResult.isValid()).isFalse();
     }

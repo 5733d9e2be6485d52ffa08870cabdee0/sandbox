@@ -29,7 +29,7 @@ public class SourceResolver implements GatewayResolver<Source> {
     public Action resolve(Source source, String customerId, String bridgeId, String processorId) {
         Action resolvedAction = new Action();
         resolvedAction.setType(WebhookAction.TYPE);
-        resolvedAction.setParameters(Map.of(
+        resolvedAction.setMapParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, getBridgeWebhookUrl(customerId, bridgeId),
                 WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true"));
         return resolvedAction;

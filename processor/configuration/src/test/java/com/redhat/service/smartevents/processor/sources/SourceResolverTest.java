@@ -63,8 +63,8 @@ class SourceResolverTest {
 
         assertThat(resolvedAction).isNotNull();
         assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.ENDPOINT_PARAM, BRIDGE_ENDPOINT);
-        assertThat(resolvedAction.getParameters()).containsEntry(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM, "true");
+        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(BRIDGE_ENDPOINT);
+        assertThat(resolvedAction.getParameter(WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM)).isEqualTo("true");
     }
 
     @Test
@@ -77,7 +77,7 @@ class SourceResolverTest {
     private Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
-        source.setParameters(Map.of(CHANNEL_PARAM, "channel", TOKEN_PARAM, "token"));
+        source.setMapParameters(Map.of(CHANNEL_PARAM, "channel", TOKEN_PARAM, "token"));
         return source;
     }
 

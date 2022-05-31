@@ -108,14 +108,14 @@ public class SchemaAPITest {
     public void getProcessorsSchema() {
         for (String source : availableSources) {
             JsonNode schema = TestUtils.getSourceProcessorsSchema(source).as(JsonNode.class);
-            assertThat(schema.get("required") != null || schema.get("optional") != null).isNotNull();
+            assertThat(schema.get("required") != null || schema.get("optional") != null).isTrue();
             assertThat(schema.get("type")).isNotNull();
             assertThat(schema.get("properties")).isNotNull();
         }
 
         for (String action : availableActions) {
             JsonNode schema = TestUtils.getActionProcessorsSchema(action).as(JsonNode.class);
-            assertThat(schema.get("required") != null || schema.get("optional") != null).isNotNull();
+            assertThat(schema.get("required") != null || schema.get("optional") != null).isTrue();
             assertThat(schema.get("type")).isNotNull();
             assertThat(schema.get("properties")).isNotNull();
         }

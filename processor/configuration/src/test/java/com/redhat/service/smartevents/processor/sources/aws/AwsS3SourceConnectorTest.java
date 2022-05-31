@@ -70,7 +70,7 @@ class AwsS3SourceConnectorTest {
 
         Source source = new Source();
         source.setType(AwsS3SourceConnector.TYPE);
-        source.setParameters(Map.of(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, TEST_BUCKET,
+        source.setMapParameters(Map.of(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, TEST_BUCKET,
                 AwsS3Source.REGION_PARAMETER, TEST_REGION,
                 AwsS3Source.ACCESS_KEY_PARAMETER, TEST_ACCESS_KEY,
                 AwsS3Source.SECRET_KEY_PARAMETER, TEST_SECRET_KEY,
@@ -87,7 +87,7 @@ class AwsS3SourceConnectorTest {
     void testEmptyPrefix() {
         Source source = new Source();
         source.setType(AwsS3SourceConnector.TYPE);
-        source.setParameters(Map.of(AwsS3Source.PREFIX, ""));
+        source.setMapParameters(Map.of(AwsS3Source.PREFIX, ""));
 
         JsonNode payload = connector.connectorPayload(source, TEST_TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
 
@@ -100,7 +100,7 @@ class AwsS3SourceConnectorTest {
         source.setType(AwsS3SourceConnector.TYPE);
         Map<String, String> values = new HashMap<>();
         values.put(AwsS3Source.PREFIX, null);
-        source.setParameters(values);
+        source.setMapParameters(values);
 
         JsonNode payload = connector.connectorPayload(source, TEST_TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
 

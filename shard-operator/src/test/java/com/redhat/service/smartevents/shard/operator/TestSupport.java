@@ -69,7 +69,7 @@ public class TestSupport {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
-        a.setParameters(params);
+        a.setMapParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
 

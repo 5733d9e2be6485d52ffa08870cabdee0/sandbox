@@ -614,21 +614,21 @@ class ProcessorServiceTest {
     private static Action createKafkaTopicAction() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
-        action.setParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
+        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
         return action;
     }
 
     private static Action createWebhookAction() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
-        action.setParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
+        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
         return action;
     }
 
     private static Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
-        source.setParameters(Map.of(
+        source.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, "test-channel",
                 SlackSource.TOKEN_PARAM, "test-token"));
         return source;
