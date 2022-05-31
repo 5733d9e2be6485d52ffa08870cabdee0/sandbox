@@ -112,11 +112,5 @@
     "id": 19,
     "reason": "You tried a life cycle transition which is not allowed",
     "type": "USER"
-  },
-  {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.EventRemovedByProcessorFilterException",
-    "id": 20,
-    "reason": "The event did not match the Processor filter definition.",
-    "type": "USER"
   }
 ]

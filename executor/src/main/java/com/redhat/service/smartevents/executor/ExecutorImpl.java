@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.EventRemovedByProcessorFilterException;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -70,25 +69,14 @@ public class ExecutorImpl implements Executor {
     private void process(CloudEvent event, Map<String, String> traceHeaders) {
         Map<String, Object> eventMap = toEventMap(event);
 
-        LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}",
-                event.getId(),
-                event.getType(),
-                processor.getName(),
-                processor.getBridgeId());
+        LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}", event.getId(), event.getType(), processor.getName(), processor.getBridgeId());
 
         // Filter evaluation
         if (!matchesFilters(eventMap)) {
-            String message = String.format("Filters of processor '%s' did not match for event with id '%s' and type '%s'",
-                    processor.getId(),
-                    event.getId(),
-                    event.getType());
-            LOG.debug(message);
-            throw new EventRemovedByProcessorFilterException(message);
+            LOG.debug("Filters of processor '{}' did not match for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
+            return;
         }
-        LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'",
-                processor.getId(),
-                event.getId(),
-                event.getType());
+        LOG.info("Filters of processor '{}' matched for event with id '{}' and type '{}'", processor.getId(), event.getId(), event.getType());
         // Transformation
         // transformations are currently supported only for sink processors
         String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);
