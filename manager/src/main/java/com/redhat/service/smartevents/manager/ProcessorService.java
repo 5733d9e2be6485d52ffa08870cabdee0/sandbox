@@ -25,7 +25,7 @@ public interface ProcessorService {
 
     Long getProcessorsCount(String bridgeId, String customerId);
 
-    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
+    ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
 
     ListResult<Processor> getAllProcessors(String bridgeId, String customerId);
 

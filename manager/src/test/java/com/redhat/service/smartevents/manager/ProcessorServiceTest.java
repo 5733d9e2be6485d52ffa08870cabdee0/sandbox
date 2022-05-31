@@ -323,8 +323,8 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testGetProcessors() {
-        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+    void testGetUserVisibleProcessors() {
+        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
         assertThat(results.getTotal()).isEqualTo(3L);
@@ -334,20 +334,20 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testGetProcessors_noProcessorsOnBridge() {
+    void testGetUserVisibleProcessors_noProcessorsOnBridge() {
         when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
-        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
     }
 
     @Test
-    void testGetProcessors_bridgeDoesNotExist() {
+    void testGetUserVisibleProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.getProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getUserVisibleProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     @Test

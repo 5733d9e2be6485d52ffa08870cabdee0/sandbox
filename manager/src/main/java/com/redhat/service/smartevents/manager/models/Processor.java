@@ -64,7 +64,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Filters({
         @Filter(name = "byName", condition = "name like :name"),
         @Filter(name = "byStatus", condition = "status in (:status)"),
-        @Filter(name = "byType", condition = "type=:ptype")
+        @Filter(name = "byType", condition = "type in (:ptype)")
 })
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
