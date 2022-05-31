@@ -161,7 +161,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getClientSecret().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getTopic().getBytes()));
-        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERRORS_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getErrorsTopic().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERRORS_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getErrorTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, Base64.getEncoder().encodeToString(bridgeExecutor.getSpec().getId().getBytes()));
 
         Secret existing = kubernetesClient

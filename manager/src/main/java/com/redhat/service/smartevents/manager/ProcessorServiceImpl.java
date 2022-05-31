@@ -329,17 +329,14 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private KafkaConnectionDTO getKafkaConnectorDTO(Processor processor) {
-        String errorTopicName = processor.getType() != ProcessorType.ERROR_HANDLER
-                ? resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId())
-                : null;
-
         return new KafkaConnectionDTO(
                 internalKafkaConfigurationProvider.getBootstrapServers(),
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 getProcessorTopicName(processor),
-                errorTopicName);
+                // TODO: does this make sense for ERROR_HANDLER processors? Now shard fails without error topic name.
+                resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
     }
 
     private String getProcessorTopicName(Processor processor) {
