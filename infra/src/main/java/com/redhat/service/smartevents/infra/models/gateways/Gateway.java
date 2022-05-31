@@ -36,7 +36,7 @@ public class Gateway {
 
     @JsonProperty("parameters")
     // ObjectNode is not rendered properly by swagger
-    @Schema(implementation = Object.class)
+    @Schema(implementation = Object.class, required = true)
     private ObjectNode parameters;
 
     public String getType() {

@@ -728,6 +728,7 @@ components:
     Action:
       required:
       - type
+      - parameters
       type: object
       properties:
         type:
@@ -1026,6 +1027,7 @@ components:
     Source:
       required:
       - type
+      - parameters
       type: object
       properties:
         type:
