@@ -325,7 +325,7 @@ public class ProcessorAPITest {
 
         assertThat(found.getId()).isEqualTo(pr.getId());
         assertThat(found.getAction().getType()).isEqualTo(SendToBridgeAction.TYPE);
-        assertThat(pr.getAction().getParameter(SendToBridgeAction.BRIDGE_ID_PARAM)).isEqualTo(bridgeId);
+        assertThat(found.getAction().getParameter(SendToBridgeAction.BRIDGE_ID_PARAM)).isEqualTo(bridgeId);
     }
 
     private void assertRequestedAction(ProcessorResponse processorResponse) {
