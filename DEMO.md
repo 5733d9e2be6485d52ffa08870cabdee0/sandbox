@@ -146,7 +146,7 @@ An example payload request is the following:
   "name": "myProcessor",
   "action": {
     "parameters": {"topic":  "demoTopic"},
-    "type": "KafkaTopic"
+    "type": "kafka_topic_sink_0.1"
   },
   "filters": [
     {
@@ -159,12 +159,12 @@ An example payload request is the following:
 ```
 
 So only the events with `source` equals to `StorageService` will be sent to the 
-the action `KafkaTopic`, which will push the event to the kafka instance under the topic `demoTopic`.
+the action `kafka_topic_sink_0.1`, which will push the event to the kafka instance under the topic `demoTopic`.
 
 Run 
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "KafkaTopic"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -187,7 +187,7 @@ and the response is something like
     ],
   "action":
     {
-      "type":"KafkaTopic",
+      "type":"kafka_topic_sink_0.1",
       "parameters":
       {
         "topic":"demoTopic"
@@ -210,7 +210,7 @@ curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID
 
 ## Sending messages to Slack using processors
 
-To send messages to Slack using a processor we have two different ways: either use the `Slack` or the `Webhook` action.
+To send messages to Slack using a processor we have two different ways: either use the `slack_sink_0.1` or the `webhook_sink_0.1` action.
 
 Here's an example of the payload for the `Slack` action. Notice that we need to specify both the channel and the webhookUrl.
 
@@ -227,7 +227,7 @@ Here's an example of the payload for the `Slack` action. Notice that we need to 
 }
 ```
 
-Here's the example payload of the `Webhook` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
+Here's the example payload of the `webhook_sink_0.1` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
 
 ```json
 {"text":"Hello, World!"}
@@ -238,7 +238,7 @@ Here's the example payload of the `Webhook` action instead. The channel is not n
 {
   "name": "SlackWithWebhookAction",
   "action": {
-    "type": "Webhook",
+    "type": "webhook_sink_0.1",
     "parameters": {
       "endpoint": "webhookUrl"
     }

@@ -66,7 +66,7 @@ elif [ "${action_type}" = 'webhook' ]; then
   action_payload='{
    "name": '"\"$action_name\""',
    "action": {
-      "type": "Webhook",
+      "type": "webhook_sink_0.1",
       "parameters": {
          "endpoint": '"\"$SLACK_WEBHOOK_URL\""'
       }

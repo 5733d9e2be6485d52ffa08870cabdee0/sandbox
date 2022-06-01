@@ -4,7 +4,7 @@ import com.redhat.service.smartevents.processor.GatewayBean;
 
 public interface WebhookAction extends GatewayBean {
 
-    String TYPE = "Webhook";
+    String TYPE = "webhook_sink_0.1";
     String ENDPOINT_PARAM = "endpoint";
     String USE_TECHNICAL_BEARER_TOKEN_PARAM = "useTechnicalBearerToken";
     String BASIC_AUTH_USERNAME_PARAM = "basic_auth_username";

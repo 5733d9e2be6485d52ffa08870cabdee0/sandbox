@@ -21,12 +21,12 @@ Feature: SendToBridge Action tests
         "parameters": {
             "bridgeId":  "${bridge.bridge2.id}"
         },
-        "type": "SendToBridge"
+        "type": "send_to_bridge_sink_0.1"
       }
     }
     """
     And the Processor "sendToBridgeWithBridgeIdProcessor" of the Bridge "bridge1" is existing with status "ready" within 3 minutes
-    And the Processor "sendToBridgeWithBridgeIdProcessor" of the Bridge "bridge1" has action of type "SendToBridge" and parameters:
+    And the Processor "sendToBridgeWithBridgeIdProcessor" of the Bridge "bridge1" has action of type "send_to_bridge_sink_0.1" and parameters:
       | bridgeId | ${bridge.bridge2.id} |
 
     And add a Processor to the Bridge "bridge2" with body:
@@ -37,13 +37,13 @@ Feature: SendToBridge Action tests
         "parameters": {
           "endpoint": "${env.slack.webhook.url}"
         },
-        "type": "Webhook"
+        "type": "webhook_sink_0.1"
       },
       "transformationTemplate" : "{ \"text\": \"hello {data.name} by {id}\" }"
     }
     """
     And the Processor "webhookProcessor" of the Bridge "bridge2" is existing with status "ready" within 3 minutes
-    And the Processor "webhookProcessor" of the Bridge "bridge2" has action of type "Webhook" and parameters:
+    And the Processor "webhookProcessor" of the Bridge "bridge2" has action of type "webhook_sink_0.1" and parameters:
       | endpoint | ${env.slack.webhook.url} |
 
     When send a cloud event to the Ingress of the Bridge "bridge1":

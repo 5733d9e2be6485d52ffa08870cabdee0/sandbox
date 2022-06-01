@@ -37,7 +37,7 @@ To send an Event to the topic `myRequestedTopic`:
 ```json
 {
   "action": {
-    "type": "KafkaTopic",
+    "type": "kafka_topic_sink_0.1",
     "parameters": {
       "topic": "myRequestedTopic"
     }
@@ -60,7 +60,7 @@ To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 ```json
 {
   "action": {
-    "type": "Webhook",
+    "type": "webhook_sink_0.1",
     "parameters": {
       "endpoint": "https://example.com/my-webhook-endpoint"
     }
@@ -87,7 +87,7 @@ To send an event to bridge with id `foo` in my account:
 ```json
 {
   "action": {
-    "type": "SendToBridge",
+    "type": "send_to_bridge_sink_0.1",
     "parameters": {
       "bridgeId": "foo"
     }
