@@ -41,7 +41,7 @@ More information on available sources can be found in the [dedicated document](.
 This demo reads messages from a Slack channel and, for each one, posts a message to another Slack channel containing
 the user ID and the text.
 
-It uses one source processor containing a _SlackSource_ and one sink processor containing a _SlackAction_
+It uses one source processor containing a _slack_source_0.1_ and one sink processor containing a _SlackAction_
 (thus the name _"From Slack To Slack"_).
 
 ### Preliminary assumption
@@ -87,7 +87,7 @@ you want to write to and set the correct `webhookUrl`. Here is the JSON:
     {
       "key": "type",
       "type": "StringEquals",
-      "value": "SlackSource"
+      "value": "slack_source_0.1"
     }
   ],
   "transformationTemplate": "Slack user {data.user} says \"{data.text}\""

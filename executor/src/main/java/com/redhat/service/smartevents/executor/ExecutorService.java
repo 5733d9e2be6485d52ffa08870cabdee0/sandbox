@@ -70,7 +70,7 @@ public class ExecutorService {
             CloudEventBuilder cloudEventBuilder = CloudEventBuilder.v1()
                     .withId(UUID.randomUUID().toString())
                     .withSource(URI.create(CLOUD_EVENT_SOURCE))
-                    .withType(String.format("%sSource", executor.getProcessor().getDefinition().getRequestedSource().getType()))
+                    .withType(String.format("%s", executor.getProcessor().getDefinition().getRequestedSource().getType()))
                     .withData(JsonCloudEventData.wrap(payload));
 
             Map<String, Object> extensions = wrapHeadersToExtensionsMap(headers);

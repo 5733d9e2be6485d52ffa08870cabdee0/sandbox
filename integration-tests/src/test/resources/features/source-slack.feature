@@ -43,9 +43,9 @@ Feature: Slack Source tests
     }
     """
     And the Processor "slackSourceProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
-    And the Processor "slackSourceProcessor" of the Bridge "mybridge" has source of type "Slack"
+    And the Processor "slackSourceProcessor" of the Bridge "mybridge" has source of type "slack_source_0.1"
     And the Processor "slackForwardProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
-    And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "Slack"
+    And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "slack_sink_0.1"
 
 
     And create message with text "Slack Event Source Feature trigger ${uuid.slack.source.trigger}" on slack channel
