@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -12,15 +15,23 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.models.ListResult;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
+import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
@@ -33,22 +44,27 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @QuarkusTestResource(PostgresResource.class)
-public class BridgeWorkerTest {
+class BridgeWorkerTest {
 
     private static final String TEST_RESOURCE_ID = "123";
     private static final String TEST_TOPIC_NAME = "TopicName";
     private static final String TEST_ERROR_HANDLER_TOPIC_NAME = "ErrorHandlerTopicName";
 
     @InjectMock
-    RhoasService rhoasService;
+    RhoasService rhoasServiceMock;
 
     @InjectMock
-    ResourceNamesProvider resourceNamesProvider;
+    ResourceNamesProvider resourceNamesProviderMock;
+
+    @InjectMock
+    ProcessorService processorServiceMock;
 
     @Inject
     WorkManager workManager;
@@ -65,6 +81,8 @@ public class BridgeWorkerTest {
     @BeforeEach
     public void setup() {
         databaseManagerUtils.cleanUp();
+        when(resourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
+        when(resourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
     }
 
     @Test
@@ -77,10 +95,10 @@ public class BridgeWorkerTest {
 
     @Transactional
     @ParameterizedTest
-    @MethodSource("srcHandleWorkProvisioningWithKnownResource")
-    void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
+    @MethodSource("provisionWorkWithKnownResourceParams")
+    void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean throwRhosError,
+            boolean throwRhoasError,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
@@ -88,19 +106,71 @@ public class BridgeWorkerTest {
 
         Work work = workManager.schedule(bridge);
 
-        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
-        if (throwRhosError) {
-            when(rhoasService.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
+        if (throwRhoasError) {
+            when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
         }
 
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
-        verify(rhoasService).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
     }
 
-    private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResource() {
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("provisionWorkWithKnownResourceParams")
+    void testProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean isWorkComplete) {
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
+        bridge.setStatus(status);
+        bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
+        bridgeDAO.persist(bridge);
+
+        Work work = workManager.schedule(bridge);
+
+        when(processorServiceMock.getAllProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
+
+        if (throwRhoasError) {
+            when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any()))
+                    .thenThrow(new InternalPlatformException("error"));
+
+            Bridge refreshed = worker.handleWork(work);
+
+            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(rhoasServiceMock, never()).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+            assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        } else {
+            Bridge refreshed = worker.handleWork(work);
+
+            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(processorServiceMock).createErrorHandlerProcessor(eq(bridge.getId()), eq(TestConstants.DEFAULT_CUSTOMER_ID), eq(TestConstants.DEFAULT_USER_NAME), any());
+            assertThat(refreshed.getDependencyStatus()).isNotEqualTo(dependencyStatusWhenComplete);
+            assertThat(workManager.exists(work)).isTrue();
+
+            reset(rhoasServiceMock);
+            reset(processorServiceMock);
+
+            when(processorServiceMock.getAllProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                    .thenReturn(new ListResult<>(List.of(createErrorHandlerProcessor(bridge)), 0, 1));
+
+            Bridge refreshed2 = worker.handleWork(work);
+
+            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(processorServiceMock, never()).createErrorHandlerProcessor(any(), any(), any(), any());
+            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+            assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        }
+    }
+
+    private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
         return Stream.of(
                 Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false, true),
                 Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, false),
@@ -110,10 +180,10 @@ public class BridgeWorkerTest {
 
     @Transactional
     @ParameterizedTest
-    @MethodSource("srcHandleWorkDeletingWithKnownResource")
-    void handleWorkDeletingWithKnownResource(ManagedResourceStatus status,
+    @MethodSource("deletionWorkWithKnownResourceParams")
+    void testDeletionWorkWithKnownResource(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean throwRhosError,
+            boolean throwRhoasError,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
@@ -121,25 +191,84 @@ public class BridgeWorkerTest {
 
         Work work = workManager.schedule(bridge);
 
-        when(resourceNamesProvider.getBridgeTopicName(bridge.getId())).thenReturn(TEST_TOPIC_NAME);
-        when(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
-        if (throwRhosError) {
-            doThrow(new InternalPlatformException("error")).when(rhoasService).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
+        when(processorServiceMock.getHiddenProcessors(any(), any()))
+                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
+
+        if (throwRhoasError) {
+            doThrow(new InternalPlatformException("error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
         }
 
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
-        verify(rhoasService).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
     }
 
-    private static Stream<Arguments> srcHandleWorkDeletingWithKnownResource() {
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("deletionWorkWithKnownResourceParams")
+    void testDeletionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean isWorkComplete) {
+        Bridge bridge = Fixtures.createBridge();
+        bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
+        bridge.setStatus(status);
+        bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
+        bridgeDAO.persist(bridge);
+
+        Work work = workManager.schedule(bridge);
+
+        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(new ListResult<>(List.of(createErrorHandlerProcessor(bridge)), 0, 1));
+
+        Bridge refreshed = worker.handleWork(work);
+
+        assertThat(refreshed.getDependencyStatus()).isNotEqualTo(dependencyStatusWhenComplete);
+        assertThat(workManager.exists(work)).isTrue();
+
+        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
+
+        if (throwRhoasError) {
+            doThrow(new InternalPlatformException("error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(any(), any());
+
+            Bridge refreshed2 = worker.handleWork(work);
+
+            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        } else {
+            Bridge refreshed2 = worker.handleWork(work);
+
+            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        }
+
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+    }
+
+    private static Stream<Arguments> deletionWorkWithKnownResourceParams() {
         return Stream.of(
                 Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, false, true),
                 Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, false),
                 Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false, true),
                 Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, false));
+    }
+
+    private static Action createWebhookAction() {
+        Action action = new Action();
+        action.setType(WebhookAction.TYPE);
+        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
+        return action;
+    }
+
+    private static Processor createErrorHandlerProcessor(Bridge bridge) {
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        processor.setType(ProcessorType.ERROR_HANDLER);
+        return processor;
     }
 
 }
