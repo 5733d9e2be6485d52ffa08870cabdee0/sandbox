@@ -21,6 +21,7 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
@@ -89,7 +90,10 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
         if (ProcessorType.SOURCE.equals(type)) {
             return getSourceJsonSchema(name).validateAndCollect(data);
         }
-        return getActionJsonSchema(name).validateAndCollect(data);
+        if (ProcessorType.SINK.equals(type)) {
+            return getActionJsonSchema(name).validateAndCollect(data);
+        }
+        throw new ItemNotFoundException(String.format("Processor type '%s' not recognized", type));
     }
 
     private String readFile(String resourceDirectory, String name) {
@@ -109,7 +113,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
         try {
             return mapper.readValue(readFile(ACTIONS_DIR_PATH, name), ObjectNode.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e); //TODO: raise specific exception
+            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", name), e);
         }
     }
 
@@ -117,7 +121,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
         try {
             return mapper.readValue(readFile(SOURCES_DIR_PATH, name), ObjectNode.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e); //TODO: raise specific exception
+            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", name), e);
         }
     }
 
