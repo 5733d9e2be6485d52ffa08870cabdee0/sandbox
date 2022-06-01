@@ -29,6 +29,6 @@ public enum ProcessorType implements BaseEnumeration {
     public static class Constants {
         public static final String SOURCE_VALUE = "source";
         public static final String SINK_VALUE = "sink";
-        public static final String ERROR_HANDLER_VALUE = "error-handler";
+        public static final String ERROR_HANDLER_VALUE = "error_handler";
     }
 }
