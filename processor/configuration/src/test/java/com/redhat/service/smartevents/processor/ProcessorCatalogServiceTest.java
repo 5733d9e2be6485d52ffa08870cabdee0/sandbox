@@ -39,12 +39,12 @@ public class ProcessorCatalogServiceTest {
         assertThat(actions).contains("catalog.json");
         assertThat(sources).contains("catalog.json");
 
-        assertThat(processorCatalogService.getActionsCatalog().size())
+        assertThat(processorCatalogService.getActionsCatalog())
                 .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(actions.size() - 1);
-        assertThat(processorCatalogService.getSourcesCatalog().size())
+                .hasSize(actions.size() - 1);
+        assertThat(processorCatalogService.getSourcesCatalog())
                 .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(sources.size() - 1);
+                .hasSize(sources.size() - 1);
     }
 
     @Test

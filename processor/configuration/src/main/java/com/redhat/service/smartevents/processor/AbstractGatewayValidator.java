@@ -10,10 +10,10 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
 
     private ProcessorCatalogService processorCatalogService;
 
-    public AbstractGatewayValidator() {
+    protected AbstractGatewayValidator() {
     }
 
-    public AbstractGatewayValidator(ProcessorCatalogService processorCatalogService) {
+    protected AbstractGatewayValidator(ProcessorCatalogService processorCatalogService) {
         this.processorCatalogService = processorCatalogService;
     }
 
@@ -27,7 +27,7 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
         }
 
         com.networknt.schema.ValidationResult result = processorCatalogService.validate(getType(), gateway.getProcessorType(), gateway.getParameters());
-        if (result.getValidationMessages().size() > 0) {
+        if (!result.getValidationMessages().isEmpty()) {
             return ValidationResult.invalid(result.getValidationMessages().stream().map(ValidationMessage::getMessage).collect(Collectors.joining(" and ")));
         }
 
