@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -86,23 +87,23 @@ public class ProcessorServiceImpl implements ProcessorService {
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
-        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest, false);
+        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
     }
 
     @Override
     @Transactional
-    public Processor createErrorHandlingProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+    public Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
 
         ProcessorType processorType = processorRequest.getType();
         if (processorType != ProcessorType.SINK) {
-            throw new BadRequestException("Unable to create a SOURCE Processor for Error Handling.");
+            throw new InternalPlatformException("Unable to configure error handler");
         }
 
-        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest, true);
+        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest);
     }
 
-    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest, boolean isErrorHandler) {
+    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");

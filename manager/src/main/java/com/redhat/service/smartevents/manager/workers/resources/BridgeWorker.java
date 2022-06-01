@@ -108,7 +108,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         if (processors.getItems().stream().noneMatch(p -> p.getType() == ProcessorType.ERROR_HANDLER)) {
             String errorHandlerName = String.format("Back-channel for Bridge '%s'", bridge.getId());
             ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
-            processorService.createErrorHandlingProcessor(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), errorHandlerProcessor);
+            processorService.createErrorHandlerProcessor(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), errorHandlerProcessor);
             return false;
         }
         return true;
