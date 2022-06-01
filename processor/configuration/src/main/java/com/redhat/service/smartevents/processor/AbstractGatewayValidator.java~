@@ -8,13 +8,13 @@ import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 public abstract class AbstractGatewayValidator<T extends Gateway> implements GatewayBean {
 
-    private ProcessorCatalogService processorCatalogService;
+    private JsonSchemaService jsonSchemaService;
 
     public AbstractGatewayValidator() {
     }
 
-    public AbstractGatewayValidator(ProcessorCatalogService processorCatalogService) {
-        this.processorCatalogService = processorCatalogService;
+    public AbstractGatewayValidator(JsonSchemaService jsonSchemaService) {
+        this.jsonSchemaService = jsonSchemaService;
     }
 
     protected ValidationResult applyAdditionalValidations(T gateway) {
@@ -26,7 +26,7 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
             return ValidationResult.invalid();
         }
 
-        com.networknt.schema.ValidationResult result = processorCatalogService.validate(getType(), gateway.getProcessorType(), gateway.getParameters());
+        com.networknt.schema.ValidationResult result = jsonSchemaService.validate(getType(), gateway.getProcessorType(), gateway.getParameters());
         if (result.getValidationMessages().size() > 0) {
             return ValidationResult.invalid(result.getValidationMessages().stream().map(ValidationMessage::getMessage).collect(Collectors.joining(" and ")));
         }
