@@ -31,7 +31,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -98,7 +97,7 @@ public class SchemaAPI {
     @APIResponses(value = {
             // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Object.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
@@ -118,7 +117,7 @@ public class SchemaAPI {
     @APIResponses(value = {
             // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
             @APIResponse(description = "Success.", responseCode = "200",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Object.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
