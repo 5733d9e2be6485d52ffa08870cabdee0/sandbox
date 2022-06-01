@@ -31,8 +31,8 @@ Read messages from a Slack channel (requires a working [bot token](https://api.s
 
 #### SlackSource Configuration Parameters
 
-* `channel` - The Slack channel name to read messages from.
-* `token` - The Slack [bot token](https://api.slack.com/authentication/token-types#bot) needed to connect to the instance and access the channel.
+* `slack_channel` - The Slack channel name to read messages from.
+* `slack_token` - The Slack [bot token](https://api.slack.com/authentication/token-types#bot) needed to connect to the instance and access the channel.
 
 #### Example of creating SlackSource
 Can be found at [SourceProcessorDemo](dev/SourceProcessorDemo.md).

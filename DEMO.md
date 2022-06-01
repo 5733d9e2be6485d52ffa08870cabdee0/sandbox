@@ -218,10 +218,10 @@ Here's an example of the payload for the `Slack` action. Notice that we need to 
 {
   "name": "SlackActionProcessor",
   "action": {
-    "type": "Slack",
+    "type": "slack_sink_0.1.json",
     "parameters": {
-      "channel": "channel",
-      "webhookUrl": "webhookURL"
+      "slack_channel": "channel",
+      "slack_webhook_url": "webhookURL"
     }
   }
 }

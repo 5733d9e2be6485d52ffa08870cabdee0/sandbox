@@ -20,10 +20,10 @@ More information on available sources can be found in the [dedicated document](.
 {
   "name": "slack-source",
   "source": {
-    "type": "Slack",
+    "type": "slack_source_0.1",
     "parameters": {
-      "channel": "my-read-channel",
-      "token": "xoxb-..."
+      "slack_channel": "my-read-channel",
+      "slack_token": "xoxb-..."
     }
   },
   "filters": [

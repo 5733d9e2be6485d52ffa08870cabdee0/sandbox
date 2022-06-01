@@ -38,8 +38,8 @@ if [ "${source_type}" = 'slack' ]; then
    "source": {
       "type": "slack_source_0.1",
       "parameters": {
-         "channel": "mc_source",
-         "token": '"\"$SLACK_TOKEN\""'
+         "slack_channel": "mc_source",
+         "slack_token": '"\"$SLACK_TOKEN\""'
       }
    }
 }'
