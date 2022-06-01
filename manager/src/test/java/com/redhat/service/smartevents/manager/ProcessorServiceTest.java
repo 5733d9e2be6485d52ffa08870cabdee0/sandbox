@@ -139,7 +139,7 @@ class ProcessorServiceTest {
                 .thenReturn(provisioningProcessor);
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, FAILED_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(failedProcessor);
-        when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
+        when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(List.of(processor, provisioningProcessor, failedProcessor), 0, 3));
         when(processorDAO.countByBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(3L);
@@ -325,6 +325,7 @@ class ProcessorServiceTest {
     @Test
     void testGetUserVisibleProcessors() {
         ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
         assertThat(results.getTotal()).isEqualTo(3L);
@@ -335,10 +336,11 @@ class ProcessorServiceTest {
 
     @Test
     void testGetUserVisibleProcessors_noProcessorsOnBridge() {
-        when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
+        when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
         ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
