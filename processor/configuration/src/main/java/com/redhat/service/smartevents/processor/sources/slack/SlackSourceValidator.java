@@ -9,12 +9,6 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
 public class SlackSourceValidator extends AbstractGatewayValidator<Source> implements SlackSource {
-    public static final String INVALID_CHANNEL_MESSAGE =
-            "The supplied " + CHANNEL_PARAM + " parameter is not valid";
-
-    public static final String INVALID_TOKEN_MESSAGE =
-            "The supplied " + TOKEN_PARAM + " parameter is not valid";
-
     @Inject
     public SlackSourceValidator(JsonSchemaService jsonSchemaService) {
         super(jsonSchemaService);

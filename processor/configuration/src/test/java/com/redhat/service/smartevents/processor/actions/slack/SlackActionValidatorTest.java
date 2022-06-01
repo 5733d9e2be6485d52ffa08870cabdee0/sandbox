@@ -23,37 +23,21 @@ class SlackActionValidatorTest {
     @Test
     void isInvalidWithNoParameters() {
         Map<String, String> params = new HashMap<>();
-        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
+        assertIsInvalid(actionWith(params), "$.slack_channel: is missing but it is required and $.slack_webhook_url: is missing but it is required");
     }
 
     @Test
     void isInvalidWithMissingChannelParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.WEBHOOK_URL_PARAM, "w");
-        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
-    }
-
-    @Test
-    void isInvalidWithEmptyChannelParameter() {
-        Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAM, "");
-        params.put(SlackAction.WEBHOOK_URL_PARAM, "w");
-        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_CHANNEL_MESSAGE);
+        assertIsInvalid(actionWith(params), "$.slack_channel: is missing but it is required");
     }
 
     @Test
     void isInvalidWithMissingWebhookURLParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "c");
-        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_WEBHOOK_URL_MESSAGE);
-    }
-
-    @Test
-    void isInvalidWithEmptyWebhookURLParameter() {
-        Map<String, String> params = new HashMap<>();
-        params.put(SlackAction.CHANNEL_PARAM, "c");
-        params.put(SlackAction.WEBHOOK_URL_PARAM, "");
-        assertIsInvalid(actionWith(params), SlackActionValidator.INVALID_WEBHOOK_URL_MESSAGE);
+        assertIsInvalid(actionWith(params), "$.slack_webhook_url: is missing but it is required");
     }
 
     @Test

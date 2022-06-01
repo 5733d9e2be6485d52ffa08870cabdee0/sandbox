@@ -14,7 +14,6 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 @ApplicationScoped
 public class WebhookActionValidator extends AbstractGatewayValidator<Action> implements WebhookAction {
 
-    public static final String MISSING_ENDPOINT_PARAM_MESSAGE = "Missing or empty \"endpoint\" parameter";
     public static final String MALFORMED_ENDPOINT_PARAM_MESSAGE = "Malformed \"endpoint\" URL";
     public static final String BASIC_AUTH_CONFIGURATION_MESSAGE = "Basic authentication configuration error. " +
             "\"" + BASIC_AUTH_USERNAME_PARAM + "\" and \"" + BASIC_AUTH_PASSWORD_PARAM + "\" must be both present and non empty.";

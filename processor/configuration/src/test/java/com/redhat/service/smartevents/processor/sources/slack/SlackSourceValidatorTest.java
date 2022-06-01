@@ -35,37 +35,21 @@ class SlackSourceValidatorTest extends AbstractSourceTest<Source> {
     @Test
     void isInvalidWithNoParameters() {
         Map<String, String> params = new HashMap<>();
-        assertValidationIsInvalid(sourceWith(params), SlackSourceValidator.INVALID_CHANNEL_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), "$.slack_channel: is missing but it is required and $.slack_token: is missing but it is required");
     }
 
     @Test
     void isInvalidWithMissingChannelParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackSource.TOKEN_PARAM, "t");
-        assertValidationIsInvalid(sourceWith(params), SlackSourceValidator.INVALID_CHANNEL_MESSAGE);
-    }
-
-    @Test
-    void isInvalidWithEmptyChannelParameter() {
-        Map<String, String> params = new HashMap<>();
-        params.put(SlackSource.CHANNEL_PARAM, "");
-        params.put(SlackSource.TOKEN_PARAM, "t");
-        assertValidationIsInvalid(sourceWith(params), SlackSourceValidator.INVALID_CHANNEL_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), "$.slack_channel: is missing but it is required");
     }
 
     @Test
     void isInvalidWithMissingTokenParameter() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackSource.CHANNEL_PARAM, "c");
-        assertValidationIsInvalid(sourceWith(params), SlackSourceValidator.INVALID_TOKEN_MESSAGE);
-    }
-
-    @Test
-    void isInvalidWithEmptyTokenParameter() {
-        Map<String, String> params = new HashMap<>();
-        params.put(SlackSource.CHANNEL_PARAM, "c");
-        params.put(SlackSource.TOKEN_PARAM, "");
-        assertValidationIsInvalid(sourceWith(params), SlackSourceValidator.INVALID_TOKEN_MESSAGE);
+        assertValidationIsInvalid(sourceWith(params), "$.slack_token: is missing but it is required");
     }
 
     @Test

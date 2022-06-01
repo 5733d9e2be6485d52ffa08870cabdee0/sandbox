@@ -26,7 +26,6 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
             return ValidationResult.invalid();
         }
 
-        // TODO: refactor
         com.networknt.schema.ValidationResult result = jsonSchemaService.validate(getType(), gateway.getProcessorType(), gateway.getParameters());
         if (result.getValidationMessages().size() > 0) {
             return ValidationResult.invalid(result.getValidationMessages().stream().map(ValidationMessage::getMessage).collect(Collectors.joining(" and ")));
