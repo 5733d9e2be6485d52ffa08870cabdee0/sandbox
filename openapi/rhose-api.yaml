@@ -940,10 +940,6 @@ components:
           $ref: '#/components/schemas/Source'
         resolvedAction:
           $ref: '#/components/schemas/Action'
-        isErrorHandler:
-          type: boolean
-        errorHandler:
-          type: boolean
     ProcessorListResponse:
       type: object
       properties:
@@ -1031,6 +1027,7 @@ components:
       enum:
       - source
       - sink
+      - error_handler
       type: string
     Source:
       required:
