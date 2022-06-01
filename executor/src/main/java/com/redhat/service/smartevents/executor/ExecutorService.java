@@ -80,7 +80,7 @@ public class ExecutorService {
     @Incoming(EVENTS_IN_CHANNEL)
     public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
         CloudEvent cloudEvent = null;
-        Headers headers = message.getHeaders();
+        Headers headers = message.getHeaders() == null ? new RecordHeaders() : message.getHeaders();
 
         try {
             String eventPayload = message.getPayload();
@@ -139,10 +139,7 @@ public class ExecutorService {
         }
     }
 
-    public static Map<String, String> toHeadersMap(Headers headers) {
-        if (headers == null) {
-            return Collections.emptyMap();
-        }
+    static Map<String, String> toHeadersMap(Headers headers) {
         Map<String, String> headersMap = new TreeMap<>();
         for (Header header : headers) {
             headersMap.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
@@ -150,7 +147,7 @@ public class ExecutorService {
         return headersMap;
     }
 
-    public static Map<String, String> toExtensionsMap(Headers headers) {
+    static Map<String, String> toExtensionsMap(Headers headers) {
         Map<String, String> extensionMap = new TreeMap<>();
         for (Map.Entry<String, String> header : toHeadersMap(headers).entrySet()) {
             extensionMap.put(adjustExtensionName(header.getKey()), header.getValue());
