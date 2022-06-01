@@ -37,12 +37,18 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "join fetch p.bridge " +
                         "left join p.connectorEntities as c " +
                         "where " +
-                        "p.bridge.status='READY' and " +
                         "p.shardId=:shardId and " +
                         "(" +
-                        "  (p.status='PREPARING' and p.dependencyStatus='READY') " +
-                        "  or " +
-                        "  (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
+                        "  (" +
+                        "    p.bridge.status='READY' and " +
+                        "    (" +
+                        "      (p.status='PREPARING' and p.dependencyStatus='READY') " +
+                        "      or " +
+                        "      (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
+                        "    )" +
+                        "  )" +
+                        ") or (" +
+                        "  p.bridge.status='DEPROVISION' and p.type='ERROR_HANDLER' and p.status='DEPROVISION' and p.dependencyStatus='DELETED'" +
                         ")"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
                 query = "from Processor p join fetch p.bridge where p.id=:id and (p.bridge.id=:bridgeId and p.bridge.customerId=:customerId)"),
