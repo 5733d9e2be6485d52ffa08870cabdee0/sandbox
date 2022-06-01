@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.processor.actions.webhook;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
@@ -34,6 +35,9 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
 
     public static final String TEST_EVENT = "{\"specversion\":\"1.0\",\"type\":\"TestType\",\"source\":\"/test/src\",\"id\":\"1234\"}";
     public static final String TEST_WEBHOOK_PATH = "/webhook";
+    public static final Map<String, String> TEST_HEADERS = Map.of(
+            "custom-header", "value-1",
+            "another-custom-header", "value-2");
 
     @Inject
     Vertx vertx;
@@ -50,13 +54,19 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
 
         String testSinkEndpoint = webhookSinkUrl + TEST_WEBHOOK_PATH;
         WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint, WebClient.create(vertx));
-        invoker.onEvent(TEST_EVENT, Collections.emptyMap());
+        invoker.onEvent(TEST_EVENT, TEST_HEADERS);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-        wireMockServer.verify(postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
+        RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
                 .withRequestBody(equalToJson(TEST_EVENT, true, true))
-                .withHeader("Content-Type", equalTo("application/json")));
+                .withHeader("Content-Type", equalTo("application/json"));
+
+        for (Map.Entry<String, String> testHeader : TEST_HEADERS.entrySet()) {
+            requestPatternBuilder = requestPatternBuilder.withHeader("x-" + testHeader.getKey(), equalTo(testHeader.getValue()));
+        }
+
+        wireMockServer.verify(requestPatternBuilder);
     }
 
     @Test
@@ -72,14 +82,20 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
                 WebClient.create(vertx),
                 "username",
                 "password");
-        invoker.onEvent(TEST_EVENT, Collections.emptyMap());
+        invoker.onEvent(TEST_EVENT, TEST_HEADERS);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-        wireMockServer.verify(postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
+        RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
                 .withRequestBody(equalToJson(TEST_EVENT, true, true))
                 .withHeader("Content-Type", equalTo("application/json"))
-                .withHeader("Authorization", equalTo("Basic dXNlcm5hbWU6cGFzc3dvcmQ=")));
+                .withHeader("Authorization", equalTo("Basic dXNlcm5hbWU6cGFzc3dvcmQ="));
+
+        for (Map.Entry<String, String> testHeader : TEST_HEADERS.entrySet()) {
+            requestPatternBuilder = requestPatternBuilder.withHeader("x-" + testHeader.getKey(), equalTo(testHeader.getValue()));
+        }
+
+        wireMockServer.verify(requestPatternBuilder);
     }
 
     @Test
@@ -96,13 +112,19 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
         WebhookActionInvoker invoker = new WebhookActionInvoker(testSinkEndpoint,
                 WebClient.create(vertx),
                 abstractOidcClient);
-        invoker.onEvent(TEST_EVENT, Collections.emptyMap());
+        invoker.onEvent(TEST_EVENT, TEST_HEADERS);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-        wireMockServer.verify(postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
+        RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
                 .withRequestBody(equalToJson(TEST_EVENT, true, true))
                 .withHeader("Content-Type", equalTo("application/json"))
-                .withHeader("Authorization", equalTo("Bearer token")));
+                .withHeader("Authorization", equalTo("Bearer token"));
+
+        for (Map.Entry<String, String> testHeader : TEST_HEADERS.entrySet()) {
+            requestPatternBuilder = requestPatternBuilder.withHeader("x-" + testHeader.getKey(), equalTo(testHeader.getValue()));
+        }
+
+        wireMockServer.verify(requestPatternBuilder);
     }
 }
