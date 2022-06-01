@@ -15,8 +15,8 @@ Feature: Slack Source tests
       "source": {
         "type": "slack_source_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "token": "${env.slack.webhook.token}"
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_webhook_url": "${env.slack.webhook.token}"
           }
       },
       "filters": [
@@ -35,8 +35,8 @@ Feature: Slack Source tests
       "action": {
         "type": "slack_sink_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "webhookUrl": "${env.slack.webhook.url}"
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_webhook_url": "${env.slack.webhook.url}"
           }
       },
       "transformationTemplate": "Message {data.text} was observed"

@@ -14,8 +14,8 @@ Feature: Slack Action tests
       "action": {
         "type": "slack_sink_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "webhookUrl": "${env.slack.webhook.url}"
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_webhook_url": "${env.slack.webhook.url}"
           }
       }
     }
