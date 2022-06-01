@@ -87,10 +87,10 @@ class ExecutorServiceTest {
                 { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource", true },
                 { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource", true },
                 { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null, false },
-                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, times(1), "RHOSE", "KafkaTopicSource", true },
+                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null, false },
                 { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },
                 { createSinkProcessorWithResolvedAction(), BROKEN_JSON, never(), null, null, false },
-                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, times(1), "RHOSE", "SendToBridgeSource", true },
+                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, never(), null, null, false, true },
                 { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true }
         };
         return Stream.of(arguments).map(Arguments::of);
