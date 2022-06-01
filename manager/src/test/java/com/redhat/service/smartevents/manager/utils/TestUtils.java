@@ -221,7 +221,6 @@ public class TestUtils {
         Map<String, String> params = new HashMap<>();
         params.put(SlackSource.CHANNEL_PARAM, "channel");
         params.put(SlackSource.TOKEN_PARAM, "token");
-        params.put(SlackSource.CLOUD_EVENT_TYPE, "ce");
         s.setMapParameters(params);
         return s;
     }
