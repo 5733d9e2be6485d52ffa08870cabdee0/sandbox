@@ -342,7 +342,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
                 getProcessorTopicName(processor),
-                // TODO: does this make sense for ERROR_HANDLER processors? Now shard fails without error topic name.
                 resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
     }
 

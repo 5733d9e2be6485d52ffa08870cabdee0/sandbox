@@ -138,7 +138,6 @@ public class BridgesServiceImpl implements BridgesService {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
 
-        // TODO: hidden processor deletion is broken. Must be fixed.
         hiddenProcessors.getItems().forEach(p -> processorService.deleteProcessor(id, p.getId(), customerId));
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());

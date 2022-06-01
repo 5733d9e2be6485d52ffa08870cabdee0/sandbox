@@ -35,6 +35,8 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
     private static final String IDS_PARAM = "ids";
     private static final Set<ProcessorType> USER_VISIBLE_PROCESSOR_TYPES = Set.of(ProcessorType.SOURCE, ProcessorType.SINK);
     private static final Set<ProcessorType> HIDDEN_PROCESSOR_TYPES = Set.of(ProcessorType.ERROR_HANDLER);
+    private static final String BY_TYPE_FILTER_NAME = "byType";
+    private static final String BY_TYPE_FILTER_PARAM = "ptype";
 
     private static class ProcessorResults {
 
@@ -153,17 +155,17 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         ProcessorType filterType = queryInfo.getFilterInfo().getFilterType();
         if (restrictTypes != null) {
             if (Objects.isNull(filterType)) {
-                query.filter("byType", Parameters.with("ptype", restrictTypes));
+                query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, restrictTypes));
             } else {
                 if (restrictTypes.contains(filterType)) {
-                    query.filter("byType", Parameters.with("ptype", Set.of(filterType)));
+                    query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, Set.of(filterType)));
                 } else {
                     return new ProcessorResults(emptyList(), 0);
                 }
             }
         } else {
             if (Objects.nonNull(filterType)) {
-                query.filter("byType", Parameters.with("ptype", Set.of(filterType)));
+                query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, Set.of(filterType)));
             }
         }
 
