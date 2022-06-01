@@ -141,8 +141,10 @@ public class ExecutorService {
 
     static Map<String, String> toHeadersMap(Headers headers) {
         Map<String, String> headersMap = new TreeMap<>();
-        for (Header header : headers) {
-            headersMap.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
+        if (headers != null) {
+            for (Header header : headers) {
+                headersMap.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
+            }
         }
         return headersMap;
     }
