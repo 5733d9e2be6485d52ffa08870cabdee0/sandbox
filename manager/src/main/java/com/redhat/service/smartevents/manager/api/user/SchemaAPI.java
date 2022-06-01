@@ -25,6 +25,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
@@ -51,6 +52,9 @@ public class SchemaAPI {
 
     @Inject
     JsonSchemaService jsonSchemaService;
+
+    @Inject
+    ObjectMapper mapper;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -90,7 +94,8 @@ public class SchemaAPI {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
-        return Response.ok(jsonSchemaService.getSourceJsonSchema(name)).build();
+        // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
+        return Response.ok(jsonSchemaService.getSourceJsonSchema(name).getSchemaNode()).build();
     }
 
     @APIResponses(value = {
@@ -110,6 +115,7 @@ public class SchemaAPI {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
-        return Response.ok(jsonSchemaService.getActionJsonSchema(name)).build();
+        // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
+        return Response.ok(jsonSchemaService.getActionJsonSchema(name).getSchemaNode()).build();
     }
 }

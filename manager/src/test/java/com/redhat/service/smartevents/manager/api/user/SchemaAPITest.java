@@ -1,11 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user;
 
-import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,27 +42,8 @@ public class SchemaAPITest {
     @Test
     public void testAuthentication() {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
-        TestUtils.getSourceProcessorsSchema("Slack").then().statusCode(401);
-        TestUtils.getActionProcessorsSchema("Slack").then().statusCode(401);
-    }
-
-    @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void testSchemasAreIncludedInCatalog() {
-        File actionsDir = new File("src/main/resources/schemas/actions/");
-        File sourcesDir = new File("src/main/resources/schemas/sources/");
-        List<String> actions = Arrays.stream(Objects.requireNonNull(actionsDir.listFiles())).map(File::getName).collect(Collectors.toList());
-        List<String> sources = Arrays.stream(Objects.requireNonNull(sourcesDir.listFiles())).map(File::getName).collect(Collectors.toList());
-        ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
-
-        assertThat(actions).contains("catalog.json");
-        assertThat(sources).contains("catalog.json");
-        assertThat(catalog.getItems().stream().filter(x -> "action".equals(x.getType())).count())
-                .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(actions.size() - 1);
-        assertThat(catalog.getItems().stream().filter(x -> "source".equals(x.getType())).count())
-                .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(sources.size() - 1);
+        TestUtils.getSourceProcessorsSchema("slack_source_0.1").then().statusCode(401);
+        TestUtils.getActionProcessorsSchema("slack_sink_0.1").then().statusCode(401);
     }
 
     @Test
