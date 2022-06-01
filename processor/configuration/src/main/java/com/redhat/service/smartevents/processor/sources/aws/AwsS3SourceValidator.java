@@ -5,13 +5,13 @@ import javax.inject.Inject;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
-import com.redhat.service.smartevents.processor.JsonSchemaService;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
 public class AwsS3SourceValidator extends AbstractGatewayValidator<Source> implements AwsS3Source {
 
     @Inject
-    public AwsS3SourceValidator(JsonSchemaService jsonSchemaService) {
-        super(jsonSchemaService);
+    public AwsS3SourceValidator(ProcessorCatalogService processorCatalogService) {
+        super(processorCatalogService);
     }
 }

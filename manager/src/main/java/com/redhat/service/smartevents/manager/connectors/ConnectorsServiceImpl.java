@@ -22,6 +22,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -40,6 +41,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Inject
     GatewayConnector gatewayConnector;
 
+    @Inject
+    ProcessorCatalogService processorCatalogService;
+
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
@@ -53,6 +57,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     private void createConnectorEntity(Processor processor, Action action) {
+        if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
+            return;
+        }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName));
     }
@@ -60,6 +67,9 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor, Source source) {
+        if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
+            return;
+        }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName));
     }

@@ -1,5 +1,14 @@
 [
-  "aws_s3_source_0.1",
-  "aws_sqs_source_0.1",
-  "slack_source_0.1"
+  {
+    "name": "aws_s3_source_0.1",
+    "isConnector": true
+  },
+  {
+    "name": "aws_sqs_source_0.1",
+    "isConnector": true
+  },
+  {
+    "name": "slack_source_0.1",
+    "isConnector": true
+  }
 ]

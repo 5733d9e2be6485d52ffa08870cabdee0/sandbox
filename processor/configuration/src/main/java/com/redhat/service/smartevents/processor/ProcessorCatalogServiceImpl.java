@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -22,37 +23,55 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationResult;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
 
 @ApplicationScoped
-public class JsonSchemaServiceImpl implements JsonSchemaService {
+public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
 
     private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
     private static final String CATALOG_FILENAME = "catalog";
 
-    private List<String> actions;
-    private List<String> sources;
+    private List<ProcessorCatalogEntry> actions;
+    private List<ProcessorCatalogEntry> sources;
 
     @Inject
     ObjectMapper mapper;
 
     @PostConstruct
     void init() throws IOException {
-        actions = mapper.readValue(readFile(ACTIONS_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
+        actions = mapper.readValue(readFile(ACTIONS_DIR_PATH, CATALOG_FILENAME), new TypeReference<List<ProcessorCatalogEntry>>() {
         });
-        sources = mapper.readValue(readFile(SOURCES_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
+        sources = mapper.readValue(readFile(SOURCES_DIR_PATH, CATALOG_FILENAME), new TypeReference<List<ProcessorCatalogEntry>>() {
         });
+    }
+
+    @Override
+    public boolean isConnector(ProcessorType type, String name) {
+        Optional<ProcessorCatalogEntry> entry = Optional.empty();
+        if (ProcessorType.SOURCE.equals(type)) {
+            entry = sources.stream().filter(x -> x.getName().equals(name)).findFirst();
+        }
+        if (ProcessorType.SINK.equals(type)) {
+            entry = actions.stream().filter(x -> x.getName().equals(name)).findFirst();
+        }
+
+        if (entry.isEmpty()) {
+            throw new ItemNotFoundException(String.format("Processor with name '%s' and type '%s' was not found in the catalog", name, type));
+        }
+
+        return entry.get().isConnector();
     }
 
     @Override
     public List<String> getActionsCatalog() {
-        return actions;
+        return actions.stream().map(ProcessorCatalogEntry::getName).collect(Collectors.toList());
     }
 
     @Override
     public List<String> getSourcesCatalog() {
-        return sources;
+        return sources.stream().map(ProcessorCatalogEntry::getName).collect(Collectors.toList());
     }
 
     @Override

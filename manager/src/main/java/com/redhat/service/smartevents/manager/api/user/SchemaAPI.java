@@ -30,7 +30,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
-import com.redhat.service.smartevents.processor.JsonSchemaService;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 import io.quarkus.security.Authenticated;
 
@@ -51,7 +51,7 @@ public class SchemaAPI {
     private static final String SOURCE_TYPE = "source";
 
     @Inject
-    JsonSchemaService jsonSchemaService;
+    ProcessorCatalogService processorCatalogService;
 
     @Inject
     ObjectMapper mapper;
@@ -69,9 +69,9 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                jsonSchemaService.getActionsCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                processorCatalogService.getActionsCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
                         .collect(Collectors.toList()));
-        entries.addAll(jsonSchemaService.getSourcesCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+        entries.addAll(processorCatalogService.getSourcesCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
@@ -90,12 +90,12 @@ public class SchemaAPI {
     @GET
     @Path("/sources/{name}")
     public Response getSourceProcessorSchema(@PathParam("name") String name) {
-        if (!jsonSchemaService.getSourcesCatalog().contains(name)) {
+        if (!processorCatalogService.getSourcesCatalog().contains(name)) {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
         // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
-        return Response.ok(jsonSchemaService.getSourceJsonSchema(name).getSchemaNode()).build();
+        return Response.ok(processorCatalogService.getSourceJsonSchema(name).getSchemaNode()).build();
     }
 
     @APIResponses(value = {
@@ -111,11 +111,11 @@ public class SchemaAPI {
     @GET
     @Path("/actions/{name}")
     public Response getActionProcessorSchema(@PathParam("name") String name) {
-        if (!jsonSchemaService.getActionsCatalog().contains(name)) {
+        if (!processorCatalogService.getActionsCatalog().contains(name)) {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
         }
 
         // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
-        return Response.ok(jsonSchemaService.getActionJsonSchema(name).getSchemaNode()).build();
+        return Response.ok(processorCatalogService.getActionJsonSchema(name).getSchemaNode()).build();
     }
 }

@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
-import com.redhat.service.smartevents.processor.JsonSchemaService;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
 public class WebhookActionValidator extends AbstractGatewayValidator<Action> implements WebhookAction {
@@ -24,8 +24,8 @@ public class WebhookActionValidator extends AbstractGatewayValidator<Action> imp
     private static final String PROTOCOL_HTTPS = "https";
 
     @Inject
-    public WebhookActionValidator(JsonSchemaService jsonSchemaService) {
-        super(jsonSchemaService);
+    public WebhookActionValidator(ProcessorCatalogService processorCatalogService) {
+        super(processorCatalogService);
     }
 
     @Override

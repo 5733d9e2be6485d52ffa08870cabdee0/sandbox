@@ -8,26 +8,26 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationResult;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-public class JsonSchemaServiceTest {
+public class ProcessorCatalogServiceTest {
 
     private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1");
     private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @Inject
-    JsonSchemaService jsonSchemaService;
+    ProcessorCatalogService processorCatalogService;
 
     @Test
     public void testSchemasAreIncludedInCatalog() {
@@ -39,38 +39,38 @@ public class JsonSchemaServiceTest {
         assertThat(actions).contains("catalog.json");
         assertThat(sources).contains("catalog.json");
 
-        assertThat(jsonSchemaService.getActionsCatalog().size())
+        assertThat(processorCatalogService.getActionsCatalog().size())
                 .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
                 .isEqualTo(actions.size() - 1);
-        assertThat(jsonSchemaService.getSourcesCatalog().size())
+        assertThat(processorCatalogService.getSourcesCatalog().size())
                 .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
                 .isEqualTo(sources.size() - 1);
     }
 
     @Test
-    public void testSchemasAreAvailable(){
-        for (String action : availableActions){
-            assertThat(jsonSchemaService.getActionJsonSchema(action)).isNotNull();
+    public void testSchemasAreAvailable() {
+        for (String action : availableActions) {
+            assertThat(processorCatalogService.getActionJsonSchema(action)).isNotNull();
         }
-        for (String source : availableSources){
-            assertThat(jsonSchemaService.getSourceJsonSchema(source)).isNotNull();
+        for (String source : availableSources) {
+            assertThat(processorCatalogService.getSourceJsonSchema(source)).isNotNull();
         }
     }
 
     @Test
-    public void testValidValidation(){
+    public void testValidValidation() {
         ObjectNode objectNode = new ObjectMapper().createObjectNode()
                 .put(SlackAction.CHANNEL_PARAM, "channel")
                 .put(SlackAction.WEBHOOK_URL_PARAM, "url");
-        ValidationResult result = jsonSchemaService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
+        ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
         assertThat(result.getValidationMessages().size()).isEqualTo(0);
     }
 
     @Test
-    public void testInvalidValidation(){
+    public void testInvalidValidation() {
         ObjectNode objectNode = new ObjectMapper().createObjectNode()
                 .put(SlackAction.CHANNEL_PARAM, "channel");
-        ValidationResult result = jsonSchemaService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
+        ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
         assertThat(result.getValidationMessages().size()).isEqualTo(1);
     }
 }

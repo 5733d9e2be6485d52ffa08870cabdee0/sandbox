@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
-import com.redhat.service.smartevents.processor.JsonSchemaService;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
 public class AwsSqsSourceValidator extends AbstractGatewayValidator<Source> implements AwsSqsSource {
@@ -17,8 +17,8 @@ public class AwsSqsSourceValidator extends AbstractGatewayValidator<Source> impl
     public static final Pattern GENERIC_QUEUE_URL_PATTERN = Pattern.compile("^(https?://[^/]*)/([0-9]{12}/)?([a-zA-Z0-9-_]+)$");
 
     @Inject
-    public AwsSqsSourceValidator(JsonSchemaService jsonSchemaService) {
-        super(jsonSchemaService);
+    public AwsSqsSourceValidator(ProcessorCatalogService processorCatalogService) {
+        super(processorCatalogService);
     }
 
     @Override
