@@ -10,9 +10,6 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 @ApplicationScoped
 public class SendToBridgeActionValidator extends AbstractGatewayValidator<Action> implements SendToBridgeAction {
 
-    public static final String INVALID_BRIDGE_ID_PARAM_MESSAGE =
-            "The supplied " + BRIDGE_ID_PARAM + " parameter is not valid";
-
     @Inject
     public SendToBridgeActionValidator(JsonSchemaService jsonSchemaService) {
         super(jsonSchemaService);

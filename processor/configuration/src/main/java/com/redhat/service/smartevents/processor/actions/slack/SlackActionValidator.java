@@ -9,6 +9,7 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
 public class SlackActionValidator extends AbstractGatewayValidator<Action> implements SlackAction {
+
     @Inject
     public SlackActionValidator(JsonSchemaService jsonSchemaService) {
         super(jsonSchemaService);

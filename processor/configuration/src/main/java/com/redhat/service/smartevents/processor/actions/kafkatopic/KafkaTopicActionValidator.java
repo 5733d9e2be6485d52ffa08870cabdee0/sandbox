@@ -10,8 +10,6 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 @ApplicationScoped
 public class KafkaTopicActionValidator extends AbstractGatewayValidator<Action> implements KafkaTopicAction {
 
-    public static final String INVALID_TOPIC_PARAM_MESSAGE = "The supplied topic parameter is not valid";
-
     @Inject
     public KafkaTopicActionValidator(JsonSchemaService jsonSchemaService) {
         super(jsonSchemaService);

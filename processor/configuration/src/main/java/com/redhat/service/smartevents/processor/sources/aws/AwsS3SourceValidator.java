@@ -9,6 +9,7 @@ import com.redhat.service.smartevents.processor.JsonSchemaService;
 
 @ApplicationScoped
 public class AwsS3SourceValidator extends AbstractGatewayValidator<Source> implements AwsS3Source {
+
     @Inject
     public AwsS3SourceValidator(JsonSchemaService jsonSchemaService) {
         super(jsonSchemaService);
