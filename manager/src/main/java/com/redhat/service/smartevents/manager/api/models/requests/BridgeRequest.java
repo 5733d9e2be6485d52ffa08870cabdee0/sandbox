@@ -15,7 +15,7 @@ public class BridgeRequest {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("errorHandler")
+    @JsonProperty("error_handler")
     @Valid
     private Action errorHandler;
 

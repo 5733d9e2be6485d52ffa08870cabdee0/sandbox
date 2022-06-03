@@ -197,9 +197,6 @@ public class ExecutorService {
         if (message.getKey() != null) {
             return message.getKey().toString();
         }
-        if (message.getTimestamp() != null) {
-            return message.getTimestamp().toString();
-        }
         LOG.error("Can't find original event ID for message {}", message);
         return "unknown";
     }

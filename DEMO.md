@@ -71,14 +71,14 @@ export BRIDGE_REQUEST='{
 }'
 ```
 
-**Note:** optionally, a `errorHandler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform
+**Note:** optionally, a `error_handler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform
 about internal processing errors. At the moment the only available option is a `Webhook` error handler.
 Here is an example request that uses [webhook.site (a website that generates working webhooks on the fly for free)](http:://webhook.site):
 
 ```bash
 export BRIDGE_REQUEST='{
   "name": "myBridge",
-  "errorHandler": {
+  "error_handler": {
     "type": "Webhook",
     "parameters": {
         "endpoint": "https://webhook.site/<webhook_site_generated_uuid>"
@@ -106,7 +106,7 @@ The response should look like something like
 }
 ```
 
-**Note:** if you added the `errorHandler` field as described above, you'll see that as well in the response.
+**Note:** if you added the `error_handler` field as described above, you'll see that as well in the response.
 
 Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 

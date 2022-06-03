@@ -7,7 +7,7 @@ Feature: Error handling tests
     """
     {
         "name": "ehBridge",
-        "errorHandler": {
+        "error_handler": {
             "type": "Webhook",
             "parameters": {
                 "endpoint": "https://webhook.site/${env.webhook.site.uuid}"

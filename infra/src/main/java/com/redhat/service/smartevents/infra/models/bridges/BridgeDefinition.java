@@ -7,7 +7,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 public class BridgeDefinition {
 
-    @JsonProperty("errorHandler")
+    @JsonProperty("error_handler")
     private Action errorHandler;
 
     public BridgeDefinition() {

@@ -10,7 +10,7 @@ public class BridgeResponse extends BaseManagedResourceResponse {
     @JsonProperty("endpoint")
     private String endpoint;
 
-    @JsonProperty("errorHandler")
+    @JsonProperty("error_handler")
     private Action errorHandler;
 
     public BridgeResponse() {

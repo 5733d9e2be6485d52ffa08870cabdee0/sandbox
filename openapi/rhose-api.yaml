@@ -808,7 +808,7 @@ components:
           minLength: 1
           type: string
           nullable: false
-        errorHandler:
+        error_handler:
           $ref: '#/components/schemas/Action'
     BridgeResponse:
       type: object
@@ -833,7 +833,7 @@ components:
           type: string
         endpoint:
           type: string
-        errorHandler:
+        error_handler:
           $ref: '#/components/schemas/Action'
     ErrorListResponse:
       type: object
