@@ -200,6 +200,7 @@ public class ExecutorService {
         if (message.getTimestamp() != null) {
             return message.getTimestamp().toString();
         }
+        LOG.error("Can't find original event ID for message {}", message);
         return "unknown";
     }
 
