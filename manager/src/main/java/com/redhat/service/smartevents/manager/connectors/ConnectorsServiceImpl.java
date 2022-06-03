@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -45,10 +44,17 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor) {
-        if (processor.getType() == ProcessorType.SOURCE) {
-            createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
-        } else if (processor.getType() == ProcessorType.SINK) {
-            createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+        switch (processor.getType()) {
+            case SOURCE:
+                createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
+                break;
+
+            case SINK:
+                createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+                break;
+
+            default:
+                LOGGER.info("No need to create connector entity for processor of type {}", processor.getType());
         }
     }
 
