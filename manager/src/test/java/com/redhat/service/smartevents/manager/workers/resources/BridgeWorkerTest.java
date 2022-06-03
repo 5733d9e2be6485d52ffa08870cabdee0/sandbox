@@ -43,7 +43,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -118,10 +118,28 @@ class BridgeWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
-    void testProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+    void testProvisionWorkWithKnownResourceAndErrorHandlerNotPresent(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
             boolean isWorkComplete) {
+        doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, false);
+    }
+
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("provisionWorkWithKnownResourceParams")
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean isWorkComplete) {
+        doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, true);
+    }
+
+    private void doTestProvisionworkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean isWorkComplete,
+            boolean errorHandlerProcessorPresent) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
@@ -130,42 +148,29 @@ class BridgeWorkerTest {
 
         Work work = workManager.schedule(bridge);
 
-        when(processorServiceMock.getAllProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
+        List<Processor> processors = errorHandlerProcessorPresent
+                ? List.of(createErrorHandlerProcessor(bridge))
+                : Collections.emptyList();
+
+        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(new ListResult<>(processors, 0, processors.size()));
 
         if (throwRhoasError) {
             when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any()))
                     .thenThrow(new InternalPlatformException("error"));
-
-            Bridge refreshed = worker.handleWork(work);
-
-            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(rhoasServiceMock, never()).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-            assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
-        } else {
-            Bridge refreshed = worker.handleWork(work);
-
-            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(processorServiceMock).createErrorHandlerProcessor(eq(bridge.getId()), eq(TestConstants.DEFAULT_CUSTOMER_ID), eq(TestConstants.DEFAULT_USER_NAME), any());
-            assertThat(refreshed.getDependencyStatus()).isNotEqualTo(dependencyStatusWhenComplete);
-            assertThat(workManager.exists(work)).isTrue();
-
-            reset(rhoasServiceMock);
-            reset(processorServiceMock);
-
-            when(processorServiceMock.getAllProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                    .thenReturn(new ListResult<>(List.of(createErrorHandlerProcessor(bridge)), 0, 1));
-
-            Bridge refreshed2 = worker.handleWork(work);
-
-            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(processorServiceMock, never()).createErrorHandlerProcessor(any(), any(), any(), any());
-            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-            assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
         }
+
+        Bridge refreshed = worker.handleWork(work);
+
+        verify(rhoasServiceMock)
+                .createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(rhoasServiceMock, times(throwRhoasError ? 0 : 1))
+                .createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(processorServiceMock, times(throwRhoasError || errorHandlerProcessorPresent ? 0 : 1))
+                .createErrorHandlerProcessor(eq(bridge.getId()), eq(TestConstants.DEFAULT_CUSTOMER_ID), eq(TestConstants.DEFAULT_USER_NAME), any());
+
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
     }
 
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
