@@ -221,6 +221,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
+        response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         return response;
     }
 }

@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
@@ -38,6 +39,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -113,6 +115,24 @@ public class BridgesAPITest {
         assertThat(retrievedBridge.getId()).isEqualTo(bridge.getId());
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getBridgeWithErrorHandler() {
+        Action errorHandler = createWebhookAction();
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge).isNotNull();
+        assertThat(retrievedBridge.getId()).isEqualTo(bridge.getId());
+        assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
+        assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
+        assertThat(retrievedBridge.getErrorHandler()).isNotNull();
+        assertThat(retrievedBridge.getErrorHandler()).isEqualTo(errorHandler);
     }
 
     @Test

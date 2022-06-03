@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.workers.resources;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -18,7 +17,6 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Inte
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
@@ -31,7 +29,6 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
-import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
@@ -39,6 +36,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -256,13 +254,6 @@ class BridgeWorkerTest {
                 Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, false),
                 Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false, true),
                 Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, false));
-    }
-
-    private static Action createWebhookAction() {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
-        return action;
     }
 
     private static Processor createErrorHandlerProcessor(Bridge bridge) {

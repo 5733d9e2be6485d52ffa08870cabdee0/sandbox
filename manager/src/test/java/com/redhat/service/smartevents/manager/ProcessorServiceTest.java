@@ -41,9 +41,9 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -229,7 +229,7 @@ class ProcessorServiceTest {
 
     @Test
     void testCreateErrorHandlerProcessor() {
-        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
+        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
         Processor processor = processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);
         doAssertProcessorCreation(processor, processorRequest, ERROR_HANDLER);
     }
@@ -423,7 +423,7 @@ class ProcessorServiceTest {
     private static Stream<Arguments> updateProcessorParams() {
         Object[] arguments = {
                 new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaTopicAction()),
-                new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
+                new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
                 new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -574,7 +574,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateErrorHandlerProcessorFails() {
-        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
+        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(
                 () -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, ERROR_HANDLER_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
     }
@@ -645,7 +645,7 @@ class ProcessorServiceTest {
     }
 
     private static Processor createErrorHandlerProcessor() {
-        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction()));
+        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction()));
         processor.setId(ERROR_HANDLER_PROCESSOR_ID);
         processor.setType(ERROR_HANDLER);
         return processor;
@@ -655,13 +655,6 @@ class ProcessorServiceTest {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
         action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
-        return action;
-    }
-
-    private static Action createWebhookAction() {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
         return action;
     }
 

@@ -26,6 +26,11 @@ public class BridgeRequest {
         this.name = name;
     }
 
+    public BridgeRequest(String name, Action errorHandler) {
+        this.name = name;
+        this.errorHandler = errorHandler;
+    }
+
     public Bridge toEntity() {
         return new Bridge(name);
     }
