@@ -126,9 +126,21 @@ public class APIConstants {
      */
     public static final String RHOSE_PROCESSOR_ID_HEADER = "rhose-processor-id";
     /**
+     * Header key for the original source of an Event processed by RHOSE.
+     */
+    public static final String RHOSE_ORIGINAL_EVENT_SOURCE_HEADER = "rhose-original-event-source";
+    /**
      * Header key for the original ID of an Event processed by RHOSE.
      */
     public static final String RHOSE_ORIGINAL_EVENT_ID_HEADER = "rhose-original-event-id";
+    /**
+     * Header key for the original type of an Event processed by RHOSE.
+     */
+    public static final String RHOSE_ORIGINAL_EVENT_TYPE_HEADER = "rhose-original-event-type";
+    /**
+     * Header key for the original subject of an Event processed by RHOSE.
+     */
+    public static final String RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER = "rhose-original-event-subject";
     /**
      * Header key for RHOSE's BridgeError code.
      */

@@ -3,10 +3,13 @@ package com.redhat.service.smartevents.executor;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -26,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
@@ -40,6 +44,9 @@ import static com.redhat.service.smartevents.executor.CloudEventExtension.adjust
 import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_BRIDGE_ID_HEADER;
 import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ERROR_CODE_HEADER;
 import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_SOURCE_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_TYPE_HEADER;
 import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_PROCESSOR_ID_HEADER;
 
 @ApplicationScoped
@@ -53,6 +60,15 @@ public class ExecutorService {
     public static final String CLOUD_EVENT_SOURCE = "RHOSE";
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorService.class);
+
+    private static final List<String> TRACE_HEADERS = List.of(
+            RHOSE_BRIDGE_ID_HEADER,
+            RHOSE_PROCESSOR_ID_HEADER,
+            RHOSE_ORIGINAL_EVENT_SOURCE_HEADER,
+            RHOSE_ORIGINAL_EVENT_ID_HEADER,
+            RHOSE_ORIGINAL_EVENT_TYPE_HEADER,
+            RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER,
+            RHOSE_ERROR_CODE_HEADER);
 
     @Inject
     Executor executor;
@@ -69,26 +85,27 @@ public class ExecutorService {
         try {
             Pair<CloudEvent, Map<String, String>> pair = convertToCloudEventAndHeadersMap(message);
             cloudEvent = pair.getLeft();
-            executor.onEvent(pair.getLeft(), pair.getRight());
+
+            // add trace headers map for SOURCE and SINK processors
+            Map<String, String> fullHeadersMap = executor.getProcessor().getType() == ProcessorType.ERROR_HANDLER
+                    ? pair.getRight()
+                    : Stream.concat(pair.getRight().entrySet().stream(), getTraceHeadersMap(cloudEvent, message).entrySet().stream())
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, TreeMap::new));
+
+            executor.onEvent(pair.getLeft(), fullHeadersMap);
         } catch (Exception e) {
             LOG.error("Processor with id '{}' on bridge '{}' failed to handle Event.",
                     executor.getProcessor().getId(), executor.getProcessor().getBridgeId(), e);
 
             // create trace headers value map
-            Map<String, String> traceHeaders = new TreeMap<>();
-            traceHeaders.put(RHOSE_BRIDGE_ID_HEADER, executor.getProcessor().getBridgeId());
-            traceHeaders.put(RHOSE_PROCESSOR_ID_HEADER, executor.getProcessor().getId());
-            traceHeaders.put(RHOSE_ORIGINAL_EVENT_ID_HEADER, getOriginalEventId(cloudEvent, message));
-            bridgeErrorService.getError(e).ifPresent(error -> traceHeaders.put(RHOSE_ERROR_CODE_HEADER, error.getCode()));
+            Map<String, String> traceHeadersMap = getTraceHeadersMap(cloudEvent, message);
+            bridgeErrorService.getError(e).ifPresent(error -> traceHeadersMap.put(RHOSE_ERROR_CODE_HEADER, error.getCode()));
 
             // Add our Kafka Headers, first removing any pre-existing ones to avoid duplication.
             // This can be replaced with w3c trace-context parameters when we add distributed tracing.
             Headers headers = message.getHeaders() == null ? new RecordHeaders() : message.getHeaders();
-            headers.remove(RHOSE_BRIDGE_ID_HEADER);
-            headers.remove(RHOSE_PROCESSOR_ID_HEADER);
-            headers.remove(RHOSE_ORIGINAL_EVENT_ID_HEADER);
-            headers.remove(RHOSE_ERROR_CODE_HEADER);
-            traceHeaders.forEach((key, value) -> headers.add(new RecordHeader(key, value.getBytes(StandardCharsets.UTF_8))));
+            TRACE_HEADERS.forEach(headers::remove);
+            traceHeadersMap.forEach((key, value) -> headers.add(new RecordHeader(key, value.getBytes(StandardCharsets.UTF_8))));
 
             return message.nack(e,
                     Metadata.of(OutgoingKafkaRecordMetadata.builder().withHeaders(new RecordHeaders(headers)).build()));
@@ -151,6 +168,26 @@ public class ExecutorService {
         extensions.forEach(cloudEventBuilder::withExtension);
 
         return cloudEventBuilder.build();
+    }
+
+    private Map<String, String> getTraceHeadersMap(CloudEvent cloudEvent, KafkaRecord<Integer, String> message) {
+        String originalSourceHeader = cloudEvent != null ? cloudEvent.getSource().toString() : CLOUD_EVENT_SOURCE;
+        String originalIdHeader = getOriginalEventId(cloudEvent, message);
+
+        Map<String, String> traceHeaders = new TreeMap<>();
+        traceHeaders.put(RHOSE_BRIDGE_ID_HEADER, executor.getProcessor().getBridgeId());
+        traceHeaders.put(RHOSE_PROCESSOR_ID_HEADER, executor.getProcessor().getId());
+        traceHeaders.put(RHOSE_ORIGINAL_EVENT_SOURCE_HEADER, originalSourceHeader);
+        traceHeaders.put(RHOSE_ORIGINAL_EVENT_ID_HEADER, originalIdHeader);
+        if (cloudEvent != null) {
+            if (cloudEvent.getType() != null) {
+                traceHeaders.put(RHOSE_ORIGINAL_EVENT_TYPE_HEADER, cloudEvent.getType());
+            }
+            if (cloudEvent.getSubject() != null) {
+                traceHeaders.put(RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER, originalIdHeader);
+            }
+        }
+        return traceHeaders;
     }
 
     static String getOriginalEventId(CloudEvent cloudEvent, KafkaRecord<Integer, String> message) {
