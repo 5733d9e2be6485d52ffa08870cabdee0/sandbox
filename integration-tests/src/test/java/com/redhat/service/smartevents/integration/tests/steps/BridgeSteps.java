@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.integration.tests.steps;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.BiFunction;
