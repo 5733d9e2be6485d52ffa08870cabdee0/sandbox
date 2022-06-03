@@ -284,12 +284,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         return processorDAO.findHiddenByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
     }
 
-    @Transactional
-    @Override
-    public ListResult<Processor> getAllProcessors(String bridgeId, String customerId) {
-        return processorDAO.findByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
-    }
-
     @Override
     @Transactional
     public void deleteProcessor(String bridgeId, String processorId, String customerId) {

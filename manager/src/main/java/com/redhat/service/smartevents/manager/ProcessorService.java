@@ -29,8 +29,6 @@ public interface ProcessorService {
 
     ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId);
 
-    ListResult<Processor> getAllProcessors(String bridgeId, String customerId);
-
     void deleteProcessor(String bridgeId, String processorId, String customerId);
 
     ProcessorDTO toDTO(Processor processor);
