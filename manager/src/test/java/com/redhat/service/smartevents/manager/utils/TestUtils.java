@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -214,6 +215,13 @@ public class TestUtils {
         return r;
     }
 
+    public static Action createWebhookAction() {
+        Action action = new Action();
+        action.setType(WebhookAction.TYPE);
+        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
+        return action;
+    }
+
     public static Source createSlackSource() {
         Source s = new Source();
         s.setType(SlackSource.TYPE);
@@ -247,5 +255,4 @@ public class TestUtils {
         });
         return processors.get(0);
     }
-
 }

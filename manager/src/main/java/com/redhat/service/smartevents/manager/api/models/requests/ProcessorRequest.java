@@ -11,10 +11,10 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidGateway;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
 
-@ValidGateway
+@ValidProcessorGateway
 public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")

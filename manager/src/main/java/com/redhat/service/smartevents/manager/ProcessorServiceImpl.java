@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -83,14 +84,30 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
-        /* We cannot deploy Processors to a Bridge that is not Available */
+        // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
+        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
+    }
+
+    @Override
+    @Transactional
+    public Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+
+        ProcessorType processorType = processorRequest.getType();
+        if (processorType != ProcessorType.SINK) {
+            throw new InternalPlatformException("Unable to configure error handler");
+        }
+
+        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest);
+    }
+
+    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest) {
+        String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
         }
-
-        ProcessorType processorType = processorRequest.getType();
 
         Processor newProcessor = new Processor();
         newProcessor.setType(processorType);
@@ -102,7 +119,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
         Action resolvedAction = processorType == ProcessorType.SOURCE
@@ -127,6 +143,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
@@ -148,6 +165,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Extract existing definition
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
+        if (existingProcessor.getType() == ProcessorType.ERROR_HANDLER) {
+            throw new BadRequestException("It is not possible to update this Processor.");
+        }
+
         if (!isProcessorActionable(existingProcessor)) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
                     processorId,
@@ -252,9 +273,15 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
+    public ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
-        return processorDAO.findByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
+        return processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
+    }
+
+    @Transactional
+    @Override
+    public ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId) {
+        return processorDAO.findHiddenByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
     }
 
     @Override
@@ -289,16 +316,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        String topicName = processor.getType() == ProcessorType.SOURCE
-                ? resourceNamesProvider.getProcessorTopicName(processor.getId())
-                : resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
-
-        KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
-                internalKafkaConfigurationProvider.getBootstrapServers(),
-                internalKafkaConfigurationProvider.getClientId(),
-                internalKafkaConfigurationProvider.getClientSecret(),
-                internalKafkaConfigurationProvider.getSecurityProtocol(),
-                topicName);
         ProcessorDTO dto = new ProcessorDTO();
         dto.setType(processor.getType());
         dto.setId(processor.getId());
@@ -308,8 +325,29 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setOwner(processor.getOwner());
         dto.setStatus(processor.getStatus());
-        dto.setKafkaConnection(kafkaConnectionDTO);
+        dto.setKafkaConnection(getKafkaConnectorDTO(processor));
         return dto;
+    }
+
+    private KafkaConnectionDTO getKafkaConnectorDTO(Processor processor) {
+        return new KafkaConnectionDTO(
+                internalKafkaConfigurationProvider.getBootstrapServers(),
+                internalKafkaConfigurationProvider.getClientId(),
+                internalKafkaConfigurationProvider.getClientSecret(),
+                internalKafkaConfigurationProvider.getSecurityProtocol(),
+                getProcessorTopicName(processor),
+                resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
+    }
+
+    private String getProcessorTopicName(Processor processor) {
+        switch (processor.getType()) {
+            case ERROR_HANDLER:
+                return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+            case SOURCE:
+                return resourceNamesProvider.getProcessorTopicName(processor.getId());
+            default:
+                return resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
+        }
     }
 
     @Override

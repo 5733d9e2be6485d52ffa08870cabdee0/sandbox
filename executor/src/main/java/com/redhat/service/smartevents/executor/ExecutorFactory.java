@@ -52,6 +52,10 @@ public class ExecutorFactory {
     @Produces
     @ApplicationScoped
     public Executor buildExecutor() {
-        return new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
+        return new ExecutorImpl(processorDTO,
+                filterEvaluatorFactory,
+                transformationEvaluatorFactory,
+                actionRuntime,
+                meterRegistry);
     }
 }

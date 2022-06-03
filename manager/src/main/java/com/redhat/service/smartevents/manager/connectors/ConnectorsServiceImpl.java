@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -45,30 +44,47 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
     public void createConnectorEntity(Processor processor) {
-        if (processor.getType() == ProcessorType.SOURCE) {
-            createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
-        } else {
-            createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+        switch (processor.getType()) {
+            case SOURCE:
+                createConnectorEntity(processor, processor.getDefinition().getRequestedSource());
+                break;
+
+            case SINK:
+                createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+                break;
+
+            default:
+                LOGGER.info("No need to create connector entity for processor of type {}", processor.getType());
         }
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private void createConnectorEntity(Processor processor, Action action) {
+    protected void createConnectorEntity(Processor processor, Action action) {
         Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
         if (optActionConnector.isEmpty()) {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
+        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
         GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor, topicName, actionConnector.getConnectorType(), actionConnector.getConnectorTypeId(), actionConnector.connectorPayload(action, topicName));
+        persistConnectorEntity(processor,
+                topicName,
+                actionConnector.getConnectorType(),
+                actionConnector.getConnectorTypeId(),
+                actionConnector.connectorPayload(action, topicName, errorHandlerTopicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, Source source) {
+    protected void createConnectorEntity(Processor processor, Source source) {
         GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
-        persistConnectorEntity(processor, topicName, sourceConnector.getConnectorType(), sourceConnector.getConnectorTypeId(), sourceConnector.connectorPayload(source, topicName));
+        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+        persistConnectorEntity(processor,
+                topicName,
+                sourceConnector.getConnectorType(),
+                sourceConnector.getConnectorTypeId(),
+                sourceConnector.connectorPayload(source, topicName, errorHandlerTopicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {

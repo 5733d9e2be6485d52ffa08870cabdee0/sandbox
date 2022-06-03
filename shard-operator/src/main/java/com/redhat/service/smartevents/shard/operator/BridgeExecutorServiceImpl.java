@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
@@ -36,6 +37,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorServiceImpl.class);
+
+    public static final String KAFKA_ERROR_STRATEGY_IGNORE = "ignore";
+    public static final String KAFKA_ERROR_STRATEGY_DLQ = "dead-letter-queue";
 
     @ConfigProperty(name = "event-bridge.executor.image")
     String executorImage;
@@ -155,12 +159,18 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void createOrUpdateBridgeExecutorSecret(BridgeExecutor bridgeExecutor, ProcessorDTO processorDTO) {
+        String kafkaErrorStrategy = processorDTO.getType() == ProcessorType.ERROR_HANDLER
+                ? KAFKA_ERROR_STRATEGY_IGNORE
+                : KAFKA_ERROR_STRATEGY_DLQ;
+
         Secret expected = templateProvider.loadBridgeExecutorSecretTemplate(bridgeExecutor);
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getBootstrapServers().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getClientId().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getClientSecret().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getTopic().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_STRATEGY_ENV_VAR, Base64.getEncoder().encodeToString(kafkaErrorStrategy.getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getErrorTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, Base64.getEncoder().encodeToString(bridgeExecutor.getSpec().getId().getBytes()));
 
         Secret existing = kubernetesClient
