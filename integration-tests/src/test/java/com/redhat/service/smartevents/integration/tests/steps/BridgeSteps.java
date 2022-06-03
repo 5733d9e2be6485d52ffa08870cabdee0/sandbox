@@ -68,7 +68,7 @@ public class BridgeSteps {
             try (InputStream resourceStream = new ByteArrayInputStream(updatedBridgeRequestJson.getBytes(StandardCharsets.UTF_8))) {
                 return BridgeResource.addBridge(context.getManagerToken(), resourceStream);
             } catch (IOException e) {
-                throw new RuntimeException("Error with inputstream", e);
+                throw new UncheckedIOException("Error with inputstream", e);
             }
         });
     }
