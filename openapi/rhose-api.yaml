@@ -833,6 +833,8 @@ components:
           type: string
         endpoint:
           type: string
+        errorHandler:
+          $ref: '#/components/schemas/Action'
     ErrorListResponse:
       type: object
       properties:
