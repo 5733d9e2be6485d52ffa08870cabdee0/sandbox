@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
@@ -75,14 +74,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // We don't need to wait for the Bridge to be READY to create the Error Handler.
-        // If this **IS** a problem we can move this to the "BridgeServiceImpl#updateBridge(...)" method and
-        // create the Processor when the Bridge status changes to READY. Having creation here is consistent
-        // with our Worker mechanism.
-        boolean canContinue = createErrorHandlerProcessor(bridge);
-        if (canContinue) {
-            bridge.setDependencyStatus(ManagedResourceStatus.READY);
-        }
+        createErrorHandlerProcessor(bridge);
 
+        bridge.setDependencyStatus(ManagedResourceStatus.READY);
         return persist(bridge);
     }
 
@@ -93,25 +87,27 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
      * @return true if the work can proceed (either the error handler processor
      *         is not required or it's created and ready), false otherwise.
      */
-    private boolean createErrorHandlerProcessor(Bridge bridge) {
+    private void createErrorHandlerProcessor(Bridge bridge) {
         // If an ErrorHandler is not needed, consider it ready
         Action errorHandlerAction = bridge.getDefinition().getErrorHandler();
         boolean errorHandlerProcessorIsNotRequired = Objects.isNull(errorHandlerAction);
         if (errorHandlerProcessorIsNotRequired) {
-            return true;
+            return;
         }
 
         String bridgeId = bridge.getId();
         String customerId = bridge.getCustomerId();
-        ListResult<Processor> processors = processorService.getAllProcessors(bridgeId, customerId);
+        ListResult<Processor> processors = processorService.getHiddenProcessors(bridgeId, customerId);
+
         // This assumes we can only have one ErrorHandler Processor per Bridge
-        if (processors.getItems().stream().noneMatch(p -> p.getType() == ProcessorType.ERROR_HANDLER)) {
-            String errorHandlerName = String.format("Back-channel for Bridge '%s'", bridge.getId());
-            ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
-            processorService.createErrorHandlerProcessor(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), errorHandlerProcessor);
-            return false;
+        if (processors.getTotal() > 0) {
+            return;
         }
-        return true;
+
+        // create error handler processor if not present
+        String errorHandlerName = String.format("Back-channel for Bridge '%s'", bridge.getId());
+        ProcessorRequest errorHandlerProcessor = new ProcessorRequest(errorHandlerName, errorHandlerAction);
+        processorService.createErrorHandlerProcessor(bridge.getId(), bridge.getCustomerId(), bridge.getOwner(), errorHandlerProcessor);
     }
 
     @Override
