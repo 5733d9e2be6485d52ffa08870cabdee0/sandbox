@@ -58,8 +58,7 @@ public class WebhookActionInvoker implements ActionInvoker {
             request.basicAuthentication(basicAuthUsername, basicAuthPassword);
         }
 
-        // Add trace HTTP Headers.
-        // This can be replaced with w3c trace-context parameters when we add distributed tracing.
+        // add headers as HTTP headers
         for (Map.Entry<String, String> e : headers.entrySet()) {
             request.headers().add("x-" + e.getKey(), e.getValue());
         }

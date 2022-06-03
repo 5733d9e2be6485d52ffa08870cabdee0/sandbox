@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -36,6 +35,10 @@ import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
 import static com.redhat.service.smartevents.executor.CloudEventExtension.adjustExtensionName;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_BRIDGE_ID_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ERROR_CODE_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER;
+import static com.redhat.service.smartevents.infra.api.APIConstants.RHOSE_PROCESSOR_ID_HEADER;
 
 @ApplicationScoped
 public class ExecutorService {
@@ -81,17 +84,17 @@ public class ExecutorService {
 
             // create trace headers value map
             Map<String, String> traceHeaders = new TreeMap<>();
-            traceHeaders.put(APIConstants.RHOSE_BRIDGE_ID_HEADER, executor.getProcessor().getBridgeId());
-            traceHeaders.put(APIConstants.RHOSE_PROCESSOR_ID_HEADER, executor.getProcessor().getId());
-            traceHeaders.put(APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER, cloudEvent != null ? cloudEvent.getId() : message.getKey().toString());
-            bridgeErrorService.getError(e).ifPresent(error -> traceHeaders.put(APIConstants.RHOSE_ERROR_CODE_HEADER, error.getCode()));
+            traceHeaders.put(RHOSE_BRIDGE_ID_HEADER, executor.getProcessor().getBridgeId());
+            traceHeaders.put(RHOSE_PROCESSOR_ID_HEADER, executor.getProcessor().getId());
+            traceHeaders.put(RHOSE_ORIGINAL_EVENT_ID_HEADER, cloudEvent != null ? cloudEvent.getId() : message.getKey().toString());
+            bridgeErrorService.getError(e).ifPresent(error -> traceHeaders.put(RHOSE_ERROR_CODE_HEADER, error.getCode()));
 
             // Add our Kafka Headers, first removing any pre-existing ones to avoid duplication.
             // This can be replaced with w3c trace-context parameters when we add distributed tracing.
-            headers.remove(APIConstants.RHOSE_BRIDGE_ID_HEADER);
-            headers.remove(APIConstants.RHOSE_PROCESSOR_ID_HEADER);
-            headers.remove(APIConstants.RHOSE_ORIGINAL_EVENT_ID_HEADER);
-            headers.remove(APIConstants.RHOSE_ERROR_CODE_HEADER);
+            headers.remove(RHOSE_BRIDGE_ID_HEADER);
+            headers.remove(RHOSE_PROCESSOR_ID_HEADER);
+            headers.remove(RHOSE_ORIGINAL_EVENT_ID_HEADER);
+            headers.remove(RHOSE_ERROR_CODE_HEADER);
             traceHeaders.forEach((key, value) -> headers.add(new RecordHeader(key, value.getBytes(StandardCharsets.UTF_8))));
 
             return message.nack(e,

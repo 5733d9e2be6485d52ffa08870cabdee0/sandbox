@@ -35,11 +35,10 @@ public class KafkaTopicActionInvoker implements ActionInvoker {
     }
 
     @Override
-    public void onEvent(String event, Map<String, String> traceHeaders) {
+    public void onEvent(String event, Map<String, String> headers) {
 
-        // Add trace Kafka Headers.
-        // This can be replaced with w3c trace-context parameters when we add distributed tracing.
-        List<Header> headers = traceHeaders
+        // add headers as Kafka headers
+        List<Header> kafkaHeaders = headers
                 .entrySet()
                 .stream()
                 .map(th -> new RecordHeader(th.getKey(), th.getValue().getBytes(StandardCharsets.UTF_8)))
@@ -51,7 +50,7 @@ public class KafkaTopicActionInvoker implements ActionInvoker {
          */
         OutgoingKafkaRecordMetadata<?> metadata = OutgoingKafkaRecordMetadata.builder()
                 .withTopic(topic)
-                .withHeaders(new RecordHeaders(headers))
+                .withHeaders(new RecordHeaders(kafkaHeaders))
                 .build();
         emitter.send(Message.of(event).addMetadata(metadata));
         LOG.info("Emitted CloudEvent to target topic '{}' for Action on Processor '{}' on Bridge '{}'", topic, processor.getId(), processor.getBridgeId());
