@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
+import java.util.Collections;
+import java.util.Objects;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
@@ -7,9 +10,12 @@ import javax.validation.ConstraintValidatorContext;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
 public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
+
+    static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type \"" + WebhookAction.TYPE + "\" are supported";
 
     protected ErrorHandlerConstraintValidator() {
         //CDI proxy
@@ -29,7 +35,16 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
             return true;
         }
 
-        return isValidGateway(action, context, gatewayConfigurator::getActionValidator);
+        if (!isValidGateway(action, context, gatewayConfigurator::getActionValidator)) {
+            return false;
+        }
+
+        if (!Objects.equals(action.getType(), WebhookAction.TYPE)) {
+            addConstraintViolation(context, UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR, Collections.emptyMap());
+            return false;
+        }
+
+        return true;
     }
 
 }

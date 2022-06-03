@@ -184,7 +184,7 @@ public class ExecutorService {
                 traceHeaders.put(RHOSE_ORIGINAL_EVENT_TYPE_HEADER, cloudEvent.getType());
             }
             if (cloudEvent.getSubject() != null) {
-                traceHeaders.put(RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER, originalIdHeader);
+                traceHeaders.put(RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER, cloudEvent.getSubject());
             }
         }
         return traceHeaders;
