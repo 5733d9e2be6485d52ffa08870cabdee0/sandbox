@@ -17,17 +17,17 @@ import com.redhat.service.smartevents.processor.sources.SourceResolver;
 public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Inject
-    Instance<AbstractGatewayValidator<Action>> actionValidators;
+    Instance<GatewayValidator<Action>> actionValidators;
     @Inject
     Instance<GatewayResolver<Action>> actionResolvers;
     @Inject
-    Instance<AbstractGatewayValidator<Source>> sourceValidators;
+    Instance<GatewayValidator<Source>> sourceValidators;
 
     @Inject
     SourceResolver sourceResolver;
 
     @Override
-    public AbstractGatewayValidator<Action> getActionValidator(String actionType) {
+    public GatewayValidator<Action> getActionValidator(String actionType) {
         return getOptionalBean(actionValidators, actionType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for action type '%s'", actionType)));
     }
@@ -38,7 +38,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public AbstractGatewayValidator<Source> getSourceValidator(String sourceType) {
+    public GatewayValidator<Source> getSourceValidator(String sourceType) {
         return getOptionalBean(sourceValidators, sourceType)
                 .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for source type '%s'", sourceType)));
     }
@@ -54,7 +54,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
                 .findFirst();
     }
 
-    Collection<AbstractGatewayValidator<Action>> getActionValidators() {
+    Collection<GatewayValidator<Action>> getActionValidators() {
         return actionValidators.stream().collect(Collectors.toList());
     }
 
@@ -62,7 +62,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 
-    Collection<AbstractGatewayValidator<Source>> getSourceValidators() {
+    Collection<GatewayValidator<Source>> getSourceValidators() {
         return sourceValidators.stream().collect(Collectors.toList());
     }
 }

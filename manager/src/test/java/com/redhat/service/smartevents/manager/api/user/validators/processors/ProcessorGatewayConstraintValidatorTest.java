@@ -26,8 +26,8 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_CLASS_PARAM;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
@@ -60,9 +60,9 @@ class ProcessorGatewayConstraintValidatorTest {
     @Mock
     GatewayConfigurator gatewayConfiguratorMock;
     @Mock
-    AbstractGatewayValidator<Action> actionValidatorMock;
+    GatewayValidator<Action> actionValidatorMock;
     @Mock
-    AbstractGatewayValidator<Source> sourceValidatorMock;
+    GatewayValidator<Source> sourceValidatorMock;
     @Mock
     HibernateConstraintValidatorContext validatorContextMock;
     @Mock
@@ -70,9 +70,9 @@ class ProcessorGatewayConstraintValidatorTest {
 
     @BeforeEach
     public void beforeEach() {
-        lenient().when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
+        lenient().when(actionValidatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
 
-        lenient().when(sourceValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
+        lenient().when(sourceValidatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
 
         lenient().when(gatewayConfiguratorMock.getActionValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
         lenient().when(gatewayConfiguratorMock.getActionValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));

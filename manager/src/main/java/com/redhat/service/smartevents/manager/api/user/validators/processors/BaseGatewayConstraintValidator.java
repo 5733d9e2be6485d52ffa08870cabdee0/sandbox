@@ -14,8 +14,8 @@ import org.hibernate.validator.internal.engine.messageinterpolation.util.Interpo
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 
 abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implements ConstraintValidator<A, T> {
 
@@ -37,7 +37,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
         this.gatewayConfigurator = gatewayConfigurator;
     }
 
-    protected <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, AbstractGatewayValidator<T>> validatorGetter) {
+    protected <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
                     Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
@@ -50,7 +50,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
             return false;
         }
 
-        AbstractGatewayValidator<T> validator;
+        GatewayValidator<T> validator;
         try {
             validator = validatorGetter.apply(gateway.getType());
         } catch (GatewayProviderException e) {

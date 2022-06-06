@@ -82,7 +82,7 @@ class GatewayConfiguratorImplTest {
 
     @Test
     void testUnexpectedActionBeans() {
-        for (AbstractGatewayValidator<Action> validator : configurator.getActionValidators()) {
+        for (GatewayValidator<Action> validator : configurator.getActionValidators()) {
             assertThat(EXPECTED_ACTION_BEANS)
                     .as("Found unexpected validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
                     .containsKey(validator.getType());
@@ -118,7 +118,7 @@ class GatewayConfiguratorImplTest {
 
     @Test
     void testUnexpectedSourceBeans() {
-        for (AbstractGatewayValidator<Source> validator : configurator.getSourceValidators()) {
+        for (GatewayValidator<Source> validator : configurator.getSourceValidators()) {
             assertThat(EXPECTED_SOURCE_BEANS)
                     .as("Found unexpected source validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
                     .containsKey(validator.getType());
@@ -126,12 +126,12 @@ class GatewayConfiguratorImplTest {
     }
 
     private static class ExpectedBeanClasses<T extends Gateway> {
-        Class<? extends AbstractGatewayValidator<T>> validatorClass;
+        Class<? extends GatewayValidator<T>> validatorClass;
         Class<? extends GatewayResolver<T>> resolverClass;
     }
 
     private static <T extends Gateway> ExpectedBeanClasses<T> expect(
-            Class<? extends AbstractGatewayValidator<T>> validatorClass,
+            Class<? extends GatewayValidator<T>> validatorClass,
             Class<? extends GatewayResolver<T>> resolverClass) {
         ExpectedBeanClasses<T> expected = new ExpectedBeanClasses<>();
         expected.validatorClass = validatorClass;

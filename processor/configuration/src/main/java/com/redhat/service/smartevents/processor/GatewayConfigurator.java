@@ -15,7 +15,7 @@ public interface GatewayConfigurator {
      * @return the validator bean
      * @throws GatewayProviderException if bean is not found
      */
-    AbstractGatewayValidator<Action> getActionValidator(String actionType);
+    GatewayValidator<Action> getActionValidator(String actionType);
 
     /**
      * Get resolver bean for specific action type.
@@ -34,7 +34,7 @@ public interface GatewayConfigurator {
      * @return the validator bean
      * @throws GatewayProviderException if bean is not found
      */
-    AbstractGatewayValidator<Source> getSourceValidator(String sourceType);
+    GatewayValidator<Source> getSourceValidator(String sourceType);
 
     /**
      * Get resolver bean for specific source type. Required for every source.

@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.AbstractGatewayValidator;
+import com.redhat.service.smartevents.processor.GatewayValidator;
 import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -31,7 +31,7 @@ class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
     AwsSqsSourceValidator validator;
 
     @Override
-    protected AbstractGatewayValidator<Source> getValidator() {
+    protected GatewayValidator<Source> getValidator() {
         return validator;
     }
 

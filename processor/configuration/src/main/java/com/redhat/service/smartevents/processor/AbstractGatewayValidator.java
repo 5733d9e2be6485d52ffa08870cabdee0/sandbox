@@ -6,7 +6,7 @@ import com.networknt.schema.ValidationMessage;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
-public abstract class AbstractGatewayValidator<T extends Gateway> implements GatewayBean {
+public abstract class AbstractGatewayValidator<T extends Gateway> implements GatewayValidator<T> {
 
     private ProcessorCatalogService processorCatalogService;
 
@@ -21,6 +21,7 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
         return ValidationResult.valid();
     }
 
+    @Override
     public final ValidationResult isValid(T gateway) {
         if (gateway.getParameters() == null) {
             return ValidationResult.invalid();
