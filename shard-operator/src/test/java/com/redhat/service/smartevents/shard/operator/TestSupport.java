@@ -36,12 +36,15 @@ public class TestSupport {
     public static final String KAFKA_CLIENT_SECRET = "testsecret";
     public static final String KAFKA_SECURITY_PROTOCOL = "PLAINTEXT";
     public static final String KAFKA_TOPIC = "ob-my-id";
+    public static final String KAFKA_ERROR_TOPIC = "ob-my-id-errors";
+
     public static final KafkaConnectionDTO KAFKA_CONNECTION_DTO = new KafkaConnectionDTO(
             KAFKA_BOOTSTRAP_SERVERS,
             KAFKA_CLIENT_ID,
             KAFKA_CLIENT_SECRET,
             KAFKA_SECURITY_PROTOCOL,
-            KAFKA_TOPIC);
+            KAFKA_TOPIC,
+            KAFKA_ERROR_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
         return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, PREPARING, KAFKA_CONNECTION_DTO);

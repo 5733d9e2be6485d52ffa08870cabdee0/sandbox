@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
@@ -291,6 +292,7 @@ public class BridgeDAOTest {
         bridge.setStatus(ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now());
         bridge.setShardId(TestConstants.SHARD_ID);
+        bridge.setDefinition(new BridgeDefinition());
 
         return bridge;
     }

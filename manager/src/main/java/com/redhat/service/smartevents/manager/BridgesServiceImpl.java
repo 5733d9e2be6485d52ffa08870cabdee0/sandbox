@@ -18,15 +18,18 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLi
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
@@ -71,6 +74,10 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setOrganisationId(organisationId);
         bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
+
+        //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
+        Action errorHandler = bridgeRequest.getErrorHandler();
+        bridge.setDefinition(new BridgeDefinition(Objects.nonNull(errorHandler) ? errorHandler : null));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
@@ -119,7 +126,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
-        if (processorsCount > 0) {
+        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(id, customerId);
+
+        if (processorsCount != hiddenProcessors.getTotal()) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
@@ -128,6 +137,9 @@ public class BridgesServiceImpl implements BridgesService {
         if (!isBridgeDeletable(bridge)) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
+
+        hiddenProcessors.getItems().forEach(p -> processorService.deleteProcessor(id, p.getId(), customerId));
+
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
         // Bridge deletion and related Work creation should always be in the same transaction
@@ -185,7 +197,8 @@ public class BridgesServiceImpl implements BridgesService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
-                resourceNamesProvider.getBridgeTopicName(bridge.getId()));
+                resourceNamesProvider.getBridgeTopicName(bridge.getId()),
+                resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()));
         BridgeDTO dto = new BridgeDTO();
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
@@ -208,6 +221,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
+        response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         return response;
     }
 }

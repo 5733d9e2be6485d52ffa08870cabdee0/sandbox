@@ -15,6 +15,8 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
+    Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
+
     Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
@@ -23,7 +25,9 @@ public interface ProcessorService {
 
     Long getProcessorsCount(String bridgeId, String customerId);
 
-    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
+    ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
+
+    ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId);
 
     void deleteProcessor(String bridgeId, String processorId, String customerId);
 

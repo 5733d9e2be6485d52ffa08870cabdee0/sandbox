@@ -12,6 +12,7 @@ public class QueryResourceInfo extends QueryPageInfo {
     private QueryFilterInfo filterInfo;
 
     public QueryResourceInfo() {
+        this(0, Integer.MAX_VALUE);
     }
 
     public QueryResourceInfo(int pageNumber, int pageSize) {

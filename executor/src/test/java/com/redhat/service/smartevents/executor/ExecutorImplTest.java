@@ -127,26 +127,26 @@ class ExecutorImplTest {
 
     private String doTestWithInvoke(ProcessorDTO processorDTO, CloudEvent inputEvent) {
         ExecutorImpl executor = new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
-        executor.onEvent(inputEvent);
+        executor.onEvent(inputEvent, Collections.emptyMap());
 
         assertMetricsAreInitialized();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock).onEvent(captor.capture());
+        verify(actionInvokerMock).onEvent(captor.capture(), any());
 
         return captor.getValue();
     }
 
     private void doTestWithoutInvoke(ProcessorDTO processorDTO, CloudEvent inputEvent) {
         ExecutorImpl executor = new ExecutorImpl(processorDTO, filterEvaluatorFactory, transformationEvaluatorFactory, actionRuntime, meterRegistry);
-        executor.onEvent(inputEvent);
+        executor.onEvent(inputEvent, Collections.emptyMap());
 
         assertMetricsAreInitialized();
 
         verify(actionRuntime).getInvokerBuilder(processorDTO.getDefinition().getResolvedAction().getType());
-        verify(actionInvokerMock, never()).onEvent(any());
+        verify(actionInvokerMock, never()).onEvent(any(), any());
     }
 
     private void assertMetricsAreInitialized() {

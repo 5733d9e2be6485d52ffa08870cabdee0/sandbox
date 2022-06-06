@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources.slack;
+package com.redhat.service.smartevents.processor.sources;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
+import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

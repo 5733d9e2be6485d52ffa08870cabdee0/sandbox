@@ -22,6 +22,9 @@ public class GatewayConnector {
     public static final String LOG_PROCESSOR_SHOWHEADERS_PARAMETER = "showHeaders";
 
     public static final String CONNECTOR_TOPIC_PARAMETER = "kafka_topic";
+    public static final String CONNECTOR_ERROR_HANDLER_PARAMETER = "error_handler";
+    public static final String CONNECTOR_ERROR_HANDLER_DLQ_PARAMETER = "dead_letter_queue";
+    public static final String CONNECTOR_ERROR_HANDLER_DLQ_TOPIC_NAME_PARAMETER = "topic";
 
     @ConfigProperty(name = "managed-connectors.log-enabled")
     boolean logEnabled;
@@ -47,6 +50,14 @@ public class GatewayConnector {
         return definition;
     }
 
+    public JsonNode connectorPayload(Gateway gateway, String topicName, String errorHandlerTopicName) {
+        ObjectNode definition = (ObjectNode) connectorPayload(gateway, topicName);
+
+        addErrorHandlerPayload(errorHandlerTopicName, definition);
+
+        return definition;
+    }
+
     private ObjectNode getLogProcessor() {
         ObjectNode logProcessorParams = mapper.createObjectNode();
         logProcessorParams.set(LOG_PROCESSOR_MULTILINE_PARAMETER, BooleanNode.TRUE);
@@ -56,5 +67,13 @@ public class GatewayConnector {
         logProcessor.set(LOG_PROCESSOR_PARENT_PARAMETER, logProcessorParams);
 
         return logProcessor;
+    }
+
+    private void addErrorHandlerPayload(String errorHandlerTopicName, ObjectNode definition) {
+        ObjectNode errorHandler = mapper.createObjectNode();
+        ObjectNode deadLetterQueue = mapper.createObjectNode();
+        errorHandler.set(CONNECTOR_ERROR_HANDLER_DLQ_PARAMETER, deadLetterQueue);
+        deadLetterQueue.set(CONNECTOR_ERROR_HANDLER_DLQ_TOPIC_NAME_PARAMETER, new TextNode(errorHandlerTopicName));
+        definition.set(CONNECTOR_ERROR_HANDLER_PARAMETER, errorHandler);
     }
 }

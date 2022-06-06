@@ -1,6 +1,14 @@
 package com.redhat.service.smartevents.processor.actions.webhook;
 
+import java.util.Map;
+
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.redhat.service.smartevents.infra.auth.OidcClient;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.processor.actions.ActionInvoker;
 
 import io.vertx.core.json.JsonObject;
@@ -9,6 +17,8 @@ import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 public class WebhookActionInvoker implements ActionInvoker {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WebhookActionInvoker.class);
 
     private final String endpoint;
     private final WebClient webClient;
@@ -37,7 +47,7 @@ public class WebhookActionInvoker implements ActionInvoker {
     }
 
     @Override
-    public void onEvent(String event) {
+    public void onEvent(String event, Map<String, String> headers) {
         HttpRequest<Buffer> request = webClient.postAbs(endpoint);
         if (oidcClient != null) {
             String token = oidcClient.getToken();
@@ -47,7 +57,27 @@ public class WebhookActionInvoker implements ActionInvoker {
         } else if (basicAuthUsername != null) {
             request.basicAuthentication(basicAuthUsername, basicAuthPassword);
         }
-        request.sendJsonObjectAndForget(new JsonObject(event));
+
+        // add headers as HTTP headers
+        for (Map.Entry<String, String> e : headers.entrySet()) {
+            request.headers().add("x-" + e.getKey(), e.getValue());
+        }
+
+        // See https://issues.redhat.com/browse/MGDOBR-777
+        // We're unable to block the Vert.X thread to wait for the response.
+        // java.lang.IllegalStateException: The current thread cannot be blocked: vert.x-eventloop-thread-1
+        request.sendJson(new JsonObject(event))
+                .subscribe()
+                .with(response -> {
+                    final int statusCode = response.statusCode();
+                    if (Response.Status.fromStatusCode(statusCode).getFamily() != Response.Status.Family.SUCCESSFUL) {
+                        String message = String.format("Unable to send event to Webhook. Status Code '%s', Status message '%s'.",
+                                response.statusCode(),
+                                response.statusMessage());
+                        LOG.debug(message);
+                        throw new ExternalUserException(message);
+                    }
+                });
     }
 
     String getEndpoint() {
