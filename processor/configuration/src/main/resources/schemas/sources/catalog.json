@@ -1,14 +1,14 @@
 [
   {
-    "name": "aws_s3_source_0.1",
+    "id": "aws_s3_source_0.1",
     "isConnector": true
   },
   {
-    "name": "aws_sqs_source_0.1",
+    "id": "aws_sqs_source_0.1",
     "isConnector": true
   },
   {
-    "name": "slack_source_0.1",
+    "id": "slack_source_0.1",
     "isConnector": true
   }
 ]

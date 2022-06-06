@@ -21,7 +21,7 @@ public abstract class AbstractGatewayValidator<T extends Gateway> implements Gat
         return ValidationResult.valid();
     }
 
-    public ValidationResult isValid(T gateway) {
+    public final ValidationResult isValid(T gateway) {
         if (gateway.getParameters() == null) {
             return ValidationResult.invalid();
         }

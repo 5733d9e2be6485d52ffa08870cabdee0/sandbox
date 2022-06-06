@@ -85,7 +85,6 @@ class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
     @MethodSource("invalidParams")
     void isInvalid(Map<String, String> params, String expectedErrorMessage) {
         ValidationResult validationResult = validator.isValid(sourceWith(params));
-        System.out.println(validationResult.getMessage());
         assertThat(validationResult.isValid()).isFalse();
         assertThat(validationResult.getMessage()).isEqualTo(expectedErrorMessage);
     }

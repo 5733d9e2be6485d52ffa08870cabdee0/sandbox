@@ -49,17 +49,17 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     }
 
     @Override
-    public boolean isConnector(ProcessorType type, String name) {
+    public boolean isConnector(ProcessorType type, String id) {
         Optional<ProcessorCatalogEntry> entry = Optional.empty();
         if (ProcessorType.SOURCE.equals(type)) {
-            entry = sources.stream().filter(x -> x.getName().equals(name)).findFirst();
+            entry = sources.stream().filter(x -> x.getId().equals(id)).findFirst();
         }
         if (ProcessorType.SINK.equals(type)) {
-            entry = actions.stream().filter(x -> x.getName().equals(name)).findFirst();
+            entry = actions.stream().filter(x -> x.getId().equals(id)).findFirst();
         }
 
         if (entry.isEmpty()) {
-            throw new ItemNotFoundException(String.format("Processor with name '%s' and type '%s' was not found in the catalog", name, type));
+            throw new ItemNotFoundException(String.format("Processor with id '%s' and type '%s' was not found in the catalog", id, type));
         }
 
         return entry.get().isConnector();
@@ -67,31 +67,31 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
 
     @Override
     public List<String> getActionsCatalog() {
-        return actions.stream().map(ProcessorCatalogEntry::getName).collect(Collectors.toList());
+        return actions.stream().map(ProcessorCatalogEntry::getId).collect(Collectors.toList());
     }
 
     @Override
     public List<String> getSourcesCatalog() {
-        return sources.stream().map(ProcessorCatalogEntry::getName).collect(Collectors.toList());
+        return sources.stream().map(ProcessorCatalogEntry::getId).collect(Collectors.toList());
     }
 
     @Override
-    public JsonSchema getActionJsonSchema(String name) {
-        return getJsonSchemaFromJsonNode(readActionJsonSchema(name));
+    public JsonSchema getActionJsonSchema(String id) {
+        return getJsonSchemaFromJsonNode(readActionJsonSchema(id));
     }
 
     @Override
-    public JsonSchema getSourceJsonSchema(String name) {
-        return getJsonSchemaFromJsonNode(readSourceJsonSchema(name));
+    public JsonSchema getSourceJsonSchema(String id) {
+        return getJsonSchemaFromJsonNode(readSourceJsonSchema(id));
     }
 
     @Override
-    public ValidationResult validate(String name, ProcessorType type, ObjectNode data) {
+    public ValidationResult validate(String id, ProcessorType type, ObjectNode data) {
         if (ProcessorType.SOURCE.equals(type)) {
-            return getSourceJsonSchema(name).validateAndCollect(data);
+            return getSourceJsonSchema(id).validateAndCollect(data);
         }
         if (ProcessorType.SINK.equals(type)) {
-            return getActionJsonSchema(name).validateAndCollect(data);
+            return getActionJsonSchema(id).validateAndCollect(data);
         }
         throw new ItemNotFoundException(String.format("Processor type '%s' not recognized", type));
     }
@@ -109,19 +109,19 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
                         .collect(Collectors.joining("\n"));
     }
 
-    private ObjectNode readActionJsonSchema(String name) {
+    private ObjectNode readActionJsonSchema(String id) {
         try {
-            return mapper.readValue(readFile(ACTIONS_DIR_PATH, name), ObjectNode.class);
+            return mapper.readValue(readFile(ACTIONS_DIR_PATH, id), ObjectNode.class);
         } catch (JsonProcessingException e) {
-            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", name), e);
+            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", id), e);
         }
     }
 
-    private ObjectNode readSourceJsonSchema(String name) {
+    private ObjectNode readSourceJsonSchema(String id) {
         try {
-            return mapper.readValue(readFile(SOURCES_DIR_PATH, name), ObjectNode.class);
+            return mapper.readValue(readFile(SOURCES_DIR_PATH, id), ObjectNode.class);
         } catch (JsonProcessingException e) {
-            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", name), e);
+            throw new DeserializationException(String.format("Could not deserialize the json schema '%s'", id), e);
         }
     }
 

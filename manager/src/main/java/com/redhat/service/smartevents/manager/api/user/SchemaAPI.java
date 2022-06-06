@@ -88,14 +88,14 @@ public class SchemaAPI {
     })
     @Operation(summary = "Get source processor schema", description = "Get the source processor JSON schema.")
     @GET
-    @Path("/sources/{name}")
-    public Response getSourceProcessorSchema(@PathParam("name") String name) {
-        if (!processorCatalogService.getSourcesCatalog().contains(name)) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+    @Path("/sources/{id}")
+    public Response getSourceProcessorSchema(@PathParam("id") String id) {
+        if (!processorCatalogService.getSourcesCatalog().contains(id)) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
         // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
-        return Response.ok(processorCatalogService.getSourceJsonSchema(name).getSchemaNode()).build();
+        return Response.ok(processorCatalogService.getSourceJsonSchema(id).getSchemaNode()).build();
     }
 
     @APIResponses(value = {
@@ -109,13 +109,13 @@ public class SchemaAPI {
     })
     @Operation(summary = "Get action processor schema", description = "Get the action processor JSON schema.")
     @GET
-    @Path("/actions/{name}")
-    public Response getActionProcessorSchema(@PathParam("name") String name) {
-        if (!processorCatalogService.getActionsCatalog().contains(name)) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+    @Path("/actions/{id}")
+    public Response getActionProcessorSchema(@PathParam("id") String id) {
+        if (!processorCatalogService.getActionsCatalog().contains(id)) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
         // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
-        return Response.ok(processorCatalogService.getActionJsonSchema(name).getSchemaNode()).build();
+        return Response.ok(processorCatalogService.getActionJsonSchema(id).getSchemaNode()).build();
     }
 }

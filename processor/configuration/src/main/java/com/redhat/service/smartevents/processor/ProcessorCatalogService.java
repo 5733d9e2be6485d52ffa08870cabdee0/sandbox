@@ -15,9 +15,9 @@ public interface ProcessorCatalogService {
 
     List<String> getSourcesCatalog();
 
-    JsonSchema getActionJsonSchema(String name);
+    JsonSchema getActionJsonSchema(String id);
 
-    JsonSchema getSourceJsonSchema(String name);
+    JsonSchema getSourceJsonSchema(String id);
 
     ValidationResult validate(String name, ProcessorType type, ObjectNode data);
 }

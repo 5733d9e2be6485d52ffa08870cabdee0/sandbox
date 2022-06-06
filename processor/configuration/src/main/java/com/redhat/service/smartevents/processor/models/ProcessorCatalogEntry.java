@@ -4,18 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProcessorCatalogEntry {
 
-    @JsonProperty("name")
-    String name;
+    @JsonProperty("id")
+    String id;
 
     @JsonProperty("isConnector")
     boolean isConnector;
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public boolean isConnector() {
