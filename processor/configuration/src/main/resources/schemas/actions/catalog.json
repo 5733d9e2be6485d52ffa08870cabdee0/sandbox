@@ -14,5 +14,9 @@
   {
     "id": "webhook_sink_0.1",
     "isConnector": false
+  },
+  {
+    "id": "azure_eventhubs_sink_0.1",
+    "isConnector": true
   }
 ]
