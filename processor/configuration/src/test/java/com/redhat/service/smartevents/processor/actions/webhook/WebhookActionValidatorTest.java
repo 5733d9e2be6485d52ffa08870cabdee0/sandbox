@@ -25,7 +25,6 @@ import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAc
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.RESERVED_ATTRIBUTES_USAGE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -52,7 +51,8 @@ class WebhookActionValidatorTest {
             { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
             { paramMap(VALID_HTTP_ENDPOINT, "", VALID_PASSWORD, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
             { paramMap(VALID_HTTP_ENDPOINT, "", "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, "value"), RESERVED_ATTRIBUTES_USAGE_MESSAGE }
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, "value"),
+                    "$.useTechnicalBearerToken: is not defined in the schema and the schema does not allow additional properties" }
     };
 
     private static final Object[] VALID_PARAMS = {
