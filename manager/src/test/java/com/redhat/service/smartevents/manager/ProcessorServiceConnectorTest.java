@@ -277,8 +277,8 @@ class ProcessorServiceConnectorTest {
     private Action createSlackAction() {
         Action mcAction = new Action();
         mcAction.setType(SlackAction.TYPE);
-        mcAction.setMapParameters(Map.of("channel", "channel",
-                "webhookUrl", "webhook_url"));
+        mcAction.setMapParameters(Map.of("slack_channel", "channel",
+                "slack_webhook_url", "webhook_url"));
         return mcAction;
     }
 
