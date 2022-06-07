@@ -1019,7 +1019,7 @@ components:
       properties:
         kind:
           type: string
-        name:
+        id:
           type: string
         type:
           type: string
