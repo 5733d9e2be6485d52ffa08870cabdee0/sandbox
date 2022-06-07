@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
+import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaActionResolver;
+import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaActionValidator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicActionValidator;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
@@ -38,7 +41,8 @@ class GatewayConfiguratorImplTest {
             KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null),
             SendToBridgeAction.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class),
             SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class),
-            WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
+            WebhookAction.TYPE, expect(WebhookActionValidator.class, null),
+            AwsLambdaAction.TYPE, expect(AwsLambdaActionValidator.class, AwsLambdaActionResolver.class));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
             AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SourceResolver.class),
