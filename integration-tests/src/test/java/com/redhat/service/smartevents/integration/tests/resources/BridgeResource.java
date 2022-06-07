@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.integration.tests.resources;
 
+import java.io.InputStream;
+
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Constants;
@@ -20,9 +22,24 @@ public class BridgeResource {
                 .as(BridgeResponse.class);
     }
 
+    public static BridgeResponse addBridge(String token, InputStream bridgeRequest) {
+        return addBridgeResponse(token, bridgeRequest)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(202)
+                .extract()
+                .as(BridgeResponse.class);
+    }
+
     public static Response addBridgeResponse(String token, String bridgeName) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(new BridgeRequest(bridgeName))
+                .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
+    }
+
+    public static Response addBridgeResponse(String token, InputStream bridgeRequest) {
+        return ResourceUtils.jsonRequest(token)
+                .body(bridgeRequest)
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 

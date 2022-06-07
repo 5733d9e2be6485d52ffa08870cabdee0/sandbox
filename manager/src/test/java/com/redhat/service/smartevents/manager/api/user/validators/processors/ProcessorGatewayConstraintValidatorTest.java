@@ -29,15 +29,15 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewayValidator;
 
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_CLASS_PARAM;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_PARAMETERS_NOT_VALID_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_TYPE_MISSING_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.GATEWAY_TYPE_NOT_RECOGNISED_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.MISSING_GATEWAY_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.GatewayConstraintValidator.TYPE_PARAM;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_CLASS_PARAM;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_NOT_VALID_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_MISSING_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_NOT_RECOGNISED_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MISSING_GATEWAY_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR;
+import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.TYPE_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,14 +48,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class GatewayConstraintValidatorTest {
+class ProcessorGatewayConstraintValidatorTest {
 
     public static String TEST_ACTION_TYPE = "TestAction";
     public static String TEST_SOURCE_TYPE = "TestSource";
     public static String TEST_PARAM_NAME = "test-param-name";
     public static String TEST_PARAM_VALUE = "test-param-value";
 
-    GatewayConstraintValidator constraintValidator;
+    ProcessorGatewayConstraintValidator constraintValidator;
 
     @Mock
     GatewayConfigurator gatewayConfiguratorMock;
@@ -82,8 +82,7 @@ class GatewayConstraintValidatorTest {
         lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
 
-        constraintValidator = new GatewayConstraintValidator();
-        constraintValidator.gatewayConfigurator = gatewayConfiguratorMock;
+        constraintValidator = new ProcessorGatewayConstraintValidator(gatewayConfiguratorMock);
     }
 
     @Test
@@ -137,7 +136,7 @@ class GatewayConstraintValidatorTest {
     @ParameterizedTest
     @MethodSource("gateways")
     void isValid_gatewayWithEmptyParamsIsValid(Gateway gateway) {
-        gateway.getParameters().clear();
+        gateway.setMapParameters(new HashMap<>());
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
@@ -267,7 +266,7 @@ class GatewayConstraintValidatorTest {
         action.setType(TEST_ACTION_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 
@@ -276,7 +275,7 @@ class GatewayConstraintValidatorTest {
         source.setType(TEST_SOURCE_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);
-        source.setParameters(params);
+        source.setMapParameters(params);
         return source;
     }
 

@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,6 +31,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -54,7 +56,7 @@ public class SchemaAPI {
     private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
-    private static final String CATALOG_FILENAME = "catalog.json";
+    private static final String CATALOG_FILENAME = "catalog";
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
 
@@ -85,16 +87,56 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
                         .collect(Collectors.toList()));
-        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x.replace(JSON_FILE_EXTENSION, ""), SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
     }
 
+    @APIResponses(value = {
+            // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get source processor schema", description = "Get the source processor JSON schema.")
+    @GET
+    @Path("/sources/{name}")
+    public Response getSourceProcessorSchema(@PathParam("name") String name) {
+        if (!sources.contains(name)) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+        }
+
+        return Response.ok(readFile(SOURCES_DIR_PATH, name)).build();
+    }
+
+    @APIResponses(value = {
+            // we can't use JsonSchema.class because of https://github.com/swagger-api/swagger-ui/issues/8046
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JsonNode.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get action processor schema", description = "Get the action processor JSON schema.")
+    @GET
+    @Path("/actions/{name}")
+    public Response getActionProcessorSchema(@PathParam("name") String name) {
+        if (!actions.contains(name)) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+        }
+
+        return Response.ok(readFile(ACTIONS_DIR_PATH, name)).build();
+    }
+
     protected String readFile(String resourceDirectory, String name) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name);
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
 
         if (is == null) {
             throw new ItemNotFoundException(String.format("Could not find '%s'.", name));

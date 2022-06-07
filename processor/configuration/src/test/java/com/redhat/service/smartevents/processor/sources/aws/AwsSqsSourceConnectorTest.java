@@ -44,20 +44,26 @@ class AwsSqsSourceConnectorTest extends AbstractSourceTest<Source> {
     private static final String CHANNEL = "channel";
     private static final String TOKEN = "token";
     private static final String TOPIC_NAME = "topic";
+    private static final String ERROR_HANDLER_TOPIC_NAME = "errorHandlerTopic";
 
     private static final String PARAMETER_TEMPLATE = "\"%s\":\"%s\",";
     private static final String PARAMETER_TEMPLATE_NO_QUOTES = "\"%s\":%s,";
     private static final String EXPECTED_PAYLOAD_JSON_TEMPLATE = "{" +
-            "   \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + TOPIC_NAME + "\"," +
-            "   %s" +
-            "   \"processors\": [" +
-            "       {" +
-            "           \"log\": {" +
-            "               \"multiLine\":true," +
-            "               \"showHeaders\":true" +
-            "        }" +
-            "     }" +
-            "   ]" +
+            "  \"" + CONNECTOR_TOPIC_PARAMETER + "\":\"" + TOPIC_NAME + "\"," +
+            "  %s" +
+            "  \"processors\": [" +
+            "    {" +
+            "      \"log\": {" +
+            "        \"multiLine\":true," +
+            "        \"showHeaders\":true" +
+            "      }" +
+            "    }" +
+            "  ], " +
+            "  \"error_handler\": {" +
+            "    \"dead_letter_queue\": {" +
+            "      \"topic\": \"errorHandlerTopic\"" +
+            "    }" +
+            "  }" +
             "}";
 
     static final Object[][] VALID_PARAMS = {
@@ -94,7 +100,7 @@ class AwsSqsSourceConnectorTest extends AbstractSourceTest<Source> {
     @MethodSource("validParams")
     void testConnectorPayload(Map<String, String> params, String expectedPayload) throws JsonProcessingException {
         JsonNode expectedPayloadJsonNode = mapper.readTree(expectedPayload);
-        JsonNode payload = connector.connectorPayload(sourceWith(params), TOPIC_NAME);
+        JsonNode payload = connector.connectorPayload(sourceWith(params), TOPIC_NAME, ERROR_HANDLER_TOPIC_NAME);
         assertThat(payload).isEqualTo(expectedPayloadJsonNode);
     }
 

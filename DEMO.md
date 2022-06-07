@@ -63,16 +63,34 @@ as expected.
 
 ## How to create a Bridge instance
 
-In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include the name of the Bridge 
-
-```json
-{"name":  "myBridge"}
-```
-
-Run 
+In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include the name of the Bridge. Let's export it to a variable:
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myBridge"}' $MANAGER_URL/api/v1/bridges | jq .
+export BRIDGE_REQUEST='{
+  "name":"myBridge"
+}'
+```
+
+**Note:** optionally, a `error_handler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform
+about internal processing errors. At the moment the only available option is a `Webhook` error handler.
+Here is an example request that uses [webhook.site (a website that generates working webhooks on the fly for free)](http:://webhook.site):
+
+```bash
+export BRIDGE_REQUEST='{
+  "name": "myBridge",
+  "error_handler": {
+    "type": "Webhook",
+    "parameters": {
+        "endpoint": "https://webhook.site/<webhook_site_generated_uuid>"
+    }
+  }
+}'
+```
+
+After exporting the desired type of request, run:
+
+```bash
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$BRIDGE_REQUEST" $MANAGER_URL/api/v1/bridges | jq .
 ```
 
 The response should look like something like
@@ -87,6 +105,8 @@ The response should look like something like
   "status":"accepted"
 }
 ```
+
+**Note:** if you added the `error_handler` field as described above, you'll see that as well in the response.
 
 Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 

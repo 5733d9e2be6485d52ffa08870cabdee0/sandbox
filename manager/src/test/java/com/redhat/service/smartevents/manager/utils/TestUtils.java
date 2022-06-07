@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -37,7 +38,7 @@ import static org.awaitility.Awaitility.await;
 
 public class TestUtils {
 
-    private static RequestSpecification jsonRequest() {
+    public static RequestSpecification jsonRequest() {
         return given()
                 .filter(new ResponseLoggingFilter())
                 .contentType(ContentType.JSON)
@@ -184,13 +185,23 @@ public class TestUtils {
                 .get(APIConstants.SCHEMA_API_BASE_PATH);
     }
 
+    public static Response getSourceProcessorsSchema(String name) {
+        return jsonRequest()
+                .get(APIConstants.SOURCES_SCHEMA_API_BASE_PATH + name);
+    }
+
+    public static Response getActionProcessorsSchema(String name) {
+        return jsonRequest()
+                .get(APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + name);
+    }
+
     public static Action createKafkaAction() {
         Action r = new Action();
         r.setType(KafkaTopicAction.TYPE);
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        r.setParameters(params);
+        r.setMapParameters(params);
         return r;
     }
 
@@ -200,8 +211,15 @@ public class TestUtils {
 
         Map<String, String> params = new HashMap<>();
         params.put(SendToBridgeAction.BRIDGE_ID_PARAM, bridgeId);
-        r.setParameters(params);
+        r.setMapParameters(params);
         return r;
+    }
+
+    public static Action createWebhookAction() {
+        Action action = new Action();
+        action.setType(WebhookAction.TYPE);
+        action.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
+        return action;
     }
 
     public static Source createSlackSource() {
@@ -212,7 +230,7 @@ public class TestUtils {
         params.put(SlackSource.CHANNEL_PARAM, "channel");
         params.put(SlackSource.TOKEN_PARAM, "token");
         params.put(SlackSource.CLOUD_EVENT_TYPE, "ce");
-        s.setParameters(params);
+        s.setMapParameters(params);
         return s;
     }
 
@@ -237,5 +255,4 @@ public class TestUtils {
         });
         return processors.get(0);
     }
-
 }

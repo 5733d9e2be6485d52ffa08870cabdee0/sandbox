@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -23,7 +24,7 @@ public class Fixtures {
         action.setType(KafkaTopicAction.TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
-        action.setParameters(params);
+        action.setMapParameters(params);
         return action;
     }
 
@@ -52,6 +53,7 @@ public class Fixtures {
         b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
         b.setSubmittedAt(ZonedDateTime.now());
         b.setEndpoint("https://bridge.redhat.com");
+        b.setDefinition(new BridgeDefinition());
         return b;
     }
 

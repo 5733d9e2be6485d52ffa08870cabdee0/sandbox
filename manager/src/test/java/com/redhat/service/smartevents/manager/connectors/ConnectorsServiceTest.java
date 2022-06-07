@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
+import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
@@ -108,6 +109,7 @@ class ConnectorsServiceTest {
 
     private static Processor processorWith(Gateway gateway) {
         Processor processor = new Processor();
+        processor.setBridge(new Bridge());
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition();
         if (gateway instanceof Action) {
@@ -127,7 +129,7 @@ class ConnectorsServiceTest {
     private static Action slackAction() {
         Action action = new Action();
         action.setType(SlackAction.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,
                 SlackAction.WEBHOOK_URL_PARAM, TEST_ACTION_WEBHOOK));
         return action;
@@ -136,7 +138,7 @@ class ConnectorsServiceTest {
     private static Source slackSource() {
         Source action = new Source();
         action.setType(SlackSource.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, TEST_SOURCE_CHANNEL,
                 SlackSource.TOKEN_PARAM, TEST_SOURCE_TOKEN));
         return action;
@@ -145,7 +147,7 @@ class ConnectorsServiceTest {
     private static Action webhookAction() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
-        action.setParameters(Map.of(
+        action.setMapParameters(Map.of(
                 WebhookAction.ENDPOINT_PARAM, TEST_ACTION_WEBHOOK));
         return action;
     }

@@ -2,7 +2,7 @@
 openapi: 3.0.3
 info:
   title: Red Hat Openshift SmartEvents Fleet Manager
-  description: The api exposed by the fleet manager of the SmartEvents service.
+  description: The API exposed by the fleet manager of the SmartEvents service.
   contact:
     name: Development Team
     email: openbridge-dev@redhat.com
@@ -480,8 +480,6 @@ paths:
           description: Internal error.
           content:
             application/json: {}
-      security:
-      - bearer: []
   /api/v1/errors/{id}:
     get:
       tags:
@@ -513,8 +511,6 @@ paths:
           description: Internal error.
           content:
             application/json: {}
-      security:
-      - bearer: []
   /api/v1/schemas:
     get:
       tags:
@@ -529,6 +525,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProcessorCatalogResponse'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+      security:
+      - bearer: []
+  /api/v1/schemas/actions/{name}:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get action processor schema
+      description: Get the action processor JSON schema.
+      operationId: SchemaAPI_getActionProcessorSchema
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonNode'
+        "400":
+          description: Bad request.
+          content:
+            application/json: {}
+        "401":
+          description: Unauthorized.
+        "403":
+          description: Forbidden.
+        "500":
+          description: Internal error.
+          content:
+            application/json: {}
+      security:
+      - bearer: []
+  /api/v1/schemas/sources/{name}:
+    get:
+      tags:
+      - Schema Catalog
+      summary: Get source processor schema
+      description: Get the source processor JSON schema.
+      operationId: SchemaAPI_getSourceProcessorSchema
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonNode'
         "400":
           description: Bad request.
           content:
@@ -671,10 +735,7 @@ components:
           type: string
           nullable: false
         parameters:
-          minProperties: 1
           type: object
-          additionalProperties:
-            type: string
     BaseFilter:
       required:
       - key
@@ -747,6 +808,8 @@ components:
           minLength: 1
           type: string
           nullable: false
+        error_handler:
+          $ref: '#/components/schemas/Action'
     BridgeResponse:
       type: object
       properties:
@@ -770,6 +833,8 @@ components:
           type: string
         endpoint:
           type: string
+        error_handler:
+          $ref: '#/components/schemas/Action'
     ErrorListResponse:
       type: object
       properties:
@@ -803,6 +868,8 @@ components:
           type: string
         reason:
           type: string
+    JsonNode:
+      type: array
     KafkaConnectionDTO:
       type: object
       properties:
@@ -815,6 +882,8 @@ components:
         securityProtocol:
           type: string
         topic:
+          type: string
+        errorTopic:
           type: string
     ManagedResourceStatus:
       enum:
@@ -960,6 +1029,7 @@ components:
       enum:
       - source
       - sink
+      - error_handler
       type: string
     Source:
       required:
@@ -971,10 +1041,7 @@ components:
           type: string
           nullable: false
         parameters:
-          minProperties: 1
           type: object
-          additionalProperties:
-            type: string
   securitySchemes:
     bearer:
       type: http

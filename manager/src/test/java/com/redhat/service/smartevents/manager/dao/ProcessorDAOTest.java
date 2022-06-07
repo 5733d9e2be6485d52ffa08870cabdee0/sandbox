@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -72,7 +73,7 @@ public class ProcessorDAOTest {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setParameters(params);
+        a.setMapParameters(params);
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
         p.setDefinition(definition);
@@ -91,6 +92,7 @@ public class ProcessorDAOTest {
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
         b.setShardId(TestConstants.SHARD_ID);
+        b.setDefinition(new BridgeDefinition());
 
         bridgeDAO.persist(b);
         return b;

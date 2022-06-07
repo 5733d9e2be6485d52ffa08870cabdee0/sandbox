@@ -1,6 +1,6 @@
 [
-  "KafkaTopic.json",
-  "SendToBridge.json",
-  "Slack.json",
-  "Webhook.json"
+  "KafkaTopic",
+  "SendToBridge",
+  "Slack",
+  "Webhook"
 ]

@@ -33,6 +33,10 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
      */
 
     private static final String IDS_PARAM = "ids";
+    private static final Set<ProcessorType> USER_VISIBLE_PROCESSOR_TYPES = Set.of(ProcessorType.SOURCE, ProcessorType.SINK);
+    private static final Set<ProcessorType> HIDDEN_PROCESSOR_TYPES = Set.of(ProcessorType.ERROR_HANDLER);
+    private static final String BY_TYPE_FILTER_NAME = "byType";
+    private static final String BY_TYPE_FILTER_PARAM = "ptype";
 
     private static class ProcessorResults {
 
@@ -95,7 +99,19 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         params.map().forEach((key, value) -> namedQuery.setParameter(key, value.toString()));
     }
 
+    public ListResult<Processor> findUserVisibleByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
+        return findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo, USER_VISIBLE_PROCESSOR_TYPES);
+    }
+
+    public ListResult<Processor> findHiddenByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
+        return findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo, HIDDEN_PROCESSOR_TYPES);
+    }
+
     public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
+        return findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo, null);
+    }
+
+    private ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo, Set<ProcessorType> restrictTypes) {
 
         /*
          * Unfortunately we can't rely on Panaches in-built Paging due the fetched join in our query
@@ -114,26 +130,43 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
             return new ListResult<>(emptyList(), queryInfo.getPageNumber(), processorCount);
         }
 
-        ProcessorResults results = getProcessorIds(customerId, bridgeId, queryInfo);
+        ProcessorResults results = getProcessorIds(customerId, bridgeId, queryInfo, restrictTypes);
         List<Processor> processors = find("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, results.ids)).list();
         return new ListResult<>(processors, queryInfo.getPageNumber(), results.total);
     }
 
-    private ProcessorResults getProcessorIds(String customerId, String bridgeId, QueryProcessorResourceInfo queryInfo) {
+    private ProcessorResults getProcessorIds(String customerId, String bridgeId, QueryProcessorResourceInfo queryInfo, Set<ProcessorType> restrictTypes) {
         Parameters parameters = Parameters.with("customerId", customerId).and("bridgeId", bridgeId);
         PanacheQuery<Processor> query = find("#PROCESSOR.findByBridgeIdAndCustomerIdNoFilter", parameters);
 
+        // filter by name
         String filterName = queryInfo.getFilterInfo().getFilterName();
-        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
-        ProcessorType filterType = queryInfo.getFilterInfo().getFilterType();
         if (Objects.nonNull(filterName)) {
             query.filter("byName", Parameters.with("name", filterName + "%"));
         }
+
+        // filter by status
+        Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query.filter("byStatus", Parameters.with("status", filterStatus));
         }
-        if (Objects.nonNull(filterType)) {
-            query.filter("byType", Parameters.with("ptype", filterType));
+
+        // filter by type, considering onlyUserVisible flag
+        ProcessorType filterType = queryInfo.getFilterInfo().getFilterType();
+        if (restrictTypes != null) {
+            if (Objects.isNull(filterType)) {
+                query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, restrictTypes));
+            } else {
+                if (restrictTypes.contains(filterType)) {
+                    query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, Set.of(filterType)));
+                } else {
+                    return new ProcessorResults(emptyList(), 0);
+                }
+            }
+        } else {
+            if (Objects.nonNull(filterType)) {
+                query.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, Set.of(filterType)));
+            }
         }
 
         long total = query.count();

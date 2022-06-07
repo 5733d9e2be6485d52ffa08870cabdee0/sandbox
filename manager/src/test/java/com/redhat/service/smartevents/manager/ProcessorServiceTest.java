@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
@@ -40,9 +41,9 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -54,6 +55,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
@@ -86,6 +88,8 @@ class ProcessorServiceTest {
     public static final String PROVISIONING_PROCESSOR_NAME = "provisioning-processor-name";
     public static final String FAILED_PROCESSOR_ID = "failed-processor-id";
     public static final String FAILED_PROCESSOR_NAME = "failed-processor-name";
+    public static final String ERROR_HANDLER_PROCESSOR_ID = "error-handler-processor-id";
+    public static final String ERROR_HANDLER_PROCESSOR_NAME = "error-handler-processor-name";
     public static final QueryProcessorResourceInfo QUERY_INFO = new QueryProcessorResourceInfo(0, 100);
 
     @Inject
@@ -109,6 +113,7 @@ class ProcessorServiceTest {
         Processor processor = createReadyProcessor();
         Processor provisioningProcessor = createProvisioningProcessor();
         Processor failedProcessor = createFailedProcessor();
+        Processor errorHandlerProcessor = createErrorHandlerProcessor();
 
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID))
                 .thenReturn(bridge);
@@ -139,7 +144,9 @@ class ProcessorServiceTest {
                 .thenReturn(provisioningProcessor);
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, FAILED_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(failedProcessor);
-        when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, ERROR_HANDLER_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(errorHandlerProcessor);
+        when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(List.of(processor, provisioningProcessor, failedProcessor), 0, 3));
         when(processorDAO.countByBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(3L);
@@ -192,7 +199,10 @@ class ProcessorServiceTest {
 
     private void doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request);
+        doAssertProcessorCreation(processor, request, type);
+    }
 
+    private void doAssertProcessorCreation(Processor processor, ProcessorRequest request, ProcessorType type) {
         assertThat(processor.getBridge().getId()).isEqualTo(DEFAULT_BRIDGE_ID);
         assertThat(processor.getType()).isEqualTo(type);
         assertThat(processor.getName()).isEqualTo(request.getName());
@@ -215,6 +225,20 @@ class ProcessorServiceTest {
 
         ProcessorDefinition definition = processor.getDefinition();
         assertThat(definition.getTransformationTemplate()).isEqualTo(request.getTransformationTemplate());
+    }
+
+    @Test
+    void testCreateErrorHandlerProcessor() {
+        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        Processor processor = processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);
+        doAssertProcessorCreation(processor, processorRequest, ERROR_HANDLER);
+    }
+
+    @Test
+    void testCreateErrorHandlerProcessorFailure() {
+        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createSlackSource());
+        assertThatExceptionOfType(InternalPlatformException.class).isThrownBy(
+                () -> processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest));
     }
 
     @Test
@@ -323,8 +347,9 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testGetProcessors() {
-        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+    void testGetUserVisibleProcessors() {
+        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
         assertThat(results.getTotal()).isEqualTo(3L);
@@ -334,20 +359,21 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void testGetProcessors_noProcessorsOnBridge() {
-        when(processorDAO.findByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
+    void testGetUserVisibleProcessors_noProcessorsOnBridge() {
+        when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
-        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
         assertThat(results.getTotal()).isZero();
     }
 
     @Test
-    void testGetProcessors_bridgeDoesNotExist() {
+    void testGetUserVisibleProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.getProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getUserVisibleProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     @Test
@@ -397,7 +423,7 @@ class ProcessorServiceTest {
     private static Stream<Arguments> updateProcessorParams() {
         Object[] arguments = {
                 new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createKafkaTopicAction()),
-                new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
+                new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
                 new ProcessorRequest(DEFAULT_PROCESSOR_NAME, createSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -547,6 +573,13 @@ class ProcessorServiceTest {
     }
 
     @Test
+    void testUpdateErrorHandlerProcessorFails() {
+        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        assertThatExceptionOfType(BadRequestException.class).isThrownBy(
+                () -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, ERROR_HANDLER_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
+    }
+
+    @Test
     void testToResponse() {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
@@ -611,24 +644,24 @@ class ProcessorServiceTest {
         return processor;
     }
 
+    private static Processor createErrorHandlerProcessor() {
+        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction()));
+        processor.setId(ERROR_HANDLER_PROCESSOR_ID);
+        processor.setType(ERROR_HANDLER);
+        return processor;
+    }
+
     private static Action createKafkaTopicAction() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
-        action.setParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
-        return action;
-    }
-
-    private static Action createWebhookAction() {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/a0704e8f-a817-4d02-b30a-b8c49d0132dc"));
+        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
         return action;
     }
 
     private static Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
-        source.setParameters(Map.of(
+        source.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, "test-channel",
                 SlackSource.TOKEN_PARAM, "test-token"));
         return source;

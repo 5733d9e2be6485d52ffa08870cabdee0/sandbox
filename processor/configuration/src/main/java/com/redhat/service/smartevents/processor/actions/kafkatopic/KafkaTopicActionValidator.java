@@ -14,7 +14,7 @@ public class KafkaTopicActionValidator implements KafkaTopicAction, GatewayValid
     @Override
     public ValidationResult isValid(Action action) {
         if (action.getParameters() != null) {
-            String topic = action.getParameters().get(TOPIC_PARAM);
+            String topic = action.getParameter(TOPIC_PARAM);
             if (topic == null || topic.isEmpty()) {
                 return ValidationResult.invalid(INVALID_TOPIC_PARAM_MESSAGE);
             }
