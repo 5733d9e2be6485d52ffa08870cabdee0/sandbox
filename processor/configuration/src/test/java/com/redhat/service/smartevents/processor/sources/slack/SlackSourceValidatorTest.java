@@ -60,6 +60,15 @@ class SlackSourceValidatorTest extends AbstractSourceTest<Source> {
         assertIsValid(sourceWith(params));
     }
 
+    @Test
+    void isInvalidWithAdditionalParameters() {
+        Map<String, String> params = new HashMap<>();
+        params.put(SlackSource.CHANNEL_PARAM, "channel");
+        params.put(SlackSource.TOKEN_PARAM, "token");
+        params.put("error_handler", "hack");
+        assertValidationIsInvalid(sourceWith(params), "$.error_handler: is not defined in the schema and the schema does not allow additional properties");
+    }
+
     private void assertIsValid(Source Source) {
         ValidationResult validationResult = validator.isValid(Source);
         assertThat(validationResult.isValid()).isTrue();

@@ -58,16 +58,16 @@ public class SchemaAPITest {
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
-                    assertThat(availableActions).contains(entry.getName());
+                    assertThat(availableActions).contains(entry.getId());
                     break;
                 case "source":
-                    assertThat(availableSources).contains(entry.getName());
+                    assertThat(availableSources).contains(entry.getId());
                     break;
                 default:
                     fail("entry type does not match 'source' nor 'action'");
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
-            assertThat(entry.getHref()).contains(entry.getName()); // The href should contain the name
+            assertThat(entry.getHref()).contains(entry.getId()); // The href should contain the name
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
     }
