@@ -45,6 +45,13 @@ sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$( getManagedKafkaMcSAC
 sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$( getManagedKafkaMcSAClientSecret )|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1${MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
 
+# Set specific prefix in case it is filled
+EVENT_BRIDGE_RESOURCE_PREFIX=$(cat ${BIN_DIR}/localconfig | grep EVENT_BRIDGE_RESOURCE_PREFIX | sed -E "s|export EVENT_BRIDGE_RESOURCE_PREFIX=(.*)|\1|")
+if [ ! -z "$EVENT_BRIDGE_RESOURCE_PREFIX" ]
+then
+  sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1${EVENT_BRIDGE_RESOURCE_PREFIX}|" ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube/manager/kustomization.yaml
+fi
+
 echo "Deploying all resources"
 kustomize build ${KUSTOMIZE_DEPLOY_DIR}/overlays/minikube | kubectl apply -f -
 
