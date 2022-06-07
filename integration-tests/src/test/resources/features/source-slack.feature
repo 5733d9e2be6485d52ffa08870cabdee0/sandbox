@@ -16,7 +16,8 @@ Feature: Slack Source tests
         "type": "Slack",
         "parameters": {
             "channel": "${env.slack.channel.name}",
-            "token": "${env.slack.webhook.token}"
+            "token": "${env.slack.webhook.token}",
+            "slack_delay": "5s"
           }
       },
       "filters": [
