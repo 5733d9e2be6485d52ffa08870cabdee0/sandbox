@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.infra.transformations;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTemplateDefinitionException;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
 import io.quarkus.qute.Engine;
@@ -22,8 +23,8 @@ public class TransformationEvaluatorFactoryQute implements TransformationEvaluat
         try {
             engine.parse(template);
         } catch (TemplateException e) {
-            return new ValidationResult(false, e.getMessage());
+            return ValidationResult.invalid(new ProcessorTemplateDefinitionException(e.getMessage()));
         }
-        return new ValidationResult(true);
+        return ValidationResult.valid();
     }
 }

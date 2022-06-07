@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -41,17 +42,17 @@ class AnsibleTowerJobTemplateActionValidatorTest extends AbstractGatewayValidato
     static final String INVALID_ENDPOINT_WRONG_PROTOCOL = "ftp://www.example.com/webhook";
 
     private static final Object[][] INVALID_PARAMS = {
-            { paramMap(null, null, null, null, null), "$.endpoint: is missing but it is required" },
-            { paramMap(VALID_HTTP_ENDPOINT, null, null, null, null), "$.job_template_id: is missing but it is required" },
-            { paramMap(INVALID_ENDPOINT_NOT_URL, VALID_JOB_TEMPLATE_ID, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_MISSING_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_UNKNOWN_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_WRONG_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), INVALID_PROTOCOL_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, VALID_USERNAME, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, null, VALID_PASSWORD, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, VALID_USERNAME, "", null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, "", VALID_PASSWORD, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, "", "", null), BASIC_AUTH_CONFIGURATION_MESSAGE },
+            { paramMap(null, null, null, null, null), List.of("$.endpoint: is missing but it is required") },
+            { paramMap(VALID_HTTP_ENDPOINT, null, null, null, null), List.of("$.job_template_id: is missing but it is required") },
+            { paramMap(INVALID_ENDPOINT_NOT_URL, VALID_JOB_TEMPLATE_ID, null, null, null), List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_MISSING_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_UNKNOWN_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_WRONG_PROTOCOL, VALID_JOB_TEMPLATE_ID, null, null, null), List.of(INVALID_PROTOCOL_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, VALID_USERNAME, null, null), List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, null, VALID_PASSWORD, null), List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, VALID_USERNAME, "", null), List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, "", VALID_PASSWORD, null), List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_JOB_TEMPLATE_ID, "", "", null), List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
     };
 
     private static final Object[] VALID_PARAMS = {
@@ -76,7 +77,7 @@ class AnsibleTowerJobTemplateActionValidatorTest extends AbstractGatewayValidato
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
+    void isInvalid(Map<String, String> invalidParams, List<String> expectedErrorMessage) {
         assertValidationIsInvalid(actionWith(AnsibleTowerJobTemplateAction.TYPE, invalidParams), expectedErrorMessage);
     }
 
