@@ -18,7 +18,6 @@ public class WebhookActionValidator extends AbstractGatewayValidator<Action> imp
     public static final String BASIC_AUTH_CONFIGURATION_MESSAGE = "Basic authentication configuration error. " +
             "\"" + BASIC_AUTH_USERNAME_PARAM + "\" and \"" + BASIC_AUTH_PASSWORD_PARAM + "\" must be both present and non empty.";
     public static final String INVALID_PROTOCOL_MESSAGE = "The \"endpoint\" protocol must be either \"http\" or \"https\"";
-    public static final String RESERVED_ATTRIBUTES_USAGE_MESSAGE = "Some reserved parameters have been added to the request.";
 
     private static final String PROTOCOL_HTTP = "http";
     private static final String PROTOCOL_HTTPS = "https";
@@ -30,10 +29,6 @@ public class WebhookActionValidator extends AbstractGatewayValidator<Action> imp
 
     @Override
     public ValidationResult applyAdditionalValidations(Action action) {
-        if (action.hasParameter(USE_TECHNICAL_BEARER_TOKEN_PARAM)) {
-            return ValidationResult.invalid(RESERVED_ATTRIBUTES_USAGE_MESSAGE);
-        }
-
         if (action.hasParameter(BASIC_AUTH_USERNAME_PARAM) && !action.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
                 || !action.hasParameter(BASIC_AUTH_USERNAME_PARAM) && action.hasParameter(BASIC_AUTH_PASSWORD_PARAM)) {
             return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
