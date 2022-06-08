@@ -11,9 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.resolvers.AbstractSourceTest;
+import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
 import com.redhat.service.smartevents.processor.validators.custom.AwsSqsSourceValidator;
 
@@ -23,10 +21,9 @@ import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_QUEUE_URL_PARAM;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_REGION_PARAM;
 import static com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
+class AwsSqsSourceValidatorTest extends AbstractGatewayValidatorTest {
 
     @Inject
     AwsSqsSourceValidator validator;
@@ -34,11 +31,6 @@ class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
     @Override
     protected GatewayValidator getValidator() {
         return validator;
-    }
-
-    @Override
-    protected String getSourceType() {
-        return AwsSqsSource.TYPE;
     }
 
     static final String INVALID_QUEUE_URL = "invalid";
@@ -78,16 +70,13 @@ class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
     @ParameterizedTest
     @MethodSource("validParams")
     void isValid(Map<String, String> params) {
-        ValidationResult validationResult = validator.isValid(sourceWith(params));
-        assertThat(validationResult.isValid()).isTrue();
+        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
     }
 
     @ParameterizedTest
     @MethodSource("invalidParams")
     void isInvalid(Map<String, String> params, String expectedErrorMessage) {
-        ValidationResult validationResult = validator.isValid(sourceWith(params));
-        assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).isEqualTo(expectedErrorMessage);
+        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params), expectedErrorMessage);
     }
 
     private static Stream<Arguments> invalidParams() {

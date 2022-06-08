@@ -14,8 +14,8 @@ import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridg
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
-import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
