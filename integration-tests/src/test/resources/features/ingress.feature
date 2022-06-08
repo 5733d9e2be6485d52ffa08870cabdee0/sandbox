@@ -13,7 +13,7 @@ Feature: Ingress tests
         "parameters": {
             "topic":  "myKafkaTopic"
         },
-        "type": "KafkaTopic"
+        "type": "kafka_topic_sink_0.1"
       }
     }
     """

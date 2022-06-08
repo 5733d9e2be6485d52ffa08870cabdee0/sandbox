@@ -138,7 +138,7 @@ public class ExecutorService {
             CloudEventData data = JsonCloudEventData.wrap(payload);
 
             return wrapToCloudEvent(
-                    String.format("%sSource", executor.getProcessor().getDefinition().getRequestedSource().getType()),
+                    String.format("%s", executor.getProcessor().getDefinition().getRequestedSource().getType()),
                     data,
                     toExtensionsMap(headers));
         } catch (JsonProcessingException e2) {

@@ -467,7 +467,7 @@ public class ProcessorAPITest {
         action.setMapParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
-        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getStatusCode()).isEqualTo(202);
     }
 
     @Test
@@ -483,7 +483,7 @@ public class ProcessorAPITest {
         action.setMapParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
-        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getStatusCode()).isEqualTo(202);
     }
 
     @Test
@@ -491,7 +491,8 @@ public class ProcessorAPITest {
     public void addProcessorWithWrongParametersNameToBridge() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        String requestBody = String.format("{\"name\": \"processorInvalid\", \"action\": {\"type\": \"Slack\", \"properties\": {\"channel\": \"test\", \"webhookUrl\": \"https://example.com\"}}}");
+        String requestBody =
+                String.format("{\"name\": \"processorInvalid\", \"action\": {\"type\": \"Slack\", \"properties\": {\"slack_channel\": \"test\", \"slack_webhook_url\": \"https://example.com\"}}}");
         Response response = TestUtils.addProcessorToBridgeWithRequestBody(bridgeResponse.getId(), requestBody);
         assertThat(response.getStatusCode()).isEqualTo(400);
     }

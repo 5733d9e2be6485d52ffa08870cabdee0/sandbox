@@ -36,10 +36,10 @@ if [ "${source_type}" = 'slack' ]; then
   source_payload='{
    "name": '"\"$source_name\""',
    "source": {
-      "type": "Slack",
+      "type": "slack_source_0.1",
       "parameters": {
-         "channel": "mc_source",
-         "token": '"\"$SLACK_TOKEN\""'
+         "slack_channel": "mc_source",
+         "slack_token": '"\"$SLACK_TOKEN\""'
       }
    }
 }'
@@ -47,7 +47,7 @@ elif [ "${source_type}" = 'awss3' ]; then
   source_payload='{
    "name": '"\"$source_name\""',
    "source": {
-      "type": "AwsS3",
+      "type": "aws_s3_source_0.1",
       "parameters": {
             "aws_bucket_name_or_arn": '"\"$S3_BUCKET\""',
             "aws_region": '"\"$S3_REGION\""',

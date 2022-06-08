@@ -8,7 +8,7 @@ Feature: Error handling tests
     {
         "name": "ehBridge",
         "error_handler": {
-            "type": "Webhook",
+            "type": "webhook_sink_0.1",
             "parameters": {
                 "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
             }
@@ -23,7 +23,7 @@ Feature: Error handling tests
     {
         "name": "whProcessor",
         "action": {
-            "type": "Webhook",
+            "type": "webhook_sink_0.1",
             "parameters": {
                 "endpoint": "https://example.com/dummy-webhook"
             }
@@ -33,7 +33,7 @@ Feature: Error handling tests
     """
     And the list of Processor instances of the Bridge "ehBridge" is containing the Processor "whProcessor"
     And the Processor "whProcessor" of the Bridge "ehBridge" is existing with status "ready" within 3 minutes
-    And the Processor "whProcessor" of the Bridge "ehBridge" has action of type "Webhook" and parameters:
+    And the Processor "whProcessor" of the Bridge "ehBridge" has action of type "webhook_sink_0.1" and parameters:
       | endpoint | https://example.com/dummy-webhook |
 
     When send a cloud event to the Ingress of the Bridge "ehBridge":

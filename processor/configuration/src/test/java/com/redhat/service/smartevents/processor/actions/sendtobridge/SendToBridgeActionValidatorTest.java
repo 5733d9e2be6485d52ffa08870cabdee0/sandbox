@@ -29,11 +29,6 @@ class SendToBridgeActionValidatorTest {
     }
 
     @Test
-    void isInvalidWithEmptyBridgeIdParam() {
-        assertIsInvalid(actionWith(paramsWithBridgeId("")), SendToBridgeActionValidator.INVALID_BRIDGE_ID_PARAM_MESSAGE);
-    }
-
-    @Test
     void isValidWithEmptyParams() {
         assertIsValid(actionWith(EMPTY_PARAMS));
     }

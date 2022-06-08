@@ -22,6 +22,10 @@
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>processor-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

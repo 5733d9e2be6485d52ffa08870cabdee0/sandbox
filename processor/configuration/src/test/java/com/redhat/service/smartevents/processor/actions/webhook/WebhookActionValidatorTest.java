@@ -25,8 +25,6 @@ import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAc
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.MISSING_ENDPOINT_PARAM_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.RESERVED_ATTRIBUTES_USAGE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -43,7 +41,7 @@ class WebhookActionValidatorTest {
     static final String INVALID_ENDPOINT_WRONG_PROTOCOL = "ftp://www.example.com/webhook";
 
     private static final Object[][] INVALID_PARAMS = {
-            { paramMap(null, null, null, null, null), MISSING_ENDPOINT_PARAM_MESSAGE },
+            { paramMap(null, null, null, null, null), "$.endpoint: is missing but it is required" },
             { paramMap(INVALID_ENDPOINT_NOT_URL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
             { paramMap(INVALID_ENDPOINT_MISSING_PROTOCOL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
             { paramMap(INVALID_ENDPOINT_UNKNOWN_PROTOCOL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
@@ -53,18 +51,19 @@ class WebhookActionValidatorTest {
             { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
             { paramMap(VALID_HTTP_ENDPOINT, "", VALID_PASSWORD, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
             { paramMap(VALID_HTTP_ENDPOINT, "", "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, "value"), RESERVED_ATTRIBUTES_USAGE_MESSAGE }
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, "value"),
+                    "$.useTechnicalBearerToken: is not defined in the schema and the schema does not allow additional properties" }
     };
 
     private static final Object[] VALID_PARAMS = {
             paramMap(VALID_HTTP_ENDPOINT, null, null, null, null),
             paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, null),
-            paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, "true", null),
-            paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, "false", null),
+            paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, true, null),
+            paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, false, null),
             paramMap(VALID_HTTPS_ENDPOINT, null, null, null, null),
             paramMap(VALID_HTTPS_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, null),
-            paramMap(VALID_HTTPS_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, "true", null),
-            paramMap(VALID_HTTPS_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, "false", null)
+            paramMap(VALID_HTTPS_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, true, null),
+            paramMap(VALID_HTTPS_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, false, null)
     };
 
     @Inject
@@ -102,8 +101,8 @@ class WebhookActionValidatorTest {
         return Arrays.stream(VALID_PARAMS).map(Arguments::of);
     }
 
-    private static Map<String, String> paramMap(String endpoint, String basicUsername, String basicAuthPassword, String disableSslVerification, String useBearerToken) {
-        Map<String, String> params = new HashMap<>();
+    private static Map<String, Object> paramMap(String endpoint, String basicUsername, String basicAuthPassword, Boolean disableSslVerification, String useBearerToken) {
+        Map<String, Object> params = new HashMap<>();
 
         if (endpoint != null) {
             params.put(ENDPOINT_PARAM, endpoint);

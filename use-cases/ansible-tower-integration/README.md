@@ -178,7 +178,7 @@ curl --request POST 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b9
              "parameters": {
                  "topic": "ansible-gateway-in"
              },
-             "type": "KafkaTopic"
+             "type": "kafka_topic_sink_0.1"
          },
          "filters": [
              {
@@ -221,7 +221,7 @@ The response should look like:
    "transformationTemplate": "{\"job_template_id\":7}",
    "action": {
       "name": "ansible-gw_kafka-action",
-      "type": "KafkaTopic",
+      "type": "kafka_topic_sink_0.1",
       "parameters": {
          "topic": "ansible-gateway-in"
       }

@@ -12,16 +12,16 @@ Feature: Slack Action tests
     {
       "name": "slackProcessor",
       "action": {
-        "type": "Slack",
+        "type": "slack_sink_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "webhookUrl": "${env.slack.webhook.url}"
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_webhook_url": "${env.slack.webhook.url}"
           }
       }
     }
     """
     And the Processor "slackProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
-    And the Processor "slackProcessor" of the Bridge "mybridge" has action of type "Slack"
+    And the Processor "slackProcessor" of the Bridge "mybridge" has action of type "slack_sink_0.1"
 
     And send a cloud event to the Ingress of the Bridge "mybridge":
     """
