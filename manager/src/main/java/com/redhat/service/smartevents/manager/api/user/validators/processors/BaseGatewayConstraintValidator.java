@@ -10,7 +10,6 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
@@ -49,15 +48,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
             return false;
         }
 
-        GatewayValidator validator;
-        try {
-            validator = gatewayConfigurator.getValidator(gateway.getType());
-        } catch (GatewayProviderException e) {
-            addConstraintViolation(context, GATEWAY_TYPE_NOT_RECOGNISED_ERROR,
-                    Map.of(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
-            return false;
-        }
-
+        GatewayValidator validator = gatewayConfigurator.getValidator(gateway.getType());
         ValidationResult v = validator.isValid(gateway);
 
         if (!v.isValid()) {

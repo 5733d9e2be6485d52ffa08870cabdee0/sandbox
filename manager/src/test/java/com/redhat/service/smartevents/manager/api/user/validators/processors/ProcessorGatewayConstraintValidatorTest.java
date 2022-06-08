@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.verification.VerificationMode;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -33,15 +32,12 @@ import static com.redhat.service.smartevents.manager.api.user.validators.process
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_NOT_VALID_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_MISSING_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_NOT_RECOGNISED_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MISSING_GATEWAY_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.TYPE_PARAM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -71,9 +67,7 @@ class ProcessorGatewayConstraintValidatorTest {
         lenient().when(validatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
         lenient().when(validatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
 
-        lenient().when(gatewayConfiguratorMock.getValidator(TEST_ACTION_TYPE)).thenReturn(validatorMock);
-        lenient().when(gatewayConfiguratorMock.getValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));
-        lenient().when(gatewayConfiguratorMock.getValidator(TEST_SOURCE_TYPE)).thenReturn(validatorMock);
+        lenient().when(gatewayConfiguratorMock.getValidator(any(String.class))).thenReturn(validatorMock);
 
         lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
@@ -146,20 +140,6 @@ class ProcessorGatewayConstraintValidatorTest {
         verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
         verifyIsValidCall(never());
         verifyErrorMessage(GATEWAY_TYPE_MISSING_ERROR, gateway, false);
-    }
-
-    @ParameterizedTest
-    @MethodSource("gateways")
-    void isValid_unrecognisedGatewayTypeIsNotValid(Gateway gateway) {
-        String doesNotExistType = "doesNotExist";
-
-        gateway.setType(doesNotExistType);
-        ProcessorRequest p = buildTestRequest(gateway);
-
-        assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(times(1), doesNotExistType);
-        verifyIsValidCall(never());
-        verifyErrorMessage(GATEWAY_TYPE_NOT_RECOGNISED_ERROR, gateway, true);
     }
 
     @ParameterizedTest
