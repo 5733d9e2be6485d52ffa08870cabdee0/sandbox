@@ -22,7 +22,10 @@ public class SlackResource {
                 .contentType(ContentType.JSON)
                 .when()
                 .get(SLACK_URI, SLACK_CHANNEL)
-                .getBody()
+                .then()
+                .log().ifValidationFails()
+                .statusCode(200)
+                .extract()
                 .jsonPath()
                 .getList("messages.text");
     }
