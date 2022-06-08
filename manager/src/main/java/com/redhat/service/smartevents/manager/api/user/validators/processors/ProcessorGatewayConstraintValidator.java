@@ -33,6 +33,9 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
         Action action = value.getAction();
         Source source = value.getSource();
 
+        System.out.println(action);
+        System.out.println(source);
+
         if (action == null && source == null) {
             addConstraintViolation(context, MISSING_GATEWAY_ERROR, Collections.emptyMap());
             return false;
