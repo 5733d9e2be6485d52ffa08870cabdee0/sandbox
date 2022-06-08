@@ -48,7 +48,6 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
             return false;
         }
 
-        return isValidGateway(action != null ? action : source, context);
+        return isValidGateway(value.getGateway(), context);
     }
-
 }

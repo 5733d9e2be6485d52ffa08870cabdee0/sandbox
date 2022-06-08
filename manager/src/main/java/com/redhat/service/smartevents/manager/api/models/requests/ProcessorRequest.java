@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
@@ -105,5 +106,18 @@ public class ProcessorRequest {
 
     public void setSource(Source source) {
         this.source = source;
+    }
+
+    public Gateway getGateway() {
+        if (action == null && source == null) {
+            throw new IllegalStateException("The action and the source are null in the ProcessorRequest.");
+        }
+        if (action != null && source != null) {
+            throw new IllegalStateException("The ProcessorRequest can have only the action or the source.");
+        }
+        if (action != null) {
+            return action;
+        }
+        return source;
     }
 }

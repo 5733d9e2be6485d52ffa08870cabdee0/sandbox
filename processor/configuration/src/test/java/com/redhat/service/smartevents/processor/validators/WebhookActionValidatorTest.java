@@ -74,14 +74,14 @@ class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validParams")
-    void isValid(Map<String, String> params) {
-        assertValidationIsValid(actionWith(WebhookAction.TYPE, params));
+    void isValid(Map<String, String> validParams) {
+        assertValidationIsValid(actionWith(WebhookAction.TYPE, validParams));
     }
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> params, String expectedErrorMessage) {
-        assertValidationIsInvalid(actionWith(WebhookAction.TYPE, params), expectedErrorMessage);
+    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
+        assertValidationIsInvalid(actionWith(WebhookAction.TYPE, invalidParams), expectedErrorMessage);
     }
 
     @Test

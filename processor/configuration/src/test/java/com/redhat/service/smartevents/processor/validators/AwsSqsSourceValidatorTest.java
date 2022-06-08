@@ -69,14 +69,14 @@ class AwsSqsSourceValidatorTest extends AbstractGatewayValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validParams")
-    void isValid(Map<String, String> params) {
-        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
+    void isValid(Map<String, String> validParams) {
+        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, validParams));
     }
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> params, String expectedErrorMessage) {
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params), expectedErrorMessage);
+    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
+        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, invalidParams), expectedErrorMessage);
     }
 
     private static Stream<Arguments> invalidParams() {
