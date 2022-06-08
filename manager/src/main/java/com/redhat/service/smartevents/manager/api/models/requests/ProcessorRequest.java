@@ -108,14 +108,7 @@ public class ProcessorRequest {
         this.source = source;
     }
 
-    @JsonIgnore
     public Gateway getGateway() {
-        if (action == null && source == null) {
-            throw new IllegalStateException("The action and the source are null in the ProcessorRequest.");
-        }
-        if (action != null && source != null) {
-            throw new IllegalStateException("The ProcessorRequest can have only the action or the source.");
-        }
         if (action != null) {
             return action;
         }
