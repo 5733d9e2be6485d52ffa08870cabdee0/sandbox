@@ -10,22 +10,20 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicActionValidator;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
-import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeActionResolver;
-import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeActionValidator;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.actions.slack.SlackActionResolver;
-import com.redhat.service.smartevents.processor.actions.slack.SlackActionValidator;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
+import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.ActionConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
-import com.redhat.service.smartevents.processor.sources.aws.AwsS3SourceValidator;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
-import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidator;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSourceValidator;
+import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.custom.AwsSqsSourceValidator;
+import com.redhat.service.smartevents.processor.validators.custom.CustomGatewayValidator;
+import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -35,15 +33,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GatewayConfiguratorImplTest {
 
     private static final Map<String, ExpectedBeanClasses<Action>> EXPECTED_ACTION_BEANS = Map.of(
-            KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null),
-            SendToBridgeAction.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class),
-            SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class),
+            KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
+            SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
+            SlackAction.TYPE, expect(DefaultGatewayValidator.class, ActionConnectorResolver.class),
             WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
-            AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SourceResolver.class),
-            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceResolver.class),
-            SlackSource.TYPE, expect(SlackSourceValidator.class, SourceResolver.class));
+            AwsS3Source.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
+            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceConnectorResolver.class),
+            SlackSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class));
 
     @Inject
     GatewayConfiguratorImpl configurator;
@@ -54,10 +52,10 @@ class GatewayConfiguratorImplTest {
             String type = entry.getKey();
             ExpectedBeanClasses<Action> expected = entry.getValue();
 
-            assertThat(configurator.getActionValidator(type))
+            assertThat(configurator.getValidator(type))
                     .as("GatewayConfigurator.getActionValidator(\"%s\") should not return null", type)
                     .isNotNull();
-            assertThat(configurator.getActionValidator(type))
+            assertThat(configurator.getValidator(type))
                     .as("GatewayConfigurator.getActionValidator(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
                     .isInstanceOf(expected.validatorClass);
 
@@ -82,11 +80,6 @@ class GatewayConfiguratorImplTest {
 
     @Test
     void testUnexpectedActionBeans() {
-        for (GatewayValidator<Action> validator : configurator.getActionValidators()) {
-            assertThat(EXPECTED_ACTION_BEANS)
-                    .as("Found unexpected validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
-                    .containsKey(validator.getType());
-        }
         for (GatewayResolver<Action> resolver : configurator.getActionResolvers()) {
             assertThat(EXPECTED_ACTION_BEANS)
                     .as("Found unexpected resolver bean for type %s of class %s. Add it to this test.", resolver.getType(), resolver.getClass())
@@ -100,11 +93,11 @@ class GatewayConfiguratorImplTest {
             String type = entry.getKey();
             ExpectedBeanClasses<Source> expected = entry.getValue();
 
-            assertThat(configurator.getSourceValidator(type))
-                    .as("GatewayConfigurator.getSourceValidator(\"%s\") should not return null", type)
+            assertThat(configurator.getValidator(type))
+                    .as("GatewayConfigurator.getValidator(\"%s\") should not return null", type)
                     .isNotNull();
-            assertThat(configurator.getSourceValidator(type))
-                    .as("GatewayConfigurator.getSourceValidator(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
+            assertThat(configurator.getValidator(type))
+                    .as("GatewayConfigurator.getValidator(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
                     .isInstanceOf(expected.validatorClass);
 
             assertThat(configurator.getSourceResolver(type))
@@ -116,22 +109,13 @@ class GatewayConfiguratorImplTest {
         }
     }
 
-    @Test
-    void testUnexpectedSourceBeans() {
-        for (GatewayValidator<Source> validator : configurator.getSourceValidators()) {
-            assertThat(EXPECTED_SOURCE_BEANS)
-                    .as("Found unexpected source validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
-                    .containsKey(validator.getType());
-        }
-    }
-
     private static class ExpectedBeanClasses<T extends Gateway> {
-        Class<? extends GatewayValidator<T>> validatorClass;
+        Class<? extends GatewayValidator> validatorClass;
         Class<? extends GatewayResolver<T>> resolverClass;
     }
 
     private static <T extends Gateway> ExpectedBeanClasses<T> expect(
-            Class<? extends GatewayValidator<T>> validatorClass,
+            Class<? extends GatewayValidator> validatorClass,
             Class<? extends GatewayResolver<T>> resolverClass) {
         ExpectedBeanClasses<T> expected = new ExpectedBeanClasses<>();
         expected.validatorClass = validatorClass;

@@ -27,7 +27,7 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_CLASS_PARAM;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
@@ -60,9 +60,7 @@ class ProcessorGatewayConstraintValidatorTest {
     @Mock
     GatewayConfigurator gatewayConfiguratorMock;
     @Mock
-    GatewayValidator<Action> actionValidatorMock;
-    @Mock
-    GatewayValidator<Source> sourceValidatorMock;
+    GatewayValidator validatorMock;
     @Mock
     HibernateConstraintValidatorContext validatorContextMock;
     @Mock
@@ -70,14 +68,11 @@ class ProcessorGatewayConstraintValidatorTest {
 
     @BeforeEach
     public void beforeEach() {
-        lenient().when(actionValidatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
+        lenient().when(validatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
 
-        lenient().when(sourceValidatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
-
-        lenient().when(gatewayConfiguratorMock.getActionValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
-        lenient().when(gatewayConfiguratorMock.getActionValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));
-        lenient().when(gatewayConfiguratorMock.getSourceValidator(TEST_SOURCE_TYPE)).thenReturn(sourceValidatorMock);
-        lenient().when(gatewayConfiguratorMock.getSourceValidator(not(eq(TEST_SOURCE_TYPE)))).thenThrow(new GatewayProviderException("No source provider found"));
+        lenient().when(gatewayConfiguratorMock.getValidator(TEST_ACTION_TYPE)).thenReturn(validatorMock);
+        lenient().when(gatewayConfiguratorMock.getValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));
+        lenient().when(gatewayConfiguratorMock.getValidator(TEST_SOURCE_TYPE)).thenReturn(validatorMock);
 
         lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
@@ -90,10 +85,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = new ProcessorRequest();
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
-        verify(gatewayConfiguratorMock, never()).getSourceValidator(any());
-        verify(actionValidatorMock, never()).isValid(any());
-        verify(sourceValidatorMock, never()).isValid(any());
+        verify(gatewayConfiguratorMock, never()).getValidator(any());
+        verify(validatorMock, never()).isValid(any());
         verifyErrorMessage(MISSING_GATEWAY_ERROR);
     }
 
@@ -104,10 +97,8 @@ class ProcessorGatewayConstraintValidatorTest {
         p.setSource(buildTestSource());
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verify(gatewayConfiguratorMock, never()).getActionValidator(any());
-        verify(gatewayConfiguratorMock, never()).getSourceValidator(any());
-        verify(actionValidatorMock, never()).isValid(any());
-        verify(sourceValidatorMock, never()).isValid(any());
+        verify(gatewayConfiguratorMock, never()).getValidator(any());
+        verify(validatorMock, never()).isValid(any());
         verifyErrorMessage(MULTIPLE_GATEWAY_ERROR);
     }
 
@@ -117,8 +108,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-        verifyGetValidatorCall(gateway, times(1), gateway.getType());
-        verifyIsValidCall(gateway, times(1));
+        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyIsValidCall(times(1));
     }
 
     @ParameterizedTest
@@ -128,8 +119,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(gateway, never(), ArgumentMatchers::anyString);
-        verifyIsValidCall(gateway, never());
+        verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
+        verifyIsValidCall(never());
         verifyErrorMessage(GATEWAY_PARAMETERS_MISSING_ERROR, gateway, false);
     }
 
@@ -140,8 +131,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-        verifyGetValidatorCall(gateway, times(1), gateway.getType());
-        verifyIsValidCall(gateway, times(1));
+        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyIsValidCall(times(1));
     }
 
     @ParameterizedTest
@@ -151,8 +142,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(gateway, never(), ArgumentMatchers::anyString);
-        verifyIsValidCall(gateway, never());
+        verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
+        verifyIsValidCall(never());
         verifyErrorMessage(GATEWAY_TYPE_MISSING_ERROR, gateway, false);
     }
 
@@ -165,8 +156,8 @@ class ProcessorGatewayConstraintValidatorTest {
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(gateway, times(1), doesNotExistType);
-        verifyIsValidCall(gateway, never());
+        verifyGetValidatorCall(times(1), doesNotExistType);
+        verifyIsValidCall(never());
         verifyErrorMessage(GATEWAY_TYPE_NOT_RECOGNISED_ERROR, gateway, true);
     }
 
@@ -174,28 +165,26 @@ class ProcessorGatewayConstraintValidatorTest {
     @MethodSource("gateways")
     void isValid_messageFromGatewayValidatorAddedOnFailure(Gateway gateway) {
         String testErrorMessage = "This is a test error message returned from validator";
-        lenient().when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(testErrorMessage));
-        lenient().when(sourceValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid(testErrorMessage));
+        lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid(testErrorMessage));
 
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(gateway, times(1), gateway.getType());
-        verifyIsValidCall(gateway, times(1));
+        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyIsValidCall(times(1));
         verifyErrorMessage(testErrorMessage);
     }
 
     @ParameterizedTest
     @MethodSource("gateways")
     void isValid_noMessageFromValidatorGenericMessageAdded(Gateway gateway) {
-        lenient().when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid());
-        lenient().when(sourceValidatorMock.isValid(any())).thenReturn(ValidationResult.invalid());
+        lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid());
 
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(gateway, times(1), gateway.getType());
-        verifyIsValidCall(gateway, times(1));
+        verifyGetValidatorCall(times(1), gateway.getType());
+        verifyIsValidCall(times(1));
         verifyErrorMessage(GATEWAY_PARAMETERS_NOT_VALID_ERROR, gateway, true);
     }
 
@@ -207,36 +196,26 @@ class ProcessorGatewayConstraintValidatorTest {
 
         if (p.getType() == ProcessorType.SOURCE) {
             assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-            verifyGetValidatorCall(gateway, never(), ArgumentMatchers::anyString);
-            verifyIsValidCall(gateway, never());
+            verifyGetValidatorCall(never(), ArgumentMatchers::anyString);
+            verifyIsValidCall(never());
             verifyErrorMessage(SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR);
         } else {
             assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
-            verifyGetValidatorCall(gateway, times(1), gateway.getType());
-            verifyIsValidCall(gateway, times(1));
+            verifyGetValidatorCall(times(1), gateway.getType());
+            verifyIsValidCall(times(1));
         }
     }
 
-    private void verifyGetValidatorCall(Gateway gateway, VerificationMode mode, String argument) {
-        verifyGetValidatorCall(gateway, mode, () -> argument);
+    private void verifyGetValidatorCall(VerificationMode mode, String argument) {
+        verifyGetValidatorCall(mode, () -> argument);
     }
 
-    private void verifyGetValidatorCall(Gateway gateway, VerificationMode mode, Supplier<String> argumentSupplier) {
-        if (gateway instanceof Action) {
-            verify(gatewayConfiguratorMock, mode).getActionValidator(argumentSupplier.get());
-        } else {
-            verify(gatewayConfiguratorMock, mode).getSourceValidator(argumentSupplier.get());
-        }
+    private void verifyGetValidatorCall(VerificationMode mode, Supplier<String> argumentSupplier) {
+        verify(gatewayConfiguratorMock, mode).getValidator(argumentSupplier.get());
     }
 
-    private void verifyIsValidCall(Gateway gateway, VerificationMode mode) {
-        if (gateway instanceof Action) {
-            verify(actionValidatorMock, mode).isValid(any());
-            verify(sourceValidatorMock, never()).isValid(any());
-        } else {
-            verify(sourceValidatorMock, mode).isValid(any());
-            verify(actionValidatorMock, never()).isValid(any());
-        }
+    private void verifyIsValidCall(VerificationMode mode) {
+        verify(validatorMock, mode).isValid(any());
     }
 
     private void verifyErrorMessage(String expectedMessage) {

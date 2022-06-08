@@ -48,9 +48,7 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
             return false;
         }
 
-        return action != null
-                ? isValidGateway(action, context, gatewayConfigurator::getActionValidator)
-                : isValidGateway(source, context, gatewayConfigurator::getSourceValidator);
+        return isValidGateway(action != null ? action : source, context);
     }
 
 }

@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager.api.user.validators.processors;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -15,7 +14,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implements ConstraintValidator<A, T> {
 
@@ -37,7 +36,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
         this.gatewayConfigurator = gatewayConfigurator;
     }
 
-    protected <T extends Gateway> boolean isValidGateway(T gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<T>> validatorGetter) {
+    protected boolean isValidGateway(Gateway gateway, ConstraintValidatorContext context) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
                     Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
@@ -50,9 +49,9 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
             return false;
         }
 
-        GatewayValidator<T> validator;
+        GatewayValidator validator;
         try {
-            validator = validatorGetter.apply(gateway.getType());
+            validator = gatewayConfigurator.getValidator(gateway.getType());
         } catch (GatewayProviderException e) {
             addConstraintViolation(context, GATEWAY_TYPE_NOT_RECOGNISED_ERROR,
                     Map.of(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));

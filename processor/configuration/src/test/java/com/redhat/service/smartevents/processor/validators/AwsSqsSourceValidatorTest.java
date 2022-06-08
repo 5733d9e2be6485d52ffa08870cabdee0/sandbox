@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources.aws;
+package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,8 +13,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
-import com.redhat.service.smartevents.processor.GatewayValidator;
-import com.redhat.service.smartevents.processor.sources.AbstractSourceTest;
+import com.redhat.service.smartevents.processor.resolvers.AbstractSourceTest;
+import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.validators.custom.AwsSqsSourceValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -31,7 +32,7 @@ class AwsSqsSourceValidatorTest extends AbstractSourceTest<Source> {
     AwsSqsSourceValidator validator;
 
     @Override
-    protected GatewayValidator<Source> getValidator() {
+    protected GatewayValidator getValidator() {
         return validator;
     }
 

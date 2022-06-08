@@ -35,7 +35,7 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
             return true;
         }
 
-        if (!isValidGateway(action, context, gatewayConfigurator::getActionValidator)) {
+        if (!isValidGateway(action, context)) {
             return false;
         }
 

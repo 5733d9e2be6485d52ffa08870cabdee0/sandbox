@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions.webhook;
+package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,6 +14,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -22,9 +24,9 @@ import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAc
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.ENDPOINT_PARAM;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.SSL_VERIFICATION_DISABLED;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
