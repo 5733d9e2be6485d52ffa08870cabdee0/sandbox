@@ -13,10 +13,10 @@ Feature: Slack Source tests
     {
       "name": "slackSourceProcessor",
       "source": {
-        "type": "Slack",
+        "type": "slack_source_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "token": "${env.slack.webhook.token}",
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_token": "${env.slack.webhook.token}",
             "slack_delay": "5s"
           }
       },
@@ -34,19 +34,19 @@ Feature: Slack Source tests
     {
       "name": "slackForwardProcessor",
       "action": {
-        "type": "Slack",
+        "type": "slack_sink_0.1",
         "parameters": {
-            "channel": "${env.slack.channel.name}",
-            "webhookUrl": "${env.slack.webhook.url}"
+            "slack_channel": "${env.slack.channel.name}",
+            "slack_webhook_url": "${env.slack.webhook.url}"
           }
       },
       "transformationTemplate": "Message {data.text} was observed"
     }
     """
     And the Processor "slackSourceProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
-    And the Processor "slackSourceProcessor" of the Bridge "mybridge" has source of type "Slack"
+    And the Processor "slackSourceProcessor" of the Bridge "mybridge" has source of type "slack_source_0.1"
     And the Processor "slackForwardProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
-    And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "Slack"
+    And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "slack_sink_0.1"
 
 
     And create message with text "Slack Event Source Feature trigger ${uuid.slack.source.trigger}" on slack channel

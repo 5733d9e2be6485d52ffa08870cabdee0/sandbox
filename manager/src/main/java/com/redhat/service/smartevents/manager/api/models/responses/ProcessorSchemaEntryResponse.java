@@ -6,8 +6,8 @@ public class ProcessorSchemaEntryResponse {
     @JsonProperty("kind")
     private final String kind = "ProcessorSchemaEntry";
 
-    @JsonProperty("name")
-    private String name;
+    @JsonProperty("id")
+    private String id;
 
     @JsonProperty("type")
     private String type;
@@ -18,18 +18,18 @@ public class ProcessorSchemaEntryResponse {
     public ProcessorSchemaEntryResponse() {
     }
 
-    public ProcessorSchemaEntryResponse(String name, String type, String href) {
-        this.name = name;
+    public ProcessorSchemaEntryResponse(String id, String type, String href) {
+        this.id = id;
         this.type = type;
         this.href = href;
     }
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getType() {

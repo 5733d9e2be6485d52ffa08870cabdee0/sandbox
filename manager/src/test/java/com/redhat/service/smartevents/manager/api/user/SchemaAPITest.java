@@ -1,11 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user;
 
-import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +27,8 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
-    private static final List<String> availableActions = List.of("KafkaTopic", "SendToBridge", "Slack", "Webhook");
-    private static final List<String> availableSources = List.of("AwsS3", "AwsSqs", "Slack");
+    private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1");
+    private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @InjectMock
     JsonWebToken jwt;
@@ -46,27 +42,8 @@ public class SchemaAPITest {
     @Test
     public void testAuthentication() {
         TestUtils.getProcessorsSchemaCatalog().then().statusCode(401);
-        TestUtils.getSourceProcessorsSchema("Slack").then().statusCode(401);
-        TestUtils.getActionProcessorsSchema("Slack").then().statusCode(401);
-    }
-
-    @Test
-    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
-    public void testSchemasAreIncludedInCatalog() {
-        File actionsDir = new File("src/main/resources/schemas/actions/");
-        File sourcesDir = new File("src/main/resources/schemas/sources/");
-        List<String> actions = Arrays.stream(Objects.requireNonNull(actionsDir.listFiles())).map(File::getName).collect(Collectors.toList());
-        List<String> sources = Arrays.stream(Objects.requireNonNull(sourcesDir.listFiles())).map(File::getName).collect(Collectors.toList());
-        ProcessorCatalogResponse catalog = TestUtils.getProcessorsSchemaCatalog().as(ProcessorCatalogResponse.class);
-
-        assertThat(actions).contains("catalog.json");
-        assertThat(sources).contains("catalog.json");
-        assertThat(catalog.getItems().stream().filter(x -> "action".equals(x.getType())).count())
-                .withFailMessage("An action processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(actions.size() - 1);
-        assertThat(catalog.getItems().stream().filter(x -> "source".equals(x.getType())).count())
-                .withFailMessage("A source processor json schema file was not added to the catalog.json file.")
-                .isEqualTo(sources.size() - 1);
+        TestUtils.getSourceProcessorsSchema("slack_source_0.1").then().statusCode(401);
+        TestUtils.getActionProcessorsSchema("slack_sink_0.1").then().statusCode(401);
     }
 
     @Test
@@ -81,16 +58,16 @@ public class SchemaAPITest {
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
-                    assertThat(availableActions).contains(entry.getName());
+                    assertThat(availableActions).contains(entry.getId());
                     break;
                 case "source":
-                    assertThat(availableSources).contains(entry.getName());
+                    assertThat(availableSources).contains(entry.getId());
                     break;
                 default:
                     fail("entry type does not match 'source' nor 'action'");
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
-            assertThat(entry.getHref()).contains(entry.getName()); // The href should contain the name
+            assertThat(entry.getHref()).contains(entry.getId()); // The href should contain the name
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
     }
@@ -99,8 +76,8 @@ public class SchemaAPITest {
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void getUnexistingProcessorsSchema() {
         TestUtils.getSourceProcessorsSchema("wrong").then().statusCode(404);
-        TestUtils.getSourceProcessorsSchema("KafkaTopic").then().statusCode(404);
-        TestUtils.getActionProcessorsSchema("AwsS3").then().statusCode(404);
+        TestUtils.getSourceProcessorsSchema("kafka_topic_sink_0.1").then().statusCode(404);
+        TestUtils.getActionProcessorsSchema("aws_s3_source_0.1").then().statusCode(404);
     }
 
     @Test

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "kafka_topic_sink_0.1",
+    "isConnector": false
+  },
+  {
+    "id": "send_to_bridge_sink_0.1",
+    "isConnector": false
+  },
+  {
+    "id": "slack_sink_0.1",
+    "isConnector": true
+  },
+  {
+    "id": "webhook_sink_0.1",
+    "isConnector": false
+  }
+]

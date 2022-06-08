@@ -37,7 +37,7 @@ To send an Event to the topic `myRequestedTopic`:
 ```json
 {
   "action": {
-    "type": "KafkaTopic",
+    "type": "kafka_topic_sink_0.1",
     "parameters": {
       "topic": "myRequestedTopic"
     }
@@ -60,7 +60,7 @@ To send an HTTP POST to `https://example.com/my-webhook-endpoint`:
 ```json
 {
   "action": {
-    "type": "Webhook",
+    "type": "webhook_sink_0.1",
     "parameters": {
       "endpoint": "https://example.com/my-webhook-endpoint"
     }
@@ -87,7 +87,7 @@ To send an event to bridge with id `foo` in my account:
 ```json
 {
   "action": {
-    "type": "SendToBridge",
+    "type": "send_to_bridge_sink_0.1",
     "parameters": {
       "bridgeId": "foo"
     }
@@ -101,8 +101,8 @@ Allows you to send a message to a Slack Channel of your choice
 
 #### Slack Configuration Parameters
 
-- `channel` - The Slack Channel to send the message to
-- `webhookUrl` - The webhook URL for the Slack Channel
+- `slack_channel` - The Slack Channel to send the message to
+- `slack_webhook_url` - The webhook URL for the Slack Channel
 
 #### Slack Example
 
@@ -111,10 +111,10 @@ To send an Event to channel `foo` with webhook URL `https://example.com`:
 ```json
 {
   "action": {
-    "type": "Slack",
+    "type": "slack_sink_0.1",
     "parameters": {
-      "channel": "foo",
-      "webhookUrl": "https://example.com"
+      "slack_channel": "foo",
+      "slack_webhook_url": "https://example.com"
     }
   }
 }

@@ -51,16 +51,6 @@ class KafkaTopicActionValidatorTest {
         ValidationResult validationResult = validator.isValid(action);
 
         assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
-    }
-
-    @Test
-    void isInvalid_emptyTopicStringIsNotValid() {
-        Action action = createActionWithTopic("myTopic");
-        action.getParameters().put(KafkaTopicAction.TOPIC_PARAM, "");
-        ValidationResult validationResult = validator.isValid(action);
-
-        assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).isEqualTo(KafkaTopicActionValidator.INVALID_TOPIC_PARAM_MESSAGE);
+        assertThat(validationResult.getMessage()).isEqualTo("$.topic: is missing but it is required");
     }
 }

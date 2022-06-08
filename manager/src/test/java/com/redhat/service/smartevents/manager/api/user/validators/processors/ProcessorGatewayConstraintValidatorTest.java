@@ -70,9 +70,9 @@ class ProcessorGatewayConstraintValidatorTest {
 
     @BeforeEach
     public void beforeEach() {
-        lenient().when(actionValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
+        lenient().when(actionValidatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
 
-        lenient().when(sourceValidatorMock.isValid(any())).thenReturn(ValidationResult.valid());
+        lenient().when(sourceValidatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
 
         lenient().when(gatewayConfiguratorMock.getActionValidator(TEST_ACTION_TYPE)).thenReturn(actionValidatorMock);
         lenient().when(gatewayConfiguratorMock.getActionValidator(not(eq(TEST_ACTION_TYPE)))).thenThrow(new GatewayProviderException("No action provider found"));

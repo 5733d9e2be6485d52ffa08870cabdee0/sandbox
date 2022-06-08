@@ -1,7 +1,7 @@
 # Source Processors Demo
 
 This document explains how _source processors_ work and how to configure a simple local demo using
-a _SlackSource_ and a _SlackAction_ (called _"From Slack To Slack"_).
+a _slack_source_0.1_ and a _slack_sink_0.1_ actions (called _"From Slack To Slack"_).
 
 ## How to define a source processor
 
@@ -20,10 +20,10 @@ More information on available sources can be found in the [dedicated document](.
 {
   "name": "slack-source",
   "source": {
-    "type": "Slack",
+    "type": "slack_source_0.1",
     "parameters": {
-      "channel": "my-read-channel",
-      "token": "xoxb-..."
+      "slack_channel": "my-read-channel",
+      "slack_token": "xoxb-..."
     }
   },
   "filters": [
@@ -41,7 +41,7 @@ More information on available sources can be found in the [dedicated document](.
 This demo reads messages from a Slack channel and, for each one, posts a message to another Slack channel containing
 the user ID and the text.
 
-It uses one source processor containing a _SlackSource_ and one sink processor containing a _SlackAction_
+It uses one source processor containing a _slack_source_0.1_ and one sink processor containing a _SlackAction_
 (thus the name _"From Slack To Slack"_).
 
 ### Preliminary assumption
@@ -59,10 +59,10 @@ you want to read from and set the correct `token`. Here is the JSON:
 {
   "name": "slack-source",
   "source": {
-    "type": "Slack",
+    "type": "slack_source_0.1",
     "parameters": {
-      "channel": "my-read-channel",
-      "token": "xoxb-..."
+      "slack_channel": "my-read-channel",
+      "slack_token": "xoxb-..."
     }
   }
 }
@@ -77,17 +77,17 @@ you want to write to and set the correct `webhookUrl`. Here is the JSON:
 {
   "name": "slack-sink",
   "action": {
-    "type": "Slack",
+    "type": "slack_sink_0.1",
     "parameters": {
-      "channel": "my-write-channel",
-      "webhookUrl": "https://hooks.slack.com/services/..."
+      "slack_channel": "my-write-channel",
+      "slack_webhook_url": "https://hooks.slack.com/services/..."
     }
   },
   "filters": [
     {
       "key": "type",
       "type": "StringEquals",
-      "value": "SlackSource"
+      "value": "slack_source_0.1"
     }
   ],
   "transformationTemplate": "Slack user {data.user} says \"{data.text}\""

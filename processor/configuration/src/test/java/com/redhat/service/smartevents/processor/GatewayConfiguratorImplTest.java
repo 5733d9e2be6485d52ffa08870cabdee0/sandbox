@@ -15,20 +15,16 @@ import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridg
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeActionValidator;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.actions.slack.SlackActionConnector;
 import com.redhat.service.smartevents.processor.actions.slack.SlackActionResolver;
 import com.redhat.service.smartevents.processor.actions.slack.SlackActionValidator;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator;
 import com.redhat.service.smartevents.processor.sources.SourceResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
-import com.redhat.service.smartevents.processor.sources.aws.AwsS3SourceConnector;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3SourceValidator;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
-import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceConnector;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSourceValidator;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSourceConnector;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSourceValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -39,15 +35,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GatewayConfiguratorImplTest {
 
     private static final Map<String, ExpectedBeanClasses<Action>> EXPECTED_ACTION_BEANS = Map.of(
-            KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null, null),
-            SendToBridgeAction.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class, null),
-            SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class, SlackActionConnector.class),
-            WebhookAction.TYPE, expect(WebhookActionValidator.class, null, null));
+            KafkaTopicAction.TYPE, expect(KafkaTopicActionValidator.class, null),
+            SendToBridgeAction.TYPE, expect(SendToBridgeActionValidator.class, SendToBridgeActionResolver.class),
+            SlackAction.TYPE, expect(SlackActionValidator.class, SlackActionResolver.class),
+            WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
-            AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SourceResolver.class, AwsS3SourceConnector.class),
-            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceResolver.class, AwsSqsSourceConnector.class),
-            SlackSource.TYPE, expect(SlackSourceValidator.class, SourceResolver.class, SlackSourceConnector.class));
+            AwsS3Source.TYPE, expect(AwsS3SourceValidator.class, SourceResolver.class),
+            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceResolver.class),
+            SlackSource.TYPE, expect(SlackSourceValidator.class, SourceResolver.class));
 
     @Inject
     GatewayConfiguratorImpl configurator;
@@ -81,23 +77,6 @@ class GatewayConfiguratorImplTest {
                         .as("GatewayConfigurator.getActionResolver(\"%s\") should contain instance of %s", type, expected.resolverClass.getSimpleName())
                         .containsInstanceOf(expected.resolverClass);
             }
-
-            assertThat(configurator.getActionConnector(type))
-                    .as("GatewayConfigurator.getActionConnector(\"%s\") should not return null", type)
-                    .isNotNull();
-
-            if (expected.connectorClass == null) {
-                assertThat(configurator.getActionConnector(type))
-                        .as("GatewayConfigurator.getActionConnector(\"%s\") should be empty", type)
-                        .isNotPresent();
-            } else {
-                assertThat(configurator.getActionConnector(type))
-                        .as("GatewayConfigurator.getActionConnector(\"%s\") should not be empty", type)
-                        .isPresent();
-                assertThat(configurator.getActionConnector(type))
-                        .as("GatewayConfigurator.getActionConnector(\"%s\") should contain instance of %s", type, expected.connectorClass.getSimpleName())
-                        .containsInstanceOf(expected.connectorClass);
-            }
         }
     }
 
@@ -112,11 +91,6 @@ class GatewayConfiguratorImplTest {
             assertThat(EXPECTED_ACTION_BEANS)
                     .as("Found unexpected resolver bean for type %s of class %s. Add it to this test.", resolver.getType(), resolver.getClass())
                     .containsKey(resolver.getType());
-        }
-        for (GatewayConnector<Action> connector : configurator.getActionConnectors()) {
-            assertThat(EXPECTED_ACTION_BEANS)
-                    .as("Found unexpected connector bean for type %s of class %s. Add it to this test.", connector.getType(), connector.getClass())
-                    .containsKey(connector.getType());
         }
     }
 
@@ -139,13 +113,6 @@ class GatewayConfiguratorImplTest {
             assertThat(configurator.getSourceResolver(type))
                     .as("GatewayConfigurator.getSourceResolver(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
                     .isInstanceOf(expected.resolverClass);
-
-            assertThat(configurator.getSourceConnector(type))
-                    .as("GatewayConfigurator.getSourceConnector(\"%s\") should be instance of %s", type, expected.validatorClass.getSimpleName())
-                    .isInstanceOf(expected.connectorClass);
-            assertThat(configurator.getSourceConnector(type))
-                    .as("GatewayConfigurator.getSourceConnector(\"%s\") should not return null", type)
-                    .isNotNull();
         }
     }
 
@@ -156,27 +123,19 @@ class GatewayConfiguratorImplTest {
                     .as("Found unexpected source validator bean for type %s of class %s. Add it to this test.", validator.getType(), validator.getClass())
                     .containsKey(validator.getType());
         }
-        for (GatewayConnector<Source> connector : configurator.getSourceConnectors()) {
-            assertThat(EXPECTED_SOURCE_BEANS)
-                    .as("Found unexpected source connector bean for type %s of class %s. Add it to this test.", connector.getType(), connector.getClass())
-                    .containsKey(connector.getType());
-        }
     }
 
     private static class ExpectedBeanClasses<T extends Gateway> {
         Class<? extends GatewayValidator<T>> validatorClass;
         Class<? extends GatewayResolver<T>> resolverClass;
-        Class<? extends GatewayConnector<T>> connectorClass;
     }
 
     private static <T extends Gateway> ExpectedBeanClasses<T> expect(
             Class<? extends GatewayValidator<T>> validatorClass,
-            Class<? extends GatewayResolver<T>> resolverClass,
-            Class<? extends GatewayConnector<T>> connectorClass) {
+            Class<? extends GatewayResolver<T>> resolverClass) {
         ExpectedBeanClasses<T> expected = new ExpectedBeanClasses<>();
         expected.validatorClass = validatorClass;
         expected.resolverClass = resolverClass;
-        expected.connectorClass = connectorClass;
         return expected;
     }
 }
