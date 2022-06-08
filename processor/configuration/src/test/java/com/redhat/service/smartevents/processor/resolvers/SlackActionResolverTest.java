@@ -11,7 +11,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.resolvers.custom.ActionConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class ActionConnectorResolverTest {
+class SlackActionResolverTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_CUSTOMER_ID = "test-customer-id";
@@ -33,7 +33,7 @@ class ActionConnectorResolverTest {
     private static final String TEST_WEBHOOK_PARAM = "myWebhook";
 
     @Inject
-    ActionConnectorResolver actionConnectorResolver;
+    SlackActionResolver slackActionResolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
@@ -50,7 +50,7 @@ class ActionConnectorResolverTest {
     void testTransform() {
         Action action = buildTestAction();
 
-        Action transformedAction = actionConnectorResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
+        Action transformedAction = slackActionResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
         assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
 

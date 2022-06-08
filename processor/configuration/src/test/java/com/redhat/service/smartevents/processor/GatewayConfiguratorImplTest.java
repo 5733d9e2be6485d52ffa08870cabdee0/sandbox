@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridg
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
-import com.redhat.service.smartevents.processor.resolvers.custom.ActionConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
@@ -22,7 +22,6 @@ import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
 import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 import com.redhat.service.smartevents.processor.validators.custom.AwsSqsSourceValidator;
-import com.redhat.service.smartevents.processor.validators.custom.CustomGatewayValidator;
 import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -35,7 +34,7 @@ class GatewayConfiguratorImplTest {
     private static final Map<String, ExpectedBeanClasses<Action>> EXPECTED_ACTION_BEANS = Map.of(
             KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
-            SlackAction.TYPE, expect(DefaultGatewayValidator.class, ActionConnectorResolver.class),
+            SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
             WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
