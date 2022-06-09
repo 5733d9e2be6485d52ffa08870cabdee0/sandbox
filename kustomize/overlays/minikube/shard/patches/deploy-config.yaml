@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:177cea4220266ec168e47bc87c0bca3ec5dd524f-jvm
-  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:f3d1f35bef05bfc164f3e4eedbaf24a37afeaa47-jvm
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:27b972abf4f915081b4e4aae8e7ea902487b0832-jvm
+  EVENT_BRIDGE_INGRESS_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/ingress:27b972abf4f915081b4e4aae8e7ea902487b0832-jvm
   EVENT_BRIDGE_K8S_PLATFORM: k8s
   EVENT_BRIDGE_MANAGER_URL: http://event-bridge.event-bridge-manager.svc.cluster.local:8080
   EVENT_BRIDGE_SHARD_ID: 150b23e9-0b34-45b7-a91a-5ec388d03a1d
