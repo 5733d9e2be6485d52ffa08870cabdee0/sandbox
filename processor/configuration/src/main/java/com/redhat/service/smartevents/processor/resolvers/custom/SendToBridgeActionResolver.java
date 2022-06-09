@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions.sendtobridge;
+package com.redhat.service.smartevents.processor.resolvers.custom;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,6 +12,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayResolver;
+import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped

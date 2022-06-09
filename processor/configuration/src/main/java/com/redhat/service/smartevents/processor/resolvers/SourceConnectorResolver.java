@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources;
+package com.redhat.service.smartevents.processor.resolvers;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,9 +18,9 @@ import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class SourceResolver implements GatewayResolver<Source> {
+public class SourceConnectorResolver implements GatewayResolver<Source> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SourceResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SourceConnectorResolver.class);
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

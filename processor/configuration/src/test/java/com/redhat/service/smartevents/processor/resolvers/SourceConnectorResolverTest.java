@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.sources;
+package com.redhat.service.smartevents.processor.resolvers;
 
 import java.util.Map;
 
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class SourceResolverTest {
+class SourceConnectorResolverTest {
 
     private static final String CUSTOMER_ID = "test-customer";
     private static final String BRIDGE_ID = "br-01";
@@ -40,7 +40,7 @@ class SourceResolverTest {
     private static final String PROCESSOR_ID = "pr-01";
 
     @Inject
-    SourceResolver resolver;
+    SourceConnectorResolver resolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
