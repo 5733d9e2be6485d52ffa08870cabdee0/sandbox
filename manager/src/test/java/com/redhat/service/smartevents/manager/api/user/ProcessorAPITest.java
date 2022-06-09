@@ -542,7 +542,9 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
-        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
+        ProcessorRequest request = new ProcessorRequest();
+        request.setAction(TestUtils.createKafkaAction());
+        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, request);
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

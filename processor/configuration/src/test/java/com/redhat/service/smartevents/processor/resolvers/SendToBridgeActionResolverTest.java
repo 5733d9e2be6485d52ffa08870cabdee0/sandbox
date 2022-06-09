@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions.sendtobridge;
+package com.redhat.service.smartevents.processor.resolvers;
 
 import java.util.Map;
 
@@ -11,7 +11,9 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLi
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
+import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;

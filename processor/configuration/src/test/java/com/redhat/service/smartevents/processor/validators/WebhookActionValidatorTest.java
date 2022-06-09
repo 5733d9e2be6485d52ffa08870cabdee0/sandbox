@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions.webhook;
+package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,6 +14,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
+import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -22,13 +25,13 @@ import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAc
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.ENDPOINT_PARAM;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.SSL_VERIFICATION_DISABLED;
 import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAction.USE_TECHNICAL_BEARER_TOKEN_PARAM;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
-import static com.redhat.service.smartevents.processor.actions.webhook.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
+import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class WebhookActionValidatorTest {
+class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
 
     static final String VALID_HTTP_ENDPOINT = "http://www.example.com/webhook";
     static final String VALID_HTTPS_ENDPOINT = "https://www.example.com/webhook";
@@ -71,17 +74,14 @@ class WebhookActionValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validParams")
-    void isValid(Map<String, String> params) {
-        ValidationResult validationResult = validator.isValid(actionWith(params));
-        assertThat(validationResult.isValid()).isTrue();
+    void isValid(Map<String, String> validParams) {
+        assertValidationIsValid(actionWith(WebhookAction.TYPE, validParams));
     }
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> params, String expectedErrorMessage) {
-        ValidationResult validationResult = validator.isValid(actionWith(params));
-        assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).startsWith(expectedErrorMessage);
+    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
+        assertValidationIsInvalid(actionWith(WebhookAction.TYPE, invalidParams), expectedErrorMessage);
     }
 
     @Test
@@ -122,10 +122,8 @@ class WebhookActionValidatorTest {
         return params;
     }
 
-    private static Action actionWith(Map<String, String> params) {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setMapParameters(params);
-        return action;
+    @Override
+    protected GatewayValidator getValidator() {
+        return validator;
     }
 }

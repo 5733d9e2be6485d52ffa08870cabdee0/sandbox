@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.actions.aws;
+package com.redhat.service.smartevents.processor.resolvers.custom;
 
 import javax.inject.Inject;
 
@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayResolver;
+import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 public class AwsLambdaActionResolver implements AwsLambdaAction,

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
@@ -105,5 +106,13 @@ public class ProcessorRequest {
 
     public void setSource(Source source) {
         this.source = source;
+    }
+
+    @JsonIgnore
+    public Gateway getGateway() {
+        if (action != null) {
+            return action;
+        }
+        return source;
     }
 }
