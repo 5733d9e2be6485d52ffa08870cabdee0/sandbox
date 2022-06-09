@@ -108,6 +108,7 @@ public class ProcessorRequest {
         this.source = source;
     }
 
+    @JsonIgnore
     public Gateway getGateway() {
         if (action != null) {
             return action;
