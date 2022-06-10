@@ -58,7 +58,7 @@ public class SchemaAPITest {
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
-                    assertThat(availableActions).contains(entry.getId());
+                    assertThat(`availableActions`).contains(entry.getId());
                     break;
                 case "source":
                     assertThat(availableSources).contains(entry.getId());
