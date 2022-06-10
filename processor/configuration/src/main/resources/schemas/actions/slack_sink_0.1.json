@@ -45,36 +45,6 @@
       "title": "Username",
       "description": "This is the username that the bot will have when sending messages to a channel or user.",
       "type": "string"
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "consumes": {
-          "$ref": "#/$defs/data_shape/consumes"
-        }
-      }
-    },
-    "processors": {}
-  },
-  "$defs": {
-    "data_shape": {
-      "consumes": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "format"
-        ],
-        "properties": {
-          "format": {
-            "type": "string",
-            "default": "application/octet-stream",
-            "enum": [
-              "application/octet-stream"
-            ]
-          }
-        }
-      }
     }
   }
 }
