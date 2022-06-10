@@ -21,8 +21,6 @@ import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
 import com.redhat.service.smartevents.processor.validators.GatewayValidator;
-import com.redhat.service.smartevents.processor.validators.custom.AwsSqsSourceValidator;
-import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -35,11 +33,11 @@ class GatewayConfiguratorImplTest {
             KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
-            WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
+            WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
             AwsS3Source.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
-            AwsSqsSource.TYPE, expect(AwsSqsSourceValidator.class, SourceConnectorResolver.class),
+            AwsSqsSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
             SlackSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class));
 
     @Inject

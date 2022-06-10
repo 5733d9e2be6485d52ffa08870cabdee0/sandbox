@@ -20,7 +20,9 @@
           "title": "Webhook URL",
           "description": "The webhook URL used by the Slack channel to handle incoming messages.",
           "type": "string",
-          "format": "password"
+          "format": "password",
+          "$comment": "https://stackoverflow.com/a/6041965/9360757",
+          "pattern": "(http|https):\\\/\\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\\/~+#-]*[\\w@?^=%&\\\/~+#-])"
         },
         {
           "description": "An opaque reference to the slack_webhook_url",
