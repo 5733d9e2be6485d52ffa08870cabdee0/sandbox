@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.processor.resolvers.custom;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -9,6 +10,7 @@ import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
+@ApplicationScoped
 public class AwsLambdaActionResolver implements AwsLambdaAction,
         GatewayResolver<Action> {
 
