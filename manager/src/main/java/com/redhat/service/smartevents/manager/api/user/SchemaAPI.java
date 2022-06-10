@@ -76,7 +76,7 @@ public class SchemaAPI {
                                 x.getName(),
                                 x.getDescription(),
                                 ACTION_TYPE,
-                                APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                                APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x.getId()))
                         .collect(Collectors.toList()));
         entries.addAll(processorCatalogService
                 .getSourcesCatalog()
@@ -85,7 +85,7 @@ public class SchemaAPI {
                         x.getName(),
                         x.getDescription(),
                         SOURCE_TYPE,
-                        APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+                        APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x.getId()))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
