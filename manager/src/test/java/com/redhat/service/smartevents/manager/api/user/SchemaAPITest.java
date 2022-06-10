@@ -67,8 +67,8 @@ public class SchemaAPITest {
                     fail("entry type does not match 'source' nor 'action'");
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
-            assertThat(entry.getName()).isNullOrEmpty();
-            assertThat(entry.getDescription()).isNullOrEmpty();
+            assertThat(entry.getName()).isNotNull().isNotBlank();
+            assertThat(entry.getDescription()).isNotNull().isNotBlank();
             assertThat(entry.getHref()).contains(entry.getId()); // The href should contain the name
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
