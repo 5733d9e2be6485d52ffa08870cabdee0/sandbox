@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.actions.google.GooglePubSubAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
@@ -35,7 +36,8 @@ class GatewayConfiguratorImplTest {
             KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
-            WebhookAction.TYPE, expect(WebhookActionValidator.class, null));
+            WebhookAction.TYPE, expect(WebhookActionValidator.class, null),
+            GooglePubSubAction.TYPE, expect(DefaultGatewayValidator.class, null));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
             AwsS3Source.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),

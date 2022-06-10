@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "gcp_project_id",
+    "gcp_destination_name",
+    "gcp_service_account_key"
+  ],
+  "properties": {
+    "gcp_project_id": {
+      "title": "Project Id",
+      "description": "The Google Cloud PubSub Project Id",
+      "type": "string"
+    },
+    "gcp_destination_name": {
+      "title": "Destination Name",
+      "description": "The Destination Name",
+      "type": "string"
+    },
+    "gcp_service_account_key": {
+      "title": "Service Account Key",
+      "description": "The Service account key that can be used as credentials for the PubSub publisher/subscriber",
+      "type": "string",
+      "x-group": "credentials",
+      "format": "base64"
+    },
+    "data_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consumes": {
+          "$ref": "#/$defs/data_shape/consumes"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "data_shape": {
+      "consumes": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format"
+        ],
+        "properties": {
+          "format": {
+            "type": "string",
+            "default": "application/octet-stream",
+            "enum": [
+              "application/octet-stream"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
