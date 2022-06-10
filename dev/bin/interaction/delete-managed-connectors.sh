@@ -8,7 +8,7 @@
 export COS_BASE_PATH=${MANAGED_CONNECTORS_CONTROL_PLANE_URL}/api/connector_mgmt/v1
 export CONNECTORS_BASE=${COS_BASE_PATH}/kafka_connectors
 
-MC_IDS=$(curl -L --insecure --oauth2-bearer "$(ocm token)" "${CONNECTORS_BASE}" | jq '(now - 12*60*60 | strflocaltime("%Y-%m-%dT%H:%M:%S")) as $recent  | .items[] | select(.name | startswith("ci-"))| select((.created_at | sub("-(?<d>[0-9]-)";"-0\(.d)")) <= $recent)| .id')
+MC_IDS=$(curl -L --insecure --oauth2-bearer "$(ocm token)" "${CONNECTORS_BASE}" | jq '(now - 12*60*60 | strflocaltime("%Y-%m-%dT%H:%M:%S")) as $older  | .items[] | select(.name | startswith("ci-"))| select((.created_at | sub("-(?<d>[0-9]-)";"-0\(.d)")) <= $older)| .id')
 
 for id in $MC_IDS
  do
