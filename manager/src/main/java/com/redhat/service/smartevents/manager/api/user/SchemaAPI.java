@@ -69,9 +69,23 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                processorCatalogService.getActionsCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                processorCatalogService
+                        .getActionsCatalog()
+                        .stream()
+                        .map(x -> new ProcessorSchemaEntryResponse(x.getId(),
+                                x.getName(),
+                                x.getDescription(),
+                                ACTION_TYPE,
+                                APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
                         .collect(Collectors.toList()));
-        entries.addAll(processorCatalogService.getSourcesCatalog().stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+        entries.addAll(processorCatalogService
+                .getSourcesCatalog()
+                .stream()
+                .map(x -> new ProcessorSchemaEntryResponse(x.getId(),
+                        x.getName(),
+                        x.getDescription(),
+                        SOURCE_TYPE,
+                        APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();

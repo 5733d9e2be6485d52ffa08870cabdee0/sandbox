@@ -9,6 +9,12 @@ public class ProcessorSchemaEntryResponse {
     @JsonProperty("id")
     private String id;
 
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("description")
+    private String description;
+
     @JsonProperty("type")
     private String type;
 
@@ -18,8 +24,10 @@ public class ProcessorSchemaEntryResponse {
     public ProcessorSchemaEntryResponse() {
     }
 
-    public ProcessorSchemaEntryResponse(String id, String type, String href) {
+    public ProcessorSchemaEntryResponse(String id, String name, String description, String type, String href) {
         this.id = id;
+        this.name = name;
+        this.description = description;
         this.type = type;
         this.href = href;
     }
@@ -30,6 +38,22 @@ public class ProcessorSchemaEntryResponse {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getType() {
