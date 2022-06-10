@@ -104,7 +104,7 @@ public class SchemaAPI {
     @GET
     @Path("/sources/{id}")
     public Response getSourceProcessorSchema(@PathParam("id") String id) {
-        if (!processorCatalogService.getSourcesCatalog().contains(id)) {
+        if (processorCatalogService.getSourcesCatalog().stream().noneMatch(x -> x.getId().equals(id))) {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
@@ -125,7 +125,7 @@ public class SchemaAPI {
     @GET
     @Path("/actions/{id}")
     public Response getActionProcessorSchema(@PathParam("id") String id) {
-        if (!processorCatalogService.getActionsCatalog().contains(id)) {
+        if (processorCatalogService.getActionsCatalog().stream().noneMatch(x -> x.getId().equals(id))) {
             throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
