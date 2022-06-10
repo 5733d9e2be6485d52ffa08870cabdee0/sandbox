@@ -11,7 +11,7 @@
     "aws_queue_name_or_arn": {
       "title": "Queue Name",
       "description": "The SQS Queue Name or ARN",
-      "allOf": [
+      "anyOf": [
         {
           "type": "string",
           "pattern": "^(https?:\/\/[^\/]*)\/([0-9]{12}\/)?([a-zA-Z0-9-_]+)$"
