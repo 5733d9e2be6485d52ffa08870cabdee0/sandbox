@@ -10,5 +10,9 @@
   {
     "id": "slack_source_0.1",
     "isConnector": true
+  },
+  {
+    "id": "google_pubsub_source_0.1",
+    "isConnector": true
   }
 ]
