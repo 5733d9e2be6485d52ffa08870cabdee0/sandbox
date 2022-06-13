@@ -99,7 +99,7 @@ public class TemplateProviderTest {
                 .withNameFromParent()
                 .withPrimaryResourceFromParent());
 
-        assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
+        assertThat(route.getMetadata().getOwnerReferences()).isNull();
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
         assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
         assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
@@ -112,7 +112,7 @@ public class TemplateProviderTest {
                 .withNameFromParent()
                 .withPrimaryResourceFromParent());
 
-        assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
+        assertThat(ingress.getMetadata().getOwnerReferences()).isNull();
         assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);
 
         assertThat(ingress.getSpec().getRules().size()).isEqualTo(1);
