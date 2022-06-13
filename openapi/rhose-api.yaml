@@ -1033,8 +1033,6 @@ components:
           nullable: false
         parameters:
           type: object
-          additionalProperties:
-            type: object
   securitySchemes:
     bearer:
       type: http
