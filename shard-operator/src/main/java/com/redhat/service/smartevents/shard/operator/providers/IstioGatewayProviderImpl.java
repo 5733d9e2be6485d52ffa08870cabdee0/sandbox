@@ -54,16 +54,11 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
         if (gatewayService == null) {
             exit("Could not retrieve the istio gateway service. Please make sure it was properly deployed.");
         }
-        try {
-            Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
-            if (http2Port.isEmpty()) {
-                exit("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
-            }
-            gatewayServiceHttp2Port = http2Port.get().getPort();
-        } // TODO: refactor this, throws exceptions in the tests
-        catch (Exception e) {
-            LOGGER.warn("Exception while retrieving the istio gateway information.");
+        Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
+        if (http2Port.isEmpty()) {
+            exit("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
         }
+        gatewayServiceHttp2Port = http2Port.get().getPort();
     }
 
     private Service extractOpenshiftGatewayService(OpenShiftClient openShiftClient) {
