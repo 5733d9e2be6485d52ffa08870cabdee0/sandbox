@@ -37,13 +37,7 @@ public class Gateway {
 
     @JsonProperty("parameters")
     // ObjectNode is not rendered properly by swagger
-    @Schema(hidden = true)
     private ObjectNode parameters;
-
-    @JsonIgnore
-    // Workaround to generate the openapi.yaml file with a Map<String, Object> for the parameters. TODO: https://issues.redhat.com/browse/MGDOBR-788
-    @Schema(name = "parameters", required = true)
-    private Map<String, Object> justforopenapi;
 
     public String getType() {
         return type;
