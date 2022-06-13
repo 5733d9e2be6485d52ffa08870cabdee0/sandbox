@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +36,7 @@ public class Gateway {
 
     @JsonProperty("parameters")
     // ObjectNode is not rendered properly by swagger
+    @Schema(implementation = Object.class, required = true)
     private ObjectNode parameters;
 
     public String getType() {
