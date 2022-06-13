@@ -736,8 +736,6 @@ components:
           nullable: false
         parameters:
           type: object
-          additionalProperties:
-            type: object
     BaseFilter:
       required:
       - key
