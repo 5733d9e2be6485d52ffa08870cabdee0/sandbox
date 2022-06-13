@@ -20,6 +20,6 @@ public class TestUtils {
 
     private static CloudEventBuilder builderForTestCloudEvent() throws JsonProcessingException {
         String jsonString = "{\"k1\":\"v1\",\"k2\":\"v2\"}";
-        return CloudEventUtils.builderFor("myId", SpecVersion.V1, URI.create("mySource"), "subject", new ObjectMapper().readTree(jsonString));
+        return CloudEventUtils.builderFor(SpecVersion.V1, "myId", URI.create("mySource"), "type", "subject", new ObjectMapper().readTree(jsonString));
     }
 }

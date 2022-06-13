@@ -62,11 +62,11 @@ public class ExecutorImpl implements Executor {
     }
 
     @Override
-    public void onEvent(CloudEvent event) {
-        processorProcessingTime.record(() -> process(event));
+    public void onEvent(CloudEvent event, Map<String, String> headers) {
+        processorProcessingTime.record(() -> process(event, headers));
     }
 
-    private void process(CloudEvent event) {
+    private void process(CloudEvent event, Map<String, String> headers) {
         Map<String, Object> eventMap = toEventMap(event);
 
         LOG.debug("Received event with id '{}' and type '{}' in processor with name '{}' of bridge '{}", event.getId(), event.getType(), processor.getName(), processor.getBridgeId());
@@ -81,7 +81,7 @@ public class ExecutorImpl implements Executor {
         // transformations are currently supported only for sink processors
         String eventToSend = isSourceProcessor ? CloudEventUtils.encode(event) : applyTransformations(eventMap);
         // Action
-        actionTimer.record(() -> actionInvoker.onEvent(eventToSend));
+        actionTimer.record(() -> actionInvoker.onEvent(eventToSend, headers));
     }
 
     @SuppressWarnings("unchecked")

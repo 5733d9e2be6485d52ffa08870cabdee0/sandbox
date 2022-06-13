@@ -1,0 +1,20 @@
+[
+  {
+    "id": "aws_s3_source_0.1",
+    "isConnector": true,
+    "name": "Aws S3 Source",
+    "description": "Ingest data from Aws S3."
+  },
+  {
+    "id": "aws_sqs_source_0.1",
+    "isConnector": true,
+    "name": "Aws Sqs Source",
+    "description": "Ingest data from Aws Sqs."
+  },
+  {
+    "id": "slack_source_0.1",
+    "isConnector": true,
+    "name": "Slack Source",
+    "description": "Ingest data from a Slack channel."
+  }
+]

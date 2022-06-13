@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.executor;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.kafka.common.header.Headers;
@@ -14,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
@@ -28,6 +30,7 @@ import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSi
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -41,22 +44,34 @@ class ExecutorServiceTest {
     @ParameterizedTest
     @MethodSource("executorServiceTestArgs")
     @SuppressWarnings("unchecked")
-    void test(ProcessorDTO processor, String inputEvent, VerificationMode wantedNumberOfOnEventInvocations, URI expectedCloudEventSource, String expectedCloudEventType) {
+    void test(ProcessorDTO processor,
+            String inputEvent,
+            VerificationMode wantedNumberOfOnEventInvocations,
+            URI expectedCloudEventSource,
+            String expectedCloudEventType,
+            boolean ack) {
         Executor executorMock = mock(Executor.class);
         when(executorMock.getProcessor()).thenReturn(processor);
+
+        BridgeErrorService bridgeErrorServiceMock = mock(BridgeErrorService.class);
+        when(bridgeErrorServiceMock.getError(any(Exception.class))).thenReturn(Optional.empty());
 
         ExecutorService executorService = new ExecutorService();
         executorService.executor = executorMock;
         executorService.mapper = new ObjectMapper();
+        executorService.bridgeErrorService = bridgeErrorServiceMock;
 
         KafkaRecord<Integer, String> inputMessage = mock(KafkaRecord.class);
         when(inputMessage.getPayload()).thenReturn(inputEvent);
+        when(inputMessage.getHeaders()).thenReturn(new RecordHeaders());
+        when(inputMessage.getKey()).thenReturn(555);
 
         ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);
 
         assertThatNoException().isThrownBy(() -> executorService.processEvent(inputMessage));
-        verify(executorMock, wantedNumberOfOnEventInvocations).onEvent(argumentCaptor.capture());
-        verify(inputMessage).ack();
+        verify(executorMock, wantedNumberOfOnEventInvocations).onEvent(argumentCaptor.capture(), any());
+        verify(inputMessage, times(ack ? 1 : 0)).ack();
+        verify(inputMessage, times(ack ? 0 : 1)).nack(any(), any());
 
         if (!argumentCaptor.getAllValues().isEmpty()) {
             CloudEvent capturedEvent = argumentCaptor.getValue();
@@ -67,16 +82,16 @@ class ExecutorServiceTest {
 
     private static Stream<Arguments> executorServiceTestArgs() {
         Object[][] arguments = {
-                { createSourceProcessor(), BROKEN_JSON, never(), null, null },
-                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
-                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
-                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource" },
-                { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null },
-                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null },
-                { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE },
-                { createSinkProcessorWithResolvedAction(), BROKEN_JSON, never(), null, null },
-                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, never(), null, null },
-                { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE }
+                { createSourceProcessor(), BROKEN_JSON, never(), null, null, false },
+                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null, false },
+                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null, false },
+                { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },
+                { createSinkProcessorWithResolvedAction(), BROKEN_JSON, never(), null, null, false },
+                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, never(), null, null, false, true },
+                { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -84,7 +99,7 @@ class ExecutorServiceTest {
     @ParameterizedTest
     @MethodSource("metadataArgs")
     void test(Headers headers, Map<String, Object> expectedExtension) {
-        Map<String, Object> cloudEventExtension = ExecutorService.wrapHeadersToExtensionsMap(headers);
+        Map<String, String> cloudEventExtension = ExecutorService.toExtensionsMap(headers);
         assertThat(cloudEventExtension).isEqualTo(expectedExtension);
     }
 

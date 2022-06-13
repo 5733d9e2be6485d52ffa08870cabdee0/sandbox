@@ -63,16 +63,34 @@ as expected.
 
 ## How to create a Bridge instance
 
-In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include the name of the Bridge 
-
-```json
-{"name":  "myBridge"}
-```
-
-Run 
+In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include the name of the Bridge. Let's export it to a variable:
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myBridge"}' $MANAGER_URL/api/v1/bridges | jq .
+export BRIDGE_REQUEST='{
+  "name":"myBridge"
+}'
+```
+
+**Note:** optionally, a `error_handler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform
+about internal processing errors. At the moment the only available option is a `Webhook` error handler.
+Here is an example request that uses [webhook.site (a website that generates working webhooks on the fly for free)](http:://webhook.site):
+
+```bash
+export BRIDGE_REQUEST='{
+  "name": "myBridge",
+  "error_handler": {
+    "type": "webhook_sink_0.1",
+    "parameters": {
+        "endpoint": "https://webhook.site/<webhook_site_generated_uuid>"
+    }
+  }
+}'
+```
+
+After exporting the desired type of request, run:
+
+```bash
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$BRIDGE_REQUEST" $MANAGER_URL/api/v1/bridges | jq .
 ```
 
 The response should look like something like
@@ -87,6 +105,8 @@ The response should look like something like
   "status":"accepted"
 }
 ```
+
+**Note:** if you added the `error_handler` field as described above, you'll see that as well in the response.
 
 Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 
@@ -146,7 +166,7 @@ An example payload request is the following:
   "name": "myProcessor",
   "action": {
     "parameters": {"topic":  "demoTopic"},
-    "type": "KafkaTopic"
+    "type": "kafka_topic_sink_0.1"
   },
   "filters": [
     {
@@ -159,12 +179,12 @@ An example payload request is the following:
 ```
 
 So only the events with `source` equals to `StorageService` will be sent to the 
-the action `KafkaTopic`, which will push the event to the kafka instance under the topic `demoTopic`.
+the action `kafka_topic_sink_0.1`, which will push the event to the kafka instance under the topic `demoTopic`.
 
 Run 
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "KafkaTopic"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -187,7 +207,7 @@ and the response is something like
     ],
   "action":
     {
-      "type":"KafkaTopic",
+      "type":"kafka_topic_sink_0.1",
       "parameters":
       {
         "topic":"demoTopic"
@@ -210,7 +230,7 @@ curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID
 
 ## Sending messages to Slack using processors
 
-To send messages to Slack using a processor we have two different ways: either use the `Slack` or the `Webhook` action.
+To send messages to Slack using a processor we have two different ways: either use the `slack_sink_0.1` or the `webhook_sink_0.1` action.
 
 Here's an example of the payload for the `Slack` action. Notice that we need to specify both the channel and the webhookUrl.
 
@@ -218,16 +238,16 @@ Here's an example of the payload for the `Slack` action. Notice that we need to 
 {
   "name": "SlackActionProcessor",
   "action": {
-    "type": "Slack",
+    "type": "slack_sink_0.1.json",
     "parameters": {
-      "channel": "channel",
-      "webhookUrl": "webhookURL"
+      "slack_channel": "channel",
+      "slack_webhook_url": "webhookURL"
     }
   }
 }
 ```
 
-Here's the example payload of the `Webhook` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
+Here's the example payload of the `webhook_sink_0.1` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
 
 ```json
 {"text":"Hello, World!"}
@@ -238,7 +258,7 @@ Here's the example payload of the `Webhook` action instead. The channel is not n
 {
   "name": "SlackWithWebhookAction",
   "action": {
-    "type": "Webhook",
+    "type": "webhook_sink_0.1",
     "parameters": {
       "endpoint": "webhookUrl"
     }

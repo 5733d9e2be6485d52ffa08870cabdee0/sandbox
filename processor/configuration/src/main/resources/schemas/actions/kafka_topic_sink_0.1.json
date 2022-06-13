@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "topic": {
+      "type": "string",
+      "title": "Topic Name",
+      "description": "The topic where to send the event.",
+      "example": "my-topic"
+    }
+  },
+  "required": [
+    "topic"
+  ]
+}

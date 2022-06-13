@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -91,6 +93,7 @@ public class ProcessorDAOTest {
         b.setSubmittedAt(ZonedDateTime.now());
         b.setPublishedAt(ZonedDateTime.now());
         b.setShardId(TestConstants.SHARD_ID);
+        b.setDefinition(new BridgeDefinition());
 
         bridgeDAO.persist(b);
         return b;
@@ -238,21 +241,22 @@ public class ProcessorDAOTest {
     public void findByBridgeIdAndCustomerId_pageOffset() {
         Bridge b = createBridge();
         Processor p = createProcessor(b, "foo");
-        Processor p1 = createProcessor(b, "bar");
+        createProcessor(b, "bar");
 
         ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(1, 1));
         assertThat(listResult.getPage()).isEqualTo(1L);
         assertThat(listResult.getSize()).isEqualTo(1L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
 
-        assertThat(listResult.getItems().get(0).getId()).isEqualTo(p1.getId());
+        // Results are sorted descending by default. The last page, 1, will contain the first processor.
+        assertThat(listResult.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
     @Test
     public void testCountByBridgeIdAndCustomerId() {
         Bridge b = createBridge();
-        Processor p = createProcessor(b, "foo");
-        Processor p1 = createProcessor(b, "bar");
+        createProcessor(b, "foo");
+        createProcessor(b, "bar");
 
         Long result = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(2L);
@@ -284,9 +288,9 @@ public class ProcessorDAOTest {
         assertThat(results.getSize()).isEqualTo(2L);
         assertThat(results.getTotal()).isEqualTo(2L);
 
-        // Newest instances come first
-        assertThat(results.getItems().get(1).getId()).isEqualTo(p1.getId());
+        // Results are sorted descending by default
         assertThat(results.getItems().get(0).getId()).isEqualTo(p2.getId());
+        assertThat(results.getItems().get(1).getId()).isEqualTo(p1.getId());
     }
 
     @Test
@@ -402,8 +406,30 @@ public class ProcessorDAOTest {
         assertThat(results.getSize()).isEqualTo(2L);
         assertThat(results.getTotal()).isEqualTo(2L);
 
+        // Results are sorted descending by default
         assertThat(results.getItems().get(0).getId()).isEqualTo(p2.getId());
         assertThat(results.getItems().get(1).getId()).isEqualTo(p1.getId());
+    }
+
+    @Test
+    @Transactional
+    void testGetProcessorsWithDefaultOrdering() {
+        Bridge b = createBridge();
+
+        IntStream.range(0, 5).forEach(i -> {
+            Processor p = createProcessor(b, String.format("foo%s", i), SOURCE);
+            p.setStatus(READY);
+            processorDAO.persist(p);
+        });
+
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+                new QueryProcessorResourceInfo(0, 100));
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isEqualTo(5L);
+        assertThat(results.getTotal()).isEqualTo(5L);
+
+        // Results are sorted descending by default. The first created is the last to be listed.
+        IntStream.range(0, 5).forEach(i -> assertThat(results.getItems().get(4 - i).getName()).isEqualTo(String.format("foo%s", i)));
     }
 
 }

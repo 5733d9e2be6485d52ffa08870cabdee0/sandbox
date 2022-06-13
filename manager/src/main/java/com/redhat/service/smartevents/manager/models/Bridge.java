@@ -15,6 +15,8 @@ import org.hibernate.annotations.FilterDefs;
 import org.hibernate.annotations.Filters;
 import org.hibernate.annotations.ParamDef;
 
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
+
 @NamedQueries({
         @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
                 query = "from Bridge where shard_id=:shardId and " +
@@ -40,7 +42,7 @@ import org.hibernate.annotations.ParamDef;
         @Filter(name = "byStatus", condition = "status in (:status)")
 })
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge extends ManagedResource {
+public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 

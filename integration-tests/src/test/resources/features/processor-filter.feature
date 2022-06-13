@@ -12,7 +12,7 @@ Feature: Tests of Processor Filter update
     {
       "name": "myProcessor",
       "action": {
-        "type": "Webhook",
+        "type": "webhook_sink_0.1",
         "parameters": {
             "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
        }
@@ -33,7 +33,7 @@ Feature: Tests of Processor Filter update
     {
       "name": "myProcessor",
       "action": {
-        "type": "Webhook",
+        "type": "webhook_sink_0.1",
         "parameters": {
             "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
         }
@@ -97,7 +97,7 @@ Feature: Tests of Processor Filter update
     {
       "name": "myProcessor",
       "action": {
-        "type": "Webhook",
+        "type": "webhook_sink_0.1",
         "parameters": {
             "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
         }

@@ -19,13 +19,12 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
+import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.actions.slack.SlackActionConnector;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
-import com.redhat.service.smartevents.processor.sources.slack.SlackSourceConnector;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -91,8 +90,8 @@ class ConnectorsServiceTest {
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { processorWith(slackAction()), SlackActionConnector.CONNECTOR_TYPE_ID },
-                { processorWith(slackSource()), SlackSourceConnector.CONNECTOR_TYPE_ID }
+                { processorWith(slackAction()), SlackAction.TYPE },
+                { processorWith(slackSource()), SlackSource.TYPE }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -108,6 +107,7 @@ class ConnectorsServiceTest {
 
     private static Processor processorWith(Gateway gateway) {
         Processor processor = new Processor();
+        processor.setBridge(new Bridge());
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition();
         if (gateway instanceof Action) {

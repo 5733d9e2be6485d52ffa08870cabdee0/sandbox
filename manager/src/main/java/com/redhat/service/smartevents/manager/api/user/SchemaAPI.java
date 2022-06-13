@@ -1,15 +1,9 @@
 package com.redhat.service.smartevents.manager.api.user;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -36,6 +30,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorCatalogResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorSchemaEntryResponse;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 import io.quarkus.security.Authenticated;
 
@@ -52,26 +47,14 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 public class SchemaAPI {
 
-    private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
-    private static final String SOURCES_DIR_PATH = "/schemas/sources/";
-    private static final String JSON_FILE_EXTENSION = ".json";
-    private static final String CATALOG_FILENAME = "catalog";
     private static final String ACTION_TYPE = "action";
     private static final String SOURCE_TYPE = "source";
 
-    private List<String> actions;
-    private List<String> sources;
+    @Inject
+    ProcessorCatalogService processorCatalogService;
 
     @Inject
     ObjectMapper mapper;
-
-    @PostConstruct
-    void init() throws IOException {
-        actions = mapper.readValue(readFile(ACTIONS_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
-        });
-        sources = mapper.readValue(readFile(SOURCES_DIR_PATH, CATALOG_FILENAME), new TypeReference<>() {
-        });
-    }
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -86,9 +69,23 @@ public class SchemaAPI {
     public Response getCatalog() {
         List<ProcessorSchemaEntryResponse> entries = new ArrayList<>();
         entries.addAll(
-                actions.stream().map(x -> new ProcessorSchemaEntryResponse(x, ACTION_TYPE, APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x))
+                processorCatalogService
+                        .getActionsCatalog()
+                        .stream()
+                        .map(x -> new ProcessorSchemaEntryResponse(x.getId(),
+                                x.getName(),
+                                x.getDescription(),
+                                ACTION_TYPE,
+                                APIConstants.ACTIONS_SCHEMA_API_BASE_PATH + x.getId()))
                         .collect(Collectors.toList()));
-        entries.addAll(sources.stream().map(x -> new ProcessorSchemaEntryResponse(x, SOURCE_TYPE, APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x))
+        entries.addAll(processorCatalogService
+                .getSourcesCatalog()
+                .stream()
+                .map(x -> new ProcessorSchemaEntryResponse(x.getId(),
+                        x.getName(),
+                        x.getDescription(),
+                        SOURCE_TYPE,
+                        APIConstants.SOURCES_SCHEMA_API_BASE_PATH + x.getId()))
                 .collect(Collectors.toList()));
         ProcessorCatalogResponse response = new ProcessorCatalogResponse(entries);
         return Response.ok(response).build();
@@ -105,13 +102,14 @@ public class SchemaAPI {
     })
     @Operation(summary = "Get source processor schema", description = "Get the source processor JSON schema.")
     @GET
-    @Path("/sources/{name}")
-    public Response getSourceProcessorSchema(@PathParam("name") String name) {
-        if (!sources.contains(name)) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+    @Path("/sources/{id}")
+    public Response getSourceProcessorSchema(@PathParam("id") String id) {
+        if (processorCatalogService.getSourcesCatalog().stream().noneMatch(x -> x.getId().equals(id))) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
-        return Response.ok(readFile(SOURCES_DIR_PATH, name)).build();
+        // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
+        return Response.ok(processorCatalogService.getSourceJsonSchema(id).getSchemaNode()).build();
     }
 
     @APIResponses(value = {
@@ -125,25 +123,13 @@ public class SchemaAPI {
     })
     @Operation(summary = "Get action processor schema", description = "Get the action processor JSON schema.")
     @GET
-    @Path("/actions/{name}")
-    public Response getActionProcessorSchema(@PathParam("name") String name) {
-        if (!actions.contains(name)) {
-            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", name));
+    @Path("/actions/{id}")
+    public Response getActionProcessorSchema(@PathParam("id") String id) {
+        if (processorCatalogService.getActionsCatalog().stream().noneMatch(x -> x.getId().equals(id))) {
+            throw new ItemNotFoundException(String.format("The processor json schema '%s' is not in the catalog.", id));
         }
 
-        return Response.ok(readFile(ACTIONS_DIR_PATH, name)).build();
-    }
-
-    protected String readFile(String resourceDirectory, String name) {
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
-
-        if (is == null) {
-            throw new ItemNotFoundException(String.format("Could not find '%s'.", name));
-        }
-
-        return new BufferedReader(
-                new InputStreamReader(is, StandardCharsets.UTF_8))
-                        .lines()
-                        .collect(Collectors.joining("\n"));
+        // We can't return a JsonSchema due to a StackOverflow exception in the jackson serialization
+        return Response.ok(processorCatalogService.getActionJsonSchema(id).getSchemaNode()).build();
     }
 }

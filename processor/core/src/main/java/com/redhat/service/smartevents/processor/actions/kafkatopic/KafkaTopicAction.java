@@ -4,7 +4,7 @@ import com.redhat.service.smartevents.processor.GatewayBean;
 
 public interface KafkaTopicAction extends GatewayBean {
 
-    String TYPE = "KafkaTopic";
+    String TYPE = "kafka_topic_sink_0.1";
     String TOPIC_PARAM = "topic";
 
     @Override
