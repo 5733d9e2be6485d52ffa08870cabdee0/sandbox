@@ -1,7 +1,7 @@
 images:
 - name: event-bridge-manager
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
-  newTag: f3d1f35bef05bfc164f3e4eedbaf24a37afeaa47-jvm
+  newTag: fe9ff4c5340ef96393e47e547c21c97d2698e55f-jvm
 - name: event-bridge-shard-operator
   newName: quay.io/jrota/shard-operator-knative
   newTag: "0.4"

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "aws_s3_source_0.1",
+    "isConnector": true
+  },
+  {
+    "id": "aws_sqs_source_0.1",
+    "isConnector": true
+  },
+  {
+    "id": "slack_source_0.1",
+    "isConnector": true
+  }
+]

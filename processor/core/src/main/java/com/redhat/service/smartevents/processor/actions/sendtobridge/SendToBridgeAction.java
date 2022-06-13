@@ -4,7 +4,7 @@ import com.redhat.service.smartevents.processor.GatewayBean;
 
 public interface SendToBridgeAction extends GatewayBean {
 
-    String TYPE = "SendToBridge";
+    String TYPE = "send_to_bridge_sink_0.1";
     String BRIDGE_ID_PARAM = "bridgeId";
 
     @Override

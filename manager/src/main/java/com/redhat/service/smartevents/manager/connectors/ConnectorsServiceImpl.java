@@ -15,13 +15,14 @@ import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
-import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;
+import com.redhat.service.smartevents.processor.ProcessorCatalogService;
 
 @ApplicationScoped
 public class ConnectorsServiceImpl implements ConnectorsService {
@@ -38,7 +39,10 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     GatewayConfiguratorService gatewayConfiguratorService;
 
     @Inject
-    GatewayConfigurator gatewayConfigurator;
+    GatewayConnector gatewayConnector;
+
+    @Inject
+    ProcessorCatalogService processorCatalogService;
 
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
@@ -59,32 +63,25 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    protected void createConnectorEntity(Processor processor, Action action) {
-        Optional<GatewayConnector<Action>> optActionConnector = gatewayConfigurator.getActionConnector(action.getType());
-        if (optActionConnector.isEmpty()) {
+    private void createConnectorEntity(Processor processor, Action action) {
+        if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
             return;
         }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
-        GatewayConnector<Action> actionConnector = optActionConnector.get();
-        persistConnectorEntity(processor,
-                topicName,
-                actionConnector.getConnectorType(),
-                actionConnector.getConnectorTypeId(),
-                actionConnector.connectorPayload(action, topicName, errorHandlerTopicName));
+
+        persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName, errorHandlerTopicName));
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    protected void createConnectorEntity(Processor processor, Source source) {
-        GatewayConnector<Source> sourceConnector = gatewayConfigurator.getSourceConnector(source.getType());
+    public void createConnectorEntity(Processor processor, Source source) {
+        if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
+            return;
+        }
         String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
-        persistConnectorEntity(processor,
-                topicName,
-                sourceConnector.getConnectorType(),
-                sourceConnector.getConnectorTypeId(),
-                sourceConnector.connectorPayload(source, topicName, errorHandlerTopicName));
+        persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName, errorHandlerTopicName));
     }
 
     private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {

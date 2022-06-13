@@ -7,12 +7,14 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import static com.redhat.service.smartevents.infra.utils.JacksonUtils.mapToObjectNode;
 
@@ -28,7 +30,7 @@ import static com.redhat.service.smartevents.infra.utils.JacksonUtils.mapToObjec
 @JsonInclude(JsonInclude.Include.NON_NULL)
 // See https://issues.redhat.com/browse/MGDOBR-638
 // Implementations *MUST* override equals(..) and hashCode() appropriately
-public class Gateway {
+public abstract class Gateway {
 
     @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
@@ -92,6 +94,9 @@ public class Gateway {
     public boolean hasParameter(String key) {
         return getParameters().get(key) != null;
     }
+
+    @JsonIgnore
+    public abstract ProcessorType getProcessorType();
 
     @Override
     public boolean equals(Object o) {

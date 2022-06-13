@@ -16,7 +16,7 @@ Feature: Tests of Processor Transformation template
         "parameters": {
             "endpoint": "${env.slack.webhook.url}"
        },
-        "type": "Webhook"
+        "type": "webhook_sink_0.1"
       },
       "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
     }
@@ -47,7 +47,7 @@ Feature: Tests of Processor Transformation template
         "parameters": {
             "endpoint": "${env.slack.webhook.url}"
        },
-        "type": "Webhook"
+        "type": "webhook_sink_0.1"
       },
       "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
     }
@@ -75,7 +75,7 @@ Feature: Tests of Processor Transformation template
         "parameters": {
             "endpoint": "${env.slack.webhook.url}"
        },
-        "type": "Webhook"
+        "type": "webhook_sink_0.1"
       },
       "transformationTemplate" : "{\"text\": \"hello {data.name} by updated template {id}\"}"
     }

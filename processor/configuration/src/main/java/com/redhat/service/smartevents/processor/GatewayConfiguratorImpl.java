@@ -8,33 +8,35 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
-import com.redhat.service.smartevents.processor.sources.SourceResolver;
+import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
+import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.custom.CustomGatewayValidator;
 
 @ApplicationScoped
 public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
     @Inject
-    Instance<GatewayValidator<Action>> actionValidators;
+    Instance<CustomGatewayValidator> customValidators;
+
     @Inject
     Instance<GatewayResolver<Action>> actionResolvers;
-    @Inject
-    Instance<GatewayConnector<Action>> actionConnectors;
-    @Inject
-    Instance<GatewayValidator<Source>> sourceValidators;
 
     @Inject
-    SourceResolver sourceResolver;
+    DefaultGatewayValidator defaultGatewayValidator;
 
     @Inject
-    Instance<GatewayConnector<Source>> sourceConnectors;
+    SourceConnectorResolver sourceConnectorResolver;
 
     @Override
-    public GatewayValidator<Action> getActionValidator(String actionType) {
-        return getOptionalBean(actionValidators, actionType)
-                .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for action type '%s'", actionType)));
+    public GatewayValidator getValidator(String actionType) {
+        Optional<CustomGatewayValidator> customValidator = getOptionalBean(customValidators, actionType);
+        if (customValidator.isPresent()) {
+            return customValidator.get();
+        }
+        return defaultGatewayValidator;
     }
 
     @Override
@@ -43,25 +45,8 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public Optional<GatewayConnector<Action>> getActionConnector(String actionType) {
-        return getOptionalBean(actionConnectors, actionType);
-    }
-
-    @Override
-    public GatewayValidator<Source> getSourceValidator(String sourceType) {
-        return getOptionalBean(sourceValidators, sourceType)
-                .orElseThrow(() -> new GatewayProviderException(String.format("No validator found for source type '%s'", sourceType)));
-    }
-
-    @Override
     public GatewayResolver<Source> getSourceResolver(String sourceType) {
-        return sourceResolver;
-    }
-
-    @Override
-    public GatewayConnector<Source> getSourceConnector(String sourceType) {
-        return getOptionalBean(sourceConnectors, sourceType)
-                .orElseThrow(() -> new GatewayProviderException(String.format("No connector found for source type '%s'", sourceType)));
+        return sourceConnectorResolver;
     }
 
     private static <T extends GatewayBean> Optional<T> getOptionalBean(Instance<T> instances, String sourceType) {
@@ -70,23 +55,11 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
                 .findFirst();
     }
 
-    Collection<GatewayValidator<Action>> getActionValidators() {
-        return actionValidators.stream().collect(Collectors.toList());
+    Collection<CustomGatewayValidator> getCustomValidators() {
+        return customValidators.stream().collect(Collectors.toList());
     }
 
     Collection<GatewayResolver<Action>> getActionResolvers() {
         return actionResolvers.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayConnector<Action>> getActionConnectors() {
-        return actionConnectors.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayValidator<Source>> getSourceValidators() {
-        return sourceValidators.stream().collect(Collectors.toList());
-    }
-
-    Collection<GatewayConnector<Source>> getSourceConnectors() {
-        return sourceConnectors.stream().collect(Collectors.toList());
     }
 }

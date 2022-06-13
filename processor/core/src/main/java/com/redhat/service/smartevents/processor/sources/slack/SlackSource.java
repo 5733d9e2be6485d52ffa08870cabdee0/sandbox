@@ -4,10 +4,9 @@ import com.redhat.service.smartevents.processor.GatewayBean;
 
 public interface SlackSource extends GatewayBean {
 
-    String TYPE = "Slack";
-    String CHANNEL_PARAM = "channel";
-    String TOKEN_PARAM = "token";
-    String CLOUD_EVENT_TYPE = "SlackSource";
+    String TYPE = "slack_source_0.1";
+    String CHANNEL_PARAM = "slack_channel";
+    String TOKEN_PARAM = "slack_token";
 
     @Override
     default String getType() {

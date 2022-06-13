@@ -83,9 +83,9 @@ class ExecutorServiceTest {
     private static Stream<Arguments> executorServiceTestArgs() {
         Object[][] arguments = {
                 { createSourceProcessor(), BROKEN_JSON, never(), null, null, false },
-                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource", true },
-                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource", true },
-                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "SlackSource", true },
+                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
                 { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null, false },
                 { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null, false },
                 { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },

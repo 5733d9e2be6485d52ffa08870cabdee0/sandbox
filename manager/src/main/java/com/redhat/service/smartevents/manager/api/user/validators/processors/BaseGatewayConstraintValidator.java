@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager.api.user.validators.processors;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -11,11 +10,10 @@ import javax.validation.ConstraintValidatorContext;
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewayValidator;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implements ConstraintValidator<A, T> {
 
@@ -37,7 +35,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
         this.gatewayConfigurator = gatewayConfigurator;
     }
 
-    protected <G extends Gateway> boolean isValidGateway(G gateway, ConstraintValidatorContext context, Function<String, GatewayValidator<G>> validatorGetter) {
+    protected boolean isValidGateway(Gateway gateway, ConstraintValidatorContext context) {
         if (gateway.getType() == null) {
             addConstraintViolation(context, GATEWAY_TYPE_MISSING_ERROR,
                     Collections.singletonMap(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName()));
@@ -50,15 +48,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
             return false;
         }
 
-        GatewayValidator<G> validator;
-        try {
-            validator = validatorGetter.apply(gateway.getType());
-        } catch (GatewayProviderException e) {
-            addConstraintViolation(context, GATEWAY_TYPE_NOT_RECOGNISED_ERROR,
-                    Map.of(GATEWAY_CLASS_PARAM, gateway.getClass().getSimpleName(), TYPE_PARAM, gateway.getType()));
-            return false;
-        }
-
+        GatewayValidator validator = gatewayConfigurator.getValidator(gateway.getType());
         ValidationResult v = validator.isValid(gateway);
 
         if (!v.isValid()) {

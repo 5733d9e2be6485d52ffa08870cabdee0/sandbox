@@ -14,13 +14,13 @@ Feature: Processor tests
         "parameters": {
             "topic":  "myKafkaTopic"
         },
-        "type": "KafkaTopic"
+        "type": "kafka_topic_sink_0.1"
       }
     }
     """
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "myProcessor"
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
-    And the Processor "myProcessor" of the Bridge "mybridge" has action of type "KafkaTopic" and parameters:
+    And the Processor "myProcessor" of the Bridge "mybridge" has action of type "kafka_topic_sink_0.1" and parameters:
       | topic | myKafkaTopic |
 
     When delete the Processor "myProcessor" of the Bridge "mybridge"

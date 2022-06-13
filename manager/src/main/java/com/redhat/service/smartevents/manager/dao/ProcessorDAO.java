@@ -131,6 +131,7 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         }
 
         ProcessorResults results = getProcessorIds(customerId, bridgeId, queryInfo, restrictTypes);
+        // The Query #PROCESSOR.findByIds must also order the result set otherwise ordering achieved by getProcessorIds() is lost.
         List<Processor> processors = find("#PROCESSOR.findByIds", Parameters.with(IDS_PARAM, results.ids)).list();
         return new ListResult<>(processors, queryInfo.getPageNumber(), results.total);
     }

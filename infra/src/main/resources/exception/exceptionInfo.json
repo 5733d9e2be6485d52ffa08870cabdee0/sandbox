@@ -112,5 +112,11 @@
     "id": 19,
     "reason": "You tried a life cycle transition which is not allowed",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException",
+    "id": 20,
+    "reason": "Error during the deserialization of a resource.",
+    "type": "PLATFORM"
   }
 ]
