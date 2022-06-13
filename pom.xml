@@ -45,8 +45,6 @@
     <module>manager</module>
     <module>executor</module>
     <module>shard-operator</module>
-    <module>shard-operator-integration-tests</module>
-    <module>integration-tests</module>
     <module>infra</module>
     <module>rhoas-client</module>
   </modules>

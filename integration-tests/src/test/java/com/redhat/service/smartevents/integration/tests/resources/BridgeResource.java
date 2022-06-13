@@ -38,7 +38,7 @@ public class BridgeResource {
     }
 
     public static Response addBridgeResponse(String token, InputStream bridgeRequest) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(bridgeRequest)
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
