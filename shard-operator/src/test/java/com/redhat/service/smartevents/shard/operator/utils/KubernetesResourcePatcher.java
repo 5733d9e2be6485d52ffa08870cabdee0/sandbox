@@ -5,6 +5,8 @@ import java.util.Collections;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
@@ -29,6 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ApplicationScoped
 public class KubernetesResourcePatcher {
+
+    @ConfigProperty(name = "event-bridge.istio.gateway.name")
+    String gatewayName;
+
+    @ConfigProperty(name = "event-bridge.istio.gateway.namespace")
+    String gatewayNamespace;
 
     @Inject
     KubernetesClient kubernetesClient;

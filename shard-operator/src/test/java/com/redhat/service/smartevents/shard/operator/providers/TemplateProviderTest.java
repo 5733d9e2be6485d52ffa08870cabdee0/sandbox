@@ -95,7 +95,9 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, new TemplateImportConfig()
+                .withNameFromParent()
+                .withPrimaryResourceFromParent());
 
         assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
@@ -106,7 +108,9 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, new TemplateImportConfig()
+                .withNameFromParent()
+                .withPrimaryResourceFromParent());
 
         assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
         assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);
