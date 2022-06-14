@@ -64,6 +64,7 @@ jobs:
           kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
           # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
