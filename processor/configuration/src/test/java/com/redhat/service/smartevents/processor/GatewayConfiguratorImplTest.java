@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.AnsibleTowerJobTemplateActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.AwsLambdaActionResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.KafkaTopicActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
@@ -34,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GatewayConfiguratorImplTest {
 
     private static final Map<String, ExpectedBeanClasses<Action>> EXPECTED_ACTION_BEANS = Map.of(
-            KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
+            KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, KafkaTopicActionResolver.class),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
             WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null),

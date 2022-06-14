@@ -201,6 +201,9 @@ public class TestUtils {
 
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.BROKER_URL, TestConstants.DEFAULT_KAFKA_TOPIC);
+        params.put(KafkaTopicAction.CLIENT_ID, TestConstants.DEFAULT_CLIENT_ID);
+        params.put(KafkaTopicAction.CLIENT_SECRET, TestConstants.DEFAULT_CLIENT_SECRET);
         r.setMapParameters(params);
         return r;
     }
