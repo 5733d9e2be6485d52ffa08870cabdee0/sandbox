@@ -27,7 +27,8 @@ public abstract class AbstractGatewayValidator implements GatewayValidator {
         if (gateway.getParameters() == null) {
             return ValidationResult.invalid();
         }
-        if (!processorCatalogService.getActionsCatalog().contains(gateway.getType()) && !processorCatalogService.getSourcesCatalog().contains(gateway.getType())) {
+        if (processorCatalogService.getActionsCatalog().stream().noneMatch(x -> x.getId().equals(gateway.getType())) &&
+                processorCatalogService.getSourcesCatalog().stream().noneMatch(x -> x.getId().equals(gateway.getType()))) {
             return ValidationResult.invalid(String.format("'%s' is not a valid source/action.", gateway.getType()));
         }
 
