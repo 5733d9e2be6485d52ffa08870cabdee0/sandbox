@@ -1,22 +1,32 @@
 [
   {
     "id": "kafka_topic_sink_0.1",
-    "isConnector": false
+    "isConnector": false,
+    "name": "Kafka Topic",
+    "description": "Send the event to a kafka topic."
   },
   {
     "id": "send_to_bridge_sink_0.1",
-    "isConnector": false
+    "isConnector": false,
+    "name": "Send To Bridge",
+    "description": "Send the event to a Bridge instance."
   },
   {
     "id": "slack_sink_0.1",
-    "isConnector": true
+    "isConnector": true,
+    "name": "Slack",
+    "description": "Send the event to a slack channel."
   },
   {
     "id": "webhook_sink_0.1",
-    "isConnector": false
+    "isConnector": false,
+    "name": "Webhook",
+    "description": "Send the event to a webhook."
   },
   {
     "id": "aws_lambda_sink_0.1",
-    "isConnector": true
+    "isConnector": true,
+    "name": "AWS Lambda",
+    "description": "Send the event to an AWS lambda."
   }
 ]
