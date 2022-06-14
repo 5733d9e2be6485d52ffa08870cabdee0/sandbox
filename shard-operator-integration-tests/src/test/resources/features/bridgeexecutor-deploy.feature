@@ -12,7 +12,7 @@ Feature: BridgeExecutor deploy and undeploy
     metadata:
       name: my-bridge-executor
       labels:
-          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator-knative
     spec:
       image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       id: my-bridge-executor-id
@@ -37,7 +37,7 @@ Feature: BridgeExecutor deploy and undeploy
     metadata:
       name: my-deleted-bridge-executor
       labels:
-          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator-knative
     spec:
       image: quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0
       id: my-bridge-executor-id

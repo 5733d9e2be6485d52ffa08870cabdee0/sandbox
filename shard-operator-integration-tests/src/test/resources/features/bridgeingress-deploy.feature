@@ -12,7 +12,7 @@ Feature: BridgeIngress deploy and undeploy
     metadata:
       name: my-bridge-ingress
       labels:
-          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator-knative
     spec:
       bridgeName: my-bridge
       customerId: customer
@@ -34,7 +34,7 @@ Feature: BridgeIngress deploy and undeploy
     metadata:
       name: my-deleted-bridge-ingress
       labels:
-          app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+          app.kubernetes.io/managed-by: bridge-fleet-shard-operator-knative
     spec:
       bridgeName: my-bridge
       customerId: customer
