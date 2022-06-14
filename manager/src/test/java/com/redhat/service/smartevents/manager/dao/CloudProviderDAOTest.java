@@ -37,7 +37,6 @@ public class CloudProviderDAOTest {
         assertThat(cp.getRegions().size()).isEqualTo(1);
 
         CloudRegion cloudRegion = cp.getRegions().get(0);
-        assertThat(cloudRegion.getId()).isEqualTo("us-east-1");
         assertThat(cloudRegion.getName()).isEqualTo("us-east-1");
         assertThat(cloudRegion.getDisplayName()).isEqualTo("US East, N. Virginia");
         assertThat(cloudRegion.isEnabled()).isTrue();
@@ -71,7 +70,6 @@ public class CloudProviderDAOTest {
         assertThat(regions.getPage()).isEqualTo(0L);
 
         CloudRegion cloudRegion = regions.getItems().get(0);
-        assertThat(cloudRegion.getId()).isEqualTo("us-east-1");
         assertThat(cloudRegion.getName()).isEqualTo("us-east-1");
         assertThat(cloudRegion.getDisplayName()).isEqualTo("US East, N. Virginia");
         assertThat(cloudRegion.isEnabled()).isTrue();

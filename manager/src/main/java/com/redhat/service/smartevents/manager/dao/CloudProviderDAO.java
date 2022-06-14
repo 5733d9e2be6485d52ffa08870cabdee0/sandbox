@@ -18,13 +18,17 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Dese
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.models.CloudProvider;
 import com.redhat.service.smartevents.manager.models.CloudRegion;
 
 @ApplicationScoped
 public class CloudProviderDAO {
 
-    private static final String CLOUD_PROVIDERS = "cloud_providers/cloud_providers.json";
+    private static final String CLOUD_PROVIDERS = "cloud_providers.json";
+
+    @Inject
+    ConfigurationLoader configurationLoader;
 
     @Inject
     ObjectMapper objectMapper;
@@ -36,17 +40,13 @@ public class CloudProviderDAO {
     @PostConstruct
     void init() {
 
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(CLOUD_PROVIDERS)) {
-
-            if (in == null) {
-                throw new DeserializationException("Cannot locate '" + CLOUD_PROVIDERS + "' on the classpath.");
-            }
-
+        InputStream in = configurationLoader.getConfigurationFileAsStream(CLOUD_PROVIDERS);
+        try {
             this.cloudProviders = objectMapper.readValue(in, new TypeReference<>() {
             });
             this.cloudProvidersById = this.cloudProviders.stream().collect(Collectors.toMap(CloudProvider::getId, Function.identity()));
         } catch (IOException e) {
-            throw new DeserializationException("Failed to load '" + CLOUD_PROVIDERS + "' from the classpath.", e);
+            throw new DeserializationException("Failed to parse '" + CLOUD_PROVIDERS + "'.", e);
         }
     }
 

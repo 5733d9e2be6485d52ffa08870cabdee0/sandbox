@@ -5,27 +5,23 @@ import com.redhat.service.smartevents.manager.models.CloudRegion;
 
 public class CloudRegionResponse {
 
-    @JsonProperty
+    @JsonProperty("kind")
     private final String kind = "CloudRegion";
 
-    @JsonProperty
-    private String id;
-
-    @JsonProperty
+    @JsonProperty("name")
     private String name;
 
     @JsonProperty("display_name")
     private String displayName;
 
-    @JsonProperty
+    @JsonProperty("enabled")
     private boolean enabled;
 
     public CloudRegionResponse() {
 
     }
 
-    public CloudRegionResponse(String id, String name, String displayName, boolean enabled) {
-        this.id = id;
+    public CloudRegionResponse(String name, String displayName, boolean enabled) {
         this.name = name;
         this.displayName = displayName;
         this.enabled = enabled;
@@ -33,10 +29,6 @@ public class CloudRegionResponse {
 
     public String getKind() {
         return kind;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public String getName() {
@@ -52,6 +44,6 @@ public class CloudRegionResponse {
     }
 
     public static CloudRegionResponse from(CloudRegion cr) {
-        return new CloudRegionResponse(cr.getId(), cr.getName(), cr.getDisplayName(), cr.isEnabled());
+        return new CloudRegionResponse(cr.getName(), cr.getDisplayName(), cr.isEnabled());
     }
 }

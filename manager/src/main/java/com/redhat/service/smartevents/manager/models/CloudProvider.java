@@ -21,6 +21,18 @@ public class CloudProvider {
     @JsonProperty("regions")
     private List<CloudRegion> regions;
 
+    public CloudProvider() {
+
+    }
+
+    public CloudProvider(String id, String name, String displayName, boolean enabled, List<CloudRegion> regions) {
+        this.id = id;
+        this.name = name;
+        this.displayName = displayName;
+        this.enabled = enabled;
+        this.regions = regions;
+    }
+
     public String getId() {
         return id;
     }

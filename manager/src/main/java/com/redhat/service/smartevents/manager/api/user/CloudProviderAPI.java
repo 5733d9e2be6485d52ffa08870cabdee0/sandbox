@@ -51,6 +51,19 @@ public class CloudProviderAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CloudProviderListResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    })
+    @Operation(summary = "Get Cloud Provider.", description = "Get details of the Cloud Provider specified by id.")
+    @GET
+    @Path("{id}")
+    public Response getCloudProvider(@PathParam("id") @NotEmpty String id) {
+        return Response.ok(CloudProviderResponse.from(cloudProviderDAO.findById(id))).build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CloudRegionListResponse.class))),
             @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))

@@ -3,10 +3,9 @@
     "id": "aws",
     "name": "aws",
     "display_name": "Amazon Web Services",
-    "enabled" : "true",
+    "enabled": "true",
     "regions": [
       {
-        "id": "us-east-1",
         "name": "us-east-1",
         "display_name": "US East, N. Virginia",
         "enabled": "true"

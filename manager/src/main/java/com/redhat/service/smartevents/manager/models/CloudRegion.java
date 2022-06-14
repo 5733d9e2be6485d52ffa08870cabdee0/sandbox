@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CloudRegion {
 
-    @JsonProperty("id")
-    private String id;
-
     @JsonProperty("name")
     private String name;
 
@@ -16,12 +13,14 @@ public class CloudRegion {
     @JsonProperty("enabled")
     private boolean enabled;
 
-    public String getId() {
-        return id;
+    public CloudRegion() {
+
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public CloudRegion(String name, String displayName, boolean enabled) {
+        this.name = name;
+        this.displayName = displayName;
+        this.enabled = enabled;
     }
 
     public String getName() {
