@@ -129,10 +129,13 @@ public class ExecutorService {
             default:
                 Map<String, String> headers = toHeadersMap(message.getHeaders());
                 Map<String, String> cloudEventHeaders = new HashMap<>();
+                Map<String, String> otherHeaders = new HashMap<>();
                 for (Map.Entry<String, String> h : headers.entrySet()) {
-                    if (h.getKey().startsWith("Ce-")) { // TODO: refactor please
-                        headers.remove(h.getKey());
+                    LOG.info(h.getKey() + " " + h.getValue());
+                    if (h.getKey().startsWith("ce_")) { // TODO: refactor please
                         cloudEventHeaders.put(h.getKey().substring(3), h.getValue()); // TODO: refactor please
+                    } else {
+                        otherHeaders.put(h.getKey(), h.getValue());
                     }
                 }
                 CloudEvent cloudEvent = null;
@@ -146,7 +149,7 @@ public class ExecutorService {
                         .build();
                 return Pair.of(
                         cloudEvent,
-                        headers);
+                        otherHeaders);
         }
     }
 
