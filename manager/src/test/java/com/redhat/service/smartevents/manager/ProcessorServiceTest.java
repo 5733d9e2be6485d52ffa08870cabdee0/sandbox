@@ -197,9 +197,17 @@ class ProcessorServiceTest {
         doTestCreateProcessor(request, type);
     }
 
-    private void doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
+    @Test
+    void testCreateProcessor_whiteSpaceInName() {
+        ProcessorRequestForTests request = new ProcessorRequestForTests("   name   ", createKafkaTopicAction());
+        Processor processor = doTestCreateProcessor(request, SINK);
+        assertThat(processor.getName()).isEqualTo("name");
+    }
+
+    private Processor doTestCreateProcessor(ProcessorRequest request, ProcessorType type) {
         Processor processor = processorService.createProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, request);
         doAssertProcessorCreation(processor, request, type);
+        return processor;
     }
 
     private void doAssertProcessorCreation(Processor processor, ProcessorRequest request, ProcessorType type) {
