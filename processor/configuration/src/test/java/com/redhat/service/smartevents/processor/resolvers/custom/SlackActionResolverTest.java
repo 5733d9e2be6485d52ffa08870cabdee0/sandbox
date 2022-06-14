@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.resolvers;
+package com.redhat.service.smartevents.processor.resolvers.custom;
 
 import java.util.Map;
 
@@ -11,7 +11,6 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
-import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -32,11 +31,20 @@ class SlackActionResolverTest {
     private static final String TEST_CHANNEL_PARAM = "myChannel";
     private static final String TEST_WEBHOOK_PARAM = "myWebhook";
 
+    private static final String TEST_BROKER_URL = "testBrokerUrl";
+    private static final String TEST_CLIENT_ID = "testClientId";
+    private static final String TEST_CLIENT_SECRET = "testClientSecret";
+    private static final String TEST_SECURITY_PROTOCOL = "testSecurityProtocol";
+    private static final String TEST_BRIDGE_ERROR_TOPIC_NAME = "testBridgeErrorTopicName";
+
     @Inject
     SlackActionResolver slackActionResolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
+
+    @InjectMock
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @BeforeEach
     void beforeEach() {
@@ -44,6 +52,13 @@ class SlackActionResolverTest {
 
         when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
         when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+
+        when(gatewayConfiguratorService.getBootstrapServers()).thenReturn(TEST_BROKER_URL);
+        when(gatewayConfiguratorService.getClientId()).thenReturn(TEST_CLIENT_ID);
+        when(gatewayConfiguratorService.getClientSecret()).thenReturn(TEST_CLIENT_SECRET);
+        when(gatewayConfiguratorService.getSecurityProtocol()).thenReturn(TEST_SECURITY_PROTOCOL);
+
+        when(gatewayConfiguratorService.getBridgeErrorTopicName(TEST_BRIDGE_ID)).thenReturn(TEST_BRIDGE_ERROR_TOPIC_NAME);
     }
 
     @Test
@@ -57,6 +72,12 @@ class SlackActionResolverTest {
         assertThat(transformedAction.getParameter(SlackAction.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL_PARAM);
         assertThat(transformedAction.getParameter(SlackAction.WEBHOOK_URL_PARAM)).isEqualTo(TEST_WEBHOOK_PARAM);
         assertThat(transformedAction.getParameter(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TEST_PROCESSOR_TOPIC_NAME);
+
+        assertThat(transformedAction.getParameter(KafkaTopicAction.BROKER_URL)).isEqualTo(TEST_BROKER_URL);
+        assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_ID)).isEqualTo(TEST_CLIENT_ID);
+        assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_SECRET)).isEqualTo(TEST_CLIENT_SECRET);
+
+        assertThat(transformedAction.getParameter(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME)).isEqualTo(TEST_BRIDGE_ERROR_TOPIC_NAME);
     }
 
     private Action buildTestAction() {

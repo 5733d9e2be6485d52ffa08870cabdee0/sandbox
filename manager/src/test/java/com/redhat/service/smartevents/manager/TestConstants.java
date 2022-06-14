@@ -16,6 +16,8 @@ public class TestConstants {
     public static final String DEFAULT_PROCESSOR_NAME = "processMcProcessor";
 
     public static final String DEFAULT_KAFKA_TOPIC = "myTestTopic";
+    public static final String DEFAULT_CLIENT_ID = "myClientId";
+    public static final String DEFAULT_CLIENT_SECRET = "myClientSecret";
 
     public static final int DEFAULT_PAGE = 0;
     public static final int DEFAULT_PAGE_SIZE = 10;

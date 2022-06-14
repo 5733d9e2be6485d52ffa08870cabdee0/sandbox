@@ -14,4 +14,29 @@ public class GatewayConfiguratorServiceMock implements GatewayConfiguratorServic
     public String getConnectorTopicName(String processorId) {
         return String.format("mock-%s", processorId);
     }
+
+    @Override
+    public String getBootstrapServers() {
+        return "bootstrapserver:443";
+    }
+
+    @Override
+    public String getClientId() {
+        return "clientId";
+    }
+
+    @Override
+    public String getClientSecret() {
+        return "clientSecret";
+    }
+
+    @Override
+    public String getSecurityProtocol() {
+        return "securityProtocol";
+    }
+
+    @Override
+    public String getBridgeErrorTopicName(String testBridgeId) {
+        return "brigeErrorTopicName";
+    }
 }

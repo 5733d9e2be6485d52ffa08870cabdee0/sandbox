@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -176,6 +178,15 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_STRATEGY_ENV_VAR, Base64.getEncoder().encodeToString(kafkaErrorStrategy.getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getErrorTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, Base64.getEncoder().encodeToString(bridgeExecutor.getSpec().getId().getBytes()));
+
+        Optional<KafkaConnectionDTO> optOutboundKafkaConnection = processorDTO.parseKafkaOutgoingConnection();
+        optOutboundKafkaConnection.ifPresent(outboundKafkaConnection -> {
+            LOGGER.info("Outbound Kafka Connection configured: {}", outboundKafkaConnection);
+            expected.getData().put(GlobalConfigurationsConstants.KAFKA_ACTIONS_OUT_BOOTSTRAP_SERVERS_ENV_VAR,
+                    Base64.getEncoder().encodeToString(outboundKafkaConnection.getBootstrapServers().getBytes()));
+            expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ACTIONS_OUT_ID_ENV_VAR, Base64.getEncoder().encodeToString(outboundKafkaConnection.getClientId().getBytes()));
+            expected.getData().put(GlobalConfigurationsConstants.KAFKA_CLIENT_ACTIONS_OUT_SECRET_ENV_VAR, Base64.getEncoder().encodeToString(outboundKafkaConnection.getClientSecret().getBytes()));
+        });
 
         Secret existing = kubernetesClient
                 .secrets()
