@@ -20,7 +20,7 @@ Feature: BridgeExecutor deploy and undeploy
       customerId: customer
       owner: customer
       processorType: sink
-      processorDefinition: "{\"filters\":[{\"type\":\"StringEquals\",\"type\":\"StringEquals\",\"key\":\"data.name\",\"value\":\"test\"}],\"transformationTemplate\":null,\"requestedAction\":{\"type\":\"webhook_sink_0.1\",\"parameters\":{\"endpoint\":\"https:\/\/webhook.site\/xxxxxx\"}},\"requestedSource\":null,\"resolvedAction\":{\"type\":\"webhook_sink_0.1\",\"parameters\":{\"endpoint\":\"https:\/\/webhook.site\/xxxxxx\"}}}"
+      processorDefinition: '{"filters":[{"type":"StringEquals","type":"StringEquals","key":"data.name","value":"test"}],"transformationTemplate":null,"requestedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}},"requestedSource":null,"resolvedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}}}'
       processorName: mybridge-processor
     """
 
@@ -46,7 +46,7 @@ Feature: BridgeExecutor deploy and undeploy
       customerId: customer
       owner: customer
       processorType: sink
-      processorDefinition: "{\"filters\":[{\"type\":\"StringEquals\",\"type\":\"StringEquals\",\"key\":\"data.name\",\"value\":\"test\"}],\"transformationTemplate\":null,\"requestedAction\":{\"type\":\"webhook_sink_0.1\",\"parameters\":{\"endpoint\":\"https:\/\/webhook.site\/xxxxxx\"}},\"requestedSource\":null,\"resolvedAction\":{\"type\":\"webhook_sink_0.1\",\"parameters\":{\"endpoint\":\"https:\/\/webhook.site\/xxxxxx\"}}}"
+      processorDefinition: '{"filters":[{"type":"StringEquals","type":"StringEquals","key":"data.name","value":"test"}],"transformationTemplate":null,"requestedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}},"requestedSource":null,"resolvedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}}}'
       processorName: mybridge-processor
     """
 
