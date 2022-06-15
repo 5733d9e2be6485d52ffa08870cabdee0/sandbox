@@ -12,7 +12,7 @@ spec:
       serviceAccountName: shard-operator
       containers:
         - image: event-bridge-shard-operator
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: event-bridge-shard-operator
           ports:
             - containerPort: 8080
