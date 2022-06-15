@@ -116,6 +116,7 @@ jobs:
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
           kind load docker-image $EXECUTOR_CONTAINER_NAME
       - name: Build and Publish JVM Container - Ingress
+        continue-on-error: true # will be removed by https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/586
         run: |
           docker build -f docker/Dockerfile.jvm -t $INGRESS_CONTAINER_NAME ingress/
           kind load docker-image $INGRESS_CONTAINER_NAME
