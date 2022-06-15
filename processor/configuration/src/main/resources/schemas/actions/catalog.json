@@ -22,5 +22,11 @@
     "isConnector": false,
     "name": "Webhook",
     "description": "Send the event to a webhook."
+  },
+  {
+    "id": "aws_lambda_sink_0.1",
+    "isConnector": true,
+    "name": "AWS Lambda",
+    "description": "Send the event to an AWS lambda."
   }
 ]
