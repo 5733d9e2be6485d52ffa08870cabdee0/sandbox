@@ -14,7 +14,7 @@ public final class LabelsBuilder {
 
     private final Map<String, String> labels = new HashMap<>();
 
-    public static final String OPERATOR_NAME = "bridge-fleet-shard-operator-knative";
+    public static final String OPERATOR_NAME = "bridge-fleet-shard-operator";
 
     /**
      * The tool being used to manage the operation of an application

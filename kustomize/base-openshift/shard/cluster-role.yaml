@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: shard-operator-knative
+  name: shard-operator
 rules:
   - apiGroups:
       - com.redhat.service.bridge

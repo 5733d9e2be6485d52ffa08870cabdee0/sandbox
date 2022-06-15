@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import io.cloudevents.SpecVersion;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -139,7 +140,8 @@ public class ExecutorService {
                     }
                 }
                 CloudEvent cloudEvent = null;
-                cloudEvent = CloudEventBuilder.v1() // TODO: refactor please
+                cloudEvent = CloudEventBuilder
+                        .fromSpecVersion(SpecVersion.parse(cloudEventHeaders.get("specversion"))) // TODO: refactor please
                         .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
                         .withId(cloudEventHeaders.getOrDefault("id", null))
                         .withSource(new URI(cloudEventHeaders.getOrDefault("source", null)))
