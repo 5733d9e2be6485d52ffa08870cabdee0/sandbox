@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "title": "Endpoint",
+      "description": "Ansible Tower instance base endpoint.",
+      "example": "https://my.ansible-tower.host"
+    },
+    "job_template_id": {
+      "type": "string",
+      "title": "Job Template ID",
+      "description": "The ID of the job template to trigger.",
+      "example": "14"
+    },
+    "basic_auth_username": {
+      "type": "string",
+      "title": "Basic Auth Username",
+      "description": "The username for basic auth.",
+      "example": "kermit"
+    },
+    "basic_auth_password": {
+      "type": "string",
+      "title": "Basic Auth Password",
+      "description": "The password for basic auth.",
+      "example": "mypassword"
+    },
+    "ssl_verification_disabled": {
+      "type": "boolean",
+      "title": "SSL Verification Disabled",
+      "description": "Specify if SSL verification has to be disabled",
+      "example": "false",
+      "default": false
+    }
+  },
+  "required": [
+    "endpoint",
+    "job_template_id"
+  ],
+  "optional": [
+    "basic_auth_username",
+    "basic_auth_password",
+    "ssl_verification_disabled"
+  ]
+}
