@@ -100,7 +100,7 @@ public class ProcessorAPITest {
 
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        ProcessorResponse p = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 0, 100).as(ProcessorListResponse.class);
@@ -108,7 +108,9 @@ public class ProcessorAPITest {
         assertThat(listResponse.getSize()).isEqualTo(2L);
         assertThat(listResponse.getTotal()).isEqualTo(2L);
 
-        listResponse.getItems().forEach((i) -> assertThat(i.getId()).isIn(p.getId(), p2.getId()));
+        // Results are sorted descending by default. The first created is the last to be listed.
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+        assertThat(listResponse.getItems().get(1).getId()).isEqualTo(p1.getId());
     }
 
     @Test
@@ -264,15 +266,16 @@ public class ProcessorAPITest {
     public void listProcessors_pageOffset() {
         BridgeResponse bridgeResponse = createAndDeployBridge();
 
-        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
-        ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        ProcessorResponse p1 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
+        TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
 
         ProcessorListResponse listResponse = TestUtils.listProcessors(bridgeResponse.getId(), 1, 1).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isEqualTo(1L);
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(2L);
 
-        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p2.getId());
+        // Results are sorted descending by default. The last page, 1, will contain the first processor.
+        assertThat(listResponse.getItems().get(0).getId()).isEqualTo(p1.getId());
         assertRequestedAction(listResponse.getItems().get(0));
     }
 
@@ -542,7 +545,9 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
-        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, new ProcessorRequest());
+        ProcessorRequest request = new ProcessorRequest();
+        request.setAction(TestUtils.createKafkaAction());
+        Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, request);
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

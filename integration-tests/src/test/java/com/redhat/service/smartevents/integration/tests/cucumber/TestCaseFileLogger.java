@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,12 +70,13 @@ public class TestCaseFileLogger implements EventListener {
             PickleStepTestStep testStep = (PickleStepTestStep) event.getTestStep();
             String keyword = testStep.getStep().getKeyword();
             String stepText = testStep.getStep().getText();
+            String timestamp = Instant.now().toString();
             switch (event.getResult().getStatus()) {
                 case PASSED:
-                    writer.writeln(String.format("%s%s", keyword, stepText));
+                    writer.writeln(String.format("%s  %s%s", timestamp, keyword, stepText));
                     break;
                 case FAILED:
-                    writer.writeln(String.format("%s%s  FAILED", keyword, stepText));
+                    writer.writeln(String.format("%s  %s%s  FAILED", timestamp, keyword, stepText));
                     event.getResult().getError().printStackTrace(writer.getPrintWriter());
                     writer.flush();
                     break;
