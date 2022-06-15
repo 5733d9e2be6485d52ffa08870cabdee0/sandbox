@@ -9,10 +9,10 @@ spec:
   replicas: 1
   template:
     spec:
-      serviceAccountName: shard-operator
+      serviceAccountName: shard-operator-knative
       containers:
         - image: event-bridge-shard-operator
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: event-bridge-shard-operator
           ports:
             - containerPort: 8080

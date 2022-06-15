@@ -118,7 +118,8 @@ class WebhookActionInvokerTest extends AbstractWireMockTest {
 
         RequestPatternBuilder requestPatternBuilder = postRequestedFor(urlEqualTo(TEST_WEBHOOK_PATH))
                 .withRequestBody(equalToJson(TEST_EVENT, true, true))
-                .withHeader("Content-Type", equalTo("application/json"))
+                // if we use the bearer token, it means we target a bridge ingress so we have to use the cloudevents+json content type
+                .withHeader("Content-Type", equalTo("application/cloudevents+json"))
                 .withHeader("Authorization", equalTo("Bearer token"));
 
         for (Map.Entry<String, String> testHeader : TEST_HEADERS.entrySet()) {

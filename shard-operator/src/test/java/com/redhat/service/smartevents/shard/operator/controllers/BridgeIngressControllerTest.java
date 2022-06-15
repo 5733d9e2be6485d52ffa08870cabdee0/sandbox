@@ -10,13 +10,13 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
@@ -75,12 +75,12 @@ public class BridgeIngressControllerTest {
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable); // TODO: replace with KnativeBrokerNotReady
         });
     }
 
     @Test
-    void testBridgeIngressDeployment() {
+    void testBridgeIngressKnativeBroker() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -89,68 +89,19 @@ public class BridgeIngressControllerTest {
         bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
-        assertThat(deployment).isNotNull();
-        assertThat(deployment.getMetadata().getOwnerReferences().size()).isEqualTo(1);
-        assertThat(deployment.getMetadata().getLabels()).isNotNull();
-        assertThat(deployment.getSpec().getSelector().getMatchLabels().size()).isEqualTo(1);
-        assertThat(deployment.getSpec().getTemplate().getMetadata().getLabels()).isNotNull();
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isNotNull();
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getName()).isNotNull();
-    }
+        KnativeBroker knativeBroker = kubernetesClient
+                .resources(KnativeBroker.class)
+                .inNamespace(bridgeIngress.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
 
-    @Test
-    void testBridgeIngressDeployment_deploymentReplicaFailure() {
-        // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
-        deployBridgeIngressSecret(bridgeIngress);
-
-        // When
-        bridgeIngressController.reconcile(bridgeIngress, null);
-        Deployment deployment = getDeploymentFor(bridgeIngress);
-
-        // Then
-        kubernetesResourcePatcher.patchDeploymentAsReplicaFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
-
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
-        assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
-    }
-
-    @Test
-    void testBridgeIngressDeployment_deploymentTimeoutFailure() {
-        // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
-        deployBridgeIngressSecret(bridgeIngress);
-
-        // When
-        bridgeIngressController.reconcile(bridgeIngress, null);
-        Deployment deployment = getDeploymentFor(bridgeIngress);
-
-        // Then
-        kubernetesResourcePatcher.patchDeploymentAsTimeoutFailed(deployment.getMetadata().getName(), deployment.getMetadata().getNamespace());
-
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
-        assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
-    }
-
-    @Test
-    void testBridgeIngressNewImage() {
-        // Given
-        BridgeIngress bridgeIngress = buildBridgeIngress();
-        String oldImage = "oldImage";
-        bridgeIngress.getSpec().setImage(oldImage);
-        deployBridgeIngressSecret(bridgeIngress);
-
-        // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
-
-        //Then
-        assertThat(updateControl.isUpdateResource()).isTrue();
-        assertThat(updateControl.getResource().getSpec().getImage()).isEqualTo(TestSupport.INGRESS_IMAGE); // Should be restored
+        assertThat(knativeBroker).isNotNull();
+        assertThat(knativeBroker.getMetadata().getOwnerReferences().size()).isEqualTo(1);
+        assertThat(knativeBroker.getMetadata().getLabels()).isNotNull();
+        assertThat(knativeBroker.getSpec().getConfig().getApiVersion()).isNotNull();
+        assertThat(knativeBroker.getSpec().getConfig().getName()).isNotNull();
+        assertThat(knativeBroker.getSpec().getConfig().getNamespace()).isNotNull();
+        assertThat(knativeBroker.getSpec().getConfig().getKind()).isNotNull();
     }
 
     private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {
@@ -168,17 +119,10 @@ public class BridgeIngressControllerTest {
                 .createOrReplace(secret);
     }
 
-    private Deployment getDeploymentFor(BridgeIngress bridgeIngress) {
-        Deployment deployment = kubernetesClient.apps().deployments().inNamespace(bridgeIngress.getMetadata().getNamespace()).withName(bridgeIngress.getMetadata().getName()).get();
-        assertThat(deployment).isNotNull();
-        return deployment;
-    }
-
     private BridgeIngress buildBridgeIngress() {
         return BridgeIngress.fromBuilder()
                 .withBridgeId(TestSupport.BRIDGE_ID)
                 .withBridgeName(TestSupport.BRIDGE_NAME)
-                .withImageName(TestSupport.INGRESS_IMAGE)
                 .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
                 .build();

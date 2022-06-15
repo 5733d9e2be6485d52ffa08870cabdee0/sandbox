@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
-import com.redhat.service.smartevents.shard.operator.networking.KubernetesNetworkingService;
+import com.redhat.service.smartevents.shard.operator.networking.NetworkingConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -25,7 +25,6 @@ public class TemplateProviderTest {
     private static final BridgeIngress BRIDGE_INGRESS = BridgeIngress.fromBuilder()
             .withBridgeName("id")
             .withNamespace("ns")
-            .withImageName("image:latest")
             .withBridgeId("12345")
             .withCustomerId("12456")
             .build();
@@ -42,35 +41,33 @@ public class TemplateProviderTest {
             .build();
 
     @Test
-    public void bridgeIngressDeploymentTemplateIsProvided() {
+    public void metadataIsUpdated() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeIngressDeploymentTemplate(BRIDGE_INGRESS);
+        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
+        assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
+        assertThat(deployment.getMetadata().getName()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getName());
+        assertThat(deployment.getMetadata().getNamespace()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getNamespace());
 
-        assertOwnerReference(BRIDGE_INGRESS, deployment.getMetadata());
-        assertLabels(deployment.getMetadata(), BridgeIngress.COMPONENT_NAME);
-        assertThat(deployment.getSpec().getReplicas()).isEqualTo(1);
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getLivenessProbe()).isNotNull();
-        assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getReadinessProbe()).isNotNull();
-    }
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, new TemplateImportConfig().withNameFromParent());
+        assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
+        assertThat(deployment.getMetadata().getName()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getName());
+        assertThat(deployment.getMetadata().getNamespace()).isNull();
 
-    @Test
-    public void bridgeIngressServiceTemplateIsProvided() {
-        TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeIngressServiceTemplate(BRIDGE_INGRESS);
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, new TemplateImportConfig().withNamespaceFromParent());
+        assertThat(deployment.getMetadata().getOwnerReferences()).isNull();
+        assertThat(deployment.getMetadata().getName()).isNull();
+        assertThat(deployment.getMetadata().getNamespace()).isEqualTo(BRIDGE_EXECUTOR.getMetadata().getNamespace());
 
-        assertOwnerReference(BRIDGE_INGRESS, service.getMetadata());
-        assertLabels(service.getMetadata(), BridgeIngress.COMPONENT_NAME);
-        assertThat(service.getSpec().getPorts().size()).isEqualTo(1);
-        assertThat(service.getSpec().getPorts().get(0).getName()).isEqualTo("web");
-        assertThat(service.getSpec().getPorts().get(0).getPort()).isEqualTo(8080);
-        assertThat(service.getSpec().getPorts().get(0).getTargetPort().getIntVal()).isEqualTo(8080);
-        assertThat(service.getSpec().getPorts().get(0).getProtocol()).isEqualTo("TCP");
+        deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, new TemplateImportConfig().withOwnerReferencesFromParent());
+        assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
+        assertThat(deployment.getMetadata().getName()).isNull();
+        assertThat(deployment.getMetadata().getNamespace()).isNull();
     }
 
     @Test
     public void bridgeExecutorDeploymentTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR);
+        Deployment deployment = templateProvider.loadBridgeExecutorDeploymentTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_EXECUTOR, deployment.getMetadata());
         assertLabels(deployment.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -82,7 +79,7 @@ public class TemplateProviderTest {
     @Test
     public void bridgeExecutorServiceTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR);
+        Service service = templateProvider.loadBridgeExecutorServiceTemplate(BRIDGE_EXECUTOR, TemplateImportConfig.withDefaults());
 
         assertOwnerReference(BRIDGE_EXECUTOR, service.getMetadata());
         assertLabels(service.getMetadata(), BridgeExecutor.COMPONENT_NAME);
@@ -93,12 +90,16 @@ public class TemplateProviderTest {
         assertThat(service.getSpec().getPorts().get(0).getProtocol()).isEqualTo("TCP");
     }
 
+    // TODO: add test for ingress secret/configmap/istio/knative resource
+
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS);
+        Route route = templateProvider.loadBridgeIngressOpenshiftRouteTemplate(BRIDGE_INGRESS, new TemplateImportConfig()
+                .withNameFromParent()
+                .withPrimaryResourceFromParent());
 
-        assertOwnerReference(BRIDGE_INGRESS, route.getMetadata());
+        assertThat(route.getMetadata().getOwnerReferences()).isNull();
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
         assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
         assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
@@ -107,15 +108,16 @@ public class TemplateProviderTest {
     @Test
     public void bridgeIngressKubernetesIngressTemplateIsProvided() {
         TemplateProvider templateProvider = new TemplateProviderImpl();
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS);
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(BRIDGE_INGRESS, new TemplateImportConfig()
+                .withNameFromParent()
+                .withPrimaryResourceFromParent());
 
-        assertOwnerReference(BRIDGE_INGRESS, ingress.getMetadata());
+        assertThat(ingress.getMetadata().getOwnerReferences()).isNull();
         assertLabels(ingress.getMetadata(), BridgeIngress.COMPONENT_NAME);
-        assertThat(ingress.getMetadata().getAnnotations().get(KubernetesNetworkingService.NGINX_REWRITE_TARGET_ANNOTATION)).isEqualTo(KubernetesNetworkingService.REWRITE_TARGET_PLACEHOLDER);
 
         assertThat(ingress.getSpec().getRules().size()).isEqualTo(1);
         assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().size()).isEqualTo(1);
-        assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPathType()).isEqualTo("Prefix");
+        assertThat(ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPathType()).isEqualTo(NetworkingConstants.K8S_INGRESS_PATH_TYPE);
     }
 
     private void assertLabels(ObjectMeta meta, String component) {

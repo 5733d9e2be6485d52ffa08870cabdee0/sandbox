@@ -7,11 +7,11 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.WithPrometheus;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -21,7 +21,6 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -38,13 +37,10 @@ public class ServiceMonitorServiceTest {
     ServiceMonitorService serviceMonitorService;
 
     @Inject
-    BridgeIngressService bridgeIngressService;
+    BridgeExecutorService bridgeExecutorService;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @Inject
-    KubernetesClient kubernetesClient;
 
     @BeforeEach
     void setup() {
@@ -55,14 +51,14 @@ public class ServiceMonitorServiceTest {
     @WithPrometheus
     void fetchOrCreateServiceMonitor() {
         // Given
-        final BridgeDTO bridge = TestSupport.newAvailableBridgeDTO();
-        final BridgeIngress bridgeIngress = BridgeIngress.fromDTO(bridge, "default", TestSupport.INGRESS_IMAGE);
-        final Secret secretMock = new SecretBuilder().withMetadata(new ObjectMetaBuilder().withName(bridgeIngress.getMetadata().getName()).build()).build();
-        final Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secretMock);
-        final Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        BridgeExecutor bridgeExecutor = BridgeExecutor.fromDTO(dto, "ns", "image");
+        final Secret secretMock = new SecretBuilder().withMetadata(new ObjectMetaBuilder().withName(bridgeExecutor.getMetadata().getName()).build()).build();
+        final Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secretMock);
+        final Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
 
         // When
-        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, "ingress");
+        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, "ingress");
 
         // Then
         assertThat(serviceMonitor).isPresent();
@@ -71,7 +67,7 @@ public class ServiceMonitorServiceTest {
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.MANAGED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
         assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.CREATED_BY_LABEL, LabelsBuilder.OPERATOR_NAME);
-        assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.COMPONENT_LABEL, "ingress");
+        assertThat(serviceMonitor.get().getMetadata().getLabels()).containsEntry(LabelsBuilder.COMPONENT_LABEL, BridgeExecutor.COMPONENT_NAME);
         assertThat(service.getMetadata().getLabels()).containsEntry(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
     }
 }

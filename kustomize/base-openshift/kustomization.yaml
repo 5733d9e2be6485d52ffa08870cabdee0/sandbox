@@ -3,8 +3,8 @@ images:
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
   newTag: 5ab25003eda321dde47cfd5fa3f49758f361fa43-jvm
 - name: event-bridge-shard-operator
-  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
-  newTag: ocp-5ab25003eda321dde47cfd5fa3f49758f361fa43-jvm
+  newName: quay.io/jrota/shard-operator-knative
+  newTag: "0.4"
 patchesStrategicMerge:
 - manager/patches/deploy.yaml
 - manager/patches/deploy-config.yaml

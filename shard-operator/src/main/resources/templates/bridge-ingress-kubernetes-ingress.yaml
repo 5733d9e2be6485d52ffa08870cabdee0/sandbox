@@ -4,22 +4,18 @@ metadata:
   name: ""
   namespace: ""
   labels:
-    app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
-    app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
+    app.kubernetes.io/managed-by: bridge-fleet-shard-operator-knative # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: bridge-fleet-shard-operator-knative # Specify the operator
     app.kubernetes.io/component: ingress # used to specify the component
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-  ownerReferences: # used for finding which BridgeIngress/Processor does this Deployment belong to
-    - apiVersion: ""
-      kind: ""
-      name: ""
-      uid: ""
+    operator-sdk/primary-resource-name: ""
+    operator-sdk/primary-resource-namespace: ""
 spec:
   rules:
     - http:
         paths:
           - path: ""
-            pathType: Prefix
+            pathType: Exact
             backend:
               serviceName: ""
               servicePort: ""

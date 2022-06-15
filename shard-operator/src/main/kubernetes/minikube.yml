@@ -25,6 +25,7 @@ rules:
       - services
       - namespaces
       - secrets
+      - configmaps
     verbs:
       - '*'
   - apiGroups:
@@ -37,6 +38,20 @@ rules:
       - monitoring.coreos.com
     resources:
       - servicemonitors
+    verbs:
+      - "*"
+  - apiGroups:
+      - eventing.knative.dev
+    resources:
+      - brokers
+      - triggers
+    verbs:
+      - "*"
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - requestauthentications
+      - authorizationpolicies
     verbs:
       - "*"
   # add here the core resources we need to manage

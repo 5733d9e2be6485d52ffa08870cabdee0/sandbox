@@ -84,10 +84,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, customerNamespace);
                         });

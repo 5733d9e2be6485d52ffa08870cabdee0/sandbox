@@ -5,6 +5,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -34,10 +38,12 @@ public class KubernetesNetworkingService implements NetworkingService {
     private static final String PATH_REGEX = "(/|$)(.*)";
     private final KubernetesClient client;
     private final TemplateProvider templateProvider;
+    private final IstioGatewayProvider istioGatewayProvider;
 
-    public KubernetesNetworkingService(KubernetesClient client, TemplateProvider templateProvider) {
+    public KubernetesNetworkingService(KubernetesClient client, TemplateProvider templateProvider, IstioGatewayProvider istioGatewayProvider) {
         this.client = client;
         this.templateProvider = templateProvider;
+        this.istioGatewayProvider = istioGatewayProvider;
     }
 
     @Override
@@ -46,13 +52,25 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress expected = buildIngress(bridgeIngress, service);
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, String path) {
+        Service service = istioGatewayProvider.getIstioGatewayService();
+        Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
-        Ingress existing = client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).get();
+        Ingress existing = client.network().v1().ingresses()
+                .inNamespace(service.getMetadata().getNamespace())
+                .withName(bridgeIngress.getMetadata().getName())
+                .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            client.network().v1().ingresses().inNamespace(service.getMetadata().getNamespace()).withName(service.getMetadata().getName()).createOrReplace(expected);
+            try {
+                LOGGER.info(new ObjectMapper().writeValueAsString(expected));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            client.network().v1().ingresses()
+                    .inNamespace(service.getMetadata().getNamespace())
+                    .withName(bridgeIngress.getMetadata().getName())
+                    .createOrReplace(expected);
             return buildNetworkingResource(expected);
         }
 
@@ -69,20 +87,27 @@ public class KubernetesNetworkingService implements NetworkingService {
         }
     }
 
-    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service) {
-        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress);
+    private Ingress buildIngress(BridgeIngress bridgeIngress, Service service, Integer port, String path) {
+        /**
+         * As the service might not be in the same namespace of the bridgeIngress (for example for the istio gateway) we can not set the owner references.
+         */
+        Ingress ingress = templateProvider.loadBridgeIngressKubernetesIngressTemplate(bridgeIngress, new TemplateImportConfig()
+                .withNameFromParent()
+                .withPrimaryResourceFromParent());
+        // Inherit the namespace from the service
+        ingress.getMetadata().setNamespace(service.getMetadata().getNamespace());
 
         IngressBackend ingressBackend = new IngressBackendBuilder()
                 .withService(new IngressServiceBackendBuilder()
                         .withName(service.getMetadata().getName())
-                        .withPort(new ServiceBackendPortBuilder().withNumber(service.getSpec().getPorts().get(0).getPort()).build())
+                        .withPort(new ServiceBackendPortBuilder().withNumber(port).build())
                         .build())
                 .build();
 
         HTTPIngressPath httpIngressPath = new HTTPIngressPathBuilder()
                 .withBackend(ingressBackend)
-                .withPath("/" + service.getMetadata().getName() + PATH_REGEX)
-                .withPathType("Prefix")
+                .withPath(path)
+                .withPathType(NetworkingConstants.K8S_INGRESS_PATH_TYPE)
                 .build();
 
         IngressRule ingressRule = new IngressRuleBuilder()
@@ -111,8 +136,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         if (host == null) {
             host = Optional.ofNullable(System.getenv("INGRESS_OVERRIDE_HOSTNAME")).orElse(ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname());
         }
-        String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath().replace(PATH_REGEX, "");
-        endpoint = endpoint + NetworkingConstants.EVENTS_ENDPOINT_SUFFIX;
+        String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath();//.replace(PATH_REGEX, "");
         return new NetworkResource(endpoint, true);
     }
 }

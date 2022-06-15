@@ -1,8 +1,10 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,6 +39,7 @@ import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.jackson.JsonCloudEventData;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
@@ -80,7 +83,7 @@ public class ExecutorService {
     BridgeErrorService bridgeErrorService;
 
     @Incoming(EVENTS_IN_CHANNEL)
-    public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
+    public CompletionStage<Void> processEvent(final IncomingKafkaRecord<Integer, String> message) {
         CloudEvent cloudEvent = null;
         try {
             Pair<CloudEvent, Map<String, String>> pair = convertToCloudEventAndHeadersMap(message);
@@ -113,7 +116,7 @@ public class ExecutorService {
         return message.ack();
     }
 
-    private Pair<CloudEvent, Map<String, String>> convertToCloudEventAndHeadersMap(KafkaRecord<Integer, String> message) {
+    private Pair<CloudEvent, Map<String, String>> convertToCloudEventAndHeadersMap(KafkaRecord<Integer, String> message) throws URISyntaxException, JsonProcessingException {
         switch (executor.getProcessor().getType()) {
             case SOURCE:
                 return Pair.of(
@@ -124,9 +127,29 @@ public class ExecutorService {
                         toErrorHandlerCloudEvent(message.getPayload()),
                         toHeadersMap(message.getHeaders()));
             default:
+                Map<String, String> headers = toHeadersMap(message.getHeaders());
+                Map<String, String> cloudEventHeaders = new HashMap<>();
+                Map<String, String> otherHeaders = new HashMap<>();
+                for (Map.Entry<String, String> h : headers.entrySet()) {
+                    LOG.info(h.getKey() + " " + h.getValue());
+                    if (h.getKey().startsWith("ce_")) { // TODO: refactor please
+                        cloudEventHeaders.put(h.getKey().substring(3), h.getValue()); // TODO: refactor please
+                    } else {
+                        otherHeaders.put(h.getKey(), h.getValue());
+                    }
+                }
+                CloudEvent cloudEvent = null;
+                cloudEvent = CloudEventBuilder.v1() // TODO: refactor please
+                        .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
+                        .withId(cloudEventHeaders.getOrDefault("id", null))
+                        .withSource(new URI(cloudEventHeaders.getOrDefault("source", null)))
+                        .withType(cloudEventHeaders.getOrDefault("type", null))
+                        .withDataSchema(cloudEventHeaders.containsKey("dataschema") ? new URI(cloudEventHeaders.get("dataschema")) : null)
+                        .withSubject(cloudEventHeaders.getOrDefault("subject", null))
+                        .build();
                 return Pair.of(
-                        CloudEventUtils.decode(message.getPayload()),
-                        toHeadersMap(message.getHeaders()));
+                        cloudEvent,
+                        otherHeaders);
         }
     }
 
