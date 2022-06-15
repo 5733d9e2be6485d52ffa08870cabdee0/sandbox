@@ -101,6 +101,10 @@ jobs:
         with:
           name: cucumber-logs
           path: shard-operator-integration-tests/target/logs/**/*.*
+      - name: Get brokers
+        if: always()
+        run: |
+          kubectl get brokers -A
       - name: Print operator log
         if: always()
         run: |
