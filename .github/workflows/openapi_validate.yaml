@@ -1,5 +1,7 @@
 name: Validate OpenAPI
 on:
+  # update to pull_request when the incompatibilities are fixed
+  # https://issues.redhat.com/browse/MGDOBR-843
   push:
     branches:
       - main
