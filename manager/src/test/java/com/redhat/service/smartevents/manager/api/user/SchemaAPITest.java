@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class SchemaAPITest {
 
-    private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "google_pubsub_sink_0.1");
+    private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1", "google_pubsub_sink_0.1");
     private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @InjectMock
@@ -54,7 +54,7 @@ public class SchemaAPITest {
         assertThat(catalog.getItems()).isNotNull();
         assertThat(catalog.getItems().size())
                 .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test")
-                .isEqualTo(7);
+                .isEqualTo(9);
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
@@ -67,6 +67,8 @@ public class SchemaAPITest {
                     fail("entry type does not match 'source' nor 'action'");
             }
             assertThatNoException().isThrownBy(() -> new URI(entry.getHref())); // is a valid URI
+            assertThat(entry.getName()).isNotNull().isNotBlank();
+            assertThat(entry.getDescription()).isNotNull().isNotBlank();
             assertThat(entry.getHref()).contains(entry.getId()); // The href should contain the name
             TestUtils.jsonRequest().get(entry.getHref()).then().statusCode(200);
         }
