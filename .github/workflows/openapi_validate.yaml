@@ -1,6 +1,6 @@
 name: Validate OpenAPI
 on:
-  pull_request:
+  push:
     branches:
       - main
 
@@ -14,5 +14,3 @@ jobs:
         with:
           node-version: 15.x
       - run: npx @stoplight/spectral@5.9.0 lint ./openapi/rhose-api.yaml
-        continue-on-error: true # to see the errors without blocking the merge
- 
