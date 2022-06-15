@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.integration.tests.resources;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import com.redhat.service.smartevents.integration.tests.common.Utils;
@@ -19,13 +19,13 @@ public class SlackResource {
     private final static String SLACK_WEBHOOK = Utils.getSystemProperty("slack.webhook.url");
 
     public static List<String> getListOfSlackMessages() {
-        final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
+        final LocalDateTime oneHourAgo = LocalDateTime.now(ZoneId.systemDefault()).minusHours(1);
         return given()
                 .auth()
                 .oauth2(SLACK_TOKEN)
                 .contentType(ContentType.JSON)
                 .queryParam("channel", SLACK_CHANNEL)
-                .queryParam("latest", yesterday.toEpochDay())
+                .queryParam("oldest", oneHourAgo.toEpochSecond(ZoneOffset.UTC))
                 .when()
                 .get(SLACK_URI)
                 .then()
