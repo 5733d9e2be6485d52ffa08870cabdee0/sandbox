@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Check labels
         # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
         if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
@@ -31,6 +33,10 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Set up KinD
         uses: ./.github/actions/kind
         with:
