@@ -12,7 +12,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -22,6 +24,8 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.processor.GatewayConnector;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
@@ -52,6 +56,12 @@ class ConnectorsServiceTest {
 
     @InjectMock
     ConnectorsDAO connectorsDAOMock;
+
+    @InjectMock
+    GatewayConnector gatewayConnector;
+
+    @InjectMock
+    ResourceNamesProvider resourceNamesProvider;
 
     @Test
     @Transactional
@@ -88,6 +98,40 @@ class ConnectorsServiceTest {
         verify(connectorsDAOMock, never()).delete(any(ConnectorEntity.class));
     }
 
+    @ParameterizedTest
+    @Transactional
+    @MethodSource("connectorProcessors")
+    void doUpdateConnectorNoneFound(Processor processor) {
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
+
+        connectorsService.updateConnectorEntityDefinition(processor);
+
+        verify(gatewayConnector, never()).connectorPayload(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @Transactional
+    @MethodSource("connectorProcessors")
+    void doUpdateConnector(Processor processor) {
+        ConnectorEntity connectorEntity = connectorEntityWith(processor);
+        // We need to ensure the Processor looks as though it has been updated
+        processor.setGeneration(1);
+        when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(connectorEntity);
+        when(resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId())).thenReturn("TopicNameError");
+        when(gatewayConnector.connectorPayload(any(), any(), any())).thenReturn(new TextNode("definition-updated"));
+
+        connectorsService.updateConnectorEntityDefinition(processor);
+
+        if (processor.getType() == ProcessorType.SOURCE) {
+            verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedSource(), connectorEntity.getTopicName(), "TopicNameError");
+        } else if (processor.getType() == ProcessorType.SINK) {
+            verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedAction(), connectorEntity.getTopicName(), "TopicNameError");
+        }
+
+        assertThat(connectorEntity.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+        assertThat(connectorEntity.getDependencyStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+    }
+
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
                 { processorWith(slackAction()), SlackAction.TYPE },
@@ -102,6 +146,7 @@ class ConnectorsServiceTest {
         connectorEntity.setId(TEST_CONNECTOR_ID);
         connectorEntity.setConnectorExternalId(TEST_CONNECTOR_EXTERNAL_ID);
         connectorEntity.setProcessor(processor);
+        connectorEntity.setDefinition(new TextNode("definition"));
         return connectorEntity;
     }
 

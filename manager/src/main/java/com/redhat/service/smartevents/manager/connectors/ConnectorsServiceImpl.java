@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager.connectors;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -92,11 +93,13 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setType(connectorType);
         newConnectorEntity.setName(newConnectorName);
         newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+        newConnectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
         newConnectorEntity.setConnectorTypeId(connectorTypeId);
         newConnectorEntity.setDefinition(connectorPayload);
+        newConnectorEntity.setGeneration(0);
 
         connectorsDAO.persist(newConnectorEntity);
     }
@@ -105,6 +108,39 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for destruction in the same transaction as a Processor
     public void deleteConnectorEntity(Processor processor) {
-        Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> c.setStatus(ManagedResourceStatus.DEPROVISION));
+        Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> {
+            c.setStatus(ManagedResourceStatus.DEPROVISION);
+            c.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
+        });
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.MANDATORY)
+    // Connector should always be updated in the same transaction as a Processor
+    public void updateConnectorEntityDefinition(Processor processor) {
+        ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processor.getId());
+        if (Objects.isNull(connectorEntity)) {
+            LOGGER.info("No ConnectorEntity found for Processor {}. No update performed.", processor.getId());
+            return;
+        }
+        String topicName = connectorEntity.getTopicName();
+        String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
+        JsonNode updatedConnectionDefinition = null;
+
+        if (processor.getType() == ProcessorType.SOURCE) {
+            updatedConnectionDefinition = gatewayConnector.connectorPayload(processor.getDefinition().getRequestedSource(), topicName, errorHandlerTopicName);
+        } else if (processor.getType() == ProcessorType.SINK) {
+            updatedConnectionDefinition = gatewayConnector.connectorPayload(processor.getDefinition().getRequestedAction(), topicName, errorHandlerTopicName);
+        }
+
+        if (processor.getGeneration() > 0) {
+            connectorEntity.setModifiedAt(ZonedDateTime.now());
+            connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+            connectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+            connectorEntity.setDefinition(updatedConnectionDefinition);
+            connectorEntity.setGeneration(connectorEntity.getGeneration() + 1);
+        } else {
+            LOGGER.info("ConnectorEntity definition for Processor {} unchanged. No update performed.", processor.getId());
+        }
     }
 }

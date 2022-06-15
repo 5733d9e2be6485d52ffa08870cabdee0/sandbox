@@ -24,6 +24,7 @@ import com.openshift.cloud.api.connector.models.ServiceAccount;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorGetException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorUpdateException;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 
 @RequestScoped
@@ -125,6 +126,19 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         createConnectorRequest.setKafka(kafka);
 
         return createConnector(createConnectorRequest);
+    }
+
+    @Override
+    public Connector updateConnector(String connectorExternalId, JsonNode definition) {
+        ConnectorsApi connectorsAPI = createConnectorsAPI();
+
+        try {
+            return connectorsAPI.patchConnector(connectorExternalId, definition);
+        } catch (ApiException e) {
+            String message =
+                    String.format("Failed to update Connector on Connector Namespace '%s' with HTTP Response Code '%s'", mcNamespaceId, e.getCode());
+            throw new ConnectorUpdateException(message, e);
+        }
     }
 
     @Override

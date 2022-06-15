@@ -11,6 +11,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
@@ -110,6 +112,7 @@ class ConnectorWorkerTest {
         Connector connector = new Connector();
         connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
+        connector.setConnector(new TextNode("definition"));
 
         when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(null, connector);
         when(connectorsApi.createConnector(connectorEntity)).thenReturn(connector);
@@ -134,6 +137,47 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
+        assertThat(workManager.exists(work)).isTrue();
+    }
+
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("provideArgsForUpdateTest")
+    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        ConnectorEntity connectorEntity = useSourceConnectorEntity
+                ? Fixtures.createSourceConnector(processor, ManagedResourceStatus.ACCEPTED)
+                : Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
+        connectorEntity.setPublishedAt(null);
+        connectorEntity.setGeneration(patchConnector ? 1 : 0);
+
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connectorEntity);
+
+        // Set-up ManagedConnector to match ConnectorEntity so subsequent update is detected
+        Connector connector = new Connector();
+        connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
+        connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
+        connector.setConnector(connectorEntity.getDefinition());
+
+        // Update ConnectorEntity with new definition
+        connectorEntity.setDefinition(updatedDefinition);
+
+        Work work = workManager.schedule(connectorEntity);
+
+        when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
+
+        ConnectorEntity refreshed = worker.handleWork(work);
+
+        if (patchConnector) {
+            verify(connectorsApi).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
+        } else {
+            assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+            assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+        }
+
         assertThat(workManager.exists(work)).isTrue();
     }
 
@@ -214,4 +258,13 @@ class ConnectorWorkerTest {
         };
         return Stream.of(arguments).map(Arguments::of);
     }
+
+    private static Stream<Arguments> provideArgsForUpdateTest() {
+        Object[][] arguments = {
+                { true, new TextNode("definition"), false },
+                { true, new TextNode("definition-updated"), true }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
 }
