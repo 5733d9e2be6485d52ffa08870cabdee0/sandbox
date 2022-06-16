@@ -27,7 +27,7 @@ public class CloudProviderAPITest {
                 .as(CloudProviderListResponse.class);
 
         assertThat(cloudProviders.getItems().size()).isEqualTo(1);
-        assertThat(cloudProviders.getPage()).isEqualTo(0);
+        assertThat(cloudProviders.getPage()).isZero();
         assertThat(cloudProviders.getSize()).isEqualTo(1);
         assertThat(cloudProviders.getTotal()).isEqualTo(1);
 
@@ -67,7 +67,7 @@ public class CloudProviderAPITest {
                 .as(CloudRegionListResponse.class);
 
         assertThat(cloudRegions.getItems().size()).isEqualTo(1);
-        assertThat(cloudRegions.getPage()).isEqualTo(0);
+        assertThat(cloudRegions.getPage()).isZero();
         assertThat(cloudRegions.getSize()).isEqualTo(1);
         assertThat(cloudRegions.getTotal()).isEqualTo(1);
 

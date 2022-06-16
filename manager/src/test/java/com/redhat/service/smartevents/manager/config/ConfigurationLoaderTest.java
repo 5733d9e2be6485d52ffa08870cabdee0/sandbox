@@ -42,14 +42,14 @@ public class ConfigurationLoaderTest {
         List<CloudProvider> loadedProviders = objectMapper.readValue(in, new TypeReference<>() {
         });
 
-        assertThat(loadedProviders.size()).isEqualTo(1);
+        assertThat(loadedProviders).hasSize(1);
 
         CloudProvider loadedProvider = loadedProviders.get(0);
         assertThat(loadedProvider.getId()).isEqualTo(gcp.getId());
         assertThat(loadedProvider.getName()).isEqualTo(gcp.getName());
         assertThat(loadedProvider.getDisplayName()).isEqualTo(gcp.getDisplayName());
         assertThat(loadedProvider.isEnabled()).isEqualTo(gcp.isEnabled());
-        assertThat(loadedProvider.getRegions().size()).isEqualTo(1);
+        assertThat(loadedProvider.getRegions()).hasSize(1);
 
         CloudRegion loadedRegion = loadedProvider.getRegions().get(0);
         assertThat(loadedRegion.getName()).isEqualTo(region.getName());
@@ -70,7 +70,7 @@ public class ConfigurationLoaderTest {
         assertThat(loadedProvider.getName()).isEqualTo("aws");
         assertThat(loadedProvider.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(loadedProvider.isEnabled()).isTrue();
-        assertThat(loadedProvider.getRegions().size()).isEqualTo(1);
+        assertThat(loadedProvider.getRegions()).hasSize(1);
 
         CloudRegion loadedRegion = loadedProvider.getRegions().get(0);
         assertThat(loadedRegion.getName()).isEqualTo("us-east-1");

@@ -25,7 +25,7 @@ public class CloudProviderDAOTest {
     public void list() {
         ListResult<CloudProvider> listResult = cloudProviderDAO.list(new QueryPageInfo(0, 1));
         assertThat(listResult.getSize()).isEqualTo(1L);
-        assertThat(listResult.getPage()).isEqualTo(0L);
+        assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getTotal()).isEqualTo(1L);
 
         CloudProvider cp = listResult.getItems().get(0);
@@ -34,7 +34,7 @@ public class CloudProviderDAOTest {
         assertThat(cp.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cp.isEnabled()).isTrue();
 
-        assertThat(cp.getRegions().size()).isEqualTo(1);
+        assertThat(cp.getRegions()).hasSize(1);
 
         CloudRegion cloudRegion = cp.getRegions().get(0);
         assertThat(cloudRegion.getName()).isEqualTo("us-east-1");
@@ -45,7 +45,7 @@ public class CloudProviderDAOTest {
     @Test
     public void list_withPagination() {
         ListResult<CloudProvider> listResult = cloudProviderDAO.list(new QueryPageInfo(1, 1));
-        assertThat(listResult.getSize()).isEqualTo(0L);
+        assertThat(listResult.getSize()).isZero();
         assertThat(listResult.getTotal()).isEqualTo(1L);
     }
 
@@ -67,7 +67,7 @@ public class CloudProviderDAOTest {
         assertThat(regions).isNotNull();
         assertThat(regions.getSize()).isEqualTo(1L);
         assertThat(regions.getTotal()).isEqualTo(1L);
-        assertThat(regions.getPage()).isEqualTo(0L);
+        assertThat(regions.getPage()).isZero();
 
         CloudRegion cloudRegion = regions.getItems().get(0);
         assertThat(cloudRegion.getName()).isEqualTo("us-east-1");
@@ -79,7 +79,7 @@ public class CloudProviderDAOTest {
     public void listRegionsById_withPagination() {
         ListResult<CloudRegion> regions = cloudProviderDAO.listRegionsById("aws", new QueryPageInfo(1, 1));
         assertThat(regions).isNotNull();
-        assertThat(regions.getSize()).isEqualTo(0L);
+        assertThat(regions.getSize()).isZero();
         assertThat(regions.getTotal()).isEqualTo(1L);
         assertThat(regions.getPage()).isEqualTo(1L);
     }
