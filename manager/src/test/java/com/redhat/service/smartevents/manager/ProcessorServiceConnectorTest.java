@@ -37,23 +37,13 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
-import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.*;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Test interaction between {@link ProcessorService} and Managed Connectors client APIs
@@ -295,7 +285,7 @@ class ProcessorServiceConnectorTest {
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
         List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
+        assertThat(processorsToBeDeleted.stream().map(Processor::getId)).isNotEmpty().doesNotContain(processor.getId());
     }
 
     private void waitForProcessorAndConnectorToFail(final Processor processor) {
