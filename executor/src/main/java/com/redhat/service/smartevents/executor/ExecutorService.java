@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.cloudevents.SpecVersion;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -33,10 +32,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
+import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.jackson.JsonCloudEventData;
@@ -124,34 +123,41 @@ public class ExecutorService {
                         toSourceCloudEvent(message.getPayload(), message.getHeaders()),
                         Collections.emptyMap());
             case ERROR_HANDLER:
-                return Pair.of(
-                        toErrorHandlerCloudEvent(message.getPayload()),
-                        toHeadersMap(message.getHeaders()));
+                return buildCloudEvent(message, true);
             default:
-                Map<String, String> headers = toHeadersMap(message.getHeaders());
-                Map<String, String> cloudEventHeaders = new HashMap<>();
-                Map<String, String> otherHeaders = new HashMap<>();
-                for (Map.Entry<String, String> h : headers.entrySet()) {
-                    LOG.info(h.getKey() + " " + h.getValue());
-                    if (h.getKey().startsWith("ce_")) { // TODO: refactor please
-                        cloudEventHeaders.put(h.getKey().substring(3), h.getValue()); // TODO: refactor please
-                    } else {
-                        otherHeaders.put(h.getKey(), h.getValue());
-                    }
+                return buildCloudEvent(message, false);
+        }
+    }
+
+    private Pair<CloudEvent, Map<String, String>> buildCloudEvent(KafkaRecord<Integer, String> message, boolean wrapOnFailure) {
+        try {
+            Map<String, String> headers = toHeadersMap(message.getHeaders());
+            Map<String, String> cloudEventHeaders = new HashMap<>();
+            for (Map.Entry<String, String> h : headers.entrySet()) {
+                LOG.info(h.getKey() + " " + h.getValue());
+                if (h.getKey().startsWith("ce_")) { // TODO: refactor please
+                    cloudEventHeaders.put(h.getKey().substring(3), h.getValue()); // TODO: refactor please
                 }
-                CloudEvent cloudEvent = null;
-                cloudEvent = CloudEventBuilder
-                        .fromSpecVersion(SpecVersion.parse(cloudEventHeaders.get("specversion"))) // TODO: refactor please
-                        .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
-                        .withId(cloudEventHeaders.getOrDefault("id", null))
-                        .withSource(new URI(cloudEventHeaders.getOrDefault("source", null)))
-                        .withType(cloudEventHeaders.getOrDefault("type", null))
-                        .withDataSchema(cloudEventHeaders.containsKey("dataschema") ? new URI(cloudEventHeaders.get("dataschema")) : null)
-                        .withSubject(cloudEventHeaders.getOrDefault("subject", null))
-                        .build();
-                return Pair.of(
-                        cloudEvent,
-                        otherHeaders);
+            }
+            CloudEvent cloudEvent = null;
+            cloudEvent = CloudEventBuilder
+                    .fromSpecVersion(SpecVersion.parse(cloudEventHeaders.get("specversion"))) // TODO: refactor please
+                    .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
+                    .withId(cloudEventHeaders.getOrDefault("id", null))
+                    .withSource(new URI(cloudEventHeaders.getOrDefault("source", null)))
+                    .withType(cloudEventHeaders.getOrDefault("type", null))
+                    .withDataSchema(cloudEventHeaders.containsKey("dataschema") ? new URI(cloudEventHeaders.get("dataschema")) : null)
+                    .withSubject(cloudEventHeaders.getOrDefault("subject", null))
+                    .build();
+            return Pair.of(
+                    cloudEvent,
+                    headers);
+        } catch (Exception e) {
+            if (wrapOnFailure) {
+                CloudEventData data = BytesCloudEventData.wrap(message.getPayload().getBytes(StandardCharsets.UTF_8));
+                return Pair.of(wrapToCloudEvent("RhoseError", data, Collections.emptyMap()), toHeadersMap(message.getHeaders()));
+            }
+            throw new RuntimeException(e);
         }
     }
 
@@ -169,17 +175,6 @@ public class ExecutorService {
         } catch (JsonProcessingException e2) {
             LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e2);
             throw new CloudEventDeserializationException("Failed to generate event map");
-        }
-    }
-
-    private CloudEvent toErrorHandlerCloudEvent(String event) {
-        try {
-            // try to decode as cloud event
-            return CloudEventUtils.decode(event);
-        } catch (CloudEventDeserializationException e) {
-            // if it fails (e.g. for connector errors) try wrapping it
-            CloudEventData data = BytesCloudEventData.wrap(event.getBytes(StandardCharsets.UTF_8));
-            return wrapToCloudEvent("RhoseError", data, Collections.emptyMap());
         }
     }
 
