@@ -18,9 +18,12 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.quarkus.arc.profile.UnlessBuildProfile;
+import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
+@UnlessBuildProfile(value = "test") // For tests we provide a mocked bean and this should not start at all.
 public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressServiceImpl.class);
 
@@ -42,7 +45,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
 
     void setup(@Observes StartupEvent event) {
         if (name.isEmpty() || namespace.isEmpty()) {
-            LOGGER.error("'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform.");
+            exit("'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform.");
             return;
         }
 
@@ -52,12 +55,12 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
             gatewayService = extractK8sGatewayService(openShiftClient);
         }
         if (gatewayService == null) {
-            LOGGER.error("Could not retrieve the istio gateway service. Please make sure it was properly deployed.");
+            exit("Could not retrieve the istio gateway service. Please make sure it was properly deployed.");
             return;
         }
         Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
         if (http2Port.isEmpty()) {
-            LOGGER.error("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
+            exit("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
             return;
         }
         gatewayServiceHttp2Port = http2Port.get().getPort();
@@ -79,5 +82,10 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     @Override
     public Integer getIstioGatewayServicePort() {
         return gatewayServiceHttp2Port;
+    }
+
+    private void exit(String message) {
+        LOGGER.error(message);
+        Quarkus.asyncExit(1);
     }
 }
