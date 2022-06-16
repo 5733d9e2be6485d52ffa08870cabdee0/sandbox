@@ -22,7 +22,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,9 @@ import io.quarkus.security.Authenticated;
 
 import static java.util.stream.Collectors.toList;
 
-@Tag(name = "Shard", description = "The API that allow a shard to retrieve and update resources.")
+/**
+ * This is a private API used by fleet shard operator to sync with the fleet manager so OpenAPI specs are hidden
+ */
 @SecuritySchemes(value = {
         @SecurityScheme(securitySchemeName = "bearer",
                 type = SecuritySchemeType.HTTP,
@@ -78,7 +79,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Update a Processor.", description = "Update a Processor.")
+    @Operation(hidden = true, summary = "Update a Processor.", description = "Update a Processor.")
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorDTO processorDTO) {
@@ -101,7 +102,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get Processors to be processed by a shard.", description = "Get Processors to be processed by a shard.")
+    @Operation(hidden = true, summary = "Get Processors to be processed by a shard.", description = "Get Processors to be processed by a shard.")
     @GET
     @Path("processors")
     public Response getProcessors() {
@@ -125,7 +126,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Get Bridge instances to be processed by a shard.", description = "Get Bridge instances to be processed by a shard.")
+    @Operation(hidden = true, summary = "Get Bridge instances to be processed by a shard.", description = "Get Bridge instances to be processed by a shard.")
     @GET
     public Response getBridges() {
         String shardId = identityResolver.resolve(jwt);
@@ -147,7 +148,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
+    @Operation(hidden = true, summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
     @PUT
     public Response updateBridge(BridgeDTO dto) {
         String subject = identityResolver.resolve(jwt);
