@@ -1,6 +1,7 @@
 name: Shard Operator - CI
 on:
-  pull_request:
+  pull_request_target:
+    types: [ opened, labeled, unlabeled, synchronize ]
     paths:
       - '.github/workflows/Operator-CI.yaml'
       - 'shard-operator/**'
@@ -20,10 +21,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Check labels
+        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        run: |
+          echo "Please add the 'safe to test' label in order to run 'Operator - CI' pipeline if it's safe to test this code"
+          exit 1
       - name: Java and Maven Setup
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
       - name: Set up KinD
         uses: ./.github/actions/kind
         with:
@@ -74,9 +87,14 @@ jobs:
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
       - name: Run integration tests
+        env:
+          IT_SHARD_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.IT_SHARD_KAFKA_BOOTSTRAP_SERVERS }}
+          IT_SHARD_KAFKA_USER: ${{ secrets.IT_SHARD_KAFKA_USER }}
+          IT_SHARD_KAFKA_PASSWORD: ${{ secrets.IT_SHARD_KAFKA_PASSWORD }}
+          IT_SHARD_KAFKA_TOPIC_NAME: ${{ secrets.IT_SHARD_KAFKA_TOPIC_NAME }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel
+          maven-command: clean verify -Pcucumber -Dparallel -Dit.shard.kafka.bootstrap.servers=$IT_SHARD_KAFKA_BOOTSTRAP_SERVERS -Dit.shard.kafka.user=$IT_SHARD_KAFKA_USER -Dit.shard.kafka.password=$IT_SHARD_KAFKA_PASSWORD -Dit.shard.kafka.topic.name=$IT_SHARD_KAFKA_TOPIC_NAME -Dit.shard.kafka.protocol=SASL_SSL -Dit.shard.kafka.sasl.mechanism=PLAIN
           working-directory: shard-operator-integration-tests
       - name: Archive test logs
         if: always()

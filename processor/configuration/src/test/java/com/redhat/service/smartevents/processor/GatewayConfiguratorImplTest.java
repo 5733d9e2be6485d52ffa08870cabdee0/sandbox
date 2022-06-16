@@ -9,11 +9,15 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
+import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.AnsibleTowerJobTemplateActionResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.AwsLambdaActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
@@ -33,7 +37,9 @@ class GatewayConfiguratorImplTest {
             KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, null),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
-            WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null));
+            WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null),
+            AwsLambdaAction.TYPE, expect(DefaultGatewayValidator.class, AwsLambdaActionResolver.class),
+            AnsibleTowerJobTemplateAction.TYPE, expect(DefaultGatewayValidator.class, AnsibleTowerJobTemplateActionResolver.class));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
             AwsS3Source.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
