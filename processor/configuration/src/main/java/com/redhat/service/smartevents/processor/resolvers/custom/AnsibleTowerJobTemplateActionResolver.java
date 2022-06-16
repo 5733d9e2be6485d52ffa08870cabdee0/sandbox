@@ -16,6 +16,8 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 @ApplicationScoped
 public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTemplateAction, GatewayResolver<Action> {
 
+    public static final String LAUNCH_JOB_TEMPLATE_ENDPOINT_FORMAT = "%s/api/v2/job_templates/%s/launch/";
+
     @Override
     public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
         Map<String, String> parameters = new HashMap<>();
@@ -23,7 +25,7 @@ public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTem
             String launchTemplateEndpoint = getLaunchTemplateEndpoint(action);
             parameters.put(WebhookAction.ENDPOINT_PARAM, launchTemplateEndpoint);
         } catch (MalformedURLException e) {
-            throw new GatewayProviderException("Can't build API call for ansible tower instance");
+            throw new GatewayProviderException("Can't build API call for ansible tower instance due to malformed URL", e);
         }
 
         if (action.hasParameter(BASIC_AUTH_USERNAME_PARAM)) {
@@ -46,7 +48,7 @@ public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTem
     static String getLaunchTemplateEndpoint(Action action) throws MalformedURLException {
         String baseEndpoint = action.getParameter(ENDPOINT_PARAM);
         String jobTemplateId = action.getParameter(JOB_TEMPLATE_ID_PARAM);
-        String fullEndpoint = String.format("%s/api/v2/job_templates/%s/launch/", baseEndpoint, jobTemplateId);
+        String fullEndpoint = String.format(LAUNCH_JOB_TEMPLATE_ENDPOINT_FORMAT, baseEndpoint, jobTemplateId);
         return new URL(fullEndpoint).toString();
     }
 }

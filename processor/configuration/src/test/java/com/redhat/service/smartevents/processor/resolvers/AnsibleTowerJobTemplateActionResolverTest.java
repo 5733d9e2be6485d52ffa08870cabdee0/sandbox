@@ -23,6 +23,12 @@ class AnsibleTowerJobTemplateActionResolverTest {
     private static final String TEST_CSTM_ID = "test-customer";
     private static final String TEST_BRDG_ID = "test-bridge";
     private static final String TEST_PRCS_ID = "test-processor";
+    private static final String TEST_JOB_TEMPLATE_ID = "12";
+    private static final String TEST_ENDPOINT = "https://host:1234";
+    private static final String TEST_RESOLVED_ENDPOINT = TEST_ENDPOINT + "/api/v2/job_templates/" + TEST_JOB_TEMPLATE_ID + "/launch/";
+    private static final String TEST_USERNAME = "username";
+    private static final String TEST_PASSWORD = "password";
+    private static final String TRUE = "true";
 
     @Inject
     AnsibleTowerJobTemplateActionResolver resolver;
@@ -31,7 +37,7 @@ class AnsibleTowerJobTemplateActionResolverTest {
     void testActionWithInvalidEndpoint() {
         Map<String, String> parameters = Map.of(
                 AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "#:",
-                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, "12");
+                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, TEST_JOB_TEMPLATE_ID);
 
         Action inputAction = new Action();
         inputAction.setType(AnsibleTowerJobTemplateAction.TYPE);
@@ -44,8 +50,8 @@ class AnsibleTowerJobTemplateActionResolverTest {
     @Test
     void testValidAction() {
         Map<String, String> parameters = Map.of(
-                AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "https://host:1234",
-                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, "12");
+                AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, TEST_ENDPOINT,
+                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, TEST_JOB_TEMPLATE_ID);
 
         Action inputAction = new Action();
         inputAction.setType(AnsibleTowerJobTemplateAction.TYPE);
@@ -56,17 +62,17 @@ class AnsibleTowerJobTemplateActionResolverTest {
         assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(resolvedAction.getParameters()).hasSize(1);
         assertThat(resolvedAction.hasParameter(WebhookAction.ENDPOINT_PARAM)).isTrue();
-        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo("https://host:1234/api/v2/job_templates/12/launch/");
+        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_RESOLVED_ENDPOINT);
     }
 
     @Test
     void testValidActionWithExtraParameters() {
         Map<String, String> parameters = Map.of(
-                AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "https://host:1234",
-                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, "12",
-                AnsibleTowerJobTemplateAction.BASIC_AUTH_USERNAME_PARAM, "username",
-                AnsibleTowerJobTemplateAction.BASIC_AUTH_PASSWORD_PARAM, "password",
-                AnsibleTowerJobTemplateAction.SSL_VERIFICATION_DISABLED, "true");
+                AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, TEST_ENDPOINT,
+                AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, TEST_JOB_TEMPLATE_ID,
+                AnsibleTowerJobTemplateAction.BASIC_AUTH_USERNAME_PARAM, TEST_USERNAME,
+                AnsibleTowerJobTemplateAction.BASIC_AUTH_PASSWORD_PARAM, TEST_PASSWORD,
+                AnsibleTowerJobTemplateAction.SSL_VERIFICATION_DISABLED, TRUE);
 
         Action inputAction = new Action();
         inputAction.setType(AnsibleTowerJobTemplateAction.TYPE);
@@ -77,12 +83,12 @@ class AnsibleTowerJobTemplateActionResolverTest {
         assertThat(resolvedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(resolvedAction.getParameters()).hasSize(4);
         assertThat(resolvedAction.hasParameter(WebhookAction.ENDPOINT_PARAM)).isTrue();
-        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo("https://host:1234/api/v2/job_templates/12/launch/");
+        assertThat(resolvedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_RESOLVED_ENDPOINT);
         assertThat(resolvedAction.hasParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isTrue();
-        assertThat(resolvedAction.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo("username");
+        assertThat(resolvedAction.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(TEST_USERNAME);
         assertThat(resolvedAction.hasParameter(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isTrue();
-        assertThat(resolvedAction.getParameter(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo("password");
+        assertThat(resolvedAction.getParameter(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(TEST_PASSWORD);
         assertThat(resolvedAction.hasParameter(WebhookAction.SSL_VERIFICATION_DISABLED)).isTrue();
-        assertThat(resolvedAction.getParameter(WebhookAction.SSL_VERIFICATION_DISABLED)).isEqualTo("true");
+        assertThat(resolvedAction.getParameter(WebhookAction.SSL_VERIFICATION_DISABLED)).isEqualTo(TRUE);
     }
 }
