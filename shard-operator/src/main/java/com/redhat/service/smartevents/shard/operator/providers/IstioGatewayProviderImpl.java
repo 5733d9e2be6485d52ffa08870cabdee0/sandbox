@@ -44,6 +44,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     void setup(@Observes StartupEvent event) {
         if (name.isEmpty() || namespace.isEmpty()) {
             exit("'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform.");
+            return;
         }
 
         if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
@@ -53,10 +54,12 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
         }
         if (gatewayService == null) {
             exit("Could not retrieve the istio gateway service. Please make sure it was properly deployed.");
+            return;
         }
         Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
         if (http2Port.isEmpty()) {
             exit("Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed.");
+            return;
         }
         gatewayServiceHttp2Port = http2Port.get().getPort();
     }

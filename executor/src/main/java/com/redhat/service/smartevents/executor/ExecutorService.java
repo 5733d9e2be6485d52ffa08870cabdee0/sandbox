@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,7 +115,7 @@ public class ExecutorService {
         return message.ack();
     }
 
-    private Pair<CloudEvent, Map<String, String>> convertToCloudEventAndHeadersMap(KafkaRecord<Integer, String> message) throws URISyntaxException, JsonProcessingException {
+    private Pair<CloudEvent, Map<String, String>> convertToCloudEventAndHeadersMap(KafkaRecord<Integer, String> message) {
         switch (executor.getProcessor().getType()) {
             case SOURCE:
                 return Pair.of(
