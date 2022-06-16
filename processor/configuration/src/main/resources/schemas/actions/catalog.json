@@ -28,5 +28,11 @@
     "isConnector": true,
     "name": "AWS Lambda",
     "description": "Send the event to an AWS lambda."
+  },
+  {
+    "id": "ansible_tower_job_template_sink_0.1",
+    "isConnector": false,
+    "name": "Ansible Tower Job Template",
+    "description": "Launch a job template in Ansible Tower."
   }
 ]
