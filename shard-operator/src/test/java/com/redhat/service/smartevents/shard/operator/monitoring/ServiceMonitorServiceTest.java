@@ -58,7 +58,7 @@ public class ServiceMonitorServiceTest {
         final Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
 
         // When
-        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, "ingress");
+        final Optional<ServiceMonitor> serviceMonitor = serviceMonitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
 
         // Then
         assertThat(serviceMonitor).isPresent();

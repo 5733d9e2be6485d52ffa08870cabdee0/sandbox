@@ -128,6 +128,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     @Override
     public Service fetchOrCreateBridgeExecutorService(BridgeExecutor bridgeExecutor, Deployment deployment) {
         Service expected = templateProvider.loadBridgeExecutorServiceTemplate(bridgeExecutor, TemplateImportConfig.withDefaults());
+        expected.getMetadata().getLabels().put(LabelsBuilder.INSTANCE_LABEL, deployment.getMetadata().getName());
+
         // Specs
         expected.getSpec().setSelector(new LabelsBuilder().withAppInstance(deployment.getMetadata().getName()).build());
 

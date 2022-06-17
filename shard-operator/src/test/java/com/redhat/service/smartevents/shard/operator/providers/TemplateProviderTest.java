@@ -102,7 +102,7 @@ public class TemplateProviderTest {
         assertThat(route.getMetadata().getOwnerReferences()).isNull();
         assertLabels(route.getMetadata(), BridgeIngress.COMPONENT_NAME);
         assertThat(route.getSpec().getTo().getKind()).isEqualTo("Service");
-        assertThat(route.getSpec().getPort().getTargetPort().getIntVal()).isEqualTo(8080);
+        assertThat(route.getSpec().getPort().getTargetPort().getStrVal()).isEqualTo("http2");
     }
 
     @Test

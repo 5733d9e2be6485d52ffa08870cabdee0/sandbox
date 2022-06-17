@@ -1,11 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.controllers;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
+import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
@@ -58,7 +65,7 @@ public class BridgeIngressControllerTest {
     }
 
     @Test
-    void testCreateNewBridgeIngress() {
+    void testCreateNewBridgeIngress() throws JsonProcessingException {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -70,11 +77,11 @@ public class BridgeIngressControllerTest {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeIngress.getStatus()).isNotNull();
         assertThat(bridgeIngress.getStatus().isReady()).isFalse();
-        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-        });
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
             assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable); // TODO: replace with KnativeBrokerNotReady
         });
     }
@@ -105,12 +112,17 @@ public class BridgeIngressControllerTest {
     }
 
     private void deployBridgeIngressSecret(BridgeIngress bridgeIngress) {
+        Map<String, String> data = new HashMap<>();
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET, Base64.getEncoder().encodeToString("bootstrap.servers".getBytes(StandardCharsets.UTF_8)));
+        data.put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString("topic".getBytes(StandardCharsets.UTF_8)));
+
         Secret secret = new SecretBuilder()
                 .withMetadata(
                         new ObjectMetaBuilder()
                                 .withNamespace(bridgeIngress.getMetadata().getNamespace())
                                 .withName(bridgeIngress.getMetadata().getName())
                                 .build())
+                .withData(data)
                 .build();
         kubernetesClient
                 .secrets()

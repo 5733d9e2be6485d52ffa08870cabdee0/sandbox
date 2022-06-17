@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
@@ -47,6 +48,9 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     @Inject
     ManagerSyncServiceImpl managerSyncService;
 
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
+
     @Test
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
@@ -66,7 +70,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         bridge1.getCustomerId());
         String expectedJsonUpdateAvailableRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"http://192.168.2.49/ob-bridgesdeployed-1/events\", \"customerId\": \"%s\", \"status\": \"ready\"}",
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-bridgesdeployed-1/events\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getCustomerId());
@@ -86,8 +90,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                         () -> {
                             kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
                             kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();

@@ -7,13 +7,10 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator;
@@ -28,7 +25,6 @@ import static com.redhat.service.smartevents.processor.actions.webhook.WebhookAc
 import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.BASIC_AUTH_CONFIGURATION_MESSAGE;
 import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.INVALID_PROTOCOL_MESSAGE;
 import static com.redhat.service.smartevents.processor.validators.custom.WebhookActionValidator.MALFORMED_ENDPOINT_PARAM_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
@@ -82,15 +78,6 @@ class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
     @MethodSource("invalidParams")
     void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
         assertValidationIsInvalid(actionWith(WebhookAction.TYPE, invalidParams), expectedErrorMessage);
-    }
-
-    @Test
-    void isInvalidWithNullParametersMap() {
-        Action action = new Action();
-        action.setType(WebhookAction.TYPE);
-        action.setMapParameters(new HashMap<>());
-        ValidationResult validationResult = validator.isValid(action);
-        assertThat(validationResult.isValid()).isFalse();
     }
 
     private static Stream<Arguments> invalidParams() {

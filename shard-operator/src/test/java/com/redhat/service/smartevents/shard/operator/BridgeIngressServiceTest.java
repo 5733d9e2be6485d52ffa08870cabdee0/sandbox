@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -42,6 +43,9 @@ public class BridgeIngressServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     @BeforeEach
     public void setup() {
@@ -99,6 +103,14 @@ public class BridgeIngressServiceTest {
                             assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP).length()).isGreaterThan(0);
                             assertThat(configMap.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP).length()).isGreaterThan(0);
 
+                            KnativeBroker knativeBroker = fetchBridgeIngressKnativeBroker(dto);
+                            assertThat(knativeBroker).isNotNull();
+                            assertThat(knativeBroker.getSpec().getConfig().getName().length()).isGreaterThan(0);
+                            assertThat(knativeBroker.getSpec().getConfig().getKind().length()).isGreaterThan(0);
+                            assertThat(knativeBroker.getSpec().getConfig().getNamespace().length()).isGreaterThan(0);
+                            assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(knativeBroker.getMetadata().getName(), knativeBroker.getMetadata().getNamespace());
+
                             AuthorizationPolicy authorizationPolicy = fetchBridgeIngressAuthorizationPolicy(dto);
                             assertThat(authorizationPolicy).isNotNull();
                             assertThat(authorizationPolicy.getSpec().getAction().length()).isGreaterThan(0);
@@ -109,14 +121,6 @@ public class BridgeIngressServiceTest {
                             assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey().length()).isGreaterThan(0);
                             assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().size()).isGreaterThan(0);
                             assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0).length()).isGreaterThan(0);
-
-                            KnativeBroker knativeBroker = fetchBridgeIngressKnativeBroker(dto);
-                            assertThat(knativeBroker).isNotNull();
-                            assertThat(knativeBroker.getSpec().getConfig().getName().length()).isGreaterThan(0);
-                            assertThat(knativeBroker.getSpec().getConfig().getKind().length()).isGreaterThan(0);
-                            assertThat(knativeBroker.getSpec().getConfig().getNamespace().length()).isGreaterThan(0);
-                            assertThat(knativeBroker.getSpec().getConfig().getApiVersion().length()).isGreaterThan(0);
-                            assertThat(knativeBroker.getSpec().getConfig().getConfig().length()).isGreaterThan(0);
                         });
     }
 
@@ -163,7 +167,7 @@ public class BridgeIngressServiceTest {
     private AuthorizationPolicy fetchBridgeIngressAuthorizationPolicy(BridgeDTO dto) {
         return kubernetesClient
                 .resources(AuthorizationPolicy.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace())
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
     }

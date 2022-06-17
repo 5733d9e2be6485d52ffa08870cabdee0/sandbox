@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
@@ -57,9 +56,6 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     NetworkingService networkingService;
-
-    @Inject
-    BridgeErrorService bridgeErrorService;
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
