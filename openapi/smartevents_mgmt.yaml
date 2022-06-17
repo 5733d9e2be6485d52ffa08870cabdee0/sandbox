@@ -68,19 +68,33 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "403":
           description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
     post:
@@ -104,7 +118,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -112,7 +128,9 @@ paths:
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/bridges/{bridgeId}:
@@ -140,7 +158,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -148,11 +168,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
     delete:
@@ -173,7 +197,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -181,11 +207,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/bridges/{bridgeId}/processors:
@@ -244,7 +274,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -252,11 +284,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
     post:
@@ -288,7 +324,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -296,11 +334,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/bridges/{bridgeId}/processors/{processorId}:
@@ -335,7 +377,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -343,11 +387,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
     put:
@@ -387,7 +435,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -395,11 +445,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
     delete:
@@ -425,7 +479,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -433,11 +489,15 @@ paths:
         "404":
           description: Not found.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/cloud_providers:
@@ -473,11 +533,15 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/smartevents_mgmt/v1/cloud_providers/{id}:
     get:
       tags:
@@ -503,11 +567,15 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/smartevents_mgmt/v1/cloud_providers/{id}/regions:
     get:
       tags:
@@ -548,11 +616,15 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/smartevents_mgmt/v1/errors:
     get:
       tags:
@@ -586,13 +658,17 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/smartevents_mgmt/v1/errors/{id}:
     get:
       tags:
@@ -617,13 +693,17 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/smartevents_mgmt/v1/schemas:
     get:
       tags:
@@ -641,7 +721,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -649,7 +731,9 @@ paths:
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/schemas/actions/{id}:
@@ -675,7 +759,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -683,7 +769,9 @@ paths:
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
   /api/smartevents_mgmt/v1/schemas/sources/{id}:
@@ -709,7 +797,9 @@ paths:
         "400":
           description: Bad request.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized.
         "403":
@@ -717,7 +807,9 @@ paths:
         "500":
           description: Internal error.
           content:
-            application/json: {}
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       security:
       - bearer: []
 components:
@@ -744,6 +836,17 @@ components:
           minLength: 1
           type: string
           nullable: false
+    BaseResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
     BridgeError:
       type: object
       properties:
@@ -938,6 +1041,17 @@ components:
         enabled:
           type: boolean
           nullable: false
+    Error:
+      allOf:
+      - $ref: '#/components/schemas/BaseResponse'
+      - $ref: '#/components/schemas/Error'
+      - description: General error response
+        type: object
+        properties:
+          code:
+            type: string
+          reason:
+            type: string
     ErrorListResponse:
       required:
       - kind
@@ -952,7 +1066,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/Error'
         page:
           format: int64
           type: integer
@@ -1002,7 +1116,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: '#/components/schemas/Error'
     ManagedResourceStatus:
       enum:
       - accepted
