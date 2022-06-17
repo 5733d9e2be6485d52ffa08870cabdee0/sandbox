@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.api.models.requests;
 
+import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -20,22 +21,22 @@ public class ProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")
     @JsonProperty("name")
-    private String name;
+    protected String name;
 
     @JsonProperty("filters")
-    private Set<@Valid BaseFilter> filters;
+    protected Set<@Valid BaseFilter> filters;
 
     @JsonProperty("transformationTemplate")
     @ValidTransformationTemplate
-    private String transformationTemplate;
+    protected String transformationTemplate;
 
     @JsonProperty("action")
     @Valid
-    private Action action;
+    protected Action action;
 
     @JsonProperty("source")
     @Valid
-    private Source source;
+    protected Source source;
 
     public ProcessorRequest() {
     }
@@ -69,43 +70,23 @@ public class ProcessorRequest {
     }
 
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return Objects.nonNull(name) ? name.trim() : null;
     }
 
     public Set<BaseFilter> getFilters() {
         return filters;
     }
 
-    public void setFilters(Set<BaseFilter> filters) {
-        this.filters = filters;
-    }
-
     public String getTransformationTemplate() {
         return transformationTemplate;
-    }
-
-    public void setTransformationTemplate(String transformationTemplate) {
-        this.transformationTemplate = transformationTemplate;
     }
 
     public Action getAction() {
         return action;
     }
 
-    public void setAction(Action action) {
-        this.action = action;
-    }
-
     public Source getSource() {
         return source;
-    }
-
-    public void setSource(Source source) {
-        this.source = source;
     }
 
     @JsonIgnore
