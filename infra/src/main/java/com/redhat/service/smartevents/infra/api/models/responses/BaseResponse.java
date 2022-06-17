@@ -10,13 +10,13 @@ public abstract class BaseResponse {
     private final String kind;
 
     @JsonProperty("id")
-    private String id;
+    protected String id;
 
     @JsonProperty("name")
-    private String name;
+    protected String name;
 
     @JsonProperty("href")
-    private String href;
+    protected String href;
 
     protected BaseResponse(String kind) {
         this.kind = kind;

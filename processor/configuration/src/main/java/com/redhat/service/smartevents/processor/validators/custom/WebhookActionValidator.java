@@ -30,6 +30,10 @@ public class WebhookActionValidator extends AbstractGatewayValidator implements 
 
     @Override
     public ValidationResult applyAdditionalValidations(Gateway gateway) {
+        return additionalValidations(gateway);
+    }
+
+    static ValidationResult additionalValidations(Gateway gateway) {
         if (gateway.hasParameter(BASIC_AUTH_USERNAME_PARAM) && !gateway.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
                 || !gateway.hasParameter(BASIC_AUTH_USERNAME_PARAM) && gateway.hasParameter(BASIC_AUTH_PASSWORD_PARAM)) {
             return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
