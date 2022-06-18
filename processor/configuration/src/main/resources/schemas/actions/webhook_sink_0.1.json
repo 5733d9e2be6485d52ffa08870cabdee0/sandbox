@@ -18,6 +18,7 @@
       "type": "string",
       "title": "Basic Auth Password",
       "description": "The password for basic auth.",
+      "format": "password",
       "example": "mypassword"
     },
     "ssl_verification_disabled": {
