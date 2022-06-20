@@ -9,11 +9,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
-import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBrokerConditionType;
+import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBrokerConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBrokerStatus;
-import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeCondition;
 import com.redhat.service.smartevents.shard.operator.utils.networking.NetworkingTestUtils;
 
 import io.fabric8.kubernetes.api.model.LoadBalancerStatus;
@@ -117,7 +117,7 @@ public class KubernetesResourcePatcher {
 
         KnativeBrokerStatus knativeBrokerStatus = new KnativeBrokerStatus();
         knativeBrokerStatus.setAddress(address);
-        knativeBrokerStatus.setConditions(Collections.singleton(new KnativeCondition(KnativeBrokerConditionType.BrokerReady, ConditionStatus.True)));
+        knativeBrokerStatus.setConditions(Collections.singleton(new Condition(KnativeBrokerConditionTypeConstants.ADDRESSABLE, ConditionStatus.True)));
 
         KnativeBroker knativeBroker = kubernetesClient
                 .resources(KnativeBroker.class)

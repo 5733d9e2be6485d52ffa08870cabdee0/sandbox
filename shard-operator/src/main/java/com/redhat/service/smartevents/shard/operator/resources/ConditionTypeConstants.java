@@ -6,7 +6,7 @@ package com.redhat.service.smartevents.shard.operator.resources;
  * @see <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties">Kubernetes API Conventions - Typical Status
  *      Properties</a>
  */
-public enum ConditionType {
-    Ready,
-    Augmentation;
+public class ConditionTypeConstants {
+    public static final String READY = "Ready";
+    public static final String AUGMENTATION = "Augmentation";
 }

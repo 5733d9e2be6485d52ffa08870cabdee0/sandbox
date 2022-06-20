@@ -10,14 +10,14 @@ package com.redhat.service.smartevents.shard.operator.resources;
  * @see <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties">Kubernetes API Conventions - Typical Status
  *      Properties</a>
  */
-public enum ConditionReason {
-    DeploymentAvailable,
-    DeploymentProgressing,
-    DeploymentFailed,
-    DeploymentNotAvailable,
-    ServiceNotReady,
-    NetworkResourceNotReady,
-    KnativeBrokerNotReady,
-    PrometheusUnavailable,
-    SecretsNotFound;
+public class ConditionReasonConstants {
+    public static final String DEPLOYMENT_AVAILABLE = "DeploymentAvailable";
+    public static final String DEPLOYMENT_PROGRESSING = "DeploymentProgressing";
+    public static final String DEPLOYMENT_FAILED = "DeploymentFailed";
+    public static final String DEPLOYMENT_NOT_AVAILABLE = "DeploymentNotAvailable";
+    public static final String SERVICE_NOT_READY = "ServiceNotReady";
+    public static final String NETWORK_RESOURCE_NOT_READY = "NetworkResourceNotReady";
+    public static final String KNATIVE_BROKER_NOT_READY = "KnativeBrokerNotReady";
+    public static final String PROMETHEUS_UNAVAILABLE = "PrometheusUnavailable";
+    public static final String SECRETS_NOT_FOUND = "SecretsNotFound";
 }

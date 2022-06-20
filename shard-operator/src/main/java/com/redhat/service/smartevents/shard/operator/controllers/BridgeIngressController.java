@@ -19,8 +19,8 @@ import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -94,8 +94,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.KnativeBrokerNotReady);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -108,8 +108,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (!networkResource.isReady()) {
             LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -117,8 +117,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }

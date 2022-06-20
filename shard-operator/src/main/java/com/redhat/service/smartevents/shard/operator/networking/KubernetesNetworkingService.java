@@ -29,11 +29,7 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public class KubernetesNetworkingService implements NetworkingService {
 
-    public static final String NGINX_REWRITE_TARGET_ANNOTATION = "nginx.ingress.kubernetes.io/rewrite-target";
-    public static final String REWRITE_TARGET_PLACEHOLDER = "/$2";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
-    private static final String PATH_REGEX = "(/|$)(.*)";
     private final KubernetesClient client;
     private final TemplateProvider templateProvider;
     private final IstioGatewayProvider istioGatewayProvider;
@@ -129,7 +125,7 @@ public class KubernetesNetworkingService implements NetworkingService {
         if (host == null) {
             host = Optional.ofNullable(System.getenv("INGRESS_OVERRIDE_HOSTNAME")).orElse(ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname());
         }
-        String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath();//.replace(PATH_REGEX, "");
+        String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath();
         return new NetworkResource(endpoint, true);
     }
 }

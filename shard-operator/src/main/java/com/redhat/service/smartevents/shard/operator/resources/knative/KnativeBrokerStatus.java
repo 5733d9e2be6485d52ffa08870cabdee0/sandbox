@@ -3,19 +3,20 @@ package com.redhat.service.smartevents.shard.operator.resources.knative;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.redhat.service.smartevents.shard.operator.resources.Condition;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class KnativeBrokerStatus {
 
-    private Set<KnativeCondition> conditions;
+    private Set<Condition> conditions;
 
     private Address address;
 
-    public Set<KnativeCondition> getConditions() {
+    public Set<Condition> getConditions() {
         return conditions;
     }
 
-    public void setConditions(Set<KnativeCondition> conditions) {
+    public void setConditions(Set<Condition> conditions) {
         this.conditions = conditions;
     }
 

@@ -12,8 +12,8 @@ public class BridgeIngressStatus extends CustomResourceStatus {
 
     private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<Condition>() {
         {
-            add(new Condition(ConditionType.Ready, ConditionStatus.Unknown));
-            add(new Condition(ConditionType.Augmentation, ConditionStatus.Unknown));
+            add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
+            add(new Condition(ConditionTypeConstants.AUGMENTATION, ConditionStatus.Unknown));
         }
     };
 

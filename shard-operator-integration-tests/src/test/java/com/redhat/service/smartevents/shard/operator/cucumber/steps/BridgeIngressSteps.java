@@ -13,7 +13,6 @@ import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
 import com.redhat.service.smartevents.shard.operator.cucumber.utils.Utils;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.cucumber.java.en.Then;
@@ -77,7 +76,7 @@ public class BridgeIngressSteps {
                     if (bridgeIngress == null || bridgeIngress.getStatus() == null) {
                         return false;
                     }
-                    return bridgeIngress.getStatus().isConditionTypeTrue(ConditionType.valueOf(condition));
+                    return bridgeIngress.getStatus().isConditionTypeTrue(condition);
                 },
                 String.format("Timeout waiting for BridgeIngress '%s' to be in condition '%s' in namespace '%s'", name, condition, context.getNamespace()));
     }
