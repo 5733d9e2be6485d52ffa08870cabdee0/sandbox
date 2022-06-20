@@ -1,14 +1,10 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.apache.kafka.clients.admin.ListTopicsResult;
-import org.apache.kafka.common.KafkaFuture;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,9 +24,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @QuarkusTestResource(restrictToAnnotatedClass = true, value = ManagerMockResource.class)
 public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
@@ -80,16 +73,6 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withStatus(200)));
-    }
-
-    // TODO: revisit processor tests when they will be integrated
-    protected void stubListKafkaTopics(Set<String> topics) throws Exception {
-        KafkaFuture<Set<String>> kafkaFuture = mock(KafkaFuture.class);
-        when(kafkaFuture.get(any(Long.class), any(TimeUnit.class))).thenReturn(topics);
-
-        ListTopicsResult listTopicsResult = mock(ListTopicsResult.class);
-        when(listTopicsResult.names()).thenReturn(kafkaFuture);
-        //        when(kafkaAdmin.listTopics()).thenReturn(listTopicsResult);
     }
 
     protected void addProcessorUpdateRequestListener(CountDownLatch latch) {
