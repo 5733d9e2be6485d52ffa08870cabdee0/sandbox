@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -36,6 +37,7 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.smallrye.mutiny.Uni;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
@@ -82,11 +84,14 @@ class ProcessorServiceConnectorTest {
     ConnectorsApiClient connectorsApiClient;
     @InjectMock
     RhoasService rhoasService;
+    @InjectMock
+    VaultService vaultServiceMock;
 
     @BeforeEach
     public void cleanUp() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
         reset(rhoasService);
+        when(vaultServiceMock.createOrReplace(any())).thenReturn(Uni.createFrom().voidItem());
     }
 
     @Test

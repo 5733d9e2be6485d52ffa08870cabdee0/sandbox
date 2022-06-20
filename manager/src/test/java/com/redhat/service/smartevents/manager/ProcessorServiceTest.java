@@ -47,6 +47,7 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
@@ -54,6 +55,7 @@ import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.smallrye.mutiny.Uni;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
@@ -112,11 +114,15 @@ class ProcessorServiceTest {
     ConnectorsService connectorServiceMock;
     @InjectMock
     WorkManager workManagerMock;
+    @InjectMock
+    VaultService vaultServiceMock;
 
     @BeforeEach
     public void cleanUp() {
         reset(bridgesServiceMock);
         reset(processorDAO);
+
+        when(vaultServiceMock.createOrReplace(any())).thenReturn(Uni.createFrom().voidItem());
 
         Bridge bridge = createReadyBridge();
         Processor processor = createReadyProcessor();
@@ -698,37 +704,6 @@ class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-    }
-
-    @Test
-    void testToResponseWithMask() {
-        Bridge b = Fixtures.createBridge();
-        Processor p = Fixtures.createProcessor(b, READY);
-
-        Source source = new Source();
-        source.setType(SlackSource.TYPE);
-        source.setMapParameters(Map.of(
-                SlackSource.CHANNEL_PARAM, "mychannel",
-                SlackSource.TOKEN_PARAM, "mytoken"));
-
-        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", source, null);
-        p.setDefinition(definition);
-
-        ProcessorResponse r = processorService.toResponse(p);
-        assertThat(r).isNotNull();
-
-        assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
-        assertThat(r.getName()).isEqualTo(p.getName());
-        assertThat(r.getStatus()).isEqualTo(p.getStatus());
-        assertThat(r.getType()).isEqualTo(p.getType());
-        assertThat(r.getId()).isEqualTo(p.getId());
-        assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
-        assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
-        assertThat(r.getKind()).isEqualTo("Processor");
-        assertThat(r.getTransformationTemplate()).isEmpty();
-        assertThat(r.getSource().getType()).isEqualTo(SlackSource.TYPE);
-        assertThat(r.getSource().getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo("mychannel");
-        assertThat(r.getSource().getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
     }
 
     private static Bridge createReadyBridge() {

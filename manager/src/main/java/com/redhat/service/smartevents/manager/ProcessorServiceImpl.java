@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -14,9 +15,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
@@ -26,6 +30,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadReque
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.models.EventBridgeSecret;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
@@ -48,6 +53,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
@@ -58,6 +64,9 @@ import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emp
 public class ProcessorServiceImpl implements ProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
+
+    @ConfigProperty(name = "secretsmanager.timeout-seconds")
+    int secretsManagerTimeout;
 
     @Inject
     GatewayConfigurator gatewayConfigurator;
@@ -79,6 +88,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     ShardService shardService;
     @Inject
     WorkManager workManager;
+    @Inject
+    VaultService vaultService;
 
     @Inject
     MetricsService metricsService;
@@ -151,14 +162,24 @@ public class ProcessorServiceImpl implements ProcessorService {
                 ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
+        Gateway gatewayToMask = processorType == ProcessorType.SOURCE ? processorRequest.getSource() : processorRequest.getAction();
+        Pair<Gateway, Map<String, String>> maskOutputPair = mask(gatewayToMask);
+        newProcessor.setHasSecret(!maskOutputPair.getRight().isEmpty());
+
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, (Source) maskOutputPair.getLeft(), resolvedAction)
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, (Action) maskOutputPair.getLeft(), resolvedAction);
 
         newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
+        // store secret
+        if (newProcessor.hasSecret()) {
+            EventBridgeSecret eventBridgeSecret = new EventBridgeSecret(resourceNamesProvider.getProcessorSecretName(newProcessor.getId()), maskOutputPair.getRight());
+            vaultService.createOrReplace(eventBridgeSecret).await().atMost(Duration.ofSeconds(secretsManagerTimeout));
+        }
+
         connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
         metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
@@ -180,6 +201,14 @@ public class ProcessorServiceImpl implements ProcessorService {
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
+    }
+
+    private Pair<Gateway, Map<String, String>> mask(Gateway gateway) {
+        try {
+            return gatewaySecretsHandler.mask(gateway);
+        } catch (JsonProcessingException e) {
+            throw new ProcessorLifecycleException("Error while storing secrets");
+        }
     }
 
     @Override
@@ -404,6 +433,27 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
+        // unmask if processor has secret to pass real values to shard operator
+        // TODO: share unmask logic with processor update
+        try {
+            if (processor.hasSecret()) {
+                EventBridgeSecret eventBridgeSecret = vaultService.get(resourceNamesProvider.getProcessorSecretName(processor.getId()))
+                        .await().atMost(Duration.ofSeconds(secretsManagerTimeout));
+
+                if (processor.getType() == ProcessorType.SOURCE) {
+                    Source maskedSource = processor.getDefinition().getRequestedSource();
+                    Source unmaskedSource = (Source) gatewaySecretsHandler.unmask(maskedSource, eventBridgeSecret.getValues());
+                    processor.getDefinition().setRequestedSource(unmaskedSource);
+                } else {
+                    Action maskedAction = processor.getDefinition().getRequestedAction();
+                    Action unmaskedAction = (Action) gatewaySecretsHandler.unmask(maskedAction, eventBridgeSecret.getValues());
+                    processor.getDefinition().setRequestedAction(unmaskedAction);
+                }
+            }
+        } catch (JsonProcessingException e) {
+            throw new ProcessorLifecycleException("Can't unmask secret");
+        }
+
         ProcessorDTO dto = new ProcessorDTO();
         dto.setType(processor.getType());
         dto.setId(processor.getId());
@@ -456,12 +506,8 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            if (definition.getRequestedAction() != null) {
-                processorResponse.setAction(gatewaySecretsHandler.mask(definition.getRequestedAction()));
-            }
-            if (definition.getRequestedSource() != null) {
-                processorResponse.setSource(gatewaySecretsHandler.mask(definition.getRequestedSource()));
-            }
+            processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setSource(definition.getRequestedSource());
         }
 
         if (processor.getBridge() != null) {

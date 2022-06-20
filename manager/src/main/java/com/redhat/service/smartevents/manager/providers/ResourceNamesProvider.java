@@ -10,4 +10,6 @@ public interface ResourceNamesProvider {
 
     String getProcessorTopicName(String processorId);
 
+    String getProcessorSecretName(String processorId);
+
 }
