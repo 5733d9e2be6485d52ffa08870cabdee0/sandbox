@@ -11,6 +11,11 @@ public class EventBridgeSecret {
     public EventBridgeSecret() {
     }
 
+    public EventBridgeSecret(String id, Map<String, String> values) {
+        this.id = id;
+        this.values = values;
+    }
+
     public EventBridgeSecret(String id) {
         this.id = id;
     }
