@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.verification.VerificationMode;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -31,7 +32,6 @@ import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_CLASS_PARAM;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_MISSING_ERROR;
-import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_PARAMETERS_NOT_VALID_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.GATEWAY_TYPE_MISSING_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MISSING_GATEWAY_ERROR;
 import static com.redhat.service.smartevents.manager.api.user.validators.processors.ProcessorGatewayConstraintValidator.MULTIPLE_GATEWAY_ERROR;
@@ -146,28 +146,15 @@ class ProcessorGatewayConstraintValidatorTest {
     @ParameterizedTest
     @MethodSource("gateways")
     void isValid_messageFromGatewayValidatorAddedOnFailure(Gateway gateway) {
-        String testErrorMessage = "This is a test error message returned from validator";
-        lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid(testErrorMessage));
+        ProcessorGatewayParametersNotValidException exception = new ProcessorGatewayParametersNotValidException("This is a test error message returned from validator");
+        lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid(exception));
 
         ProcessorRequest p = buildTestRequest(gateway);
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
         verifyGetValidatorCall(times(1), gateway.getType());
         verifyIsValidCall(times(1));
-        verifyErrorMessage(testErrorMessage);
-    }
-
-    @ParameterizedTest
-    @MethodSource("gateways")
-    void isValid_noMessageFromValidatorGenericMessageAdded(Gateway gateway) {
-        lenient().when(validatorMock.isValid(any())).thenReturn(ValidationResult.invalid());
-
-        ProcessorRequest p = buildTestRequest(gateway);
-
-        assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
-        verifyGetValidatorCall(times(1), gateway.getType());
-        verifyIsValidCall(times(1));
-        verifyErrorMessage(GATEWAY_PARAMETERS_NOT_VALID_ERROR, gateway, true);
+        verifyErrorMessage(exception.getMessage());
     }
 
     @ParameterizedTest

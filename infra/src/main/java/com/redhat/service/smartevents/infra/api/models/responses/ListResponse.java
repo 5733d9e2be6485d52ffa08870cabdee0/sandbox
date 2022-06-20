@@ -14,9 +14,6 @@ public abstract class ListResponse<T> {
 
     public static <T, V> ListResponse<V> fill(ListResult<T> source, ListResponse<V> target, Function<T, V> converter) {
         target.setItems(source.getItems().stream().map(converter).collect(Collectors.toList()));
-        target.setPage(source.getPage());
-        target.setSize(source.getSize());
-        target.setTotal(source.getTotal());
         return target;
     }
 
@@ -30,15 +27,6 @@ public abstract class ListResponse<T> {
     @JsonProperty("items")
     private List<T> items = new ArrayList<>();
 
-    @JsonProperty("page")
-    private long page;
-
-    @JsonProperty("size")
-    private long size;
-
-    @JsonProperty("total")
-    private long total;
-
     public String getKind() {
         return kind;
     }
@@ -51,27 +39,4 @@ public abstract class ListResponse<T> {
         this.items = items;
     }
 
-    public long getPage() {
-        return page;
-    }
-
-    public void setPage(long page) {
-        this.page = page;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public void setSize(long size) {
-        this.size = size;
-    }
-
-    public long getTotal() {
-        return total;
-    }
-
-    public void setTotal(long total) {
-        this.total = total;
-    }
 }

@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -46,20 +47,35 @@ class AwsSqsSourceValidatorTest extends AbstractGatewayValidatorTest {
 
     private static final Object[][] INVALID_PARAMS = {
             { paramMap(null, null, null, null),
-                    "$.aws_queue_name_or_arn: is missing but it is required and $.aws_region: is missing but it is required and $.aws_access_key: is missing but it is required and $.aws_secret_key: is missing but it is required" },
-            { paramMap("", null, null, null), "$.aws_region: is missing but it is required and $.aws_access_key: is missing but it is required and $.aws_secret_key: is missing but it is required" },
+                    List.of("$.aws_queue_name_or_arn: is missing but it is required",
+                            "$.aws_region: is missing but it is required",
+                            "$.aws_access_key: is missing but it is required",
+                            "$.aws_secret_key: is missing but it is required") },
+            { paramMap("", null, null, null),
+                    List.of("$.aws_region: is missing but it is required",
+                            "$.aws_access_key: is missing but it is required",
+                            "$.aws_secret_key: is missing but it is required") },
             { paramMap(VALID_AWS_QUEUE_URL, null, null, null),
-                    "$.aws_region: is missing but it is required and $.aws_access_key: is missing but it is required and $.aws_secret_key: is missing but it is required" },
+                    List.of("$.aws_region: is missing but it is required",
+                            "$.aws_access_key: is missing but it is required",
+                            "$.aws_secret_key: is missing but it is required") },
             { paramMap(VALID_AWS_QUEUE_URL, "", null, null),
-                    "$.aws_access_key: is missing but it is required and $.aws_secret_key: is missing but it is required and $.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]" },
-            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, null, null), "$.aws_access_key: is missing but it is required and $.aws_secret_key: is missing but it is required" },
-            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, "", null), "$.aws_secret_key: is missing but it is required" },
-            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, null), "$.aws_secret_key: is missing but it is required" },
-            { paramMap(INVALID_QUEUE_URL, VALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY), "Malformed \"aws_queue_name_or_arn\" url: \"invalid\"" },
+                    List.of("$.aws_access_key: is missing but it is required",
+                            "$.aws_secret_key: is missing but it is required",
+                            "$.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]") },
+            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, null, null),
+                    List.of("$.aws_access_key: is missing but it is required",
+                            "$.aws_secret_key: is missing but it is required") },
+            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, "", null),
+                    List.of("$.aws_secret_key: is missing but it is required") },
+            { paramMap(VALID_AWS_QUEUE_URL, VALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, null),
+                    List.of("$.aws_secret_key: is missing but it is required") },
+            { paramMap(INVALID_QUEUE_URL, VALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY),
+                    List.of("Malformed \"aws_queue_name_or_arn\" url: \"invalid\"") },
             { paramMap(VALID_AWS_QUEUE_URL, "", VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY),
-                    "$.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]" },
+                    List.of("$.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]") },
             { paramMap(VALID_AWS_QUEUE_URL, INVALID_AWS_REGION, VALID_AWS_ACCESS_KEY_ID, VALID_AWS_SECRET_ACCESS_KEY),
-                    "$.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]" }
+                    List.of("$.aws_region: does not have a value in the enumeration [af-south-1, ap-east-1, ap-northeast-1, ap-northeast-2, ap-northeast-3, ap-south-1, ap-southeast-1, ap-southeast-2, ap-southeast-3, ca-central-1, eu-central-1, eu-north-1, eu-south-1, eu-west-1, eu-west-2, eu-west-3, fips-us-east-1, fips-us-east-2, fips-us-west-1, fips-us-west-2, me-south-1, sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2, cn-north-1, cn-northwest-1, us-gov-east-1, us-gov-west-1, us-iso-east-1, us-iso-west-1, us-isob-east-1]") }
     };
 
     private static final Object[] VALID_PARAMS = {
@@ -75,8 +91,8 @@ class AwsSqsSourceValidatorTest extends AbstractGatewayValidatorTest {
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, invalidParams), expectedErrorMessage);
+    void isInvalid(Map<String, String> invalidParams, List<String> expectedErrorMessages) {
+        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, invalidParams), expectedErrorMessages);
     }
 
     private static Stream<Arguments> invalidParams() {

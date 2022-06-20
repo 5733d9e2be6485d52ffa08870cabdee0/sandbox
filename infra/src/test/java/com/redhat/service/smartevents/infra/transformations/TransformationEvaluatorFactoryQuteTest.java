@@ -16,7 +16,7 @@ public class TransformationEvaluatorFactoryQuteTest {
         ValidationResult result = factory.validate(template);
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isTrue();
-        assertThat(result.getMessage()).isNull();
+        assertThat(result.getViolations()).isEmpty();
     }
 
     @Test
@@ -27,6 +27,6 @@ public class TransformationEvaluatorFactoryQuteTest {
         ValidationResult result = factory.validate(template);
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getMessage()).isNotBlank();
+        assertThat(result.getViolations()).isNotEmpty();
     }
 }
