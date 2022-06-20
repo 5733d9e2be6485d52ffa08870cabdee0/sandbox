@@ -95,7 +95,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.DeploymentNotAvailable); // TODO: replace with KnativeBrokerNotReady
+            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.KnativeBrokerNotReady);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 

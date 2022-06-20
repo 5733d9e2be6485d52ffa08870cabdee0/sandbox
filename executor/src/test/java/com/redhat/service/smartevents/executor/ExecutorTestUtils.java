@@ -98,6 +98,7 @@ public class ExecutorTestUtils {
                 "test",
                 "test",
                 "PLAINTEXT",
+                "PLAIN",
                 "ob-bridgeid-1",
                 "ob-bridgeid-1-errors");
     }

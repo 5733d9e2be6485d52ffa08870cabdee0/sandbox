@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
+import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.IngressResource;
@@ -29,8 +30,6 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 
 public class IngressSteps {
-
-    private static final String CE_JSON_CONTENT_TYPE = "application/cloudevents+json";
 
     private TestContext context;
 
@@ -70,7 +69,7 @@ public class IngressSteps {
         String endpoint = BridgeUtils.getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
         cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
 
-        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, CE_JSON_CONTENT_TYPE);
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, Constants.CE_JSON_CONTENT_TYPE);
     }
 
     @When("^send a cloud event to the endpoint URL \"([^\"]*)\":$")
@@ -78,7 +77,7 @@ public class IngressSteps {
         endpoint = ContextResolver.resolveWithScenarioContext(context, endpoint);
         cloudEvent = ContextResolver.resolveWithScenarioContext(context, cloudEvent);
 
-        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, CE_JSON_CONTENT_TYPE);
+        adjustSendAndCheckCloudEvent(endpoint, cloudEvent, Constants.CE_JSON_CONTENT_TYPE);
     }
 
     @When("^send a json event to the Ingress of the Bridge \"([^\"]*)\" with headers (\"[^\"]+\":\"[^\"]+\"(?:,\"[^\"]+\":\"[^\"]+\")*):$")
@@ -91,7 +90,7 @@ public class IngressSteps {
 
         parsedHeaders = adjustCloudEventHeaderParameters(parsedHeaders, context.getCloudEventSystemId(testCloudEventId));
 
-        sendAndCheckCloudEvent(endpoint, cloudEvent, parsedHeaders, "application/json");
+        sendAndCheckCloudEvent(endpoint, cloudEvent, parsedHeaders, Constants.JSON_CONTENT_TYPE);
     }
 
     private void adjustSendAndCheckCloudEvent(String endpoint, String cloudEvent, String contentType) {

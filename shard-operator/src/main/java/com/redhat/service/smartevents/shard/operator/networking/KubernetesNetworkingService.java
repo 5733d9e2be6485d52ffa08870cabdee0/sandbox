@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
@@ -62,11 +60,6 @@ public class KubernetesNetworkingService implements NetworkingService {
                 .get();
 
         if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
-            try {
-                LOGGER.info(new ObjectMapper().writeValueAsString(expected));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
             client.network().v1().ingresses()
                     .inNamespace(service.getMetadata().getNamespace())
                     .withName(bridgeIngress.getMetadata().getName())

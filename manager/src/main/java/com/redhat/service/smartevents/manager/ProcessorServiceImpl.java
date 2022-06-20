@@ -335,6 +335,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.getSaslMechanism(),
                 getProcessorTopicName(processor),
                 resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
     }

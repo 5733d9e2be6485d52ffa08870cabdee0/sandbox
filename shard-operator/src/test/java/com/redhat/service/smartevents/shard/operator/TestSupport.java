@@ -34,6 +34,7 @@ public class TestSupport {
     public static final String KAFKA_CLIENT_ID = "client-id";
     public static final String KAFKA_CLIENT_SECRET = "testsecret";
     public static final String KAFKA_SECURITY_PROTOCOL = "PLAINTEXT";
+    public static final String KAFKA_SASL_MECHANISM = "PLAIN";
     public static final String KAFKA_TOPIC = "ob-my-id";
     public static final String KAFKA_ERROR_TOPIC = "ob-my-id-errors";
 
@@ -42,6 +43,7 @@ public class TestSupport {
             KAFKA_CLIENT_ID,
             KAFKA_CLIENT_SECRET,
             KAFKA_SECURITY_PROTOCOL,
+            KAFKA_SASL_MECHANISM,
             KAFKA_TOPIC,
             KAFKA_ERROR_TOPIC);
 
