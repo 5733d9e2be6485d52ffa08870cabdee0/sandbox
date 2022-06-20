@@ -13,13 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.filters.ObjectMapperFactory;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
@@ -33,8 +31,6 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorWorker.class);
-
-    private static final ObjectMapper MAPPER = ObjectMapperFactory.get();
 
     @Inject
     ConnectorsDAO connectorsDAO;
