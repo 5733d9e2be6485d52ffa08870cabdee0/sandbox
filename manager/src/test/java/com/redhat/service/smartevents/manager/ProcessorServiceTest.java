@@ -63,6 +63,7 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCE
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.MASK_PATTERN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -609,6 +610,37 @@ class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+    }
+
+    @Test
+    void testToResponseWithMask() {
+        Bridge b = Fixtures.createBridge();
+        Processor p = Fixtures.createProcessor(b, READY);
+
+        Source source = new Source();
+        source.setType(SlackSource.TYPE);
+        source.setMapParameters(Map.of(
+                SlackSource.CHANNEL_PARAM, "mychannel",
+                SlackSource.TOKEN_PARAM, "mytoken"));
+
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", source, null);
+        p.setDefinition(definition);
+
+        ProcessorResponse r = processorService.toResponse(p);
+        assertThat(r).isNotNull();
+
+        assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getName()).isEqualTo(p.getName());
+        assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getType()).isEqualTo(p.getType());
+        assertThat(r.getId()).isEqualTo(p.getId());
+        assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
+        assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getKind()).isEqualTo("Processor");
+        assertThat(r.getTransformationTemplate()).isEmpty();
+        assertThat(r.getSource().getType()).isEqualTo(SlackSource.TYPE);
+        assertThat(r.getSource().getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo("mychannel");
+        assertThat(r.getSource().getParameter(SlackSource.TOKEN_PARAM)).isEqualTo(MASK_PATTERN);
     }
 
     private static Bridge createReadyBridge() {

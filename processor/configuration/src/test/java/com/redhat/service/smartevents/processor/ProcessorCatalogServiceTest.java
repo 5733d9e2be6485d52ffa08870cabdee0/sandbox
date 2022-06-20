@@ -2,19 +2,25 @@ package com.redhat.service.smartevents.processor;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationResult;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
+import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -73,4 +79,74 @@ public class ProcessorCatalogServiceTest {
         ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
         assertThat(result.getValidationMessages().size()).isEqualTo(1);
     }
+
+    @ParameterizedTest
+    @MethodSource("createActionPasswordProperties")
+    public void testActionPasswordProperties(String id, List<String> expectedResult) {
+        List<String> actualResult = processorCatalogService.getActionPasswordProperties(id);
+        assertThat(actualResult).isEqualTo(expectedResult);
+
+        // test twice to test memoization
+        List<String> actualResult2 = processorCatalogService.getActionPasswordProperties(id);
+        assertThat(actualResult2).isEqualTo(expectedResult);
+    }
+
+    @Test
+    public void testActionPasswordPropertiesCompleteness() {
+        List<String> definedActionIds = createActionPasswordProperties()
+                .map(arg -> (String) arg.get()[0])
+                .sorted()
+                .collect(Collectors.toList());
+        List<String> serviceActionIds = processorCatalogService.getActionsCatalog().stream()
+                .map(ProcessorCatalogEntry::getId)
+                .sorted()
+                .collect(Collectors.toList());
+        assertThat(definedActionIds).isEqualTo(serviceActionIds);
+    }
+
+    private static Stream<Arguments> createActionPasswordProperties() {
+        Object[][] arguments = {
+                { "ansible_tower_job_template_sink_0.1", List.of("basic_auth_password") },
+                { "aws_lambda_sink_0.1", List.of("aws_access_key", "aws_secret_key") },
+                { "kafka_topic_sink_0.1", Collections.emptyList() },
+                { "send_to_bridge_sink_0.1", Collections.emptyList() },
+                { "slack_sink_0.1", List.of("slack_webhook_url") },
+                { "webhook_sink_0.1", List.of("basic_auth_password") }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    @ParameterizedTest
+    @MethodSource("createSourcePasswordProperties")
+    public void testSourcePasswordProperties(String id, List<String> expectedResult) {
+        List<String> actualResult = processorCatalogService.getSourcePasswordProperties(id);
+        assertThat(actualResult).isEqualTo(expectedResult);
+
+        // test twice to test memoization
+        List<String> actualResult2 = processorCatalogService.getSourcePasswordProperties(id);
+        assertThat(actualResult2).isEqualTo(expectedResult);
+    }
+
+    @Test
+    public void testSourcePasswordPropertiesCompleteness() {
+        List<String> definedSourceIds = createSourcePasswordProperties()
+                .map(arg -> (String) arg.get()[0])
+                .sorted()
+                .collect(Collectors.toList());
+        List<String> serviceSourceIds = processorCatalogService.getSourcesCatalog().stream()
+                .map(ProcessorCatalogEntry::getId)
+                .sorted()
+                .collect(Collectors.toList());
+        assertThat(definedSourceIds).isEqualTo(serviceSourceIds);
+    }
+
+    private static Stream<Arguments> createSourcePasswordProperties() {
+        Object[][] arguments = {
+                { "aws_s3_source_0.1", List.of("aws_access_key", "aws_secret_key") },
+                { "aws_sqs_source_0.1", List.of("aws_access_key", "aws_secret_key") },
+                { "slack_source_0.1", List.of("slack_token") }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
 }

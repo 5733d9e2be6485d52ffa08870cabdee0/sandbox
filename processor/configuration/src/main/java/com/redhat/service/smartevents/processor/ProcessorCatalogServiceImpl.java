@@ -5,9 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -15,6 +21,7 @@ import javax.inject.Inject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.JsonSchema;
@@ -33,6 +40,8 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
     private static final String JSON_FILE_EXTENSION = ".json";
     private static final String CATALOG_FILENAME = "catalog";
+
+    private static final Map<String, List<String>> PASSWORD_PROPERTIES_MAP = new HashMap<>();
 
     private List<ProcessorCatalogEntry> actions;
     private List<ProcessorCatalogEntry> sources;
@@ -96,6 +105,16 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
         throw new ItemNotFoundException(String.format("Processor type '%s' not recognized", type));
     }
 
+    @Override
+    public List<String> getActionPasswordProperties(String id) {
+        return getPasswordProperties(id, getActionJsonSchema(id));
+    }
+
+    @Override
+    public List<String> getSourcePasswordProperties(String id) {
+        return getPasswordProperties(id, getSourceJsonSchema(id));
+    }
+
     private String readFile(String resourceDirectory, String name) {
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceDirectory + name + JSON_FILE_EXTENSION);
 
@@ -128,5 +147,46 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     private JsonSchema getJsonSchemaFromJsonNode(ObjectNode objectNode) {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
         return factory.getSchema(objectNode);
+    }
+
+    private List<String> getPasswordProperties(String gatewayType, JsonSchema schema) {
+        if (PASSWORD_PROPERTIES_MAP.containsKey(gatewayType)) {
+            return PASSWORD_PROPERTIES_MAP.get(gatewayType);
+        }
+
+        Stream<Map.Entry<String, JsonNode>> fieldsStream = toStream(schema.getSchemaNode().get("properties").fields());
+
+        List<String> passwordFields = fieldsStream
+                .filter(ProcessorCatalogServiceImpl::isPasswordField)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toUnmodifiableList());
+
+        PASSWORD_PROPERTIES_MAP.put(gatewayType, passwordFields);
+
+        return passwordFields;
+    }
+
+    private static boolean isPasswordField(Map.Entry<String, JsonNode> fieldEntry) {
+        JsonNode fieldNode = fieldEntry.getValue();
+        // if node is directly a password node, we're good
+        if (isPasswordNode(fieldNode)) {
+            return true;
+        }
+        // but some properties contain a "oneOf" array if multiple values are possible
+        // so we check if one of them is a password node
+        if (fieldNode.has("oneOf")) {
+            Stream<JsonNode> fieldsStream = toStream(fieldNode.get("oneOf").iterator());
+            return fieldsStream.anyMatch(ProcessorCatalogServiceImpl::isPasswordNode);
+        }
+        // otherwise, it's not a password field
+        return false;
+    }
+
+    private static boolean isPasswordNode(JsonNode fieldNode) {
+        return fieldNode.has("format") && fieldNode.get("format").asText().equalsIgnoreCase("password");
+    }
+
+    private static <T> Stream<T> toStream(Iterator<T> iterator) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
     }
 }

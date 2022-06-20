@@ -40,6 +40,7 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -48,6 +49,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     GatewayConfigurator gatewayConfigurator;
+    @Inject
+    GatewaySecretsHandler gatewaySecretsHandler;
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
     @Inject
@@ -366,8 +369,12 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            processorResponse.setAction(definition.getRequestedAction());
-            processorResponse.setSource(definition.getRequestedSource());
+            if (definition.getRequestedAction() != null) {
+                processorResponse.setAction(gatewaySecretsHandler.mask(definition.getRequestedAction()));
+            }
+            if (definition.getRequestedSource() != null) {
+                processorResponse.setSource(gatewaySecretsHandler.mask(definition.getRequestedSource()));
+            }
         }
 
         if (processor.getBridge() != null) {
