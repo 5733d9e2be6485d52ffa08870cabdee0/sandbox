@@ -118,5 +118,65 @@
     "id": 20,
     "reason": "Error during the deserialization of a resource.",
     "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedConstraintViolationException",
+    "id": 21,
+    "reason": "A ConstraintViolation has not been mapped to an ExternalUserException. The raw violation is shown.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTemplateDefinitionException",
+    "id": 22,
+    "reason": "The Transformation Template for the Processor is invalid",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMissingGatewayException",
+    "id": 23,
+    "reason": "The Processor is missing a Gateway definition.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersMissingException",
+    "id": 24,
+    "reason": "The Processor Gateway definition is missing parameters.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayNotRecognisedException",
+    "id": 25,
+    "reason": "The Processor Gateway type is not recognised.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersNotValidException",
+    "id": 26,
+    "reason": "One or more of the Processor Gateway parameters are invalid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayUnclassifiedException",
+    "id": 27,
+    "reason": "One or more of the Processor Gateway parameters are invalid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMultipleGatewayException",
+    "id": 28,
+    "reason": "A Processor cannot have both a Source and an Action Gateway defined.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException",
+    "id": 29,
+    "reason": "Processor Source Gateways do not support Transformation Templates.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException",
+    "id": 30,
+    "reason": "The specified ErrorHandler Action is unsupported.",
+    "type": "USER"
   }
 ]

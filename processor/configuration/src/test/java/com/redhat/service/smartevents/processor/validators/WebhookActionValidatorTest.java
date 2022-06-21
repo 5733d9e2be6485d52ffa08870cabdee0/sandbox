@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.processor.validators;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -40,18 +41,28 @@ class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
     static final String INVALID_ENDPOINT_WRONG_PROTOCOL = "ftp://www.example.com/webhook";
 
     private static final Object[][] INVALID_PARAMS = {
-            { paramMap(null, null, null, null, null), "$.endpoint: is missing but it is required" },
-            { paramMap(INVALID_ENDPOINT_NOT_URL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_MISSING_PROTOCOL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_UNKNOWN_PROTOCOL, null, null, null, null), MALFORMED_ENDPOINT_PARAM_MESSAGE },
-            { paramMap(INVALID_ENDPOINT_WRONG_PROTOCOL, null, null, null, null), INVALID_PROTOCOL_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, null, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, null, VALID_PASSWORD, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, "", VALID_PASSWORD, null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
-            { paramMap(VALID_HTTP_ENDPOINT, "", "", null, null), BASIC_AUTH_CONFIGURATION_MESSAGE },
+            { paramMap(null, null, null, null, null),
+                    List.of("$.endpoint: is missing but it is required") },
+            { paramMap(INVALID_ENDPOINT_NOT_URL, null, null, null, null),
+                    List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_MISSING_PROTOCOL, null, null, null, null),
+                    List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_UNKNOWN_PROTOCOL, null, null, null, null),
+                    List.of(MALFORMED_ENDPOINT_PARAM_MESSAGE) },
+            { paramMap(INVALID_ENDPOINT_WRONG_PROTOCOL, null, null, null, null),
+                    List.of(INVALID_PROTOCOL_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, null, null, null),
+                    List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, null, VALID_PASSWORD, null, null),
+                    List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, "", null, null),
+                    List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, "", VALID_PASSWORD, null, null),
+                    List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
+            { paramMap(VALID_HTTP_ENDPOINT, "", "", null, null),
+                    List.of(BASIC_AUTH_CONFIGURATION_MESSAGE) },
             { paramMap(VALID_HTTP_ENDPOINT, VALID_USERNAME, VALID_PASSWORD, null, "value"),
-                    "$.useTechnicalBearerToken: is not defined in the schema and the schema does not allow additional properties" }
+                    List.of("$.useTechnicalBearerToken: is not defined in the schema and the schema does not allow additional properties") }
     };
 
     private static final Object[] VALID_PARAMS = {
@@ -76,8 +87,8 @@ class WebhookActionValidatorTest extends AbstractGatewayValidatorTest {
 
     @ParameterizedTest
     @MethodSource("invalidParams")
-    void isInvalid(Map<String, String> invalidParams, String expectedErrorMessage) {
-        assertValidationIsInvalid(actionWith(WebhookAction.TYPE, invalidParams), expectedErrorMessage);
+    void isInvalid(Map<String, String> invalidParams, List<String> expectedErrorMessages) {
+        assertValidationIsInvalid(actionWith(WebhookAction.TYPE, invalidParams), expectedErrorMessages);
     }
 
     private static Stream<Arguments> invalidParams() {

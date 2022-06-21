@@ -910,6 +910,15 @@ components:
           type: string
         reason:
           type: string
+    ErrorsResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorResponse'
     ManagedResourceStatus:
       enum:
       - accepted

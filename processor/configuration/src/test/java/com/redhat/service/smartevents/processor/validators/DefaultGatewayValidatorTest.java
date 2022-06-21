@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.processor.validators;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -25,7 +26,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
         params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
-        assertValidationIsInvalid(sourceWith(AwsS3Source.TYPE, params), "$.aws_secret_key: is missing but it is required");
+        assertValidationIsInvalid(sourceWith(AwsS3Source.TYPE, params), List.of("$.aws_secret_key: is missing but it is required"));
 
         params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
@@ -39,7 +40,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     void testSlackSource() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackSource.TOKEN_PARAM, "t");
-        assertValidationIsInvalid(sourceWith(SlackSource.TYPE, params), "$.slack_channel: is missing but it is required");
+        assertValidationIsInvalid(sourceWith(SlackSource.TYPE, params), List.of("$.slack_channel: is missing but it is required"));
 
         params = new HashMap<>();
         params.put(SlackSource.CHANNEL_PARAM, "channel");
