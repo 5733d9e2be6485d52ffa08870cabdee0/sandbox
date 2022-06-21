@@ -15,6 +15,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -41,9 +44,9 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
-import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -63,7 +66,8 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCE
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
-import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.MASK_PATTERN;
+import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -238,7 +242,7 @@ class ProcessorServiceTest {
 
     @Test
     void testCreateErrorHandlerProcessor() {
-        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
         Processor processor = processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);
         doAssertProcessorCreation(processor, processorRequest, ERROR_HANDLER);
     }
@@ -432,8 +436,10 @@ class ProcessorServiceTest {
     private static Stream<Arguments> updateProcessorParams() {
         Object[] arguments = {
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createKafkaTopicAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource())
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createdMaskedWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createMaskedSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
     }
@@ -470,6 +476,10 @@ class ProcessorServiceTest {
     @ParameterizedTest
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithName(ProcessorRequestForTests request) {
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(existingProcessor);
+
         request.setName(request.getName() + "-updated");
         assertThatExceptionOfType(BadRequestException.class)
                 .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
@@ -497,7 +507,6 @@ class ProcessorServiceTest {
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithGateway(ProcessorRequestForTests request) {
         Processor existingProcessor = createReadyProcessorFromRequest(request);
-
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -519,7 +528,6 @@ class ProcessorServiceTest {
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithGatewayWithOppositeType(ProcessorRequestForTests request) {
         Processor existingProcessor = createReadyProcessorFromRequest(request);
-
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -571,7 +579,6 @@ class ProcessorServiceTest {
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);
-
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -583,7 +590,7 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateErrorHandlerProcessorFails() {
-        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(
                 () -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, ERROR_HANDLER_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
     }
@@ -640,7 +647,7 @@ class ProcessorServiceTest {
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getSource().getType()).isEqualTo(SlackSource.TYPE);
         assertThat(r.getSource().getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo("mychannel");
-        assertThat(r.getSource().getParameter(SlackSource.TOKEN_PARAM)).isEqualTo(MASK_PATTERN);
+        assertThat(r.getSource().getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
     }
 
     private static Bridge createReadyBridge() {
@@ -685,7 +692,7 @@ class ProcessorServiceTest {
     }
 
     private static Processor createErrorHandlerProcessor() {
-        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction()));
+        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction()));
         processor.setId(ERROR_HANDLER_PROCESSOR_ID);
         processor.setType(ERROR_HANDLER);
         return processor;
@@ -698,12 +705,28 @@ class ProcessorServiceTest {
         return action;
     }
 
+    private static Action createdMaskedWebhookAction() {
+        Action webhookAction = createWebhookAction();
+        webhookAction.getParameters().set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode("myusername"));
+        webhookAction.getParameters().set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode());
+        return webhookAction;
+    }
+
     private static Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
         source.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, "test-channel",
                 SlackSource.TOKEN_PARAM, "test-token"));
+        return source;
+    }
+
+    private static Source createMaskedSlackSource() {
+        Source source = new Source();
+        source.setType(SlackSource.TYPE);
+        source.setParameters(new ObjectNode(JsonNodeFactory.instance, Map.of(
+                SlackSource.CHANNEL_PARAM, new TextNode("test-channel"),
+                SlackSource.TOKEN_PARAM, emptyObjectNode())));
         return source;
     }
 }

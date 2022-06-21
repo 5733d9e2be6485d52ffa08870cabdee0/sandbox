@@ -1,7 +1,10 @@
 package com.redhat.service.smartevents.manager;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,6 +15,8 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -25,6 +30,7 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -41,6 +47,8 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
+
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -182,6 +190,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         Action existingResolvedAction = existingDefinition.getResolvedAction();
         Source existingSource = existingDefinition.getRequestedSource();
 
+        // for sensitive fields we may receive either a string with the new value or an empty object
+        // if it remains unchanged (since the caller can't know the current real value)
+        // thus, before comparing the requested action/source with the existing one, we must unmask
+        // the sensitive fields with the original values (if those are unchanged) or with the new ones
+        Action unmaskedRequestedAction = unmaskRequestedGateway(processorRequest.getAction(), existingAction);
+        Source unmaskedRequestedSource = unmaskRequestedGateway(processorRequest.getSource(), existingSource);
+
         // Validate update.
         // Name cannot be updated.
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
@@ -191,10 +206,10 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
         // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
-        if (!Objects.equals(existingAction, processorRequest.getAction())) {
+        if (!Objects.equals(existingAction, unmaskedRequestedAction)) {
             throw new BadRequestException("It is not possible to update the Processor's Action.");
         }
-        if (!Objects.equals(existingSource, processorRequest.getSource())) {
+        if (!Objects.equals(existingSource, unmaskedRequestedSource)) {
             throw new BadRequestException("It is not possible to update the Processor's Source.");
         }
 
@@ -226,6 +241,24 @@ public class ProcessorServiceImpl implements ProcessorService {
                 existingProcessor.getBridge().getId());
 
         return existingProcessor;
+    }
+
+    private <T extends Gateway> T unmaskRequestedGateway(T requestedGateway, T existingGateway) {
+        if (requestedGateway == null || requestedGateway.getParameters() == null) {
+            return requestedGateway;
+        }
+        Map<String, String> toBeUnmasked = new HashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedGateway.getParameters().fields();
+        while (parametersIterator.hasNext()) {
+            Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
+            if (parameterEntry.getValue().equals(emptyObjectNode())) {
+                // this parameter is an unchanged sensitive field, so we must unmask it
+                // with the current real value
+                toBeUnmasked.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
+            }
+        }
+        toBeUnmasked.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
+        return requestedGateway;
     }
 
     @Transactional
