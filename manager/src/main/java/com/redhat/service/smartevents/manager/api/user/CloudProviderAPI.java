@@ -20,7 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderResponse;
@@ -46,7 +46,7 @@ public class CloudProviderAPI {
     @Operation(summary = "List Supported Cloud Providers.", description = "Returns the list of supported Cloud Providers.")
     @GET
     public Response listCloudProviders(@Valid @BeanParam QueryPageInfo queryInfo) {
-        return Response.ok(ListResponse.fill(cloudProviderDAO.list(queryInfo), new CloudProviderListResponse(), CloudProviderResponse::from)).build();
+        return Response.ok(PagedListResponse.fill(cloudProviderDAO.list(queryInfo), new CloudProviderListResponse(), CloudProviderResponse::from)).build();
     }
 
     @APIResponses(value = {
@@ -72,6 +72,6 @@ public class CloudProviderAPI {
     @GET
     @Path("{id}/regions")
     public Response listCloudProviderRegions(@PathParam("id") @NotEmpty String id, @Valid @BeanParam QueryPageInfo queryInfo) {
-        return Response.ok(ListResponse.fill(cloudProviderDAO.listRegionsById(id, queryInfo), new CloudRegionListResponse(), CloudRegionResponse::from)).build();
+        return Response.ok(PagedListResponse.fill(cloudProviderDAO.listRegionsById(id, queryInfo), new CloudRegionListResponse(), CloudRegionResponse::from)).build();
     }
 }

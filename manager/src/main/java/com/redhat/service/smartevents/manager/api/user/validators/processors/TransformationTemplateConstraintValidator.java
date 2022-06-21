@@ -7,6 +7,7 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTemplateDefinitionException;
 import com.redhat.service.smartevents.infra.transformations.TransformationEvaluatorFactory;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 
@@ -30,10 +31,15 @@ public class TransformationTemplateConstraintValidator implements ConstraintVali
             return true;
         }
 
+        ValidationResult.Violation violation = validationResult.getViolations().get(0);
+
         context.disableDefaultConstraintViolation();
         HibernateConstraintValidatorContext hibernateContext = context.unwrap(HibernateConstraintValidatorContext.class);
-        hibernateContext.addMessageParameter(ERROR_PARAM, validationResult.getMessage());
-        hibernateContext.buildConstraintViolationWithTemplate(TRANSFORMATION_TEMPLATE_MALFORMED_ERROR).addConstraintViolation();
+        hibernateContext
+                .withDynamicPayload(new ProcessorTemplateDefinitionException(violation.getException().getMessage()))
+                .addMessageParameter(ERROR_PARAM, violation.getException().getMessage())
+                .buildConstraintViolationWithTemplate(TRANSFORMATION_TEMPLATE_MALFORMED_ERROR)
+                .addConstraintViolation();
         return false;
     }
 }
