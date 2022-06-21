@@ -8,10 +8,14 @@ import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
@@ -90,7 +94,79 @@ public class TemplateProviderTest {
         assertThat(service.getSpec().getPorts().get(0).getProtocol()).isEqualTo("TCP");
     }
 
-    // TODO: add test for ingress secret/configmap/istio/knative resource
+    @Test
+    public void bridgeIngressBrokerTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        KnativeBroker broker = templateProvider.loadBridgeIngressBrokerTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
+
+        assertOwnerReference(BRIDGE_INGRESS, broker.getMetadata());
+        assertLabels(broker.getMetadata(), BridgeIngress.COMPONENT_NAME);
+        assertThat(broker.getMetadata().getAnnotations().get("eventing.knative.dev/broker.class")).isEqualTo("Kafka");
+        assertThat(broker.getMetadata().getAnnotations().get("x-kafka.eventing.knative.dev/external.topic")).isBlank();
+        assertThat(broker.getSpec().getConfig().getKind()).isEqualTo("ConfigMap");
+        assertThat(broker.getSpec().getConfig().getApiVersion()).isEqualTo("v1");
+    }
+
+    @Test
+    public void bridgeIngressAuthorizationPolicyTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        AuthorizationPolicy authorizationPolicy = templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(BRIDGE_INGRESS,
+                new TemplateImportConfig()
+                        .withNameFromParent()
+                        .withPrimaryResourceFromParent());
+
+        assertThat(authorizationPolicy.getMetadata().getOwnerReferences()).isNull();
+        assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-name")).isEqualTo(BRIDGE_INGRESS.getMetadata().getName());
+        assertThat(authorizationPolicy.getMetadata().getAnnotations().get("operator-sdk/primary-resource-namespace")).isEqualTo(BRIDGE_INGRESS.getMetadata().getNamespace());
+        assertLabels(authorizationPolicy.getMetadata(), BridgeIngress.COMPONENT_NAME);
+
+        // account_id
+        assertThat(authorizationPolicy.getSpec().getAction()).isEqualTo("ALLOW");
+        assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getPaths().get(0)).isEqualTo("");
+        assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getMethods().get(0)).isEqualTo("POST");
+        assertThat(authorizationPolicy.getSpec().getRules().get(0).getTo().get(0).getOperation().getMethods().get(1)).isEqualTo("OPTIONS");
+        assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getKey()).isEqualTo("request.auth.claims[account_id]");
+        assertThat(authorizationPolicy.getSpec().getRules().get(0).getWhen().get(0).getValues().get(0)).isBlank();
+
+        // rh-user-id
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getTo().get(0).getOperation().getPaths().get(0)).isEqualTo("");
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getTo().get(0).getOperation().getMethods().get(0)).isEqualTo("POST");
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getTo().get(0).getOperation().getMethods().get(1)).isEqualTo("OPTIONS");
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getWhen().get(0).getKey()).isEqualTo("request.auth.claims[rh-user-id]");
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getWhen().get(0).getValues().get(0)).isBlank(); // customerId
+        assertThat(authorizationPolicy.getSpec().getRules().get(1).getWhen().get(0).getValues().get(1)).isBlank(); // webhook technical accountId
+    }
+
+    @Test
+    public void bridgeIngressConfigMapTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        ConfigMap configMap = templateProvider.loadBridgeIngressConfigMapTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
+
+        assertOwnerReference(BRIDGE_INGRESS, configMap.getMetadata());
+        assertLabels(configMap.getMetadata(), BridgeIngress.COMPONENT_NAME);
+
+        assertThat(configMap.getData().get("default.topic.partitions")).isBlank();
+        assertThat(configMap.getData().get("default.topic.replication.factor")).isBlank();
+        assertThat(configMap.getData().get("bootstrap.servers")).isBlank();
+        assertThat(configMap.getData().get("auth.secret.ref.name")).isBlank();
+        assertThat(configMap.getData().get("topic.name")).isBlank();
+    }
+
+    @Test
+    public void bridgeIngressSecretTemplateIsProvided() {
+        TemplateProvider templateProvider = new TemplateProviderImpl();
+        Secret secret = templateProvider.loadBridgeIngressSecretTemplate(BRIDGE_INGRESS, TemplateImportConfig.withDefaults());
+
+        assertOwnerReference(BRIDGE_INGRESS, secret.getMetadata());
+        assertLabels(secret.getMetadata(), BridgeIngress.COMPONENT_NAME);
+
+        assertThat(secret.getData().get("protocol")).isBlank();
+        assertThat(secret.getData().get("sasl.mechanism")).isBlank();
+        assertThat(secret.getData().get("user")).isBlank();
+        assertThat(secret.getData().get("password")).isBlank();
+        assertThat(secret.getData().get("bootstrap.servers")).isBlank();
+        assertThat(secret.getData().get("topic.name")).isBlank();
+    }
 
     @Test
     public void bridgeIngressOpenshiftRouteTemplateIsProvided() {

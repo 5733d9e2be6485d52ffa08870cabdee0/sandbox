@@ -56,7 +56,7 @@ public class OpenshiftNetworkingTestUtils implements NetworkingTestUtils {
     private void patchOpenshiftIngressDomain() {
         Ingress openshiftIngress = new IngressBuilder()
                 .withMetadata(new ObjectMetaBuilder().withName(OpenshiftNetworkingService.CLUSTER_DOMAIN_RESOURCE_NAME).build())
-                .withSpec(new IngressSpecBuilder().withDomain("apps.openbridge-test.fdvfn.p2.openshiftapps.com").build())
+                .withSpec(new IngressSpecBuilder().withDomain(NetworkingTestConstants.HOST_ADDRESS).build())
                 .build();
         this.client.config().ingresses().withName(OpenshiftNetworkingService.CLUSTER_DOMAIN_RESOURCE_NAME).create(openshiftIngress);
     }

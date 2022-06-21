@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.executor;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,6 +19,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.slf4j.Logger;
@@ -29,15 +29,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
-import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.jackson.JsonCloudEventData;
+import io.cloudevents.kafka.CloudEventDeserializer;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
@@ -71,6 +72,9 @@ public class ExecutorService {
             RHOSE_ORIGINAL_EVENT_TYPE_HEADER,
             RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER,
             RHOSE_ERROR_CODE_HEADER);
+
+    @ConfigProperty(name = "mp.messaging.incoming.events-in.topic")
+    String topic;
 
     @Inject
     Executor executor;
@@ -130,33 +134,18 @@ public class ExecutorService {
 
     private Pair<CloudEvent, Map<String, String>> buildCloudEvent(KafkaRecord<Integer, String> message, boolean wrapOnFailure) {
         try {
-            Map<String, String> headers = toHeadersMap(message.getHeaders());
-            Map<String, String> cloudEventHeaders = new HashMap<>();
-            for (Map.Entry<String, String> h : headers.entrySet()) {
-                LOG.info(h.getKey() + " " + h.getValue());
-                if (h.getKey().startsWith("ce_")) { // TODO: refactor please
-                    cloudEventHeaders.put(h.getKey().substring(3), h.getValue()); // TODO: refactor please
-                }
-            }
-            CloudEvent cloudEvent = null;
-            cloudEvent = CloudEventBuilder
-                    .fromSpecVersion(SpecVersion.parse(cloudEventHeaders.get("specversion"))) // TODO: refactor please
-                    .withData(JsonCloudEventData.wrap(mapper.readTree(message.getPayload())))
-                    .withId(cloudEventHeaders.getOrDefault("id", null))
-                    .withSource(new URI(cloudEventHeaders.getOrDefault("source", null)))
-                    .withType(cloudEventHeaders.getOrDefault("type", null))
-                    .withDataSchema(cloudEventHeaders.containsKey("dataschema") ? new URI(cloudEventHeaders.get("dataschema")) : null)
-                    .withSubject(cloudEventHeaders.getOrDefault("subject", null))
-                    .build();
+            CloudEvent cloudEvent = new CloudEventDeserializer()
+                    .deserialize(topic, message.getHeaders(), message.getPayload().getBytes(StandardCharsets.UTF_8));
             return Pair.of(
                     cloudEvent,
-                    headers);
+                    toHeadersMap(message.getHeaders()));
         } catch (Exception e) {
+            // if it fails (e.g. for connector errors) try wrapping it
             if (wrapOnFailure) {
                 CloudEventData data = BytesCloudEventData.wrap(message.getPayload().getBytes(StandardCharsets.UTF_8));
                 return Pair.of(wrapToCloudEvent("RhoseError", data, Collections.emptyMap()), toHeadersMap(message.getHeaders()));
             }
-            throw new RuntimeException(e);
+            throw new DeserializationException("Failed to deserialize the cloud event", e);
         }
     }
 

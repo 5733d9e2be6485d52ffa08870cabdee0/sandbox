@@ -250,7 +250,7 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
     private BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
         return new BridgeDTO("bridgesDeployed-" + suffix,
                 "myName-" + suffix,
-                "myEndpoint/events",
+                "",
                 TestSupport.CUSTOMER_ID,
                 TestSupport.USER_NAME,
                 status,

@@ -29,7 +29,7 @@ public class KubernetesNetworkingTestUtils implements NetworkingTestUtils {
                 .withLoadBalancer(new LoadBalancerStatusBuilder()
                         .withIngress(new LoadBalancerIngressBuilder()
                                 .withHostname(name)
-                                .withIp(NetworkingTestConstants.HOST_IP)
+                                .withIp(NetworkingTestConstants.HOST_ADDRESS)
                                 .build())
                         .build())
                 .build();

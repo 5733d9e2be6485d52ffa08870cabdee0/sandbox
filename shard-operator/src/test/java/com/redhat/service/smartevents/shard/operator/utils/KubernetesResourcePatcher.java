@@ -113,7 +113,7 @@ public class KubernetesResourcePatcher {
 
     public void patchReadyKnativeBroker(String name, String namespace) {
         KnativeBrokerStatus.Address address = new KnativeBrokerStatus.Address();
-        address.setUrl("http://192.168.2.49/ob-bridgesdeployed-1/events"); // TODO change
+        address.setUrl("http://kafka-broker-ingress.knative-eventing.svc.cluster.local/ob-55029811/ob-bridgesdeployed-1");
 
         KnativeBrokerStatus knativeBrokerStatus = new KnativeBrokerStatus();
         knativeBrokerStatus.setAddress(address);
