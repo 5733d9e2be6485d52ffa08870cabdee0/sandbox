@@ -21,11 +21,22 @@
       "example": "kermit"
     },
     "basic_auth_password": {
-      "type": "string",
       "title": "Basic Auth Password",
-      "description": "The password for basic auth.",
-      "format": "password",
-      "example": "mypassword"
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Basic Auth Password",
+          "description": "The password for basic auth.",
+          "type": "string",
+          "format": "password",
+          "example": "mypassword"
+        },
+        {
+          "description": "An opaque reference to the basic_auth_password",
+          "type": "object",
+          "properties": {}
+        }
+      ]
     },
     "ssl_verification_disabled": {
       "type": "boolean",

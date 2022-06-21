@@ -5,8 +5,9 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -14,10 +15,12 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 @ApplicationScoped
 public class GatewaySecretsHandler {
 
-    public static final String MASK_PATTERN = "***";
-
     @Inject
     ProcessorCatalogService processorCatalogService;
+
+    public static JsonNode emptyObjectNode() {
+        return new ObjectNode(JsonNodeFactory.instance);
+    }
 
     public Action mask(Action action) {
         List<String> passwordProps = processorCatalogService.getActionPasswordProperties(action.getType());
@@ -33,7 +36,7 @@ public class GatewaySecretsHandler {
         ObjectNode parameters = gateway.getParameters();
         for (String passwordProperty : passwordProps) {
             if (parameters.has(passwordProperty)) {
-                parameters.set(passwordProperty, new TextNode(MASK_PATTERN));
+                parameters.set(passwordProperty, emptyObjectNode());
             }
         }
         gateway.setParameters(parameters);
