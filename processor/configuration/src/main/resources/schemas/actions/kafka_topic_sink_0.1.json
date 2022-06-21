@@ -11,7 +11,7 @@
     "kafka_broker_url": {
       "type": "string",
       "title": "Broker URL",
-      "description": "RHOSAK Broker URL ",
+      "description": "RHOSAK Broker URL",
       "example": "username-c--hj---mhlksdfss-p--a.bf2.kafka.rhcloud.com:443"
     },
     "kafka_client_id": {
