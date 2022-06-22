@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -25,6 +27,7 @@ import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -333,10 +336,154 @@ public class BridgesAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void testDeleteBridgeWithActiveErrorHandler() {
+        Action errorHandler = createWebhookAction();
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler)).as(BridgeResponse.class);
+        TestUtils.updateBridge(
+                new BridgeDTO(bridgeResponse.getId(),
+                        bridgeResponse.getName(),
+                        bridgeResponse.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
+
+        TestUtils.deleteBridge(bridgeResponse.getId()).then().statusCode(202);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
         TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(202);
         TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
                 .then().statusCode(400);
     }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void updateBridgeAddErrorHandler() {
+        //Create Bridge without an ErrorHandler
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge.getErrorHandler()).isNull();
+
+        // Place Bridge into READY state to be able to update
+        TestUtils.updateBridge(
+                new BridgeDTO(bridge.getId(),
+                        bridge.getName(),
+                        bridge.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
+
+        //Update Bridge removing ErrorHandler
+        Action errorHandler = createWebhookAction();
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler));
+        bridgeUpdateResponse.then().statusCode(202);
+
+        BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(updatedBridge.getErrorHandler()).isNotNull();
+        assertThat(updatedBridge.getErrorHandler()).isEqualTo(errorHandler);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void updateBridgeRemoveErrorHandler() {
+        //Create Bridge with an ErrorHandler
+        Action errorHandler = createWebhookAction();
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge.getErrorHandler()).isNotNull();
+        assertThat(retrievedBridge.getErrorHandler()).isEqualTo(errorHandler);
+
+        // Place Bridge into READY state to be able to update
+        TestUtils.updateBridge(
+                new BridgeDTO(bridge.getId(),
+                        bridge.getName(),
+                        bridge.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
+
+        //Update Bridge removing ErrorHandler
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        bridgeUpdateResponse.then().statusCode(202);
+
+        BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(updatedBridge.getErrorHandler()).isNull();
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void updateBridgeUpdateErrorHandler() {
+        //Create Bridge with an ErrorHandler
+        Action errorHandler1 = createWebhookAction();
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler1));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge.getErrorHandler()).isNotNull();
+        assertThat(retrievedBridge.getErrorHandler()).isEqualTo(errorHandler1);
+
+        // Place Bridge into READY state to be able to update
+        TestUtils.updateBridge(
+                new BridgeDTO(bridge.getId(),
+                        bridge.getName(),
+                        bridge.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
+
+        //Update Bridge removing ErrorHandler
+        Action errorHandler2 = createWebhookAction();
+        errorHandler2.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/updated-error-handler"));
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler2));
+        bridgeUpdateResponse.then().statusCode(202);
+
+        BridgeResponse updatedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(updatedBridge.getErrorHandler()).isNotNull();
+        assertThat(updatedBridge.getErrorHandler()).isEqualTo(errorHandler2);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void updateBridgeUpdateNameNotSupported() {
+        //Create Bridge
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        bridgeCreateResponse.then().statusCode(202);
+
+        BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
+
+        BridgeResponse retrievedBridge = TestUtils.getBridge(bridge.getId()).as(BridgeResponse.class);
+        assertThat(retrievedBridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+
+        // Place Bridge into READY state to be able to update
+        TestUtils.updateBridge(
+                new BridgeDTO(bridge.getId(),
+                        bridge.getName(),
+                        bridge.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
+
+        //Attempt to update Bridge name
+        Response bridgeUpdateResponse = TestUtils.updateBridge(bridge.getId(), new BridgeRequest(DEFAULT_BRIDGE_NAME + "-updated"));
+        bridgeUpdateResponse.then().statusCode(400);
+    }
+
 }

@@ -15,9 +15,11 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
+    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
+
     Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
-    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
+    Processor updateErrorHandlerProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
 

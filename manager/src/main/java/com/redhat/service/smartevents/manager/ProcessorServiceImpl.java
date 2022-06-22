@@ -37,7 +37,6 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
@@ -90,7 +89,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
-        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
+        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest, 0);
     }
 
     @Override
@@ -103,10 +102,10 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new InternalPlatformException("Unable to configure error handler");
         }
 
-        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest);
+        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest, bridge.getGeneration());
     }
 
-    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest) {
+    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest, long generation) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
@@ -120,6 +119,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
+        newProcessor.setGeneration(generation);
         newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
@@ -165,15 +165,42 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
         // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
-        bridgesService.getReadyBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
-        // Extract existing definition
+        return doUpdateProcessor(bridgeId,
+                processorId,
+                customerId,
+                processorRequest.getType(),
+                processorRequest,
+                bridge.getGeneration());
+    }
+
+    @Override
+    @Transactional
+    public Processor updateErrorHandlerProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+
+        return doUpdateProcessor(bridgeId,
+                processorId,
+                customerId,
+                ProcessorType.ERROR_HANDLER,
+                processorRequest,
+                bridge.getGeneration());
+    }
+
+    // The parameters to this method are part of a larger hack around ErrorHandlers. ProcessorRequest infers its type
+    // from whether it has an Action or a Source defined. However, an ErrorHandler also has an Action defined and hence
+    // the inference fails. Therefore, the ProcessorType is passed explicitly to this method and not extracted from
+    // ProcessorRequest. See the creation related methods for similar m_a_g_i_c.
+    private Processor doUpdateProcessor(String bridgeId,
+            String processorId,
+            String customerId,
+            ProcessorType existingProcessorType,
+            ProcessorRequest processorRequest,
+            long bridgeGeneration) {
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
-        if (existingProcessor.getType() == ProcessorType.ERROR_HANDLER) {
-            throw new BadRequestException("It is not possible to update this Processor.");
-        }
 
-        if (!isManagedResourceActionable(existingProcessor)) {
+        if (!existingProcessor.isActionable()) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
                     processorId,
                     customerId));
@@ -190,15 +217,15 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
         }
-        if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
+        if (!Objects.equals(existingProcessor.getType(), existingProcessorType)) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SINK) {
+        if (existingProcessorType == ProcessorType.SINK) {
             if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
                 throw new BadRequestException("It is not possible to update the Processor's Action Type.");
             }
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE) {
+        if (existingProcessorType == ProcessorType.SOURCE) {
             if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
                 throw new BadRequestException("It is not possible to update the Processor's Source Type.");
             }
@@ -209,10 +236,10 @@ public class ProcessorServiceImpl implements ProcessorService {
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
         Source updatedSource = processorRequest.getSource();
         Action updatedAction = processorRequest.getAction();
-        Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
+        Action updatedResolvedAction = existingProcessorType == ProcessorType.SOURCE
                 ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
                 : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
-        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+        ProcessorDefinition updatedDefinition = existingProcessorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
                 : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
 
@@ -233,7 +260,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
-        existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
+        existingProcessor.setGeneration(bridgeGeneration);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -299,7 +326,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-        if (!isManagedResourceActionable(bridge)) {
+        if (!bridge.isActionable()) {
             throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
         }
         return processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
@@ -318,7 +345,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
-        if (!isManagedResourceActionable(processor)) {
+        if (!processor.isActionable()) {
             throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
         }
 
@@ -335,10 +362,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 processor.getId(),
                 processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
-    }
-
-    private boolean isManagedResourceActionable(ManagedResource managedResource) {
-        return managedResource.getStatus() == ManagedResourceStatus.READY || managedResource.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Override

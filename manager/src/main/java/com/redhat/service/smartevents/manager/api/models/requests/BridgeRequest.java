@@ -15,11 +15,11 @@ public class BridgeRequest {
 
     @NotEmpty(message = "Bridge name cannot be null or empty")
     @JsonProperty("name")
-    private String name;
+    protected String name;
 
     @JsonProperty("error_handler")
     @Valid
-    private Action errorHandler;
+    protected Action errorHandler;
 
     public BridgeRequest() {
     }
