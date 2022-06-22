@@ -8,8 +8,13 @@ info:
     email: openbridge-dev@redhat.com
   license:
     name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    url: https://www.apache.org/licenses/LICENSE-2.0
   version: 0.0.1
+servers:
+- url: https://api.stage.openshift.com
+- url: http://localhost:8000
+- url: https://api.openshift.com
+- url: /
 tags:
 - name: Bridges
   description: "The API that allow the user to retrieve, create or delete Bridge instances."
