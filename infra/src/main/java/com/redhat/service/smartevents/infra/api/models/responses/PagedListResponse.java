@@ -8,8 +8,11 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.ListResult;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(name = "List",
+        allOf = { PagedListResponse.class, ListResponse.class })
 public abstract class PagedListResponse<T> extends ListResponse<T> {
 
     public static <T, V> PagedListResponse<V> fill(ListResult<T> source, PagedListResponse<V> target, Function<T, V> converter) {

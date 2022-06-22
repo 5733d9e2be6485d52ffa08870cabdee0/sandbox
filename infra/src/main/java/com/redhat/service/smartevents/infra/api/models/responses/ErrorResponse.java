@@ -12,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "Error",
-        description = "General error response",
         allOf = { BaseResponse.class, ErrorResponse.class })
 public class ErrorResponse extends BaseResponse {
 

@@ -841,17 +841,6 @@ components:
           minLength: 1
           type: string
           nullable: false
-    BaseResponse:
-      type: object
-      properties:
-        kind:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        href:
-          type: string
     BridgeError:
       type: object
       properties:
@@ -1048,10 +1037,9 @@ components:
           nullable: false
     Error:
       allOf:
-      - $ref: '#/components/schemas/BaseResponse'
+      - $ref: '#/components/schemas/ObjectReference'
       - $ref: '#/components/schemas/Error'
-      - description: General error response
-        type: object
+      - type: object
         properties:
           code:
             type: string
@@ -1122,6 +1110,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Error'
+    List:
+      allOf:
+      - $ref: '#/components/schemas/ListResponse'
+      - type: object
+        properties:
+          page:
+            format: int64
+            type: integer
+          size:
+            format: int64
+            type: integer
+          total:
+            format: int64
+            type: integer
+    ListResponse:
+      type: object
+      properties:
+        kind:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
     ManagedResourceStatus:
       enum:
       - accepted
@@ -1133,6 +1144,17 @@ components:
       - deleted
       - failed
       type: string
+    ObjectReference:
+      type: object
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
     ProcessorCatalogResponse:
       required:
       - kind
