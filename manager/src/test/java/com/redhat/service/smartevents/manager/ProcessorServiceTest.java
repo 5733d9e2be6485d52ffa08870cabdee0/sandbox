@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.manager;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -16,8 +15,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -27,7 +24,6 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
@@ -660,56 +656,6 @@ class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
-    }
-
-    @Test
-    public void testCorrectKafkaOutboundConnectParameters() {
-        Processor readyProcessor = createReadyProcessor();
-        readyProcessor.getDefinition().getResolvedAction().setParameters(neededKafkaParameters());
-
-        ProcessorDTO processorDTO = processorService.toDTO(readyProcessor);
-        Optional<KafkaConnectionDTO> optkafkaConnectionDTO = processorDTO.parseKafkaOutgoingConnection();
-        assertThat(optkafkaConnectionDTO).isPresent();
-
-        KafkaConnectionDTO kafkaConnectionDTO = optkafkaConnectionDTO.get();
-        assertThat(kafkaConnectionDTO.getBootstrapServers()).isEqualTo(TEST_BROKER_URL);
-        assertThat(kafkaConnectionDTO.getClientId()).isEqualTo(TEST_CLIENT_ID);
-        assertThat(kafkaConnectionDTO.getClientSecret()).isEqualTo(TEST_CLIENT_SECRET);
-        assertThat(kafkaConnectionDTO.getSecurityProtocol()).isEqualTo(TEST_SECURITY_PROTOCOL);
-        assertThat(kafkaConnectionDTO.getTopic()).isEqualTo(TEST_TOPIC);
-    }
-
-    @Test
-    public void testCorrectKafkaOutboundConnectParametersInWrongAction() {
-        Processor readyProcessor = createReadyProcessor();
-        readyProcessor.getDefinition().getRequestedAction().setParameters(neededKafkaParameters());
-
-        ProcessorDTO processorDTO = processorService.toDTO(readyProcessor);
-        Optional<KafkaConnectionDTO> kafkaConnectionDTO = processorDTO.parseKafkaOutgoingConnection();
-        assertThat(kafkaConnectionDTO).isEmpty();
-    }
-
-    @Test
-    public void testInCorrectKafkaOutboundConnectParameters() {
-        Processor readyProcessor = createReadyProcessor();
-        readyProcessor.getDefinition().getRequestedAction().setParameters(neededKafkaParameters());
-        readyProcessor.getDefinition().getRequestedAction().getParameters().remove(KafkaTopicAction.BROKER_URL);
-
-        ProcessorDTO processorDTO = processorService.toDTO(readyProcessor);
-        Optional<KafkaConnectionDTO> kafkaConnectionDTO = processorDTO.parseKafkaOutgoingConnection();
-        assertThat(kafkaConnectionDTO).isEmpty();
-    }
-
-    private ObjectNode neededKafkaParameters() {
-        final ObjectNode parameters = new ObjectMapper().createObjectNode();
-
-        parameters.put(KafkaTopicAction.BROKER_URL, TEST_BROKER_URL);
-        parameters.put(KafkaTopicAction.CLIENT_ID, TEST_CLIENT_ID);
-        parameters.put(KafkaTopicAction.CLIENT_SECRET, TEST_CLIENT_SECRET);
-        parameters.put(KafkaTopicAction.SECURITY_PROTOCOL, TEST_SECURITY_PROTOCOL);
-        parameters.put(KafkaTopicAction.TOPIC_PARAM, TEST_TOPIC);
-
-        return parameters;
     }
 
     private static Bridge createReadyBridge() {

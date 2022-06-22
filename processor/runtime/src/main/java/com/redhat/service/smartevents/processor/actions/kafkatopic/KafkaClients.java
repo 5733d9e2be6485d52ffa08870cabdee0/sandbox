@@ -3,17 +3,16 @@ package com.redhat.service.smartevents.processor.actions.kafkatopic;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
 import io.smallrye.common.annotation.Identifier;
@@ -57,15 +56,23 @@ public class KafkaClients {
     @ApplicationScoped
     @Identifier("actions-out")
     Map<String, Object> outgoing() {
-        Optional<KafkaConnectionDTO> outgoingConnection = processorDTO.parseKafkaOutgoingConnection();
-        return outgoingConnection.map(c -> Map.<String, Object> ofEntries(
-                Map.entry("bootstrap.servers", c.getBootstrapServers()),
+        if(processorDTO.getDefinition() == null || processorDTO.getDefinition().getResolvedAction() == null) {
+            return Collections.emptyMap();
+        }
+
+        Action action = processorDTO.getDefinition().getResolvedAction();
+
+        String brokerUrl = action.getParameter(KafkaTopicAction.BROKER_URL);
+        String clientId = action.getParameter(KafkaTopicAction.CLIENT_ID);
+        String clientSecret = action.getParameter(KafkaTopicAction.CLIENT_SECRET);
+
+        return Map.ofEntries(
+                Map.entry("bootstrap.servers", brokerUrl),
                 Map.entry("asl.mechanism", "PLAIN"),
                 Map.entry("security.protocol", "SASL_SSL"),
                 Map.entry("dead-letter-queue.topic", kafkaErrorTopic),
                 Map.entry("sasl.jaas.config",
                         String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=%s password=%s;",
-                                c.getClientId(), c.getClientSecret()))))
-                .orElse(Collections.emptyMap());
+                                clientId, clientSecret)));
     }
 }

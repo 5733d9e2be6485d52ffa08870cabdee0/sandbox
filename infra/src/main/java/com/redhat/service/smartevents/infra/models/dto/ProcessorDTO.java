@@ -1,13 +1,10 @@
 package com.redhat.service.smartevents.infra.models.dto;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.processor.actions.KafkaTopicConstants;
 
 public class ProcessorDTO {
 
@@ -108,27 +105,6 @@ public class ProcessorDTO {
 
     public void setKafkaConnection(KafkaConnectionDTO kafkaConnection) {
         this.kafkaConnection = kafkaConnection;
-    }
-
-    public Optional<KafkaConnectionDTO> parseKafkaOutgoingConnection() {
-        Action action = definition.getResolvedAction();
-        String brokerUrl = action.getParameter(KafkaTopicConstants.KAFKA_BROKER_URL);
-        String clientId = action.getParameter(KafkaTopicConstants.KAFKA_CLIENT_ID);
-        String clientSecret = action.getParameter(KafkaTopicConstants.KAFKA_CLIENT_SECRET);
-        String topic = action.getParameter(KafkaTopicConstants.TOPIC_PARAM);
-        String securityProtocol = action.getParameter(KafkaTopicConstants.KAFKA_SECURITY_PROTOCOL);
-
-        if (brokerUrl != null
-                && clientId != null
-                && clientSecret != null
-                && topic != null
-                && securityProtocol != null) {
-
-            // Error topic will be the same as inbound connection and will be taken by configuration properties
-            return Optional.of(new KafkaConnectionDTO(brokerUrl, clientId, clientSecret, securityProtocol, topic, ""));
-        } else {
-            return Optional.empty();
-        }
     }
 
     @Override
