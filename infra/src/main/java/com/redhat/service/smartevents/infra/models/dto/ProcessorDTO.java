@@ -124,7 +124,8 @@ public class ProcessorDTO {
                 && topic != null
                 && securityProtocol != null) {
 
-            return Optional.of(new KafkaConnectionDTO(brokerUrl, clientId, clientSecret, securityProtocol, topic, kafkaConnection.getErrorTopic()));
+            // Error topic will be the same as inbound connection and will be taken by configuration properties
+            return Optional.of(new KafkaConnectionDTO(brokerUrl, clientId, clientSecret, securityProtocol, topic, ""));
         } else {
             return Optional.empty();
         }
