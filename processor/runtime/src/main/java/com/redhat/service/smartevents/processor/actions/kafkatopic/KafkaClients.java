@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.infra.models.gateways.Action;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 import io.smallrye.common.annotation.Identifier;
 
@@ -40,10 +40,7 @@ public class KafkaClients {
     }
 
     @Inject
-    ProcessorDTO processorDTO;
-
-    @ConfigProperty(name = "KAFKA_ERROR_TOPIC")
-    String kafkaErrorTopic;
+    Instance<ProcessorDTO> optProcessorDTO;
 
     // See https://quarkus.io/guides/kafka#kafka-configuration-resolution
     // Attribute values are resolved as follows:
@@ -56,7 +53,13 @@ public class KafkaClients {
     @ApplicationScoped
     @Identifier("actions-out")
     Map<String, Object> outgoing() {
-        if(processorDTO.getDefinition() == null || processorDTO.getDefinition().getResolvedAction() == null) {
+        if (optProcessorDTO.isUnsatisfied()) {
+            return Collections.emptyMap();
+        }
+
+        ProcessorDTO processorDTO = optProcessorDTO.get();
+
+        if (processorDTO.getDefinition() == null || processorDTO.getDefinition().getResolvedAction() == null) {
             return Collections.emptyMap();
         }
 
@@ -65,12 +68,14 @@ public class KafkaClients {
         String brokerUrl = action.getParameter(KafkaTopicAction.BROKER_URL);
         String clientId = action.getParameter(KafkaTopicAction.CLIENT_ID);
         String clientSecret = action.getParameter(KafkaTopicAction.CLIENT_SECRET);
+        String securityProtocol = action.getParameter(KafkaTopicAction.SECURITY_PROTOCOL);
+        String errorTopicName = action.getParameter(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME);
 
         return Map.ofEntries(
                 Map.entry("bootstrap.servers", brokerUrl),
                 Map.entry("asl.mechanism", "PLAIN"),
-                Map.entry("security.protocol", "SASL_SSL"),
-                Map.entry("dead-letter-queue.topic", kafkaErrorTopic),
+                Map.entry("security.protocol", securityProtocol),
+                Map.entry("dead-letter-queue.topic", errorTopicName),
                 Map.entry("sasl.jaas.config",
                         String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=%s password=%s;",
                                 clientId, clientSecret)));
