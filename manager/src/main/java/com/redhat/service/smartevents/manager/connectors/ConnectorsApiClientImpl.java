@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.openshift.cloud.api.connector.ConnectorsApi;
 import com.openshift.cloud.api.connector.invoker.ApiClient;
 import com.openshift.cloud.api.connector.invoker.ApiException;
@@ -33,6 +35,8 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorsApiClientImpl.class);
 
     private static final String KAFKA_ID_IGNORED = "kafkaId-ignored";
+
+    static final String CONNECTOR_PATCH_JSON_PROPERTY = "connector";
 
     @ConfigProperty(name = "managed-connectors.services.url")
     String mcServicesBaseUrl;
@@ -133,7 +137,9 @@ public class ConnectorsApiClientImpl implements ConnectorsApiClient {
         ConnectorsApi connectorsAPI = createConnectorsAPI();
 
         try {
-            return connectorsAPI.patchConnector(connectorExternalId, definition);
+            ObjectNode connector = JsonNodeFactory.instance.objectNode();
+            connector.set(CONNECTOR_PATCH_JSON_PROPERTY, definition);
+            return connectorsAPI.patchConnector(connectorExternalId, connector);
         } catch (ApiException e) {
             String message =
                     String.format("Failed to update Connector on Connector Namespace '%s' with HTTP Response Code '%s'", mcNamespaceId, e.getCode());

@@ -138,7 +138,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
             connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDefinition(updatedConnectionDefinition);
-            connectorEntity.setGeneration(connectorEntity.getGeneration() + 1);
         } else {
             LOGGER.info("ConnectorEntity definition for Processor {} unchanged. No update performed.", processor.getId());
         }

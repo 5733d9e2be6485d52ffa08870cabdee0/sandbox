@@ -22,6 +22,7 @@ import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
+import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
@@ -92,13 +93,16 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
         if (status.getState() == ConnectorState.READY) {
             // If the Connector is ready but differs to that required we need to patch it.
-            JsonNode updatedConnectorDefinition = connectorEntity.getDefinition();
-            if (connectorEntity.getGeneration() > 0) {
+            long processorGeneration = getProcessorGeneration(connectorEntity);
+            if (connectorEntity.getGeneration() < processorGeneration) {
                 LOGGER.debug("Managed Connector for '{}' [{}] was found but with a different definition. Patching definition.",
                         connectorEntity.getName(),
                         connectorEntity.getId());
+                JsonNode updatedConnectorDefinition = connectorEntity.getDefinition();
                 connectorsApi.updateConnector(connector.getId(), updatedConnectorDefinition);
-                return connectorEntity;
+
+                connectorEntity.setGeneration(connectorEntity.getGeneration() + 1);
+                return persist(connectorEntity);
             }
 
             LOGGER.debug("Managed Connector for '{}' [{}] is ready.",
@@ -126,6 +130,12 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         return connectorEntity;
+    }
+
+    @Transactional
+    protected long getProcessorGeneration(ConnectorEntity connectorEntity) {
+        Processor processor = connectorsDAO.findById(connectorEntity.getId()).getProcessor();
+        return processor.getGeneration();
     }
 
     @Override

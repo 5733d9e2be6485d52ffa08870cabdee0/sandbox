@@ -146,11 +146,12 @@ class ConnectorWorkerTest {
     void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        processor.setGeneration(patchConnector ? 1 : 0);
+
         ConnectorEntity connectorEntity = useSourceConnectorEntity
                 ? Fixtures.createSourceConnector(processor, ManagedResourceStatus.ACCEPTED)
                 : Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
         connectorEntity.setPublishedAt(null);
-        connectorEntity.setGeneration(patchConnector ? 1 : 0);
 
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);

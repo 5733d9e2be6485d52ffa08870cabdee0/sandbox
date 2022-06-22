@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.ConnectorsApi;
 import com.openshift.cloud.api.connector.invoker.ApiException;
@@ -166,7 +168,10 @@ class ConnectorsApiClientTest {
     void doUpdateConnector() throws ApiException {
         connectorsApiClient.updateConnector(TEST_CONNECTOR_ID, TEST_DEFINITION);
 
-        verify(connectorsApi).patchConnector(TEST_CONNECTOR_ID, TEST_DEFINITION);
+        ObjectNode patch = JsonNodeFactory.instance.objectNode();
+        patch.set(ConnectorsApiClientImpl.CONNECTOR_PATCH_JSON_PROPERTY, TEST_DEFINITION);
+
+        verify(connectorsApi).patchConnector(TEST_CONNECTOR_ID, patch);
     }
 
     @Test
