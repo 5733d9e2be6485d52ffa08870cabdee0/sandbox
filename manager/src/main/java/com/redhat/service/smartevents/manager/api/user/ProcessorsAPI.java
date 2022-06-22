@@ -94,7 +94,7 @@ public class ProcessorsAPI {
     @GET
     @Path("{bridgeId}/processors")
     public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryProcessorResourceInfo queryInfo) {
-        return Response.ok(PagedListResponse.fill(processorService.getUserVisibleProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
+        return Response.ok(PagedListResponse.fill(processorService.getProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
                 processorService::toResponse)).build();
     }
 

@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
@@ -15,9 +16,13 @@ public interface ProcessorService {
 
     Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
+    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
+
+    Optional<Processor> getErrorHandler(String bridgeId, String customerId);
+
     Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest);
 
-    Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
+    Processor updateErrorHandlerProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
 
@@ -25,9 +30,7 @@ public interface ProcessorService {
 
     Long getProcessorsCount(String bridgeId, String customerId);
 
-    ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
-
-    ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId);
+    ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
 
     void deleteProcessor(String bridgeId, String processorId, String customerId);
 

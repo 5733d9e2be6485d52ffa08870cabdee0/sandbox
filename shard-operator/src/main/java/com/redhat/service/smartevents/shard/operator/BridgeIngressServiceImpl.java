@@ -71,6 +71,12 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
 
             // create or update the secrets for the bridgeIngress
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
+        } else {
+            LOGGER.info("BridgeIngress '{}' already exists. Notifying manager that it is ready.", bridgeDTO.getId());
+            bridgeDTO.setStatus(ManagedResourceStatus.READY);
+            managerClient.notifyBridgeStatusChange(bridgeDTO).subscribe().with(
+                    success -> LOGGER.debug("Ready notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
+                    failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
         }
     }
 
