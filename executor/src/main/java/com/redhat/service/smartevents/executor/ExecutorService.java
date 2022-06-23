@@ -133,8 +133,8 @@ public class ExecutorService {
     }
 
     private Pair<CloudEvent, Map<String, String>> buildCloudEvent(KafkaRecord<Integer, String> message, boolean wrapOnFailure) {
-        try {
-            CloudEvent cloudEvent = new CloudEventDeserializer()
+        try (CloudEventDeserializer cloudEventDeserializer = new CloudEventDeserializer()) {
+            CloudEvent cloudEvent = cloudEventDeserializer
                     .deserialize(topic, message.getHeaders(), message.getPayload().getBytes(StandardCharsets.UTF_8));
             return Pair.of(
                     cloudEvent,

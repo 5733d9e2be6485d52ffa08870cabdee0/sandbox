@@ -12,7 +12,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -28,16 +27,12 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
-public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
+public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
@@ -63,7 +58,8 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format(
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getEndpoint(),
@@ -243,31 +239,4 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
         assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
-
-    private BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
-        return new BridgeDTO("bridgesDeployed-" + suffix,
-                "myName-" + suffix,
-                "",
-                TestSupport.CUSTOMER_ID,
-                TestSupport.USER_NAME,
-                status,
-                TestSupport.KAFKA_CONNECTION_DTO);
-    }
-
-    private void assertJsonRequest(String expectedJsonRequest, String url) {
-        // For some reason the latch occasionally triggers sooner than the request is available on wiremock.
-        // So wireMockServer.verify is unreliable and waiting loop is implemented.
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(10))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(
-                        () -> {
-                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(url))
-                                    .withRequestBody(equalToJson(expectedJsonRequest, true, true))
-                                    .withHeader("Content-Type", equalTo("application/json")));
-                            assertThat(findAll).hasSize(1);
-                        });
-
-    }
-
 }
