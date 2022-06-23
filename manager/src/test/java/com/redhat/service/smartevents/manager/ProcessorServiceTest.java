@@ -572,7 +572,7 @@ class ProcessorServiceTest {
 
         processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request);
 
-        verify(connectorServiceMock).updateConnectorEntityDefinition(existingProcessor);
+        verify(connectorServiceMock).updateConnectorEntity(existingProcessor);
         verify(workManagerMock).schedule(existingProcessor);
 
         assertThat(existingProcessor.getStatus()).isEqualTo(ACCEPTED);

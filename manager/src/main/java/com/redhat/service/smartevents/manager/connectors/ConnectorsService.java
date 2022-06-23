@@ -8,5 +8,5 @@ public interface ConnectorsService {
 
     void deleteConnectorEntity(Processor processor);
 
-    void updateConnectorEntityDefinition(Processor processor);
+    void updateConnectorEntity(Processor processor);
 }

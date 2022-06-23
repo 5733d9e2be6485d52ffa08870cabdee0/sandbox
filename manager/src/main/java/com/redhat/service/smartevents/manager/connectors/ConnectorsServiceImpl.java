@@ -99,7 +99,6 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setTopicName(topicName);
         newConnectorEntity.setConnectorTypeId(connectorTypeId);
         newConnectorEntity.setDefinition(connectorPayload);
-        newConnectorEntity.setGeneration(0);
 
         connectorsDAO.persist(newConnectorEntity);
     }
@@ -117,7 +116,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Override
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be updated in the same transaction as a Processor
-    public void updateConnectorEntityDefinition(Processor processor) {
+    public void updateConnectorEntity(Processor processor) {
         ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processor.getId());
         if (Objects.isNull(connectorEntity)) {
             LOGGER.info("No ConnectorEntity found for Processor {}. No update performed.", processor.getId());

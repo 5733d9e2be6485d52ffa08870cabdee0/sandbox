@@ -104,7 +104,7 @@ class ConnectorsServiceTest {
     void doUpdateConnectorNoneFound(Processor processor) {
         when(connectorsDAOMock.findByProcessorId(TEST_PROCESSOR_ID)).thenReturn(null);
 
-        connectorsService.updateConnectorEntityDefinition(processor);
+        connectorsService.updateConnectorEntity(processor);
 
         verify(gatewayConnector, never()).connectorPayload(any(), any(), any());
     }
@@ -120,7 +120,7 @@ class ConnectorsServiceTest {
         when(resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId())).thenReturn("TopicNameError");
         when(gatewayConnector.connectorPayload(any(), any(), any())).thenReturn(new TextNode("definition-updated"));
 
-        connectorsService.updateConnectorEntityDefinition(processor);
+        connectorsService.updateConnectorEntity(processor);
 
         if (processor.getType() == ProcessorType.SOURCE) {
             verify(gatewayConnector).connectorPayload(processor.getDefinition().getRequestedSource(), connectorEntity.getTopicName(), "TopicNameError");

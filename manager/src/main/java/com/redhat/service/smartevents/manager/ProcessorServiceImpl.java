@@ -118,7 +118,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
         newProcessor.setOwner(owner);
-        newProcessor.setGeneration(0);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
@@ -235,7 +234,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
-        connectorService.updateConnectorEntityDefinition(existingProcessor);
+        connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
         metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
 
