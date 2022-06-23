@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -28,6 +29,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.events.v1.Event;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.vertx.core.json.JsonObject;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -153,16 +158,28 @@ public class ProcessorSteps {
                                 .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                                 .then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
-                .pollInterval(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofSeconds(1))
                 .failFast(() -> ProcessorResource
                         .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
                         .then()
                         .body("status", Matchers.not("failed")))
                 .untilAsserted(
-                        () -> ProcessorResource
-                                .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
-                                .then()
-                                .body("status", Matchers.equalTo(status)));
+                        () -> {
+                            try (KubernetesClient client = new DefaultKubernetesClient()) {
+                                List<Pod> items = client.pods().inAnyNamespace().withLabel("app.kubernetes.io/instance", "ob-" + processorId).list().getItems();
+                                for (Pod pod : items) {
+                                    if (!pod.getStatus().getPhase().equals("Pending")) {
+                                        String log = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).getLog();
+                                        context.getScenario().log(log);
+                                    }
+                                    client.events().v1().events().inNamespace(pod.getMetadata().getNamespace()).list().getItems();
+                                }
+                            }
+                            ProcessorResource
+                                    .getProcessorResponse(context.getManagerToken(), bridgeContext.getId(), processorId)
+                                    .then()
+                                    .body("status", Matchers.equalTo(status));
+                        });
     }
 
     @And("^the Processor \"([^\"]*)\" of the Bridge \"([^\"]*)\" has action of type \"([^\"]*)\" and parameters:$")
