@@ -1,8 +1,9 @@
 package com.redhat.service.smartevents.infra.api.models.responses;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "ObjectReference")
