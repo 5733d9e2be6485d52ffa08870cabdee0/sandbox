@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
@@ -21,6 +22,7 @@ import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
+import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
@@ -90,6 +92,19 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             return connectorEntity;
         }
         if (status.getState() == ConnectorState.READY) {
+            // If the Connector is ready but differs to that required we need to patch it.
+            long processorGeneration = getProcessorGeneration(connectorEntity);
+            if (connectorEntity.getGeneration() < processorGeneration) {
+                LOGGER.debug("Managed Connector for '{}' [{}] was found but with a different definition. Patching definition.",
+                        connectorEntity.getName(),
+                        connectorEntity.getId());
+                JsonNode updatedConnectorDefinition = connectorEntity.getDefinition();
+                connectorsApi.updateConnector(connector.getId(), updatedConnectorDefinition);
+
+                connectorEntity.setGeneration(connectorEntity.getGeneration() + 1);
+                return persist(connectorEntity);
+            }
+
             LOGGER.debug("Managed Connector for '{}' [{}] is ready.",
                     connectorEntity.getName(),
                     connectorEntity.getId());
@@ -115,6 +130,12 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         }
 
         return connectorEntity;
+    }
+
+    @Transactional
+    protected long getProcessorGeneration(ConnectorEntity connectorEntity) {
+        Processor processor = connectorsDAO.findById(connectorEntity.getId()).getProcessor();
+        return processor.getGeneration();
     }
 
     @Override
