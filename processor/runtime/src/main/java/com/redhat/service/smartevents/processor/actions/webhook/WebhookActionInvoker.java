@@ -20,7 +20,7 @@ public class WebhookActionInvoker implements ActionInvoker {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebhookActionInvoker.class);
 
-    private static final String CE_JSON_CONTENT_TYPE = "application/cloudevents+json";
+    public static final String CE_JSON_CONTENT_TYPE = "application/cloudevents+json";
 
     private final String endpoint;
     private final WebClient webClient;

@@ -95,7 +95,7 @@ public class ExecutorImpl implements Executor {
             try {
                 map.replace(CloudEventUtils.CE_DATA_FIELD_NAME, MAPPER.readValue(map.get(CloudEventUtils.CE_DATA_FIELD_NAME).toString(), Map.class));
             } catch (Exception e) {
-                LOG.info("Could not deserialize the data into a Map. It is kept as String.");
+                LOG.debug("Could not deserialize the data into a Map. It is kept as String.");
             }
         }
 
