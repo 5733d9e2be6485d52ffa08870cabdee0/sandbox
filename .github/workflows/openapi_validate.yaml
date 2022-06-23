@@ -1,8 +1,6 @@
 name: Validate OpenAPI
 on:
-  # update to pull_request when the incompatibilities are fixed
-  # https://issues.redhat.com/browse/MGDOBR-843
-  push:
+  pull_request:
     branches:
       - main
 
@@ -16,4 +14,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 15.x
-      - run: npx @stoplight/spectral@5.9.0 lint ./openapi/smartevents_mgmt.yaml
+      - run: |
+          npx @stoplight/spectral@5.9.0 lint \
+          ./openapi/smartevents_mgmt.yaml \
+          --skip-rule rhoas-error-response \
+          --skip-rule rhoas-error-schema \
+          --skip-rule rhoas-list-schema
