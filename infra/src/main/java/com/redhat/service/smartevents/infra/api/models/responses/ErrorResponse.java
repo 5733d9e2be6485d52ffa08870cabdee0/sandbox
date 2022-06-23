@@ -10,7 +10,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "Error",
-        allOf = { BaseResponse.class, ErrorResponse.class })
+        allOf = { BaseResponse.class })
 public class ErrorResponse extends BaseResponse {
 
     @JsonProperty("code")
