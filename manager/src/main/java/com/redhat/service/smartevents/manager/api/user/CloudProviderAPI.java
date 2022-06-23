@@ -12,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -21,6 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderListResponse;

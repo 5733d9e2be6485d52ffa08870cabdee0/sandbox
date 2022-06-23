@@ -14,7 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -28,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
