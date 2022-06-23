@@ -54,7 +54,7 @@ public class KafkaOutboundClients {
 
         return Map.ofEntries(
                 Map.entry("bootstrap.servers", brokerUrl),
-                Map.entry("asl.mechanism", "PLAIN"),
+                Map.entry("sasl.mechanism", "PLAIN"),
                 Map.entry("security.protocol", securityProtocol),
                 Map.entry("dead-letter-queue.topic", errorTopicName),
                 Map.entry("sasl.jaas.config",
