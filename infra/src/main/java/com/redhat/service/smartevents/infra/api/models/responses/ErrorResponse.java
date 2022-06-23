@@ -4,11 +4,12 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "Error",
