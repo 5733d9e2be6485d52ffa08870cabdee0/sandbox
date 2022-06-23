@@ -42,16 +42,6 @@ spec:
                     errorCode:
                       type: string
                     reason:
-                      enum:
-                      - DeploymentProgressing
-                      - ServiceNotReady
-                      - PrometheusUnavailable
-                      - SecretsNotFound
-                      - DeploymentAvailable
-                      - DeploymentFailed
-                      - NetworkResourceNotReady
-                      - DeploymentNotAvailable
-                      - KnativeBrokerNotReady
                       type: string
                     status:
                       enum:
@@ -60,9 +50,6 @@ spec:
                       - "False"
                       type: string
                     type:
-                      enum:
-                      - Ready
-                      - Augmentation
                       type: string
                     message:
                       type: string
