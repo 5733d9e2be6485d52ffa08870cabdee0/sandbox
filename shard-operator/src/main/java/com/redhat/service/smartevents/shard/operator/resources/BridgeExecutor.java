@@ -72,7 +72,6 @@ public class BridgeExecutor extends CustomResource<BridgeExecutorSpec, BridgeExe
         ProcessorDTO processorDTO = new ProcessorDTO();
         processorDTO.setType(ProcessorType.fromString(this.getSpec().getProcessorType()));
         processorDTO.setId(this.getSpec().getId());
-        // TODO: think about removing bridgeDTO from the processorDTO and keep only bridgeId and customerId!
         processorDTO.setBridgeId(this.getSpec().getBridgeId());
         processorDTO.setCustomerId(this.getSpec().getCustomerId());
         processorDTO.setOwner(this.getSpec().getOwner());

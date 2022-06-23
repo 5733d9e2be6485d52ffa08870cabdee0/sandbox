@@ -11,3 +11,4 @@ resources:
 - shard
 - manager
 - localstack
+- istio

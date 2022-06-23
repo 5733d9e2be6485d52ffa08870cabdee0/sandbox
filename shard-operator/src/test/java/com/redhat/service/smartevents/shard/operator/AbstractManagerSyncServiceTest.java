@@ -21,7 +21,7 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
     protected BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
         return new BridgeDTO("bridgesDeployed-" + suffix,
                 "myName-" + suffix,
-                "myEndpoint/events",
+                "",
                 TestSupport.CUSTOMER_ID,
                 TestSupport.USER_NAME,
                 status,

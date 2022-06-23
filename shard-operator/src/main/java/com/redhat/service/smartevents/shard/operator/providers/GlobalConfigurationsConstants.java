@@ -9,6 +9,22 @@ public class GlobalConfigurationsConstants {
     public static final String KAFKA_ERROR_STRATEGY_ENV_VAR = "KAFKA_ERROR_STRATEGY";
     public static final String KAFKA_ERROR_TOPIC_ENV_VAR = "KAFKA_ERROR_TOPIC";
     public static final String KAFKA_GROUP_ID_ENV_VAR = "KAFKA_GROUP_ID";
-    public static final String SSO_URL_CONFIG_ENV_VAR = "EVENT_BRIDGE_SSO_URL";
-    public static final String SSO_CLIENT_ID_CONFIG_ENV_VAR = "EVENT_BRIDGE_SSO_CLIENT_ID";
+
+    public static final String KNATIVE_KAFKA_PROTOCOL_SECRET = "protocol";
+    public static final String KNATIVE_KAFKA_SASL_MECHANISM_SECRET = "sasl.mechanism";
+    public static final String KNATIVE_KAFKA_USER_SECRET = "user";
+    public static final String KNATIVE_KAFKA_PASSWORD_SECRET = "password";
+    public static final String KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET = "bootstrap.servers";
+    public static final String KNATIVE_KAFKA_TOPIC_NAME_SECRET = "topic.name";
+
+    public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP = "default.topic.partitions";
+    public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP = "1";
+    public static final String KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP = "1";
+    public static final String KNATIVE_KAFKA_REPLICATION_FACTOR_CONFIGMAP = "default.topic.replication.factor";
+    public static final String KNATIVE_KAFKA_TOPIC_BOOTSTRAP_SERVERS_CONFIGMAP = "bootstrap.servers";
+    public static final String KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP = "auth.secret.ref.name";
+    public static final String KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP = "topic.name";
+
+    public static final String KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME = "x-kafka.eventing.knative.dev/external.topic";
+
 }

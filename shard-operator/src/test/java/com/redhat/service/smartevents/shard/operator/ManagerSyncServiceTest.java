@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
@@ -42,6 +43,9 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     @Inject
     ManagerSyncServiceImpl managerSyncService;
 
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
+
     @Test
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
@@ -54,14 +58,15 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format(
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getEndpoint(),
                         bridge1.getCustomerId());
         String expectedJsonUpdateAvailableRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"http://192.168.2.49/ob-bridgesdeployed-1/events\", \"customerId\": \"%s\", \"status\": \"ready\"}",
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getCustomerId());
@@ -79,12 +84,10 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
@@ -102,10 +105,9 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
 
         // The BridgeIngressController delete loop does not execute so only one update can be captured
@@ -124,15 +126,13 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
-        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
 
         // The BridgeIngressController does not need to execute if the CRD is not deployed
@@ -239,5 +239,4 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
         assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
-
 }

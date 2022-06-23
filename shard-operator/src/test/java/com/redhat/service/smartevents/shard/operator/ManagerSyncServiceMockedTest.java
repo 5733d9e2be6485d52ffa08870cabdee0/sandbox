@@ -87,7 +87,8 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
                         bridge.getEndpoint(),
                         bridge.getCustomerId());
         String expectedJsonUpdateDeletedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                String.format(
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                         bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),

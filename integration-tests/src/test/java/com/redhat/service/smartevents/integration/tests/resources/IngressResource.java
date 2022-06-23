@@ -13,9 +13,8 @@ public class IngressResource {
 
     public static Response optionsJsonEmptyEventResponse(String token, String endpoint) {
         try (ByteArrayInputStream cloudEventStream = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))) {
-            return ResourceUtils.jsonRequest(token)
+            return ResourceUtils.newRequest(token, ContentType.JSON.toString())
                     .body(cloudEventStream)
-                    .contentType(ContentType.JSON)
                     .options(endpoint);
         } catch (IOException e) {
             throw new RuntimeException("Error with inputstream", e);
@@ -23,11 +22,10 @@ public class IngressResource {
     }
 
     public static Response postCloudEventResponse(String token, String endpoint, InputStream cloudEventStream,
-            Headers headers) {
-        return ResourceUtils.jsonRequest(token)
+            Headers headers, String contentType) {
+        return ResourceUtils.newRequest(token, contentType)
                 .headers(headers)
                 .body(cloudEventStream)
-                .contentType(ContentType.JSON)
                 .post(endpoint);
     }
 }

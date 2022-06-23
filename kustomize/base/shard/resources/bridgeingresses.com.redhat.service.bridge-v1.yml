@@ -51,6 +51,7 @@ spec:
                       - DeploymentFailed
                       - NetworkResourceNotReady
                       - DeploymentNotAvailable
+                      - KnativeBrokerNotReady
                       type: string
                     status:
                       enum:

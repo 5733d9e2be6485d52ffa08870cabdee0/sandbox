@@ -14,9 +14,9 @@ class ConditionTest {
     @Test
     void testKubernetesDateFormat() {
         final ObjectMapper mapper = new ObjectMapper();
-        final BridgeIngress ingress = BridgeIngress.fromDTO(TestSupport.newRequestedBridgeDTO(), "ns", "image");
-        ingress.getStatus().markConditionTrue(ConditionType.Ready);
-        final JsonNode conditionAsNode = mapper.convertValue(ingress.getStatus().getConditionByType(ConditionType.Ready).get(), JsonNode.class);
+        final BridgeIngress ingress = BridgeIngress.fromDTO(TestSupport.newRequestedBridgeDTO(), "ns");
+        ingress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+        final JsonNode conditionAsNode = mapper.convertValue(ingress.getStatus().getConditionByType(ConditionTypeConstants.READY).get(), JsonNode.class);
         assertThat(conditionAsNode.get("lastTransitionTime").getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(conditionAsNode.get("lastTransitionTime").asText()).contains("T");
         assertThat(conditionAsNode.get("lastTransitionTime").asText()).contains("Z");

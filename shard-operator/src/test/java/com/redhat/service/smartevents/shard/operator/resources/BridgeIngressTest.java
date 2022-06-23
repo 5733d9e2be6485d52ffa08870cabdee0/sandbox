@@ -14,7 +14,7 @@ public class BridgeIngressTest {
     @Test
     public void fromDTO() {
         BridgeDTO dto = TestSupport.newRequestedBridgeDTO();
-        BridgeIngress bridgeIngress = BridgeIngress.fromDTO(dto, "ns", "image");
+        BridgeIngress bridgeIngress = BridgeIngress.fromDTO(dto, "ns");
 
         assertThat(bridgeIngress.getMetadata().getNamespace()).isEqualTo("ns");
         assertThat(bridgeIngress.getMetadata().getName()).isEqualTo(OB_RESOURCE_NAME_PREFIX + TestSupport.BRIDGE_ID);
@@ -24,7 +24,6 @@ public class BridgeIngressTest {
 
         assertThat(bridgeIngress.getSpec().getBridgeName()).isEqualTo(dto.getName());
         assertThat(bridgeIngress.getSpec().getId()).isEqualTo(dto.getId());
-        assertThat(bridgeIngress.getSpec().getImage()).isEqualTo("image");
         assertThat(bridgeIngress.getSpec().getCustomerId()).isEqualTo(dto.getCustomerId());
         assertThat(bridgeIngress.getSpec().getOwner()).isEqualTo(dto.getOwner());
     }
