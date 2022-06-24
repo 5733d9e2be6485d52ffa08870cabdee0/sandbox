@@ -399,4 +399,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         return processorResponse;
     }
+
+    @Override
+    public long getProcessorsCount(String bridgeId) {
+        return processorDAO.countByBridgeId(bridgeId);
+    }
+
 }

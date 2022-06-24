@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.models;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -30,7 +31,9 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
-                query = "from Bridge where customer_id=:customerId order by submitted_at desc")
+                query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
+        @NamedQuery(name = "BRIDGE.findByOrganisationId",
+                query = "from Bridge where organisation_id=:organisationId"),
 })
 @Entity
 @FilterDefs({
@@ -60,6 +63,12 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     @Column(name = "owner")
     private String owner;
+
+    @Column(name = "instance_type")
+    private ServiceLimitInstanceType instanceType;
+
+    @Column(name = "expire_at", updatable = false, columnDefinition = "TIMESTAMP")
+    protected ZonedDateTime expireAt;
 
     public Bridge() {
     }
@@ -106,6 +115,22 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public ZonedDateTime getExpireAt() {
+        return expireAt;
+    }
+
+    public void setExpireAt(ZonedDateTime expireAt) {
+        this.expireAt = expireAt;
+    }
+
+    public ServiceLimitInstanceType getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(ServiceLimitInstanceType instanceType) {
+        this.instanceType = instanceType;
     }
 
     /*

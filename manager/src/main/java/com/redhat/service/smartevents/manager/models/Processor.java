@@ -59,7 +59,9 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndCustomerIdNoFilter",
                 query = "from Processor p where p.bridge.id=:bridgeId and p.bridge.customerId=:customerId order by p.submittedAt desc"),
         @NamedQuery(name = "PROCESSOR.findByIds",
-                query = "select p from Processor p join fetch p.bridge where p.id in (:ids) order by p.submittedAt desc")
+                query = "select p from Processor p join fetch p.bridge where p.id in (:ids) order by p.submittedAt desc"),
+        @NamedQuery(name = "PROCESSOR.countByBridgeId",
+                query = "select count(p.id) from Processor p where p.bridge.id=:bridgeId")
 })
 @Entity
 @FilterDefs({

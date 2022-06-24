@@ -56,4 +56,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
+
+    public List<Bridge> findByOrganisationId(String orgId) {
+        Parameters params = Parameters
+                .with("organisationId", orgId);
+        return find("#BRIDGE.findByOrganisationId", params).list();
+    }
 }

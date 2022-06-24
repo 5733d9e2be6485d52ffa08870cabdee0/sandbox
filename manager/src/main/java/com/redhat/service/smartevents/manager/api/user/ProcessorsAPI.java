@@ -30,11 +30,15 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.manager.BridgesService;
+import com.redhat.service.smartevents.manager.LimitService;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
+import com.redhat.service.smartevents.manager.models.OrganisationServiceLimit;
 import com.redhat.service.smartevents.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
@@ -59,7 +63,13 @@ public class ProcessorsAPI {
     IdentityResolver identityResolver;
 
     @Inject
+    LimitService limitService;
+
+    @Inject
     JsonWebToken jwt;
+
+    @Inject
+    BridgesService bridgesService;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -112,6 +122,11 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
+        String orgId = identityResolver.resolveOrganisationId(jwt);
+
+        // validate service limit
+        validateServiceLimitToCreateNewProcessor(orgId, bridgeId);
+
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
@@ -132,6 +147,10 @@ public class ProcessorsAPI {
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
             @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
+
+        // validate service limit
+        validateServiceLimitToUpdateExistingProcessor(bridgeId);
+
         Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
@@ -150,5 +169,33 @@ public class ProcessorsAPI {
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
         processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
         return Response.accepted().build();
+    }
+
+    /**
+     * Validate weather user is allowed to create new processor instance under an bridge
+     * 
+     * @param orgId Organisation id.
+     * @param bridgeId Bridge id.
+     */
+    private void validateServiceLimitToCreateNewProcessor(String orgId, String bridgeId) {
+        OrganisationServiceLimit organisationServiceLimit = limitService.getOrganisationServiceLimit(orgId);
+        long maxAllowedProcessors = organisationServiceLimit.getProcessorLimit();
+        long existingProcessorCount = processorService.getProcessorsCount(bridgeId);
+
+        if (existingProcessorCount >= maxAllowedProcessors) {
+            throw new ServiceLimitExceedException("Max allowed processor instance limit exceed");
+        }
+    }
+
+    /**
+     * Validate weather user is allowed to update existing processor instance under an bridge
+     * 
+     * @param bridgeId Bridge id.
+     */
+    private void validateServiceLimitToUpdateExistingProcessor(String bridgeId) {
+        boolean activeBridge = bridgesService.isBridgeActive(bridgeId);
+        if (!activeBridge) {
+            throw new ServiceLimitExceedException("Bridge expired");
+        }
     }
 }

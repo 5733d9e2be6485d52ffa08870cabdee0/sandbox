@@ -226,4 +226,24 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         return response;
     }
+
+    @Override
+    public long getActiveBridgeCount(String orgId) {
+        return bridgeDAO.findByOrganisationId(orgId).stream().filter(this::isBridgeActive).count();
+    }
+
+    @Override
+    public boolean isBridgeActive(String id) {
+        Bridge bridge = bridgeDAO.findById(id);
+        return isBridgeActive(bridge);
+    }
+
+    private boolean isBridgeActive(Bridge bridge) {
+        ZonedDateTime expireAt = bridge.getExpireAt();
+        if (Objects.isNull(expireAt)) {
+            return true;
+        }
+
+        return ZonedDateTime.now().isBefore(expireAt);
+    }
 }

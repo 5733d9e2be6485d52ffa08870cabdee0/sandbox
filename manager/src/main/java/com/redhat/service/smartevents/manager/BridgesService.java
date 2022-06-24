@@ -30,4 +30,8 @@ public interface BridgesService {
     BridgeDTO toDTO(Bridge bridge);
 
     BridgeResponse toResponse(Bridge bridge);
+
+    long getActiveBridgeCount(String orgId);
+
+    boolean isBridgeActive(String id);
 }
