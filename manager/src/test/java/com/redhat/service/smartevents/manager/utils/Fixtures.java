@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.utils;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -38,7 +39,11 @@ public class Fixtures {
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
-        p.setDefinition(new ProcessorDefinition());
+        Action requestedAction = new Action();
+        Action resolvedAction = new Action();
+        p.setDefinition(new ProcessorDefinition(new HashSet<>(), "",
+                requestedAction,
+                resolvedAction));
 
         return p;
     }

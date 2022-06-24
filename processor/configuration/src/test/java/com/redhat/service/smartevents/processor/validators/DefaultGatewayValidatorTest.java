@@ -8,7 +8,9 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
+import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
@@ -137,6 +139,24 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "http://webhook.site:8080/hello");
         params.put(AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, "abcd");
         assertValidationIsValid(actionWith(AnsibleTowerJobTemplateAction.TYPE, params));
+    }
+
+    @Test
+    void testKafkaTopicAction() {
+        Map<String, String> invalidParams = new HashMap<>();
+        invalidParams.put(KafkaTopicAction.TOPIC_PARAM, "example_topic");
+        Action invalidKafkaTopicAction = actionWith(KafkaTopicAction.TYPE, invalidParams);
+        assertValidationIsInvalid(invalidKafkaTopicAction, List.of("$.kafka_broker_url: is missing but it is required",
+                "$.kafka_client_id: is missing but it is required",
+                "$.kafka_client_secret: is missing but it is required"));
+
+        Map<String, String> validParams = new HashMap<>();
+        validParams.put(KafkaTopicAction.TOPIC_PARAM, "example_topic");
+        validParams.put(KafkaTopicAction.BROKER_URL, "example-broker-url:443");
+        validParams.put(KafkaTopicAction.CLIENT_ID, "example-client-id");
+        validParams.put(KafkaTopicAction.CLIENT_SECRET, "example-client-secret");
+        Action validKafkaTopicAction = actionWith(KafkaTopicAction.TYPE, validParams);
+        assertValidationIsValid(validKafkaTopicAction);
     }
 
     @Override

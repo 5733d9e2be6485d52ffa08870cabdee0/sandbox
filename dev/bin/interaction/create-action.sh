@@ -80,6 +80,20 @@ elif [ "${action_type}" = 'webhook' ]; then
   ],
   "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
 }'
+elif [ "${action_type}" = 'kafka' ]; then
+  action_payload='{
+   "name": '"\"$action_name\""',
+   "action": {
+      "type": "kafka_topic_sink_0.1",
+      "parameters": {
+         "topic": '"\"$KAFKA_TOPIC\""',
+         "kafka_broker_url": '"\"$KAFKA_BROKER_URL\""',
+         "kafka_client_id": '"\"$KAFKA_CLIENT_ID\""',
+         "kafka_client_secret": '"\"$KAFKA_CLIENT_SECRET\""'
+      }
+   },
+  "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
+}'
 else
   echo "Unknown action type: ${action_type}"
   usage

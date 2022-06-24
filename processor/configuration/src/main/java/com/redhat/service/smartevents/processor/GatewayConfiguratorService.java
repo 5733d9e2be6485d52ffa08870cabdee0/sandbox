@@ -10,4 +10,14 @@ public interface GatewayConfiguratorService {
     String getBridgeEndpoint(String bridgeId, String customerId);
 
     String getConnectorTopicName(String processorId);
+
+    String getBootstrapServers();
+
+    String getClientId();
+
+    String getClientSecret();
+
+    String getSecurityProtocol();
+
+    String getBridgeErrorTopicName(String testBridgeId);
 }
