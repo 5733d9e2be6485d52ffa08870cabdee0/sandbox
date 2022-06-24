@@ -93,12 +93,6 @@ class ProcessorServiceTest {
     public static final String ERROR_HANDLER_PROCESSOR_NAME = "error-handler-processor-name";
     public static final QueryProcessorResourceInfo QUERY_INFO = new QueryProcessorResourceInfo(0, 100);
 
-    private static final String TEST_BROKER_URL = "brokerUrl";
-    private static final String TEST_CLIENT_ID = "clientId";
-    private static final String TEST_CLIENT_SECRET = "clientSecret";
-    private static final String TEST_SECURITY_PROTOCOL = "securityProtocol";
-    private static final String TEST_TOPIC = "topic";
-
     @Inject
     ProcessorService processorService;
 
@@ -709,7 +703,9 @@ class ProcessorServiceTest {
     private static Action createKafkaTopicAction() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
-        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
+        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC,
+                KafkaTopicAction.SECURITY_PROTOCOL, "PLAINTEXT",
+                KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME, "ob-brdg-myId-err"));
         return action;
     }
 
