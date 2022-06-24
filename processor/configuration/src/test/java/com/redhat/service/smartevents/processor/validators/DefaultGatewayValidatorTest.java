@@ -8,11 +8,11 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
+import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;

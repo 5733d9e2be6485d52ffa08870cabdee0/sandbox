@@ -58,7 +58,7 @@ public class KafkaOutboundClients {
                 Map.entry("security.protocol", securityProtocol),
                 Map.entry("dead-letter-queue.topic", errorTopicName),
                 Map.entry("sasl.jaas.config",
-                        String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=%s password=%s;",
+                        String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
                                 clientId, clientSecret)));
     }
 }
