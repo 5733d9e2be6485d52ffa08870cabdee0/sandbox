@@ -7,4 +7,6 @@ public interface ConnectorsService {
     void createConnectorEntity(Processor processor);
 
     void deleteConnectorEntity(Processor processor);
+
+    void updateConnectorEntity(Processor processor);
 }

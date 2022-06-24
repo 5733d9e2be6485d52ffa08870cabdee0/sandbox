@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -98,7 +99,15 @@ class ProcessorServiceConnectorTest {
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         //Emulate successful External Connector creation
-        Connector externalConnector = stubbedExternalConnector("connectorExternalId");
+        Connector externalConnector = new Connector() {
+            @NotNull
+            @Override
+            public Object getConnector() {
+                // Ensure the mocked ManagedConnector definition matches reality to avoid a call to patch the definition.
+                return connectorsDAO.findAll().firstResult().getDefinition();
+            }
+        };
+        externalConnector.setId("connectorExternalId");
         ConnectorStatusStatus externalConnectorStatus = new ConnectorStatusStatus();
         externalConnectorStatus.setState(ConnectorState.READY);
         externalConnector.setStatus(externalConnectorStatus);
@@ -280,12 +289,6 @@ class ProcessorServiceConnectorTest {
         mcAction.setMapParameters(Map.of("slack_channel", "channel",
                 "slack_webhook_url", "webhook_url"));
         return mcAction;
-    }
-
-    private Connector stubbedExternalConnector(String connectorExternalId) {
-        Connector connector = new Connector();
-        connector.setId(connectorExternalId);
-        return connector;
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {

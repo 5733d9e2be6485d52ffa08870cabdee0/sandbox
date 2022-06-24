@@ -7,6 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
@@ -40,7 +41,10 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
         }
 
         if (!Objects.equals(action.getType(), WebhookAction.TYPE)) {
-            addConstraintViolation(context, UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR, Collections.emptyMap());
+            addConstraintViolation(context,
+                    UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR,
+                    Collections.emptyMap(),
+                    UnsupportedErrorHandlerGatewayException::new);
             return false;
         }
 

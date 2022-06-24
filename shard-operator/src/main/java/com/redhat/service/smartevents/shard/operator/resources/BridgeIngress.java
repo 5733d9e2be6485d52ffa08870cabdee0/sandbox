@@ -47,14 +47,13 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         return new Builder();
     }
 
-    public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace, String ingressImage) {
+    public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace) {
         return new Builder()
                 .withNamespace(namespace)
                 .withBridgeName(bridgeDTO.getName())
                 .withCustomerId(bridgeDTO.getCustomerId())
                 .withOwner(bridgeDTO.getOwner())
                 .withBridgeId(bridgeDTO.getId())
-                .withImageName(ingressImage)
                 .build();
     }
 
@@ -79,7 +78,6 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         private String bridgeName;
         private String customerId;
         private String owner;
-        private String imageName;
 
         private Builder() {
 
@@ -110,11 +108,6 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             return this;
         }
 
-        public Builder withImageName(final String imageName) {
-            this.imageName = imageName;
-            return this;
-        }
-
         public BridgeIngress build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
@@ -127,7 +120,6 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
                     .build();
 
             BridgeIngressSpec bridgeIngressSpec = new BridgeIngressSpec();
-            bridgeIngressSpec.setImage(imageName);
             bridgeIngressSpec.setBridgeName(bridgeName);
             bridgeIngressSpec.setCustomerId(customerId);
             bridgeIngressSpec.setOwner(owner);
@@ -144,7 +136,6 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         private void validate() {
             requireNonNull(Strings.emptyToNull(this.customerId), "[BridgeIngress] CustomerId can't be null");
             requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
-            requireNonNull(Strings.emptyToNull(this.imageName), "[BridgeIngress] Ingress Image Name can't be null");
             requireNonNull(Strings.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
             requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
         }

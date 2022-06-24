@@ -8,8 +8,8 @@ public class FooResourceStatus extends CustomResourceStatus {
     public FooResourceStatus() {
         super(new HashSet<Condition>() {
             {
-                add(new Condition(ConditionType.Augmentation));
-                add(new Condition(ConditionType.Ready));
+                add(new Condition(ConditionTypeConstants.AUGMENTATION));
+                add(new Condition(ConditionTypeConstants.READY));
             }
         });
     }

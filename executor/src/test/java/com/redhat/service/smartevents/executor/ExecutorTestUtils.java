@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.executor;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,8 +42,14 @@ public class ExecutorTestUtils {
         }
     }
 
-    public static String createCloudEventString() {
-        return CloudEventUtils.encode(createCloudEvent());
+    public static Map<String, String> createCloudEventHeaders() {
+        Map<String, String> map = new HashMap<>();
+        map.put("ce_specversion", "1.0");
+        map.put("ce_type", CLOUD_EVENT_TYPE);
+        map.put("ce_source", CLOUD_EVENT_SOURCE.toString());
+        map.put("ce_id", CLOUD_EVENT_ID);
+        map.put("ce_subject", CLOUD_EVENT_SUBJECT);
+        return map;
     }
 
     public static ProcessorDTO createSourceProcessor() {
@@ -90,6 +98,7 @@ public class ExecutorTestUtils {
                 "test",
                 "test",
                 "PLAINTEXT",
+                "PLAIN",
                 "ob-bridgeid-1",
                 "ob-bridgeid-1-errors");
     }

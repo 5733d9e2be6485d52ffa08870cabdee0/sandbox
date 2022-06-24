@@ -41,25 +41,25 @@ public class Condition {
      */
     private static final String KUBERNETES_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    private final ConditionType type;
+    private final String type;
     private ConditionStatus status;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = KUBERNETES_DATE_FORMAT, timezone = "UTC")
     private Date lastTransitionTime;
-    private ConditionReason reason;
+    private String reason;
     private String message;
     private String errorCode;
 
     @JsonCreator
-    public Condition(@JsonProperty("type") final ConditionType type, @JsonProperty("status") final ConditionStatus status) {
+    public Condition(@JsonProperty("type") final String type, @JsonProperty("status") final ConditionStatus status) {
         this.type = type;
         this.status = status;
     }
 
-    public Condition(final ConditionType type) {
+    public Condition(final String type) {
         this(type, ConditionStatus.Unknown);
     }
 
-    public ConditionType getType() {
+    public String getType() {
         return type;
     }
 
@@ -79,11 +79,11 @@ public class Condition {
         this.lastTransitionTime = lastTransitionTime;
     }
 
-    public ConditionReason getReason() {
+    public String getReason() {
         return reason;
     }
 
-    public void setReason(ConditionReason reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 

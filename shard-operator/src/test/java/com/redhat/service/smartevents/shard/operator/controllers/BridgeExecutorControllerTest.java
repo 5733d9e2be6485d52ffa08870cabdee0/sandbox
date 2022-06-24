@@ -9,9 +9,9 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinitio
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
@@ -72,12 +72,12 @@ public class BridgeExecutorControllerTest {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeExecutor.getStatus()).isNotNull();
         assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Augmentation)).isPresent().hasValueSatisfying(c -> {
+        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
         });
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionType.Ready)).isPresent().hasValueSatisfying(c -> {
+        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-            assertThat(c.getReason()).isEqualTo(ConditionReason.DeploymentNotAvailable);
+            assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE);
         });
     }
 
@@ -116,8 +116,8 @@ public class BridgeExecutorControllerTest {
 
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION).get().getStatus()).isEqualTo(ConditionStatus.False);
     }
 
     @Test
@@ -135,8 +135,8 @@ public class BridgeExecutorControllerTest {
 
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Ready).get().getReason()).isEqualTo(ConditionReason.DeploymentFailed);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionType.Augmentation).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION).get().getStatus()).isEqualTo(ConditionStatus.False);
     }
 
     @Test

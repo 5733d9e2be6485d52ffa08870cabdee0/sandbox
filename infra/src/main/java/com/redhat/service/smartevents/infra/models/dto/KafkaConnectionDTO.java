@@ -16,6 +16,9 @@ public class KafkaConnectionDTO {
     @JsonProperty("securityProtocol")
     private String securityProtocol;
 
+    @JsonProperty("saslMechanism")
+    private String saslMechanism;
+
     @JsonProperty("topic")
     private String topic;
 
@@ -25,11 +28,12 @@ public class KafkaConnectionDTO {
     public KafkaConnectionDTO() {
     }
 
-    public KafkaConnectionDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String topic, String errorTopic) {
+    public KafkaConnectionDTO(String bootstrapServers, String clientId, String clientSecret, String securityProtocol, String saslMechanism, String topic, String errorTopic) {
         this.bootstrapServers = bootstrapServers;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.securityProtocol = securityProtocol;
+        this.saslMechanism = saslMechanism;
         this.topic = topic;
         this.errorTopic = errorTopic;
     }
@@ -74,6 +78,14 @@ public class KafkaConnectionDTO {
         this.securityProtocol = securityProtocol;
     }
 
+    public String getSaslMechanism() {
+        return saslMechanism;
+    }
+
+    public void setSaslMechanism(String saslMechanism) {
+        this.saslMechanism = saslMechanism;
+    }
+
     public void setTopic(String topic) {
         this.topic = topic;
     }
@@ -89,6 +101,7 @@ public class KafkaConnectionDTO {
                 ", clientId='" + clientId + '\'' +
                 ", clientSecret=<REDACTED>" +
                 ", securityProtocol='" + securityProtocol + '\'' +
+                ", saslMechanism='" + saslMechanism + '\'' +
                 ", topic=" + topic + '\'' +
                 ", errorTopic=" + errorTopic + '\'' +
                 '}';

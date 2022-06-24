@@ -27,7 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.BridgesService;
@@ -72,7 +72,7 @@ public class BridgesAPI {
     @Operation(summary = "Get the list of Bridge instances", description = "Get the list of Bridge instances for the authenticated user.")
     @GET
     public Response getBridges(@Valid @BeanParam QueryResourceInfo queryInfo) {
-        return Response.ok(ListResponse.fill(bridgesService
+        return Response.ok(PagedListResponse.fill(bridgesService
                 .getBridges(identityResolver.resolve(jwt), queryInfo), new BridgeListResponse(), bridgesService::toResponse)).build();
     }
 

@@ -1,12 +1,14 @@
 package com.redhat.service.smartevents.processor.validators;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
@@ -28,7 +30,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
         params.put(AwsS3Source.REGION_PARAMETER, "af-south-1");
         params.put(AwsS3Source.ACCESS_KEY_PARAMETER, "access-key");
-        assertValidationIsInvalid(sourceWith(AwsS3Source.TYPE, params), "$.aws_secret_key: is missing but it is required");
+        assertValidationIsInvalid(sourceWith(AwsS3Source.TYPE, params), List.of("$.aws_secret_key: is missing but it is required"));
 
         params = new HashMap<>();
         params.put(AwsS3Source.BUCKET_NAME_OR_ARN_PARAMETER, "test-bucket-name");
@@ -42,7 +44,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     void testSlackSource() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackSource.TOKEN_PARAM, "t");
-        assertValidationIsInvalid(sourceWith(SlackSource.TYPE, params), "$.slack_channel: is missing but it is required");
+        assertValidationIsInvalid(sourceWith(SlackSource.TYPE, params), List.of("$.slack_channel: is missing but it is required"));
 
         params = new HashMap<>();
         params.put(SlackSource.CHANNEL_PARAM, "channel");
@@ -54,13 +56,14 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     void testSlackAction() {
         Map<String, String> params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "t");
-        assertValidationIsInvalid(actionWith(SlackAction.TYPE, params), "$.slack_webhook_url: is missing but it is required");
+        assertValidationIsInvalid(actionWith(SlackAction.TYPE, params), List.of("$.slack_webhook_url: is missing but it is required"));
 
         params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "t");
         params.put(SlackAction.WEBHOOK_URL_PARAM, "notavalidurl");
         assertValidationIsInvalid(actionWith(SlackAction.TYPE, params),
-                "$.slack_webhook_url: string found, object expected and $.slack_webhook_url: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])");
+                List.of("$.slack_webhook_url: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])",
+                        "$.slack_webhook_url: string found, object expected"));
 
         params = new HashMap<>();
         params.put(SlackAction.CHANNEL_PARAM, "t");
@@ -77,7 +80,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "notavalidurl");
 
         assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                "$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$");
+                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
 
         params = new HashMap<>();
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
@@ -86,7 +89,7 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "https://localhost:8080");
 
         assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                "$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$");
+                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
 
         params = new HashMap<>();
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
@@ -102,24 +105,38 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         Map<String, String> params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, "notavalidurl");
         assertValidationIsInvalid(actionWith(WebhookAction.TYPE, params),
-                "$.endpoint: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])");
+                List.of("$.endpoint: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])"));
 
         params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, "http://localhost{}>?");
         assertValidationIsInvalid(actionWith(WebhookAction.TYPE, params),
-                "$.endpoint: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])");
+                List.of("$.endpoint: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])"));
 
         params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, "http://webhook.site:8080/hello");
         params.put(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, "pass");
         assertValidationIsInvalid(actionWith(WebhookAction.TYPE, params),
-                "$: has a missing property which is dependent required {basic_auth_password=[basic_auth_username], basic_auth_username=[basic_auth_password]}");
+                List.of("$: has a missing property which is dependent required {basic_auth_password=[basic_auth_username], basic_auth_username=[basic_auth_password]}"));
 
         params = new HashMap<>();
         params.put(WebhookAction.ENDPOINT_PARAM, "http://webhook.site:8080/hello");
         params.put(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, "pass");
         params.put(WebhookAction.BASIC_AUTH_USERNAME_PARAM, "user");
         assertValidationIsValid(actionWith(WebhookAction.TYPE, params));
+    }
+
+    @Test
+    void testAnsibleAction() {
+        Map<String, String> params = new HashMap<>();
+        params.put(AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "notavalidurl");
+        assertValidationIsInvalid(actionWith(AnsibleTowerJobTemplateAction.TYPE, params),
+                List.of("$.endpoint: does not match the regex pattern (http|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])",
+                        "$.job_template_id: is missing but it is required"));
+
+        params = new HashMap<>();
+        params.put(AnsibleTowerJobTemplateAction.ENDPOINT_PARAM, "http://webhook.site:8080/hello");
+        params.put(AnsibleTowerJobTemplateAction.JOB_TEMPLATE_ID_PARAM, "abcd");
+        assertValidationIsValid(actionWith(AnsibleTowerJobTemplateAction.TYPE, params));
     }
 
     @Override
