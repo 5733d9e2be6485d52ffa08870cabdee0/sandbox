@@ -28,7 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.ProcessorService;
@@ -93,7 +93,7 @@ public class ProcessorsAPI {
     @GET
     @Path("{bridgeId}/processors")
     public Response listProcessors(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryProcessorResourceInfo queryInfo) {
-        return Response.ok(ListResponse.fill(processorService.getUserVisibleProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
+        return Response.ok(PagedListResponse.fill(processorService.getUserVisibleProcessors(bridgeId, identityResolver.resolve(jwt), queryInfo), new ProcessorListResponse(),
                 processorService::toResponse)).build();
     }
 

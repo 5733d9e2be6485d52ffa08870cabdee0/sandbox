@@ -34,44 +34,44 @@ public abstract class CustomResourceStatus {
     }
 
     @JsonIgnore
-    public final Optional<Condition> getConditionByType(final ConditionType conditionType) {
+    public final Optional<Condition> getConditionByType(final String conditionType) {
         // o(1) operation since we are fetching by our hash key
         return conditions.stream().filter(c -> conditionType.equals(c.getType())).findFirst();
     }
 
     @JsonIgnore
     public final boolean isReady() {
-        return conditions.stream().anyMatch(c -> ConditionType.Ready.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
+        return conditions.stream().anyMatch(c -> ConditionTypeConstants.READY.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
 
     @JsonIgnore
-    public final boolean isConditionTypeTrue(final ConditionType conditionType) {
+    public final boolean isConditionTypeTrue(final String conditionType) {
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
     }
 
     @JsonIgnore
     public void setConditionsFromDeployment(final Deployment d) {
         if (d.getStatus() == null) {
-            this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentNotAvailable, "");
-            this.markConditionFalse(ConditionType.Augmentation);
+            this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
+            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
         } else if (Readiness.isDeploymentReady(d)) {
-            this.markConditionTrue(ConditionType.Ready, ConditionReason.DeploymentAvailable);
-            this.markConditionFalse(ConditionType.Augmentation);
+            this.markConditionTrue(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_AVAILABLE);
+            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
         } else {
             if (DeploymentStatusUtils.isTimeoutFailure(d)) {
-                this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentFailed, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(d));
-                this.markConditionFalse(ConditionType.Augmentation);
+                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(d));
+                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             } else if (DeploymentStatusUtils.isStatusReplicaFailure(d)) {
-                this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentFailed, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(d));
-                this.markConditionFalse(ConditionType.Augmentation);
+                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(d));
+                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             } else {
-                this.markConditionFalse(ConditionType.Ready, ConditionReason.DeploymentNotAvailable, "");
-                this.markConditionTrue(ConditionType.Augmentation, ConditionReason.DeploymentProgressing);
+                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
+                this.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.DEPLOYMENT_PROGRESSING);
             }
         }
     }
 
-    public void markConditionFalse(final ConditionType conditionType, final ConditionReason reason, final String message, final String errorCode) {
+    public void markConditionFalse(final String conditionType, final String reason, final String message, final String errorCode) {
         final Optional<Condition> condition = this.getConditionByType(conditionType);
         if (condition.isPresent()) {
             condition.get().setMessage(message);
@@ -83,15 +83,15 @@ public abstract class CustomResourceStatus {
         }
     }
 
-    public void markConditionFalse(final ConditionType conditionType, final ConditionReason reason, final String message) {
+    public void markConditionFalse(final String conditionType, final String reason, final String message) {
         markConditionFalse(conditionType, reason, message, null);
     }
 
-    public void markConditionFalse(final ConditionType conditionType) {
+    public void markConditionFalse(final String conditionType) {
         markConditionFalse(conditionType, null, "", null);
     }
 
-    public void markConditionTrue(final ConditionType conditionType, final ConditionReason reason) {
+    public void markConditionTrue(final String conditionType, final String reason) {
         final Optional<Condition> condition = this.getConditionByType(conditionType);
         if (condition.isPresent()) {
             condition.get().setMessage("");
@@ -102,7 +102,7 @@ public abstract class CustomResourceStatus {
         }
     }
 
-    public void markConditionTrue(final ConditionType conditionType) {
+    public void markConditionTrue(final String conditionType) {
         markConditionTrue(conditionType, null);
     }
 }

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: bridge-fleet-shard-operator # used for filtering of Deployments created by the controller
+    app.kubernetes.io/created-by: bridge-fleet-shard-operator # Specify the operator
+    app.kubernetes.io/component: ingress # used to specify the component
+  ownerReferences: # used for finding which Processor does this Deployment belong to
+    - apiVersion: ""
+      kind: ""
+      name: ""
+      uid: ""
+  name: ""
+data:
+  default.topic.partitions: ""
+  default.topic.replication.factor: ""
+  bootstrap.servers: ""
+  auth.secret.ref.name: ""
+  topic.name: ""

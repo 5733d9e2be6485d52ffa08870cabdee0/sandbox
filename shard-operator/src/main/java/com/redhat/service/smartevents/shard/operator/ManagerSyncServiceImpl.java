@@ -20,6 +20,22 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
 
+    private enum FallibleOperation {
+        PROVISIONING("Provisioning"),
+        DELETING("Deleting");
+
+        String prettyName;
+
+        FallibleOperation(String prettyName) {
+            this.prettyName = prettyName;
+        }
+
+        String getPrettyName() {
+            return prettyName;
+        }
+
+    }
+
     @Inject
     ManagerClient managerClient;
 
@@ -51,7 +67,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.debug("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
-                                            bridgeIngressService.createBridgeIngress(y);
+                                            createBridgeIngress(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
@@ -61,7 +77,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
-                                            bridgeIngressService.deleteBridgeIngress(y);
+                                            deleteBridgeIngress(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
@@ -79,7 +95,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.debug("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
-                                            bridgeExecutorService.createBridgeExecutor(y);
+                                            createBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
@@ -89,12 +105,74 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
-                                            bridgeExecutorService.deleteBridgeExecutor(y);
+                                            deleteBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
                     return Uni.createFrom().voidItem();
                 }).collect(Collectors.toList())));
+    }
+
+    private void createBridgeIngress(BridgeDTO bridge) {
+        LOGGER.debug("Provisioning Bridge '{}'", bridge.getId());
+        doFallibleBridgeOperation(() -> bridgeIngressService.createBridgeIngress(bridge),
+                FallibleOperation.PROVISIONING,
+                ManagedResourceStatus.FAILED,
+                bridge);
+    }
+
+    private void deleteBridgeIngress(BridgeDTO bridge) {
+        LOGGER.debug("Deleting Processor '{}'", bridge.getId());
+        doFallibleBridgeOperation(() -> bridgeIngressService.deleteBridgeIngress(bridge),
+                FallibleOperation.DELETING,
+                ManagedResourceStatus.DELETED,
+                bridge);
+    }
+
+    private void doFallibleBridgeOperation(Runnable runnable,
+            FallibleOperation operation,
+            ManagedResourceStatus failedStatus,
+            BridgeDTO bridge) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            bridge.setStatus(failedStatus);
+            managerClient.notifyBridgeStatusChange(bridge)
+                    .subscribe()
+                    .with(success -> LOGGER.debug(String.format("%s of Bridge '%s' failed", operation.getPrettyName(), bridge.getId()), e),
+                            failure -> failedToSendUpdateToManager(bridge, e));
+        }
+    }
+
+    private void createBridgeExecutor(ProcessorDTO processor) {
+        LOGGER.debug("Provisioning Processor '{}'", processor.getId());
+        doFallibleProcessorOperation(() -> bridgeExecutorService.createBridgeExecutor(processor),
+                FallibleOperation.PROVISIONING,
+                ManagedResourceStatus.FAILED,
+                processor);
+    }
+
+    private void deleteBridgeExecutor(ProcessorDTO processor) {
+        LOGGER.debug("Deleting Processor '{}'", processor.getId());
+        doFallibleProcessorOperation(() -> bridgeExecutorService.deleteBridgeExecutor(processor),
+                FallibleOperation.DELETING,
+                ManagedResourceStatus.DELETED,
+                processor);
+    }
+
+    private void doFallibleProcessorOperation(Runnable runnable,
+            FallibleOperation operation,
+            ManagedResourceStatus failedStatus,
+            ProcessorDTO processor) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            processor.setStatus(failedStatus);
+            managerClient.notifyProcessorStatusChange(processor)
+                    .subscribe()
+                    .with(success -> LOGGER.debug(String.format("%s of Processor '%s' failed", operation.getPrettyName(), processor.getId()), e),
+                            failure -> failedToSendUpdateToManager(processor, e));
+        }
     }
 
     private void failedToSendUpdateToManager(Object entity, Throwable t) {

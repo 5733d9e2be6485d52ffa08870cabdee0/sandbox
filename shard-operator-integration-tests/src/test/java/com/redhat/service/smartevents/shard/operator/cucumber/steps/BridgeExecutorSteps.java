@@ -9,7 +9,6 @@ import java.util.concurrent.TimeoutException;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.Context;
 import com.redhat.service.smartevents.shard.operator.cucumber.common.TimeUtils;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.cucumber.java.en.Then;
@@ -84,7 +83,7 @@ public class BridgeExecutorSteps {
                     if (bridgeExecutor == null || bridgeExecutor.getStatus() == null) {
                         return false;
                     }
-                    return bridgeExecutor.getStatus().isConditionTypeTrue(ConditionType.valueOf(condition));
+                    return bridgeExecutor.getStatus().isConditionTypeTrue(condition);
                 },
                 String.format("Timeout waiting for BridgeExecutor '%s' to be in condition '%s' in namespace '%s'", name, condition, context.getNamespace()));
     }

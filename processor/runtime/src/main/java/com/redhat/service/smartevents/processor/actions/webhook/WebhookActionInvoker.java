@@ -20,6 +20,8 @@ public class WebhookActionInvoker implements ActionInvoker {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebhookActionInvoker.class);
 
+    public static final String CE_JSON_CONTENT_TYPE = "application/cloudevents+json";
+
     private final String endpoint;
     private final WebClient webClient;
     private final OidcClient oidcClient;
@@ -49,10 +51,12 @@ public class WebhookActionInvoker implements ActionInvoker {
     @Override
     public void onEvent(String event, Map<String, String> headers) {
         HttpRequest<Buffer> request = webClient.postAbs(endpoint);
+        // If the oidcClient is set, then the target is a bridge ingress. The content type has to be application/cloudevents+json.
         if (oidcClient != null) {
             String token = oidcClient.getToken();
             if (token != null && !"".equals(token)) {
                 request = request.bearerTokenAuthentication(token);
+                request = request.putHeader("content-type", CE_JSON_CONTENT_TYPE);
             }
         } else if (basicAuthUsername != null) {
             request.basicAuthentication(basicAuthUsername, basicAuthPassword);

@@ -26,6 +26,9 @@ public class ManagedResource {
     @SuppressWarnings("unused")
     protected long version;
 
+    @Column(name = "generation")
+    protected long generation;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     protected ManagedResourceStatus status;
@@ -111,5 +114,13 @@ public class ManagedResource {
 
     public void setDeletionRequestedAt(ZonedDateTime deletedAt) {
         this.deletionRequestedAt = deletedAt;
+    }
+
+    public long getGeneration() {
+        return generation;
+    }
+
+    public void setGeneration(long generation) {
+        this.generation = generation;
     }
 }

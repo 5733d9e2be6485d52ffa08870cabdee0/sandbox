@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
+import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.ResourceUtils;
 
@@ -21,13 +22,8 @@ public class MetricsSteps {
         testMetricAndCount(BridgeUtils.MANAGER_URL + "/q/metrics", metricName, minimalValue);
     }
 
-    @Given("^the Ingress of the Bridge \"([^\"]*)\" metric \'([^\']*)\' count is at least (\\d+)$")
-    public void ingressOfBridgeMetricCountIsAtLeast(String testBridgeName, String metricName, int minimalValue) {
-        testMetricAndCount(BridgeUtils.getOrRetrieveBridgeEndpoint(context, testBridgeName) + "/q/metrics", metricName, minimalValue);
-    }
-
     private void testMetricAndCount(String metricsEndpoint, String metricName, int minimalValue) {
-        String metrics = ResourceUtils.jsonRequest(context.getManagerToken())
+        String metrics = ResourceUtils.newRequest(context.getManagerToken(), Constants.TEXT_PLAIN_CONTENT_TYPE)
                 .get(metricsEndpoint)
                 .then()
                 .extract()

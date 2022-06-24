@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
@@ -35,7 +36,7 @@ public class ServiceMonitorServiceImpl implements ServiceMonitorService {
             return Optional.empty();
         }
 
-        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource);
+        ServiceMonitor expected = templateProvider.loadServiceMonitorTemplate(resource, TemplateImportConfig.withDefaults());
         if (expected.getSpec().getSelector() == null) {
             expected.getSpec().setSelector(new LabelSelector());
         }

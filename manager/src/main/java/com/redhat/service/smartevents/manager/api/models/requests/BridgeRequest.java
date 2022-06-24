@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.api.models.requests;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
@@ -32,11 +34,11 @@ public class BridgeRequest {
     }
 
     public Bridge toEntity() {
-        return new Bridge(name);
+        return new Bridge(getName());
     }
 
     public String getName() {
-        return name;
+        return Objects.nonNull(name) ? name.trim() : null;
     }
 
     public Action getErrorHandler() {

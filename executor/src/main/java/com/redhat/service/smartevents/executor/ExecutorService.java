@@ -19,6 +19,7 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.header.internals.RecordHeaders;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 import org.slf4j.Logger;
@@ -28,15 +29,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.DeserializationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.CloudEventDeserializationException;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.jackson.JsonCloudEventData;
+import io.cloudevents.kafka.CloudEventDeserializer;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 
@@ -70,6 +73,9 @@ public class ExecutorService {
             RHOSE_ORIGINAL_EVENT_SUBJECT_HEADER,
             RHOSE_ERROR_CODE_HEADER);
 
+    @ConfigProperty(name = "mp.messaging.incoming.events-in.topic")
+    String topic;
+
     @Inject
     Executor executor;
 
@@ -80,7 +86,7 @@ public class ExecutorService {
     BridgeErrorService bridgeErrorService;
 
     @Incoming(EVENTS_IN_CHANNEL)
-    public CompletionStage<Void> processEvent(final KafkaRecord<Integer, String> message) {
+    public CompletionStage<Void> processEvent(final IncomingKafkaRecord<Integer, String> message) {
         CloudEvent cloudEvent = null;
         try {
             Pair<CloudEvent, Map<String, String>> pair = convertToCloudEventAndHeadersMap(message);
@@ -120,13 +126,26 @@ public class ExecutorService {
                         toSourceCloudEvent(message.getPayload(), message.getHeaders()),
                         Collections.emptyMap());
             case ERROR_HANDLER:
-                return Pair.of(
-                        toErrorHandlerCloudEvent(message.getPayload()),
-                        toHeadersMap(message.getHeaders()));
+                return buildCloudEvent(message, true);
             default:
-                return Pair.of(
-                        CloudEventUtils.decode(message.getPayload()),
-                        toHeadersMap(message.getHeaders()));
+                return buildCloudEvent(message, false);
+        }
+    }
+
+    private Pair<CloudEvent, Map<String, String>> buildCloudEvent(KafkaRecord<Integer, String> message, boolean wrapOnFailure) {
+        try (CloudEventDeserializer cloudEventDeserializer = new CloudEventDeserializer()) {
+            CloudEvent cloudEvent = cloudEventDeserializer
+                    .deserialize(topic, message.getHeaders(), message.getPayload().getBytes(StandardCharsets.UTF_8));
+            return Pair.of(
+                    cloudEvent,
+                    toHeadersMap(message.getHeaders()));
+        } catch (Exception e) {
+            // if it fails (e.g. for connector errors) try wrapping it
+            if (wrapOnFailure) {
+                CloudEventData data = BytesCloudEventData.wrap(message.getPayload().getBytes(StandardCharsets.UTF_8));
+                return Pair.of(wrapToCloudEvent("RhoseError", data, Collections.emptyMap()), toHeadersMap(message.getHeaders()));
+            }
+            throw new DeserializationException("Failed to deserialize the cloud event", e);
         }
     }
 
@@ -144,17 +163,6 @@ public class ExecutorService {
         } catch (JsonProcessingException e2) {
             LOG.error("JsonProcessingException when generating CloudEvent for '{}'", event, e2);
             throw new CloudEventDeserializationException("Failed to generate event map");
-        }
-    }
-
-    private CloudEvent toErrorHandlerCloudEvent(String event) {
-        try {
-            // try to decode as cloud event
-            return CloudEventUtils.decode(event);
-        } catch (CloudEventDeserializationException e) {
-            // if it fails (e.g. for connector errors) try wrapping it
-            CloudEventData data = BytesCloudEventData.wrap(event.getBytes(StandardCharsets.UTF_8));
-            return wrapToCloudEvent("RhoseError", data, Collections.emptyMap());
         }
     }
 

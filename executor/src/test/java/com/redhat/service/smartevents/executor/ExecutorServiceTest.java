@@ -19,12 +19,12 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
-import io.smallrye.reactive.messaging.kafka.KafkaRecord;
+import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_SOURCE;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.CLOUD_EVENT_TYPE;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.PLAIN_EVENT_JSON;
-import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createCloudEventString;
+import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createCloudEventHeaders;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithResolvedAction;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSinkProcessorWithSameAction;
 import static com.redhat.service.smartevents.executor.ExecutorTestUtils.createSourceProcessor;
@@ -46,6 +46,7 @@ class ExecutorServiceTest {
     @SuppressWarnings("unchecked")
     void test(ProcessorDTO processor,
             String inputEvent,
+            Map<String, String> headers,
             VerificationMode wantedNumberOfOnEventInvocations,
             URI expectedCloudEventSource,
             String expectedCloudEventType,
@@ -61,9 +62,15 @@ class ExecutorServiceTest {
         executorService.mapper = new ObjectMapper();
         executorService.bridgeErrorService = bridgeErrorServiceMock;
 
-        KafkaRecord<Integer, String> inputMessage = mock(KafkaRecord.class);
+        IncomingKafkaRecord<Integer, String> inputMessage = mock(IncomingKafkaRecord.class);
         when(inputMessage.getPayload()).thenReturn(inputEvent);
-        when(inputMessage.getHeaders()).thenReturn(new RecordHeaders());
+        RecordHeaders recordHeaders = new RecordHeaders();
+        if (headers != null) {
+            for (Map.Entry<String, String> h : headers.entrySet()) {
+                recordHeaders.add(h.getKey(), h.getValue().getBytes(StandardCharsets.UTF_8));
+            }
+        }
+        when(inputMessage.getHeaders()).thenReturn(recordHeaders);
         when(inputMessage.getKey()).thenReturn(555);
 
         ArgumentCaptor<CloudEvent> argumentCaptor = ArgumentCaptor.forClass(CloudEvent.class);
@@ -82,16 +89,16 @@ class ExecutorServiceTest {
 
     private static Stream<Arguments> executorServiceTestArgs() {
         Object[][] arguments = {
-                { createSourceProcessor(), BROKEN_JSON, never(), null, null, false },
-                { createSourceProcessor(), null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
-                { createSourceProcessor(), "", times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
-                { createSourceProcessor(), PLAIN_EVENT_JSON, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
-                { createSinkProcessorWithSameAction(), BROKEN_JSON, never(), null, null, false },
-                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, never(), null, null, false },
-                { createSinkProcessorWithSameAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },
-                { createSinkProcessorWithResolvedAction(), BROKEN_JSON, never(), null, null, false },
-                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, never(), null, null, false, true },
-                { createSinkProcessorWithResolvedAction(), createCloudEventString(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true }
+                { createSourceProcessor(), BROKEN_JSON, null, never(), null, null, false },
+                { createSourceProcessor(), null, null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), "", null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSourceProcessor(), PLAIN_EVENT_JSON, null, times(1), URI.create(ExecutorService.CLOUD_EVENT_SOURCE), "slack_source_0.1", true },
+                { createSinkProcessorWithSameAction(), BROKEN_JSON, null, never(), null, null, false },
+                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, null, never(), null, null, false },
+                { createSinkProcessorWithSameAction(), PLAIN_EVENT_JSON, createCloudEventHeaders(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true },
+                { createSinkProcessorWithResolvedAction(), BROKEN_JSON, null, never(), null, null, false },
+                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, null, never(), null, null, false, true },
+                { createSinkProcessorWithResolvedAction(), PLAIN_EVENT_JSON, createCloudEventHeaders(), times(1), CLOUD_EVENT_SOURCE, CLOUD_EVENT_TYPE, true }
         };
         return Stream.of(arguments).map(Arguments::of);
     }

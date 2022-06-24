@@ -18,8 +18,9 @@ Feature: BridgeExecutor deploy and undeploy
       id: my-bridge-executor-id
       bridgeId: my-bridge-id
       customerId: customer
+      owner: customer
       processorType: sink
-      processorDefinition: mybridge-processor-definition
+      processorDefinition: '{"filters":[{"type":"StringEquals","type":"StringEquals","key":"data.name","value":"test"}],"transformationTemplate":null,"requestedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}},"requestedSource":null,"resolvedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}}}'
       processorName: mybridge-processor
     """
 
@@ -43,8 +44,9 @@ Feature: BridgeExecutor deploy and undeploy
       id: my-bridge-executor-id
       bridgeId: my-bridge-id
       customerId: customer
+      owner: customer
       processorType: sink
-      processorDefinition: mybridge-processor-definition
+      processorDefinition: '{"filters":[{"type":"StringEquals","type":"StringEquals","key":"data.name","value":"test"}],"transformationTemplate":null,"requestedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}},"requestedSource":null,"resolvedAction":{"type":"webhook_sink_0.1","parameters":{"endpoint":"https://webhook.site/xxxxxx"}}}'
       processorName: mybridge-processor
     """
 

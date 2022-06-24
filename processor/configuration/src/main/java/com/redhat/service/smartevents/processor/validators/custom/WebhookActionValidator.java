@@ -6,6 +6,7 @@ import java.net.URL;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersNotValidException;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.processor.ProcessorCatalogService;
@@ -30,14 +31,18 @@ public class WebhookActionValidator extends AbstractGatewayValidator implements 
 
     @Override
     public ValidationResult applyAdditionalValidations(Gateway gateway) {
+        return additionalValidations(gateway);
+    }
+
+    static ValidationResult additionalValidations(Gateway gateway) {
         if (gateway.hasParameter(BASIC_AUTH_USERNAME_PARAM) && !gateway.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
                 || !gateway.hasParameter(BASIC_AUTH_USERNAME_PARAM) && gateway.hasParameter(BASIC_AUTH_PASSWORD_PARAM)) {
-            return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
+            return ValidationResult.invalid(new ProcessorGatewayParametersNotValidException(BASIC_AUTH_CONFIGURATION_MESSAGE));
         }
 
         if (gateway.hasParameter(BASIC_AUTH_USERNAME_PARAM) && gateway.hasParameter(BASIC_AUTH_PASSWORD_PARAM)
                 && (gateway.getParameter(BASIC_AUTH_USERNAME_PARAM).isEmpty() || gateway.getParameter(BASIC_AUTH_PASSWORD_PARAM).isEmpty())) {
-            return ValidationResult.invalid(BASIC_AUTH_CONFIGURATION_MESSAGE);
+            return ValidationResult.invalid(new ProcessorGatewayParametersNotValidException(BASIC_AUTH_CONFIGURATION_MESSAGE));
         }
 
         String endpoint = gateway.getParameter(ENDPOINT_PARAM);
@@ -45,12 +50,12 @@ public class WebhookActionValidator extends AbstractGatewayValidator implements 
         try {
             endpointUrl = new URL(endpoint);
         } catch (MalformedURLException e) {
-            return ValidationResult.invalid(malformedUrlMessage(endpoint, e));
+            return ValidationResult.invalid(new ProcessorGatewayParametersNotValidException(malformedUrlMessage(endpoint, e)));
         }
 
         String protocol = endpointUrl.getProtocol();
         if (!PROTOCOL_HTTP.equalsIgnoreCase(protocol) && !PROTOCOL_HTTPS.equalsIgnoreCase(protocol)) {
-            return ValidationResult.invalid(invalidProtocolMessage(protocol));
+            return ValidationResult.invalid(new ProcessorGatewayParametersNotValidException(invalidProtocolMessage(protocol)));
         }
 
         return ValidationResult.valid();

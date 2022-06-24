@@ -1,7 +1,7 @@
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-240 as builder
 
-RUN microdnf install wget tar java-11-openjdk-devel
+RUN microdnf install gzip wget tar java-11-openjdk-devel
 
 RUN wget https://archive.apache.org/dist/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz -P /tmp \
     && tar xf /tmp/apache-maven-3.8.1-bin.tar.gz -C /opt \

@@ -1,37 +1,50 @@
 package com.redhat.service.smartevents.infra.validations;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ValidationResult {
 
-    private final boolean valid;
+    private final List<Violation> violations;
 
-    private final String message;
+    public static class Violation {
 
-    public ValidationResult(boolean valid) {
-        this(valid, null);
+        private Exception exception;
+
+        public Violation(Exception exception) {
+            this.exception = exception;
+        }
+
+        public Exception getException() {
+            return exception;
+        }
     }
 
-    public ValidationResult(boolean valid, String message) {
-        this.valid = valid;
-        this.message = message;
+    ValidationResult() {
+        this(new ArrayList<>());
+    }
+
+    ValidationResult(List<Violation> violations) {
+        this.violations = violations;
     }
 
     public boolean isValid() {
-        return valid;
+        return this.violations.isEmpty();
     }
 
-    public String getMessage() {
-        return message;
+    public List<Violation> getViolations() {
+        return violations;
     }
 
     public static ValidationResult valid() {
-        return new ValidationResult(true);
+        return new ValidationResult();
     }
 
-    public static ValidationResult invalid() {
-        return invalid(null);
+    public static ValidationResult invalid(Exception exception) {
+        return invalid(List.of(new Violation(exception)));
     }
 
-    public static ValidationResult invalid(String message) {
-        return new ValidationResult(false, message);
+    public static ValidationResult invalid(List<Violation> violations) {
+        return new ValidationResult(violations);
     }
 }

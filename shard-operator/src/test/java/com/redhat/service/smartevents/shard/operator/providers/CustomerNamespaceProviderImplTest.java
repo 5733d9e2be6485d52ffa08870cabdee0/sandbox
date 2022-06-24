@@ -6,12 +6,14 @@ import java.util.Collections;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
@@ -37,6 +39,14 @@ class CustomerNamespaceProviderImplTest {
 
     @Inject
     KubernetesClient kubernetesClient;
+
+    @Inject
+    KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @BeforeEach
+    void setup() {
+        kubernetesResourcePatcher.cleanUp();
+    }
 
     @Test
     void testNamespaceIsCreated() {

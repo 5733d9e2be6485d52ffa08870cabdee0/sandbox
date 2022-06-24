@@ -29,6 +29,9 @@ public final class LabelsBuilder {
     public static final String CUSTOMER_ID_LABEL = "bridge.services.redhat.com/customerId";
     public static final String RECONCILER_LABEL_SELECTOR = LabelsBuilder.MANAGED_BY_LABEL + "=" + LabelsBuilder.OPERATOR_NAME;
 
+    public static final String PRIMARY_RESOURCE_NAME_LABEL = "operator-sdk/primary-resource-name";
+    public static final String PRIMARY_RESOURCE_NAMESPACE_LABEL = "operator-sdk/primary-resource-namespace";
+
     /**
      * Customer Identification label.
      * Useful for querying objects related to a given customer.
@@ -93,6 +96,22 @@ public final class LabelsBuilder {
      */
     public LabelsBuilder withComponent(String component) {
         this.labels.put(COMPONENT_LABEL, sanitizeAndCheckLabelValue(component));
+        return this;
+    }
+
+    /**
+     * The primary resource name. Example "myresource".
+     */
+    public LabelsBuilder withPrimaryResourceName(String name) {
+        this.labels.put(PRIMARY_RESOURCE_NAME_LABEL, sanitizeAndCheckLabelValue(name));
+        return this;
+    }
+
+    /**
+     * The primary resource namespace. Example "mynamespace".
+     */
+    public LabelsBuilder withPrimaryResourceNamespace(String namespace) {
+        this.labels.put(PRIMARY_RESOURCE_NAMESPACE_LABEL, sanitizeAndCheckLabelValue(namespace));
         return this;
     }
 

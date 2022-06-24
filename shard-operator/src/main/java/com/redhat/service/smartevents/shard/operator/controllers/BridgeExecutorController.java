@@ -19,8 +19,8 @@ import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -114,8 +114,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         if (service.getStatus() == null) {
             LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeExecutor.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -128,8 +128,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                     bridgeExecutor.getMetadata().getNamespace());
             BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
                     .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Ready,
-                    ConditionReason.PrometheusUnavailable,
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
+                    ConditionReasonConstants.PROMETHEUS_UNAVAILABLE,
                     prometheusNotAvailableError.getReason(),
                     prometheusNotAvailableError.getCode());
             notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
@@ -139,8 +139,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {
-            bridgeExecutor.getStatus().markConditionTrue(ConditionType.Ready);
-            bridgeExecutor.getStatus().markConditionFalse(ConditionType.Augmentation);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
