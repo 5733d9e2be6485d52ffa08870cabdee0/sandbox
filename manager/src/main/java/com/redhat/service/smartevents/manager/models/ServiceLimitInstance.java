@@ -1,10 +1,19 @@
 package com.redhat.service.smartevents.manager.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ServiceLimitInstance {
 
+    @JsonProperty("instance_type")
     private ServiceLimitInstanceType instanceType;
+
+    @JsonProperty("processor_limit")
     private int processorLimit;
+
+    @JsonProperty("bridge_duration")
     private long bridgeDuration;
+
+    @JsonProperty("instance_quota")
     private int instanceQuota;
 
     public void setInstanceType(ServiceLimitInstanceType instanceType) {

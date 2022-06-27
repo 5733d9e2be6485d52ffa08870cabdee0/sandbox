@@ -1,11 +1,26 @@
 package com.redhat.service.smartevents.manager.models;
 
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class OrganisationOverride {
 
+    @JsonProperty("org_id")
+    @NotNull(message = "Organisation Id can't be null or empty")
     private String orgId;
-    private ServiceLimitInstanceType orgInstanceType;
+
+    @JsonProperty("instance_type")
+    @NotNull(message = "Instance type can't be null or empty")
+    private ServiceLimitInstanceType instanceType;
+
+    @JsonProperty("processor_limit")
     private int processorLimit;
+
+    @JsonProperty("bridge_duration")
     private long bridgeDuration;
+
+    @JsonProperty("instance_quota")
     private int instanceQuota;
 
     public String getOrgId() {
@@ -16,12 +31,12 @@ public class OrganisationOverride {
         this.orgId = orgId;
     }
 
-    public ServiceLimitInstanceType getOrgInstanceType() {
-        return orgInstanceType;
+    public ServiceLimitInstanceType getInstanceType() {
+        return instanceType;
     }
 
-    public void setOrgInstanceType(ServiceLimitInstanceType orgInstanceType) {
-        this.orgInstanceType = orgInstanceType;
+    public void setInstanceType(ServiceLimitInstanceType instanceType) {
+        this.instanceType = instanceType;
     }
 
     public int getProcessorLimit() {

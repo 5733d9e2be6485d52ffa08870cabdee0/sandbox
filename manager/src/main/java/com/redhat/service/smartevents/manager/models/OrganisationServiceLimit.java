@@ -2,9 +2,18 @@ package com.redhat.service.smartevents.manager.models;
 
 public class OrganisationServiceLimit {
 
+    ServiceLimitInstanceType instanceType;
     private int processorLimit;
     private long bridgeDuration;
     private long instanceQuota;
+
+    public ServiceLimitInstanceType getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(ServiceLimitInstanceType instanceType) {
+        this.instanceType = instanceType;
+    }
 
     public int getProcessorLimit() {
         return processorLimit;

@@ -29,6 +29,7 @@ import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.OrganisationServiceLimit;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
@@ -60,6 +61,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    LimitService limitService;
+
     @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
@@ -75,6 +79,13 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridge.setGeneration(0);
+
+        OrganisationServiceLimit organisationServiceLimit = limitService.getOrganisationServiceLimit(organisationId);
+        bridge.setInstanceType(organisationServiceLimit.getInstanceType());
+        long bridgeDuration = organisationServiceLimit.getBridgeDuration();
+        if (bridgeDuration > 0) {
+            bridge.setExpireAt(ZonedDateTime.now().plusSeconds(bridgeDuration));
+        }
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();

@@ -11,12 +11,16 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.models.*;
 
+import io.quarkus.runtime.Startup;
+
+@Startup
 @ApplicationScoped
 public class LimitServiceImpl implements LimitService {
 
@@ -34,6 +38,7 @@ public class LimitServiceImpl implements LimitService {
     void init() throws IOException {
         serviceLimit = mapper.readValue(readServiceLimitFile(), new TypeReference<>() {
         });
+        validateServiceLimitJson(serviceLimit);
     }
 
     private String readServiceLimitFile() {
@@ -42,6 +47,14 @@ public class LimitServiceImpl implements LimitService {
                 new InputStreamReader(is, StandardCharsets.UTF_8))
                         .lines()
                         .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * Function validate the service_limit.json file using javax.validation annotation provided on {{@ServiceLimit}}
+     * 
+     * @param serviceLimit ServiceLimit instance read created using Json
+     */
+    void validateServiceLimitJson(@Valid ServiceLimit serviceLimit) {
     }
 
     @Override
@@ -57,6 +70,7 @@ public class LimitServiceImpl implements LimitService {
     private OrganisationServiceLimit createDefaultOrganisationServiceLimit() {
         ServiceLimitInstance defaultServiceLimitInstance = serviceLimit.getInstanceTypes().stream().filter(s -> serviceLimit.getDefaultInstanceType().equals(s.getInstanceType())).findFirst().get();
         OrganisationServiceLimit organisationServiceLimit = new OrganisationServiceLimit();
+        organisationServiceLimit.setInstanceType(defaultServiceLimitInstance.getInstanceType());
         organisationServiceLimit.setProcessorLimit(defaultServiceLimitInstance.getProcessorLimit());
         organisationServiceLimit.setBridgeDuration(defaultServiceLimitInstance.getBridgeDuration());
         organisationServiceLimit.setInstanceQuota(defaultServiceLimitInstance.getInstanceQuota());
@@ -64,8 +78,9 @@ public class LimitServiceImpl implements LimitService {
     }
 
     private OrganisationServiceLimit createOrganisationSpecificServiceLimit(OrganisationOverride orgOverride) {
-        ServiceLimitInstanceType orgInstanceType = orgOverride.getOrgInstanceType();
+        ServiceLimitInstanceType orgInstanceType = orgOverride.getInstanceType();
         OrganisationServiceLimit orgServiceLimit = new OrganisationServiceLimit();
+        orgServiceLimit.setInstanceType(orgInstanceType);
 
         if (orgOverride.getProcessorLimit() != 0) {
             orgServiceLimit.setProcessorLimit(orgOverride.getProcessorLimit());
