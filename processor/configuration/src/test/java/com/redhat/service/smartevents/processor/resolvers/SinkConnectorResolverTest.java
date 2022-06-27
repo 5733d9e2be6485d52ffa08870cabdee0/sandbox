@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.resolvers.custom;
+package com.redhat.service.smartevents.processor.resolvers;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class SlackActionResolverTest {
+class SinkConnectorResolverTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_CUSTOMER_ID = "test-customer-id";
@@ -37,7 +37,7 @@ class SlackActionResolverTest {
     private static final String TEST_SECURITY_PROTOCOL = "testSecurityProtocol";
 
     @Inject
-    SlackActionResolver slackActionResolver;
+    SinkConnectorResolver sinkConnectorResolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
@@ -62,7 +62,7 @@ class SlackActionResolverTest {
     void testTransform() {
         Action action = buildTestAction();
 
-        Action transformedAction = slackActionResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
+        Action transformedAction = sinkConnectorResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
         assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
 

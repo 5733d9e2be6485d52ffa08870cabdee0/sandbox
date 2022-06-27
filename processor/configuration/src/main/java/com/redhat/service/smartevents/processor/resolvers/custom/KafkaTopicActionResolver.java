@@ -6,12 +6,10 @@ import javax.inject.Inject;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
-public class KafkaTopicActionResolver implements KafkaTopicAction,
-        GatewayResolver<Action> {
+public class KafkaTopicActionResolver implements KafkaTopicAction, CustomGatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

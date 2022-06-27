@@ -15,12 +15,13 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.resolvers.GatewayResolver;
+import com.redhat.service.smartevents.processor.resolvers.SinkConnectorResolver;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.AnsibleTowerJobTemplateActionResolver;
-import com.redhat.service.smartevents.processor.resolvers.custom.AwsLambdaActionResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.CustomGatewayResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.KafkaTopicActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
-import com.redhat.service.smartevents.processor.resolvers.custom.SlackActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
@@ -37,9 +38,9 @@ class GatewayConfiguratorImplTest {
     private static final Map<String, ExpectedBeanClasses<Action>> EXPECTED_ACTION_BEANS = Map.of(
             KafkaTopicAction.TYPE, expect(DefaultGatewayValidator.class, KafkaTopicActionResolver.class),
             SendToBridgeAction.TYPE, expect(DefaultGatewayValidator.class, SendToBridgeActionResolver.class),
-            SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
+            SlackAction.TYPE, expect(DefaultGatewayValidator.class, SinkConnectorResolver.class),
             WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null),
-            AwsLambdaAction.TYPE, expect(DefaultGatewayValidator.class, AwsLambdaActionResolver.class),
+            AwsLambdaAction.TYPE, expect(DefaultGatewayValidator.class, SinkConnectorResolver.class),
             AnsibleTowerJobTemplateAction.TYPE, expect(DefaultGatewayValidator.class, AnsibleTowerJobTemplateActionResolver.class));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
@@ -84,7 +85,7 @@ class GatewayConfiguratorImplTest {
 
     @Test
     void testUnexpectedActionBeans() {
-        for (GatewayResolver<Action> resolver : configurator.getActionResolvers()) {
+        for (CustomGatewayResolver<Action> resolver : configurator.getActionResolvers()) {
             assertThat(EXPECTED_ACTION_BEANS)
                     .as("Found unexpected resolver bean for type %s of class %s. Add it to this test.", resolver.getType(), resolver.getClass())
                     .containsKey(resolver.getType());

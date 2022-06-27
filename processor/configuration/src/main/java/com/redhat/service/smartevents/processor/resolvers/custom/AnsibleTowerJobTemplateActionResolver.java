@@ -9,12 +9,11 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTemplateAction, GatewayResolver<Action> {
+public class AnsibleTowerJobTemplateActionResolver implements AnsibleTowerJobTemplateAction, CustomGatewayResolver<Action> {
 
     public static final String LAUNCH_JOB_TEMPLATE_ENDPOINT_FORMAT = "%s/api/v2/job_templates/%s/launch/";
 
