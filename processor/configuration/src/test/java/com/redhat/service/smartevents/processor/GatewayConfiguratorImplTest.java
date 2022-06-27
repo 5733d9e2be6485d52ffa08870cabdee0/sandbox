@@ -42,7 +42,7 @@ class GatewayConfiguratorImplTest {
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SlackActionResolver.class),
             WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null),
             AwsLambdaAction.TYPE, expect(DefaultGatewayValidator.class, AwsLambdaActionResolver.class),
-            AnsibleTowerJobTemplateAction.TYPE, expect(AnsibleTowerJobTemplateActionValidator.class, AnsibleTowerJobTemplateActionResolver.class),
+            AnsibleTowerJobTemplateAction.TYPE, expect(DefaultGatewayValidator.class, AnsibleTowerJobTemplateActionResolver.class),
             GooglePubSubAction.TYPE, expect(DefaultGatewayValidator.class, GooglePubSubActionResolver.class));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(

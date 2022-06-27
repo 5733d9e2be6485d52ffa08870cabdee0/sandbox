@@ -14,12 +14,12 @@
     },
     "gcp_destination_name": {
       "title": "Destination Name",
-      "description": "The Destination Name",
+      "description": "The Destination Name. For the consumer this will be the subscription name, while for the producer this will be the topic name.",
       "type": "string"
     },
     "gcp_service_account_key": {
       "title": "Service Account Key",
-      "description": "The Service account key that can be used as credentials for the PubSub publisher/subscriber",
+      "description": "The Service account key that can be used as credentials for the PubSub publisher/subscriber in base64 encoding.",
       "type": "string",
       "x-group": "credentials",
       "format": "base64"
