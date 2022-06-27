@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class SchemaAPITest {
 
     private static final List<String> availableActions =
-            List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1", "ansible_tower_job_template_sink_0.1");
+            List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1", "ansible_tower_job_template_sink_0.1", "google_pubsub_sink_0.1");
     private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @InjectMock
@@ -55,7 +55,7 @@ public class SchemaAPITest {
         assertThat(catalog.getItems()).isNotNull();
         assertThat(catalog.getItems())
                 .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test")
-                .hasSize(9);
+                .hasSize(10);
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
