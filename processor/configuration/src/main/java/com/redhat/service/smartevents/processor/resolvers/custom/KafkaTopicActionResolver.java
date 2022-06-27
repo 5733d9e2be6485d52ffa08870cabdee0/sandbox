@@ -24,7 +24,6 @@ public class KafkaTopicActionResolver implements KafkaTopicAction,
 
         ObjectNode actionParameters = resolvedAction.getParameters();
         actionParameters.put(SECURITY_PROTOCOL, gatewayConfiguratorService.getSecurityProtocol());
-        actionParameters.put(BRIDGE_ERROR_TOPIC_NAME, gatewayConfiguratorService.getBridgeErrorTopicName(bridgeId));
 
         return resolvedAction;
     }

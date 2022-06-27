@@ -22,7 +22,5 @@ public class InternalKafkaConnectionPayloadImpl implements InternalKafkaConnecti
         actionParameters.set(KafkaTopicAction.CLIENT_ID, new TextNode(gatewayConfiguratorService.getClientId()));
         actionParameters.set(KafkaTopicAction.CLIENT_SECRET, new TextNode(gatewayConfiguratorService.getClientSecret()));
         actionParameters.set(KafkaTopicAction.SECURITY_PROTOCOL, new TextNode(gatewayConfiguratorService.getSecurityProtocol()));
-
-        actionParameters.put(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME, gatewayConfiguratorService.getBridgeErrorTopicName(bridgeId));
     }
 }

@@ -46,7 +46,6 @@ public class KafkaOutboundClients {
         String clientId = action.getParameter(KafkaTopicAction.CLIENT_ID);
         String clientSecret = action.getParameter(KafkaTopicAction.CLIENT_SECRET);
         String securityProtocol = action.getParameter(KafkaTopicAction.SECURITY_PROTOCOL);
-        String errorTopicName = action.getParameter(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME);
 
         if (brokerUrl == null || clientId == null || clientSecret == null) {
             return Collections.emptyMap();
@@ -56,7 +55,6 @@ public class KafkaOutboundClients {
                 Map.entry("bootstrap.servers", brokerUrl),
                 Map.entry("sasl.mechanism", "PLAIN"),
                 Map.entry("security.protocol", securityProtocol),
-                Map.entry("dead-letter-queue.topic", errorTopicName),
                 Map.entry("sasl.jaas.config",
                         String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";",
                                 clientId, clientSecret)));
