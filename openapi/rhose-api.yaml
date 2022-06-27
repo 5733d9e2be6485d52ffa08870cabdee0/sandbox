@@ -10,6 +10,11 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
+servers:
+- url: http://localhost:8080
+  description: Auto generated value
+- url: http://0.0.0.0:8080
+  description: Auto generated value
 tags:
 - name: Bridges
   description: "The API that allow the user to retrieve, create or delete Bridge instances."
