@@ -11,6 +11,7 @@
       "instance_quota": "5"
     }
   ],
+  "default_instance_type": "EVAL",
   "organisation_overrides": [{
     "org_id": "15247674",
     "instance_type": "EVAL",
