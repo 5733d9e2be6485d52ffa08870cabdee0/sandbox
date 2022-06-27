@@ -3,15 +3,16 @@ package com.redhat.service.smartevents.processor.resolvers;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.processor.InternalKafkaConnectionPayload;
+import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 
 @ApplicationScoped
 public class SinkConnectorResolver implements GatewayResolver<Action> {
 
     @Inject
-    InternalKafkaConnectionPayload internalKafkaConnectionPayload;
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @Override
     public Action resolve(Action action, String customerId, String bridgeId, String processorId) {
@@ -21,7 +22,14 @@ public class SinkConnectorResolver implements GatewayResolver<Action> {
         resolvedAction.setParameters(action.getParameters().deepCopy());
         resolvedAction.setType(KafkaTopicAction.TYPE);
 
-        internalKafkaConnectionPayload.addInternalKafkaConnectionPayload(bridgeId, processorId, resolvedAction.getParameters());
+        String connectorTopicName = gatewayConfiguratorService.getConnectorTopicName(processorId);
+
+        resolvedAction.getParameters().set(KafkaTopicAction.TOPIC_PARAM, new TextNode(connectorTopicName));
+        resolvedAction.getParameters().set(KafkaTopicAction.BROKER_URL, new TextNode(gatewayConfiguratorService.getBootstrapServers()));
+        resolvedAction.getParameters().set(KafkaTopicAction.CLIENT_ID, new TextNode(gatewayConfiguratorService.getClientId()));
+        resolvedAction.getParameters().set(KafkaTopicAction.CLIENT_SECRET, new TextNode(gatewayConfiguratorService.getClientSecret()));
+        resolvedAction.getParameters().set(KafkaTopicAction.SECURITY_PROTOCOL, new TextNode(gatewayConfiguratorService.getSecurityProtocol()));
+        resolvedAction.getParameters().put(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME, gatewayConfiguratorService.getBridgeErrorTopicName(bridgeId));
 
         return resolvedAction;
     }
