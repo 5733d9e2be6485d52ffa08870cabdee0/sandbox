@@ -35,7 +35,6 @@ class SinkConnectorResolverTest {
     private static final String TEST_CLIENT_ID = "testClientId";
     private static final String TEST_CLIENT_SECRET = "testClientSecret";
     private static final String TEST_SECURITY_PROTOCOL = "testSecurityProtocol";
-    private static final String TEST_BRIDGE_ERROR_TOPIC_NAME = "testBridgeErrorTopicName";
 
     @Inject
     SinkConnectorResolver sinkConnectorResolver;
@@ -57,8 +56,6 @@ class SinkConnectorResolverTest {
         when(gatewayConfiguratorService.getClientId()).thenReturn(TEST_CLIENT_ID);
         when(gatewayConfiguratorService.getClientSecret()).thenReturn(TEST_CLIENT_SECRET);
         when(gatewayConfiguratorService.getSecurityProtocol()).thenReturn(TEST_SECURITY_PROTOCOL);
-
-        when(gatewayConfiguratorService.getBridgeErrorTopicName(TEST_BRIDGE_ID)).thenReturn(TEST_BRIDGE_ERROR_TOPIC_NAME);
     }
 
     @Test
@@ -76,8 +73,6 @@ class SinkConnectorResolverTest {
         assertThat(transformedAction.getParameter(KafkaTopicAction.BROKER_URL)).isEqualTo(TEST_BROKER_URL);
         assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_ID)).isEqualTo(TEST_CLIENT_ID);
         assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_SECRET)).isEqualTo(TEST_CLIENT_SECRET);
-
-        assertThat(transformedAction.getParameter(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME)).isEqualTo(TEST_BRIDGE_ERROR_TOPIC_NAME);
     }
 
     private Action buildTestAction() {

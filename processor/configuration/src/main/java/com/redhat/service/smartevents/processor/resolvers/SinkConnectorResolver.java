@@ -29,7 +29,6 @@ public class SinkConnectorResolver implements GatewayResolver<Action> {
         resolvedAction.getParameters().set(KafkaTopicAction.CLIENT_ID, new TextNode(gatewayConfiguratorService.getClientId()));
         resolvedAction.getParameters().set(KafkaTopicAction.CLIENT_SECRET, new TextNode(gatewayConfiguratorService.getClientSecret()));
         resolvedAction.getParameters().set(KafkaTopicAction.SECURITY_PROTOCOL, new TextNode(gatewayConfiguratorService.getSecurityProtocol()));
-        resolvedAction.getParameters().put(KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME, gatewayConfiguratorService.getBridgeErrorTopicName(bridgeId));
 
         return resolvedAction;
     }
