@@ -111,7 +111,10 @@
       "title": "Protocol",
       "description": "The underlying protocol used to communicate with SQS",
       "type": "string",
-      "example": "http or https",
+      "enum": [
+        "http",
+        "https"
+      ],
       "default": "https"
     },
     "aws_queue_u_r_l": {

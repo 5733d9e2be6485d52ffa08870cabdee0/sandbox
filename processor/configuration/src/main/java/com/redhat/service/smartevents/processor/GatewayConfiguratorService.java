@@ -18,6 +18,4 @@ public interface GatewayConfiguratorService {
     String getClientSecret();
 
     String getSecurityProtocol();
-
-    String getBridgeErrorTopicName(String testBridgeId);
 }

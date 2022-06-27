@@ -48,9 +48,4 @@ public class GatewayConfiguratorServiceImpl implements GatewayConfiguratorServic
     public String getSecurityProtocol() {
         return internalKafkaConfigurationProvider.getSecurityProtocol();
     }
-
-    @Override
-    public String getBridgeErrorTopicName(String testBridgeId) {
-        return resourceNamesProvider.getBridgeErrorTopicName(testBridgeId);
-    }
 }

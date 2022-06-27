@@ -10,7 +10,6 @@ public interface KafkaTopicAction extends GatewayBean {
     String CLIENT_ID = "kafka_client_id";
     String CLIENT_SECRET = "kafka_client_secret";
     String SECURITY_PROTOCOL = "kafka_security_protocol";
-    String BRIDGE_ERROR_TOPIC_NAME = "bridge_error_topic_name";
 
     @Override
     default String getType() {
