@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
 import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.google.GooglePubSubAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
@@ -18,6 +19,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.GatewayResolver;
 import com.redhat.service.smartevents.processor.resolvers.SinkConnectorResolver;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.AnsibleTowerJobTemplateActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.CustomGatewayResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.KafkaTopicActionResolver;
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
@@ -40,6 +42,7 @@ class GatewayConfiguratorImplTest {
             SlackAction.TYPE, expect(DefaultGatewayValidator.class, SinkConnectorResolver.class),
             WebhookAction.TYPE, expect(DefaultGatewayValidator.class, null),
             AwsLambdaAction.TYPE, expect(DefaultGatewayValidator.class, SinkConnectorResolver.class),
+            AnsibleTowerJobTemplateAction.TYPE, expect(DefaultGatewayValidator.class, AnsibleTowerJobTemplateActionResolver.class),
             GooglePubSubAction.TYPE, expect(DefaultGatewayValidator.class, SinkConnectorResolver.class));
 
     private static final Map<String, ExpectedBeanClasses<Source>> EXPECTED_SOURCE_BEANS = Map.of(
