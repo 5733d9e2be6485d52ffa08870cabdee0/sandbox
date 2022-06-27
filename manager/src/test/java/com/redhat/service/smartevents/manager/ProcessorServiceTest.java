@@ -703,7 +703,9 @@ class ProcessorServiceTest {
     private static Action createKafkaTopicAction() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
-        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC));
+        action.setMapParameters(Map.of(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC,
+                KafkaTopicAction.SECURITY_PROTOCOL, "PLAINTEXT",
+                KafkaTopicAction.BRIDGE_ERROR_TOPIC_NAME, "ob-brdg-myId-err"));
         return action;
     }
 

@@ -165,7 +165,12 @@ An example payload request is the following:
 {
   "name": "myProcessor",
   "action": {
-    "parameters": {"topic":  "demoTopic"},
+    "parameters": {
+      "topic":  "demoTopic",
+      "kafka_broker_url": "kafka-server-url:443",
+      "kafka_client_id": "clientId",
+      "kafka_client_secret": "clientSecret"
+    },
     "type": "kafka_topic_sink_0.1"
   },
   "filters": [
@@ -181,10 +186,10 @@ An example payload request is the following:
 So only the events with `source` equals to `StorageService` will be sent to the 
 the action `kafka_topic_sink_0.1`, which will push the event to the kafka instance under the topic `demoTopic`.
 
-Run 
+Replace the kafka connection parameter in the following request then run:
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic", "kafka_broker_url": "kafka-server-url:443", "kafka_client_id": "clientId", "kafka_client_secret": "clientSecret"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
 and the response is something like 
@@ -210,7 +215,10 @@ and the response is something like
       "type":"kafka_topic_sink_0.1",
       "parameters":
       {
-        "topic":"demoTopic"
+        "topic":"demoTopic",
+        "kafka_broker_url": "kafka-server-url:443",
+        "kafka_client_id": "clientId",
+        "kafka_client_secret": "clientSecret"
       }
     }
 }

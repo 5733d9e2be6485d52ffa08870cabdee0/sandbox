@@ -11,7 +11,8 @@
     "aws_queue_name_or_arn": {
       "title": "Queue Name",
       "description": "The SQS Queue Name or ARN",
-      "type": "string"
+      "type": "string",
+      "pattern": "^https:\/\/sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com\/[0-9]{12}\/([^\/]+)$"
     },
     "aws_delete_after_read": {
       "title": "Auto-delete Messages",
@@ -143,27 +144,7 @@
           "$ref": "#/$defs/data_shape/produces"
         }
       }
-    },
-    "processors": {}
-  },
-  "$defs": {
-    "data_shape": {
-      "produces": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "format"
-        ],
-        "properties": {
-          "format": {
-            "type": "string",
-            "default": "application/octet-stream",
-            "enum": [
-              "application/octet-stream"
-            ]
-          }
-        }
-      }
     }
   }
 }
+
