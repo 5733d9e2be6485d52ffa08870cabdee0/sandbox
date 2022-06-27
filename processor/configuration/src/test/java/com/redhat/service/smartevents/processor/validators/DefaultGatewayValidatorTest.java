@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
+import com.redhat.service.smartevents.processor.actions.google.GooglePubSubAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
@@ -52,6 +53,15 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(SlackSource.CHANNEL_PARAM, "channel");
         params.put(SlackSource.TOKEN_PARAM, "token");
         assertValidationIsValid(sourceWith(SlackSource.TYPE, params));
+    }
+
+    @Test
+    void testGooglePubsubAction() {
+        Map<String, String> params = new HashMap<>();
+        params.put(GooglePubSubAction.GCP_PROJECT_ID_PARAM, "id");
+        params.put(GooglePubSubAction.GCP_SERVICE_ACCOUNT_KEY_PARAM, "key");
+        params.put(GooglePubSubAction.GCP_DESTINATION_NAME_PARAM, "dest");
+        assertValidationIsValid(actionWith(GooglePubSubAction.TYPE, params));
     }
 
     @Test

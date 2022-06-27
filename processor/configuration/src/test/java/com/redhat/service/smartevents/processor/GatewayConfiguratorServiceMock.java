@@ -34,9 +34,4 @@ public class GatewayConfiguratorServiceMock implements GatewayConfiguratorServic
     public String getSecurityProtocol() {
         return "securityProtocol";
     }
-
-    @Override
-    public String getBridgeErrorTopicName(String testBridgeId) {
-        return "brigeErrorTopicName";
-    }
 }
