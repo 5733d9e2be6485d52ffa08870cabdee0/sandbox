@@ -32,8 +32,7 @@ public class InternalPlatformExceptionMapperTest {
     @BeforeEach
     void setup() {
         when(bridgeErrorService.getError(InternalPlatformException.class)).thenReturn(Optional.of(MAPPED_ERROR));
-        this.mapper = new InternalPlatformExceptionMapper();
-        this.mapper.bridgeErrorService = bridgeErrorService;
+        this.mapper = new InternalPlatformExceptionMapper(bridgeErrorService);
         this.mapper.init();
     }
 

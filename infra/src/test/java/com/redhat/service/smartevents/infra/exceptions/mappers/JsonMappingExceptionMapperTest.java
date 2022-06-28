@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
@@ -20,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ExternalUserExceptionMapperTest {
+public class JsonMappingExceptionMapperTest {
 
     private static final BridgeError BRIDGE_ERROR = new BridgeError(1, "code", "reason", BridgeErrorType.USER);
 
@@ -29,11 +30,11 @@ public class ExternalUserExceptionMapperTest {
     @Mock
     private BridgeErrorService bridgeErrorService;
 
-    private ExternalUserExceptionMapper mapper;
+    private JsonMappingExceptionMapper mapper;
 
     @BeforeEach
     void setup() {
-        this.mapper = new ExternalUserExceptionMapper(bridgeErrorService);
+        this.mapper = new JsonMappingExceptionMapper(bridgeErrorService);
         when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
     }
@@ -42,7 +43,7 @@ public class ExternalUserExceptionMapperTest {
     void testMappedException() {
         when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.of(MAPPED_ERROR));
 
-        ErrorsResponse response = mapper.toResponse(new ItemNotFoundException("message")).readEntity(ErrorsResponse.class);
+        ErrorsResponse response = mapper.toResponse(new JsonMappingException("Unable to map", new ItemNotFoundException("message"))).readEntity(ErrorsResponse.class);
         assertThat(response.getItems()).hasSize(1);
 
         ErrorResponse error = response.getItems().get(0);
@@ -55,7 +56,7 @@ public class ExternalUserExceptionMapperTest {
     void testUnMappedException() {
         when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.empty());
 
-        ErrorsResponse response = mapper.toResponse(new ItemNotFoundException("unmapped-reason")).readEntity(ErrorsResponse.class);
+        ErrorsResponse response = mapper.toResponse(new JsonMappingException("Unable to map", new ItemNotFoundException("unmapped-reason"))).readEntity(ErrorsResponse.class);
         assertThat(response.getItems()).hasSize(1);
 
         ErrorResponse error = response.getItems().get(0);
