@@ -12,6 +12,12 @@
     "isConnector": true
   },
   {
+    "id": "azure_eventhubs_sink_0.1",
+    "name": "Azure EventHubs",
+    "description": "Send the event to an Azure EventHubs.",
+    "isConnector": true
+  },
+  {
     "id": "google_pubsub_sink_0.1",
     "name": "Google PubSub",
     "description": "Send the event to Google PubSub",
