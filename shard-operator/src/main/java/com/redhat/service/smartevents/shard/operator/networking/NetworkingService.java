@@ -2,12 +2,11 @@ package com.redhat.service.smartevents.shard.operator.networking;
 
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 
-import io.fabric8.kubernetes.api.model.Service;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 public interface NetworkingService {
 
-    NetworkResource fetchOrCreateNetworkIngress(BridgeIngress bridgeIngress, Service service);
+    NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, String path);
 
     EventSource buildInformerEventSource(String component);
 

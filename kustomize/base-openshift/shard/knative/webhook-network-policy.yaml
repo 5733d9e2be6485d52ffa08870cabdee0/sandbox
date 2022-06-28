@@ -11,3 +11,5 @@ spec:
   podSelector:
     matchLabels:
       app: eventing-webhook
+  ingress:
+    - {}

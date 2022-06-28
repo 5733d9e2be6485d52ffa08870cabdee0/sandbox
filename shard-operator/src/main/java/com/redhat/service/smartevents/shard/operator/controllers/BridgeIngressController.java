@@ -1,8 +1,9 @@
 package com.redhat.service.smartevents.shard.operator.controllers;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -10,29 +11,24 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
-import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReason;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionType;
-import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
-import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
@@ -62,19 +58,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     NetworkingService networkingService;
 
     @Inject
-    ServiceMonitorService monitorService;
-
-    @Inject
-    BridgeErrorService bridgeErrorService;
+    IstioGatewayProvider istioGatewayProvider;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
 
         List<EventSource> eventSources = new ArrayList<>();
         eventSources.add(EventSourceFactory.buildSecretsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildDeploymentsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
-        eventSources.add(EventSourceFactory.buildServicesMonitorInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildConfigMapsInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildBrokerInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
+        eventSources.add(EventSourceFactory.buildAuthorizationPolicyInformer(kubernetesClient, BridgeIngress.COMPONENT_NAME));
         eventSources.add(networkingService.buildInformerEventSource(BridgeIngress.COMPONENT_NAME));
 
         return eventSources;
@@ -91,78 +84,45 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             return UpdateControl.noUpdate();
         }
 
-        // Check if the image of the ingress has to be updated
-        String image = bridgeIngressService.getIngressImage();
-        if (!image.equals(bridgeIngress.getSpec().getImage())) {
-            bridgeIngress.getSpec().setImage(image);
-            return UpdateControl.updateResource(bridgeIngress);
-        }
+        ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
 
-        Deployment deployment = bridgeIngressService.fetchOrCreateBridgeIngressDeployment(bridgeIngress, secret);
+        // Nothing to check for ConfigMap
 
-        if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+        KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
+        String path = extractBrokerPath(knativeBroker);
+
+        if (path == null) {
+            LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-
-            bridgeIngress.getStatus().setConditionsFromDeployment(deployment);
-
-            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyDeploymentFailure(bridgeIngress, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyDeploymentFailure(bridgeIngress, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
-            }
-
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
-        LOGGER.debug("Ingress deployment BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Create Service
-        Service service = bridgeIngressService.fetchOrCreateBridgeIngressService(bridgeIngress, deployment);
-        if (service.getStatus() == null) {
-            LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.ServiceNotReady);
-            return UpdateControl.updateStatus(bridgeIngress);
-        }
-        LOGGER.debug("Ingress service BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress, path);
 
-        // Create Route
-        NetworkResource networkResource = networkingService.fetchOrCreateNetworkIngress(bridgeIngress, service);
+        // Nothing to check for Authorization Policy
+
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
 
         if (!networkResource.isReady()) {
             LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Augmentation, ConditionReason.NetworkResourceNotReady);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
-        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeIngress, service, BridgeIngress.COMPONENT_NAME);
-        if (serviceMonitor.isPresent()) {
-            // this is an optional resource
-            LOGGER.debug("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
-        } else {
-            LOGGER.warn("Ingress monitor resource BridgeIngress: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeIngress.getMetadata().getName(),
-                    bridgeIngress.getMetadata().getNamespace());
-            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
-                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Ready,
-                    ConditionReason.PrometheusUnavailable,
-                    prometheusNotAvailableError.getReason(),
-                    prometheusNotAvailableError.getCode());
-            notifyManager(bridgeIngress, ManagedResourceStatus.FAILED);
-            return UpdateControl.updateStatus(bridgeIngress);
-        }
+        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.getStatus().markConditionTrue(ConditionType.Ready);
-            bridgeIngress.getStatus().markConditionFalse(ConditionType.Augmentation);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
+
         return UpdateControl.noUpdate();
     }
 
@@ -170,17 +130,22 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     public DeleteControl cleanup(BridgeIngress bridgeIngress, Context context) {
         LOGGER.info("Deleted BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        // Linked resources are automatically deleted
+        // Linked resources are automatically deleted except for Authorization Policy and the ingress due to https://github.com/istio/istio/issues/37221
+
+        // Since the authorizationPolicy has to be in the istio-system namespace due to https://github.com/istio/istio/issues/37221
+        // we can not set the owner reference. We have to delete the resource manually.
+        kubernetesClient.resources(AuthorizationPolicy.class)
+                .inNamespace(istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace()) // https://github.com/istio/istio/issues/37221
+                .withName(bridgeIngress.getMetadata().getName())
+                .delete();
+
+        // Since the ingress for the gateway has to be in the istio-system namespace
+        // we can not set the owner reference. We have to delete the resource manually.
+        networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
         notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 
         return DeleteControl.defaultDelete();
-    }
-
-    private void notifyDeploymentFailure(BridgeIngress bridgeIngress, String failureReason) {
-        LOGGER.warn("Ingress deployment BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeIngress, ManagedResourceStatus.FAILED);
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
@@ -191,5 +156,17 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId()));
+    }
+
+    private String extractBrokerPath(KnativeBroker broker) {
+        if (broker == null || broker.getStatus() == null || broker.getStatus().getAddress().getUrl() == null) {
+            return null;
+        }
+        try {
+            return new URL(broker.getStatus().getAddress().getUrl()).getPath();
+        } catch (MalformedURLException e) {
+            LOGGER.info("Could not extract URL of the broker of BridgeIngress '{}'", broker.getMetadata().getName());
+            return null;
+        }
     }
 }

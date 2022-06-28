@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.filters.StringIn;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.manager.ProcessorRequestForTests;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
@@ -486,7 +487,7 @@ public class ProcessorAPITest {
         action.setMapParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
-        assertThat(response.getStatusCode()).isEqualTo(202);
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test
@@ -545,7 +546,7 @@ public class ProcessorAPITest {
     @Test
     @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
     public void addProcessorToBridge_noNameSuppliedForProcessor() {
-        ProcessorRequest request = new ProcessorRequest();
+        ProcessorRequestForTests request = new ProcessorRequestForTests();
         request.setAction(TestUtils.createKafkaAction());
         Response response = TestUtils.addProcessorToBridge(TestConstants.DEFAULT_BRIDGE_NAME, request);
         assertThat(response.getStatusCode()).isEqualTo(400);

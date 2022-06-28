@@ -114,6 +114,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setName(processorRequest.getName());
         newProcessor.setSubmittedAt(ZonedDateTime.now());
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
+        newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
         newProcessor.setOwner(owner);
@@ -175,9 +176,11 @@ public class ProcessorServiceImpl implements ProcessorService {
                     customerId));
         }
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
+        Set<BaseFilter> existingFilters = existingDefinition.getFilters();
+        String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
         Action existingAction = existingDefinition.getRequestedAction();
-        Action existingResolvedAction = existingDefinition.getResolvedAction();
         Source existingSource = existingDefinition.getRequestedSource();
+        Action existingResolvedAction = existingDefinition.getResolvedAction();
 
         // Validate update.
         // Name cannot be updated.
@@ -187,33 +190,51 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        // See https://issues.redhat.com/browse/MGDOBR-516 for updating Action support
-        if (!Objects.equals(existingAction, processorRequest.getAction())) {
-            throw new BadRequestException("It is not possible to update the Processor's Action.");
+        if (existingProcessor.getType() == ProcessorType.SINK) {
+            if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
+            }
         }
-        if (!Objects.equals(existingSource, processorRequest.getSource())) {
-            throw new BadRequestException("It is not possible to update the Processor's Source.");
+        if (existingProcessor.getType() == ProcessorType.SOURCE) {
+            if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
+            }
         }
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
+        Source updatedSource = processorRequest.getSource();
+        Action updatedAction = processorRequest.getAction();
+        Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
+                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
+                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
         ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingSource, existingResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, existingAction, existingResolvedAction);
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
 
         // No need to update CRD if the definition is unchanged
-        if (existingDefinition.equals(updatedDefinition)) {
+        // This will need to change to compare _public_ and _secret_ Gateway parameters
+        // See https://issues.redhat.com/browse/MGDOBR-59. The individual components of the ProcessorDefinition
+        // are separated here to make the required change more explicit.
+        if (Objects.equals(existingFilters, updatedFilters)
+                && Objects.equals(existingTransformationTemplate, updatedTransformationTemplate)
+                && Objects.equals(existingAction, updatedAction)
+                && Objects.equals(existingSource, updatedSource)
+                && Objects.equals(existingResolvedAction, updatedResolvedAction)) {
             return existingProcessor;
         }
 
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now());
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
+        existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
+        existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
 
-        // Processor and Work should always be created in the same transaction
+        // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
+        connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
         metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
 
@@ -297,6 +318,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         // Processor and Connector deletion and related Work creation should always be in the same transaction
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
+        processor.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
         processor.setDeletionRequestedAt(ZonedDateTime.now());
 
         connectorService.deleteConnectorEntity(processor);
@@ -335,6 +357,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 internalKafkaConfigurationProvider.getClientId(),
                 internalKafkaConfigurationProvider.getClientSecret(),
                 internalKafkaConfigurationProvider.getSecurityProtocol(),
+                internalKafkaConfigurationProvider.getSaslMechanism(),
                 getProcessorTopicName(processor),
                 resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId()));
     }

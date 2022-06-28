@@ -6,6 +6,11 @@ package com.redhat.service.smartevents.infra.api;
 public class APIConstants {
 
     /**
+     * Base Path for the Cloud Providers API
+     */
+    public static final String CLOUD_PROVIDERS_BASE_PATH = "/api/v1/cloud_providers";
+
+    /**
      * Base Path for the user-facing API
      */
     public static final String USER_API_BASE_PATH = "/api/v1/bridges/";

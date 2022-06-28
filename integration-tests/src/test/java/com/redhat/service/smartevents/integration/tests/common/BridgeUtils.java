@@ -63,11 +63,6 @@ public class BridgeUtils {
                 .getToken();
     }
 
-    public static String getOrRetrieveBridgeEndpoint(TestContext context, String testBridgeName) {
-        String bridgeEventsEndpoint = getOrRetrieveBridgeEventsEndpoint(context, testBridgeName);
-        return bridgeEventsEndpoint.replaceFirst("/events$", "");
-    }
-
     public static String getOrRetrieveBridgeEventsEndpoint(TestContext context, String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
 

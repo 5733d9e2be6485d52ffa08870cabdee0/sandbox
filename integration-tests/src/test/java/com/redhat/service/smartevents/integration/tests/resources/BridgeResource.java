@@ -4,6 +4,7 @@ import java.io.InputStream;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
+import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -31,24 +32,24 @@ public class BridgeResource {
     }
 
     public static Response addBridgeResponse(String token, String bridgeName) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(new BridgeRequest(bridgeName))
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
     public static Response addBridgeResponse(String token, InputStream bridgeRequest) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(bridgeRequest)
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 
     public static BridgeResponse getBridgeDetails(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId)
                 .then()
                 .log().ifValidationFails()
@@ -67,7 +68,7 @@ public class BridgeResource {
     }
 
     public static Response getBridgeListResponse(String token) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
@@ -79,7 +80,7 @@ public class BridgeResource {
     }
 
     public static Response deleteBridgeResponse(String token, String bridgeId) {
-        return ResourceUtils.jsonRequest(token)
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .delete(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
     }
 }

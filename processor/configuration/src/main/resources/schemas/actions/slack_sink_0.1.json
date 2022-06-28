@@ -20,7 +20,9 @@
           "title": "Webhook URL",
           "description": "The webhook URL used by the Slack channel to handle incoming messages.",
           "type": "string",
-          "format": "password"
+          "format": "password",
+          "$comment": "https://stackoverflow.com/a/6041965/9360757",
+          "pattern": "(http|https):\\\/\\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\\/~+#-]*[\\w@?^=%&\\\/~+#-])"
         },
         {
           "description": "An opaque reference to the slack_webhook_url",
@@ -43,36 +45,6 @@
       "title": "Username",
       "description": "This is the username that the bot will have when sending messages to a channel or user.",
       "type": "string"
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "consumes": {
-          "$ref": "#/$defs/data_shape/consumes"
-        }
-      }
-    },
-    "processors": {}
-  },
-  "$defs": {
-    "data_shape": {
-      "consumes": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "format"
-        ],
-        "properties": {
-          "format": {
-            "type": "string",
-            "default": "application/octet-stream",
-            "enum": [
-              "application/octet-stream"
-            ]
-          }
-        }
-      }
     }
   }
 }

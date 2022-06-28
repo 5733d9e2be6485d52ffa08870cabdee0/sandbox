@@ -10,6 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.ConnectorsApi;
 import com.openshift.cloud.api.connector.invoker.ApiException;
 import com.openshift.cloud.api.connector.models.Connector;
@@ -18,6 +22,7 @@ import com.openshift.cloud.api.connector.models.Error;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorCreationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorDeletionException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorGetException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ConnectorUpdateException;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
@@ -42,6 +47,7 @@ class ConnectorsApiClientTest {
     private static final String TEST_CONNECTOR_EXTERNAL_ID = "test-connector-ext-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_NAME = "TestProcessor";
+    private static final JsonNode TEST_DEFINITION = new TextNode("definition");
 
     @ConfigProperty(name = "managed-connectors.namespace.id")
     String mcNamespaceId;
@@ -156,6 +162,28 @@ class ConnectorsApiClientTest {
         when(connectorsApi.deleteConnector(any())).thenReturn(error);
 
         assertThatThrownBy(() -> connectorsApiClient.deleteConnector(TEST_CONNECTOR_ID)).isInstanceOf(ConnectorDeletionException.class);
+    }
+
+    @Test
+    void doUpdateConnector() throws ApiException {
+        connectorsApiClient.updateConnector(TEST_CONNECTOR_ID, TEST_DEFINITION);
+
+        ObjectNode patch = JsonNodeFactory.instance.objectNode();
+        patch.set(ConnectorsApiClientImpl.CONNECTOR_PATCH_JSON_PROPERTY, TEST_DEFINITION);
+
+        verify(connectorsApi).patchConnector(TEST_CONNECTOR_ID, patch);
+    }
+
+    @Test
+    void doUpdateConnectorApiException() throws ApiException {
+        final ApiException exception = new ApiException("Not Found",
+                new IllegalStateException(""),
+                Response.Status.NOT_FOUND.getStatusCode(),
+                Collections.emptyMap(), "");
+
+        when(connectorsApi.patchConnector(any(), any())).thenThrow(exception);
+
+        assertThatThrownBy(() -> connectorsApiClient.updateConnector(TEST_CONNECTOR_ID, TEST_DEFINITION)).isInstanceOf(ConnectorUpdateException.class);
     }
 
     private Connector testConnector() {

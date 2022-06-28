@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluator;
 import com.redhat.service.smartevents.executor.filters.FilterEvaluatorFactory;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -27,6 +28,7 @@ import io.micrometer.core.instrument.Timer;
 public class ExecutorImpl implements Executor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutorImpl.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final ProcessorDTO processor;
     private final boolean isSourceProcessor;
@@ -86,7 +88,18 @@ public class ExecutorImpl implements Executor {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> toEventMap(CloudEvent event) {
-        return CloudEventUtils.getMapper().convertValue(event, Map.class);
+        Map<String, Object> map = CloudEventUtils.getMapper().convertValue(event, Map.class);
+
+        // The CloudEventDeserializer from the cloud-event sdk decodes the data as a String. If it's a json, we have to convert it.
+        if (map.containsKey(CloudEventUtils.CE_DATA_FIELD_NAME)) {
+            try {
+                map.replace(CloudEventUtils.CE_DATA_FIELD_NAME, MAPPER.readValue(map.get(CloudEventUtils.CE_DATA_FIELD_NAME).toString(), Map.class));
+            } catch (Exception e) {
+                LOG.debug("Could not deserialize the data into a Map. It is kept as String.");
+            }
+        }
+
+        return map;
     }
 
     private boolean matchesFilters(Map<String, Object> eventMap) {

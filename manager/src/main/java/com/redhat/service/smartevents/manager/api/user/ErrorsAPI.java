@@ -24,7 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorListResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.ListResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
@@ -48,7 +48,7 @@ public class ErrorsAPI {
     @Operation(summary = "Get the list of errors.", description = "Get the list of errors from the error catalog.")
     @GET
     public Response getErrors(@Valid @BeanParam QueryPageInfo queryInfo) {
-        return Response.ok(ListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
+        return Response.ok(PagedListResponse.fill(service.getUserErrors(queryInfo), new ErrorListResponse(), ErrorResponse::from)).build();
     }
 
     @APIResponses(value = {
