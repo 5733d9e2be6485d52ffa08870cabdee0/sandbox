@@ -26,10 +26,10 @@ public class CloudProviderAPITest {
                 .get()
                 .as(CloudProviderListResponse.class);
 
-        assertThat(cloudProviders.getItems().size()).isEqualTo(1);
+        assertThat(cloudProviders.getItems().size()).isEqualTo(2);
         assertThat(cloudProviders.getPage()).isZero();
-        assertThat(cloudProviders.getSize()).isEqualTo(1);
-        assertThat(cloudProviders.getTotal()).isEqualTo(1);
+        assertThat(cloudProviders.getSize()).isEqualTo(2);
+        assertThat(cloudProviders.getTotal()).isEqualTo(2);
 
         CloudProviderResponse cloudProviderResponse = cloudProviders.getItems().get(0);
         assertThat(cloudProviderResponse.getKind()).isEqualTo("CloudProvider");
@@ -38,6 +38,14 @@ public class CloudProviderAPITest {
         assertThat(cloudProviderResponse.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(cloudProviderResponse.isEnabled()).isTrue();
         assertThat(cloudProviderResponse.getHref()).isEqualTo(APIConstants.CLOUD_PROVIDERS_BASE_PATH + "/aws");
+
+        cloudProviderResponse = cloudProviders.getItems().get(1);
+        assertThat(cloudProviderResponse.getKind()).isEqualTo("CloudProvider");
+        assertThat(cloudProviderResponse.getId()).isEqualTo("gcp");
+        assertThat(cloudProviderResponse.getName()).isEqualTo("gcp");
+        assertThat(cloudProviderResponse.getDisplayName()).isEqualTo("Google Compute Cloud");
+        assertThat(cloudProviderResponse.isEnabled()).isFalse();
+        assertThat(cloudProviderResponse.getHref()).isEqualTo(APIConstants.CLOUD_PROVIDERS_BASE_PATH + "/gcp");
     }
 
     @Test
@@ -66,22 +74,28 @@ public class CloudProviderAPITest {
                 .get()
                 .as(CloudRegionListResponse.class);
 
-        assertThat(cloudRegions.getItems().size()).isEqualTo(1);
+        assertThat(cloudRegions.getItems().size()).isEqualTo(2);
         assertThat(cloudRegions.getPage()).isZero();
-        assertThat(cloudRegions.getSize()).isEqualTo(1);
-        assertThat(cloudRegions.getTotal()).isEqualTo(1);
+        assertThat(cloudRegions.getSize()).isEqualTo(2);
+        assertThat(cloudRegions.getTotal()).isEqualTo(2);
 
         CloudRegionResponse cloudRegion = cloudRegions.getItems().get(0);
         assertThat(cloudRegion.getKind()).isEqualTo("CloudRegion");
         assertThat(cloudRegion.getName()).isEqualTo("us-east-1");
         assertThat(cloudRegion.getDisplayName()).isEqualTo("US East, N. Virginia");
         assertThat(cloudRegion.isEnabled()).isTrue();
+
+        cloudRegion = cloudRegions.getItems().get(1);
+        assertThat(cloudRegion.getKind()).isEqualTo("CloudRegion");
+        assertThat(cloudRegion.getName()).isEqualTo("eu-west-1");
+        assertThat(cloudRegion.getDisplayName()).isEqualTo("EU West, London");
+        assertThat(cloudRegion.isEnabled()).isFalse();
     }
 
     @Test
     public void listCloudProviderRegions_unknownCloudProvider() {
         int fourOhFour = given()
-                .basePath(APIConstants.CLOUD_PROVIDERS_BASE_PATH + "/gcp/regions")
+                .basePath(APIConstants.CLOUD_PROVIDERS_BASE_PATH + "/azure/regions")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()

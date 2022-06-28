@@ -1,7 +1,9 @@
 package com.redhat.service.smartevents.manager.models;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CloudProvider {
@@ -71,5 +73,13 @@ public class CloudProvider {
 
     public void setRegions(List<CloudRegion> regions) {
         this.regions = regions;
+    }
+
+    @JsonIgnore
+    public Optional<CloudRegion> getRegionByName(String name) {
+        if (this.regions == null) {
+            return Optional.empty();
+        }
+        return this.regions.stream().filter(r -> r.getName().equals(name)).findFirst();
     }
 }
