@@ -48,6 +48,8 @@ class TransformationTemplateConstraintValidatorTest {
     void isValidMalformedTemplate() {
         when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
         when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
+        when(validatorContextMock.addMessageParameter(any(), anyString())).thenReturn(validatorContextMock);
+        when(validatorContextMock.withDynamicPayload(any())).thenReturn(validatorContextMock);
 
         assertThat(constraintValidator.isValid("Hi {key how are you?", validatorContextMock)).isFalse();
 

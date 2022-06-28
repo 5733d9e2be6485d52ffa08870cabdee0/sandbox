@@ -66,13 +66,13 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     }
 
     @Override
-    public List<String> getActionsCatalog() {
-        return actions.stream().map(ProcessorCatalogEntry::getId).collect(Collectors.toList());
+    public List<ProcessorCatalogEntry> getActionsCatalog() {
+        return actions;
     }
 
     @Override
-    public List<String> getSourcesCatalog() {
-        return sources.stream().map(ProcessorCatalogEntry::getId).collect(Collectors.toList());
+    public List<ProcessorCatalogEntry> getSourcesCatalog() {
+        return sources;
     }
 
     @Override
@@ -126,7 +126,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     }
 
     private JsonSchema getJsonSchemaFromJsonNode(ObjectNode objectNode) {
-        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
         return factory.getSchema(objectNode);
     }
 }

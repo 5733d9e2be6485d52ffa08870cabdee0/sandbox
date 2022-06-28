@@ -6,6 +6,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMissingGatewayException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorMultipleGatewayException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorTransformationTemplateUnsupportedException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -34,17 +37,26 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
         Source source = value.getSource();
 
         if (action == null && source == null) {
-            addConstraintViolation(context, MISSING_GATEWAY_ERROR, Collections.emptyMap());
+            addConstraintViolation(context,
+                    MISSING_GATEWAY_ERROR,
+                    Collections.emptyMap(),
+                    ProcessorMissingGatewayException::new);
             return false;
         }
         if (action != null && source != null) {
-            addConstraintViolation(context, MULTIPLE_GATEWAY_ERROR, Collections.emptyMap());
+            addConstraintViolation(context,
+                    MULTIPLE_GATEWAY_ERROR,
+                    Collections.emptyMap(),
+                    ProcessorMultipleGatewayException::new);
             return false;
         }
 
         // Currently, source processors don't support transformation
         if (value.getType() == ProcessorType.SOURCE && value.getTransformationTemplate() != null) {
-            addConstraintViolation(context, SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR, Collections.emptyMap());
+            addConstraintViolation(context,
+                    SOURCE_PROCESSOR_WITH_TRANSFORMATION_ERROR,
+                    Collections.emptyMap(),
+                    ProcessorTransformationTemplateUnsupportedException::new);
             return false;
         }
 

@@ -24,22 +24,28 @@ The following `Actions` are currently supported by Event Bridge:
 
 ### KafkaTopic
 
-Allows you to send an `Event` to a Kafka Topic on a hard-coded Kafka Cluster made available via the SmartEvents deployment
+Allows you to send an `Event` to a Kafka Topic on a RHOSAK Kafka Cluster
 
 #### KafkaTopic Configuration Parameters
 
 * `topic` - The topic name to send the Event to
+* `kafka_broker_url` - The RHOSAK Broker URL
+* `kafka_client_id` - The Client Id part of the credentials to authenticate to Kafka
+* `kafka_client_secret` - The Client Secret part of the credentials to authenticate to Kafka
 
 #### KafkaTopic Example
 
-To send an Event to the topic `myRequestedTopic`:
+To send an Event to the Kafka Topic `myRequestedTopic` on the Kafka Server `kafka-server-url:443` with the credentials `clientId` and `clientSecret`
 
 ```json
 {
   "action": {
     "type": "kafka_topic_sink_0.1",
     "parameters": {
-      "topic": "myRequestedTopic"
+      "topic": "myRequestedTopic",
+      "kafka_broker_url": "kafka-server-url:443",
+      "kafka_client_id": "clientId",
+      "kafka_client_secret": "clientSecret"
     }
   }
 }

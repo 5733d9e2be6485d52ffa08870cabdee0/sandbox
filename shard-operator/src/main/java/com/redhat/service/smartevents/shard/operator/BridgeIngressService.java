@@ -2,10 +2,11 @@ package com.redhat.service.smartevents.shard.operator;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 
 public interface BridgeIngressService {
     void createBridgeIngress(BridgeDTO bridgeDTO);
@@ -16,9 +17,9 @@ public interface BridgeIngressService {
 
     Secret fetchBridgeIngressSecret(BridgeIngress bridgeIngress);
 
-    Deployment fetchOrCreateBridgeIngressDeployment(BridgeIngress bridgeIngress, Secret secret);
+    ConfigMap fetchOrCreateBridgeIngressConfigMap(BridgeIngress bridgeIngress, Secret secret);
 
-    Service fetchOrCreateBridgeIngressService(BridgeIngress bridgeIngress, Deployment deployment);
+    KnativeBroker fetchOrCreateBridgeIngressBroker(BridgeIngress bridgeIngress, ConfigMap configMap);
 
-    String getIngressImage();
+    AuthorizationPolicy fetchOrCreateBridgeIngressAuthorizationPolicy(BridgeIngress bridgeIngress, String path);
 }

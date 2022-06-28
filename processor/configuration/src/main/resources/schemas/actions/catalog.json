@@ -1,18 +1,44 @@
 [
   {
+    "id": "ansible_tower_job_template_sink_0.1",
+    "name": "Ansible Tower Job Template",
+    "description": "Launch a job template in Ansible Tower.",
+    "isConnector": false
+  },
+  {
+    "id": "aws_lambda_sink_0.1",
+    "name": "AWS Lambda",
+    "description": "Send the event to an AWS lambda.",
+    "isConnector": true
+  },
+  {
+    "id": "google_pubsub_sink_0.1",
+    "name": "Google PubSub",
+    "description": "Send the event to Google PubSub",
+    "isConnector": true
+  },
+  {
     "id": "kafka_topic_sink_0.1",
+    "name": "Kafka Topic",
+    "description": "Send the event to a kafka topic.",
     "isConnector": false
   },
   {
     "id": "send_to_bridge_sink_0.1",
+    "name": "Send To Bridge",
+    "description": "Send the event to a Bridge instance.",
     "isConnector": false
   },
   {
     "id": "slack_sink_0.1",
+    "name": "Slack",
+    "description": "Send the event to a slack channel.",
     "isConnector": true
   },
   {
     "id": "webhook_sink_0.1",
+    "name": "Webhook",
+    "description": "Send the event to a webhook.",
     "isConnector": false
   }
 ]

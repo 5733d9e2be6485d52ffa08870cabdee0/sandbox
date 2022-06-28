@@ -142,6 +142,13 @@ public class BridgesServiceTest {
     }
 
     @Test
+    void testCreateBridge_whiteSpaceInName() {
+        BridgeRequest request = new BridgeRequest("   name   ");
+        Bridge bridge = bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
+        assertThat(bridge.getName()).isEqualTo("name");
+    }
+
+    @Test
     public void testUpdateBridgeStatus() {
         BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);

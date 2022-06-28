@@ -22,6 +22,8 @@ public class CloudEventUtils {
     private static final Logger LOG = LoggerFactory.getLogger(CloudEventUtils.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(JsonFormat.getCloudEventJacksonModule());
 
+    public static final String CE_DATA_FIELD_NAME = "data";
+
     public static CloudEventBuilder builderFor(SpecVersion specVersion, String id, URI source, String type, String subject, JsonNode data) {
         CloudEventBuilder builder = CloudEventBuilder.fromSpecVersion(specVersion)
                 .withId(id)

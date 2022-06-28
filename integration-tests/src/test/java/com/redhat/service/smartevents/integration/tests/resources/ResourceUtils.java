@@ -2,19 +2,18 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.util.Optional;
 
-import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
 
 public class ResourceUtils {
 
-    public static RequestSpecification jsonRequest(String token) {
-        return jsonRequest(Optional.ofNullable(token));
+    public static RequestSpecification newRequest(String token, String contentType) {
+        return newRequest(Optional.ofNullable(token), contentType);
     }
 
-    public static RequestSpecification jsonRequest(Optional<String> token) {
-        RequestSpecification requestSpec = given().contentType(ContentType.JSON).when();
+    public static RequestSpecification newRequest(Optional<String> token, String contentType) {
+        RequestSpecification requestSpec = given().contentType(contentType).when();
         if (token.isPresent()) {
             return requestSpec.auth().oauth2(token.get());
         } else {

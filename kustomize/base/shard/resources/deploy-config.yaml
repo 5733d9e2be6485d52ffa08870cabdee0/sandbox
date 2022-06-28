@@ -4,7 +4,6 @@ metadata:
   name: event-bridge-shard-operator-config
 data:
   EVENT_BRIDGE_MANAGER_URL: toReplace
-  EVENT_BRIDGE_INGRESS_IMAGE: toReplace
   EVENT_BRIDGE_EXECUTOR_IMAGE: toReplace
   EVENT_BRIDGE_K8S_PLATFORM: toReplace
   KAFKA_SECURITY_PROTOCOL: toReplace

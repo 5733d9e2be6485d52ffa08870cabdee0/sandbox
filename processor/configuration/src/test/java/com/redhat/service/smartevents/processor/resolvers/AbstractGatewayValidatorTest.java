@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.processor.resolvers;
 
+import java.util.List;
 import java.util.Map;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -28,10 +29,12 @@ public abstract class AbstractGatewayValidatorTest {
         return action;
     }
 
-    protected void assertValidationIsInvalid(Gateway gateway, String errorMessage) {
+    protected void assertValidationIsInvalid(Gateway gateway, List<String> errorMessages) {
         ValidationResult validationResult = getValidator().isValid(gateway);
         assertThat(validationResult.isValid()).isFalse();
-        assertThat(validationResult.getMessage()).startsWith(errorMessage);
+        for (String errorMessage : errorMessages) {
+            assertThat(validationResult.getViolations().stream().map(v -> v.getException().getMessage()).anyMatch(m -> m.startsWith(errorMessage))).isTrue();
+        }
     }
 
     protected void assertValidationIsValid(Gateway gateway) {

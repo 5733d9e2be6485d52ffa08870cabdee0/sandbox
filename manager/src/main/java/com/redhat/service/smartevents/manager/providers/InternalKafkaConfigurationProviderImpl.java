@@ -11,6 +11,7 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
     public static final String KAFKA_CLIENT_ID_PROPERTY = "event-bridge.kafka.client.id";
     public static final String KAFKA_CLIENT_SECRET_PROPERTY = "event-bridge.kafka.client.secret";
     public static final String KAFKA_SECURITY_PROTOCOL_PROPERTY = "event-bridge.kafka.security.protocol";
+    public static final String KAFKA_SASL_MECHANISM_PROPERTY = "event-bridge.kafka.sasl.mechanism";
 
     @ConfigProperty(name = KAFKA_BOOTSTRAP_SERVERS_PROPERTY)
     String kafkaBootstrapServers;
@@ -23,6 +24,9 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
 
     @ConfigProperty(name = KAFKA_SECURITY_PROTOCOL_PROPERTY)
     String kafkaSecurityProtocol;
+
+    @ConfigProperty(name = KAFKA_SASL_MECHANISM_PROPERTY)
+    String saslMechanism;
 
     @Override
     public String getClientId() {
@@ -42,5 +46,10 @@ public class InternalKafkaConfigurationProviderImpl implements InternalKafkaConf
     @Override
     public String getSecurityProtocol() {
         return kafkaSecurityProtocol;
+    }
+
+    @Override
+    public String getSaslMechanism() {
+        return saslMechanism;
     }
 }

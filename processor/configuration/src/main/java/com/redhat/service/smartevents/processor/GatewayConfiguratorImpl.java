@@ -8,9 +8,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
+import com.redhat.service.smartevents.processor.resolvers.GatewayResolver;
+import com.redhat.service.smartevents.processor.resolvers.SinkConnectorResolver;
 import com.redhat.service.smartevents.processor.resolvers.SourceConnectorResolver;
+import com.redhat.service.smartevents.processor.resolvers.custom.CustomGatewayResolver;
 import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
 import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 import com.redhat.service.smartevents.processor.validators.custom.CustomGatewayValidator;
@@ -22,13 +27,19 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     Instance<CustomGatewayValidator> customValidators;
 
     @Inject
-    Instance<GatewayResolver<Action>> actionResolvers;
+    Instance<CustomGatewayResolver<Action>> actionResolvers;
 
     @Inject
     DefaultGatewayValidator defaultGatewayValidator;
 
     @Inject
+    SinkConnectorResolver sinkConnectorResolver;
+
+    @Inject
     SourceConnectorResolver sourceConnectorResolver;
+
+    @Inject
+    ProcessorCatalogService processorCatalogService;
 
     @Override
     public GatewayValidator getValidator(String actionType) {
@@ -40,7 +51,17 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
     }
 
     @Override
-    public Optional<GatewayResolver<Action>> getActionResolver(String actionType) {
+    public Optional<? extends GatewayResolver<Action>> getActionResolver(String actionType) {
+        Optional<ProcessorCatalogEntry> catalogEntry = processorCatalogService.getActionsCatalog().stream().filter(x -> x.getId().equals(actionType)).findFirst();
+        if (catalogEntry.isEmpty()) {
+            throw new ItemNotFoundException(String.format("Action of type '%s' not recognized", actionType));
+        }
+
+        // All the connectors resolve to the SinkConnectorResolver
+        if (catalogEntry.get().isConnector()) {
+            return Optional.of(sinkConnectorResolver);
+        }
+
         return getOptionalBean(actionResolvers, actionType);
     }
 
@@ -59,7 +80,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
         return customValidators.stream().collect(Collectors.toList());
     }
 
-    Collection<GatewayResolver<Action>> getActionResolvers() {
+    Collection<CustomGatewayResolver<Action>> getActionResolvers() {
         return actionResolvers.stream().collect(Collectors.toList());
     }
 }

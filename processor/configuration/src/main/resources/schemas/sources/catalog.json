@@ -1,18 +1,26 @@
 [
   {
     "id": "aws_s3_source_0.1",
-    "isConnector": true
+    "isConnector": true,
+    "name": "Aws S3 Source",
+    "description": "Ingest data from Aws S3."
   },
   {
     "id": "aws_sqs_source_0.1",
+    "isConnector": true,
+    "name": "Aws Sqs Source",
+    "description": "Ingest data from Aws Sqs."
+  },
+  {
+    "id": "google_pubsub_source_0.1",
+    "name": "Google PubSub Source",
+    "description": "Ingest data from Google PubSub.",
     "isConnector": true
   },
   {
     "id": "slack_source_0.1",
-    "isConnector": true
-  },
-  {
-    "id": "google_pubsub_source_0.1",
-    "isConnector": true
+    "isConnector": true,
+    "name": "Slack Source",
+    "description": "Ingest data from a Slack channel."
   }
 ]

@@ -17,6 +17,10 @@ public class ListResult<T> {
 
     private final long page;
 
+    public ListResult(List<T> items) {
+        this(items, 0, items.size());
+    }
+
     public ListResult(List<T> items, long page, long total) {
         this.items = items;
         this.page = page;

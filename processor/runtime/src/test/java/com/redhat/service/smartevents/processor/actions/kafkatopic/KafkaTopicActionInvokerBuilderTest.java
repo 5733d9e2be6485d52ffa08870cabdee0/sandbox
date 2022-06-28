@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
@@ -38,6 +39,7 @@ class KafkaTopicActionInvokerBuilderTest {
     KafkaTopicActionInvokerBuilder builder;
 
     @InjectMock
+    @Named("outboundAdminClient")
     AdminClient kafkaAdmin;
 
     private Set<String> topics = Collections.singleton(TOPIC_NAME);

@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 public class ProcessorCatalogServiceTest {
 
-    private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1");
+    private static final List<String> availableActions = List.of("kafka_topic_sink_0.1", "send_to_bridge_sink_0.1", "slack_sink_0.1", "webhook_sink_0.1", "aws_lambda_sink_0.1");
     private static final List<String> availableSources = List.of("aws_s3_source_0.1", "aws_sqs_source_0.1", "slack_source_0.1");
 
     @Inject
@@ -61,7 +61,7 @@ public class ProcessorCatalogServiceTest {
     public void testValidValidation() {
         ObjectNode objectNode = new ObjectMapper().createObjectNode()
                 .put(SlackAction.CHANNEL_PARAM, "channel")
-                .put(SlackAction.WEBHOOK_URL_PARAM, "url");
+                .put(SlackAction.WEBHOOK_URL_PARAM, "https://webhook.com");
         ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
         assertThat(result.getValidationMessages().size()).isEqualTo(0);
     }
@@ -71,6 +71,15 @@ public class ProcessorCatalogServiceTest {
         ObjectNode objectNode = new ObjectMapper().createObjectNode()
                 .put(SlackAction.CHANNEL_PARAM, "channel");
         ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
-        assertThat(result.getValidationMessages().size()).isEqualTo(1);
+        assertThat(result.getValidationMessages()).hasSize(1);
+    }
+
+    @Test
+    public void testInvalidValidationURL() {
+        ObjectNode objectNode = new ObjectMapper().createObjectNode()
+                .put(SlackAction.CHANNEL_PARAM, "channel")
+                .put(SlackAction.WEBHOOK_URL_PARAM, "notavalidurl");
+        ValidationResult result = processorCatalogService.validate("slack_sink_0.1", ProcessorType.SINK, objectNode);
+        assertThat(result.getValidationMessages()).hasSizeGreaterThan(0);
     }
 }
