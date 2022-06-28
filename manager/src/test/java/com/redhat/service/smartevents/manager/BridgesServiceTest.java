@@ -29,10 +29,12 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.SHARD_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +77,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetBridges() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         ListResult<Bridge> bridges = bridgesService.getBridges(DEFAULT_CUSTOMER_ID, new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE));
@@ -92,7 +94,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetBridge() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         Bridge bridge = bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete
@@ -114,7 +116,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetBridgeWithWrongCustomerId() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete
@@ -125,7 +127,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testCreateBridge() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete
@@ -141,14 +143,14 @@ public class BridgesServiceTest {
 
     @Test
     void testCreateBridge_whiteSpaceInName() {
-        BridgeRequest request = new BridgeRequest("   name   ");
+        BridgeRequest request = new BridgeRequest("   name   ", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         Bridge bridge = bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
         assertThat(bridge.getName()).isEqualTo("name");
     }
 
     @Test
     public void testUpdateBridgeStatus() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete
@@ -170,7 +172,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testUpdateBridgeStatusReadyPublishedAt() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete
@@ -203,7 +205,7 @@ public class BridgesServiceTest {
 
     @Test
     public void getBridge() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
 
         //Wait for Workers to complete

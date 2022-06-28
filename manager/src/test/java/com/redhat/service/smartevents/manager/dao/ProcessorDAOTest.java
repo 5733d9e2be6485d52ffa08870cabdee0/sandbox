@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
@@ -85,11 +84,7 @@ public class ProcessorDAOTest {
     }
 
     private Bridge createBridge() {
-        Bridge b = new Bridge();
-        b.setName(TestConstants.DEFAULT_BRIDGE_NAME);
-        b.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setOrganisationId(TestConstants.DEFAULT_CUSTOMER_ID);
-        b.setOwner(TestConstants.DEFAULT_USER_NAME);
+        Bridge b = Fixtures.createBridge();
         b.setStatus(ManagedResourceStatus.READY);
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
