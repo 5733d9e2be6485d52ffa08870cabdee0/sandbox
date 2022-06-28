@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -53,6 +54,15 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(SlackSource.CHANNEL_PARAM, "channel");
         params.put(SlackSource.TOKEN_PARAM, "token");
         assertValidationIsValid(sourceWith(SlackSource.TYPE, params));
+    }
+
+    @Test
+    void testGooglePubSubSource() {
+        Map<String, String> params = new HashMap<>();
+        params.put(GooglePubSubSource.GCP_SERVICE_ACCOUNT_KEY_PARAM, "key");
+        params.put(GooglePubSubSource.GCP_PROJECT_ID_PARAM, "id");
+        params.put(GooglePubSubSource.GCP_SUBSCRIPTION_NAME, "sub");
+        assertValidationIsValid(sourceWith(GooglePubSubSource.TYPE, params));
     }
 
     @Test
