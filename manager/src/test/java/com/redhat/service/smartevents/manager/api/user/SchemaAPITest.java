@@ -55,7 +55,7 @@ public class SchemaAPITest {
         assertThat(catalog.getItems()).isNotNull();
         assertThat(catalog.getItems())
                 .withFailMessage("The size of the catalog does not match. If you added a new action or a new source under /resources/schemas/ please update this test")
-                .hasSize(10);
+                .hasSize(11);
         for (ProcessorSchemaEntryResponse entry : catalog.getItems()) {
             switch (entry.getType()) {
                 case "action":
