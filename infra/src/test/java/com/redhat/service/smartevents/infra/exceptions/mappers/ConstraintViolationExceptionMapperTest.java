@@ -63,11 +63,13 @@ public class ConstraintViolationExceptionMapperTest {
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(constraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("message");
     }
 
     @Test
@@ -76,11 +78,13 @@ public class ConstraintViolationExceptionMapperTest {
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("message");
     }
 
     @Test
@@ -91,11 +95,13 @@ public class ConstraintViolationExceptionMapperTest {
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("message");
     }
 
     @Test
@@ -105,11 +111,13 @@ public class ConstraintViolationExceptionMapperTest {
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("2");
-        assertThat(response.getCode()).isEqualTo("mapped-code");
-        assertThat(response.getReason()).isEqualTo("not-found");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("2");
+        assertThat(error.getCode()).isEqualTo("mapped-code");
+        assertThat(error.getReason()).isEqualTo("not-found");
     }
 
     @Test

@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -40,10 +41,6 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
         ResponseBuilder builder = Response.status(Response.Status.BAD_REQUEST.getStatusCode());
         List<ConstraintViolation<?>> violations = new ArrayList<>(e.getConstraintViolations());
-        if (violations.size() == 1) {
-            ErrorResponse response = converter.apply(violations.get(0));
-            return builder.entity(response).build();
-        }
 
         ErrorsResponse response = new ErrorsResponse();
         ErrorsResponse.fill(new ListResult<>(violations), response, converter);
@@ -76,7 +73,7 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
         private ErrorResponse unmappedConstraintViolation(ConstraintViolation<?> cv) {
             Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
             if (error.isEmpty()) {
-                throw new IllegalStateException("Something seriously wrong has happened!");
+                throw new InternalPlatformException("Lookup of UnclassifiedConstraintViolationException failed.");
             }
             ErrorResponse errorResponse = ErrorResponse.from(error.get());
             errorResponse.setReason(cv.getMessage());

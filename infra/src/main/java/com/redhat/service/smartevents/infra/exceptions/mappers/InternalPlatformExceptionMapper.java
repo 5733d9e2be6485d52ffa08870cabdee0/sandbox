@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
@@ -47,7 +48,7 @@ public class InternalPlatformExceptionMapper implements ExceptionMapper<Internal
         Response.ResponseBuilder builder = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         ErrorResponse errorResponse = ErrorResponse.from(internalPlatformExceptionBridgeError);
         errorResponse.setReason(String.format(MESSAGE_TEMPLATE, e.getClass().getName(), e.getMessage()));
-        builder.entity(errorResponse);
+        builder.entity(ErrorsResponse.toErrors(errorResponse));
         return builder.build();
     }
 }

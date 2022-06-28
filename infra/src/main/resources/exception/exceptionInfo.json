@@ -178,5 +178,11 @@
     "id": 30,
     "reason": "The specified ErrorHandler Action is unsupported.",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedException",
+    "id": 31,
+    "reason": "An Exception has not been mapped to an ExternalUserException. The raw error is shown.",
+    "type": "PLATFORM"
   }
 ]
