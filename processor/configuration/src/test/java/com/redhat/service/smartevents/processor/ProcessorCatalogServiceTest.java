@@ -117,6 +117,7 @@ public class ProcessorCatalogServiceTest {
         Object[][] arguments = {
                 { "ansible_tower_job_template_sink_0.1", List.of("basic_auth_password") },
                 { "aws_lambda_sink_0.1", List.of("aws_access_key", "aws_secret_key") },
+                { "google_pubsub_sink_0.1", Collections.emptyList() },
                 { "kafka_topic_sink_0.1", Collections.emptyList() },
                 { "send_to_bridge_sink_0.1", Collections.emptyList() },
                 { "slack_sink_0.1", List.of("slack_webhook_url") },
@@ -153,6 +154,7 @@ public class ProcessorCatalogServiceTest {
         Object[][] arguments = {
                 { "aws_s3_source_0.1", List.of("aws_access_key", "aws_secret_key") },
                 { "aws_sqs_source_0.1", List.of("aws_access_key", "aws_secret_key") },
+                { "google_pubsub_source_0.1", Collections.emptyList() },
                 { "slack_source_0.1", List.of("slack_token") }
         };
         return Stream.of(arguments).map(Arguments::of);
