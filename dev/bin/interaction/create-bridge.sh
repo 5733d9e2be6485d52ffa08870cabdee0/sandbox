@@ -7,9 +7,9 @@ BRIDGE_NAME=${1:-$TODAY_BRIDGE_NAME}
 
 if [ "$ERROR_HANDLER_WEBHOOK_URL" = "" ];
 then
-    bridge_payload='{"name": '"\"$BRIDGE_NAME\""' }'
+    bridge_payload='{"name": '"\"$BRIDGE_NAME\""', "cloud_provider": "aws", "region": "us-east-1" }'
 else
-    bridge_payload='{"name": '"\"$BRIDGE_NAME\""',
+    bridge_payload='{"name": '"\"$BRIDGE_NAME\""', "cloud_provider": "aws", "region": "us-east-1",
                     "error_handler": { "type": "webhook_sink_0.1",
                                                      "parameters": {
                                                          "endpoint": '"\"$ERROR_HANDLER_WEBHOOK_URL\""'
