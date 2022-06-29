@@ -12,7 +12,7 @@ public class WebhookSiteResource {
 
     private static final String ENDPOINT_UUID = Utils.getSystemProperty("webhook.site.uuid");
 
-    private static final String ENDPOINT_TEST_UUID = Utils.getSystemProperty("35c8603e-a3c7-41e0-a465-cde9dddabe8a");
+    private static final String ENDPOINT_TEST_UUID = Utils.getSystemProperty("webhook.site.uuid.second");
 
     public static List<WebhookSiteRequest> requests(WebhookSiteQuerySorting sorting) {
         return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", ENDPOINT_UUID, sorting.getValue())
