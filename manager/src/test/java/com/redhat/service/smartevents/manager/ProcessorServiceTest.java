@@ -449,7 +449,7 @@ class ProcessorServiceTest {
 
     private static Stream<Arguments> updateProcessorGatewayParams() {
         Object[] arguments = {
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -573,7 +573,7 @@ class ProcessorServiceTest {
                     SlackSource.TOKEN_PARAM, "test-token-updated"));
             request.setSource(updatedSource);
         } else if (request.getType() == SINK) {
-            Action updatedAction = TestUtils.createWebhookAction();
+            Action updatedAction = createWebhookAction();
             updatedAction.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/updated"));
             request.setAction(updatedAction);
         }
