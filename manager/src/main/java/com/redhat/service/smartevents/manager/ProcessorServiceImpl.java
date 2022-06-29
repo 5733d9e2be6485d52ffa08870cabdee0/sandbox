@@ -193,13 +193,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         Action existingResolvedAction = existingDefinition.getResolvedAction();
         Source existingSource = existingDefinition.getRequestedSource();
 
-        // for sensitive fields we may receive either a string with the new value or an empty object
-        // if it remains unchanged (since the caller can't know the current real value)
-        // thus, before comparing the requested action/source with the existing one, we must unmask
-        // the sensitive fields with the original values (if those are unchanged) or with the new ones
-        Action unmaskedRequestedAction = unmaskRequestedGateway(processorRequest.getAction(), existingAction);
-        Source unmaskedRequestedSource = unmaskRequestedGateway(processorRequest.getSource(), existingSource);
-
         // Validate update.
         // Name cannot be updated.
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
@@ -208,28 +201,26 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SINK) {
-            if (!Objects.equals(existingAction.getType(), unmaskedRequestedAction.getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Action Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE) {
-            if (!Objects.equals(existingSource.getType(), unmaskedRequestedSource.getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
+
+        // for sensitive fields we may receive either a string with the new value or an empty object
+        // if it remains unchanged (since the caller can't know the current real value)
+        // thus, before comparing the requested action/source with the existing one, we must unmask
+        // the sensitive fields with the original values (if those are unchanged) or with the new ones
+        Action updatedAction = mergeGatewaySecrets(processorRequest.getAction(), existingAction);
+        Source updatedSource = mergeGatewaySecrets(processorRequest.getSource(), existingSource);
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Source updatedSource = processorRequest.getSource();
-        Action updatedAction = processorRequest.getAction();
         Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
-                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
-        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+                ? resolveSource(updatedSource, customerId, bridgeId, processorId)
+                : resolveAction(updatedAction, customerId, bridgeId, processorId);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -242,6 +233,10 @@ public class ProcessorServiceImpl implements ProcessorService {
                 && Objects.equals(existingResolvedAction, updatedResolvedAction)) {
             return existingProcessor;
         }
+
+        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
 
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now());
@@ -264,21 +259,21 @@ public class ProcessorServiceImpl implements ProcessorService {
         return existingProcessor;
     }
 
-    private <T extends Gateway> T unmaskRequestedGateway(T requestedGateway, T existingGateway) {
+    private <T extends Gateway> T mergeGatewaySecrets(T requestedGateway, T existingGateway) {
         if (requestedGateway == null || requestedGateway.getParameters() == null) {
             return requestedGateway;
         }
-        Map<String, String> toBeUnmasked = new HashMap<>();
+        Map<String, String> secretValues = new HashMap<>();
         Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedGateway.getParameters().fields();
         while (parametersIterator.hasNext()) {
             Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
             if (parameterEntry.getValue().equals(emptyObjectNode())) {
-                // this parameter is an unchanged sensitive field, so we must unmask it
-                // with the current real value
-                toBeUnmasked.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
+                // this parameter is an unchanged sensitive field,
+                // so we must replace it with the current real value
+                secretValues.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
             }
         }
-        toBeUnmasked.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
+        secretValues.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
         return requestedGateway;
     }
 
