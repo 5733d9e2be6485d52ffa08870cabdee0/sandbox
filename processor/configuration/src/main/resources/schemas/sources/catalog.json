@@ -12,6 +12,12 @@
     "description": "Ingest data from Aws Sqs."
   },
   {
+    "id": "google_pubsub_source_0.1",
+    "name": "Google PubSub Source",
+    "description": "Ingest data from Google PubSub.",
+    "isConnector": true
+  },
+  {
     "id": "slack_source_0.1",
     "isConnector": true,
     "name": "Slack Source",

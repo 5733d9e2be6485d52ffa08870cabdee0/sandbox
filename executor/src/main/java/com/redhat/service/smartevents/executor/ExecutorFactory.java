@@ -51,6 +51,12 @@ public class ExecutorFactory {
 
     @Produces
     @ApplicationScoped
+    public ProcessorDTO getProcessorDTO() {
+        return processorDTO;
+    }
+
+    @Produces
+    @ApplicationScoped
     public Executor buildExecutor() {
         return new ExecutorImpl(processorDTO,
                 filterEvaluatorFactory,

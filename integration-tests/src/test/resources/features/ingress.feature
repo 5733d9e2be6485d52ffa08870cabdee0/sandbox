@@ -10,10 +10,10 @@ Feature: Ingress tests
     {
       "name": "myProcessor",
       "action": {
+        "type": "webhook_sink_0.1",
         "parameters": {
-            "topic":  "myKafkaTopic"
-        },
-        "type": "kafka_topic_sink_0.1"
+            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+        }
       }
     }
     """

@@ -487,7 +487,7 @@ public class ProcessorAPITest {
         action.setMapParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
-        assertThat(response.getStatusCode()).isEqualTo(202);
+        assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
     @Test

@@ -6,19 +6,23 @@
       "type": "string",
       "title": "Endpoint",
       "description": "The endpoint that receives the webhook.",
+      "$comment": "https://stackoverflow.com/a/6041965/9360757",
+      "pattern": "(http|https):\\\/\\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\\/~+#-]*[\\w@?^=%&\\\/~+#-])",
       "example": "https://webhook.site/#!/f1fbd010-93cf-4be1-aa78-b37ba48858fe"
     },
     "basic_auth_username": {
       "type": "string",
       "title": "Basic Auth Username",
       "description": "The username for basic auth.",
-      "example": "kermit"
+      "example": "kermit",
+      "format": "password"
     },
     "basic_auth_password": {
       "type": "string",
       "title": "Basic Auth Password",
       "description": "The password for basic auth.",
-      "example": "mypassword"
+      "example": "mypassword",
+      "format": "password"
     },
     "ssl_verification_disabled": {
       "type": "boolean",
@@ -35,5 +39,13 @@
     "basic_auth_username",
     "basic_auth_password",
     "ssl_verification_disabled"
-  ]
+  ],
+  "dependentRequired": {
+    "basic_auth_username": [
+      "basic_auth_password"
+    ],
+    "basic_auth_password": [
+      "basic_auth_username"
+    ]
+  }
 }
