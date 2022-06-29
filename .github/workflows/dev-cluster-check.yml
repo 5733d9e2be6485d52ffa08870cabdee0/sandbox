@@ -50,7 +50,7 @@ jobs:
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}

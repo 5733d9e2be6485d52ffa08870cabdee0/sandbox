@@ -10,10 +10,10 @@ Feature: Ingress tests
     {
       "name": "myProcessor",
       "action": {
+        "type": "webhook_sink_0.1",
         "parameters": {
-            "topic":  "myKafkaTopic"
-        },
-        "type": "kafka_topic_sink_0.1"
+            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+        }
       }
     }
     """
@@ -35,11 +35,9 @@ Feature: Ingress tests
       }
     }
     """
-    Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events",}' count is at least 1
 
   Scenario: Send plain Cloud Event
-    When send a cloud event to the Ingress of the Bridge "mybridge" with path "plain" and headers "ce-id":"my-id","ce-source":"mySource","ce-specversion":"1.0","ce-type":"myType":
+    When send a json event to the Ingress of the Bridge "mybridge" with headers "Ce-Id":"my-id","Ce-Source":"mySource","Ce-Specversion":"1.0","Ce-Type":"myType":
     """
     { "data" : "test" }
     """
-    Then the Ingress of the Bridge "mybridge" metric 'http_server_requests_seconds_count{method="POST",outcome="SUCCESS",status="200",uri="/events/plain",}' count is at least 1

@@ -177,6 +177,9 @@ curl --request POST 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b9
              "name": "ansible-gw_kafka-action",
              "parameters": {
                  "topic": "ansible-gateway-in"
+                 "kafka_broker_url": "<url of the local kafka install>",
+                 "kafka_client_id": "<client id of a service account>",
+                 "kafka_client_secret": "<client secret of a service account>"
              },
              "type": "kafka_topic_sink_0.1"
          },
@@ -223,7 +226,10 @@ The response should look like:
       "name": "ansible-gw_kafka-action",
       "type": "kafka_topic_sink_0.1",
       "parameters": {
-         "topic": "ansible-gateway-in"
+         "topic": "ansible-gateway-in",
+         "kafka_broker_url": "<url of the local kafka install>",
+         "kafka_client_id": "<client id of a service account>",
+         "kafka_client_secret": "<client secret of a service account>"
       }
    }
 }

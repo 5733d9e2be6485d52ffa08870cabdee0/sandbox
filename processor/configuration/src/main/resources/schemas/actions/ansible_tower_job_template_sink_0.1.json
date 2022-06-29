@@ -6,6 +6,7 @@
       "type": "string",
       "title": "Endpoint",
       "description": "Ansible Tower instance base endpoint.",
+      "pattern": "(http|https):\\\/\\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\\/~+#-]*[\\w@?^=%&\\\/~+#-])",
       "example": "https://my.ansible-tower.host"
     },
     "job_template_id": {
@@ -42,7 +43,6 @@
       "type": "boolean",
       "title": "SSL Verification Disabled",
       "description": "Specify if SSL verification has to be disabled",
-      "example": "false",
       "default": false
     }
   },
@@ -54,5 +54,13 @@
     "basic_auth_username",
     "basic_auth_password",
     "ssl_verification_disabled"
-  ]
+  ],
+  "dependentRequired": {
+    "basic_auth_username": [
+      "basic_auth_password"
+    ],
+    "basic_auth_password": [
+      "basic_auth_username"
+    ]
+  }
 }

@@ -11,12 +11,11 @@ import javax.inject.Inject;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayProviderException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.GatewayResolver;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
-public class SendToBridgeActionResolver implements SendToBridgeAction, GatewayResolver<Action> {
+public class SendToBridgeActionResolver implements SendToBridgeAction, CustomGatewayResolver<Action> {
 
     @Inject
     GatewayConfiguratorService gatewayConfiguratorService;

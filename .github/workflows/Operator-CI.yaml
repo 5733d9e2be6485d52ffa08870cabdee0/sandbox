@@ -76,13 +76,12 @@ jobs:
           kubectl create -f kustomize/overlays/minikube/keycloak/keycloak.yaml -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
           # Deploy operator
-          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/minikube.yml
           # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
           kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_INGRESS_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml

@@ -12,12 +12,12 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
@@ -27,16 +27,12 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
-public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
+public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Inject
     CustomerNamespaceProvider customerNamespaceProvider;
@@ -46,6 +42,9 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
 
     @Inject
     ManagerSyncServiceImpl managerSyncService;
+
+    @Inject
+    IstioGatewayProvider istioGatewayProvider;
 
     @Test
     @WithPrometheus
@@ -59,14 +58,15 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format(
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getEndpoint(),
                         bridge1.getCustomerId());
         String expectedJsonUpdateAvailableRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"http://192.168.2.49/ob-bridgesdeployed-1/events\", \"customerId\": \"%s\", \"status\": \"ready\"}",
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getCustomerId());
@@ -84,12 +84,10 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
                         });
 
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
@@ -107,10 +105,9 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
 
         // The BridgeIngressController delete loop does not execute so only one update can be captured
@@ -129,15 +126,13 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
-        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                 bridge1.getId(),
                 bridge1.getName(),
-                bridge1.getEndpoint(),
                 bridge1.getCustomerId());
 
         // The BridgeIngressController does not need to execute if the CRD is not deployed
@@ -244,31 +239,4 @@ public class ManagerSyncServiceTest extends AbstractShardWireMockTest {
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
         assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
-
-    private BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
-        return new BridgeDTO("bridgesDeployed-" + suffix,
-                "myName-" + suffix,
-                "myEndpoint/events",
-                TestSupport.CUSTOMER_ID,
-                TestSupport.USER_NAME,
-                status,
-                TestSupport.KAFKA_CONNECTION_DTO);
-    }
-
-    private void assertJsonRequest(String expectedJsonRequest, String url) {
-        // For some reason the latch occasionally triggers sooner than the request is available on wiremock.
-        // So wireMockServer.verify is unreliable and waiting loop is implemented.
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(10))
-                .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(
-                        () -> {
-                            List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(url))
-                                    .withRequestBody(equalToJson(expectedJsonRequest, true, true))
-                                    .withHeader("Content-Type", equalTo("application/json")));
-                            assertThat(findAll).hasSize(1);
-                        });
-
-    }
-
 }

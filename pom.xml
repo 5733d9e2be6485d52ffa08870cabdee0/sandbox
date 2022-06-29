@@ -45,7 +45,6 @@
     <module>manager</module>
     <module>executor</module>
     <module>shard-operator</module>
-    <module>ingress</module>
     <module>infra</module>
     <module>rhoas-client</module>
   </modules>

@@ -274,6 +274,8 @@ objects:
     kind: Service
     metadata:
       name: rhose-fleet-manager
+      labels:
+        app: rhose-fleet-manager
     spec:
       ports:
         - name: web

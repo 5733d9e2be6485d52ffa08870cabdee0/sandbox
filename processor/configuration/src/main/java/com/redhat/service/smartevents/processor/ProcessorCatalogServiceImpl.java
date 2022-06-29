@@ -145,7 +145,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     }
 
     private JsonSchema getJsonSchemaFromJsonNode(ObjectNode objectNode) {
-        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
         return factory.getSchema(objectNode);
     }
 
