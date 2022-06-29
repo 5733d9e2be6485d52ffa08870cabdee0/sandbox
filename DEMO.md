@@ -63,10 +63,21 @@ If not, please double-check the setup instructions in [dev/README.md](dev/README
 
 In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/smartevents_mgmt/v1/bridges`. The request must include the name of the Bridge. Let's export
 it to a variable:
+In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include:
+
+* The `name` of the Bridge
+* The `cloud_provider` that we want the Bridge instance deployed to
+* The `region` on the chosen `cloud_provider` that we want the Bridge deployed to
+
+The list of supported `cloud_providers` and `regions` are available at the endpoint `/api/v1/cloud_providers` and `/api/v1/cloud_providers/{id}/regions`. 
+
+In this example, lets create a Bridge called `myBridge`, on Cloud Provider `aws` in the `us-east-1` region:
 
 ```bash
 export BRIDGE_REQUEST='{
-  "name":"myBridge"
+  "name":"myBridge",
+  "cloud_provider": "aws",
+  "region": "us-east-1"
 }'
 ```
 
@@ -76,6 +87,8 @@ available option is a `Webhook` error handler. Here is an example request that u
 ```bash
 export BRIDGE_REQUEST='{
   "name": "myBridge",
+  "cloud_provider": "aws",
+  "region": "us-east-1",
   "error_handler": {
     "type": "webhook_sink_0.1",
     "parameters": {
@@ -98,6 +111,8 @@ The response should look like something like
   "kind":"Bridge",
   "id":"87508471-ee0f-4f53-b574-da8a61285986",
   "name":"myBridge",
+  "cloud_provider": "aws",
+  "region": "us-east-1",
   "href":"/api/smartevents_mgmt/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
   "status":"accepted"
@@ -126,6 +141,8 @@ the response should look like
   "kind":"Bridge",
   "id":"87508471-ee0f-4f53-b574-da8a61285986",
   "name":"myBridge",
+  "cloud_provider": "aws",
+  "region": "us-east-1",
   "href":"/api/smartevents_mgmt/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
   "status":"ready",
@@ -144,6 +161,7 @@ events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbri
 
 1. `/events`: it accepts only valid cloud event json payloads.
 2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`.
+The application is now `ready` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. 
 
 ## How to add Processors to the Bridge
 
@@ -154,7 +172,7 @@ It is possible to add `Processors` to the Bridge instance using the endpoint `/a
 - `Actions`: the `Action` to take with the filtered events.
     - Further documentation on the supported `Actions` can be found [here](ACTIONS.md)
 - `Transformations`: an optional `Transformation` logic can be specified for each action definition.
-    - Further documention on writing `Transformations` can be found [here](TRANSFORMATIONS.md)
+    - Further documentation on writing `Transformations` can be found [here](TRANSFORMATIONS.md)
 
 Note that an `Action` is always required by a `Processor`, but `Filters` and the `Transformation` are optional (i.e. the events will always flow into the action without filtering).
 
