@@ -888,6 +888,8 @@ components:
     BridgeRequest:
       required:
       - name
+      - cloud_provider
+      - region
       type: object
       properties:
         name:
@@ -896,6 +898,14 @@ components:
           nullable: false
         error_handler:
           $ref: '#/components/schemas/Action'
+        cloud_provider:
+          minLength: 1
+          type: string
+          nullable: false
+        region:
+          minLength: 1
+          type: string
+          nullable: false
     BridgeResponse:
       required:
       - kind
@@ -935,6 +945,10 @@ components:
           type: string
         error_handler:
           $ref: '#/components/schemas/Action'
+        cloud_provider:
+          type: string
+        region:
+          type: string
     CloudProviderListResponse:
       required:
       - kind

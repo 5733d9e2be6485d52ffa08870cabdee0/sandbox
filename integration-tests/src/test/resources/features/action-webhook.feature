@@ -3,7 +3,7 @@ Feature: Webhook Action tests
   @webhookaction
   Scenario: Webhook is correctly called
     Given authenticate against Manager
-    And create a new Bridge "mybridge" in cloud provider "aws" in region "us-east-1"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
