@@ -48,6 +48,7 @@ jobs:
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SIDE_UUID_UPDATE_PROCESSOR_E2E: ${{ secrets.WEBHOOK_SIDE_UUID_UPDATE_PROCESSOR_E2E }}
         uses: ./.github/actions/maven
         with:
           maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET
