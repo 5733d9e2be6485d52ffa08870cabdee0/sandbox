@@ -35,11 +35,6 @@ public class CloudProviderConstraintValidator extends BaseConstraintValidator<Va
     CloudProviderDAO cloudProviderDAO;
 
     @Override
-    public void initialize(ValidCloudProvider constraintAnnotation) {
-        super.initialize(constraintAnnotation);
-    }
-
-    @Override
     public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
         CloudProvider cloudProvider = cloudProviderDAO.findById(bridgeRequest.getCloudProvider());
         if (cloudProvider == null) {
