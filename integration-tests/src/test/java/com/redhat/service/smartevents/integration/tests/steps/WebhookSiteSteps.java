@@ -52,4 +52,21 @@ public class WebhookSiteSteps {
                     .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));
         }
     }
+
+    @Then("Webhook site contains updated request with text \"(.*)\" within (\\d+) (?:minute|minutes)$")
+    public void webhookSiteContainsUpdatedRequestWithTextWithinMinute(String requestText, int timeoutMinutes) {
+        String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(timeoutMinutes))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests(WebhookSiteQuerySorting.NEWEST))
+                        .map(request -> request.getContent())
+                        .as("Searching for request containing text: '%s'",
+                                requestTextWithoutPlaceholders)
+                        .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+
+    }
 }
+
+
+
