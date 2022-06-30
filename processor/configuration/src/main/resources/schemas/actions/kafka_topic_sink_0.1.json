@@ -20,9 +20,21 @@
       "description": "The Client Id part of the credentials to authenticate to Kafka"
     },
     "kafka_client_secret": {
-      "type": "string",
       "title": "Client Secret",
-      "description": "The Client Secret part of the credentials to authenticate to Kafka"
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Client Secret",
+          "description": "The Client Secret part of the credentials to authenticate to Kafka",
+          "type": "string",
+          "format": "password"
+        },
+        {
+          "description": "An opaque reference to the kafka_client_secret",
+          "type": "object",
+          "properties": {}
+        }
+      ]
     }
   },
   "required": [
