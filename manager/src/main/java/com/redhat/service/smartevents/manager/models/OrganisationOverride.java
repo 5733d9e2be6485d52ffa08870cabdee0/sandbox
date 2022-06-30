@@ -18,7 +18,7 @@ public class OrganisationOverride {
     private int processorLimit;
 
     @JsonProperty("bridge_duration")
-    private long bridgeDuration;
+    private String bridgeDuration;
 
     @JsonProperty("instance_quota")
     private int instanceQuota;
@@ -47,11 +47,11 @@ public class OrganisationOverride {
         this.processorLimit = processorLimit;
     }
 
-    public long getBridgeDuration() {
+    public String getBridgeDuration() {
         return bridgeDuration;
     }
 
-    public void setBridgeDuration(long bridgeDuration) {
+    public void setBridgeDuration(String bridgeDuration) {
         this.bridgeDuration = bridgeDuration;
     }
 

@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -9,6 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,9 +84,10 @@ public class BridgesServiceImpl implements BridgesService {
 
         OrganisationServiceLimit organisationServiceLimit = limitService.getOrganisationServiceLimit(organisationId);
         bridge.setInstanceType(organisationServiceLimit.getInstanceType());
-        long bridgeDuration = organisationServiceLimit.getBridgeDuration();
-        if (bridgeDuration > 0) {
-            bridge.setExpireAt(ZonedDateTime.now().plusSeconds(bridgeDuration));
+        String bridgeDuration = organisationServiceLimit.getBridgeDuration();
+        if (StringUtils.isNotEmpty(bridgeDuration)) {
+            Duration duration = Duration.parse(bridgeDuration);
+            bridge.setExpireAt(ZonedDateTime.now().plus(duration));
         }
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
@@ -245,7 +248,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Override
     public boolean isBridgeActive(String id) {
-        Bridge bridge = bridgeDAO.findById(id);
+        Bridge bridge = getBridge(id);
         return isBridgeActive(bridge);
     }
 

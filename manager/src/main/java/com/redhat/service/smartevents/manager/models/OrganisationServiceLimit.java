@@ -4,7 +4,7 @@ public class OrganisationServiceLimit {
 
     ServiceLimitInstanceType instanceType;
     private int processorLimit;
-    private long bridgeDuration;
+    private String bridgeDuration;
     private long instanceQuota;
 
     public ServiceLimitInstanceType getInstanceType() {
@@ -23,11 +23,11 @@ public class OrganisationServiceLimit {
         this.processorLimit = processorLimit;
     }
 
-    public long getBridgeDuration() {
+    public String getBridgeDuration() {
         return bridgeDuration;
     }
 
-    public void setBridgeDuration(long bridgeDuration) {
+    public void setBridgeDuration(String bridgeDuration) {
         this.bridgeDuration = bridgeDuration;
     }
 

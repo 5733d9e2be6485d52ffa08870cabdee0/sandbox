@@ -94,6 +94,7 @@ public class ProcessorDAOTest {
         b.setPublishedAt(ZonedDateTime.now());
         b.setShardId(TestConstants.SHARD_ID);
         b.setDefinition(new BridgeDefinition());
+        b.setInstanceType(TestConstants.DEFAULT_INSTANCE_TYPE);
 
         bridgeDAO.persist(b);
         return b;

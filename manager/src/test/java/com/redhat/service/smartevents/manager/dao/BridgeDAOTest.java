@@ -25,6 +25,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_INSTANCE_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -293,6 +294,7 @@ public class BridgeDAOTest {
         bridge.setSubmittedAt(ZonedDateTime.now());
         bridge.setShardId(TestConstants.SHARD_ID);
         bridge.setDefinition(new BridgeDefinition());
+        bridge.setInstanceType(DEFAULT_INSTANCE_TYPE);
 
         return bridge;
     }

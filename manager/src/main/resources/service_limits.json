@@ -2,7 +2,7 @@
   "service_limit_instances": [{
     "instance_type": "EVAL",
     "processor_limit": "6",
-    "bridge_duration": "50505",
+    "bridge_duration": "PT12H",
     "instance_quota": "1"
   },
     {
@@ -16,7 +16,7 @@
     "org_id": "15247674",
     "instance_type": "EVAL",
     "processor_limit": "12",
-    "bridge_duration": "100505",
+    "bridge_duration": "PT12H",
     "instance_quota": "3"
   }]
 }

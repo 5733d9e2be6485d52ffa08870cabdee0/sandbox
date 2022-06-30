@@ -11,7 +11,7 @@ public class ServiceLimitInstance {
     private int processorLimit;
 
     @JsonProperty("bridge_duration")
-    private long bridgeDuration;
+    private String bridgeDuration;
 
     @JsonProperty("instance_quota")
     private int instanceQuota;
@@ -32,11 +32,11 @@ public class ServiceLimitInstance {
         return processorLimit;
     }
 
-    public void setBridgeDuration(long bridgeDuration) {
+    public void setBridgeDuration(String bridgeDuration) {
         this.bridgeDuration = bridgeDuration;
     }
 
-    public long getBridgeDuration() {
+    public String getBridgeDuration() {
         return bridgeDuration;
     }
 

@@ -13,6 +13,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
@@ -88,7 +90,7 @@ public class LimitServiceImpl implements LimitService {
             orgServiceLimit.setProcessorLimit(fetchDefaultProcessorLimit(orgInstanceType));
         }
 
-        if (orgOverride.getBridgeDuration() != 0) {
+        if (StringUtils.isNotEmpty(orgOverride.getBridgeDuration())) {
             orgServiceLimit.setBridgeDuration(orgOverride.getBridgeDuration());
         } else {
             orgServiceLimit.setBridgeDuration(fetchDefaultBridgeDuration(orgInstanceType));
@@ -111,7 +113,7 @@ public class LimitServiceImpl implements LimitService {
         return serviceLimit.getInstanceTypes().stream().filter(s -> instanceType.equals(s.getInstanceType())).findFirst().get().getProcessorLimit();
     }
 
-    private long fetchDefaultBridgeDuration(ServiceLimitInstanceType instanceType) {
+    private String fetchDefaultBridgeDuration(ServiceLimitInstanceType instanceType) {
         return serviceLimit.getInstanceTypes().stream().filter(s -> instanceType.equals(s.getInstanceType())).findFirst().get().getBridgeDuration();
     }
 
