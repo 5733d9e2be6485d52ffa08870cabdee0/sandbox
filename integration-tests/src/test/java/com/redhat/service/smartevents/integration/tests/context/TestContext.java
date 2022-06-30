@@ -20,6 +20,7 @@ public class TestContext {
     private Map<String, String> cloudEvents = new HashMap<>();
     private Map<String, String> uuids = new HashMap<>();
     private Map<String, String> kafkaTopics = new HashMap<>();
+    private Map<String, String> testData = new HashMap<>();
 
     private Scenario scenario;
 
@@ -122,5 +123,13 @@ public class TestContext {
             throw new RuntimeException("Cloud event with id " + testCloudEventId + " not found.");
         }
         return cloudEvents.get(testCloudEventId);
+    }
+
+    public String getTestData(String key) {
+        return this.testData.get(key);
+    }
+
+    public void setTestData(String key, String value) {
+        this.testData.put(key, value);
     }
 }
