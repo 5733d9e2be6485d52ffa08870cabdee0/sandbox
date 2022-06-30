@@ -133,6 +133,7 @@
             <slack.channel.name>mc</slack.channel.name>
 
             <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
+            <webhook.site.uuid.second>${env.WEBHOOK_SITE_UUID_SECOND}</webhook.site.uuid.second>
           </systemProperties>
         </configuration>
       </plugin>

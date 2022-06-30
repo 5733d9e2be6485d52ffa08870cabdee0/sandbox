@@ -12,8 +12,18 @@ public class WebhookSiteResource {
 
     private static final String ENDPOINT_UUID = Utils.getSystemProperty("webhook.site.uuid");
 
+    private static final String ENDPOINT_TEST_UUID = Utils.getSystemProperty("webhook.site.uuid.second");
+
     public static List<WebhookSiteRequest> requests(WebhookSiteQuerySorting sorting) {
         return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", ENDPOINT_UUID, sorting.getValue())
+                .then()
+                .extract()
+                .body()
+                .jsonPath().getList("data", WebhookSiteRequest.class);
+    }
+
+    public static List<WebhookSiteRequest> requests_updated(WebhookSiteQuerySorting sorting) {
+        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", ENDPOINT_TEST_UUID, sorting.getValue())
                 .then()
                 .extract()
                 .body()
