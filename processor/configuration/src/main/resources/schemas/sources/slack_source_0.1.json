@@ -39,15 +39,6 @@
       "title": "Topic Names",
       "description": "Comma separated list of Kafka topic names",
       "type": "string"
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "produces": {
-          "$ref": "#/$defs/data_shape/produces"
-        }
-      }
     }
   }
 }
