@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +35,8 @@ public class ExternalUserExceptionMapperTest {
     void setup() {
         this.mapper = new ExternalUserExceptionMapper();
         this.mapper.bridgeErrorService = bridgeErrorService;
+        when(bridgeErrorService.getError(ExternalUserException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
+        this.mapper.init();
     }
 
     @Test
@@ -53,7 +55,6 @@ public class ExternalUserExceptionMapperTest {
     @Test
     void testUnMappedException() {
         when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.empty());
-        when(bridgeErrorService.getError(UnclassifiedException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
 
         ErrorsResponse response = mapper.toResponse(new ItemNotFoundException("unmapped-reason")).readEntity(ErrorsResponse.class);
         assertThat(response.getItems()).hasSize(1);

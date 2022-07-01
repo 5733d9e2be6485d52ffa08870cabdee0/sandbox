@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -21,10 +22,11 @@ import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.ListResult;
+
+import io.quarkus.runtime.Quarkus;
 
 public class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
@@ -32,8 +34,21 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
     private final ErrorResponseConverter converter = new ErrorResponseConverter();
 
+    BridgeError unclassifiedConstraintViolationException;
+
     @Inject
     BridgeErrorService bridgeErrorService;
+
+    @PostConstruct
+    void init() {
+        Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
+        if (error.isPresent()) {
+            unclassifiedConstraintViolationException = error.get();
+        } else {
+            LOGGER.error("UnclassifiedConstraintViolationException error is not defined in the ErrorsService.");
+            Quarkus.asyncExit(1);
+        }
+    }
 
     @Override
     public Response toResponse(ConstraintViolationException e) {
@@ -71,12 +86,9 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
         }
 
         private ErrorResponse unmappedConstraintViolation(ConstraintViolation<?> cv) {
-            Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
-            if (error.isEmpty()) {
-                throw new InternalPlatformException("Lookup of UnclassifiedConstraintViolationException failed.");
-            }
-            ErrorResponse errorResponse = ErrorResponse.from(error.get());
-            errorResponse.setReason(cv.getMessage());
+            LOGGER.warn(String.format("ConstraintViolation %s did not link to an ExternalUserException. The raw violation has been wrapped.", cv), cv);
+            ErrorResponse errorResponse = ErrorResponse.from(unclassifiedConstraintViolationException);
+            errorResponse.setReason(cv.toString());
             return errorResponse;
         }
 
