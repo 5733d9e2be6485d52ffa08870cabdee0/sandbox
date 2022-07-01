@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -25,14 +26,29 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Uncl
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 
+import io.quarkus.runtime.Quarkus;
+
 public class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
 
     private final ErrorResponseConverter converter = new ErrorResponseConverter();
 
+    BridgeError unclassifiedConstraintViolationException;
+
     @Inject
     BridgeErrorService bridgeErrorService;
+
+    @PostConstruct
+    void init() {
+        Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
+        if (error.isPresent()) {
+            unclassifiedConstraintViolationException = error.get();
+        } else {
+            LOGGER.error("UnclassifiedConstraintViolationException error is not defined in the ErrorsService.");
+            Quarkus.asyncExit(1);
+        }
+    }
 
     @Override
     public Response toResponse(ConstraintViolationException e) {
@@ -40,10 +56,6 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
         ResponseBuilder builder = Response.status(Response.Status.BAD_REQUEST.getStatusCode());
         List<ConstraintViolation<?>> violations = new ArrayList<>(e.getConstraintViolations());
-        if (violations.size() == 1) {
-            ErrorResponse response = converter.apply(violations.get(0));
-            return builder.entity(response).build();
-        }
 
         ErrorsResponse response = new ErrorsResponse();
         ErrorsResponse.fill(new ListResult<>(violations), response, converter);
@@ -74,12 +86,9 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
         }
 
         private ErrorResponse unmappedConstraintViolation(ConstraintViolation<?> cv) {
-            Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
-            if (error.isEmpty()) {
-                throw new IllegalStateException("Something seriously wrong has happened!");
-            }
-            ErrorResponse errorResponse = ErrorResponse.from(error.get());
-            errorResponse.setReason(cv.getMessage());
+            LOGGER.warn(String.format("ConstraintViolation %s did not link to an ExternalUserException. The raw violation has been wrapped.", cv), cv);
+            ErrorResponse errorResponse = ErrorResponse.from(unclassifiedConstraintViolationException);
+            errorResponse.setReason(cv.toString());
             return errorResponse;
         }
 

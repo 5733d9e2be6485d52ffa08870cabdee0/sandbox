@@ -14,7 +14,7 @@
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException",
     "id": 3,
-    "reason": "The requested item does not exist in out repository",
+    "reason": "We were unable to process your request. Please contact Red Hat support if the error persists.",
     "type": "USER"
   },
   {
