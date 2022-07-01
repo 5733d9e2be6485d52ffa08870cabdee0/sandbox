@@ -6,14 +6,14 @@ import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
 
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
-import com.redhat.service.smartevents.infra.exceptions.mappers.ConstraintViolationExceptionMapper;
+import com.redhat.service.smartevents.infra.exceptions.mappers.JsonMappingExceptionMapper;
 
 @Provider
 @ApplicationScoped
-public class ManagerConstraintViolationExceptionMapper extends ConstraintViolationExceptionMapper {
+public class ManagerJsonMappingExceptionMapper extends JsonMappingExceptionMapper {
 
     @Inject
-    public ManagerConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService) {
+    public ManagerJsonMappingExceptionMapper(BridgeErrorService bridgeErrorService) {
         super(bridgeErrorService);
     }
 

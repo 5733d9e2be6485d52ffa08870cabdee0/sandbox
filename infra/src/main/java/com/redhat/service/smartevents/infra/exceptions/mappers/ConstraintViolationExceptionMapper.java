@@ -6,13 +6,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.ext.ExceptionMapper;
 
 import org.hibernate.validator.engine.HibernateConstraintViolation;
 import org.slf4j.Logger;
@@ -26,28 +23,18 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Uncl
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 
-import io.quarkus.runtime.Quarkus;
-
-public class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
+public class ConstraintViolationExceptionMapper extends BaseExceptionMapper<ConstraintViolationException> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
 
     private final ErrorResponseConverter converter = new ErrorResponseConverter();
 
-    BridgeError unclassifiedConstraintViolationException;
+    protected ConstraintViolationExceptionMapper() {
+        //CDI proxy
+    }
 
-    @Inject
-    BridgeErrorService bridgeErrorService;
-
-    @PostConstruct
-    void init() {
-        Optional<BridgeError> error = bridgeErrorService.getError(UnclassifiedConstraintViolationException.class);
-        if (error.isPresent()) {
-            unclassifiedConstraintViolationException = error.get();
-        } else {
-            LOGGER.error("UnclassifiedConstraintViolationException error is not defined in the ErrorsService.");
-            Quarkus.asyncExit(1);
-        }
+    public ConstraintViolationExceptionMapper(BridgeErrorService bridgeErrorService) {
+        super(bridgeErrorService, UnclassifiedConstraintViolationException.class);
     }
 
     @Override
@@ -87,7 +74,7 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
         private ErrorResponse unmappedConstraintViolation(ConstraintViolation<?> cv) {
             LOGGER.warn(String.format("ConstraintViolation %s did not link to an ExternalUserException. The raw violation has been wrapped.", cv), cv);
-            ErrorResponse errorResponse = ErrorResponse.from(unclassifiedConstraintViolationException);
+            ErrorResponse errorResponse = ErrorResponse.from(defaultBridgeError);
             errorResponse.setReason(cv.toString());
             return errorResponse;
         }

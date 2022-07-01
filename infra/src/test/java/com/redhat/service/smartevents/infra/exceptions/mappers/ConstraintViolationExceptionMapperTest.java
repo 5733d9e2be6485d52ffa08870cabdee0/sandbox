@@ -50,8 +50,7 @@ public class ConstraintViolationExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new ConstraintViolationExceptionMapper();
-        this.mapper.bridgeErrorService = bridgeErrorService;
+        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService);
         when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
         this.mapper.init();
 
