@@ -14,7 +14,7 @@
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException",
     "id": 3,
-    "reason": "Your request has caused an exception. Please consult the logs for more information.",
+    "reason": "We were unable to process your request. Please contact Red Hat support if the error persists.",
     "type": "USER"
   },
   {
