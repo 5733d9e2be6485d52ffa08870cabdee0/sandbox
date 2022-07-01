@@ -16,6 +16,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -35,6 +36,7 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
@@ -170,7 +172,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update this Processor.");
         }
 
-        if (!isProcessorActionable(existingProcessor)) {
+        if (!isManagedResourceActionable(existingProcessor)) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
                     processorId,
                     customerId));
@@ -295,7 +297,10 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     @Override
     public ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
-        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+        if (!isManagedResourceActionable(bridge)) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
+        }
         return processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
     }
 
@@ -312,7 +317,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
-        if (!isProcessorActionable(processor)) {
+        if (!isManagedResourceActionable(processor)) {
             throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
         }
 
@@ -331,9 +336,8 @@ public class ProcessorServiceImpl implements ProcessorService {
                 processor.getBridge().getId());
     }
 
-    private boolean isProcessorActionable(Processor processor) {
-        // bridge could only be deleted if its in READY or FAILED state
-        return processor.getStatus() == ManagedResourceStatus.READY || processor.getStatus() == ManagedResourceStatus.FAILED;
+    private boolean isManagedResourceActionable(ManagedResource managedResource) {
+        return managedResource.getStatus() == ManagedResourceStatus.READY || managedResource.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Override
