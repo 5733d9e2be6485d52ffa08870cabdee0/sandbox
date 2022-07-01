@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import javax.inject.Inject;
@@ -96,7 +97,7 @@ public class AbstractWorkerTest {
 
         Work work = workManager.schedule(bridge);
         assertThat(workManager.exists(work)).isTrue();
-        work.setSubmittedAt(ZonedDateTime.now().minusSeconds(timeoutSeconds * 2L));
+        work.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(timeoutSeconds * 2L));
 
         worker.handleWork(work);
 

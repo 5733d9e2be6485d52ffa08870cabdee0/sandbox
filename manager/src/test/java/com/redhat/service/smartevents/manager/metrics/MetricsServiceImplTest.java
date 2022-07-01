@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.metrics;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -82,10 +83,10 @@ public class MetricsServiceImplTest {
     public void onOperationComplete_forBridge(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
         ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
-        bridge.setSubmittedAt(ZonedDateTime.now().minusMinutes(4));
-        bridge.setPublishedAt(ZonedDateTime.now().minusMinutes(3));
-        bridge.setModifiedAt(ZonedDateTime.now().minusMinutes(3));
-        bridge.setDeletionRequestedAt(ZonedDateTime.now().minusMinutes(1));
+        bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
+        bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
+        bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
+        bridge.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(1));
         bridge.setStatus(status);
 
         metricsService.onOperationComplete(bridge, metricsOperation);
@@ -101,10 +102,10 @@ public class MetricsServiceImplTest {
         Bridge bridge = Fixtures.createBridge();
         ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
         Processor processor = Fixtures.createProcessor(bridge, status);
-        processor.setSubmittedAt(ZonedDateTime.now().minusMinutes(4));
-        processor.setPublishedAt(ZonedDateTime.now().minusMinutes(3));
-        processor.setModifiedAt(ZonedDateTime.now().minusMinutes(2));
-        processor.setDeletionRequestedAt(ZonedDateTime.now().minusMinutes(1));
+        processor.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
+        processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
+        processor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(2));
+        processor.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(1));
 
         metricsService.onOperationComplete(processor, metricsOperation);
 

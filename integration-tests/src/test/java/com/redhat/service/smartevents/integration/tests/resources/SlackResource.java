@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class SlackResource {
                 .oauth2(SLACK_TOKEN)
                 .contentType(ContentType.JSON)
                 .queryParam("channel", SLACK_CHANNEL)
-                .queryParam("oldest", oneHourAgo.toEpochSecond(ZonedDateTime.now().getOffset()))
+                .queryParam("oldest", oneHourAgo.toEpochSecond(ZonedDateTime.now(ZoneOffset.UTC).getOffset()))
                 .when()
                 .get(SLACK_URI)
                 .then()
