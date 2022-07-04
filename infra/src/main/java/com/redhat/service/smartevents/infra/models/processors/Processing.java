@@ -12,7 +12,7 @@ public class Processing {
     @JsonProperty("type")
     String type;
 
-    @JsonProperty("parameters")
+    @JsonProperty("spec")
     // ObjectNode is not rendered properly by swagger
     @Schema(implementation = Object.class, required = true)
     private ObjectNode spec;
@@ -56,5 +56,13 @@ public class Processing {
     @Override
     public int hashCode() {
         return Objects.hash(type, spec);
+    }
+
+    @Override
+    public String toString() {
+        return "Processing{" +
+                "type='" + type + '\'' +
+                ", spec=" + spec +
+                '}';
     }
 }

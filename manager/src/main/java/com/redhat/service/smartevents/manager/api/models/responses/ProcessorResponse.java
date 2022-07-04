@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.api.models.responses;
 
 import java.util.Set;
 
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,6 +34,9 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     @JsonProperty("source")
     private Source source;
+
+    @JsonProperty("processing")
+    protected Processing processing;
 
     public ProcessorType getType() {
         return type;
@@ -72,5 +76,13 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     public void setSource(Source source) {
         this.source = source;
+    }
+
+    public Processing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
     }
 }

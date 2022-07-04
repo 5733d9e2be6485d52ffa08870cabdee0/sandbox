@@ -78,6 +78,112 @@ elif [ "${action_type}" = 'webhook' ]; then
       "value": "StorageService"
     }
   ],
+  "processing": {
+      "type": "cameldsl_0.1",
+      "spec": {
+        "flow": {
+          "from": {
+            "uri": "rhose",
+            "steps": [
+              {
+                "unmarshal": {
+                  "json": {}
+                }
+              },
+              {
+                "choice": {
+                  "when": [
+                    {
+                      "jq": ".nutritions.sugar <= 5",
+                      "steps": [
+                        {
+                          "removeHeaders": "*"
+                        },
+                        {
+                          "marshal": {
+                            "json": {}
+                          }
+                        },
+                        {
+                          "setHeader": {
+                            "name": "ce-type",
+                            "constant": "low-sugar"
+                          }
+                        },
+                        {
+                          "setHeader": {
+                            "name": "fruit-sugar-level",
+                            "constant": "low"
+                          }
+                        },
+                        {
+                          "to": "mySlackAction"
+                        }
+                      ]
+                    },
+                    {
+                      "jq": ".nutritions.sugar > 5 | .nutritions.sugar <= 10",
+                      "steps": [
+                        {
+                          "removeHeaders": "*"
+                        },
+                        {
+                          "marshal": {
+                            "json": {}
+                          }
+                        },
+                        {
+                          "setHeader": {
+                            "name": "ce-type",
+                            "constant": "medium-sugar"
+                          }
+                        },
+                        {
+                          "setHeader": {
+                            "name": "fruit-sugar-level",
+                            "constant": "medium"
+                          }
+                        },
+                        {
+                          "to": "myServiceNowAction"
+                        }
+                      ]
+                    }
+                  ],
+                  "otherwise": {
+                    "steps": [
+                      {
+                        "removeHeaders": "*"
+                      },
+                      {
+                        "marshal": {
+                          "json": {}
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "ce-type",
+                          "constant": "high-sugar"
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "fruit-sugar-level",
+                          "constant": "high"
+                        }
+                      },
+                      {
+                        "to": "error"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
   "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
 }'
 elif [ "${action_type}" = 'kafka' ]; then

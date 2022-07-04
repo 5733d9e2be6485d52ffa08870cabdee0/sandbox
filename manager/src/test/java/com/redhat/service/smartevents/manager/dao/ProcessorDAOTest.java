@@ -12,6 +12,10 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,10 +34,8 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+
 import io.quarkus.test.junit.QuarkusTest;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static com.redhat.service.smartevents.infra.models.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
@@ -209,7 +211,7 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(withProvisionedConnectors);
 
         ConnectorEntity provisionedConnector = Fixtures.createSinkConnector(withProvisionedConnectors,
-                                                                            ManagedResourceStatus.READY);
+                ManagedResourceStatus.READY);
         provisionedConnector.setName("connectorProvisioned");
         processorDAO.getEntityManager().merge(provisionedConnector);
 
@@ -220,7 +222,7 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity nonProvisionedConnector = Fixtures.createSinkConnector(nonProvisioned,
-                                                                               ManagedResourceStatus.PROVISIONING);
+                ManagedResourceStatus.PROVISIONING);
         nonProvisionedConnector.setName("nonProvisionedConnector");
         processorDAO.getEntityManager().merge(nonProvisionedConnector);
 
@@ -231,7 +233,7 @@ public class ProcessorDAOTest {
         processorDAO.getEntityManager().merge(nonProvisioned);
 
         ConnectorEntity toBeDeletedConnector = Fixtures.createSinkConnector(toBeDeleted,
-                                                                            ManagedResourceStatus.DELETING);
+                ManagedResourceStatus.DELETING);
         toBeDeletedConnector.setName("toBeDeletedConnector");
         processorDAO.getEntityManager().merge(toBeDeletedConnector);
 
@@ -313,7 +315,7 @@ public class ProcessorDAOTest {
         createSinkProcessor(b, "bar");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -439,7 +441,7 @@ public class ProcessorDAOTest {
         Processor p = createSinkProcessorWithProcessing(b, "camelProcessor", camelProcessing);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -462,7 +464,7 @@ public class ProcessorDAOTest {
         Processor p2 = createSinkProcessor(b, "foo2");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by("foo").build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by("foo").build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(2L);
         assertThat(results.getTotal()).isEqualTo(2L);
@@ -482,7 +484,7 @@ public class ProcessorDAOTest {
         processorDAO.persist(p);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -496,7 +498,7 @@ public class ProcessorDAOTest {
         createSinkProcessor(b, "bar");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getType()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -513,7 +515,7 @@ public class ProcessorDAOTest {
         processorDAO.persist(p);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -527,7 +529,7 @@ public class ProcessorDAOTest {
         createSinkProcessor(b, "bar");
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getType()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -544,7 +546,7 @@ public class ProcessorDAOTest {
         processorDAO.persist(p);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).by(p.getType()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -561,7 +563,7 @@ public class ProcessorDAOTest {
         processorDAO.persist(p);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).by(p.getType()).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
@@ -580,7 +582,7 @@ public class ProcessorDAOTest {
         processorDAO.persist(p2);
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(ACCEPTED).by(READY).build()));
+                new QueryProcessorResourceInfo(0, 100, filter().by(ACCEPTED).by(READY).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(2L);
         assertThat(results.getTotal()).isEqualTo(2L);
@@ -602,7 +604,7 @@ public class ProcessorDAOTest {
         });
 
         ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
-                                                                                            new QueryProcessorResourceInfo(0, 100));
+                new QueryProcessorResourceInfo(0, 100));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(5L);
         assertThat(results.getTotal()).isEqualTo(5L);

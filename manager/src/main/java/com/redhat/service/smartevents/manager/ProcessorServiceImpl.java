@@ -133,6 +133,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
                 : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, processorRequest.getProcessing());
 
+        System.out.println("++++ Processor definition " + definition.getProcessing());
         newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
@@ -396,6 +397,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
             processorResponse.setSource(definition.getRequestedSource());
+            processorResponse.setProcessing(definition.getProcessing());
         }
 
         if (processor.getBridge() != null) {
