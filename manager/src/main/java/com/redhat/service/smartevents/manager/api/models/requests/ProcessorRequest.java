@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
@@ -39,6 +40,9 @@ public class ProcessorRequest {
     @JsonProperty("source")
     @Valid
     protected Source source;
+
+    @JsonProperty("processing")
+    protected Processing processing;
 
     public ProcessorRequest() {
     }
@@ -89,6 +93,10 @@ public class ProcessorRequest {
 
     public Source getSource() {
         return source;
+    }
+
+    public Processing getProcessing() {
+        return processing;
     }
 
     @JsonIgnore

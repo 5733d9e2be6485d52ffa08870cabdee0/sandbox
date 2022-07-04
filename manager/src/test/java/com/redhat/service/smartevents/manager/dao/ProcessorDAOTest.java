@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -11,11 +12,15 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.TestConstants;
@@ -26,6 +31,7 @@ import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import io.quarkus.test.junit.QuarkusTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,24 +53,42 @@ public class ProcessorDAOTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @BeforeEach
     public void before() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
     }
 
     private Processor createSinkProcessor(Bridge bridge, String name) {
-        Processor processor = createProcessorModel(bridge, name, SINK);
+        Processor processor = createProcessorModel(bridge, name, SINK, processorDefinition());
+        processorDAO.persist(processor);
+        return processor;
+    }
+
+    private Processor createSinkProcessorWithProcessing(Bridge bridge, String name, Processing processing) {
+        Action a = new Action();
+        a.setType(KafkaTopicAction.TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        a.setMapParameters(params);
+
+        ProcessorDefinition processingProcessorDefinition = new ProcessorDefinition(Collections.emptySet(), null, a, null, processing);
+
+        Processor processor = createProcessorModel(bridge, name, SINK, processingProcessorDefinition);
         processorDAO.persist(processor);
         return processor;
     }
 
     private Processor createSourceProcessor(Bridge bridge, String name) {
-        Processor processor = createProcessorModel(bridge, name, ProcessorType.SOURCE);
+        Processor processor = createProcessorModel(bridge, name, ProcessorType.SOURCE, processorDefinition());
         processorDAO.persist(processor);
         return processor;
     }
 
-    private Processor createProcessorModel(Bridge bridge, String name, ProcessorType type) {
+    private Processor createProcessorModel(Bridge bridge, String name, ProcessorType type, ProcessorDefinition processorDefinition) {
         Processor p = new Processor();
         p.setType(type);
         p.setBridge(bridge);
@@ -75,6 +99,13 @@ public class ProcessorDAOTest {
         p.setShardId(TestConstants.SHARD_ID);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
 
+        p.setDefinition(processorDefinition);
+
+        return p;
+    }
+
+    @NotNull
+    private ProcessorDefinition processorDefinition() {
         Action a = new Action();
         a.setType(KafkaTopicAction.TYPE);
 
@@ -82,10 +113,7 @@ public class ProcessorDAOTest {
         params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
         a.setMapParameters(params);
 
-        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), null, a);
-        p.setDefinition(definition);
-
-        return p;
+        return new ProcessorDefinition(Collections.emptySet(), null, a);
     }
 
     private Bridge createBridge() {
@@ -290,6 +318,141 @@ public class ProcessorDAOTest {
         assertThat(results.getSize()).isEqualTo(1L);
         assertThat(results.getTotal()).isEqualTo(1L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
+    }
+
+    @Test
+    void testCreateCamelProcessor() {
+        Bridge b = createBridge();
+
+        String spec = "{\n" +
+                "      \"flow\": {\n" +
+                "        \"from\": {\n" +
+                "          \"uri\": \"rhose\",\n" +
+                "          \"steps\": [\n" +
+                "            {\n" +
+                "              \"unmarshal\": {\n" +
+                "                \"json\": {}\n" +
+                "              }\n" +
+                "            },\n" +
+                "            {\n" +
+                "              \"choice\": {\n" +
+                "                \"when\": [\n" +
+                "                  {\n" +
+                "                    \"jq\": \".nutritions.sugar <= 5\",\n" +
+                "                    \"steps\": [\n" +
+                "                      {\n" +
+                "                        \"removeHeaders\": \"*\"\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"marshal\": {\n" +
+                "                          \"json\": {}\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"setHeader\": {\n" +
+                "                          \"name\": \"ce-type\",\n" +
+                "                          \"constant\": \"low-sugar\"\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"setHeader\": {\n" +
+                "                          \"name\": \"fruit-sugar-level\",\n" +
+                "                          \"constant\": \"low\"\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"to\": \"mySlackAction\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  },\n" +
+                "                  {\n" +
+                "                    \"jq\": \".nutritions.sugar > 5 | .nutritions.sugar <= 10\",\n" +
+                "                    \"steps\": [\n" +
+                "                      {\n" +
+                "                        \"removeHeaders\": \"*\"\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"marshal\": {\n" +
+                "                          \"json\": {}\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"setHeader\": {\n" +
+                "                          \"name\": \"ce-type\",\n" +
+                "                          \"constant\": \"medium-sugar\"\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"setHeader\": {\n" +
+                "                          \"name\": \"fruit-sugar-level\",\n" +
+                "                          \"constant\": \"medium\"\n" +
+                "                        }\n" +
+                "                      },\n" +
+                "                      {\n" +
+                "                        \"to\": \"myServiceNowAction\"\n" +
+                "                      }\n" +
+                "                    ]\n" +
+                "                  }\n" +
+                "                ],\n" +
+                "                \"otherwise\": {\n" +
+                "                  \"steps\": [\n" +
+                "                    {\n" +
+                "                      \"removeHeaders\": \"*\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"marshal\": {\n" +
+                "                        \"json\": {}\n" +
+                "                      }\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"setHeader\": {\n" +
+                "                        \"name\": \"ce-type\",\n" +
+                "                        \"constant\": \"high-sugar\"\n" +
+                "                      }\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"setHeader\": {\n" +
+                "                        \"name\": \"fruit-sugar-level\",\n" +
+                "                        \"constant\": \"high\"\n" +
+                "                      }\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"to\": \"error\"\n" +
+                "                    }\n" +
+                "                  ]\n" +
+                "                }\n" +
+                "              }\n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }";
+
+        ObjectNode flowSpec = null;
+        try {
+            flowSpec = (ObjectNode) objectMapper.readTree(spec);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
+        Processor p = createSinkProcessorWithProcessing(b, "camelProcessor", camelProcessing);
+
+        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+                                                                                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(1L);
+
+        Processor processor = results.getItems().get(0);
+        assertThat(processor.getId()).isEqualTo(p.getId());
+
+        ProcessorDefinition definition = processor.getDefinition();
+
+        ObjectNode camelSpec = definition.getProcessing().getSpec();
+
+        JsonNode flow = camelSpec.get("flow");
+        assertThat(flow).isNotEmpty();
     }
 
     @Test

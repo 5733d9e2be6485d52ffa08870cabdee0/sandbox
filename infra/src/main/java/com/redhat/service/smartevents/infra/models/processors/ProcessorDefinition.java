@@ -25,6 +25,9 @@ public class ProcessorDefinition {
     @JsonProperty("resolvedAction")
     private Action resolvedAction;
 
+    @JsonProperty("processing")
+    private Processing processing;
+
     public ProcessorDefinition() {
     }
 
@@ -44,6 +47,11 @@ public class ProcessorDefinition {
         this.transformationTemplate = transformationTemplate;
         this.requestedSource = requestedSource;
         this.resolvedAction = resolvedAction;
+    }
+
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction, Action resolvedAction, Processing processing) {
+        this(filters, transformationTemplate, requestedAction, resolvedAction);
+        this.processing = processing;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -86,6 +94,14 @@ public class ProcessorDefinition {
         this.resolvedAction = resolvedAction;
     }
 
+    public Processing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -96,11 +112,11 @@ public class ProcessorDefinition {
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
         return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
+                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction) && Objects.equals(processing, that.processing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
+        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
     }
 }

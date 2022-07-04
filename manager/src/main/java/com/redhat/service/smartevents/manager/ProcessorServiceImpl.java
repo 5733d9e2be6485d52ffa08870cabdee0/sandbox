@@ -131,7 +131,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, processorRequest.getProcessing());
 
         newProcessor.setDefinition(definition);
 
