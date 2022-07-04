@@ -32,6 +32,9 @@ import static com.redhat.service.smartevents.infra.utils.JacksonUtils.mapToObjec
 // Implementations *MUST* override equals(..) and hashCode() appropriately
 public abstract class Gateway {
 
+    @JsonProperty("name")
+    private String name;
+
     @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
     private String type;
@@ -47,6 +50,14 @@ public abstract class Gateway {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public ObjectNode getParameters() {
@@ -106,12 +117,12 @@ public abstract class Gateway {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Gateway that = (Gateway) o;
-        return Objects.equals(type, that.type) && Objects.equals(parameters, that.parameters);
+        Gateway gateway = (Gateway) o;
+        return Objects.equals(name, gateway.name) && type.equals(gateway.type) && Objects.equals(parameters, gateway.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, parameters);
+        return Objects.hash(name, type, parameters);
     }
 }

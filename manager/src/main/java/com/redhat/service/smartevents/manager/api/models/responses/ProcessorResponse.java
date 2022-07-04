@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.api.models.responses;
 
 import java.util.Set;
 
-import com.redhat.service.smartevents.infra.models.processors.Processing;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
