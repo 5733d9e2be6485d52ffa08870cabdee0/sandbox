@@ -1,16 +1,15 @@
 # Demo of SmartEvents
 
-If running this demo against your local machine, please ensure you have completed all steps in the local dev
-setup documentation: [dev/README.md](dev/README.md)
+If running this demo against your local machine, please ensure you have completed all steps in the local dev setup documentation: [dev/README.md](dev/README.md)
 
-Alternatively, the demo can be run against our "demo cluster". Details are specified in 
-[this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet). If running against our "demo cluster", you
-will need to update the URLs used in the rest of this guide to match.
+Alternatively, the demo can be run against our "demo cluster". Details are specified in
+[this](https://docs.google.com/document/d/1C3s0ft4On8MIoi5v7dPXdsoNVCjLH8kMD2bdekHZ7Zg/edit?usp=sharing) gdoc (not publicly available yet). If running against our "demo cluster", you will need to
+update the URLs used in the rest of this guide to match.
 
 The following assumes you will be running the demo on your local machine:
 
-First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above.
-If you deployed the infrastructure with minikube, the keycloak server is running under `http://<YOUR_MINIKUBE_IP>:30007`.
+First of all, export the base address of the Manager. When running locally, the application by default will run on `localhost:8080`. If you want to use the staging area, refer to the link above. If
+you deployed the infrastructure with minikube, the keycloak server is running under `http://<YOUR_MINIKUBE_IP>:30007`.
 
 ```bash
 export MANAGER_URL=http://localhost:8080
@@ -33,7 +32,8 @@ export OB_TOKEN="Bearer $(curl --insecure -X POST $KEYCLOAK_URL/auth/realms/even
 
 This token will last 10 hours. Each time you get a `401 Unauthorized` from SmartEvents, run the command above again.
 
-If you target any remote environment (dev or stable) you will have to use a token from sso.redhat.com. Export your token from [here](https://console.redhat.com/openshift/token) and run the following command 
+If you target any remote environment (dev or stable) you will have to use a token from sso.redhat.com. Export your token from [here](https://console.redhat.com/openshift/token) and run the following
+command
 
 ```shell
 export OPENSHIFT_OFFLINE_TOKEN=<REPLACE WITH YOUR TOKEN>
@@ -42,14 +42,13 @@ export OB_TOKEN="Bearer $(curl -s --insecure -X POST https://sso.redhat.com/auth
 
 ## Testing your Setup
 
-This is a good time to test your setup. To do this we will invoke the `/api/v1/bridges` endpoint of SmartEvents to the
-currently running Bridge Instances. This _will_ return an empty list, but it will demonstrate that the Fleet Manager is
-working.
+This is a good time to test your setup. To do this we will invoke the `/api/smartevents_mgmt/v1/bridges` endpoint of SmartEvents to the currently running Bridge Instances. This _will_ return an empty
+list, but it will demonstrate that the Fleet Manager is working.
 
 Use the following to test the API:
 
 ```bash
-curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges | jq .
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/smartevents_mgmt/v1/bridges | jq .
 ```
 
 You should get a response that looks like this:
@@ -58,12 +57,12 @@ You should get a response that looks like this:
 {"kind":"BridgeList","items":[],"page":0,"size":0,"total":0}
 ```
 
-If not, please double-check the setup instructions in [dev/README.md](dev/README.md) to ensure everything is running
-as expected.
+If not, please double-check the setup instructions in [dev/README.md](dev/README.md) to ensure everything is running as expected.
 
 ## How to create a Bridge instance
 
-In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include the name of the Bridge. Let's export it to a variable:
+In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/smartevents_mgmt/v1/bridges`. The request must include the name of the Bridge. Let's export
+it to a variable:
 
 ```bash
 export BRIDGE_REQUEST='{
@@ -71,9 +70,8 @@ export BRIDGE_REQUEST='{
 }'
 ```
 
-**Note:** optionally, a `error_handler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform
-about internal processing errors. At the moment the only available option is a `Webhook` error handler.
-Here is an example request that uses [webhook.site (a website that generates working webhooks on the fly for free)](http:://webhook.site):
+**Note:** optionally, a `error_handler` field can be added to the request. It allows to specify a mechanism for the RHOSE instance to inform about internal processing errors. At the moment the only
+available option is a `Webhook` error handler. Here is an example request that uses [webhook.site (a website that generates working webhooks on the fly for free)](http:://webhook.site):
 
 ```bash
 export BRIDGE_REQUEST='{
@@ -90,7 +88,7 @@ export BRIDGE_REQUEST='{
 After exporting the desired type of request, run:
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$BRIDGE_REQUEST" $MANAGER_URL/api/v1/bridges | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$BRIDGE_REQUEST" $MANAGER_URL/api/smartevents_mgmt/v1/bridges | jq .
 ```
 
 The response should look like something like
@@ -100,7 +98,7 @@ The response should look like something like
   "kind":"Bridge",
   "id":"87508471-ee0f-4f53-b574-da8a61285986",
   "name":"myBridge",
-  "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
+  "href":"/api/smartevents_mgmt/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
   "status":"accepted"
 }
@@ -114,21 +112,21 @@ Extract the `id` field and store it in another env variable called `BRIDGE_ID`
 export BRIDGE_ID=87508471-ee0f-4f53-b574-da8a61285986 # same id as before
 ```
 
-Until the Bridge is not in the `ready` state, it is not possible to create Processors and to push events to the Ingress. 
-Check the status of the deployment with a GET request to the `/api/v1/bridges/{id}` endpoint: 
+Until the Bridge is not in the `ready` state, it is not possible to create Processors and to push events to the Ingress. Check the status of the deployment with a GET request to
+the `/api/smartevents_mgmt/v1/bridges/{id}` endpoint:
 
 ```bash
-curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq .
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID | jq .
 ```
 
-the response should look like 
+the response should look like
 
 ```json
 {
   "kind":"Bridge",
   "id":"87508471-ee0f-4f53-b574-da8a61285986",
   "name":"myBridge",
-  "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
+  "href":"/api/smartevents_mgmt/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986",
   "submitted_at":"2021-09-24T11:29:33.086649+0000",
   "status":"ready",
   "endpoint":"http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/"
@@ -138,28 +136,29 @@ the response should look like
 Keep track of the `endpoint`, it will be used later when pushing an event to this ingress application.
 
 ```bash
-export BRIDGE_ENDPOINT="$(curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID | jq --raw-output .endpoint)"
+export BRIDGE_ENDPOINT="$(curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID | jq --raw-output .endpoint)"
 ```
 
-The application is now `ready` and we also have the information about the endpoint to use to push the events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
+The application is now `ready` and we also have the information about the endpoint to use to push the
+events: `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/` in this particular case. The paths to submit events are
+
 1. `/events`: it accepts only valid cloud event json payloads.
-2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`. 
+2. `/events/plain`: it accepts any json string as payload, but it is mandatory to specify the headers `ce-specversion`, `ce-type`, `ce-id`, `ce-source` and `ce-subject`.
 
 ## How to add Processors to the Bridge
 
-It is possible to add `Processors` to the Bridge instance using the endpoint `/api/v1/bridges/{bridgeId}/processors`. 
-There are 3 basic concepts around a Processor:
+It is possible to add `Processors` to the Bridge instance using the endpoint `/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors`. There are 3 basic concepts around a Processor:
 
 - `Filters`: when one or more `Filters` are specified, only those events that evaluates the `Filters` to `true` will be processed by the specified `Action`.
-  - Further documentation on the supported `Filters` can be found [here](FILTERS.md).
+    - Further documentation on the supported `Filters` can be found [here](FILTERS.md).
 - `Actions`: the `Action` to take with the filtered events.
-  - Further documentation on the supported `Actions` can be found [here](ACTIONS.md)
+    - Further documentation on the supported `Actions` can be found [here](ACTIONS.md)
 - `Transformations`: an optional `Transformation` logic can be specified for each action definition.
-  - Further documention on writing `Transformations` can be found [here](TRANSFORMATIONS.md)
+    - Further documention on writing `Transformations` can be found [here](TRANSFORMATIONS.md)
 
 Note that an `Action` is always required by a `Processor`, but `Filters` and the `Transformation` are optional (i.e. the events will always flow into the action without filtering).
 
-An example payload request is the following: 
+An example payload request is the following:
 
 ```json
 {
@@ -183,22 +182,21 @@ An example payload request is the following:
 }
 ```
 
-So only the events with `source` equals to `StorageService` will be sent to the 
-the action `kafka_topic_sink_0.1`, which will push the event to the kafka instance under the topic `demoTopic`.
+So only the events with `source` equals to `StorageService` will be sent to the the action `kafka_topic_sink_0.1`, which will push the event to the kafka instance under the topic `demoTopic`.
 
 Replace the kafka connection parameter in the following request then run:
 
 ```bash
-curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic", "kafka_broker_url": "kafka-server-url:443", "kafka_client_id": "clientId", "kafka_client_secret": "clientSecret"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq .
+curl -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{"name": "myProcessor", "action": {"parameters": {"topic":  "demoTopic", "kafka_broker_url": "kafka-server-url:443", "kafka_client_id": "clientId", "kafka_client_secret": "clientSecret"}, "type": "kafka_topic_sink_0.1"},"filters": [{"key": "source","type": "StringEquals","value": "StorageService"}]}' $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors | jq .
 ```
 
-and the response is something like 
+and the response is something like
 
 ```json
 {
   "id":"cad90605-9836-4378-9250-f9c8d19f4e0c",
   "kind":"Processor",
-  "href":"/api/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986/processors/cad90605-9836-4378-9250-f9c8d19f4e0c",
+  "href":"/api/smartevents_mgmt/v1/bridges/87508471-ee0f-4f53-b574-da8a61285986/processors/cad90605-9836-4378-9250-f9c8d19f4e0c",
   "name":"myProcessor",
   "submitted_at":"2021-09-24T11:49:47.170209+0000",
   "status":"accepted",
@@ -224,16 +222,16 @@ and the response is something like
 }
 ```
 
-Extract the Processor ID, it's the first id field in top level response. 
+Extract the Processor ID, it's the first id field in top level response.
 
 ```bash
 export PROCESSOR_ID=cad90605-9836-4378-9250-f9c8d19f4e0c
 ```
 
-Like for the Bridge instance, it is needed to wait until the Processor has been deployed. Monitor its state with the endpoint `/api/v1/bridges/{bridgeId}/processors/{processorId}`
+Like for the Bridge instance, it is needed to wait until the Processor has been deployed. Monitor its state with the endpoint `/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors/{processorId}`
 
 ```bash
-curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID  | jq .
+curl -H "Authorization: $OB_TOKEN" -X GET $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID  | jq .
 ```
 
 ## Sending messages to Slack using processors
@@ -255,7 +253,8 @@ Here's an example of the payload for the `Slack` action. Notice that we need to 
 }
 ```
 
-Here's the example payload of the `webhook_sink_0.1` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
+Here's the example payload of the `webhook_sink_0.1` action instead. The channel is not needed but a specific transformation template that will transform the CloudEvents data to Slack's required
+format is needed. Messages that don't comply to this format won't be written on Slack when using the `Webhook` action.
 
 ```json
 {"text":"Hello, World!"}
@@ -278,7 +277,8 @@ Here's the example payload of the `webhook_sink_0.1` action instead. The channel
 
 ## Send events to the Ingress
 
-Everything is now set up to accept events and process them. Let's send the following cloud event to the ingress at the endpoint you extracted from the Bridge response: in this example `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/events`. 
+Everything is now set up to accept events and process them. Let's send the following cloud event to the ingress at the endpoint you extracted from the Bridge response: in this
+example `http://ob-87508471-ee0f-4f53-b574-da8a61285986-ob-kekkobar.apps.openbridge-dev.fdvn.p1.openshiftapps.com/events`.
 
 Here's the cloud event we are going to send:
 
