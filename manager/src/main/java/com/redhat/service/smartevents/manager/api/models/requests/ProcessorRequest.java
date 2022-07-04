@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidTransformationTemplate;
@@ -36,9 +37,15 @@ public class ProcessorRequest {
     @Valid
     protected Action action;
 
+    @JsonProperty("actions")
+    protected Set<Action> actions;
+
     @JsonProperty("source")
     @Valid
     protected Source source;
+
+    @JsonProperty("processing")
+    protected Processing processing;
 
     public ProcessorRequest() {
     }
@@ -68,6 +75,9 @@ public class ProcessorRequest {
         if (getAction() != null) {
             return ProcessorType.SINK;
         }
+        if (hasActions()) {
+            return ProcessorType.SINK;
+        }
         throw new IllegalStateException("ProcessorRequest with unknown type");
     }
 
@@ -91,11 +101,44 @@ public class ProcessorRequest {
         return source;
     }
 
+    public Processing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
+    }
+
+    public Set<Action> getActions() {
+        return actions;
+    }
+
+    public void setActions(Set<Action> actions) {
+        this.actions = actions;
+    }
+
+    public boolean hasActions() {
+        return actions != null && actions.size() > 0;
+    }
+
     @JsonIgnore
     public Gateway getGateway() {
         if (action != null) {
             return action;
         }
         return source;
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessorRequest{" +
+                "name='" + name + '\'' +
+                ", filters=" + filters +
+                ", transformationTemplate='" + transformationTemplate + '\'' +
+                ", action=" + action +
+                ", actions=" + actions +
+                ", source=" + source +
+                ", processing=" + processing +
+                '}';
     }
 }

@@ -13,8 +13,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.quartz.SchedulerException;
 
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
@@ -130,6 +132,47 @@ public class ProcessorWorkerTest {
         verify(connectorWorker).createDependencies(work, connectorEntity);
 
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
+    }
+
+    @Transactional
+    @Test
+    void handleWorkProvisioningWithKnownResourceWithMultipleConnectors() {
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        processor.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity1 = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED, ConnectorType.SINK, "test_sink_0.1", "connector1");
+        ConnectorEntity connectorEntity2 = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED, ConnectorType.SINK, "test_sink_0.1", "connector2");
+
+        connectorEntity1.setStatus(ManagedResourceStatus.ACCEPTED);
+        connectorEntity2.setStatus(ManagedResourceStatus.ACCEPTED);
+
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connectorEntity1);
+        connectorsDAO.persist(connectorEntity2);
+
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+
+        doAnswer((i) -> {
+            //Emulate ConnectorWorker completing work
+            connectorEntity1.setStatus(ManagedResourceStatus.READY);
+            return connectorEntity1;
+        }).when(connectorWorker).createDependencies(work, connectorEntity1);
+
+        doAnswer((i) -> {
+            //Emulate ConnectorWorker completing work
+            connectorEntity2.setStatus(ManagedResourceStatus.READY);
+            return connectorEntity2;
+        }).when(connectorWorker).createDependencies(work, connectorEntity2);
+
+        Processor refreshed = worker.handleWork(work);
+
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+
+        ArgumentCaptor<Work> workArgumentCaptor = ArgumentCaptor.forClass(Work.class);
+        ArgumentCaptor<ConnectorEntity> connectorEntityArgumentCaptor = ArgumentCaptor.forClass(ConnectorEntity.class);
+        verify(connectorWorker, times(2)).createDependencies(workArgumentCaptor.capture(), connectorEntityArgumentCaptor.capture());
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {

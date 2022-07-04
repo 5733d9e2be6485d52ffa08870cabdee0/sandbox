@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "http_url",
+    "kafka_topic"
+  ],
+  "properties": {
+    "http_url": {
+      "title": "URL",
+      "description": "The URL to send data to",
+      "type": "string",
+      "example": "https://my-service/path",
+      "pattern": "^(http|https)://.*"
+    },
+    "http_method": {
+      "title": "Method",
+      "description": "The HTTP method to use",
+      "type": "string",
+      "default": "POST"
+    }
+  }
+}

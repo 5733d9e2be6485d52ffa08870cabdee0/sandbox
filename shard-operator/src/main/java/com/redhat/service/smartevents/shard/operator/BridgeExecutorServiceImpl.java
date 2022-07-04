@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
@@ -23,6 +24,7 @@ import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurati
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -166,6 +168,28 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
+        }
+
+        Processing processing = processorDTO.getDefinition().getProcessing();
+        if (processing != null) {
+            LOGGER.info("------ Processing found - Deleting the Camel Integration");
+
+            String camelResourceName = CamelIntegration.resolveResourceName(processorDTO.getId());
+            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace, processing, null);
+
+            LOGGER.info("------ Deleting {} with definition {}", camelResourceName, expectedIntegrationFromDTO);
+
+            final boolean camelIntegrationDeleted =
+                    kubernetesClient
+                            .resources(CamelIntegration.class)
+                            .inNamespace(namespace)
+                            .delete(expectedIntegrationFromDTO);
+
+            if (camelIntegrationDeleted) {
+                LOGGER.info("------ Deleted");
+            } else {
+                LOGGER.info("------ NOT Deleted");
+            }
         }
     }
 

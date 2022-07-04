@@ -1,8 +1,13 @@
 package com.redhat.service.smartevents.shard.operator;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -10,13 +15,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -32,6 +47,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
@@ -60,6 +76,9 @@ public class BridgeExecutorServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @InjectMock
     ServiceMonitorService monitorService;
@@ -101,6 +120,142 @@ public class BridgeExecutorServiceTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_STRATEGY_ENV_VAR)).isNotEmpty();
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR)).isNotEmpty();
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR)).isNotEmpty();
+    }
+
+    @Test
+    public void testCamelResourceCreated() {
+
+        ProcessorDTO dto = processorDTOWithCamelProcessing();
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            // The deployment is deployed by the controller
+
+                            // Then
+                            String camelIntegrationName = CamelIntegration.resolveResourceName(dto.getId());
+
+                            CamelIntegration camelIntegration = kubernetesClient
+                                    .resources(CamelIntegration.class)
+                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                                    .withName(camelIntegrationName)
+                                    .get();
+
+                            assertThat(camelIntegration).isNotNull();
+
+                            System.out.println("+++++++" + camelIntegration);
+
+                            ObjectNode camelIntegrationSpec = camelIntegration.getSpec();
+
+                            List<JsonNode> camelIntegrationFlows = camelIntegrationSpec.findValues("flows");
+
+                            JsonNode flow = camelIntegrationFlows.get(0);
+
+                            JsonNode camelIntegrationFrom = flow.get(0).get("from");
+
+                            assertThat(camelIntegrationFrom.get("uri").asText()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
+                            ObjectNode parameters = (ObjectNode) camelIntegrationFrom.get("parameters");
+
+                            assertThat(parameters.get("brokers").asText()).isEqualTo("mytestkafka:9092");
+                            assertThat(parameters.get("securityProtocol").asText()).isEqualTo("SASL_SSL");
+                            assertThat(parameters.get("saslMechanism").asText()).isEqualTo("PLAIN");
+                            assertThat(parameters.get("saslJaasConfig").asText())
+                                    .isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+                            assertThat(parameters.get("maxPollRecords").intValue()).isEqualTo(5000);
+                            assertThat(parameters.get("consumersCount").intValue()).isEqualTo(1);
+                            assertThat(parameters.get("seekTo").asText()).isEqualTo("beginning");
+                            assertThat(parameters.get("groupId").asText()).isEqualTo("kafkaGroup");
+
+                            JsonNode camelIntegrationTo = camelIntegrationFrom.get("steps").iterator().next();
+
+                            JsonNode to = camelIntegrationTo.get("to");
+                            assertThat(to.get("uri").asText()).isEqualTo("kafka:kafkaOutputTopic");
+
+                            ObjectNode toParameters = (ObjectNode) to.get("parameters");
+
+                            assertThat(toParameters.get("brokers").asText()).isEqualTo("mytestkafka:9092");
+                            assertThat(toParameters.get("securityProtocol").asText()).isEqualTo("SASL_SSL");
+                            assertThat(toParameters.get("saslMechanism").asText()).isEqualTo("PLAIN");
+                            assertThat(toParameters.get("saslJaasConfig").asText())
+                                    .isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+                            assertThat(toParameters.get("maxPollRecords").intValue()).isEqualTo(5000);
+                            assertThat(toParameters.get("consumersCount").intValue()).isEqualTo(1);
+                            assertThat(toParameters.get("seekTo").asText()).isEqualTo("beginning");
+                            assertThat(toParameters.get("groupId").asText()).isEqualTo("kafkaGroup");
+
+                        });
+
+    }
+
+    @Test
+    public void testCamelResourceDelete() {
+
+        ProcessorDTO dto = processorDTOWithCamelProcessing();
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+        bridgeExecutorService.deleteBridgeExecutor(dto);
+
+        // Then
+        CamelIntegration camelIntegration = kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(CamelIntegration.resolveResourceName(dto.getId()))
+                .get();
+        assertThat(camelIntegration).isNull();
+    }
+
+    private ProcessorDTO processorDTOWithCamelProcessing() {
+        Action resolvedAction1 = createKafkaAction("mySlackAction", "kafkaOutputTopic");
+        Action resolvedAction2 = createKafkaAction("otherAction", "doNotUse");
+
+        String spec = "{\n" +
+                "      \"flow\": {\n" +
+                "        \"from\": {\n" +
+                "          \"uri\": \"rhose\",\n" +
+                "          \"steps\": [\n" +
+                "            {\n" +
+                "              \"to\": { \"uri\" : \"mySlackAction\" } \n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }";
+        ObjectNode flowSpec = null;
+        try {
+            flowSpec = (ObjectNode) objectMapper.readTree(spec);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
+
+        ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
+                "",
+                null,
+                null,
+                camelProcessing,
+                Arrays.asList(resolvedAction1, resolvedAction2),
+                Arrays.asList(resolvedAction1, resolvedAction2));
+
+        return TestSupport.newRequestedProcessorDTO(processorDefinition);
+    }
+
+    private Action createKafkaAction(String name, String topic) {
+        Action resolvedAction = new Action();
+        resolvedAction.setType(SlackAction.TYPE);
+        resolvedAction.setName(name);
+
+        Map<String, String> resolvedActionParams = new HashMap<>();
+        resolvedActionParams.put(KafkaTopicAction.TOPIC_PARAM, topic);
+        resolvedAction.setMapParameters(resolvedActionParams);
+        return resolvedAction;
     }
 
     @Test

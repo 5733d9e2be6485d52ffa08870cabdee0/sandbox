@@ -93,7 +93,8 @@ class ProcessorServiceConnectorTest {
     void createConnectorSuccess() {
         Bridge b = createPersistBridge(READY);
 
-        Action slackAction = createSlackAction();
+        String actionName = "actionName";
+        Action slackAction = createSlackAction(actionName);
         ProcessorRequest processorRequest = new ProcessorRequest("ManagedConnectorProcessor", slackAction);
 
         //Emulate successful External Connector creation
@@ -120,7 +121,7 @@ class ProcessorServiceConnectorTest {
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    resourceNamesProvider.getProcessorConnectorName(processor.getId()));
+                    resourceNamesProvider.getProcessorConnectorName(processor.getId(), actionName));
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();
@@ -281,12 +282,17 @@ class ProcessorServiceConnectorTest {
         return connector;
     }
 
-    private Action createSlackAction() {
+    private Action createSlackAction(String name) {
         Action mcAction = new Action();
+        mcAction.setName(name);
         mcAction.setType(SlackAction.TYPE);
         mcAction.setMapParameters(Map.of("slack_channel", "channel",
                 "slack_webhook_url", "webhook_url"));
         return mcAction;
+    }
+
+    private Action createSlackAction() {
+        return createSlackAction("slackAction-name");
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {

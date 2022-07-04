@@ -55,4 +55,11 @@ if [ "${disable_extra_components}" != 'true' ]; then
   cat ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml | sed -E "s|<REPLACE_WITH_MINIKUBE_IP>|$(minikube -p "${MINIKUBE_PROFILE}" ip)|" | kubectl apply -f -
 fi
 
+sleep 5
+minikube addons enable registry
+sleep 5
+
+kamel install --global
+sleep 5
+
 set +x

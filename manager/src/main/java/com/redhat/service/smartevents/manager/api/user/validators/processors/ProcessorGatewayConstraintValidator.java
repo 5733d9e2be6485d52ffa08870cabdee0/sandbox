@@ -36,7 +36,7 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
         Action action = value.getAction();
         Source source = value.getSource();
 
-        if (action == null && source == null) {
+        if (action == null && !value.hasActions() && source == null) {
             addConstraintViolation(context,
                     MISSING_GATEWAY_ERROR,
                     Collections.emptyMap(),
@@ -60,6 +60,6 @@ public class ProcessorGatewayConstraintValidator extends BaseGatewayConstraintVa
             return false;
         }
 
-        return isValidGateway(value.getGateway(), context);
+        return value.hasActions() || isValidGateway(value.getGateway(), context);
     }
 }

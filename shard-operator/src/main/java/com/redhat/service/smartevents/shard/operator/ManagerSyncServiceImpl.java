@@ -205,11 +205,11 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void failedToSendUpdateToManager(Object entity, Throwable t) {
-        LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
+        LOGGER.info("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
     }
 
     private void processingFailed(Class<?> entity, Throwable t) {
-        LOGGER.error("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
+        LOGGER.info("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
     }
 
     private void processingComplete(Class<?> entity) {

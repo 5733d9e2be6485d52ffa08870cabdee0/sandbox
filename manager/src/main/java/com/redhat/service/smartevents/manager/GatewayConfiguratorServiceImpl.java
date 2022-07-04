@@ -25,8 +25,8 @@ public class GatewayConfiguratorServiceImpl implements GatewayConfiguratorServic
     }
 
     @Override
-    public String getConnectorTopicName(String processorId) {
-        return resourceNamesProvider.getProcessorTopicName(processorId);
+    public String getConnectorTopicName(String processorId, String actionName) {
+        return resourceNamesProvider.getProcessorTopicName(processorId, actionName);
     }
 
     @Override

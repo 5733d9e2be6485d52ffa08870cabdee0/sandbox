@@ -1,0 +1,36 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: kafka.yaml
+spec:
+  flows:
+    - from:
+        parameters:
+          brokers: brokerUrl:443
+          consumersCount: 1
+          groupId: kafkaGroup
+          maxPollRecords: 5000
+          saslJaasConfig: >-
+            org.apache.kafka.common.security.plain.PlainLoginModule required
+            username='clientId'
+            password='secret';
+          saslMechanism: PLAIN
+          securityProtocol: SASL_SSL
+          seekTo: beginning
+        steps:
+          - to:
+              parameters:
+                brokers: brokerUrl:443
+                consumersCount: 1
+                groupId: kafkaGroup
+                maxPollRecords: 5000
+                saslJaasConfig: >-
+                  org.apache.kafka.common.security.plain.PlainLoginModule
+                  required
+                  username='clientId'
+                  password='clientSecret';
+                saslMechanism: PLAIN
+                securityProtocol: SASL_SSL
+                seekTo: beginning
+              uri: kafka:lmolteni-prcs-9d63041f-7761-45bb-a5f5-835421d8bb7d
+        uri: kafka:lmolteni-brdg-9dce6d4c-3b34-4967-8138-309fda671fcf

@@ -51,6 +51,102 @@ if [ "${action_type}" = 'slack' ]; then
   ],
   "transformationTemplate": "{\"test\": \"{data.myMessage}\"}"
 }'
+elif [ "${action_type}" = 'camel' ]; then
+  action_payload='{
+  "name": '"\"$action_name\""',
+  "processing": {
+      "type": "cameldsl_0.1",
+      "spec": {
+        "flow": {
+             "from": {
+                "uri": "rhose",
+                "steps": [
+                  {
+                    "unmarshal": {
+                      "json": {}
+                    }
+                  },
+                  {
+                    "choice": {
+                      "when": [
+                        {
+                          "simple": "${body[nutritions][sugar]} <= 5",
+                          "steps": [
+                            {
+                              "log": { "message" : "++++- Lesser equal than 5 ${body}" }
+                            },
+                            {
+                              "marshal": {
+                                "json": {}
+                              }
+                            },
+                            {
+                              "to": { "uri" : "slackAction1" }
+                            }
+                          ]
+                        },
+                        {
+                          "simple": "${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <= 10",
+                          "steps": [
+                            {
+                              "log": { "message" : "++++- between 5 and 10 goes to http ${body}" }
+                            },
+                            {
+                              "marshal": {
+                                "json": {}
+                              }
+                            },
+                            {
+                              "to": { "uri" : "httpAction" }
+                            }
+                          ]
+                        }
+                      ],
+                      "otherwise": {
+                        "steps": [
+                          {
+                            "marshal": {
+                              "json": {}
+                            }
+                          },
+                          {
+                            "to": { "uri" : "errorAction" }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+           }
+        }
+    },
+    "actions": [
+      {
+        "name": "slackAction1",
+        "type": "slack_sink_0.1",
+        "parameters": {
+          "slack_channel": "mc",
+          "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL\""'
+        }
+      },
+      {
+        "name": "httpAction",
+        "type": "http_sink_0.1",
+        "parameters": {
+            "http_url": '"\"$HTTP_WEBHOOK_ACTION\""'
+        }
+      },
+      {
+        "name": "errorAction",
+        "type": "slack_sink_0.1",
+        "parameters": {
+          "slack_channel": "mc2",
+          "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""'
+        }
+      }
+    ]
+}'
 elif [ "${action_type}" = 'slack-plain' ]; then
   action_payload='{
    "name": '"\"$action_name\""',
@@ -68,7 +164,7 @@ elif [ "${action_type}" = 'webhook' ]; then
    "action": {
       "type": "webhook_sink_0.1",
       "parameters": {
-         "endpoint": '"\"$SLACK_WEBHOOK_URL\""'
+         "endpoint": '"\"$SLACK_WEBHOOK_URL2\""'
       }
    },
   "filters": [
@@ -101,8 +197,13 @@ else
 fi
 
 
-printf "\n\nCreating the ${action_type} action with name $action_name\n"
-PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
+echo $action_payload | jq .
 
+printf "\n\nCreating the ${action_type} action with name $action_name\n"
+
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
 printf "\n\nAction ${action_type} created: $action_name\n"
-echo "\texport PROCESSOR_ID=$PROCESSOR_ID"
+echo "export PROCESSOR_ID=$PROCESSOR_ID"
+
+
+# curl -v -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors

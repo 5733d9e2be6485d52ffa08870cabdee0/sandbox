@@ -672,7 +672,7 @@ class ProcessorServiceTest {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
         p.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        Action action = Fixtures.createKafkaAction();
+        Action action = Fixtures.createKafkaAction("actionName");
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
         p.setDefinition(definition);

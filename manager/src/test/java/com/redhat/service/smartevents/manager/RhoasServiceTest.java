@@ -136,7 +136,7 @@ class RhoasServiceTest {
     }
 
     private String testProcessorTopicName() {
-        return resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID);
+        return resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID, "actionName");
     }
 
     // verify(rhoasClientMock, times(4)).createTopicAndGrantAccess(any(), any(), any()); does not take into account the retries. So this is a workaround.

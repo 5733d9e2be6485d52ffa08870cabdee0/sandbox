@@ -49,8 +49,8 @@ class SinkConnectorResolverTest {
     void beforeEach() {
         reset(gatewayConfiguratorServiceMock);
 
-        when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
-        when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID, "actionName")).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
+        when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)), "actionName")).thenThrow(new IllegalStateException());
 
         when(gatewayConfiguratorService.getBootstrapServers()).thenReturn(TEST_BROKER_URL);
         when(gatewayConfiguratorService.getClientId()).thenReturn(TEST_CLIENT_ID);
@@ -81,6 +81,7 @@ class SinkConnectorResolverTest {
                 SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
 
         Action action = new Action();
+        action.setName("actionName");
         action.setType(SlackAction.TYPE);
         action.setMapParameters(parameters);
         return action;

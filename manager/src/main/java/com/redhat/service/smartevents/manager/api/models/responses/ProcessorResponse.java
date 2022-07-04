@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.api.models.responses;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -34,8 +36,14 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     @JsonProperty("action")
     private Action action;
 
+    @JsonProperty("actions")
+    private List<Action> actions;
+
     @JsonProperty("source")
     private Source source;
+
+    @JsonProperty("processing")
+    protected Processing processing;
 
     public ProcessorType getType() {
         return type;
@@ -75,5 +83,21 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     public void setSource(Source source) {
         this.source = source;
+    }
+
+    public Processing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
+    }
+
+    public List<Action> getActions() {
+        return actions;
+    }
+
+    public void setActions(List<Action> actions) {
+        this.actions = actions;
     }
 }

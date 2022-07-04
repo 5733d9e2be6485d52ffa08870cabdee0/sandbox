@@ -26,6 +26,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
@@ -33,6 +35,7 @@ import com.redhat.service.smartevents.infra.api.models.responses.PagedListRespon
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.ProcessorService;
+import com.redhat.service.smartevents.manager.api.models.requests.CamelProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
@@ -52,6 +55,8 @@ import io.quarkus.security.Authenticated;
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
 public class ProcessorsAPI {
+
+    Logger LOGGER = LoggerFactory.getLogger(ProcessorsAPI.class);
 
     @Inject
     ProcessorService processorService;
@@ -113,6 +118,7 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
+        System.out.println("++++ Creating a processor with payload" + processorRequest);
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
@@ -125,6 +131,30 @@ public class ProcessorsAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
+    })
+    @Operation(summary = "Create a Camel Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
+    @POST
+    @Path("{bridgeId}/camelProcessors")
+    public Response addCamelProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid CamelProcessorRequest camelProcessorRequest) {
+        String customerId = identityResolver.resolve(jwt);
+        String owner = identityResolver.resolveOwner(jwt);
+
+        LOGGER.info("++++ Creating a processor with camel payload" + camelProcessorRequest);
+        ProcessorRequest processorRequest = new CamelToProcessorRequest(camelProcessorRequest).convert();
+        LOGGER.info("++++ Creating a processor with payload" + processorRequest);
+
+        Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
+        return Response.accepted(processorService.toResponse(processor)).build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Accepted.", responseCode = "202",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ProcessorResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Unauthorized.", responseCode = "401"),
+            @APIResponse(description = "Forbidden.", responseCode = "403"),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
     @Operation(summary = "Update a Processor instance Filter definition or Transformation template.",
             description = "Update a Processor instance Filter definition or Transformation template for the authenticated user.")

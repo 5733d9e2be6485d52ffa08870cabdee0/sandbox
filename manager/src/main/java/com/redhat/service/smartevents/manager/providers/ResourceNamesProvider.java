@@ -6,8 +6,8 @@ public interface ResourceNamesProvider {
 
     String getBridgeErrorTopicName(String bridgeId);
 
-    String getProcessorConnectorName(String processorId);
+    String getProcessorConnectorName(String processorId, String actionName);
 
-    String getProcessorTopicName(String processorId);
+    String getProcessorTopicName(String processorId, String actionName);
 
 }

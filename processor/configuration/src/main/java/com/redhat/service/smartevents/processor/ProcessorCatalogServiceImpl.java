@@ -13,6 +13,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +31,8 @@ import com.redhat.service.smartevents.processor.models.ProcessorCatalogEntry;
 
 @ApplicationScoped
 public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
+
+    Logger LOGGER = LoggerFactory.getLogger(ProcessorCatalogServiceImpl.class);
 
     private static final String ACTIONS_DIR_PATH = "/schemas/actions/";
     private static final String SOURCES_DIR_PATH = "/schemas/sources/";
@@ -61,6 +66,8 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
         if (entry.isEmpty()) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' and type '%s' was not found in the catalog", id, type));
         }
+
+        LOGGER.info("++++++ Catalog entry {}  ", entry);
 
         return entry.get().isConnector();
     }

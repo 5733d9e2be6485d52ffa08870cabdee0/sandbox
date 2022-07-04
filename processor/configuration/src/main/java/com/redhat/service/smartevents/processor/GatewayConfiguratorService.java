@@ -9,7 +9,7 @@ public interface GatewayConfiguratorService {
 
     String getBridgeEndpoint(String bridgeId, String customerId);
 
-    String getConnectorTopicName(String processorId);
+    String getConnectorTopicName(String processorId, String actionName);
 
     String getBootstrapServers();
 
