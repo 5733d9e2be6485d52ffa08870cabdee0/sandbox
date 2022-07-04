@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -114,7 +115,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         Processor newProcessor = new Processor();
         newProcessor.setType(processorType);
         newProcessor.setName(processorRequest.getName());
-        newProcessor.setSubmittedAt(ZonedDateTime.now());
+        newProcessor.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
@@ -228,7 +229,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         // Create new definition copying existing properties
-        existingProcessor.setModifiedAt(ZonedDateTime.now());
+        existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
@@ -277,7 +278,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (ManagedResourceStatus.READY == processorDTO.getStatus()) {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
-                    p.setPublishedAt(ZonedDateTime.now());
+                    p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
                     metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
                 } else {
                     metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
@@ -324,7 +325,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Processor and Connector deletion and related Work creation should always be in the same transaction
         processor.setStatus(ManagedResourceStatus.DEPROVISION);
         processor.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
-        processor.setDeletionRequestedAt(ZonedDateTime.now());
+        processor.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
