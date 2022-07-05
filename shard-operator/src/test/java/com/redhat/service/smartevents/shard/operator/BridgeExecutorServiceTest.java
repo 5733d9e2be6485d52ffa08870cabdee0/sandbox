@@ -1,10 +1,21 @@
 package com.redhat.service.smartevents.shard.operator;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
+import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +91,76 @@ public class BridgeExecutorServiceTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR)).isNotEmpty();
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR)).isNotEmpty();
     }
+
+    @Test
+    public void testCamelResourceCreated() {
+
+        Action a = new Action();
+        a.setType(KafkaTopicAction.TYPE);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
+        a.setMapParameters(params);
+
+        String spec = "{\n" +
+                "      \"flow\": {\n" +
+                "        \"from\": {\n" +
+                "          \"uri\": \"rhose\",\n" +
+                "          \"steps\": [\n" +
+                "            {\n" +
+                "              \"to\": \"mySlackAction\"\n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }";
+        ObjectNode flowSpec = null;
+        try {
+            flowSpec = (ObjectNode) objectMapper.readTree(spec);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
+
+        ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
+                                                                          "",
+                                                                          a,
+                                                                          null,
+                                                                          camelProcessing);
+
+
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO(processorDefinition);
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        CamelIntegration camelIntegration = kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(CamelIntegration.resolveResourceName(dto.getId()))
+                .get();
+
+        assertThat(camelIntegration).isNotNull();
+
+//        assertThat(camelIntegration.getSpec().getOwner()).isEqualTo(dto.getOwner());
+//
+//        Secret secret = fetchBridgeExecutorSecret(dto);
+//        assertThat(secret).isNotNull();
+//        assertThat(secret.getMetadata().getName()).isEqualTo(camelIntegration.getMetadata().getName());
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_STRATEGY_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR)).isNotEmpty();
+//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR)).isNotEmpty();
+    }
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @Test
     public void testBridgeExecutorCreationTriggersController() {
