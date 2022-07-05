@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models.gateways;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -58,9 +59,30 @@ public abstract class Gateway {
     }
 
     // mapParameters is included in openapi.yaml. We have to exclude it manually
+    @JsonIgnore
     @Schema(hidden = true)
     public void setMapParameters(Map<String, String> parameters) {
         this.parameters = mapToObjectNode(parameters);
+    }
+
+    /**
+     * For each field of the received {@link ObjectNode}, replaces the current parameter value
+     * or creates it if it doesn't exist.
+     *
+     * @param otherParameters the object containing the new values to be inserted
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
+    public void mergeParameters(ObjectNode otherParameters) {
+        Iterator<Map.Entry<String, JsonNode>> it = otherParameters.fields();
+        while (it.hasNext()) {
+            Map.Entry<String, JsonNode> otherParameterEntry = it.next();
+            this.parameters.set(otherParameterEntry.getKey(), otherParameterEntry.getValue());
+        }
+    }
+
+    public void setParameter(String key, JsonNode value) {
+        this.parameters.set(key, value);
     }
 
     public String getParameter(String key) {
