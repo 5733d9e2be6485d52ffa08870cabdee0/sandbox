@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.workers;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +65,7 @@ public class WorkManagerImpl implements WorkManager {
 
     @Transactional
     protected void setModifiedAt(Work work) {
-        work.setModifiedAt(ZonedDateTime.now());
+        work.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
     }
 
     @Override
@@ -82,7 +83,7 @@ public class WorkManagerImpl implements WorkManager {
         // Work has been serialised by VertX at this point and has therefore lost all affinity with
         // a JPA session. We therefore need to first retrieve the entity before updating it.
         Work w = workDAO.findById(work.getId());
-        w.setModifiedAt(ZonedDateTime.now());
+        w.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         w.setAttempts(w.getAttempts() + 1);
     }
 
@@ -117,7 +118,7 @@ public class WorkManagerImpl implements WorkManager {
     @Transactional
     @Scheduled(every = "5m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     void reconnectDroppedWorkers() {
-        ZonedDateTime age = ZonedDateTime.now().minusMinutes(5);
+        ZonedDateTime age = ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(5);
         workDAO.reconnectDroppedWorkers(workerId, age);
     }
 

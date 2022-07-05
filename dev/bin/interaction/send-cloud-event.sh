@@ -20,7 +20,7 @@ export CLOUD_EVENT='{
 }'
 
 
-BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
+BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
 
 echo "Sending cloud event to $BRIDGE_ENDPOINT"
 curl -s -X POST -H 'Accept: application/json' -H 'Content-Type: application/cloudevents+json' -H "Authorization: $OB_TOKEN" -d "$CLOUD_EVENT" "$BRIDGE_ENDPOINT"

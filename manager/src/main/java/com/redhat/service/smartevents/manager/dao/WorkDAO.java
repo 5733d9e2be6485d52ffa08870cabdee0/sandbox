@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class WorkDAO implements PanacheRepositoryBase<Work, String> {
     public int reconnectDroppedWorkers(String workerId, ZonedDateTime lastUpdated) {
         return update("#Work.reconnectDroppedWorkers",
                 Parameters.with("workerId", workerId)
-                        .and("now", ZonedDateTime.now())
+                        .and("now", ZonedDateTime.now(ZoneOffset.UTC))
                         .and("age", lastUpdated));
     }
 }

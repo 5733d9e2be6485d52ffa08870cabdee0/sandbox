@@ -58,7 +58,7 @@
       "pluginVersion": "6.6.1",
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -108,7 +108,7 @@
       "pluginVersion": "6.6.1",
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -158,7 +158,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -261,7 +261,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -364,7 +364,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/v1/bridges\",}[1m])",
+          "expr": "increase(http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m])",
           "refId": "A"
         }
       ],
@@ -451,7 +451,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m])",
+          "expr": "increase(http_server_requests_seconds_count{method=\"POST\",outcome=\"SUCCESS\",status=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m])",
           "refId": "A"
         }
       ],
@@ -537,7 +537,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -623,7 +623,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_count{method=\"POST\",status!=\"202\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -709,7 +709,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_sum{method=\"POST\",uri=\"/api/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_sum{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges\",}[1m]))",
           "refId": "A"
         }
       ],
@@ -812,7 +812,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_server_requests_seconds_sum{method=\"POST\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/v1/bridges/{bridgeId}/processors\",}[1m]))",
+          "expr": "sum(increase(http_server_requests_seconds_sum{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))/sum(increase(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/processors\",}[1m]))",
           "refId": "A"
         }
       ],

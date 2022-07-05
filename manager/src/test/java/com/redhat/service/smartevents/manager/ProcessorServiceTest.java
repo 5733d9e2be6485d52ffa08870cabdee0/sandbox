@@ -27,6 +27,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
@@ -54,8 +55,10 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
@@ -391,6 +394,39 @@ class ProcessorServiceTest {
     }
 
     @Test
+    void testGetUserVisibleProcessorsWhenBridgeHasFailed() {
+        Bridge bridge = createFailedBridge();
+
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
+
+        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isEqualTo(3L);
+        assertThat(results.getTotal()).isEqualTo(3L);
+        assertThat(results.getItems().get(0).getId()).isEqualTo(DEFAULT_PROCESSOR_ID);
+        assertThat(results.getItems().get(1).getId()).isEqualTo(PROVISIONING_PROCESSOR_ID);
+        assertThat(results.getItems().get(2).getId()).isEqualTo(FAILED_PROCESSOR_ID);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getUserVisibleProcessorsWhenBridgeIsStatus")
+    void testGetUserVisibleProcessorsWhenBridgeIsPreparing(ManagedResourceStatus status) {
+        Bridge bridge = createBridge(status);
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
+
+        assertThatExceptionOfType(BridgeLifecycleException.class)
+                .isThrownBy(() -> processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+    }
+
+    private static Stream<Arguments> getUserVisibleProcessorsWhenBridgeIsStatus() {
+        Object[][] arguments = {
+                { PREPARING }, { PROVISIONING }, { DEPROVISION }, { DELETING }
+        };
+        return Stream.of(arguments).map(Arguments::of);
+    }
+
+    @Test
     void testGetProcessorsCount() {
         Long result = processorService.getProcessorsCount(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(3L);
@@ -691,9 +727,17 @@ class ProcessorServiceTest {
     }
 
     private static Bridge createReadyBridge() {
+        return createBridge(READY);
+    }
+
+    private static Bridge createFailedBridge() {
+        return createBridge(FAILED);
+    }
+
+    private static Bridge createBridge(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(DEFAULT_BRIDGE_ID);
-        bridge.setStatus(READY);
+        bridge.setStatus(status);
         return bridge;
     }
 

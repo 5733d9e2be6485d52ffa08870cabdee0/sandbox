@@ -3,5 +3,5 @@
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 printf "\n\nDeleting processor: $PROCESSOR_ID"
-curl -s -H "Authorization: $OB_TOKEN" -X DELETE $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID
+curl -s -H "Authorization: $OB_TOKEN" -X DELETE $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors/$PROCESSOR_ID
 printf "\nDeleted"
