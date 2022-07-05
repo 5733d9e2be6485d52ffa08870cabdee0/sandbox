@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
+import java.util.Collections;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -64,8 +66,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         camelIntegrationFrom.getParameters().put("seekTo", "beginning");
         camelIntegrationFrom.getParameters().put("groupId", "kafkaGroup");
 
-        camelIntegrationFlows.setCamelIntegrationFrom(camelIntegrationFrom);
-
+        camelIntegrationFlows.setCamelIntegrationFrom(Collections.singletonList(camelIntegrationFrom));
 
         CamelIntegrationSpec camelIntegrationSpec = new CamelIntegrationSpec();
 
@@ -75,6 +76,12 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         camelIntegration.setSpec(camelIntegrationSpec);
         camelIntegration.setMetadata(metadata);
+
+        CamelIntegrationTo camelIntegrationTo = new CamelIntegrationTo();
+        String kafkaToURI = String.format("kafka:%s", processorDTO.getDefinition().getResolvedAction().getParameter("topic"));
+        camelIntegrationTo.setTo(kafkaToURI);
+        camelIntegrationFrom.getSteps().add(camelIntegrationTo);
+
 
         return camelIntegration;
     }

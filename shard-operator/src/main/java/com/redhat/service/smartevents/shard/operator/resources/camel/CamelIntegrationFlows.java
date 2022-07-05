@@ -1,16 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class CamelIntegrationFlows {
 
-    CamelIntegrationFrom camelIntegrationFrom;
+    List<CamelIntegrationFrom> camelIntegrationFrom = new ArrayList<>();
 
-    public CamelIntegrationFrom getCamelIntegrationFrom() {
+    public List<CamelIntegrationFrom> getCamelIntegrationFrom() {
         return camelIntegrationFrom;
     }
 
-    public void setCamelIntegrationFrom(CamelIntegrationFrom camelIntegrationFrom) {
+    public void setCamelIntegrationFrom(List<CamelIntegrationFrom> camelIntegrationFrom) {
         this.camelIntegrationFrom = camelIntegrationFrom;
     }
 

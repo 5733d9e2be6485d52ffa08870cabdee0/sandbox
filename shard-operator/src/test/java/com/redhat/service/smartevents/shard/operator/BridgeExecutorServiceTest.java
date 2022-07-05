@@ -16,6 +16,7 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
+import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
@@ -24,6 +25,7 @@ import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegr
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlows;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFrom;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationTo;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -34,15 +36,11 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.assertj.core.api.MapAssert;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
-import org.assertj.core.api.MapAssert;
-import org.assertj.core.api.AssertionsForInterfaceTypes;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -101,11 +99,20 @@ public class BridgeExecutorServiceTest {
     public void testCamelResourceCreated() {
 
         Action a = new Action();
-        a.setType(KafkaTopicAction.TYPE);
+        a.setType(SlackAction.TYPE);
+        a.setName("mySlackAction");
 
         Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
+        params.put(KafkaTopicAction.TOPIC_PARAM, "kafkaOutputTopic");
         a.setMapParameters(params);
+
+        Action resolvedAction = new Action();
+        resolvedAction.setType(SlackAction.TYPE);
+        resolvedAction.setName("mySlackAction");
+
+        Map<String, String> resolvedActionParams = new HashMap<>();
+        resolvedActionParams.put(KafkaTopicAction.TOPIC_PARAM, "kafkaOutputTopic");
+        resolvedAction.setMapParameters(resolvedActionParams);
 
         String spec = "{\n" +
                 "      \"flow\": {\n" +
@@ -131,7 +138,7 @@ public class BridgeExecutorServiceTest {
         ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
                                                                           "",
                                                                           a,
-                                                                          null,
+                                                                          resolvedAction,
                                                                           camelProcessing);
 
 
@@ -153,7 +160,9 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationFlows camelIntegrationFlows = camelIntegrationSpec.getCamelIntegrationFlows();
 
-        CamelIntegrationFrom camelIntegrationFrom = camelIntegrationFlows.getCamelIntegrationFrom();
+        List<CamelIntegrationFrom> camelIntegrationFromList = camelIntegrationFlows.getCamelIntegrationFrom();
+
+        CamelIntegrationFrom camelIntegrationFrom = camelIntegrationFromList.get(0);
 
         assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
         Map<String, Object> parameters = camelIntegrationFrom.getParameters();
@@ -167,19 +176,10 @@ public class BridgeExecutorServiceTest {
         assertThat(parameters.get("seekTo")).isEqualTo("beginning");
         assertThat(parameters.get("groupId")).isEqualTo("kafkaGroup");
 
-//        assertThat(camelIntegration.getSpec().getOwner()).isEqualTo(dto.getOwner());
-//
-//        Secret secret = fetchBridgeExecutorSecret(dto);
-//        assertThat(secret).isNotNull();
-//        assertThat(secret.getMetadata().getName()).isEqualTo(camelIntegration.getMetadata().getName());
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_SECURITY_PROTOCOL_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_STRATEGY_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR)).isNotEmpty();
-//        assertThat(secret.getData().get(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR)).isNotEmpty();
+        CamelIntegrationTo camelIntegrationTo = camelIntegrationFrom.getSteps().iterator().next();
+
+        assertThat(camelIntegrationTo.getTo()).isEqualTo("kafka:kafkaOutputTopic");
+
     }
 
     @Inject
