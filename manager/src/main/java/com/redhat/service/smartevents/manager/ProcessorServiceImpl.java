@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -129,11 +130,18 @@ public class ProcessorServiceImpl implements ProcessorService {
                 ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
+        List<Action> multipleResolvedActions = new ArrayList<>();
+        for(Action a : processorRequest.getActions()) {
+            Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());
+            multipleResolvedActions.add(rAction);
+        }
+
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction, processorRequest.getProcessing());
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
+                                          processorRequest.getProcessing(),
+                                          multipleResolvedActions);
 
-        System.out.println("++++ Processor definition " + definition.getProcessing());
         newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction

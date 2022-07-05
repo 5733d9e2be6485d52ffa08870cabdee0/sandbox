@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.dao;
 import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,19 +70,28 @@ public class ProcessorDAOTest {
         return processor;
     }
 
-    private Processor createSinkProcessorWithProcessing(Bridge bridge, String name, Processing processing) {
-        Action a = new Action();
-        a.setType(KafkaTopicAction.TYPE);
+    private Processor createSinkProcessorWithProcessing(Bridge bridge, String name, Processing processing, List<Action> resolvedActions) {
 
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
-        a.setMapParameters(params);
-
-        ProcessorDefinition processingProcessorDefinition = new ProcessorDefinition(Collections.emptySet(), null, a, null, processing);
+        ProcessorDefinition processingProcessorDefinition = new ProcessorDefinition(Collections.emptySet(),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    processing, resolvedActions);
 
         Processor processor = createProcessorModel(bridge, name, SINK, processingProcessorDefinition);
         processorDAO.persist(processor);
         return processor;
+    }
+
+    private Action createAction(String name) {
+        Action a = new Action();
+        a.setType(KafkaTopicAction.TYPE);
+        a.setName(name);
+
+        Map<String, String> params = new HashMap<>();
+        params.put(KafkaTopicAction.TOPIC_PARAM, TestConstants.DEFAULT_KAFKA_TOPIC);
+        a.setMapParameters(params);
+        return a;
     }
 
     private Processor createSourceProcessor(Bridge bridge, String name) {
@@ -438,7 +448,10 @@ public class ProcessorDAOTest {
         }
 
         Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
-        Processor p = createSinkProcessorWithProcessing(b, "camelProcessor", camelProcessing);
+
+        Action a1 = createAction("actionName1");
+        Action a2 = createAction("actionName2");
+        Processor p = createSinkProcessorWithProcessing(b, "camelProcessor", camelProcessing, Arrays.asList(a1, a2));
 
         ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
@@ -455,6 +468,10 @@ public class ProcessorDAOTest {
 
         JsonNode flow = camelSpec.get("flow");
         assertThat(flow).isNotEmpty();
+
+        List<Action> actions = processor.getDefinition().getMultipleActions();
+
+        assertThat(actions).map(Action::getName).contains("actionName1", "actionName2");
     }
 
     @Test

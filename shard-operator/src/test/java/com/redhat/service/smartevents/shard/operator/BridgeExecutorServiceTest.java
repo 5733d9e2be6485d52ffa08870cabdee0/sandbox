@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import org.awaitility.Awaitility;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -98,21 +100,8 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testCamelResourceCreated() {
 
-        Action a = new Action();
-        a.setType(SlackAction.TYPE);
-        a.setName("mySlackAction");
-
-        Map<String, String> params = new HashMap<>();
-        params.put(KafkaTopicAction.TOPIC_PARAM, "kafkaOutputTopic");
-        a.setMapParameters(params);
-
-        Action resolvedAction = new Action();
-        resolvedAction.setType(SlackAction.TYPE);
-        resolvedAction.setName("mySlackAction");
-
-        Map<String, String> resolvedActionParams = new HashMap<>();
-        resolvedActionParams.put(KafkaTopicAction.TOPIC_PARAM, "kafkaOutputTopic");
-        resolvedAction.setMapParameters(resolvedActionParams);
+        Action resolvedAction1 = createKafkaAction("mySlackAction1", "kafkaOutputTopic");
+        Action resolvedAction2 = createKafkaAction("otherAction", "doNotUse");
 
         String spec = "{\n" +
                 "      \"flow\": {\n" +
@@ -137,9 +126,10 @@ public class BridgeExecutorServiceTest {
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
                                                                           "",
-                                                                          a,
-                                                                          resolvedAction,
-                                                                          camelProcessing);
+                                                                          null,
+                                                                          null,
+                                                                          camelProcessing,
+                                                                          Arrays.asList(resolvedAction1, resolvedAction2));
 
 
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO(processorDefinition);
@@ -180,6 +170,17 @@ public class BridgeExecutorServiceTest {
 
         assertThat(camelIntegrationTo.getTo()).isEqualTo("kafka:kafkaOutputTopic");
 
+    }
+
+    private Action createKafkaAction(String name, String topic) {
+        Action resolvedAction = new Action();
+        resolvedAction.setType(SlackAction.TYPE);
+        resolvedAction.setName(name);
+
+        Map<String, String> resolvedActionParams = new HashMap<>();
+        resolvedActionParams.put(KafkaTopicAction.TOPIC_PARAM, topic);
+        resolvedAction.setMapParameters(resolvedActionParams);
+        return resolvedAction;
     }
 
     @Inject

@@ -37,6 +37,9 @@ public class ProcessorRequest {
     @Valid
     protected Action action;
 
+    @JsonProperty("actions")
+    protected Set<Action> actions;
+
     @JsonProperty("source")
     @Valid
     protected Source source;
@@ -97,6 +100,10 @@ public class ProcessorRequest {
 
     public Processing getProcessing() {
         return processing;
+    }
+
+    public Set<Action> getActions() {
+        return actions;
     }
 
     @JsonIgnore

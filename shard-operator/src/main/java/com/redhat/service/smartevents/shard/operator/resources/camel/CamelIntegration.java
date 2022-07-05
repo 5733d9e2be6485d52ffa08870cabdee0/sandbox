@@ -3,9 +3,11 @@ package com.redhat.service.smartevents.shard.operator.resources.camel;
 import java.util.Collections;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -45,6 +47,10 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         ObjectNode spec = processorDTO.getDefinition().getProcessing().getSpec();
 
+        System.out.println("+++++ " + spec);
+        JsonNode jsonNode = spec.get("flow").get("from").get("steps").get("to");
+        System.out.println("jsonNode" + jsonNode);
+
         CamelIntegrationFlows camelIntegrationFlows = new CamelIntegrationFlows();
 
         CamelIntegrationFrom camelIntegrationFrom = new CamelIntegrationFrom();
@@ -78,7 +84,12 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         camelIntegration.setMetadata(metadata);
 
         CamelIntegrationTo camelIntegrationTo = new CamelIntegrationTo();
-        String kafkaToURI = String.format("kafka:%s", processorDTO.getDefinition().getResolvedAction().getParameter("topic"));
+        for(Action ra : processorDTO.getDefinition().getMultipleActions()) {
+            // find resolved Actions and put it inside the toUri instead of
+//        String topic1 = processorDTO.getDefinition().getResolvedAction().getParameter("topic");
+        }
+
+        String kafkaToURI = String.format("kafka:%s", "");
         camelIntegrationTo.setTo(kafkaToURI);
         camelIntegrationFrom.getSteps().add(camelIntegrationTo);
 

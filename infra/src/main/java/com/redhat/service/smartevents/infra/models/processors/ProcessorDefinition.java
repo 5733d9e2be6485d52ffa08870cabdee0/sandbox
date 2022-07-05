@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,6 +10,9 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public class ProcessorDefinition {
+
+    @JsonProperty("actions")
+    private List<Action> multipleActions;
 
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
@@ -49,9 +53,15 @@ public class ProcessorDefinition {
         this.resolvedAction = resolvedAction;
     }
 
-    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate, Action requestedAction, Action resolvedAction, Processing processing) {
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate,
+                               Action requestedAction,
+                               Action resolvedAction,
+                               Processing processing,
+                               List<Action> multipleActions
+    ) {
         this(filters, transformationTemplate, requestedAction, resolvedAction);
         this.processing = processing;
+        this.multipleActions = multipleActions;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -100,6 +110,14 @@ public class ProcessorDefinition {
 
     public void setProcessing(Processing processing) {
         this.processing = processing;
+    }
+
+    public List<Action> getMultipleActions() {
+        return multipleActions;
+    }
+
+    public void setMultipleActions(List<Action> multipleActions) {
+        this.multipleActions = multipleActions;
     }
 
     @Override
