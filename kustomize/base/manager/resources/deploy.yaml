@@ -18,6 +18,13 @@ spec:
         - image: event-bridge-manager
           imagePullPolicy: IfNotPresent
           name: event-bridge-manager
+          resources:
+            limits:
+              cpu: 200m
+              memory: 1000Mi
+            requests:
+              cpu: 50m
+              memory: 250Mi
           env:
             - name: EVENT_BRIDGE_RESOURCES_WORKER_ID
               valueFrom:
