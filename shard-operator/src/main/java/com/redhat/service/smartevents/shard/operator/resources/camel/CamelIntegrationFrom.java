@@ -10,7 +10,7 @@ public class CamelIntegrationFrom {
 
     String uri;
 
-    Map<String, String> parameters = new HashMap<>();
+    Map<String, Object> parameters = new HashMap<>();
 
     List<CamelIntegrationTo> steps = new ArrayList<>();
 
@@ -22,11 +22,11 @@ public class CamelIntegrationFrom {
         this.uri = uri;
     }
 
-    public Map<String, String> getParameters() {
+    public Map<String, Object> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, String> parameters) {
+    public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
     }
 

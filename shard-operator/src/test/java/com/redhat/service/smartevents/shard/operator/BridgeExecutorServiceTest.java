@@ -11,24 +11,22 @@ import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlows;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFrom;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
-
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -36,8 +34,15 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import org.assertj.core.api.MapAssert;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
+import org.assertj.core.api.MapAssert;
+import org.assertj.core.api.AssertionsForInterfaceTypes;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -143,6 +148,24 @@ public class BridgeExecutorServiceTest {
                 .get();
 
         assertThat(camelIntegration).isNotNull();
+
+        CamelIntegrationSpec camelIntegrationSpec = camelIntegration.getSpec();
+
+        CamelIntegrationFlows camelIntegrationFlows = camelIntegrationSpec.getCamelIntegrationFlows();
+
+        CamelIntegrationFrom camelIntegrationFrom = camelIntegrationFlows.getCamelIntegrationFrom();
+
+        assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
+        Map<String, Object> parameters = camelIntegrationFrom.getParameters();
+
+        assertThat(parameters.get("brokers")).isEqualTo("mytestkafka:9092");
+        assertThat(parameters.get("securityProtocol")).isEqualTo("SASL_SSL");
+        assertThat(parameters.get("saslMechanism")).isEqualTo("PLAIN");
+        assertThat(parameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+        assertThat(parameters.get("maxPollRecords")).isEqualTo(5000);
+        assertThat(parameters.get("consumersCount")).isEqualTo(1);
+        assertThat(parameters.get("seekTo")).isEqualTo("beginning");
+        assertThat(parameters.get("groupId")).isEqualTo("kafkaGroup");
 
 //        assertThat(camelIntegration.getSpec().getOwner()).isEqualTo(dto.getOwner());
 //
