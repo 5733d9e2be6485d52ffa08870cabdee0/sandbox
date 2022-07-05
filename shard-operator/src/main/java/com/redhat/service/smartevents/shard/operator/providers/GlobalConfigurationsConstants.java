@@ -25,6 +25,6 @@ public class GlobalConfigurationsConstants {
     public static final String KNATIVE_KAFKA_TOPIC_SECRET_REF_NAME_CONFIGMAP = "auth.secret.ref.name";
     public static final String KNATIVE_KAFKA_TOPIC_TOPIC_NAME_CONFIGMAP = "topic.name";
 
-    public static final String KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME = "x-kafka.eventing.knative.dev/external.topic";
+    public static final String KNATIVE_BROKER_EXTERNAL_TOPIC_ANNOTATION_NAME = "kafka.eventing.knative.dev/external.topic";
 
 }
