@@ -5,6 +5,8 @@ import java.util.Objects;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +19,12 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
-import io.quarkus.vertx.ConsumeEvent;
+
+import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
 
 @ApplicationScoped
 public class BridgeWorker extends AbstractWorker<Bridge> {
@@ -46,14 +48,15 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         return bridgeDAO;
     }
 
-    // This must be equal to the Bridge.class.getName()
-    @ConsumeEvent(value = "com.redhat.service.smartevents.manager.models.Bridge", blocking = true)
-    public Bridge handleWork(Work work) {
-        return super.handleWork(work);
+    @Override
+    protected String getId(JobExecutionContext context) {
+        // The ID of the ManagedResource to process is stored directly in the JobDetail.
+        JobDataMap data = context.getTrigger().getJobDataMap();
+        return data.getString(STATE_FIELD_ID);
     }
 
     @Override
-    public Bridge createDependencies(Work work, Bridge bridge) {
+    public Bridge createDependencies(JobExecutionContext context, Bridge bridge) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 bridge.getName(),
                 bridge.getId());
@@ -117,7 +120,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     @Override
-    public Bridge deleteDependencies(Work work, Bridge bridge) {
+    public Bridge deleteDependencies(JobExecutionContext context, Bridge bridge) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 bridge.getName(),
                 bridge.getId());

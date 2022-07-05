@@ -6,9 +6,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +26,11 @@ import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+
+import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
 
 @ApplicationScoped
 public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
@@ -48,7 +52,23 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
+    protected String getId(JobExecutionContext context) {
+        // The ID of the ManagedResource to process is the child of that stored directly in the JobDetail.
+        JobDataMap data = context.getTrigger().getJobDataMap();
+        String processorId = data.getString(STATE_FIELD_ID);
+        ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
+
+        if (Objects.isNull(connectorEntity)) {
+            //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
+            throw new IllegalStateException(String.format("Connector for Processor with id '%s' cannot be found in the database.", processorId));
+        }
+
+        return connectorEntity.getId();
+    }
+
+    @Override
+    @ActivateRequestContext
+    public ConnectorEntity createDependencies(JobExecutionContext context, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
@@ -153,7 +173,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
+    @ActivateRequestContext
+    public ConnectorEntity deleteDependencies(JobExecutionContext context, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());

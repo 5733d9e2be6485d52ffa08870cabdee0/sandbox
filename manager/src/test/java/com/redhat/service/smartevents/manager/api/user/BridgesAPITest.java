@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
@@ -25,9 +24,9 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.workers.WorkManager;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.response.Response;
@@ -45,7 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 public class BridgesAPITest {
 
     @Inject
@@ -58,7 +56,14 @@ public class BridgesAPITest {
     JsonWebToken jwt;
 
     @InjectMock
+    @SuppressWarnings("unused")
     RhoasService rhoasServiceMock;
+
+    @InjectMock
+    @SuppressWarnings("unused")
+    // Effectively disable Work scheduling and execution without disabling Quarkus's Quartz.
+    // Disabling Quarkus's Quartz leads to CDI injection issues as the Scheduler is not available.
+    WorkManager workManager;
 
     @BeforeEach
     public void cleanUp() {

@@ -85,7 +85,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
-    @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
@@ -94,7 +93,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
-    @Transactional
     public Processor createErrorHandlerProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
 
@@ -135,9 +133,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         newProcessor.setDefinition(definition);
 
-        // Processor, Connector and Work should always be created in the same transaction
-        processorDAO.persist(newProcessor);
-        connectorService.createConnectorEntity(newProcessor);
+        persist(newProcessor);
         workManager.schedule(newProcessor);
         metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
 
@@ -147,7 +143,15 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+    }
 
+    @Transactional
+    // Ensure Processor has been committed before Workers attempt to load it.
+    // Quartz runs Jobs on a different thread that fail to see uncommitted data.
+    // Processor and Connector should always be created in the same transaction
+    protected void persist(Processor processor) {
+        processorDAO.persist(processor);
+        connectorService.createConnectorEntity(processor);
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {

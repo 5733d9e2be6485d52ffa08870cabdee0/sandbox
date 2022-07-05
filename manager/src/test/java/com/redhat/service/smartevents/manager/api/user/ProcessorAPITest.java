@@ -26,7 +26,6 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.ProcessorRequestForTests;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -44,7 +43,6 @@ import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridg
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
@@ -61,7 +59,6 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 public class ProcessorAPITest {
 
     @Inject
