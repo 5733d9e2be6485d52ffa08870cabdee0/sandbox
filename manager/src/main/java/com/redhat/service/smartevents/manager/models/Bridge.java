@@ -27,8 +27,8 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
-        @NamedQuery(name = "BRIDGE.findByOrganisationId",
-                query = "from Bridge where organisation_id=:organisationId"),
+        @NamedQuery(name = "BRIDGE.countActiveBridgeByOrganisationId",
+                query = "select count(b.id) from Bridge b where b.organisationId=:organisationId and (b.expireAt>:currentTimeStamp OR b.expireAt is null)"),
 })
 @Entity
 @FilterDefs({
@@ -61,7 +61,7 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     @Column(name = "instance_type")
     @Enumerated(EnumType.STRING)
-    private ServiceLimitInstanceType instanceType;
+    private LimitInstanceType instanceType;
 
     @Column(name = "expire_at", updatable = false, columnDefinition = "TIMESTAMP")
     protected ZonedDateTime expireAt;
@@ -121,11 +121,11 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
         this.expireAt = expireAt;
     }
 
-    public ServiceLimitInstanceType getInstanceType() {
+    public LimitInstanceType getInstanceType() {
         return instanceType;
     }
 
-    public void setInstanceType(ServiceLimitInstanceType instanceType) {
+    public void setInstanceType(LimitInstanceType instanceType) {
         this.instanceType = instanceType;
     }
 

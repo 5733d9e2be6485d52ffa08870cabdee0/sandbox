@@ -1,22 +1,27 @@
 {
-  "service_limit_instances": [{
+  "instance_limits": [{
     "instance_type": "EVAL",
     "processor_limit": "6",
-    "bridge_duration": "PT12H",
-    "instance_quota": "1"
+    "bridge_duration": "PT12H"
   },
     {
       "instance_type": "STANDARD",
-      "processor_limit": "30",
-      "instance_quota": "5"
+      "processor_limit": "30"
     }
   ],
-  "default_instance_type": "EVAL",
-  "organisation_overrides": [{
-    "org_id": "15247674",
+  "default_quotas": [{
     "instance_type": "EVAL",
-    "processor_limit": "12",
-    "bridge_duration": "PT12H",
-    "instance_quota": "3"
+    "quota": "1"
+  }],
+  "organisation_quotas": [{
+    "org_id": "15247674",
+    "instance_quotas": [{
+      "instance_type": "EVAL",
+      "quota": 6
+    },
+    {
+      "instance_type": "STANDARD",
+      "quota": 2
+    }]
   }]
 }

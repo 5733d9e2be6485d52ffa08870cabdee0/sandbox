@@ -29,15 +29,12 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.BridgesService;
-import com.redhat.service.smartevents.manager.LimitService;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.OrganisationServiceLimit;
 
 import io.quarkus.security.Authenticated;
 
@@ -62,9 +59,6 @@ public class BridgesAPI {
 
     @Inject
     JsonWebToken jwt;
-
-    @Inject
-    LimitService limitService;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -96,10 +90,6 @@ public class BridgesAPI {
         String customerId = identityResolver.resolve(jwt);
         String organisationId = identityResolver.resolveOrganisationId(jwt);
         String owner = identityResolver.resolveOwner(jwt);
-
-        // validate service limit
-        validateServiceLimitToCreateNewBridge(organisationId);
-
         Bridge bridge = bridgesService.createBridge(customerId, organisationId, owner, bridgeRequest);
         return Response.accepted(bridgesService.toResponse(bridge)).build();
     }
@@ -135,20 +125,5 @@ public class BridgesAPI {
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
         bridgesService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.accepted().build();
-    }
-
-    /**
-     * Validate weather user is allowed to create new Bridge instance
-     * 
-     * @param orgId Organisation id.
-     */
-    private void validateServiceLimitToCreateNewBridge(String orgId) {
-        OrganisationServiceLimit organisationServiceLimit = limitService.getOrganisationServiceLimit(orgId);
-        long maxAllowedBridgeInstances = organisationServiceLimit.getInstanceQuota();
-        long activeBridgeCount = bridgesService.getActiveBridgeCount(orgId);
-
-        if (activeBridgeCount >= maxAllowedBridgeInstances) {
-            throw new ServiceLimitExceedException("Max allowed bridge instance limit exceed");
-        }
     }
 }

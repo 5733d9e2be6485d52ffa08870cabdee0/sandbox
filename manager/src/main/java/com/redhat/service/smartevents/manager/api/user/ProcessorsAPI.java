@@ -38,7 +38,7 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.smartevents.manager.models.OrganisationServiceLimit;
+import com.redhat.service.smartevents.manager.models.InstanceLimit;
 import com.redhat.service.smartevents.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
@@ -178,8 +178,8 @@ public class ProcessorsAPI {
      * @param bridgeId Bridge id.
      */
     private void validateServiceLimitToCreateNewProcessor(String orgId, String bridgeId) {
-        OrganisationServiceLimit organisationServiceLimit = limitService.getOrganisationServiceLimit(orgId);
-        long maxAllowedProcessors = organisationServiceLimit.getProcessorLimit();
+        InstanceLimit bridgeInstanceLimit = limitService.getBridgeInstanceLimit(orgId).get();
+        long maxAllowedProcessors = bridgeInstanceLimit.getProcessorLimit();
         long existingProcessorCount = processorService.getProcessorsCount(bridgeId);
 
         if (existingProcessorCount >= maxAllowedProcessors) {

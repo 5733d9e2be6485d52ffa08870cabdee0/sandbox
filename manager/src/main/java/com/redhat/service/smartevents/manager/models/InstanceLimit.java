@@ -1,17 +1,23 @@
 package com.redhat.service.smartevents.manager.models;
 
-public class OrganisationServiceLimit {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    ServiceLimitInstanceType instanceType;
+public class InstanceLimit {
+
+    @JsonProperty("instance_type")
+    private LimitInstanceType instanceType;
+
+    @JsonProperty("processor_limit")
     private int processorLimit;
-    private String bridgeDuration;
-    private long instanceQuota;
 
-    public ServiceLimitInstanceType getInstanceType() {
+    @JsonProperty("bridge_duration")
+    private String bridgeDuration;
+
+    public LimitInstanceType getInstanceType() {
         return instanceType;
     }
 
-    public void setInstanceType(ServiceLimitInstanceType instanceType) {
+    public void setInstanceType(LimitInstanceType instanceType) {
         this.instanceType = instanceType;
     }
 
@@ -29,13 +35,5 @@ public class OrganisationServiceLimit {
 
     public void setBridgeDuration(String bridgeDuration) {
         this.bridgeDuration = bridgeDuration;
-    }
-
-    public long getInstanceQuota() {
-        return instanceQuota;
-    }
-
-    public void setInstanceQuota(long instanceQuota) {
-        this.instanceQuota = instanceQuota;
     }
 }

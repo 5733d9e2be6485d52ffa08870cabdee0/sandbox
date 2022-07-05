@@ -16,6 +16,6 @@ public class ServiceLimitExceedException extends ExternalUserException {
 
     @Override
     public int getStatusCode() {
-        return Response.Status.BAD_REQUEST.getStatusCode();
+        return Response.Status.FORBIDDEN.getStatusCode();
     }
 }

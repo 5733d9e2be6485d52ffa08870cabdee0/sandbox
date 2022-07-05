@@ -1,10 +1,12 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -57,9 +59,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 
-    public List<Bridge> findByOrganisationId(String orgId) {
-        Parameters params = Parameters
-                .with("organisationId", orgId);
-        return find("#BRIDGE.findByOrganisationId", params).list();
+    public Long countActiveBridgeByOrganisationId(String orgId) {
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countActiveBridgeByOrganisationId", Long.class);
+        namedQuery.setParameter("organisationId", orgId);
+        namedQuery.setParameter("currentTimeStamp", ZonedDateTime.now());
+        return namedQuery.getSingleResult();
     }
 }

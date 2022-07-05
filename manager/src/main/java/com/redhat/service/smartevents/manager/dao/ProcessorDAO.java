@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -183,9 +184,11 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
     }
 
     public Long countByBridgeId(String bridgeId) {
-        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("PROCESSOR.countByBridgeId", Long.class);
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("PROCESSOR.countUserDefineProcessorByBridgeId", Long.class);
+        List<ProcessorType> processorTypes = Arrays.asList(ProcessorType.SINK, ProcessorType.SOURCE);
         Parameters params = Parameters
-                .with(Processor.BRIDGE_ID_PARAM, bridgeId);
+                .with(Processor.BRIDGE_ID_PARAM, bridgeId)
+                .with("processorType", processorTypes);
         addParamsToNamedQuery(params, namedQuery);
         return namedQuery.getSingleResult();
     }

@@ -31,7 +31,7 @@ public interface BridgesService {
 
     BridgeResponse toResponse(Bridge bridge);
 
-    long getActiveBridgeCount(String orgId);
+    Long getActiveBridgeCount(String orgId);
 
     boolean isBridgeActive(String id);
 }
