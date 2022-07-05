@@ -18,10 +18,6 @@
     "instance_quotas": [{
       "instance_type": "EVAL",
       "quota": 6
-    },
-    {
-      "instance_type": "STANDARD",
-      "quota": 2
     }]
   }]
 }
