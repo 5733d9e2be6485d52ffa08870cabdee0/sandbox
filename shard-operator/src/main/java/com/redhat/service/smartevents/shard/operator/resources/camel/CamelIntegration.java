@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,11 +46,6 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
                                     .buildWithDefaults())
                 .build();
 
-        ObjectNode spec = processorDTO.getDefinition().getProcessing().getSpec();
-
-        System.out.println("+++++ " + spec);
-        JsonNode jsonNode = spec.get("flow").get("from").get("steps").get("to");
-        System.out.println("jsonNode" + jsonNode);
 
         CamelIntegrationFlows camelIntegrationFlows = new CamelIntegrationFlows();
 
@@ -84,15 +80,24 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         camelIntegration.setMetadata(metadata);
 
         CamelIntegrationTo camelIntegrationTo = new CamelIntegrationTo();
-        for(Action ra : processorDTO.getDefinition().getMultipleActions()) {
-            // find resolved Actions and put it inside the toUri instead of
-//        String topic1 = processorDTO.getDefinition().getResolvedAction().getParameter("topic");
-        }
 
-        String kafkaToURI = String.format("kafka:%s", "");
-        camelIntegrationTo.setTo(kafkaToURI);
-        camelIntegrationFrom.getSteps().add(camelIntegrationTo);
+        ObjectNode spec = processorDTO.getDefinition().getProcessing().getSpec();
 
+        String toLabel = spec.get("flow").get("from").get("steps").get(0).get("to").asText();
+
+        Optional<Action> action = processorDTO.getDefinition()
+                .getMultipleActions()
+                .stream().filter(n -> {
+                    return n.getName().equals(toLabel);
+                }).findFirst();
+
+        action.ifPresent(a -> {
+            String toTopic = a.getParameter("topic");
+
+            String kafkaToURI = String.format("kafka:%s", toTopic);
+            camelIntegrationTo.setTo(kafkaToURI);
+            camelIntegrationFrom.getSteps().add(camelIntegrationTo);
+        });
 
         return camelIntegration;
     }

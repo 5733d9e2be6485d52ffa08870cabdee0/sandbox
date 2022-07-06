@@ -100,7 +100,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testCamelResourceCreated() {
 
-        Action resolvedAction1 = createKafkaAction("mySlackAction1", "kafkaOutputTopic");
+        Action resolvedAction1 = createKafkaAction("mySlackAction", "kafkaOutputTopic");
         Action resolvedAction2 = createKafkaAction("otherAction", "doNotUse");
 
         String spec = "{\n" +
