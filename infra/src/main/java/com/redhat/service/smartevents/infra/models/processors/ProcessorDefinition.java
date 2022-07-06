@@ -107,7 +107,7 @@ public class ProcessorDefinition {
 
     public ProcessorDefinition deepCopy() {
         ProcessorDefinition definitionCopy = new ProcessorDefinition();
-        definitionCopy.setFilters(new HashSet<>(filters));
+        definitionCopy.setFilters(filters == null ? null : new HashSet<>(filters));
         definitionCopy.setTransformationTemplate(transformationTemplate);
         definitionCopy.setRequestedAction(requestedAction == null ? null : requestedAction.deepCopy());
         definitionCopy.setRequestedSource(requestedSource == null ? null : requestedSource.deepCopy());
