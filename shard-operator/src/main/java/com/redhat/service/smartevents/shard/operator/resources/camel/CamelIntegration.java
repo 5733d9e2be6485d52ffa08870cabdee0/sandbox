@@ -12,6 +12,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
+import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.CustomResource;
@@ -25,9 +26,7 @@ import static com.redhat.service.smartevents.shard.operator.resources.BridgeExec
 @Version("v1")
 @Group("camel.apache.org")
 @Kind("Integration")
-public class CamelIntegration extends CustomResource<CamelIntegrationSpec, CamelIntegrationStatus> {
-
-    public static final String COMPONENT_NAME = "integration";
+public class CamelIntegration extends CustomResource<CamelIntegrationSpec, CamelIntegrationStatus> implements Namespaced {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -45,7 +44,6 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
                 .withName(resolveResourceName(processorDTO.getId()))
                 .withNamespace(namespace)
                 .withLabels(new LabelsBuilder()
-                        .withComponent(COMPONENT_NAME)
                         .buildWithDefaults())
                 .build();
 
