@@ -25,12 +25,14 @@ public class GatewaySecretsHandler {
         return new ObjectNode(JsonNodeFactory.instance);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Gateway> Pair<T, ObjectNode> mask(T gateway) {
         List<String> passwordProps = gateway instanceof Action
                 ? processorCatalogService.getActionPasswordProperties(gateway.getType())
                 : processorCatalogService.getSourcePasswordProperties(gateway.getType());
 
-        ObjectNode parameters = gateway.getParameters();
+        T gatewayCopy = (T) gateway.deepCopy();
+        ObjectNode parameters = gatewayCopy.getParameters();
         ObjectNode secrets = emptyObjectNode();
         for (String passwordProperty : passwordProps) {
             if (parameters.has(passwordProperty)) {
@@ -38,20 +40,22 @@ public class GatewaySecretsHandler {
                 parameters.set(passwordProperty, emptyObjectNode());
             }
         }
-        gateway.setParameters(parameters);
+        gatewayCopy.setParameters(parameters);
 
-        return Pair.of(gateway, secrets);
+        return Pair.of(gatewayCopy, secrets);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Gateway> T unmask(T gateway, ObjectNode secrets) {
         Iterator<Map.Entry<String, JsonNode>> it = secrets.fields();
+        T gatewayCopy = (T) gateway.deepCopy();
         while (it.hasNext()) {
             Map.Entry<String, JsonNode> secretEntry = it.next();
-            if (!gateway.getParameters().has(secretEntry.getKey()) || emptyObjectNode().equals(gateway.getParameters().get(secretEntry.getKey()))) {
-                gateway.setParameter(secretEntry.getKey(), secretEntry.getValue());
+            if (!gatewayCopy.getParameters().has(secretEntry.getKey()) || emptyObjectNode().equals(gatewayCopy.getParameters().get(secretEntry.getKey()))) {
+                gatewayCopy.setParameter(secretEntry.getKey(), secretEntry.getValue());
             }
         }
-        return gateway;
+        return gatewayCopy;
     }
 
 }

@@ -35,12 +35,12 @@ public abstract class Gateway {
 
     @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
-    private String type;
+    protected String type;
 
     @JsonProperty("parameters")
     // ObjectNode is not rendered properly by swagger
     @Schema(implementation = Object.class, required = true)
-    private ObjectNode parameters;
+    protected ObjectNode parameters;
 
     public String getType() {
         return type;
@@ -135,5 +135,14 @@ public abstract class Gateway {
     @Override
     public int hashCode() {
         return Objects.hash(type, parameters);
+    }
+
+    @JsonIgnore
+    public abstract Gateway deepCopy();
+
+    protected <T extends Gateway> T deepCopy(T destination) {
+        destination.type = type;
+        destination.parameters = parameters.deepCopy();
+        return destination;
     }
 }

@@ -8,4 +8,9 @@ public class Action extends Gateway {
     public ProcessorType getProcessorType() {
         return ProcessorType.SINK;
     }
+
+    @Override
+    public Action deepCopy() {
+        return super.deepCopy(new Action());
+    }
 }

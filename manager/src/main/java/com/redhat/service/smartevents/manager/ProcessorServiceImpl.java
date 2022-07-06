@@ -200,7 +200,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
         return gatewayConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
-                .orElse(action);
+                // we need to deep copy the action even if it's the same because the mask/unmask of secrets may cause issues otherwise
+                .orElse(action.deepCopy());
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
@@ -265,28 +266,30 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (existingDefinition == null) {
             return existingDefinition;
         }
+        ProcessorDefinition definitionCopy = existingDefinition.deepCopy();
+
         if (existingDefinition.getRequestedAction() != null) {
             ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getRequestedAction() == null
                     ? emptyObjectNode()
                     : gatewaySecretsHandler.mask(requestedDefinition.getRequestedAction()).getRight();
             ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("requestedAction"), requestedSecrets);
-            existingDefinition.getRequestedAction().mergeParameters(gatewaySecrets);
+            definitionCopy.getRequestedAction().mergeParameters(gatewaySecrets);
         }
         if (existingDefinition.getRequestedSource() != null) {
             ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getRequestedSource() == null
                     ? emptyObjectNode()
                     : gatewaySecretsHandler.mask(requestedDefinition.getRequestedSource()).getRight();
             ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("requestedSource"), requestedSecrets);
-            existingDefinition.getRequestedSource().mergeParameters(gatewaySecrets);
+            definitionCopy.getRequestedSource().mergeParameters(gatewaySecrets);
         }
         if (existingDefinition.getResolvedAction() != null) {
             ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getResolvedAction() == null
                     ? emptyObjectNode()
                     : gatewaySecretsHandler.mask(requestedDefinition.getResolvedAction()).getRight();
             ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("resolvedAction"), requestedSecrets);
-            existingDefinition.getResolvedAction().mergeParameters(gatewaySecrets);
+            definitionCopy.getResolvedAction().mergeParameters(gatewaySecrets);
         }
-        return existingDefinition;
+        return definitionCopy;
     }
 
     private static ObjectNode mergeNewerSecrets(ObjectNode existingSecrets, ObjectNode requestedSecrets) {
