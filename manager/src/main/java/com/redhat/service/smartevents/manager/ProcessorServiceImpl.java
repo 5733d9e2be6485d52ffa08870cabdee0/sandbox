@@ -40,6 +40,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -224,29 +225,31 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     private Pair<ProcessorDefinition, Map<String, ObjectNode>> maskProcessorDefinition(ProcessorDefinition definition) {
+        ProcessorDefinition definitionCopy = definition.deepCopy();
+
         Map<String, ObjectNode> secretsMap = new HashMap<>();
         if (definition.getRequestedAction() != null) {
             Pair<Action, ObjectNode> p = gatewaySecretsHandler.mask(definition.getRequestedAction());
+            definitionCopy.setRequestedAction(p.getLeft());
             if (!p.getRight().isEmpty()) {
                 secretsMap.put("requestedAction", p.getRight());
-                definition.setRequestedAction(p.getLeft());
             }
         }
         if (definition.getRequestedSource() != null) {
             Pair<Source, ObjectNode> p = gatewaySecretsHandler.mask(definition.getRequestedSource());
+            definitionCopy.setRequestedSource(p.getLeft());
             if (!p.getRight().isEmpty()) {
                 secretsMap.put("requestedSource", p.getRight());
-                definition.setRequestedSource(p.getLeft());
             }
         }
         if (definition.getResolvedAction() != null) {
             Pair<Action, ObjectNode> p = gatewaySecretsHandler.mask(definition.getResolvedAction());
+            definitionCopy.setResolvedAction(p.getLeft());
             if (!p.getRight().isEmpty()) {
                 secretsMap.put("resolvedAction", p.getRight());
-                definition.setResolvedAction(p.getLeft());
             }
         }
-        return Pair.of(definition, secretsMap);
+        return Pair.of(definitionCopy, secretsMap);
     }
 
     private ProcessorDefinition deserializeSecretsAndUnmaskProcessorDefinition(ProcessorDefinition existingDefinition, Map<String, String> existingSecrets, ProcessorDefinition requestedDefinition) {
@@ -269,33 +272,36 @@ public class ProcessorServiceImpl implements ProcessorService {
         ProcessorDefinition definitionCopy = existingDefinition.deepCopy();
 
         if (existingDefinition.getRequestedAction() != null) {
-            ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getRequestedAction() == null
-                    ? emptyObjectNode()
-                    : gatewaySecretsHandler.mask(requestedDefinition.getRequestedAction()).getRight();
-            ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("requestedAction"), requestedSecrets);
-            definitionCopy.getRequestedAction().mergeParameters(gatewaySecrets);
+            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
+                    .map(ProcessorDefinition::getRequestedAction)
+                    .map(Gateway::getParameters)
+                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
+            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("requestedAction"), requestedParams);
+            definitionCopy.getRequestedAction().mergeParameters(newGatewayParams);
         }
         if (existingDefinition.getRequestedSource() != null) {
-            ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getRequestedSource() == null
-                    ? emptyObjectNode()
-                    : gatewaySecretsHandler.mask(requestedDefinition.getRequestedSource()).getRight();
-            ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("requestedSource"), requestedSecrets);
-            definitionCopy.getRequestedSource().mergeParameters(gatewaySecrets);
+            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
+                    .map(ProcessorDefinition::getRequestedSource)
+                    .map(Gateway::getParameters)
+                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
+            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("requestedSource"), requestedParams);
+            definitionCopy.getRequestedSource().mergeParameters(newGatewayParams);
         }
         if (existingDefinition.getResolvedAction() != null) {
-            ObjectNode requestedSecrets = requestedDefinition == null || requestedDefinition.getResolvedAction() == null
-                    ? emptyObjectNode()
-                    : gatewaySecretsHandler.mask(requestedDefinition.getResolvedAction()).getRight();
-            ObjectNode gatewaySecrets = mergeNewerSecrets(existingSecrets.get("resolvedAction"), requestedSecrets);
-            definitionCopy.getResolvedAction().mergeParameters(gatewaySecrets);
+            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
+                    .map(ProcessorDefinition::getResolvedAction)
+                    .map(Gateway::getParameters)
+                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
+            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("resolvedAction"), requestedParams);
+            definitionCopy.getResolvedAction().mergeParameters(newGatewayParams);
         }
         return definitionCopy;
     }
 
-    private static ObjectNode mergeNewerSecrets(ObjectNode existingSecrets, ObjectNode requestedSecrets) {
-        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedSecrets.fields();
+    private static ObjectNode mergeNewerParams(ObjectNode existingParams, ObjectNode requestedParams) {
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedParams.fields();
         ObjectNode empty = emptyObjectNode();
-        ObjectNode merged = existingSecrets != null ? existingSecrets : emptyObjectNode();
+        ObjectNode merged = existingParams != null ? existingParams.deepCopy() : emptyObjectNode();
         while (parametersIterator.hasNext()) {
             Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
             if (!empty.equals(parameterEntry.getValue())) {
@@ -374,20 +380,23 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
 
+        ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
+
         EventBridgeSecret eventBridgeSecret = vaultService.get(resourceNamesProvider.getProcessorSecretName(existingProcessor.getId()))
                 .await().atMost(Duration.ofSeconds(secretsManagerTimeout));
-        ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
-        ProcessorDefinition unmaskedProcessorDefinition = deserializeSecretsAndUnmaskProcessorDefinition(existingDefinition, eventBridgeSecret.getValues(), requestedDefinition);
+        ProcessorDefinition unmaskedExistingDefinition = deserializeSecretsAndUnmaskProcessorDefinition(existingDefinition, eventBridgeSecret.getValues(), null);
+        ProcessorDefinition unmaskedRequestedDefinition = deserializeSecretsAndUnmaskProcessorDefinition(existingDefinition, eventBridgeSecret.getValues(), requestedDefinition);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
         // See https://issues.redhat.com/browse/MGDOBR-59. The individual components of the ProcessorDefinition
         // are separated here to make the required change more explicit.
-        if (Objects.equals(existingFilters, unmaskedProcessorDefinition.getFilters())
-                && Objects.equals(existingTransformationTemplate, unmaskedProcessorDefinition.getTransformationTemplate())
-                && Objects.equals(existingAction, unmaskedProcessorDefinition.getRequestedAction())
-                && Objects.equals(existingSource, unmaskedProcessorDefinition.getRequestedSource())
-                && Objects.equals(existingResolvedAction, unmaskedProcessorDefinition.getResolvedAction())) {
+        if (Objects.equals(unmaskedExistingDefinition.getFilters(), unmaskedRequestedDefinition.getFilters())
+                && Objects.equals(unmaskedExistingDefinition.getTransformationTemplate(), unmaskedRequestedDefinition.getTransformationTemplate())
+                && Objects.equals(unmaskedExistingDefinition.getRequestedAction(), unmaskedRequestedDefinition.getRequestedAction())
+                && Objects.equals(unmaskedExistingDefinition.getRequestedSource(), unmaskedRequestedDefinition.getRequestedSource())
+                && Objects.equals(unmaskedExistingDefinition.getResolvedAction(), unmaskedRequestedDefinition.getResolvedAction())) {
+            LOGGER.info("NOTHING TO DO FOR PROCESSOR: {}", existingProcessor.getId());
             return existingProcessor;
         }
 
@@ -395,10 +404,10 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
-        existingProcessor.setDefinition(unmaskedProcessorDefinition);
+        existingProcessor.setDefinition(unmaskedRequestedDefinition);
         existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
 
-        Pair<ProcessorDefinition, Map<String, String>> maskPair = maskProcessorDefinitionAndSerializeSecrets(unmaskedProcessorDefinition);
+        Pair<ProcessorDefinition, Map<String, String>> maskPair = maskProcessorDefinitionAndSerializeSecrets(unmaskedRequestedDefinition);
 
         existingProcessor.setDefinition(maskPair.getLeft());
         existingProcessor.setHasSecret(!maskPair.getRight().isEmpty());
