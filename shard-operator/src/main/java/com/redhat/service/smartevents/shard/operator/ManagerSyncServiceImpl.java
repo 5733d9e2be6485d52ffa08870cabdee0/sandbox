@@ -48,7 +48,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     @Override
     @Scheduled(every = "30s")
     public void syncUpdatesFromManager() {
-        LOGGER.debug("Fetching updates from Manager for Bridges and Processors to deploy and delete");
+        LOGGER.info("Fetching updates from Manager for Bridges and Processors to deploy and delete");
         doBridges().subscribe().with(
                 success -> processingComplete(BridgeDTO.class),
                 failure -> processingFailed(BridgeDTO.class, failure));
@@ -66,7 +66,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         return managerClient.notifyBridgeStatusChange(y)
                                 .subscribe().with(
                                         success -> {
-                                            LOGGER.debug("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                            LOGGER.info("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
                                             createBridgeIngress(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
@@ -76,7 +76,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         return managerClient.notifyBridgeStatusChange(y)
                                 .subscribe().with(
                                         success -> {
-                                            LOGGER.debug("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
+                                            LOGGER.info("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
                                             deleteBridgeIngress(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
@@ -94,7 +94,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         return managerClient.notifyProcessorStatusChange(y)
                                 .subscribe().with(
                                         success -> {
-                                            LOGGER.debug("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                            LOGGER.info("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
                                             createBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
@@ -104,7 +104,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                         return managerClient.notifyProcessorStatusChange(y)
                                 .subscribe().with(
                                         success -> {
-                                            LOGGER.debug("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
+                                            LOGGER.info("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
                                             deleteBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
@@ -114,7 +114,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void createBridgeIngress(BridgeDTO bridge) {
-        LOGGER.debug("Provisioning Bridge '{}'", bridge.getId());
+        LOGGER.info("Provisioning Bridge '{}'", bridge.getId());
         doFallibleBridgeOperation(() -> bridgeIngressService.createBridgeIngress(bridge),
                 FallibleOperation.PROVISIONING,
                 ManagedResourceStatus.FAILED,
@@ -122,7 +122,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void deleteBridgeIngress(BridgeDTO bridge) {
-        LOGGER.debug("Deleting Processor '{}'", bridge.getId());
+        LOGGER.info("Deleting Processor '{}'", bridge.getId());
         doFallibleBridgeOperation(() -> bridgeIngressService.deleteBridgeIngress(bridge),
                 FallibleOperation.DELETING,
                 ManagedResourceStatus.DELETED,
@@ -145,7 +145,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void createBridgeExecutor(ProcessorDTO processor) {
-        LOGGER.debug("Provisioning Processor '{}'", processor.getId());
+        LOGGER.info("Provisioning Processor '{}'", processor.getId());
         doFallibleProcessorOperation(() -> bridgeExecutorService.createBridgeExecutor(processor),
                 FallibleOperation.PROVISIONING,
                 ManagedResourceStatus.FAILED,
@@ -153,7 +153,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     }
 
     private void deleteBridgeExecutor(ProcessorDTO processor) {
-        LOGGER.debug("Deleting Processor '{}'", processor.getId());
+        LOGGER.info("Deleting Processor '{}'", processor.getId());
         doFallibleProcessorOperation(() -> bridgeExecutorService.deleteBridgeExecutor(processor),
                 FallibleOperation.DELETING,
                 ManagedResourceStatus.DELETED,
@@ -170,20 +170,20 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             processor.setStatus(failedStatus);
             managerClient.notifyProcessorStatusChange(processor)
                     .subscribe()
-                    .with(success -> LOGGER.debug(String.format("%s of Processor '%s' failed", operation.getPrettyName(), processor.getId()), e),
+                    .with(success -> LOGGER.error(String.format("%s of Processor '%s' failed", operation.getPrettyName(), processor.getId()), e),
                             failure -> failedToSendUpdateToManager(processor, e));
         }
     }
 
     private void failedToSendUpdateToManager(Object entity, Throwable t) {
-        LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
+        LOGGER.info("Failed to send updated status to Manager for entity of type '{}'", entity.getClass().getSimpleName(), t);
     }
 
     private void processingFailed(Class<?> entity, Throwable t) {
-        LOGGER.error("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
+        LOGGER.info("Failure processing entities '{}' to be deployed or deleted", entity.getSimpleName(), t);
     }
 
     private void processingComplete(Class<?> entity) {
-        LOGGER.debug("Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
+        LOGGER.info("Successfully processed all entities '{}' to deploy or delete", entity.getSimpleName());
     }
 }
