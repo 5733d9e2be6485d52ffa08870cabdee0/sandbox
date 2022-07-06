@@ -125,4 +125,13 @@ public abstract class Gateway {
     public int hashCode() {
         return Objects.hash(name, type, parameters);
     }
+
+    @Override
+    public String toString() {
+        return "Gateway{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", parameters=" + parameters +
+                '}';
+    }
 }

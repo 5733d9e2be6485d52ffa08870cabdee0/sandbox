@@ -131,16 +131,23 @@ public class ProcessorServiceImpl implements ProcessorService {
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
         List<Action> multipleResolvedActions = new ArrayList<>();
-        for(Action a : processorRequest.getActions()) {
-            Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());
-            multipleResolvedActions.add(rAction);
+        if(processorRequest.getActions() != null) {
+            for (Action a : processorRequest.getActions()) {
+                System.out.printf("+++++ multiple actions: %s type: %s%n", a.getName(), a.getType());
+                Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());
+                multipleResolvedActions.add(rAction);
+            }
         }
+
+        System.out.printf("+++++ multiple resolved actions of size: %d%n", multipleResolvedActions.size());
 
         ProcessorDefinition definition = processorType == ProcessorType.SOURCE
                 ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
                 : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
-                                          processorRequest.getProcessing(),
-                                          multipleResolvedActions);
+                        processorRequest.getProcessing(),
+                        multipleResolvedActions);
+
+        System.out.println("+++++  definition: " + definition);
 
         newProcessor.setDefinition(definition);
 

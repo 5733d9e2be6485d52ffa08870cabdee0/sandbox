@@ -112,7 +112,7 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
-        System.out.println("++++ Creating a processor " + processorRequest.getProcessing());
+        System.out.println("++++ Creating a processor with payload" + processorRequest);
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }

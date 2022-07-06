@@ -30,4 +30,11 @@ public class CamelIntegrationSpec {
     public int hashCode() {
         return Objects.hash(camelIntegrationFlows);
     }
+
+    @Override
+    public String toString() {
+        return "CamelIntegrationSpec{" +
+                "camelIntegrationFlows=" + camelIntegrationFlows +
+                '}';
+    }
 }

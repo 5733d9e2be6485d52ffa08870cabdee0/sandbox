@@ -33,4 +33,11 @@ public class CamelIntegrationTo {
     public int hashCode() {
         return Objects.hash(to);
     }
+
+    @Override
+    public String toString() {
+        return "CamelIntegrationTo{" +
+                "to='" + to + '\'' +
+                '}';
+    }
 }

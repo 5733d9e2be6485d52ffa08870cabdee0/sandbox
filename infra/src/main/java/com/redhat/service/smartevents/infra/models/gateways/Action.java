@@ -8,4 +8,9 @@ public class Action extends Gateway {
     public ProcessorType getProcessorType() {
         return ProcessorType.SINK;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

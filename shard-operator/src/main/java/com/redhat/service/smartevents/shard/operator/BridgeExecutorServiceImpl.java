@@ -7,6 +7,10 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -22,6 +26,7 @@ import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegr
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -29,9 +34,6 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class BridgeExecutorServiceImpl implements BridgeExecutorService {
@@ -87,7 +89,11 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         }
 
+        LOGGER.info("------ Creating a Camel Integration");
+
         CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
+
+        LOGGER.info("------ integration expected: " + expectedIntegrationFromDTO);
 
         CamelIntegration existingCamelIntegration = kubernetesClient
                 .resources(CamelIntegration.class)
@@ -96,10 +102,15 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .get();
 
         if (existingCamelIntegration == null || !expectedIntegrationFromDTO.getSpec().equals(existingCamelIntegration.getSpec())) {
-            kubernetesClient
+            LOGGER.info("------ Integration not found, creating...");
+
+            CamelIntegration createdResource = kubernetesClient
                     .resources(CamelIntegration.class)
                     .inNamespace(namespace.getMetadata().getName())
                     .createOrReplace(expectedIntegrationFromDTO);
+
+            LOGGER.info("------ Created resource: " + createdResource);
+
         }
     }
 

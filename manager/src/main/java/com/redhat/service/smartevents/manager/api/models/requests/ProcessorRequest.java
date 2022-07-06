@@ -113,4 +113,17 @@ public class ProcessorRequest {
         }
         return source;
     }
+
+    @Override
+    public String toString() {
+        return "ProcessorRequest{" +
+                "name='" + name + '\'' +
+                ", filters=" + filters +
+                ", transformationTemplate='" + transformationTemplate + '\'' +
+                ", action=" + action +
+                ", actions=" + actions +
+                ", source=" + source +
+                ", processing=" + processing +
+                '}';
+    }
 }

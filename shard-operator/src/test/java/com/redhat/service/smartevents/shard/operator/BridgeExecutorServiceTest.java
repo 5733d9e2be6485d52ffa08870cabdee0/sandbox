@@ -10,6 +10,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -30,6 +34,7 @@ import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegr
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
+
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -37,10 +42,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
-import org.awaitility.Awaitility;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -125,12 +126,11 @@ public class BridgeExecutorServiceTest {
         Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
-                                                                          "",
-                                                                          null,
-                                                                          null,
-                                                                          camelProcessing,
-                                                                          Arrays.asList(resolvedAction1, resolvedAction2));
-
+                "",
+                null,
+                null,
+                camelProcessing,
+                Arrays.asList(resolvedAction1, resolvedAction2));
 
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO(processorDefinition);
 

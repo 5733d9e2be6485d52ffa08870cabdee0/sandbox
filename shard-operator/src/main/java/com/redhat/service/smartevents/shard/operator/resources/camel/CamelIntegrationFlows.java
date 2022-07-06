@@ -32,4 +32,11 @@ public class CamelIntegrationFlows {
     public int hashCode() {
         return Objects.hash(camelIntegrationFrom);
     }
+
+    @Override
+    public String toString() {
+        return "CamelIntegrationFlows{" +
+                "camelIntegrationFrom=" + camelIntegrationFrom +
+                '}';
+    }
 }

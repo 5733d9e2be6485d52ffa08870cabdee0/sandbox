@@ -54,4 +54,13 @@ public class CamelIntegrationFrom {
     public int hashCode() {
         return Objects.hash(uri, parameters, steps);
     }
+
+    @Override
+    public String toString() {
+        return "CamelIntegrationFrom{" +
+                "uri='" + uri + '\'' +
+                ", parameters=" + parameters +
+                ", steps=" + steps +
+                '}';
+    }
 }

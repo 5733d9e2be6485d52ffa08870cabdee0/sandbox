@@ -73,10 +73,10 @@ public class ProcessorDAOTest {
     private Processor createSinkProcessorWithProcessing(Bridge bridge, String name, Processing processing, List<Action> resolvedActions) {
 
         ProcessorDefinition processingProcessorDefinition = new ProcessorDefinition(Collections.emptySet(),
-                                                                                    null,
-                                                                                    null,
-                                                                                    null,
-                                                                                    processing, resolvedActions);
+                null,
+                null,
+                null,
+                processing, resolvedActions);
 
         Processor processor = createProcessorModel(bridge, name, SINK, processingProcessorDefinition);
         processorDAO.persist(processor);

@@ -129,12 +129,24 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction) && Objects.equals(processing, that.processing);
+        return Objects.equals(multipleActions, that.multipleActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction) && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction) && Objects.equals(processing, that.processing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
+        return Objects.hash(multipleActions, filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessorDefinition{" +
+                "multipleActions=" + multipleActions +
+                ", filters=" + filters +
+                ", transformationTemplate='" + transformationTemplate + '\'' +
+                ", requestedAction=" + requestedAction +
+                ", requestedSource=" + requestedSource +
+                ", resolvedAction=" + resolvedAction +
+                ", processing=" + processing +
+                '}';
     }
 }

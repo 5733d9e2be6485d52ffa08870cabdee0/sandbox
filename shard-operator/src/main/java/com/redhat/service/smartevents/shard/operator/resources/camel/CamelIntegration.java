@@ -3,15 +3,15 @@ package com.redhat.service.smartevents.shard.operator.resources.camel;
 import java.util.Collections;
 import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
+
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.CustomResource;
@@ -31,6 +31,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CamelIntegration.class);
 
     public static String resolveResourceName(String id) {
         return String.format("%scamel-%s", OB_RESOURCE_NAME_PREFIX, KubernetesResourceUtil.sanitizeName(id));
@@ -38,14 +39,17 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
     public static CamelIntegration fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
 
+        LOGGER.info("------ fromDto: " + processorDTO);
+
         ObjectMeta metadata = new ObjectMetaBuilder()
                 .withName(resolveResourceName(processorDTO.getId()))
                 .withNamespace(namespace)
                 .withLabels(new LabelsBuilder()
-                                    .withComponent(COMPONENT_NAME)
-                                    .buildWithDefaults())
+                        .withComponent(COMPONENT_NAME)
+                        .buildWithDefaults())
                 .build();
 
+        LOGGER.info("------ metadata: " + metadata);
 
         CamelIntegrationFlows camelIntegrationFlows = new CamelIntegrationFlows();
 
@@ -61,12 +65,14 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         camelIntegrationFrom.getParameters().put("securityProtocol", "SASL_SSL");
         camelIntegrationFrom.getParameters().put("saslMechanism", "PLAIN");
         camelIntegrationFrom.getParameters().put("saslJaasConfig",
-                                                 String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
-                                                               processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
+                String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
+                        processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
         camelIntegrationFrom.getParameters().put("maxPollRecords", 5000);
         camelIntegrationFrom.getParameters().put("consumersCount", 1);
         camelIntegrationFrom.getParameters().put("seekTo", "beginning");
         camelIntegrationFrom.getParameters().put("groupId", "kafkaGroup");
+
+        LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
 
         camelIntegrationFlows.setCamelIntegrationFrom(Collections.singletonList(camelIntegrationFrom));
 
@@ -85,9 +91,12 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         String toLabel = spec.get("flow").get("from").get("steps").get(0).get("to").asText();
 
+        LOGGER.info("------ toLabel: " + toLabel);
+
         Optional<Action> action = processorDTO.getDefinition()
                 .getMultipleActions()
                 .stream().filter(n -> {
+                    LOGGER.info("------ action name: " + n.getName());
                     return n.getName().equals(toLabel);
                 }).findFirst();
 
@@ -99,6 +108,16 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
             camelIntegrationFrom.getSteps().add(camelIntegrationTo);
         });
 
+        LOGGER.info("------ camelIntegration: " + camelIntegration);
+
         return camelIntegration;
+    }
+
+    @Override
+    public String toString() {
+        return "CamelIntegration{" +
+                "spec=" + spec +
+                ", status=" + status +
+                '}';
     }
 }

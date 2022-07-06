@@ -21,6 +21,7 @@ public class SinkConnectorResolver implements GatewayResolver<Action> {
 
         resolvedAction.setParameters(action.getParameters().deepCopy());
         resolvedAction.setType(KafkaTopicAction.TYPE);
+        resolvedAction.setName(action.getName());
 
         String connectorTopicName = gatewayConfiguratorService.getConnectorTopicName(processorId);
 
