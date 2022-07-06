@@ -139,7 +139,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             bridge.setStatus(failedStatus);
             managerClient.notifyBridgeStatusChange(bridge)
                     .subscribe()
-                    .with(success -> LOGGER.debug(String.format("%s of Bridge '%s' failed", operation.getPrettyName(), bridge.getId()), e),
+                    .with(success -> LOGGER.error(String.format("%s of Bridge '%s' failed", operation.getPrettyName(), bridge.getId()), e),
                             failure -> failedToSendUpdateToManager(bridge, e));
         }
     }
