@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - prerequisites
+  - shard
+
+configurations:
+  - env-var-transformer.yaml
+
+configMapGenerator:
+  - name: smart-events-environment-variables
+    envs: [environment-properties.env]
+    behavior: create
+    namespace: openshift-operators
+
+secretGenerator:
+  - name: smart-events-shard-operator-secrets
+    envs: [secret-properties.env]
+    behavior: create
+    namespace: openshift-operators
+
+generatorOptions:
+    disableNameSuffixHash: true
+
+vars:
+  - name: EVENT_BRIDGE_FLEET_SHARD_INDEX_IMAGE
+    objref:
+      kind: ConfigMap
+      name: smart-events-environment-variables
+      namespace: openshift-operators
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.EVENT_BRIDGE_FLEET_SHARD_INDEX_IMAGE
+  - name: EVENT_BRIDGE_SSO_URL
+    objref:
+      kind: ConfigMap
+      name: smart-events-environment-variables
+      namespace: openshift-operators
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.EVENT_BRIDGE_SSO_URL
+  - name: EVENT_BRIDGE_MANAGER_URL
+    objref:
+      kind: ConfigMap
+      name: smart-events-environment-variables
+      namespace: openshift-operators
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.EVENT_BRIDGE_MANAGER_URL

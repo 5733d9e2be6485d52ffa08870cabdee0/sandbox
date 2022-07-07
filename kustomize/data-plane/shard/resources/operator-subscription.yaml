@@ -1,0 +1,20 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: smart-events-shard-operator-subscription
+  namespace: openshift-operators
+spec:
+  channel: alpha
+  name: smart-events-shard-operator
+  source: smart-events-shard-catalog-source
+  sourceNamespace: openshift-marketplace
+  config:
+    tolerations:
+      - operator: "Exists"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "4Gi"
+        cpu: "500m"

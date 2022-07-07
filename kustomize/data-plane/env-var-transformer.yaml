@@ -1,0 +1,9 @@
+varReference:
+  - kind: CatalogSource
+    path: spec/image
+  - kind: ConfigMap
+    path: data
+  - kind: RequestAuthentication
+    path: spec/jwtRules/issuer
+  - kind: RequestAuthentication
+    path: spec/jwtRules/jwksUri
