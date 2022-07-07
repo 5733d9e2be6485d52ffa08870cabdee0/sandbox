@@ -24,6 +24,7 @@ secretGenerator:
   - EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=<REPLACE_WITH_KAFKA_ADMIN_CLIENT_SECRET>
   - RHOAS_OPS_ACCOUNT_CLIENT_ID=<REPLACE_WITH_KAFKA_OPERATIONAL_CLIENT_ID>
 patchesStrategicMerge:
+- patches/deploy.yaml
 - patches/deploy-config.yaml
 - patches/postgres-config.yaml
 namespace: event-bridge-manager
