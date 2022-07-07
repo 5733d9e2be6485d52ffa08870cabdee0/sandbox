@@ -61,15 +61,13 @@ If not, please double-check the setup instructions in [dev/README.md](dev/README
 
 ## How to create a Bridge instance
 
-In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/smartevents_mgmt/v1/bridges`. The request must include the name of the Bridge. Let's export
-it to a variable:
-In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/v1/bridges`. The request must include:
+In order to send events to an Ingress, it is necessary to create a Bridge instance using the endpoint `/api/smartevents_mgmt/v1/bridges`. The request must include:
 
 * The `name` of the Bridge
 * The `cloud_provider` that we want the Bridge instance deployed to
 * The `region` on the chosen `cloud_provider` that we want the Bridge deployed to
 
-The list of supported `cloud_providers` and `regions` are available at the endpoint `/api/v1/cloud_providers` and `/api/v1/cloud_providers/{id}/regions`. 
+The list of supported `cloud_providers` and `regions` are available at the endpoint `/api/smartevents_mgmt/v1/cloud_providers` and `/api/smartevents_mgmt/v1/cloud_providers/{id}/regions`. 
 
 In this example, lets create a Bridge called `myBridge`, on Cloud Provider `aws` in the `us-east-1` region:
 

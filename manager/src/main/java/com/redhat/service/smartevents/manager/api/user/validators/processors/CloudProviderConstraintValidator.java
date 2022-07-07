@@ -9,13 +9,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.dao.CloudProviderDAO;
 import com.redhat.service.smartevents.manager.models.CloudProvider;
 import com.redhat.service.smartevents.manager.models.CloudRegion;
-import org.apache.commons.lang3.StringUtils;
 
 @ApplicationScoped
 public class CloudProviderConstraintValidator extends BaseConstraintValidator<ValidCloudProvider, BridgeRequest> {
@@ -39,8 +40,8 @@ public class CloudProviderConstraintValidator extends BaseConstraintValidator<Va
     public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
 
         /*
-            Not valid to have a null or empty cloud_provider or region field, but validation failure
-            messaging will be added by the annotations on the BridgeRequest resource.
+         * Not valid to have a null or empty cloud_provider or region field, but validation failure
+         * messaging will be added by the annotations on the BridgeRequest resource.
          */
         if (StringUtils.isEmpty(bridgeRequest.getCloudProvider()) || StringUtils.isEmpty(bridgeRequest.getRegion())) {
             return false;
