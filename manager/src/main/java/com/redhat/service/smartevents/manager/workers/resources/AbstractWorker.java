@@ -39,7 +39,7 @@ import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_F
 import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
 import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_SUBMITTED_AT;
 
-public abstract class AbstractWorker<T extends ManagedResource> implements Job, Worker {
+public abstract class AbstractWorker<T extends ManagedResource> implements Job, Worker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 

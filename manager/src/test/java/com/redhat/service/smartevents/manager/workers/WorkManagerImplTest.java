@@ -71,7 +71,7 @@ public class WorkManagerImplTest {
 
         JobDataMap data = trigger.getJobDataMap();
         assertThat(data.getString(STATE_FIELD_ID)).isEqualTo(RESOURCE_ID);
-        assertThat(data.getLong(STATE_FIELD_ATTEMPTS)).isEqualTo(0);
+        assertThat(data.getLong(STATE_FIELD_ATTEMPTS)).isZero();
         assertThat(data.get(STATE_FIELD_SUBMITTED_AT)).isNotNull();
     }
 
