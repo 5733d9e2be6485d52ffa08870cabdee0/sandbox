@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor;
+package com.redhat.service.smartevents.manager;
 
 import java.util.Map;
 
@@ -16,13 +16,12 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
+import static com.redhat.service.smartevents.manager.SecretsServiceImpl.emptyObjectNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-class GatewaySecretsHandlerTest {
+class SecretsServiceTest {
 
     private static final String TEST_ENDPOINT = "http://example.com/webhook";
     private static final String TEST_USERNAME = "myusername";
@@ -32,10 +31,7 @@ class GatewaySecretsHandlerTest {
     private static final String TEST_TOKEN = "mytoken";
 
     @Inject
-    GatewaySecretsHandler secretsHandler;
-
-    @InjectMock
-    GatewayConfiguratorService gatewayConfiguratorServiceMock;
+    SecretsService secretsService;
 
     @Test
     void testMaskAction() {
@@ -46,7 +42,7 @@ class GatewaySecretsHandlerTest {
                 WebhookAction.BASIC_AUTH_USERNAME_PARAM, TEST_USERNAME,
                 WebhookAction.BASIC_AUTH_PASSWORD_PARAM, TEST_PASSWORD));
 
-        Pair<Action, ObjectNode> maskOutputPair = secretsHandler.mask(action);
+        Pair<Action, ObjectNode> maskOutputPair = secretsService.maskGateway(action);
 
         Action maskedAction = maskOutputPair.getLeft();
         assertThat(maskedAction.getType()).isEqualTo(WebhookAction.TYPE);
@@ -67,7 +63,7 @@ class GatewaySecretsHandlerTest {
                 SlackSource.CHANNEL_PARAM, TEST_CHANNEL,
                 SlackSource.TOKEN_PARAM, TEST_TOKEN));
 
-        Pair<Source, ObjectNode> maskOutputPair = secretsHandler.mask(source);
+        Pair<Source, ObjectNode> maskOutputPair = secretsService.maskGateway(source);
 
         Source maskedSource = maskOutputPair.getLeft();
         assertThat(maskedSource.getType()).isEqualTo(SlackSource.TYPE);
@@ -91,7 +87,7 @@ class GatewaySecretsHandlerTest {
         ObjectNode secrets = emptyObjectNode();
         secrets.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD));
 
-        Action unmaskedAction = secretsHandler.unmask(maskedAction, secrets);
+        Action unmaskedAction = secretsService.unmaskGateway(maskedAction, secrets);
 
         assertThat(unmaskedAction.getType()).isEqualTo(WebhookAction.TYPE);
         assertThat(unmaskedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_ENDPOINT);
@@ -110,7 +106,7 @@ class GatewaySecretsHandlerTest {
         ObjectNode secrets = emptyObjectNode();
         secrets.set(SlackSource.TOKEN_PARAM, new TextNode(TEST_TOKEN));
 
-        Source unaskedSource = secretsHandler.unmask(maskedSource, secrets);
+        Source unaskedSource = secretsService.unmaskGateway(maskedSource, secrets);
 
         assertThat(unaskedSource.getType()).isEqualTo(SlackSource.TYPE);
         assertThat(unaskedSource.getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL);
