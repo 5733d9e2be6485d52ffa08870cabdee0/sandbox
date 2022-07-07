@@ -55,9 +55,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Job, 
     @ConfigProperty(name = "event-bridge.resources.workers.timeout-seconds")
     int timeoutSeconds;
 
-    @ConfigProperty(name = "event-bridge.resources.workers.frequency")
-    String frequencyConfigProperty;
-    long frequency;
+    @ConfigProperty(name = "event-bridge.resources.workers.frequency-seconds")
+    String frequencySecondsConfigProperty;
+    long frequencySeconds;
 
     @Inject
     protected Scheduler quartz;
@@ -65,11 +65,11 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Job, 
     @PostConstruct
     protected void init() {
         try {
-            frequency = Long.parseLong(frequencyConfigProperty);
+            frequencySeconds = Long.parseLong(frequencySecondsConfigProperty);
         } catch (NumberFormatException nfe) {
-            LOGGER.warn("Unable to parse Config Property 'event-bridge.resources.workers.frequency' of '{}'. Using default of 30s.",
-                    frequencyConfigProperty);
-            frequency = 30;
+            LOGGER.warn("Unable to parse Config Property 'event-bridge.resources.workers.frequency-seconds' of '{}'. Using default of 30s.",
+                    frequencySecondsConfigProperty);
+            frequencySeconds = 30;
         }
     }
 
@@ -197,7 +197,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Job, 
                     .forJob(existingTrigger.getJobKey())
                     .withIdentity(existingTriggerKey)
                     .usingJobData(existingTrigger.getJobDataMap())
-                    .startAt(new Date(System.currentTimeMillis() + frequency * 1000))
+                    .startAt(new Date(System.currentTimeMillis() + frequencySeconds * 1000))
                     .build();
             quartz.rescheduleJob(existingTriggerKey, newTrigger);
         } catch (SchedulerException e) {
