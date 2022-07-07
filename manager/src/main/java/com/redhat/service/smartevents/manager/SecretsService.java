@@ -17,7 +17,7 @@ public interface SecretsService {
         return new ObjectNode(JsonNodeFactory.instance);
     }
 
-    static ProcessorDefinition mergeDefinitions(ProcessorDefinition existingDefinition, ProcessorDefinition newDefinition) {
+    static ProcessorDefinition mergeProcessorDefinitions(ProcessorDefinition existingDefinition, ProcessorDefinition newDefinition) {
         if (newDefinition == null) {
             return existingDefinition;
         }
@@ -29,40 +29,47 @@ public interface SecretsService {
         if (newDefinition.getRequestedAction() != null) {
             ObjectNode currentParams = mergedDefinition.getRequestedAction() != null ? mergedDefinition.getRequestedAction().getParameters() : null;
             Action mergedAction = newDefinition.getRequestedAction().deepCopy();
-            mergedAction.setParameters(mergeObjectNodes(currentParams, newDefinition.getRequestedAction().getParameters()));
+            mergedAction.setParameters(mergeObjectNodes(currentParams, newDefinition.getRequestedAction().getParameters(), true));
             mergedDefinition.setRequestedAction(mergedAction);
         }
 
         if (newDefinition.getRequestedSource() != null) {
             ObjectNode currentParams = mergedDefinition.getRequestedSource() != null ? mergedDefinition.getRequestedSource().getParameters() : null;
             Source mergedSource = newDefinition.getRequestedSource().deepCopy();
-            mergedSource.setParameters(mergeObjectNodes(currentParams, newDefinition.getRequestedSource().getParameters()));
+            mergedSource.setParameters(mergeObjectNodes(currentParams, newDefinition.getRequestedSource().getParameters(), true));
             mergedDefinition.setRequestedSource(mergedSource);
         }
 
         if (newDefinition.getResolvedAction() != null) {
             ObjectNode currentParams = mergedDefinition.getResolvedAction() != null ? mergedDefinition.getResolvedAction().getParameters() : null;
             Action mergedAction = newDefinition.getResolvedAction().deepCopy();
-            mergedAction.setParameters(mergeObjectNodes(currentParams, newDefinition.getResolvedAction().getParameters()));
+            mergedAction.setParameters(mergeObjectNodes(currentParams, newDefinition.getResolvedAction().getParameters(), true));
             mergedDefinition.setResolvedAction(mergedAction);
         }
 
         return mergedDefinition;
     }
 
-    static ObjectNode mergeObjectNodes(ObjectNode existingNode, ObjectNode newNode) {
+    static ObjectNode mergeObjectNodes(ObjectNode existingNode, ObjectNode newNode, boolean deleteMissingExisting) {
         if (newNode == null) {
             return existingNode;
         }
 
-        ObjectNode mergedValues = existingNode != null ? existingNode.deepCopy() : emptyObjectNode();
-        Iterator<Map.Entry<String, JsonNode>> parametersIterator = newNode.fields();
+        ObjectNode mergedValues = deleteMissingExisting || existingNode == null
+                ? emptyObjectNode()
+                : existingNode.deepCopy();
 
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = newNode.fields();
         while (parametersIterator.hasNext()) {
             Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
+            String parameterKey = parameterEntry.getKey();
             JsonNode parameterNode = parameterEntry.getValue();
             if (!(parameterNode.isObject() && parameterNode.isEmpty())) {
-                mergedValues.set(parameterEntry.getKey(), parameterEntry.getValue());
+                mergedValues.set(parameterKey, parameterEntry.getValue());
+            } else if (deleteMissingExisting && existingNode != null && existingNode.has(parameterKey)) {
+                // if deleteMissingExisting=false the value is already there
+                // because we cloned the existingNode in the first place
+                mergedValues.set(parameterKey, existingNode.get(parameterKey));
             }
         }
 

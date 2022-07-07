@@ -44,7 +44,7 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
-import static com.redhat.service.smartevents.manager.SecretsService.mergeDefinitions;
+import static com.redhat.service.smartevents.manager.SecretsService.mergeProcessorDefinitions;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -253,7 +253,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition unmaskedExistingDefinition = secretsService.getUnmaskedProcessorDefinition(existingProcessor);
         ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
-        ProcessorDefinition unmaskedRequestedDefinition = mergeDefinitions(unmaskedExistingDefinition, requestedDefinition);
+        ProcessorDefinition unmaskedRequestedDefinition = mergeProcessorDefinitions(unmaskedExistingDefinition, requestedDefinition);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
