@@ -131,7 +131,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                 : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
 
         List<Action> multipleResolvedActions = new ArrayList<>();
-        if(processorRequest.getActions() != null) {
+        if (processorRequest.getActions() != null) {
             for (Action a : processorRequest.getActions()) {
                 System.out.printf("+++++ multiple actions: %s type: %s%n", a.getName(), a.getType());
                 Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());

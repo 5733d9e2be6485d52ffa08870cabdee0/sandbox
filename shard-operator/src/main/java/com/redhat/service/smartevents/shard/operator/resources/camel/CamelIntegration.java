@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.processors.Processing;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
@@ -36,7 +37,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         return String.format("%scamel-%s", OB_RESOURCE_NAME_PREFIX, KubernetesResourceUtil.sanitizeName(id));
     }
 
-    public static CamelIntegration fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage) {
+    public static CamelIntegration fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage, Processing processing) {
 
         LOGGER.info("------ fromDto: " + processorDTO);
 
@@ -74,7 +75,6 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
 
-
         CamelIntegrationSpec camelIntegrationSpec = new CamelIntegrationSpec();
 
         camelIntegrationSpec.setFlows(Collections.singletonList(camelIntegrationFlow));
@@ -86,7 +86,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         CamelIntegrationTo camelIntegrationTo = new CamelIntegrationTo();
 
-        ObjectNode spec = processorDTO.getDefinition().getProcessing().getSpec();
+        ObjectNode spec = processing.getSpec();
 
         String toLabel = spec.get("flow").get("from").get("steps").get(0).get("to").asText();
 
