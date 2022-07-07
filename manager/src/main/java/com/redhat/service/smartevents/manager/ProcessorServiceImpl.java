@@ -1,29 +1,18 @@
 package com.redhat.service.smartevents.manager;
 
-import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -31,7 +20,6 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadReque
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
-import com.redhat.service.smartevents.infra.models.EventBridgeSecret;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
@@ -40,7 +28,6 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -54,27 +41,16 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
-import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
-import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
-
-import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorServiceImpl.class);
 
-    @ConfigProperty(name = "secretsmanager.timeout-seconds")
-    int secretsManagerTimeout;
-
-    @Inject
-    ObjectMapper mapper;
     @Inject
     GatewayConfigurator gatewayConfigurator;
-    @Inject
-    GatewaySecretsHandler gatewaySecretsHandler;
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
     @Inject
@@ -88,11 +64,11 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     ConnectorsService connectorService;
     @Inject
+    SecretsService secretsService;
+    @Inject
     ShardService shardService;
     @Inject
     WorkManager workManager;
-    @Inject
-    VaultService vaultService;
 
     @Inject
     MetricsService metricsService;
@@ -160,18 +136,13 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition definition = processorRequestToDefinition(processorRequest, processorType, newProcessor.getId(), bridgeId, customerId);
 
-        Pair<ProcessorDefinition, Map<String, String>> maskPair = maskProcessorDefinitionAndSerializeSecrets(definition);
+        ProcessorDefinition maskedDefinition = secretsService.maskProcessorDefinition(newProcessor.getId(), definition);
 
-        newProcessor.setDefinition(maskPair.getLeft());
-        newProcessor.setHasSecret(!maskPair.getRight().isEmpty());
+        newProcessor.setDefinition(maskedDefinition);
+        newProcessor.setHasSecret(!maskedDefinition.equals(definition));
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
-        // store secret
-        if (newProcessor.hasSecret()) {
-            EventBridgeSecret eventBridgeSecret = new EventBridgeSecret(resourceNamesProvider.getProcessorSecretName(newProcessor.getId()), maskPair.getRight());
-            vaultService.createOrReplace(eventBridgeSecret).await().atMost(Duration.ofSeconds(secretsManagerTimeout));
-        }
 
         connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
@@ -208,107 +179,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
         return gatewayConfigurator.getSourceResolver(source.getType())
                 .resolve(source, customerId, bridgeId, processorId);
-    }
-
-    private Pair<ProcessorDefinition, Map<String, String>> maskProcessorDefinitionAndSerializeSecrets(ProcessorDefinition definition) {
-        try {
-            Pair<ProcessorDefinition, Map<String, ObjectNode>> p = maskProcessorDefinition(definition);
-            // ObjectNodes must be serialized because VaultService supports only Map<String, String>
-            Map<String, String> serializedSecretsMap = new HashMap<>();
-            for (Map.Entry<String, ObjectNode> entry : p.getRight().entrySet()) {
-                serializedSecretsMap.put(entry.getKey(), mapper.writeValueAsString(entry.getValue()));
-            }
-            return Pair.of(p.getLeft(), serializedSecretsMap);
-        } catch (JsonProcessingException e) {
-            throw new ProcessorLifecycleException("Error while storing secrets");
-        }
-    }
-
-    private Pair<ProcessorDefinition, Map<String, ObjectNode>> maskProcessorDefinition(ProcessorDefinition definition) {
-        ProcessorDefinition definitionCopy = definition.deepCopy();
-
-        Map<String, ObjectNode> secretsMap = new HashMap<>();
-        if (definition.getRequestedAction() != null) {
-            Pair<Action, ObjectNode> p = gatewaySecretsHandler.mask(definition.getRequestedAction());
-            definitionCopy.setRequestedAction(p.getLeft());
-            if (!p.getRight().isEmpty()) {
-                secretsMap.put("requestedAction", p.getRight());
-            }
-        }
-        if (definition.getRequestedSource() != null) {
-            Pair<Source, ObjectNode> p = gatewaySecretsHandler.mask(definition.getRequestedSource());
-            definitionCopy.setRequestedSource(p.getLeft());
-            if (!p.getRight().isEmpty()) {
-                secretsMap.put("requestedSource", p.getRight());
-            }
-        }
-        if (definition.getResolvedAction() != null) {
-            Pair<Action, ObjectNode> p = gatewaySecretsHandler.mask(definition.getResolvedAction());
-            definitionCopy.setResolvedAction(p.getLeft());
-            if (!p.getRight().isEmpty()) {
-                secretsMap.put("resolvedAction", p.getRight());
-            }
-        }
-        return Pair.of(definitionCopy, secretsMap);
-    }
-
-    private ProcessorDefinition deserializeSecretsAndUnmaskProcessorDefinition(ProcessorDefinition existingDefinition, Map<String, String> existingSecrets, ProcessorDefinition requestedDefinition) {
-        try {
-            // ObjectNodes must be serialized because VaultService supports only Map<String, String>
-            Map<String, ObjectNode> deserializedSecretsMap = new HashMap<>();
-            for (Map.Entry<String, String> entry : existingSecrets.entrySet()) {
-                deserializedSecretsMap.put(entry.getKey(), (ObjectNode) mapper.readTree(entry.getValue()));
-            }
-            return unmaskProcessorDefinition(existingDefinition, deserializedSecretsMap, requestedDefinition);
-        } catch (ClassCastException | JsonProcessingException e) {
-            throw new ProcessorLifecycleException("Error while retrieving secrets");
-        }
-    }
-
-    private ProcessorDefinition unmaskProcessorDefinition(ProcessorDefinition existingDefinition, Map<String, ObjectNode> existingSecrets, ProcessorDefinition requestedDefinition) {
-        if (existingDefinition == null) {
-            return existingDefinition;
-        }
-        ProcessorDefinition definitionCopy = existingDefinition.deepCopy();
-
-        if (existingDefinition.getRequestedAction() != null) {
-            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
-                    .map(ProcessorDefinition::getRequestedAction)
-                    .map(Gateway::getParameters)
-                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
-            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("requestedAction"), requestedParams);
-            definitionCopy.getRequestedAction().mergeParameters(newGatewayParams);
-        }
-        if (existingDefinition.getRequestedSource() != null) {
-            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
-                    .map(ProcessorDefinition::getRequestedSource)
-                    .map(Gateway::getParameters)
-                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
-            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("requestedSource"), requestedParams);
-            definitionCopy.getRequestedSource().mergeParameters(newGatewayParams);
-        }
-        if (existingDefinition.getResolvedAction() != null) {
-            ObjectNode requestedParams = Optional.ofNullable(requestedDefinition)
-                    .map(ProcessorDefinition::getResolvedAction)
-                    .map(Gateway::getParameters)
-                    .orElseGet(GatewaySecretsHandler::emptyObjectNode);
-            ObjectNode newGatewayParams = mergeNewerParams(existingSecrets.get("resolvedAction"), requestedParams);
-            definitionCopy.getResolvedAction().mergeParameters(newGatewayParams);
-        }
-        return definitionCopy;
-    }
-
-    private static ObjectNode mergeNewerParams(ObjectNode existingParams, ObjectNode requestedParams) {
-        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedParams.fields();
-        ObjectNode empty = emptyObjectNode();
-        ObjectNode merged = existingParams != null ? existingParams.deepCopy() : emptyObjectNode();
-        while (parametersIterator.hasNext()) {
-            Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
-            if (!empty.equals(parameterEntry.getValue())) {
-                merged.set(parameterEntry.getKey(), parameterEntry.getValue());
-            }
-        }
-        return merged;
     }
 
     @Override
@@ -359,8 +229,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                     customerId));
         }
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
-        Set<BaseFilter> existingFilters = existingDefinition.getFilters();
-        String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
+
         Action existingAction = existingDefinition.getRequestedAction();
         Source existingSource = existingDefinition.getRequestedSource();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
@@ -382,10 +251,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
 
-        EventBridgeSecret eventBridgeSecret = vaultService.get(resourceNamesProvider.getProcessorSecretName(existingProcessor.getId()))
-                .await().atMost(Duration.ofSeconds(secretsManagerTimeout));
-        ProcessorDefinition unmaskedExistingDefinition = deserializeSecretsAndUnmaskProcessorDefinition(existingDefinition, eventBridgeSecret.getValues(), null);
-        ProcessorDefinition unmaskedRequestedDefinition = deserializeSecretsAndUnmaskProcessorDefinition(existingDefinition, eventBridgeSecret.getValues(), requestedDefinition);
+        ProcessorDefinition unmaskedExistingDefinition = secretsService.unmaskProcessorDefinition(existingProcessor.getId(), existingDefinition, null);
+        ProcessorDefinition unmaskedRequestedDefinition = secretsService.unmaskProcessorDefinition(existingProcessor.getId(), existingDefinition, requestedDefinition);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -396,7 +263,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 && Objects.equals(unmaskedExistingDefinition.getRequestedAction(), unmaskedRequestedDefinition.getRequestedAction())
                 && Objects.equals(unmaskedExistingDefinition.getRequestedSource(), unmaskedRequestedDefinition.getRequestedSource())
                 && Objects.equals(unmaskedExistingDefinition.getResolvedAction(), unmaskedRequestedDefinition.getResolvedAction())) {
-            LOGGER.info("NOTHING TO DO FOR PROCESSOR: {}", existingProcessor.getId());
             return existingProcessor;
         }
 
@@ -407,16 +273,10 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDefinition(unmaskedRequestedDefinition);
         existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
 
-        Pair<ProcessorDefinition, Map<String, String>> maskPair = maskProcessorDefinitionAndSerializeSecrets(unmaskedRequestedDefinition);
+        ProcessorDefinition maskedDefinition = secretsService.maskProcessorDefinition(existingProcessor.getId(), unmaskedRequestedDefinition);
 
-        existingProcessor.setDefinition(maskPair.getLeft());
-        existingProcessor.setHasSecret(!maskPair.getRight().isEmpty());
-
-        // store secret
-        if (existingProcessor.hasSecret()) {
-            EventBridgeSecret eventBridgeSecret2 = new EventBridgeSecret(resourceNamesProvider.getProcessorSecretName(existingProcessor.getId()), maskPair.getRight());
-            vaultService.createOrReplace(eventBridgeSecret2).await().atMost(Duration.ofSeconds(secretsManagerTimeout));
-        }
+        existingProcessor.setDefinition(maskedDefinition);
+        existingProcessor.setHasSecret(!maskedDefinition.equals(unmaskedRequestedDefinition));
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -518,10 +378,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     public ProcessorDTO toDTO(Processor processor) {
         // unmask if processor has secret to pass real values to shard operator
         if (processor.hasSecret()) {
-            EventBridgeSecret eventBridgeSecret = vaultService.get(resourceNamesProvider.getProcessorSecretName(processor.getId()))
-                    .await().atMost(Duration.ofSeconds(secretsManagerTimeout));
-
-            ProcessorDefinition unmaskedDefinition = deserializeSecretsAndUnmaskProcessorDefinition(processor.getDefinition(), eventBridgeSecret.getValues(), null);
+            ProcessorDefinition unmaskedDefinition = secretsService.unmaskProcessorDefinition(processor.getId(), processor.getDefinition(), null);
             processor.setDefinition(unmaskedDefinition);
         }
 
