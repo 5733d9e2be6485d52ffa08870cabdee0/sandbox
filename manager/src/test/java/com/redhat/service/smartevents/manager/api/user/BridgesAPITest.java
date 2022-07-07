@@ -157,18 +157,20 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidCloudProvider() {
-        ErrorResponse errorResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
-                .as(ErrorResponse.class);
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
+                .as(ErrorsResponse.class);
 
+        ErrorResponse errorResponse = errorsResponse.getItems().get(0);
         assertThat(errorResponse.getCode()).isEqualTo(errorDAO.findByException(InvalidCloudProviderException.class).getCode());
     }
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidRegion() {
-        ErrorResponse errorResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
-                .as(ErrorResponse.class);
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
+                .as(ErrorsResponse.class);
 
+        ErrorResponse errorResponse = errorsResponse.getItems().get(0);
         assertThat(errorResponse.getCode()).isEqualTo(errorDAO.findByException(InvalidRegionException.class).getCode());
     }
 
@@ -360,12 +362,12 @@ public class BridgesAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
-                        bridgeResponse.getName(),
-                        bridgeResponse.getEndpoint(),
-                        DEFAULT_CUSTOMER_ID,
-                        DEFAULT_USER_NAME,
-                        READY,
-                        new KafkaConnectionDTO()));
+                              bridgeResponse.getName(),
+                              bridgeResponse.getEndpoint(),
+                              DEFAULT_CUSTOMER_ID,
+                              DEFAULT_USER_NAME,
+                              READY,
+                              new KafkaConnectionDTO()));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
