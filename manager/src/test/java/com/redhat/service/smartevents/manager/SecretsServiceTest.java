@@ -4,7 +4,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -17,7 +16,7 @@ import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-import static com.redhat.service.smartevents.manager.SecretsServiceImpl.emptyObjectNode;
+import static com.redhat.service.smartevents.manager.SecretsService.emptyObjectNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -31,7 +30,7 @@ class SecretsServiceTest {
     private static final String TEST_TOKEN = "mytoken";
 
     @Inject
-    SecretsService secretsService;
+    SecretsServiceImpl secretsService;
 
     @Test
     void testMaskAction() {
@@ -42,17 +41,16 @@ class SecretsServiceTest {
                 WebhookAction.BASIC_AUTH_USERNAME_PARAM, TEST_USERNAME,
                 WebhookAction.BASIC_AUTH_PASSWORD_PARAM, TEST_PASSWORD));
 
-        Pair<Action, ObjectNode> maskOutputPair = secretsService.maskGateway(action);
+        ObjectNode secrets = secretsService.maskGateway(action);
 
-        Action maskedAction = maskOutputPair.getLeft();
-        assertThat(maskedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(maskedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_ENDPOINT);
-        assertThat(maskedAction.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(TEST_USERNAME);
-        assertThat(maskedAction.getParameters().get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(emptyObjectNode());
+        assertThat(action.getType()).isEqualTo(WebhookAction.TYPE);
+        assertThat(action.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_ENDPOINT);
+        assertThat(action.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(TEST_USERNAME);
+        assertThat(action.getParameters().get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(emptyObjectNode());
 
-        assertThat(maskOutputPair.getRight()).hasSize(1);
-        assertThat(maskOutputPair.getRight().has(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isTrue();
-        assertThat(maskOutputPair.getRight().get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
+        assertThat(secrets).hasSize(1);
+        assertThat(secrets.has(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isTrue();
+        assertThat(secrets.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
     }
 
     @Test
@@ -63,54 +61,32 @@ class SecretsServiceTest {
                 SlackSource.CHANNEL_PARAM, TEST_CHANNEL,
                 SlackSource.TOKEN_PARAM, TEST_TOKEN));
 
-        Pair<Source, ObjectNode> maskOutputPair = secretsService.maskGateway(source);
+        ObjectNode secrets = secretsService.maskGateway(source);
 
-        Source maskedSource = maskOutputPair.getLeft();
-        assertThat(maskedSource.getType()).isEqualTo(SlackSource.TYPE);
-        assertThat(maskedSource.getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL);
-        assertThat(maskedSource.getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
+        assertThat(source.getType()).isEqualTo(SlackSource.TYPE);
+        assertThat(source.getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL);
+        assertThat(source.getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
 
-        assertThat(maskOutputPair.getRight()).hasSize(1);
-        assertThat(maskOutputPair.getRight().has(SlackSource.TOKEN_PARAM)).isTrue();
-        assertThat(maskOutputPair.getRight().get(SlackSource.TOKEN_PARAM)).isEqualTo(new TextNode(TEST_TOKEN));
+        assertThat(secrets).hasSize(1);
+        assertThat(secrets.has(SlackSource.TOKEN_PARAM)).isTrue();
+        assertThat(secrets.get(SlackSource.TOKEN_PARAM)).isEqualTo(new TextNode(TEST_TOKEN));
     }
 
     @Test
-    void testUnmaskAction() {
-        Action maskedAction = new Action();
-        maskedAction.setType(WebhookAction.TYPE);
-        maskedAction.setParameters((new ObjectNode(JsonNodeFactory.instance, Map.of(
+    void testMergeValues() {
+        ObjectNode parameters = new ObjectNode(JsonNodeFactory.instance, Map.of(
                 WebhookAction.ENDPOINT_PARAM, new TextNode(TEST_ENDPOINT),
                 WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_USERNAME),
-                WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode()))));
+                WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode()));
 
         ObjectNode secrets = emptyObjectNode();
         secrets.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD));
 
-        Action unmaskedAction = secretsService.unmaskGateway(maskedAction, secrets);
+        ObjectNode merged = SecretsService.mergeObjectNodes(parameters, secrets);
 
-        assertThat(unmaskedAction.getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(unmaskedAction.getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_ENDPOINT);
-        assertThat(unmaskedAction.getParameter(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(TEST_USERNAME);
-        assertThat(unmaskedAction.getParameter(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(TEST_PASSWORD);
-    }
-
-    @Test
-    void testUnmaskSource() {
-        Source maskedSource = new Source();
-        maskedSource.setType(SlackSource.TYPE);
-        maskedSource.setParameters(new ObjectNode(JsonNodeFactory.instance, Map.of(
-                SlackSource.CHANNEL_PARAM, new TextNode(TEST_CHANNEL),
-                SlackSource.TOKEN_PARAM, emptyObjectNode())));
-
-        ObjectNode secrets = emptyObjectNode();
-        secrets.set(SlackSource.TOKEN_PARAM, new TextNode(TEST_TOKEN));
-
-        Source unaskedSource = secretsService.unmaskGateway(maskedSource, secrets);
-
-        assertThat(unaskedSource.getType()).isEqualTo(SlackSource.TYPE);
-        assertThat(unaskedSource.getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL);
-        assertThat(unaskedSource.getParameter(SlackSource.TOKEN_PARAM)).isEqualTo(TEST_TOKEN);
+        assertThat(merged.get(WebhookAction.ENDPOINT_PARAM)).isEqualTo(new TextNode(TEST_ENDPOINT));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_USERNAME));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
     }
 
 }

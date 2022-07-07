@@ -1,11 +1,11 @@
--- add new "has_secret" column
+-- add new "has_secrets" column
 alter table PROCESSOR
-    add column "has_secret" boolean;
+    add column "has_secrets" boolean;
 
--- update existing processors "has_secret" with 'false' value (the only possible one before this migration)
+-- update existing processors "has_secrets" with 'false' value (the only possible one before this migration)
 update PROCESSOR
-    set "has_secret"=false;
+    set "has_secrets"=false;
 
--- add not null constraint to "has_secret" column
+-- add not null constraint to "has_secrets" column
 alter table PROCESSOR
-    alter column "has_secret" set not null;
+    alter column "has_secrets" set not null;
