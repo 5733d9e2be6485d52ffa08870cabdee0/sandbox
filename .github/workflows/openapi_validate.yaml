@@ -15,4 +15,4 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 15.x
-      - run: npx @stoplight/spectral@5.9.0 lint ./openapi/rhose-api.yaml
+      - run: npx @stoplight/spectral@5.9.0 lint ./openapi/smartevents_mgmt.yaml
