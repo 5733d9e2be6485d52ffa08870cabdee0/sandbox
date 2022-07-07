@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.workers;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.PostConstruct;
@@ -10,7 +9,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -51,13 +49,13 @@ public class WorkManagerImpl implements WorkManager {
     }
 
     @Override
-    public JobDataMap schedule(Bridge bridge) {
-        return doSchedule(bridge.getId(), bridgeWorkerJob);
+    public void schedule(Bridge bridge) {
+        doSchedule(bridge.getId(), bridgeWorkerJob);
     }
 
     @Override
-    public JobDataMap schedule(Processor processor) {
-        return doSchedule(processor.getId(), processorWorkerJob);
+    public void schedule(Processor processor) {
+        doSchedule(processor.getId(), processorWorkerJob);
     }
 
     // Schedule the first execution of a Job.
@@ -65,23 +63,20 @@ public class WorkManagerImpl implements WorkManager {
     // Trigger definition and Quartz does not support updating the Trigger JobDataMap after the Trigger
     // has been created. Rescheduling of the Job is handled by AbstractWorker if either an execution
     // failed or the Work remained incomplete.
-    protected JobDataMap doSchedule(String id, JobDetail jobDetail) {
-        Map<String, Object> jobData = Map.of(
-                STATE_FIELD_ID, id,
-                STATE_FIELD_ATTEMPTS, 0L,
-                STATE_FIELD_SUBMITTED_AT, ZonedDateTime.now(ZoneOffset.UTC));
-        JobDataMap jobDataMap = new JobDataMap(jobData);
-
+    protected void doSchedule(String id, JobDetail jobDetail) {
         try {
             TriggerKey key = new TriggerKey(id, MANAGED_RESOURCES_GROUP);
             if (Objects.nonNull(quartz.getTrigger(key))) {
                 LOGGER.info(String.format("Work already exists for '%s'. Skipping.", id));
             }
 
+            // We have to store the serialised JobData due to limitations in Quarkus. See WorkManager for details.
             Trigger trigger = TriggerBuilder.newTrigger()
                     .forJob(jobDetail)
                     .withIdentity(key)
-                    .usingJobData(jobDataMap)
+                    .usingJobData(STATE_FIELD_ID, id)
+                    .usingJobData(STATE_FIELD_ATTEMPTS, String.valueOf(0))
+                    .usingJobData(STATE_FIELD_SUBMITTED_AT, ZonedDateTime.now(ZoneOffset.UTC).toString())
                     .startNow()
                     .build();
             quartz.scheduleJob(trigger);
@@ -89,7 +84,5 @@ public class WorkManagerImpl implements WorkManager {
         } catch (SchedulerException e) {
             LOGGER.info(String.format("Unable to schedule work for '%s'", id), e);
         }
-
-        return jobDataMap;
     }
 }

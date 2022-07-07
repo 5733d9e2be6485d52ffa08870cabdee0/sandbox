@@ -37,8 +37,8 @@ class WorkerTestUtils {
     static JobExecutionContext makeJobExecutionContext(String id, long attempts, ZonedDateTime submittedAt) {
         JobDataMap data = new JobDataMap();
         data.put(STATE_FIELD_ID, id);
-        data.put(STATE_FIELD_ATTEMPTS, attempts);
-        data.put(STATE_FIELD_SUBMITTED_AT, submittedAt);
+        data.put(STATE_FIELD_ATTEMPTS, String.valueOf(attempts));
+        data.put(STATE_FIELD_SUBMITTED_AT, submittedAt.toString());
 
         JobExecutionContext context = mock(JobExecutionContext.class);
         Trigger trigger = mock(Trigger.class);

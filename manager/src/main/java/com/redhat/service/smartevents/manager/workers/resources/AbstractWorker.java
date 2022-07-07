@@ -152,7 +152,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Job, 
 
     protected boolean isTimeoutExceeded(JobExecutionContext context, ManagedResource managedResource) {
         JobDataMap data = context.getTrigger().getJobDataMap();
-        ZonedDateTime submittedAt = (ZonedDateTime) data.get(STATE_FIELD_SUBMITTED_AT);
+        // We have to store the serialised form due to limitations in Quarkus. See WorkManager for details.
+        String serialisedSubmittedAt = data.getString(STATE_FIELD_SUBMITTED_AT);
+        ZonedDateTime submittedAt = ZonedDateTime.parse(serialisedSubmittedAt);
         boolean isTimeoutExceeded = ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(timeoutSeconds).isAfter(submittedAt);
         if (isTimeoutExceeded) {
             LOGGER.error(
@@ -182,7 +184,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Job, 
     protected void recordAttemptAndReschedule(JobExecutionContext context) {
         JobDataMap data = context.getTrigger().getJobDataMap();
         long attempts = data.getLong(STATE_FIELD_ATTEMPTS);
-        data.put(STATE_FIELD_ATTEMPTS, attempts + 1);
+        data.put(STATE_FIELD_ATTEMPTS, String.valueOf(attempts + 1));
 
         reschedule(context);
     }
