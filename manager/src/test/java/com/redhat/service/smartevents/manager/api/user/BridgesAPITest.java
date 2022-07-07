@@ -362,12 +362,12 @@ public class BridgesAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
-                              bridgeResponse.getName(),
-                              bridgeResponse.getEndpoint(),
-                              DEFAULT_CUSTOMER_ID,
-                              DEFAULT_USER_NAME,
-                              READY,
-                              new KafkaConnectionDTO()));
+                        bridgeResponse.getName(),
+                        bridgeResponse.getEndpoint(),
+                        DEFAULT_CUSTOMER_ID,
+                        DEFAULT_USER_NAME,
+                        READY,
+                        new KafkaConnectionDTO()));
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 
