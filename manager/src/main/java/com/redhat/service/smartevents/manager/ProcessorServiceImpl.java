@@ -44,6 +44,8 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
+import static com.redhat.service.smartevents.manager.SecretsService.mergeDefinitions;
+
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
 
@@ -133,13 +135,13 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setShardId(shardService.getAssignedShard(newProcessor.getId()).getId());
         newProcessor.setGeneration(generation);
         newProcessor.setOwner(owner);
+        newProcessor.setHasSecrets(false);
 
         ProcessorDefinition definition = processorRequestToDefinition(processorRequest, processorType, newProcessor.getId(), bridgeId, customerId);
+        newProcessor.setDefinition(definition);
 
-        ProcessorDefinition maskedDefinition = secretsService.maskProcessorDefinition(newProcessor.getId(), definition);
-
-        newProcessor.setDefinition(maskedDefinition);
-        newProcessor.setHasSecret(!maskedDefinition.equals(definition));
+        // this updates the processor "definition" and "hasSecrets" fields if required
+        secretsService.maskProcessor(newProcessor);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
@@ -228,8 +230,8 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorId,
                     customerId));
         }
-        ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
 
+        ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
         Action existingAction = existingDefinition.getRequestedAction();
         Source existingSource = existingDefinition.getRequestedSource();
         Action existingResolvedAction = existingDefinition.getResolvedAction();
@@ -249,10 +251,9 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
 
+        ProcessorDefinition unmaskedExistingDefinition = secretsService.getUnmaskedProcessorDefinition(existingProcessor);
         ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
-
-        ProcessorDefinition unmaskedExistingDefinition = secretsService.unmaskProcessorDefinition(existingProcessor.getId(), existingDefinition, null);
-        ProcessorDefinition unmaskedRequestedDefinition = secretsService.unmaskProcessorDefinition(existingProcessor.getId(), existingDefinition, requestedDefinition);
+        ProcessorDefinition unmaskedRequestedDefinition = mergeDefinitions(unmaskedExistingDefinition, requestedDefinition);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -273,10 +274,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDefinition(unmaskedRequestedDefinition);
         existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
 
-        ProcessorDefinition maskedDefinition = secretsService.maskProcessorDefinition(existingProcessor.getId(), unmaskedRequestedDefinition);
-
-        existingProcessor.setDefinition(maskedDefinition);
-        existingProcessor.setHasSecret(!maskedDefinition.equals(unmaskedRequestedDefinition));
+        // this updates the processor "definition" and "hasSecrets" fields if required
+        secretsService.maskProcessor(existingProcessor);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -376,17 +375,11 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Override
     public ProcessorDTO toDTO(Processor processor) {
-        // unmask if processor has secret to pass real values to shard operator
-        if (processor.hasSecret()) {
-            ProcessorDefinition unmaskedDefinition = secretsService.unmaskProcessorDefinition(processor.getId(), processor.getDefinition(), null);
-            processor.setDefinition(unmaskedDefinition);
-        }
-
         ProcessorDTO dto = new ProcessorDTO();
         dto.setType(processor.getType());
         dto.setId(processor.getId());
         dto.setName(processor.getName());
-        dto.setDefinition(processor.getDefinition());
+        dto.setDefinition(secretsService.getUnmaskedProcessorDefinition(processor));
         dto.setBridgeId(processor.getBridge().getId());
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setOwner(processor.getOwner());

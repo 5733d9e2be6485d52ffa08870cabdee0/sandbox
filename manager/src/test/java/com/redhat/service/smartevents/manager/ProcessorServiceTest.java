@@ -67,7 +67,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
-import static com.redhat.service.smartevents.manager.SecretsServiceImpl.emptyObjectNode;
+import static com.redhat.service.smartevents.manager.SecretsService.emptyObjectNode;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;

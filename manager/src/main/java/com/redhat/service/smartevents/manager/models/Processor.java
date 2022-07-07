@@ -106,8 +106,8 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
     @Column(name = "owner")
     private String owner;
 
-    @Column(name = "has_secret")
-    private boolean hasSecret;
+    @Column(name = "has_secrets")
+    private boolean hasSecrets;
 
     public ProcessorType getType() {
         return type;
@@ -149,12 +149,12 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
         this.owner = owner;
     }
 
-    public boolean hasSecret() {
-        return hasSecret;
+    public boolean hasSecrets() {
+        return hasSecrets;
     }
 
-    public void setHasSecret(boolean hasSecret) {
-        this.hasSecret = hasSecret;
+    public void setHasSecrets(boolean hasSecret) {
+        this.hasSecrets = hasSecret;
     }
 
     /*
