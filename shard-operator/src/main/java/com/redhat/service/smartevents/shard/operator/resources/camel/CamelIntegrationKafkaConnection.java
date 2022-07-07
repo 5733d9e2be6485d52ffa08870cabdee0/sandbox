@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CamelIntegrationFrom {
+public class CamelIntegrationKafkaConnection {
 
     String uri;
 
@@ -46,7 +46,7 @@ public class CamelIntegrationFrom {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CamelIntegrationFrom that = (CamelIntegrationFrom) o;
+        CamelIntegrationKafkaConnection that = (CamelIntegrationKafkaConnection) o;
         return Objects.equals(uri, that.uri) && Objects.equals(parameters, that.parameters) && Objects.equals(steps, that.steps);
     }
 

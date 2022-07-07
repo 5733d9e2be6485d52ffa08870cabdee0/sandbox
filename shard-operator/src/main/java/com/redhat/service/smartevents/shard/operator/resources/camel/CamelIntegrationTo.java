@@ -4,16 +4,13 @@ import java.util.Objects;
 
 public class CamelIntegrationTo {
 
-    private String to;
+    CamelIntegrationKafkaConnection to;
 
-    public CamelIntegrationTo() {
-    }
-
-    public String getTo() {
+    public CamelIntegrationKafkaConnection getTo() {
         return to;
     }
 
-    public void setTo(String to) {
+    public void setTo(CamelIntegrationKafkaConnection to) {
         this.to = to;
     }
 
@@ -37,7 +34,7 @@ public class CamelIntegrationTo {
     @Override
     public String toString() {
         return "CamelIntegrationTo{" +
-                "to='" + to + '\'' +
+                "to=" + to +
                 '}';
     }
 }

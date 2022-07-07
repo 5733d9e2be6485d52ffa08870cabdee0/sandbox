@@ -28,7 +28,7 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlow;
-import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFrom;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnection;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationTo;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -152,7 +152,7 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationFlow flow = camelIntegrationFlows.get(0);
 
-        CamelIntegrationFrom camelIntegrationFrom = flow.getFrom();
+        CamelIntegrationKafkaConnection camelIntegrationFrom = flow.getFrom();
 
         assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
         Map<String, Object> parameters = camelIntegrationFrom.getParameters();
@@ -168,8 +168,19 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationTo camelIntegrationTo = camelIntegrationFrom.getSteps().iterator().next();
 
-        assertThat(camelIntegrationTo.getTo()).isEqualTo("kafka:kafkaOutputTopic");
+        CamelIntegrationKafkaConnection to = camelIntegrationTo.getTo();
+        assertThat(to.getUri()).isEqualTo("kafka:kafkaOutputTopic");
 
+        Map<String, Object> toParameters = to.getParameters();
+
+        assertThat(toParameters.get("brokers")).isEqualTo("mytestkafka:9092");
+        assertThat(toParameters.get("securityProtocol")).isEqualTo("SASL_SSL");
+        assertThat(toParameters.get("saslMechanism")).isEqualTo("PLAIN");
+        assertThat(toParameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+        assertThat(toParameters.get("maxPollRecords")).isEqualTo(5000);
+        assertThat(toParameters.get("consumersCount")).isEqualTo(1);
+        assertThat(toParameters.get("seekTo")).isEqualTo("beginning");
+        assertThat(toParameters.get("groupId")).isEqualTo("kafkaGroup");
     }
 
     private Action createKafkaAction(String name, String topic) {

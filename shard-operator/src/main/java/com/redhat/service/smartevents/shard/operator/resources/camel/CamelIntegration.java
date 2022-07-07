@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -52,7 +54,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         CamelIntegrationFlow camelIntegrationFlow = new CamelIntegrationFlow();
 
-        CamelIntegrationFrom camelIntegrationFrom = new CamelIntegrationFrom();
+        CamelIntegrationKafkaConnection camelIntegrationFrom = new CamelIntegrationKafkaConnection();
 
         camelIntegrationFlow.setFrom(camelIntegrationFrom);
 
@@ -61,17 +63,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         camelIntegrationFrom.setUri(String.format("kafka:%s", topic));
 
-        // TODO CAMEL-POC secrets
-        camelIntegrationFrom.getParameters().put("brokers", bootstrapServers);
-        camelIntegrationFrom.getParameters().put("securityProtocol", "SASL_SSL");
-        camelIntegrationFrom.getParameters().put("saslMechanism", "PLAIN");
-        camelIntegrationFrom.getParameters().put("saslJaasConfig",
-                String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
-                        processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
-        camelIntegrationFrom.getParameters().put("maxPollRecords", 5000);
-        camelIntegrationFrom.getParameters().put("consumersCount", 1);
-        camelIntegrationFrom.getParameters().put("seekTo", "beginning");
-        camelIntegrationFrom.getParameters().put("groupId", "kafkaGroup");
+        camelIntegrationFrom.setParameters(kafkaConnectionsParameter(processorDTO, bootstrapServers));
 
         LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
 
@@ -102,14 +94,34 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         action.ifPresent(a -> {
             String toTopic = a.getParameter("topic");
 
+            CamelIntegrationKafkaConnection to = new CamelIntegrationKafkaConnection();
+            to.setParameters(kafkaConnectionsParameter(processorDTO, bootstrapServers));
+
             String kafkaToURI = String.format("kafka:%s", toTopic);
-            camelIntegrationTo.setTo(kafkaToURI);
+            to.setUri(kafkaToURI);
+            camelIntegrationTo.setTo(to);
             camelIntegrationFrom.getSteps().add(camelIntegrationTo);
         });
 
         LOGGER.info("------ camelIntegration: " + camelIntegration);
 
         return camelIntegration;
+    }
+
+    // TODO CAMEL-POC secrets
+    private static Map<String, Object> kafkaConnectionsParameter(ProcessorDTO processorDTO, String bootstrapServers) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("brokers", bootstrapServers);
+        parameters.put("securityProtocol", "SASL_SSL");
+        parameters.put("saslMechanism", "PLAIN");
+        parameters.put("saslJaasConfig",
+                       String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
+                                     processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
+        parameters.put("maxPollRecords", 5000);
+        parameters.put("consumersCount", 1);
+        parameters.put("seekTo", "beginning");
+        parameters.put("groupId", "kafkaGroup");
+        return parameters;
     }
 
     @Override
