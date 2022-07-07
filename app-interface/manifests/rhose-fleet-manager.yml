@@ -16,7 +16,7 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: 3
+      replicas: 2
       template:
         metadata:
           labels:
