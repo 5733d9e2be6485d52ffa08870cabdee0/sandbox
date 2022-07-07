@@ -181,19 +181,19 @@
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
-    "id": 31,
+    "id": 32,
     "reason": "Unable to deserialize Filter definition.",
     "type": "USER"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidCloudProviderException",
-    "id": 32,
+    "id": 33,
     "reason": "The selected Cloud Provider is not valid.",
     "type": "USER"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException",
-    "id": 33,
+    "id": 34,
     "reason": "The selected Region is not valid.",
     "type": "USER"
   }

@@ -11,9 +11,6 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -27,8 +24,9 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.redhat.service.smartevents.infra.models.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
@@ -86,11 +84,7 @@ public class ProcessorDAOTest {
     private Bridge createBridge() {
         Bridge b = Fixtures.createBridge();
         b.setStatus(ManagedResourceStatus.READY);
-        b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
-        b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setShardId(TestConstants.SHARD_ID);
-        b.setDefinition(new BridgeDefinition());
-
         bridgeDAO.persist(b);
         return b;
     }
