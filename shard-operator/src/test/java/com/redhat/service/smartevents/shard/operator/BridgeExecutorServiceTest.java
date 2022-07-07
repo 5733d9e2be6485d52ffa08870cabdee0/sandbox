@@ -27,7 +27,7 @@ import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurati
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
-import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlows;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlow;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFrom;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationTo;
@@ -148,11 +148,11 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationSpec camelIntegrationSpec = camelIntegration.getSpec();
 
-        CamelIntegrationFlows camelIntegrationFlows = camelIntegrationSpec.getCamelIntegrationFlows();
+        List<CamelIntegrationFlow> camelIntegrationFlows = camelIntegrationSpec.getFlows();
 
-        List<CamelIntegrationFrom> camelIntegrationFromList = camelIntegrationFlows.getCamelIntegrationFrom();
+        CamelIntegrationFlow flow = camelIntegrationFlows.get(0);
 
-        CamelIntegrationFrom camelIntegrationFrom = camelIntegrationFromList.get(0);
+        CamelIntegrationFrom camelIntegrationFrom = flow.getFrom();
 
         assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
         Map<String, Object> parameters = camelIntegrationFrom.getParameters();

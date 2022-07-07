@@ -49,9 +49,11 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         LOGGER.info("------ metadata: " + metadata);
 
-        CamelIntegrationFlows camelIntegrationFlows = new CamelIntegrationFlows();
+        CamelIntegrationFlow camelIntegrationFlow = new CamelIntegrationFlow();
 
         CamelIntegrationFrom camelIntegrationFrom = new CamelIntegrationFrom();
+
+        camelIntegrationFlow.setFrom(camelIntegrationFrom);
 
         String bootstrapServers = processorDTO.getKafkaConnection().getBootstrapServers();
         String topic = processorDTO.getKafkaConnection().getTopic();
@@ -72,11 +74,10 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
 
-        camelIntegrationFlows.setCamelIntegrationFrom(Collections.singletonList(camelIntegrationFrom));
 
         CamelIntegrationSpec camelIntegrationSpec = new CamelIntegrationSpec();
 
-        camelIntegrationSpec.setCamelIntegrationFlows(camelIntegrationFlows);
+        camelIntegrationSpec.setFlows(Collections.singletonList(camelIntegrationFlow));
 
         CamelIntegration camelIntegration = new CamelIntegration();
 

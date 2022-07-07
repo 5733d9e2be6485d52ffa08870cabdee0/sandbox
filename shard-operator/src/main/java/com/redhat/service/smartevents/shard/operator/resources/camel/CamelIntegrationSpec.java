@@ -1,17 +1,18 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
+import java.util.List;
 import java.util.Objects;
 
 public class CamelIntegrationSpec {
 
-    private CamelIntegrationFlows camelIntegrationFlows;
+    private List<CamelIntegrationFlow> flows;
 
-    public CamelIntegrationFlows getCamelIntegrationFlows() {
-        return camelIntegrationFlows;
+    public List<CamelIntegrationFlow> getFlows() {
+        return flows;
     }
 
-    public void setCamelIntegrationFlows(CamelIntegrationFlows camelIntegrationFlows) {
-        this.camelIntegrationFlows = camelIntegrationFlows;
+    public void setFlows(List<CamelIntegrationFlow> flows) {
+        this.flows = flows;
     }
 
     @Override
@@ -23,18 +24,18 @@ public class CamelIntegrationSpec {
             return false;
         }
         CamelIntegrationSpec that = (CamelIntegrationSpec) o;
-        return Objects.equals(camelIntegrationFlows, that.camelIntegrationFlows);
+        return Objects.equals(flows, that.flows);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(camelIntegrationFlows);
+        return Objects.hash(flows);
     }
 
     @Override
     public String toString() {
         return "CamelIntegrationSpec{" +
-                "camelIntegrationFlows=" + camelIntegrationFlows +
+                "flows=" + flows +
                 '}';
     }
 }
