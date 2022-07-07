@@ -34,6 +34,25 @@ shift "$((OPTIND-1))"
 
 if [ "${action_type}" = 'slack' ]; then
   action_payload='{
+   "name": '"\"$action_name\""',
+   "action": {
+      "type": "slack_sink_0.1",
+      "parameters": {
+         "slack_channel": "mc",
+         "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL\""'
+      }
+   },
+  "filters": [
+    {
+      "key": "source",
+      "type": "StringEquals",
+      "value": "StorageService"
+    }
+  ],
+  "transformationTemplate": "{\"test\": \"{data.myMessage}\"}"
+}'
+elif [ "${action_type}" = 'camel' ]; then
+  action_payload='{
   "name": '"\"$action_name\""',
   "action": {
     "name": "mySlackAction",
@@ -119,11 +138,9 @@ else
   exit 1
 fi
 
-echo $action_payload | jq .
 
 printf "\n\nCreating the ${action_type} action with name $action_name\n"
-#PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
-curl -v -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$action_payload" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
 
-# printf "\n\nAction ${action_type} created: $action_name\n"
-# echo "export PROCESSOR_ID=$PROCESSOR_ID"
+printf "\n\nAction ${action_type} created: $action_name\n"
+echo "export PROCESSOR_ID=$PROCESSOR_ID"
