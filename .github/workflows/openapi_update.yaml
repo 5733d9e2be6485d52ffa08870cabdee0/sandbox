@@ -17,6 +17,7 @@ jobs:
           - "redhat-developer/app-services-sdk-js"
           - "redhat-developer/app-services-sdk-java"
     runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - uses: actions/checkout@v2
         
