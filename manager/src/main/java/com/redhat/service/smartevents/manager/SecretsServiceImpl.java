@@ -125,15 +125,18 @@ public class SecretsServiceImpl implements SecretsService {
 
     protected void unmaskProcessorDefinition(ProcessorDefinition definition, Map<String, ObjectNode> secrets) {
         if (definition.getRequestedAction() != null) {
-            ObjectNode newGatewayParams = mergeObjectNodes(definition.getRequestedAction().getParameters(), secrets.get("requestedAction"));
+            ObjectNode currentParams = definition.getRequestedAction().getParameters();
+            ObjectNode newGatewayParams = mergeObjectNodes(currentParams, secrets.get("requestedAction"), false);
             definition.getRequestedAction().setParameters(newGatewayParams);
         }
         if (definition.getRequestedSource() != null) {
-            ObjectNode newGatewayParams = mergeObjectNodes(definition.getRequestedSource().getParameters(), secrets.get("requestedSource"));
+            ObjectNode currentParams = definition.getRequestedSource().getParameters();
+            ObjectNode newGatewayParams = mergeObjectNodes(currentParams, secrets.get("requestedSource"), false);
             definition.getRequestedSource().setParameters(newGatewayParams);
         }
         if (definition.getResolvedAction() != null) {
-            ObjectNode newGatewayParams = mergeObjectNodes(definition.getResolvedAction().getParameters(), secrets.get("resolvedAction"));
+            ObjectNode currentParams = definition.getResolvedAction().getParameters();
+            ObjectNode newGatewayParams = mergeObjectNodes(currentParams, secrets.get("resolvedAction"), false);
             definition.getResolvedAction().setParameters(newGatewayParams);
         }
     }

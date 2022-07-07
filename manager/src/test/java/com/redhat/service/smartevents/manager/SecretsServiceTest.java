@@ -24,6 +24,7 @@ class SecretsServiceTest {
 
     private static final String TEST_ENDPOINT = "http://example.com/webhook";
     private static final String TEST_USERNAME = "myusername";
+    private static final String TEST_NEW_USERNAME = "mynewusername";
     private static final String TEST_PASSWORD = "mypassword";
 
     private static final String TEST_CHANNEL = "mychannel";
@@ -73,19 +74,74 @@ class SecretsServiceTest {
     }
 
     @Test
-    void testMergeValues() {
-        ObjectNode parameters = new ObjectNode(JsonNodeFactory.instance, Map.of(
+    void testMergeObjectNodes() {
+        ObjectNode existingNode = new ObjectNode(JsonNodeFactory.instance, Map.of(
                 WebhookAction.ENDPOINT_PARAM, new TextNode(TEST_ENDPOINT),
                 WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_USERNAME),
                 WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode()));
 
-        ObjectNode secrets = emptyObjectNode();
-        secrets.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD));
+        ObjectNode newNode = emptyObjectNode();
+        newNode.set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_NEW_USERNAME));
+        newNode.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD));
 
-        ObjectNode merged = SecretsService.mergeObjectNodes(parameters, secrets);
+        ObjectNode merged = SecretsService.mergeObjectNodes(existingNode, newNode, false);
 
         assertThat(merged.get(WebhookAction.ENDPOINT_PARAM)).isEqualTo(new TextNode(TEST_ENDPOINT));
-        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_USERNAME));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_NEW_USERNAME));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
+    }
+
+    @Test
+    void testMergeObjectNodesWithSecretUnchanged() {
+        ObjectNode existingNode = new ObjectNode(JsonNodeFactory.instance, Map.of(
+                WebhookAction.ENDPOINT_PARAM, new TextNode(TEST_ENDPOINT),
+                WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_USERNAME),
+                WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD)));
+
+        ObjectNode newNode = emptyObjectNode();
+        newNode.set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_NEW_USERNAME));
+        newNode.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode());
+
+        ObjectNode merged = SecretsService.mergeObjectNodes(existingNode, newNode, false);
+
+        assertThat(merged.get(WebhookAction.ENDPOINT_PARAM)).isEqualTo(new TextNode(TEST_ENDPOINT));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_NEW_USERNAME));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
+    }
+
+    @Test
+    void testMergeObjectNodesWithDeleteMissingExisting() {
+        ObjectNode existingNode = new ObjectNode(JsonNodeFactory.instance, Map.of(
+                WebhookAction.ENDPOINT_PARAM, new TextNode(TEST_ENDPOINT),
+                WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_USERNAME),
+                WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode()));
+
+        ObjectNode newNode = emptyObjectNode();
+        newNode.set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_NEW_USERNAME));
+        newNode.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD));
+
+        ObjectNode merged = SecretsService.mergeObjectNodes(existingNode, newNode, true);
+
+        assertThat(merged.has(WebhookAction.ENDPOINT_PARAM)).isFalse();
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_NEW_USERNAME));
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
+    }
+
+    @Test
+    void testMergeObjectNodesWithSecretUnchangedAndDeleteMissingExisting() {
+        ObjectNode existingNode = new ObjectNode(JsonNodeFactory.instance, Map.of(
+                WebhookAction.ENDPOINT_PARAM, new TextNode(TEST_ENDPOINT),
+                WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_USERNAME),
+                WebhookAction.BASIC_AUTH_PASSWORD_PARAM, new TextNode(TEST_PASSWORD)));
+
+        ObjectNode newNode = emptyObjectNode();
+        newNode.set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode(TEST_NEW_USERNAME));
+        newNode.set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode());
+
+        ObjectNode merged = SecretsService.mergeObjectNodes(existingNode, newNode, true);
+
+        assertThat(merged.has(WebhookAction.ENDPOINT_PARAM)).isFalse();
+        assertThat(merged.get(WebhookAction.BASIC_AUTH_USERNAME_PARAM)).isEqualTo(new TextNode(TEST_NEW_USERNAME));
         assertThat(merged.get(WebhookAction.BASIC_AUTH_PASSWORD_PARAM)).isEqualTo(new TextNode(TEST_PASSWORD));
     }
 
