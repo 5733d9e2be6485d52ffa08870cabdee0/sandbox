@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +27,14 @@ import com.redhat.service.smartevents.manager.api.models.responses.BridgeRespons
 import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.manager.utils.SimpleTestVaultServiceImpl;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
@@ -81,6 +85,11 @@ public class ShardBridgesSyncAPITest {
 
     @InjectMock
     RhoasService rhoasServiceMock;
+
+    @BeforeAll
+    public static void setup() {
+        QuarkusMock.installMockForType(new SimpleTestVaultServiceImpl(), VaultService.class);
+    }
 
     @BeforeEach
     public void cleanUp() {

@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,10 +32,13 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.utils.SimpleTestVaultServiceImpl;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
@@ -86,6 +90,11 @@ public class BridgesAPITest {
     // Effectively disable Work scheduling and execution without disabling Quarkus's Quartz.
     // Disabling Quarkus's Quartz leads to CDI injection issues as the Scheduler is not available.
     WorkManager workManager;
+
+    @BeforeAll
+    public static void setup() {
+        QuarkusMock.installMockForType(new SimpleTestVaultServiceImpl(), VaultService.class);
+    }
 
     @BeforeEach
     public void cleanUp() {

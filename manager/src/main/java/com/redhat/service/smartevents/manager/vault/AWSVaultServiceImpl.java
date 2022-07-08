@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.VaultException;
 import com.redhat.service.smartevents.infra.models.EventBridgeSecret;
 
+import io.quarkus.arc.DefaultBean;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.impl.LRUCache;
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.secretsmanager.model.ResourceExistsExcept
 import software.amazon.awssdk.services.secretsmanager.model.ResourceNotFoundException;
 
 @ApplicationScoped
+@DefaultBean
 public class AWSVaultServiceImpl implements VaultService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AWSVaultServiceImpl.class);
