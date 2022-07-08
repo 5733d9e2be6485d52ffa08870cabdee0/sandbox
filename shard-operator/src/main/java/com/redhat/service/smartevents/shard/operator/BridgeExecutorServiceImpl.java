@@ -22,6 +22,8 @@ import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurati
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -78,7 +80,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 .withName(BridgeExecutor.resolveResourceName(processorDTO.getId()))
                 .get();
 
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+        if (createOrReplace(expected, existing)) {
             BridgeExecutor bridgeExecutor = kubernetesClient
                     .resources(BridgeExecutor.class)
                     .inNamespace(namespace.getMetadata().getName())
@@ -87,6 +89,21 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         }
+    }
+
+    private boolean createOrReplace(BridgeExecutor expected, BridgeExecutor existing) {
+        // Does not exist. Create it.
+        if (existing == null) {
+            return true;
+        }
+        // Does exist, but it has already entered the Kubernetes reconciliation loop. Don't update it.
+        if (existing.getStatus()
+                .getConditionByType(ConditionTypeConstants.READY)
+                .filter(c -> c.getStatus() == ConditionStatus.False).isPresent()) {
+            return false;
+        }
+        // Specs differ. Update it.
+        return !expected.getSpec().equals(existing.getSpec());
     }
 
     @Override

@@ -19,6 +19,8 @@ import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvi
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -63,7 +65,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
                 .withName(BridgeIngress.resolveResourceName(bridgeDTO.getId()))
                 .get();
 
-        if (existing == null || !expected.getSpec().equals(existing.getSpec())) {
+        if (createOrReplace(expected, existing)) {
             BridgeIngress bridgeIngress = kubernetesClient
                     .resources(BridgeIngress.class)
                     .inNamespace(namespace.getMetadata().getName())
@@ -72,6 +74,21 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             // create or update the secrets for the bridgeIngress
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         }
+    }
+
+    private boolean createOrReplace(BridgeIngress expected, BridgeIngress existing) {
+        // Does not exist. Create it.
+        if (existing == null) {
+            return true;
+        }
+        // Does exist, but it has already entered the Kubernetes reconciliation loop. Don't update it.
+        if (existing.getStatus()
+                .getConditionByType(ConditionTypeConstants.READY)
+                .filter(c -> c.getStatus() == ConditionStatus.False).isPresent()) {
+            return false;
+        }
+        // Specs differ. Update it.
+        return !expected.getSpec().equals(existing.getSpec());
     }
 
     @Override

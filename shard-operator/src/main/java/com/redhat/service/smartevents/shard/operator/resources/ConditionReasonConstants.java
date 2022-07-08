@@ -19,5 +19,6 @@ public class ConditionReasonConstants {
     public static final String NETWORK_RESOURCE_NOT_READY = "NetworkResourceNotReady";
     public static final String KNATIVE_BROKER_NOT_READY = "KnativeBrokerNotReady";
     public static final String PROMETHEUS_UNAVAILABLE = "PrometheusUnavailable";
+    public static final String RECONCILIATION_PROGRESSING = "ReconciliationProgressing";
     public static final String SECRETS_NOT_FOUND = "SecretsNotFound";
 }

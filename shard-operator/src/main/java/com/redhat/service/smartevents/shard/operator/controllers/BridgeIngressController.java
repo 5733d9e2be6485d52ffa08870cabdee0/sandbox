@@ -19,7 +19,9 @@ import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -75,12 +77,33 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Override
     public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
-        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+
+        BridgeIngressStatus status = bridgeIngress.getStatus();
+        status.getConditions().forEach(c -> LOGGER.debug("BridgeIngress '{}' in namespace '{}' condition: {}:{}:{}",
+                bridgeIngress.getMetadata().getName(),
+                bridgeIngress.getMetadata().getNamespace(),
+                c.getType(),
+                c.getStatus(),
+                c.getReason()));
+
+        // Mark CRD as being reconciled
+        if (bridgeIngress.getStatus()
+                .getConditionByType(ConditionTypeConstants.READY)
+                .filter(c -> c.getStatus() != ConditionStatus.False)
+                .isPresent()) {
+            LOGGER.info("Marking BridgeIngress '{}' in namespace '{}' as augmenting reconciliation.",
+                    bridgeIngress.getMetadata().getName(),
+                    bridgeIngress.getMetadata().getNamespace());
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.RECONCILIATION_PROGRESSING);
+            return UpdateControl.updateStatus(bridgeIngress);
+        }
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
         if (secret == null) {
-            LOGGER.debug("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
+            LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
             return UpdateControl.noUpdate();
         }
 
@@ -106,14 +129,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
 
         if (!networkResource.isReady()) {
-            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
             bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
-        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());

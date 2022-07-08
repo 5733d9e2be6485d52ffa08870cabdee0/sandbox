@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
@@ -77,6 +78,18 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @Override
     public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context context) {
         LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+
+        // Mark CRD as being reconciled
+        LOGGER.debug("=================> RECONCILING");
+        BridgeExecutorStatus status = bridgeExecutor.getStatus();
+        status.getConditions().forEach(c -> LOGGER.debug("-----> {}:{}:{}", c.getType(), c.getStatus(), c.getReason()));
+        LOGGER.debug("===============================");
+
+        if (bridgeExecutor.getStatus().isReady()) {
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.RECONCILIATION_PROGRESSING);
+            return UpdateControl.updateStatus(bridgeExecutor);
+        }
 
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 

@@ -71,9 +71,21 @@ public class BridgeIngressControllerTest {
         deployBridgeIngressSecret(bridgeIngress);
 
         // When
-        UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
+        UpdateControl<BridgeIngress> updateControl1 = bridgeIngressController.reconcile(bridgeIngress, null);
 
-        // Then
+        // Then (First reconciliation marks the CRD as being reconciled)
+        assertUpdateControl(bridgeIngress, updateControl1, ConditionReasonConstants.RECONCILIATION_PROGRESSING);
+
+        // When
+        UpdateControl<BridgeIngress> updateControl2 = bridgeIngressController.reconcile(bridgeIngress, null);
+
+        // Then (Second reconciliation performs updates)
+        assertUpdateControl(bridgeIngress, updateControl2, ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
+    }
+
+    private void assertUpdateControl(BridgeIngress bridgeIngress,
+            UpdateControl<BridgeIngress> updateControl,
+            String reason) {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeIngress.getStatus()).isNotNull();
         assertThat(bridgeIngress.getStatus().isReady()).isFalse();
@@ -82,8 +94,9 @@ public class BridgeIngressControllerTest {
         });
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
-            assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
+            assertThat(c.getReason()).isEqualTo(reason);
         });
+
     }
 
     @Test

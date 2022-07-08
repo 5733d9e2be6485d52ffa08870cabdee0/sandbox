@@ -80,8 +80,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         String firstBridgeName = BridgeIngress.resolveResourceName(bridge1.getId());
         String secondBridgeName = BridgeIngress.resolveResourceName(bridge2.getId());
         Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
-                .pollInterval(Duration.ofSeconds(5))
+                .atMost(Duration.ofMinutes(5))
+                .pollInterval(Duration.ofSeconds(10))
                 .untilAsserted(
                         () -> {
                             kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);

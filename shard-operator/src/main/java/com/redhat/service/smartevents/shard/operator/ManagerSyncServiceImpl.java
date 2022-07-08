@@ -81,6 +81,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
+                    if (y.getStatus().equals(ManagedResourceStatus.PROVISIONING)) { // Bridges that were being provisioned (before the Operator failed).
+                        return Uni.createFrom().voidItem().invoke(() -> createBridgeIngress(y));
+                    }
+                    if (y.getStatus().equals(ManagedResourceStatus.DELETING)) { // Bridges that were being deleted (before the Operator failed).
+                        return Uni.createFrom().voidItem().invoke(() -> deleteBridgeIngress(y));
+                    }
                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                     return Uni.createFrom().voidItem();
                 }).collect(Collectors.toList())));
@@ -108,6 +114,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                             deleteBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
+                    }
+                    if (y.getStatus().equals(ManagedResourceStatus.PROVISIONING)) { // Processors that were being provisioned (before the Operator failed).
+                        return Uni.createFrom().voidItem().invoke(() -> createBridgeExecutor(y));
+                    }
+                    if (y.getStatus().equals(ManagedResourceStatus.DELETING)) { // Processors that were being deleted (before the Operator failed).
+                        return Uni.createFrom().voidItem().invoke(() -> deleteBridgeExecutor(y));
                     }
                     return Uni.createFrom().voidItem();
                 }).collect(Collectors.toList())));
