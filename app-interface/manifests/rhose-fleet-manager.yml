@@ -28,19 +28,19 @@ objects:
                 - podAffinityTerm:
                     labelSelector:
                       matchExpressions:
-                      - key: app
-                        operator: In
-                        values:
-                        - rhose-fleet-manager
+                        - key: app
+                          operator: In
+                          values:
+                            - rhose-fleet-manager
                     topologyKey: kubernetes.io/hostname
                   weight: 90
                 - podAffinityTerm:
                     labelSelector:
                       matchExpressions:
-                      - key: app
-                        operator: In
-                        values:
-                        - rhose-fleet-manager
+                        - key: app
+                          operator: In
+                          values:
+                            - rhose-fleet-manager
                     topologyKey: topology.kubernetes.io/zone
                   weight: 100
           serviceAccount: registry-rhose-appsre
@@ -199,46 +199,46 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
-                - name: MC_AUTH_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_CLIENT_ID
-                - name: MC_AUTH_OFFLINE_TOKEN
+                      key: MANAGED_CONNECTORS_AUTH_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_OFFLINE_TOKEN
-                - name: MC_AUTH_SERVER_URL
+                      key: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
+                - name: MANAGED_CONNECTORS_AUTH_SERVER_URL
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_SERVER_URL
-                - name: MC_AUTH_TOKEN_PATH
+                      key: MANAGED_CONNECTORS_AUTH_SERVER_URL
+                - name: MANAGED_CONNECTORS_AUTH_TOKEN_PATH
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_TOKEN_PATH
-                - name: MC_CLUSTER_ID
+                      key: MANAGED_CONNECTORS_AUTH_TOKEN_PATH
+                - name: MANAGED_CONNECTORS_CLUSTER_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_CLUSTER_ID
-                - name: MC_NAMESPACE_ID
+                      key: MANAGED_CONNECTORS_CLUSTER_ID
+                - name: MANAGED_CONNECTORS_NAMESPACE_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_NAMESPACE_ID
-                - name: MC_SERVICES_URL
+                      key: MANAGED_CONNECTORS_NAMESPACE_ID
+                - name: MANAGED_CONNECTORS_SERVICES_URL
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_SERVICES_URL
-                - name: MC_TOPIC_NAME
+                      key: MANAGED_CONNECTORS_SERVICES_URL
+                - name: MANAGED_CONNECTORS_TOPIC_NAME
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_TOPIC_NAME
+                      key: MANAGED_CONNECTORS_TOPIC_NAME
                 - name: QUARKUS_LOG_LEVEL
                   value: ${QUARKUS_LOG_LEVEL}
                 - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
@@ -266,12 +266,12 @@ objects:
                 initialDelaySeconds: 10
                 periodSeconds: 10
               volumeMounts:
-              - name: rds
-                mountPath: /secrets/rds
+                - name: rds
+                  mountPath: /secrets/rds
           volumes:
-          - name: rds
-            secret:
-              secretName: ${RDS_SECRET_NAME}
+            - name: rds
+              secret:
+                secretName: ${RDS_SECRET_NAME}
   - apiVersion: v1
     kind: Service
     metadata:
@@ -298,7 +298,7 @@ parameters:
     description: the fleet-manager image name
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
-    description: the fleet-manager image tag 
+    description: the fleet-manager image tag
   - name: FLEET_MANAGER_LIMITS_CPU
     value: "2"
     description: the fleet-manager cpu limit
