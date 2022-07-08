@@ -96,8 +96,11 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
+        return Objects.equals(filters, that.filters)
+                && Objects.equals(transformationTemplate, that.transformationTemplate)
+                && Objects.equals(requestedAction, that.requestedAction)
+                && Objects.equals(requestedSource, that.requestedSource)
+                && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
