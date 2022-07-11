@@ -126,28 +126,38 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
-        Action resolvedAction = processorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+        ProcessorDefinition definition;
 
         List<Action> multipleResolvedActions = new ArrayList<>();
-        if (processorRequest.getActions() != null) {
+        if (processorRequest.getActions() != null) { // Camel Processing
             for (Action a : processorRequest.getActions()) {
-                System.out.printf("+++++ multiple actions: %s type: %s%n", a.getName(), a.getType());
+                LOGGER.info("+++++ Resolving multiple actions: {} type: {} parameters: {}", a.getName(), a.getType(), a.getParameters());
                 Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());
+                LOGGER.info("+++++ Resolved action: {} type {}", rAction.getType(), rAction.getParameters());
                 multipleResolvedActions.add(rAction);
             }
+
+            LOGGER.info("+++++ multiple resolved actions of size: {}", multipleResolvedActions.size());
+
+            definition = processorType == ProcessorType.SOURCE
+                    ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), null)
+                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), null,
+                            processorRequest.getProcessing(),
+                            multipleResolvedActions);
+        } else { // NON-camel processing
+
+            Action resolvedAction = processorType == ProcessorType.SOURCE
+                    ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                    : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+
+            definition = processorType == ProcessorType.SOURCE
+                    ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
+                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
+                            processorRequest.getProcessing(),
+                            multipleResolvedActions);
         }
 
-        System.out.printf("+++++ multiple resolved actions of size: %d%n", multipleResolvedActions.size());
-
-        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
-                        processorRequest.getProcessing(),
-                        multipleResolvedActions);
-
-        System.out.println("+++++  definition: " + definition);
+        LOGGER.info("+++++  Processor definition: {} ", definition);
 
         newProcessor.setDefinition(definition);
 
@@ -388,7 +398,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             case ERROR_HANDLER:
                 return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
             case SOURCE:
-                return resourceNamesProvider.getProcessorTopicName(processor.getId());
+                return resourceNamesProvider.getProcessorTopicName(processor.getId(), "");
             default:
                 return resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
         }

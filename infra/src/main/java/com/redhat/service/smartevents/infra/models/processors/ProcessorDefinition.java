@@ -54,11 +54,10 @@ public class ProcessorDefinition {
     }
 
     public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate,
-                               Action requestedAction,
-                               Action resolvedAction,
-                               Processing processing,
-                               List<Action> multipleActions
-    ) {
+            Action requestedAction,
+            Action resolvedAction,
+            Processing processing,
+            List<Action> multipleActions) {
         this(filters, transformationTemplate, requestedAction, resolvedAction);
         this.processing = processing;
         this.multipleActions = multipleActions;
@@ -129,7 +128,9 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(multipleActions, that.multipleActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction) && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction) && Objects.equals(processing, that.processing);
+        return Objects.equals(multipleActions, that.multipleActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate)
+                && Objects.equals(requestedAction, that.requestedAction) && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction)
+                && Objects.equals(processing, that.processing);
     }
 
     @Override

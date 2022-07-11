@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.connectors;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -36,6 +38,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,6 +82,22 @@ class ConnectorsServiceTest {
         verify(connectorsDAOMock).persist(captor.capture());
         ConnectorEntity entity = captor.getValue();
         assertThat(entity.getConnectorTypeId()).isEqualTo(expectedConnectorTypeId);
+    }
+
+    @Transactional
+    @Test
+    void doCreateMultipleConnector() {
+        Action action1 = slackAction("slackAction1");
+        Action action2 = slackAction("slackAction2");
+        Processor processor = processorWithMultipleActions(action1, action2);
+
+        connectorsService.createConnectorEntity(processor);
+
+        ArgumentCaptor<ConnectorEntity> captor = ArgumentCaptor.forClass(ConnectorEntity.class);
+        verify(connectorsDAOMock, times(2)).persist(captor.capture());
+
+        List<ConnectorEntity> entities = captor.getAllValues();
+        assertThat(entities).map(ConnectorEntity::getConnectorTypeId).containsExactlyInAnyOrder(SlackAction.TYPE, SlackAction.TYPE);
     }
 
     @Test
@@ -134,7 +153,7 @@ class ConnectorsServiceTest {
 
     private static Stream<Arguments> connectorProcessors() {
         Object[][] arguments = {
-                { processorWith(slackAction()), SlackAction.TYPE },
+                { processorWith(slackAction("actionName")), SlackAction.TYPE },
                 { processorWith(slackSource()), SlackSource.TYPE }
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -169,8 +188,24 @@ class ConnectorsServiceTest {
         return processor;
     }
 
-    private static Action slackAction() {
+    private static Processor processorWithMultipleActions(Action... actions) {
+        Processor processor = new Processor();
+        processor.setBridge(new Bridge());
+
+        ProcessorDefinition processorDefinition = new ProcessorDefinition();
+        processor.setType(ProcessorType.SINK);
+
+        processorDefinition.setMultipleActions(Arrays.asList(actions));
+
+        processor.setId(TEST_PROCESSOR_ID);
+        processor.setName(TEST_PROCESSOR_NAME);
+        processor.setDefinition(processorDefinition);
+        return processor;
+    }
+
+    private static Action slackAction(String actionName) {
         Action action = new Action();
+        action.setName(actionName);
         action.setType(SlackAction.TYPE);
         action.setMapParameters(Map.of(
                 SlackAction.CHANNEL_PARAM, TEST_ACTION_CHANNEL,

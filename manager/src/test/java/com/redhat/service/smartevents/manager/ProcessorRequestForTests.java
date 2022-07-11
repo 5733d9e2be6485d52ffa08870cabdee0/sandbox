@@ -48,4 +48,8 @@ public class ProcessorRequestForTests extends ProcessorRequest {
         this.source = source;
     }
 
+    public void setActions(Set<Action> actions) {
+        this.actions = actions;
+    }
+
 }

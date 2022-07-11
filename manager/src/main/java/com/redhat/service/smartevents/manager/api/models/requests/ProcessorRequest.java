@@ -75,6 +75,9 @@ public class ProcessorRequest {
         if (getAction() != null) {
             return ProcessorType.SINK;
         }
+        if (hasActions()) {
+            return ProcessorType.SINK;
+        }
         throw new IllegalStateException("ProcessorRequest with unknown type");
     }
 
@@ -104,6 +107,10 @@ public class ProcessorRequest {
 
     public Set<Action> getActions() {
         return actions;
+    }
+
+    public boolean hasActions() {
+        return actions != null && actions.size() > 0;
     }
 
     @JsonIgnore

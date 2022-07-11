@@ -202,7 +202,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                             .inNamespace(namespace)
                             .delete(expectedIntegrationFromDTO);
 
-            if(camelIntegrationDeleted) {
+            if (camelIntegrationDeleted) {
                 LOGGER.info("------ Deleted");
             } else {
                 LOGGER.info("------ NOT Deleted");

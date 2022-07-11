@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.connectors;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -56,7 +57,15 @@ public class ConnectorsServiceImpl implements ConnectorsService {
                 break;
 
             case SINK:
-                createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+                List<Action> multipleActions = processor.getDefinition().getMultipleActions();
+                if (multipleActions != null && multipleActions.size() > 0) { // Camel processing, multiple actions
+                    LOGGER.info("++++++ Multiple actions found creating connector entity for processor {}  ", processor);
+                    for (Action a : multipleActions) {
+                        createConnectorEntity(processor, a);
+                    }
+                } else {
+                    createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
+                }
                 break;
 
             default:
@@ -66,13 +75,18 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     private void createConnectorEntity(Processor processor, Action action) {
+        LOGGER.info("++++++ Creating connector entity for {}  ", action);
         if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
             return;
         }
-        String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
+        String actionName = action.getName();
+        String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId(), actionName);
+        LOGGER.info("++++++ Topic name {}  ", topicName);
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
 
-        persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), gatewayConnector.connectorPayload(action, topicName, errorHandlerTopicName));
+        JsonNode connectorPayload = gatewayConnector.connectorPayload(action, topicName, errorHandlerTopicName);
+
+        persistConnectorEntity(processor, topicName, ConnectorType.SINK, action.getType(), connectorPayload, actionName);
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
@@ -81,13 +95,22 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
             return;
         }
-        String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId());
+        String actionName = "";
+        String topicName = gatewayConfiguratorService.getConnectorTopicName(processor.getId(), actionName);
         String errorHandlerTopicName = resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
-        persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), gatewayConnector.connectorPayload(source, topicName, errorHandlerTopicName));
+
+        JsonNode connectorPayload = gatewayConnector.connectorPayload(source, topicName, errorHandlerTopicName);
+
+        persistConnectorEntity(processor, topicName, ConnectorType.SOURCE, source.getType(), connectorPayload, actionName);
     }
 
-    private void persistConnectorEntity(Processor processor, String topicName, ConnectorType connectorType, String connectorTypeId, JsonNode connectorPayload) {
-        String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId());
+    private void persistConnectorEntity(Processor processor,
+            String topicName,
+            ConnectorType connectorType,
+            String connectorTypeId,
+            JsonNode connectorPayload,
+            String actionName) {
+        String newConnectorName = resourceNamesProvider.getProcessorConnectorName(processor.getId(), actionName);
 
         ConnectorEntity newConnectorEntity = new ConnectorEntity();
 

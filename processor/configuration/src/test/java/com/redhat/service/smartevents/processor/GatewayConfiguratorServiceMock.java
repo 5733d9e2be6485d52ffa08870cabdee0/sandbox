@@ -11,7 +11,7 @@ public class GatewayConfiguratorServiceMock implements GatewayConfiguratorServic
     }
 
     @Override
-    public String getConnectorTopicName(String processorId) {
+    public String getConnectorTopicName(String processorId, String name) {
         return String.format("mock-%s", processorId);
     }
 

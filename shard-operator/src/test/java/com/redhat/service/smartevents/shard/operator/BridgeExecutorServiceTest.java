@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnectionTo;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +29,7 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlow;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnectionFrom;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnectionTo;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationTo;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -62,7 +62,6 @@ public class BridgeExecutorServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
 
     @Inject
     ObjectMapper objectMapper;
@@ -201,11 +200,11 @@ public class BridgeExecutorServiceTest {
         Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
 
         ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
-                                                                          "",
-                                                                          null,
-                                                                          null,
-                                                                          camelProcessing,
-                                                                          Arrays.asList(resolvedAction1, resolvedAction2));
+                "",
+                null,
+                null,
+                camelProcessing,
+                Arrays.asList(resolvedAction1, resolvedAction2));
 
         return TestSupport.newRequestedProcessorDTO(processorDefinition);
     }
