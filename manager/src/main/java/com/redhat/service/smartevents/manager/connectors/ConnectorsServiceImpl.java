@@ -4,7 +4,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -57,11 +56,11 @@ public class ConnectorsServiceImpl implements ConnectorsService {
                 break;
 
             case SINK:
-                List<Action> multipleActions = processor.getDefinition().getMultipleActions();
-                if (multipleActions != null && multipleActions.size() > 0) { // Camel processing, multiple actions
+                List<Action> requestedActions = processor.getDefinition().getRequestedActions();
+                if (requestedActions != null && requestedActions.size() > 0) { // Camel processing, multiple actions
                     LOGGER.info("++++++ Multiple actions found creating connector entity for processor {}  ", processor);
-                    for (Action a : multipleActions) {
-                        createConnectorEntity(processor, a);
+                    for (Action requestedAction : requestedActions) { // this has to be the requested
+                        createConnectorEntity(processor, requestedAction);
                     }
                 } else {
                     createConnectorEntity(processor, processor.getDefinition().getRequestedAction());
@@ -74,9 +73,12 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private void createConnectorEntity(Processor processor, Action action) {
+    public void createConnectorEntity(Processor processor, Action action) {
         LOGGER.info("++++++ Creating connector entity for {}  ", action);
+
+        LOGGER.info("++++++ Checking if this processor is connector type {}  ", action.getType());
         if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
+            LOGGER.info("++++++ This is not a connector  ");
             return;
         }
         String actionName = action.getName();
@@ -131,7 +133,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for destruction in the same transaction as a Processor
     public void deleteConnectorEntity(Processor processor) {
-        Optional.ofNullable(connectorsDAO.findByProcessorId(processor.getId())).ifPresent(c -> {
+        connectorsDAO.findConnectorsByProcessorId(processor.getId()).forEach(c -> {
             c.setStatus(ManagedResourceStatus.DEPROVISION);
             c.setDependencyStatus(ManagedResourceStatus.DEPROVISION);
         });

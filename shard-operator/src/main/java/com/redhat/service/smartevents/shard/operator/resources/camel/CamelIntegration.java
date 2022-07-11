@@ -90,7 +90,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         LOGGER.info("------ toLabel: " + toLabel);
 
         Optional<Action> action = processorDTO.getDefinition()
-                .getMultipleActions()
+                .getResolvedActions()
                 .stream().filter(n -> {
                     LOGGER.info("------ action name: " + n.getName());
                     return n.getName().equals(toLabel);

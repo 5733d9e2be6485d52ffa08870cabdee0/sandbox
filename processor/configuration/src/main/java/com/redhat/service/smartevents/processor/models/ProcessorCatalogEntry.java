@@ -47,4 +47,14 @@ public class ProcessorCatalogEntry {
     public void setConnector(boolean connector) {
         isConnector = connector;
     }
+
+    @Override
+    public String toString() {
+        return "ProcessorCatalogEntry{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", isConnector=" + isConnector +
+                '}';
+    }
 }

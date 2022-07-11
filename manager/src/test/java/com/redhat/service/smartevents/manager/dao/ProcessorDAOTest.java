@@ -76,7 +76,7 @@ public class ProcessorDAOTest {
                 null,
                 null,
                 null,
-                processing, resolvedActions);
+                processing, resolvedActions, resolvedActions);
 
         Processor processor = createProcessorModel(bridge, name, SINK, processingProcessorDefinition);
         processorDAO.persist(processor);
@@ -469,7 +469,7 @@ public class ProcessorDAOTest {
         JsonNode flow = camelSpec.get("flow");
         assertThat(flow).isNotEmpty();
 
-        List<Action> actions = processor.getDefinition().getMultipleActions();
+        List<Action> actions = processor.getDefinition().getResolvedActions();
 
         assertThat(actions).map(Action::getName).contains("actionName1", "actionName2");
     }

@@ -11,8 +11,11 @@ import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public class ProcessorDefinition {
 
-    @JsonProperty("actions")
-    private List<Action> multipleActions;
+    @JsonProperty("requestedActions")
+    private List<Action> requestedActions;
+
+    @JsonProperty("resolvedActions")
+    private List<Action> resolvedActions;
 
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
@@ -57,10 +60,12 @@ public class ProcessorDefinition {
             Action requestedAction,
             Action resolvedAction,
             Processing processing,
-            List<Action> multipleActions) {
+            List<Action> requestedActions,
+            List<Action> resolvedActions) {
         this(filters, transformationTemplate, requestedAction, resolvedAction);
         this.processing = processing;
-        this.multipleActions = multipleActions;
+        this.requestedActions = requestedActions;
+        this.resolvedActions = resolvedActions;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -111,12 +116,20 @@ public class ProcessorDefinition {
         this.processing = processing;
     }
 
-    public List<Action> getMultipleActions() {
-        return multipleActions;
+    public List<Action> getRequestedActions() {
+        return requestedActions;
     }
 
-    public void setMultipleActions(List<Action> multipleActions) {
-        this.multipleActions = multipleActions;
+    public void setRequestedActions(List<Action> requestedActions) {
+        this.requestedActions = requestedActions;
+    }
+
+    public List<Action> getResolvedActions() {
+        return resolvedActions;
+    }
+
+    public void setResolvedActions(List<Action> resolvedActions) {
+        this.resolvedActions = resolvedActions;
     }
 
     @Override
@@ -128,20 +141,20 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(multipleActions, that.multipleActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate)
+        return Objects.equals(resolvedActions, that.resolvedActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate)
                 && Objects.equals(requestedAction, that.requestedAction) && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction)
                 && Objects.equals(processing, that.processing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(multipleActions, filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
+        return Objects.hash(resolvedActions, filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
     }
 
     @Override
     public String toString() {
         return "ProcessorDefinition{" +
-                "multipleActions=" + multipleActions +
+                "multipleActions=" + resolvedActions +
                 ", filters=" + filters +
                 ", transformationTemplate='" + transformationTemplate + '\'' +
                 ", requestedAction=" + requestedAction +

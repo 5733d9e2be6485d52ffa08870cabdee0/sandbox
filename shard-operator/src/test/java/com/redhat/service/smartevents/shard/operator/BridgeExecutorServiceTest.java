@@ -217,6 +217,7 @@ public class BridgeExecutorServiceTest {
                 null,
                 null,
                 camelProcessing,
+                Arrays.asList(resolvedAction1, resolvedAction2),
                 Arrays.asList(resolvedAction1, resolvedAction2));
 
         return TestSupport.newRequestedProcessorDTO(processorDefinition);

@@ -1,6 +1,6 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
-import java.util.Objects;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -54,7 +54,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         processor = persist(processor);
 
         if (hasZeroConnectors(processor)) {
-            LOGGER.debug(
+            LOGGER.info(
                     "No dependencies required for '{}' [{}]",
                     processor.getName(),
                     processor.getId());
@@ -98,26 +98,25 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     private Processor delegate(Work work, Processor processor) {
         //Get Processor's Connector for which work needs completing
-        final ConnectorEntity connectorEntity = getConnectorEntity(processor);
+        final List<ConnectorEntity> connectorEntities = connectorsDAO.findConnectorsByProcessorId(processor.getId());
 
-        //Delegate to the ConnectorWorker however mimic that the Work originated from the Processor.
-        Work connectorEntityWork = Work.forDependentResource(connectorEntity, work);
-        ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(connectorEntityWork);
-        processor.setDependencyStatus(updatedConnectorEntity.getStatus());
+        for (ConnectorEntity connectorEntity : connectorEntities) {
+            //Delegate to the ConnectorWorker however mimic that the Work originated from the Processor.
+            Work connectorEntityWork = Work.forDependentResource(connectorEntity, work);
+            ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(connectorEntityWork);
+            processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
-        // If the Connector failed we should mark the Processor as failed too
-        if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
-            processor.setStatus(ManagedResourceStatus.FAILED);
+            // If the Connector failed we should mark the Processor as failed too
+            if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
+                processor.setStatus(ManagedResourceStatus.FAILED);
+            }
         }
 
         return persist(processor);
     }
 
     protected boolean hasZeroConnectors(Processor processor) {
-        return Objects.isNull(getConnectorEntity(processor));
+        return connectorsDAO.findConnectorsByProcessorId(processor.getId()).size() == 0;
     }
 
-    protected ConnectorEntity getConnectorEntity(Processor processor) {
-        return connectorsDAO.findByProcessorId(processor.getId());
-    }
 }

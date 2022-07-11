@@ -86,8 +86,7 @@ elif [ "${action_type}" = 'camel' ]; then
           "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""'
         }
       }
-    ],
-    "transformationTemplate": "{\"text\": \"{data.myMessage}\"}"
+    ]
 }'
 elif [ "${action_type}" = 'slack-plain' ]; then
   action_payload='{

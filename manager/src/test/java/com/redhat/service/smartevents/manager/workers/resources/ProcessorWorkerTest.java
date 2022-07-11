@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @QuarkusTest
@@ -133,6 +136,62 @@ public class ProcessorWorkerTest {
         assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
 
         assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+    }
+
+    @Transactional
+    @Test
+    void handleWorkProvisioningWithKnownResourceWithMultipleConnectors() {
+        Bridge bridge = Fixtures.createBridge();
+        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        processor.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity1 = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED, ConnectorType.SINK, "test_sink_0.1", "connector1");
+        ConnectorEntity connectorEntity2 = Fixtures.createConnector(processor, ManagedResourceStatus.ACCEPTED, ConnectorType.SINK, "test_sink_0.1", "connector2");
+
+        connectorEntity1.setStatus(ManagedResourceStatus.ACCEPTED);
+        connectorEntity2.setStatus(ManagedResourceStatus.ACCEPTED);
+
+        bridgeDAO.persist(bridge);
+        processorDAO.persist(processor);
+        connectorsDAO.persist(connectorEntity1);
+        connectorsDAO.persist(connectorEntity2);
+
+        Work work = workManager.schedule(processor);
+
+        doAnswer((i) -> {
+            //Emulate ConnectorWorker completing work
+            connectorEntity1.setStatus(ManagedResourceStatus.READY);
+            return connectorEntity1;
+        }).when(connectorWorker).handleWork(any(Work.class));
+
+        doAnswer((i) -> {
+            //Emulate ConnectorWorker completing work
+            connectorEntity2.setStatus(ManagedResourceStatus.READY);
+            return connectorEntity2;
+        }).when(connectorWorker).handleWork(any(Work.class));
+
+        Processor refreshed = worker.handleWork(work);
+
+        assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+
+        ArgumentCaptor<Work> workArgumentCaptor = ArgumentCaptor.forClass(Work.class);
+        verify(connectorWorker, times(2)).handleWork(workArgumentCaptor.capture());
+
+        List<Work> allValues = workArgumentCaptor.getAllValues();
+
+        for (Work w : allValues) {
+            assertionForSingleWork(w, workArgumentCaptor);
+        }
+    }
+
+    private void assertionForSingleWork(Work work, ArgumentCaptor<Work> workArgumentCaptor) {
+        Work connectorWork = workArgumentCaptor.getValue();
+        assertThat(connectorWork).isNotNull();
+        assertThat(connectorWork.getId()).isEqualTo(work.getId());
+        //        assertThat(connectorWork.getManagedResourceId()).isEqualTo(connectorEntity.getId());
+        assertThat(connectorWork.getSubmittedAt()).isEqualTo(work.getSubmittedAt());
+
+        //        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {

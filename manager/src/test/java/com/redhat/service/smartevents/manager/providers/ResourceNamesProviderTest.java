@@ -37,26 +37,26 @@ class ResourceNamesProviderTest {
             "-notvalid"
     };
 
-//    @ParameterizedTest
-//    @MethodSource("validPrefixes")
-//    void testValidPrefix(String prefix, String expectedValidatedPrefix) {
-//        ResourceNamesProviderImpl resourceNamesProvider = new ResourceNamesProviderImpl();
-//        resourceNamesProvider.resourcePrefix = prefix;
-//        resourceNamesProvider.validate();
-//        assertThat(resourceNamesProvider.validatedResourcePrefix).isEqualTo(expectedValidatedPrefix);
-//
-//        String bridgeTopicName = resourceNamesProvider.getBridgeTopicName(TEST_BRIDGE_ID);
-//        assertIsRFC1035Label(bridgeTopicName);
-//        assertThat(bridgeTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.BRIDGE_SHORTNAME + "-" + TEST_BRIDGE_ID);
-//
-//        String processorConnectorName = resourceNamesProvider.getProcessorConnectorName(TEST_PROCESSOR_ID, ACTION_NAME);
-//        assertIsRFC1035Label(processorConnectorName);
-//        assertThat(processorConnectorName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
-//
-//        String processorTopicName = resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID, ACTION_NAME);
-//        assertIsRFC1035Label(processorTopicName);
-//        assertThat(processorTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
-//    }
+    //    @ParameterizedTest
+    //    @MethodSource("validPrefixes")
+    //    void testValidPrefix(String prefix, String expectedValidatedPrefix) {
+    //        ResourceNamesProviderImpl resourceNamesProvider = new ResourceNamesProviderImpl();
+    //        resourceNamesProvider.resourcePrefix = prefix;
+    //        resourceNamesProvider.validate();
+    //        assertThat(resourceNamesProvider.validatedResourcePrefix).isEqualTo(expectedValidatedPrefix);
+    //
+    //        String bridgeTopicName = resourceNamesProvider.getBridgeTopicName(TEST_BRIDGE_ID);
+    //        assertIsRFC1035Label(bridgeTopicName);
+    //        assertThat(bridgeTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.BRIDGE_SHORTNAME + "-" + TEST_BRIDGE_ID);
+    //
+    //        String processorConnectorName = resourceNamesProvider.getProcessorConnectorName(TEST_PROCESSOR_ID, ACTION_NAME);
+    //        assertIsRFC1035Label(processorConnectorName);
+    //        assertThat(processorConnectorName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
+    //
+    //        String processorTopicName = resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID, ACTION_NAME);
+    //        assertIsRFC1035Label(processorTopicName);
+    //        assertThat(processorTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
+    //    }
 
     private static Stream<Arguments> validPrefixes() {
         return Arrays.stream(VALID_PREFIXES).map(Arguments::of);

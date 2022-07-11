@@ -128,22 +128,26 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorDefinition definition;
 
-        List<Action> multipleResolvedActions = new ArrayList<>();
+        List<Action> requestedActions = new ArrayList<>();
+        List<Action> resolvedActions = new ArrayList<>();
         if (processorRequest.getActions() != null) { // Camel Processing
-            for (Action a : processorRequest.getActions()) {
-                LOGGER.info("+++++ Resolving multiple actions: {} type: {} parameters: {}", a.getName(), a.getType(), a.getParameters());
-                Action rAction = resolveAction(a, customerId, bridge.getId(), newProcessor.getId());
-                LOGGER.info("+++++ Resolved action: {} type {}", rAction.getType(), rAction.getParameters());
-                multipleResolvedActions.add(rAction);
+            for (Action requested : processorRequest.getActions()) {
+                LOGGER.info("+++++ Resolving multiple actions: {} type: {} parameters: {}", requested.getName(), requested.getType(), requested.getParameters());
+                Action resolvedAction = resolveAction(requested, customerId, bridge.getId(), newProcessor.getId());
+                LOGGER.info("+++++ Resolved action: {} type {}", resolvedAction.getType(), resolvedAction.getParameters());
+                requestedActions.add(requested);
+                resolvedActions.add(resolvedAction);
             }
 
-            LOGGER.info("+++++ multiple resolved actions of size: {}", multipleResolvedActions.size());
+            LOGGER.info("+++++ requested actionsof size: {}", requestedActions.size());
+            LOGGER.info("+++++ multiple resolved actions of size: {}", resolvedActions.size());
 
             definition = processorType == ProcessorType.SOURCE
                     ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), null)
-                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), null,
+                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, null, null,
                             processorRequest.getProcessing(),
-                            multipleResolvedActions);
+                            requestedActions,
+                            resolvedActions);
         } else { // NON-camel processing
 
             Action resolvedAction = processorType == ProcessorType.SOURCE
@@ -154,7 +158,7 @@ public class ProcessorServiceImpl implements ProcessorService {
                     ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
                     : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
                             processorRequest.getProcessing(),
-                            multipleResolvedActions);
+                            new ArrayList<>(), new ArrayList<>());
         }
 
         LOGGER.info("+++++  Processor definition: {} ", definition);
@@ -164,6 +168,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
         connectorService.createConnectorEntity(newProcessor);
+        LOGGER.info("+++++  Connector entities created ");
+
         workManager.schedule(newProcessor);
         metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
 
