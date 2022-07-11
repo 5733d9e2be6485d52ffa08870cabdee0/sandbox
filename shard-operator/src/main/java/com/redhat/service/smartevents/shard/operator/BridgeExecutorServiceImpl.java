@@ -94,6 +94,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     private boolean createOrReplace(BridgeExecutor expected, BridgeExecutor existing) {
         // Does not exist. Create it.
         if (existing == null) {
+            LOGGER.info("Existing BridgeExecutor does not exist. Creating a new instance.");
             return true;
         }
         // Does exist, but it has already entered the Kubernetes reconciliation loop. Don't update it.
@@ -102,6 +103,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         if (existing.getStatus()
                 .getConditionByType(ConditionTypeConstants.READY)
                 .filter(c -> c.getStatus() == ConditionStatus.False).isPresent()) {
+            LOGGER.info("Existing BridgeExecutor has been marked as READY:False. Skipping.");
             return false;
         }
         // Specs differ. Update it.

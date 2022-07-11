@@ -79,6 +79,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
     private boolean createOrReplace(BridgeIngress expected, BridgeIngress existing) {
         // Does not exist. Create it.
         if (existing == null) {
+            LOGGER.info("Existing BridgeIngress does not exist. Creating a new instance.");
             return true;
         }
         // Does exist, but it has already entered the Kubernetes reconciliation loop. Don't update it.
@@ -87,6 +88,7 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         if (existing.getStatus()
                 .getConditionByType(ConditionTypeConstants.READY)
                 .filter(c -> c.getStatus() == ConditionStatus.False).isPresent()) {
+            LOGGER.info("Existing BridgeIngress has been marked as READY:False. Skipping.");
             return false;
         }
         // Specs differ. Update it.
