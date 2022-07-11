@@ -6,13 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CamelIntegrationKafkaConnection {
+// Identical to CamelIntegrationKafkaConnectionFrom but without steps fields
+public class CamelIntegrationKafkaConnectionTo {
 
     String uri;
 
     Map<String, Object> parameters = new HashMap<>();
-
-    List<CamelIntegrationTo> steps = new ArrayList<>();
 
     public String getUri() {
         return uri;
@@ -30,14 +29,6 @@ public class CamelIntegrationKafkaConnection {
         this.parameters = parameters;
     }
 
-    public List<CamelIntegrationTo> getSteps() {
-        return steps;
-    }
-
-    public void setSteps(List<CamelIntegrationTo> steps) {
-        this.steps = steps;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -46,21 +37,20 @@ public class CamelIntegrationKafkaConnection {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CamelIntegrationKafkaConnection that = (CamelIntegrationKafkaConnection) o;
-        return Objects.equals(uri, that.uri) && Objects.equals(parameters, that.parameters) && Objects.equals(steps, that.steps);
+        CamelIntegrationKafkaConnectionTo that = (CamelIntegrationKafkaConnectionTo) o;
+        return Objects.equals(uri, that.uri) && Objects.equals(parameters, that.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uri, parameters, steps);
+        return Objects.hash(uri, parameters);
     }
 
     @Override
     public String toString() {
-        return "CamelIntegrationFrom{" +
+        return "CamelIntegrationKafkaConnectionTo{" +
                 "uri='" + uri + '\'' +
                 ", parameters=" + parameters +
-                ", steps=" + steps +
                 '}';
     }
 }

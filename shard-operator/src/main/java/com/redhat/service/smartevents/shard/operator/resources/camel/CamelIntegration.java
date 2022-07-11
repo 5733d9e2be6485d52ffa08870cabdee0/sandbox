@@ -54,7 +54,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         CamelIntegrationFlow camelIntegrationFlow = new CamelIntegrationFlow();
 
-        CamelIntegrationKafkaConnection camelIntegrationFrom = new CamelIntegrationKafkaConnection();
+        CamelIntegrationKafkaConnectionFrom camelIntegrationFrom = new CamelIntegrationKafkaConnectionFrom();
 
         camelIntegrationFlow.setFrom(camelIntegrationFrom);
 
@@ -94,7 +94,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         action.ifPresent(a -> {
             String toTopic = a.getParameter("topic");
 
-            CamelIntegrationKafkaConnection to = new CamelIntegrationKafkaConnection();
+            CamelIntegrationKafkaConnectionTo to = new CamelIntegrationKafkaConnectionTo();
             to.setParameters(kafkaConnectionsParameter(processorDTO, bootstrapServers));
 
             String kafkaToURI = String.format("kafka:%s", toTopic);
@@ -115,8 +115,8 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         parameters.put("securityProtocol", "SASL_SSL");
         parameters.put("saslMechanism", "PLAIN");
         parameters.put("saslJaasConfig",
-                       String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
-                                     processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
+                String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
+                        processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
         parameters.put("maxPollRecords", 5000);
         parameters.put("consumersCount", 1);
         parameters.put("seekTo", "beginning");

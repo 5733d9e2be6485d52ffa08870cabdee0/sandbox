@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnectionTo;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationFlow;
-import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnection;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationKafkaConnectionFrom;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationSpec;
 import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegrationTo;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -152,7 +153,7 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationFlow flow = camelIntegrationFlows.get(0);
 
-        CamelIntegrationKafkaConnection camelIntegrationFrom = flow.getFrom();
+        CamelIntegrationKafkaConnectionFrom camelIntegrationFrom = flow.getFrom();
 
         assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
         Map<String, Object> parameters = camelIntegrationFrom.getParameters();
@@ -168,7 +169,7 @@ public class BridgeExecutorServiceTest {
 
         CamelIntegrationTo camelIntegrationTo = camelIntegrationFrom.getSteps().iterator().next();
 
-        CamelIntegrationKafkaConnection to = camelIntegrationTo.getTo();
+        CamelIntegrationKafkaConnectionTo to = camelIntegrationTo.getTo();
         assertThat(to.getUri()).isEqualTo("kafka:kafkaOutputTopic");
 
         Map<String, Object> toParameters = to.getParameters();
@@ -181,6 +182,7 @@ public class BridgeExecutorServiceTest {
         assertThat(toParameters.get("consumersCount")).isEqualTo(1);
         assertThat(toParameters.get("seekTo")).isEqualTo("beginning");
         assertThat(toParameters.get("groupId")).isEqualTo("kafkaGroup");
+
     }
 
     private Action createKafkaAction(String name, String topic) {

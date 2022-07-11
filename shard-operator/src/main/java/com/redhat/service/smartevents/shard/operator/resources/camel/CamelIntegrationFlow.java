@@ -4,13 +4,13 @@ import java.util.Objects;
 
 public class CamelIntegrationFlow {
 
-    CamelIntegrationKafkaConnection from;
+    CamelIntegrationKafkaConnectionFrom from;
 
-    public CamelIntegrationKafkaConnection getFrom() {
+    public CamelIntegrationKafkaConnectionFrom getFrom() {
         return from;
     }
 
-    public void setFrom(CamelIntegrationKafkaConnection from) {
+    public void setFrom(CamelIntegrationKafkaConnectionFrom from) {
         this.from = from;
     }
 
