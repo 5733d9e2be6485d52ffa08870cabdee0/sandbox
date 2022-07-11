@@ -88,8 +88,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 c.getReason()));
 
         // Mark CRD as being reconciled
-        if (bridgeIngress.getStatus()
-                .getConditionByType(ConditionTypeConstants.READY)
+        if (status.getConditionByType(ConditionTypeConstants.READY)
                 .filter(c -> c.getStatus() != ConditionStatus.False)
                 .isPresent()) {
             LOGGER.info("Marking BridgeIngress '{}' in namespace '{}' as augmenting reconciliation.",

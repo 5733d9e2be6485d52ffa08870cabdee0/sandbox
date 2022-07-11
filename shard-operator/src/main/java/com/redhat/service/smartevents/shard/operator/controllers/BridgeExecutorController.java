@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorSe
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -77,15 +78,23 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
     @Override
     public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context context) {
-        LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+
+        BridgeExecutorStatus status = bridgeExecutor.getStatus();
+        status.getConditions().forEach(c -> LOGGER.debug("BridgeExecutor '{}' in namespace '{}' condition: {}:{}:{}",
+                bridgeExecutor.getMetadata().getName(),
+                bridgeExecutor.getMetadata().getNamespace(),
+                c.getType(),
+                c.getStatus(),
+                c.getReason()));
 
         // Mark CRD as being reconciled
-        LOGGER.debug("=================> RECONCILING");
-        BridgeExecutorStatus status = bridgeExecutor.getStatus();
-        status.getConditions().forEach(c -> LOGGER.debug("-----> {}:{}:{}", c.getType(), c.getStatus(), c.getReason()));
-        LOGGER.debug("===============================");
-
-        if (bridgeExecutor.getStatus().isReady()) {
+        if (status.getConditionByType(ConditionTypeConstants.READY)
+                .filter(c -> c.getStatus() != ConditionStatus.False)
+                .isPresent()) {
+            LOGGER.info("Marking bridgeExecutor '{}' in namespace '{}' as augmenting reconciliation.",
+                    bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.RECONCILIATION_PROGRESSING);
             return UpdateControl.updateStatus(bridgeExecutor);
@@ -94,7 +103,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 
         if (secret == null) {
-            LOGGER.debug("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
+            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
             return UpdateControl.noUpdate();
         }
 
@@ -107,7 +116,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
             bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
@@ -120,12 +129,12 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
             return UpdateControl.updateStatus(bridgeExecutor);
         }
-        LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
         if (service.getStatus() == null) {
-            LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
@@ -135,7 +144,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
-            LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
@@ -149,7 +158,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
-        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);

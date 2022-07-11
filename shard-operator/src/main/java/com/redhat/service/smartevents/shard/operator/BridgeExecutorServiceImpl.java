@@ -97,6 +97,8 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             return true;
         }
         // Does exist, but it has already entered the Kubernetes reconciliation loop. Don't update it.
+        // The expected definition will always have READY:Unknown set by BridgeExecutor.Builder.build().
+        // READY:False is set by the first iteration through k8s's reconciliation loop.
         if (existing.getStatus()
                 .getConditionByType(ConditionTypeConstants.READY)
                 .filter(c -> c.getStatus() == ConditionStatus.False).isPresent()) {
