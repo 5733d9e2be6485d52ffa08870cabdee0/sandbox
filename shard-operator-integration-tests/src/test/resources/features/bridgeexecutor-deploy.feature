@@ -24,10 +24,10 @@ Feature: BridgeExecutor deploy and undeploy
       processorName: mybridge-processor
     """
 
-    Then the BridgeExecutor "my-bridge-executor" exists within 1 minute
-    And the Deployment "my-bridge-executor" is ready within 1 minute
-    And the Service "my-bridge-executor" exists within 1 minute
-    And the BridgeExecutor "my-bridge-executor" is in condition "Ready" within 2 minutes
+    Then the BridgeExecutor "my-bridge-executor" exists within 2 minute
+    And the Deployment "my-bridge-executor" is ready within 2 minute
+    And the Service "my-bridge-executor" exists within 2 minute
+    And the BridgeExecutor "my-bridge-executor" is in condition "Ready" within 3 minutes
 
   # Using "dummy" image as real BridgeExecutor image requires Kafka
   Scenario: BridgeExecutor gets deleted

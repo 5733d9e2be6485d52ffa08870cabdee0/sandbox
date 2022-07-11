@@ -18,9 +18,9 @@ Feature: BridgeIngress deploy and undeploy
       customerId: customer
       id: my-bridge-ingress
     """
-     
-     Then the BridgeIngress "my-bridge-ingress" exists within 1 minute
-     And the BridgeIngress "my-bridge-ingress" is in condition "Ready" within 2 minutes
+
+    Then the BridgeIngress "my-bridge-ingress" exists within 2 minute
+    And the BridgeIngress "my-bridge-ingress" is in condition "Ready" within 3 minutes
 
   # Using "dummy" image as real BridgeIngress image requires Kafka
   Scenario: BridgeIngress gets deleted
@@ -40,5 +40,5 @@ Feature: BridgeIngress deploy and undeploy
     And the BridgeIngress "my-deleted-bridge-ingress" is in condition "Ready" within 2 minutes
 
     When delete BridgeIngress "my-deleted-bridge-ingress"
-     
+
     Then the BridgeIngress "my-deleted-bridge-ingress" does not exist within 1 minute
