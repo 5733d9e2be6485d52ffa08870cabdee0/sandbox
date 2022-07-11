@@ -1,0 +1,37 @@
+{
+  "name": "myProcessor",
+  "filters": [
+    {
+      "type": "StringEquals",
+      "key": "source",
+      "value": "StorageService"
+    }
+  ],
+  "processing": {
+    "type": "cameldsl_0.1",
+    "spec": {
+      "flow": {
+        "from": {
+          "uri": "rhose",
+          "steps": [
+            {
+              "to": "mySlackAction"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "action": {
+        "name": "mySlackAction",
+        "type": "slack_sink_0.1",
+        "parameters": {
+          "slack_channel": "mychannel",
+          "slack_webhook_url": "slack.com/url"
+        }
+      }
+    }
+  ]
+}
