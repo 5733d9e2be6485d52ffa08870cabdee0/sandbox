@@ -15,8 +15,8 @@ Feature: Error handling tests
         }
     }
     """
-    And the Bridge "ehBridge" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "ehBridge" is available within 2 minutes
+    And the Bridge "ehBridge" is existing with status "ready" within 5 minutes
+    And the Ingress of Bridge "ehBridge" is available within 3 minutes
 
     And add a Processor to the Bridge "ehBridge" with body:
     """
@@ -32,7 +32,7 @@ Feature: Error handling tests
     }
     """
     And the list of Processor instances of the Bridge "ehBridge" is containing the Processor "whProcessor"
-    And the Processor "whProcessor" of the Bridge "ehBridge" is existing with status "ready" within 3 minutes
+    And the Processor "whProcessor" of the Bridge "ehBridge" is existing with status "ready" within 5 minutes
     And the Processor "whProcessor" of the Bridge "ehBridge" has action of type "webhook_sink_0.1" and parameters:
       | endpoint | https://example.com/dummy-webhook |
 

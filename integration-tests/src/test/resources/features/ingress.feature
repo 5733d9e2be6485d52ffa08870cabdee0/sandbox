@@ -3,8 +3,8 @@ Feature: Ingress tests
   Background:
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 5 minutes
+    And the Ingress of Bridge "mybridge" is available within 3 minutes
     And add a Processor to the Bridge "mybridge" with body:
     """
     {
@@ -17,7 +17,7 @@ Feature: Ingress tests
       }
     }
     """
-    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
 
   Scenario: Send Cloud Event
     When send a cloud event to the Ingress of the Bridge "mybridge":

@@ -3,8 +3,8 @@ Feature: Slack Source tests
   Background:
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 5 minutes
+    And the Ingress of Bridge "mybridge" is available within 3 minutes
 
   @slacksource
   Scenario: Slack Source Processor is created and slack message as source should result into other generated slack message

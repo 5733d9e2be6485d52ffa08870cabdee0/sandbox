@@ -165,8 +165,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
-                .pollInterval(Duration.ofSeconds(5))
+                .atMost(Duration.ofMinutes(5))
+                .pollInterval(Duration.ofSeconds(10))
                 .untilAsserted(
                         () -> {
                             kubernetesResourcePatcher.patchReadyDeploymentAsReady(sanitizedName, customerNamespace);

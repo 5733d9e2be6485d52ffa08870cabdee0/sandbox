@@ -88,8 +88,8 @@ public class BridgeIngressServiceTest {
 
         // Then
         Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
+                .atMost(Duration.ofMinutes(3))
+                .pollInterval(Duration.ofSeconds(10))
                 .untilAsserted(
                         () -> {
                             Secret secret = fetchBridgeIngressSecret(dto);

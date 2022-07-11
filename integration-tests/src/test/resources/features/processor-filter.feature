@@ -3,8 +3,8 @@ Feature: Tests of Processor Filter update
   Background:
     Given authenticate against Manager
     And create a new Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 5 minutes
+    And the Ingress of Bridge "mybridge" is available within 3 minutes
 
   Scenario: Processor filter is updated
     Given add a Processor to the Bridge "mybridge" with body:
@@ -26,7 +26,7 @@ Feature: Tests of Processor Filter update
       ]
     }
     """
-    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
 
     When update the Processor "myProcessor" of the Bridge "mybridge" with body:
     """
@@ -58,7 +58,7 @@ Feature: Tests of Processor Filter update
       ]
     }
     """
-    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
     # Need to wait until original Processor pod is completely terminated, see https://issues.redhat.com/browse/MGDOBR-613
     And wait for 10 seconds
     And send a cloud event to the Ingress of the Bridge "mybridge":
@@ -112,7 +112,7 @@ Feature: Tests of Processor Filter update
 
     }
     """
-    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
+    And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
 
 
     When send a cloud event to the Ingress of the Bridge "mybridge":

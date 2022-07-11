@@ -4,8 +4,8 @@ Feature: Bridge tests
     Given authenticate against Manager
     And create a new Bridge "mybridge"
     And the list of Bridge instances is containing the Bridge "mybridge"
-    And the Bridge "mybridge" is existing with status "ready" within 4 minutes
-    And the Ingress of Bridge "mybridge" is available within 2 minutes
+    And the Bridge "mybridge" is existing with status "ready" within 5 minutes
+    And the Ingress of Bridge "mybridge" is available within 3 minutes
 
     When delete the Bridge "mybridge"
 
