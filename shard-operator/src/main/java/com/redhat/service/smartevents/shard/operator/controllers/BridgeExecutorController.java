@@ -17,10 +17,12 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
+import com.redhat.service.smartevents.shard.operator.camel.CamelService;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.resources.camel.CamelIntegration;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -60,6 +62,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     ServiceMonitorService monitorService;
 
     @Inject
+    CamelService camelService;
+
+    @Inject
     BridgeErrorService bridgeErrorService;
 
     @Override
@@ -85,55 +90,72 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             return UpdateControl.noUpdate();
         }
 
-        // Check if the image of the executor has to be updated
-        String image = bridgeExecutorService.getExecutorImage();
-        if (!image.equals(bridgeExecutor.getSpec().getImage())) {
-            bridgeExecutor.getSpec().setImage(image);
-            return UpdateControl.updateResource(bridgeExecutor);
-        }
+        ProcessorDTO processorDTO = bridgeExecutor.toDTO();
+        if (processorDTO.getDefinition().getProcessing() == null) {
+            LOGGER.info("---- No camel processing found. Provisioning executor.");
 
-        Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
-        if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-
-            bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
-
-            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+            // Check if the image of the executor has to be updated
+            String image = bridgeExecutorService.getExecutorImage();
+            if (!image.equals(bridgeExecutor.getSpec().getImage())) {
+                bridgeExecutor.getSpec().setImage(image);
+                return UpdateControl.updateResource(bridgeExecutor);
             }
 
-            return UpdateControl.updateStatus(bridgeExecutor);
-        }
-        LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
+            if (!Readiness.isDeploymentReady(deployment)) {
+                LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+                        bridgeExecutor.getMetadata().getNamespace());
 
-        // Create Service
-        Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
-        if (service.getStatus() == null) {
-            LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
-            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
-            return UpdateControl.updateStatus(bridgeExecutor);
-        }
+                bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
 
-        Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
-        if (serviceMonitor.isPresent()) {
-            // this is an optional resource
-            LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
+                    notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+                } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                    notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+                }
+
+                return UpdateControl.updateStatus(bridgeExecutor);
+            }
+
+            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+
+            // Create Service
+            Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
+            if (service.getStatus() == null) {
+                LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+                        bridgeExecutor.getMetadata().getNamespace());
+                bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+                bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
+                return UpdateControl.updateStatus(bridgeExecutor);
+            }
+
+            Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
+            if (serviceMonitor.isPresent()) {
+                // this is an optional resource
+                LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            } else {
+                LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
+                        bridgeExecutor.getMetadata().getNamespace());
+                BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
+                        .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
+                bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.PROMETHEUS_UNAVAILABLE,
+                        prometheusNotAvailableError.getReason(),
+                        prometheusNotAvailableError.getCode());
+                notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
+                return UpdateControl.updateStatus(bridgeExecutor);
+            }
+
         } else {
-            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
-                    bridgeExecutor.getMetadata().getNamespace());
-            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
-                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
-                    ConditionReasonConstants.PROMETHEUS_UNAVAILABLE,
-                    prometheusNotAvailableError.getReason(),
-                    prometheusNotAvailableError.getCode());
-            notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
-            return UpdateControl.updateStatus(bridgeExecutor);
+            LOGGER.info("---- Camel processing found. Not provisioning executor provisioning Camel resource instead");
+
+            Optional<CamelIntegration> camelIntegration = camelService.fetchOrCreateCamelIntegration(bridgeExecutor, secret);
+            if (camelIntegration.isPresent()) {
+                // this is an optional resource
+                LOGGER.debug("CameIntegration resource {} for BridgeExecutor: '{}' in namespace '{}' is ready", camelIntegration.get(),
+                        bridgeExecutor.getMetadata().getName(),
+                        bridgeExecutor.getMetadata().getNamespace());
+            }
         }
 
         LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());

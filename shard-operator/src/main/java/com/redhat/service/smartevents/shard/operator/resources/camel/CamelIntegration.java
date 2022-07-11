@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.resources.camel;
 
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,11 +14,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.Processing;
+import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.model.annotation.Group;
@@ -39,17 +42,19 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         return String.format("%scamel-%s", OB_RESOURCE_NAME_PREFIX, KubernetesResourceUtil.sanitizeName(id));
     }
 
-    public static CamelIntegration fromDTO(ProcessorDTO processorDTO, String namespace, String executorImage, Processing processing) {
+    public static CamelIntegration fromDTO(ProcessorDTO processorDTO, String namespace, Processing processing, Secret secret) {
 
         LOGGER.info("------ fromDto: " + processorDTO);
 
+        String name = resolveResourceName(processorDTO.getId());
         ObjectMeta metadata = new ObjectMetaBuilder()
-                .withName(resolveResourceName(processorDTO.getId()))
+                .withName(name)
                 .withNamespace(namespace)
                 .withLabels(new LabelsBuilder()
                         .buildWithDefaults())
                 .build();
 
+        LOGGER.info("------ name: " + name);
         LOGGER.info("------ metadata: " + metadata);
 
         CamelIntegrationFlow camelIntegrationFlow = new CamelIntegrationFlow();
@@ -58,12 +63,12 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
 
         camelIntegrationFlow.setFrom(camelIntegrationFrom);
 
-        String bootstrapServers = processorDTO.getKafkaConnection().getBootstrapServers();
-        String topic = processorDTO.getKafkaConnection().getTopic();
+        if (secret != null) {
+            String topic = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR);
+            camelIntegrationFrom.setUri(String.format("kafka:%s", topic));
+        }
 
-        camelIntegrationFrom.setUri(String.format("kafka:%s", topic));
-
-        camelIntegrationFrom.setParameters(kafkaConnectionsParameter(processorDTO, bootstrapServers));
+        camelIntegrationFrom.setParameters(kafkaConnectionsParameter(secret));
 
         LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
 
@@ -95,7 +100,7 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
             String toTopic = a.getParameter("topic");
 
             CamelIntegrationKafkaConnectionTo to = new CamelIntegrationKafkaConnectionTo();
-            to.setParameters(kafkaConnectionsParameter(processorDTO, bootstrapServers));
+            to.setParameters(kafkaConnectionsParameter(secret));
 
             String kafkaToURI = String.format("kafka:%s", toTopic);
             to.setUri(kafkaToURI);
@@ -108,15 +113,27 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         return camelIntegration;
     }
 
+    private static String decodeBase64(Secret secret, String key) {
+        return new String(Base64.getDecoder().decode(secret.getData().get(key)));
+    }
+
     // TODO CAMEL-POC secrets
-    private static Map<String, Object> kafkaConnectionsParameter(ProcessorDTO processorDTO, String bootstrapServers) {
+    private static Map<String, Object> kafkaConnectionsParameter(Secret secret) {
+        if (secret == null) {
+            return Collections.emptyMap();
+        }
+
+        String bootstrapServers = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_BOOTSTRAP_SERVERS_ENV_VAR);
+        String clientId = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_CLIENT_ID_ENV_VAR);
+        String clientSecret = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_CLIENT_SECRET_ENV_VAR);
+
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("brokers", bootstrapServers);
         parameters.put("securityProtocol", "SASL_SSL");
         parameters.put("saslMechanism", "PLAIN");
         parameters.put("saslJaasConfig",
                 String.format("org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",
-                        processorDTO.getKafkaConnection().getClientId(), processorDTO.getKafkaConnection().getClientSecret()));
+                        clientId, clientSecret));
         parameters.put("maxPollRecords", 5000);
         parameters.put("consumersCount", 1);
         parameters.put("seekTo", "beginning");

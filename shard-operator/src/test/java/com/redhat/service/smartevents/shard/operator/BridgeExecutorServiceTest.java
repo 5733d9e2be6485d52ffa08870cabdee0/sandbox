@@ -111,49 +111,62 @@ public class BridgeExecutorServiceTest {
         bridgeExecutorService.createBridgeExecutor(dto);
 
         // Then
-        CamelIntegration camelIntegration = kubernetesClient
-                .resources(CamelIntegration.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(CamelIntegration.resolveResourceName(dto.getId()))
-                .get();
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(
+                        () -> {
+                            // The deployment is deployed by the controller
 
-        assertThat(camelIntegration).isNotNull();
+                            // Then
+                            String camelIntegrationName = CamelIntegration.resolveResourceName(dto.getId());
 
-        CamelIntegrationSpec camelIntegrationSpec = camelIntegration.getSpec();
+                            CamelIntegration camelIntegration = kubernetesClient
+                                    .resources(CamelIntegration.class)
+                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                                    .withName(camelIntegrationName)
+                                    .get();
 
-        List<CamelIntegrationFlow> camelIntegrationFlows = camelIntegrationSpec.getFlows();
+                            assertThat(camelIntegration).isNotNull();
 
-        CamelIntegrationFlow flow = camelIntegrationFlows.get(0);
+                            CamelIntegrationSpec camelIntegrationSpec = camelIntegration.getSpec();
 
-        CamelIntegrationKafkaConnectionFrom camelIntegrationFrom = flow.getFrom();
+                            List<CamelIntegrationFlow> camelIntegrationFlows = camelIntegrationSpec.getFlows();
 
-        assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
-        Map<String, Object> parameters = camelIntegrationFrom.getParameters();
+                            CamelIntegrationFlow flow = camelIntegrationFlows.get(0);
 
-        assertThat(parameters.get("brokers")).isEqualTo("mytestkafka:9092");
-        assertThat(parameters.get("securityProtocol")).isEqualTo("SASL_SSL");
-        assertThat(parameters.get("saslMechanism")).isEqualTo("PLAIN");
-        assertThat(parameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
-        assertThat(parameters.get("maxPollRecords")).isEqualTo(5000);
-        assertThat(parameters.get("consumersCount")).isEqualTo(1);
-        assertThat(parameters.get("seekTo")).isEqualTo("beginning");
-        assertThat(parameters.get("groupId")).isEqualTo("kafkaGroup");
+                            CamelIntegrationKafkaConnectionFrom camelIntegrationFrom = flow.getFrom();
 
-        CamelIntegrationTo camelIntegrationTo = camelIntegrationFrom.getSteps().iterator().next();
+                            assertThat(camelIntegrationFrom.getUri()).isEqualTo(String.format("kafka:ob-%s", TestSupport.BRIDGE_ID));
+                            Map<String, Object> parameters = camelIntegrationFrom.getParameters();
 
-        CamelIntegrationKafkaConnectionTo to = camelIntegrationTo.getTo();
-        assertThat(to.getUri()).isEqualTo("kafka:kafkaOutputTopic");
+                            assertThat(parameters.get("brokers")).isEqualTo("mytestkafka:9092");
+                            assertThat(parameters.get("securityProtocol")).isEqualTo("SASL_SSL");
+                            assertThat(parameters.get("saslMechanism")).isEqualTo("PLAIN");
+                            assertThat(parameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+                            assertThat(parameters.get("maxPollRecords")).isEqualTo(5000);
+                            assertThat(parameters.get("consumersCount")).isEqualTo(1);
+                            assertThat(parameters.get("seekTo")).isEqualTo("beginning");
+                            assertThat(parameters.get("groupId")).isEqualTo("kafkaGroup");
 
-        Map<String, Object> toParameters = to.getParameters();
+                            CamelIntegrationTo camelIntegrationTo = camelIntegrationFrom.getSteps().iterator().next();
 
-        assertThat(toParameters.get("brokers")).isEqualTo("mytestkafka:9092");
-        assertThat(toParameters.get("securityProtocol")).isEqualTo("SASL_SSL");
-        assertThat(toParameters.get("saslMechanism")).isEqualTo("PLAIN");
-        assertThat(toParameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
-        assertThat(toParameters.get("maxPollRecords")).isEqualTo(5000);
-        assertThat(toParameters.get("consumersCount")).isEqualTo(1);
-        assertThat(toParameters.get("seekTo")).isEqualTo("beginning");
-        assertThat(toParameters.get("groupId")).isEqualTo("kafkaGroup");
+                            CamelIntegrationKafkaConnectionTo to = camelIntegrationTo.getTo();
+                            assertThat(to.getUri()).isEqualTo("kafka:kafkaOutputTopic");
+
+                            Map<String, Object> toParameters = to.getParameters();
+
+                            assertThat(toParameters.get("brokers")).isEqualTo("mytestkafka:9092");
+                            assertThat(toParameters.get("securityProtocol")).isEqualTo("SASL_SSL");
+                            assertThat(toParameters.get("saslMechanism")).isEqualTo("PLAIN");
+                            assertThat(toParameters.get("saslJaasConfig")).isEqualTo("org.apache.kafka.common.security.plain.PlainLoginModule required username='client-id' password='testsecret';");
+                            assertThat(toParameters.get("maxPollRecords")).isEqualTo(5000);
+                            assertThat(toParameters.get("consumersCount")).isEqualTo(1);
+                            assertThat(toParameters.get("seekTo")).isEqualTo("beginning");
+                            assertThat(toParameters.get("groupId")).isEqualTo("kafkaGroup");
+
+                        });
+
     }
 
     @Test

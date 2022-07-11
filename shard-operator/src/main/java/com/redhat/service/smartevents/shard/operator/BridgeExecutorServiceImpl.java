@@ -89,32 +89,6 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         }
-
-        Processing processing = processorDTO.getDefinition().getProcessing();
-        if (processing != null) {
-            LOGGER.info("------ Creating a Camel Integration");
-
-            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage, processing);
-
-            LOGGER.info("------ integration expected: " + expectedIntegrationFromDTO);
-
-            CamelIntegration existingCamelIntegration = kubernetesClient
-                    .resources(CamelIntegration.class)
-                    .inNamespace(namespace.getMetadata().getName())
-                    .withName(CamelIntegration.resolveResourceName(processorDTO.getId()))
-                    .get();
-
-            if (existingCamelIntegration == null || !expectedIntegrationFromDTO.getSpec().equals(existingCamelIntegration.getSpec())) {
-                LOGGER.info("------ Integration not found, creating...");
-
-                CamelIntegration createdResource = kubernetesClient
-                        .resources(CamelIntegration.class)
-                        .inNamespace(namespace.getMetadata().getName())
-                        .createOrReplace(expectedIntegrationFromDTO);
-
-                LOGGER.info("------ Created resource: " + createdResource);
-            }
-        }
     }
 
     @Override
@@ -192,7 +166,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             LOGGER.info("------ Processing found - Deleting the Camel Integration");
 
             String camelResourceName = CamelIntegration.resolveResourceName(processorDTO.getId());
-            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace, executorImage, processing);
+            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace, processing, null);
 
             LOGGER.info("------ Deleting {} with definition {}", camelResourceName, expectedIntegrationFromDTO);
 
