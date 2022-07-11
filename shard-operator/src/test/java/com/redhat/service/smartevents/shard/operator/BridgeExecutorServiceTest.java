@@ -63,6 +63,10 @@ public class BridgeExecutorServiceTest {
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
 
+
+    @Inject
+    ObjectMapper objectMapper;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
@@ -102,38 +106,7 @@ public class BridgeExecutorServiceTest {
     @Test
     public void testCamelResourceCreated() {
 
-        Action resolvedAction1 = createKafkaAction("mySlackAction", "kafkaOutputTopic");
-        Action resolvedAction2 = createKafkaAction("otherAction", "doNotUse");
-
-        String spec = "{\n" +
-                "      \"flow\": {\n" +
-                "        \"from\": {\n" +
-                "          \"uri\": \"rhose\",\n" +
-                "          \"steps\": [\n" +
-                "            {\n" +
-                "              \"to\": \"mySlackAction\"\n" +
-                "            }\n" +
-                "          ]\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }";
-        ObjectNode flowSpec = null;
-        try {
-            flowSpec = (ObjectNode) objectMapper.readTree(spec);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
-
-        ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
-                "",
-                null,
-                null,
-                camelProcessing,
-                Arrays.asList(resolvedAction1, resolvedAction2));
-
-        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO(processorDefinition);
+        ProcessorDTO dto = processorDTOWithCamelProcessing();
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
@@ -182,7 +155,59 @@ public class BridgeExecutorServiceTest {
         assertThat(toParameters.get("consumersCount")).isEqualTo(1);
         assertThat(toParameters.get("seekTo")).isEqualTo("beginning");
         assertThat(toParameters.get("groupId")).isEqualTo("kafkaGroup");
+    }
 
+    @Test
+    public void testCamelResourceDelete() {
+
+        ProcessorDTO dto = processorDTOWithCamelProcessing();
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+        bridgeExecutorService.deleteBridgeExecutor(dto);
+
+        // Then
+        CamelIntegration camelIntegration = kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .withName(CamelIntegration.resolveResourceName(dto.getId()))
+                .get();
+        assertThat(camelIntegration).isNull();
+    }
+
+    private ProcessorDTO processorDTOWithCamelProcessing() {
+        Action resolvedAction1 = createKafkaAction("mySlackAction", "kafkaOutputTopic");
+        Action resolvedAction2 = createKafkaAction("otherAction", "doNotUse");
+
+        String spec = "{\n" +
+                "      \"flow\": {\n" +
+                "        \"from\": {\n" +
+                "          \"uri\": \"rhose\",\n" +
+                "          \"steps\": [\n" +
+                "            {\n" +
+                "              \"to\": \"mySlackAction\"\n" +
+                "            }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }";
+        ObjectNode flowSpec = null;
+        try {
+            flowSpec = (ObjectNode) objectMapper.readTree(spec);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Processing camelProcessing = new Processing("cameldsl_0.1", flowSpec);
+
+        ProcessorDefinition processorDefinition = new ProcessorDefinition(Collections.emptySet(),
+                                                                          "",
+                                                                          null,
+                                                                          null,
+                                                                          camelProcessing,
+                                                                          Arrays.asList(resolvedAction1, resolvedAction2));
+
+        return TestSupport.newRequestedProcessorDTO(processorDefinition);
     }
 
     private Action createKafkaAction(String name, String topic) {
@@ -195,9 +220,6 @@ public class BridgeExecutorServiceTest {
         resolvedAction.setMapParameters(resolvedActionParams);
         return resolvedAction;
     }
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Test
     public void testBridgeExecutorCreationTriggersController() {

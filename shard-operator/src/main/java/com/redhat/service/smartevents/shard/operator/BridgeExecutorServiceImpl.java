@@ -186,6 +186,28 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                     success -> LOGGER.debug("Deleted notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
         }
+
+        Processing processing = processorDTO.getDefinition().getProcessing();
+        if (processing != null) {
+            LOGGER.info("------ Processing found - Deleting the Camel Integration");
+
+            String camelResourceName = CamelIntegration.resolveResourceName(processorDTO.getId());
+            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace, executorImage, processing);
+
+            LOGGER.info("------ Deleting {} with definition {}", camelResourceName, expectedIntegrationFromDTO);
+
+            final boolean camelIntegrationDeleted =
+                    kubernetesClient
+                            .resources(CamelIntegration.class)
+                            .inNamespace(namespace)
+                            .delete(expectedIntegrationFromDTO);
+
+            if(camelIntegrationDeleted) {
+                LOGGER.info("------ Deleted");
+            } else {
+                LOGGER.info("------ NOT Deleted");
+            }
+        }
     }
 
     @Override
