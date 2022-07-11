@@ -60,8 +60,10 @@ jobs:
             shard-operator:
               - *general
               - shard-operator/**
+              - executor/**
             executor:
               - *general
+              - shard-operator/**
               - executor/**
 
       # run only if 'manager' or any 'general' modules have changed
