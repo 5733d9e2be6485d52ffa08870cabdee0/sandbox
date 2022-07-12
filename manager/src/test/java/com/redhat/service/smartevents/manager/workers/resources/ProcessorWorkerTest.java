@@ -13,8 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.JobExecutionContext;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -24,15 +22,17 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeJobExecutionContext;
+import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,8 +50,8 @@ public class ProcessorWorkerTest {
     @InjectMock
     ConnectorWorker connectorWorker;
 
-    @InjectMock(convertScopes = true)
-    Scheduler quartzMock;
+    @InjectMock
+    WorkManager workManager;
 
     @Inject
     ProcessorWorker worker;
@@ -75,9 +75,9 @@ public class ProcessorWorkerTest {
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
-        JobExecutionContext context = makeJobExecutionContext(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
 
-        assertThatCode(() -> worker.handleWork(context)).isInstanceOf(IllegalStateException.class);
+        assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
     @Transactional
@@ -90,12 +90,12 @@ public class ProcessorWorkerTest {
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
 
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
-        Processor refreshed = worker.handleWork(context);
+        Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(quartzMock, never()).rescheduleJob(any(), any());
+        verify(workManager, never()).reschedule(any());
     }
 
     @Transactional
@@ -114,22 +114,22 @@ public class ProcessorWorkerTest {
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
 
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
             connectorEntity.setStatus(dependencyStatusWhenComplete);
             return connectorEntity;
-        }).when(connectorWorker).createDependencies(context, connectorEntity);
+        }).when(connectorWorker).createDependencies(work, connectorEntity);
 
-        Processor refreshed = worker.handleWork(context);
+        Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
-        verify(connectorWorker).createDependencies(context, connectorEntity);
+        verify(connectorWorker).createDependencies(work, connectorEntity);
 
-        verify(quartzMock, times(isWorkComplete ? 0 : 1)).rescheduleJob(any(), any());
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
@@ -152,12 +152,12 @@ public class ProcessorWorkerTest {
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
 
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
-        Processor refreshed = worker.handleWork(context);
+        Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(quartzMock, never()).rescheduleJob(any(), any());
+        verify(workManager, never()).reschedule(any());
     }
 
     @Transactional
@@ -176,22 +176,22 @@ public class ProcessorWorkerTest {
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
 
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
             connectorEntity.setStatus(dependencyStatusWhenComplete);
             return connectorEntity;
-        }).when(connectorWorker).deleteDependencies(context, connectorEntity);
+        }).when(connectorWorker).deleteDependencies(work, connectorEntity);
 
-        Processor refreshed = worker.handleWork(context);
+        Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
-        verify(connectorWorker).deleteDependencies(context, connectorEntity);
+        verify(connectorWorker).deleteDependencies(work, connectorEntity);
 
-        verify(quartzMock, times(isWorkComplete ? 0 : 1)).rescheduleJob(any(), any());
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {

@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.JobExecutionContext;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,8 +28,10 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
 
@@ -39,10 +39,9 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeJobExecutionContext;
+import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -62,8 +61,8 @@ class ConnectorWorkerTest {
     @InjectMock
     ConnectorsApiClient connectorsApi;
 
-    @InjectMock(convertScopes = true)
-    Scheduler quartzMock;
+    @InjectMock
+    WorkManager workManager;
 
     @Inject
     ConnectorWorker worker;
@@ -87,9 +86,9 @@ class ConnectorWorkerTest {
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
-        JobExecutionContext context = makeJobExecutionContext(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
 
-        assertThatCode(() -> worker.handleWork(context)).isInstanceOf(IllegalStateException.class);
+        assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
     @Transactional
@@ -112,7 +111,7 @@ class ConnectorWorkerTest {
         connectorsDAO.persist(connectorEntity);
 
         // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         Connector connector = new Connector();
         connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
@@ -122,16 +121,16 @@ class ConnectorWorkerTest {
         when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(null, connector);
         when(connectorsApi.createConnector(connectorEntity)).thenReturn(connector);
 
-        ConnectorEntity refreshed = worker.handleWork(context);
+        ConnectorEntity refreshed = worker.handleWork(work);
 
         verify(rhoasService).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApi).createConnector(connectorEntity);
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
-        verify(quartzMock).rescheduleJob(any(), any());
+        verify(workManager).reschedule(work);
 
         // This emulates a subsequent invocation
-        refreshed = worker.handleWork(context);
+        refreshed = worker.handleWork(work);
 
         verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
@@ -143,7 +142,7 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        verify(quartzMock, times(2)).rescheduleJob(any(), any());
+        verify(workManager, times(2)).reschedule(work);
     }
 
     @Transactional
@@ -173,11 +172,11 @@ class ConnectorWorkerTest {
         connectorEntity.setDefinition(updatedDefinition);
 
         // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
 
-        ConnectorEntity refreshed = worker.handleWork(context);
+        ConnectorEntity refreshed = worker.handleWork(work);
 
         if (patchConnector) {
             verify(connectorsApi).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
@@ -186,7 +185,7 @@ class ConnectorWorkerTest {
             assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         }
 
-        verify(quartzMock).rescheduleJob(any(), any());
+        verify(workManager).reschedule(work);
     }
 
     @Transactional
@@ -208,7 +207,7 @@ class ConnectorWorkerTest {
         connectorsDAO.persist(connectorEntity);
 
         // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
-        JobExecutionContext context = makeJobExecutionContext(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         Connector connector = new Connector();
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
@@ -217,7 +216,7 @@ class ConnectorWorkerTest {
         when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
         int refreshCount = 1;
-        ConnectorEntity refreshed = worker.handleWork(context);
+        ConnectorEntity refreshed = worker.handleWork(work);
 
         if (connectorState != ConnectorState.DELETED) {
             assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETING);
@@ -226,7 +225,7 @@ class ConnectorWorkerTest {
             verify(connectorsApi).deleteConnector(connectorEntity.getConnectorExternalId());
 
             // This emulates a subsequent invocation by WorkManager
-            refreshed = worker.handleWork(context);
+            refreshed = worker.handleWork(work);
             refreshCount = 2;
         }
 
@@ -235,7 +234,7 @@ class ConnectorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(quartzMock, times(refreshCount)).rescheduleJob(any(), any());
+        verify(workManager, times(refreshCount)).reschedule(work);
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {

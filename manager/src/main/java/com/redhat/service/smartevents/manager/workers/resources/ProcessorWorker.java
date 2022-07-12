@@ -5,8 +5,6 @@ import java.util.Objects;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +13,9 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.Work;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
-
-import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
 
 @ApplicationScoped
 public class ProcessorWorker extends AbstractWorker<Processor> {
@@ -40,14 +37,13 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
-    protected String getId(JobExecutionContext context) {
+    protected String getId(Work work) {
         // The ID of the ManagedResource to process is stored directly in the JobDetail.
-        JobDataMap data = context.getTrigger().getJobDataMap();
-        return data.getString(STATE_FIELD_ID);
+        return work.getManagedResourceId();
     }
 
     @Override
-    public Processor createDependencies(JobExecutionContext context, Processor processor) {
+    public Processor createDependencies(Work work, Processor processor) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 processor.getName(),
                 processor.getId());
@@ -67,10 +63,9 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
         // If we have to deploy a Managed Connector, delegate to the ConnectorWorker.
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-        JobDataMap data = context.getTrigger().getJobDataMap();
-        String processorId = data.getString(STATE_FIELD_ID);
+        String processorId = work.getManagedResourceId();
         ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
-        ConnectorEntity updatedConnectorEntity = connectorWorker.createDependencies(context, connectorEntity);
+        ConnectorEntity updatedConnectorEntity = connectorWorker.createDependencies(work, connectorEntity);
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too
@@ -88,7 +83,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     }
 
     @Override
-    public Processor deleteDependencies(JobExecutionContext context, Processor processor) {
+    public Processor deleteDependencies(Work work, Processor processor) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 processor.getName(),
                 processor.getId());
@@ -102,10 +97,9 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         }
 
         // If we have to delete a Managed Connector, delegate to the ConnectorWorker.
-        JobDataMap data = context.getTrigger().getJobDataMap();
-        String processorId = data.getString(STATE_FIELD_ID);
+        String processorId = work.getManagedResourceId();
         ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
-        ConnectorEntity updatedConnectorEntity = connectorWorker.deleteDependencies(context, connectorEntity);
+        ConnectorEntity updatedConnectorEntity = connectorWorker.deleteDependencies(work, connectorEntity);
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too

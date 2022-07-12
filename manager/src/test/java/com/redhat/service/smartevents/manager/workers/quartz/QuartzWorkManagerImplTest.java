@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.workers;
+package com.redhat.service.smartevents.manager.workers.quartz;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,19 +12,17 @@ import org.quartz.Scheduler;
 import org.quartz.Trigger;
 
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.Work;
 
-import static com.redhat.service.smartevents.manager.workers.WorkManager.MANAGED_RESOURCES_GROUP;
-import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ATTEMPTS;
-import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
-import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_SUBMITTED_AT;
+import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkManagerImpl.STATE_FIELD_ATTEMPTS;
+import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkManagerImpl.STATE_FIELD_ID;
+import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkManagerImpl.STATE_FIELD_SUBMITTED_AT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class WorkManagerImplTest {
+public class QuartzWorkManagerImplTest {
 
     private static final String RESOURCE_ID = "123";
 
@@ -37,11 +35,11 @@ public class WorkManagerImplTest {
     @Captor
     ArgumentCaptor<Trigger> triggerArgumentCaptor;
 
-    private WorkManagerImpl manager;
+    private QuartzWorkManagerImpl manager;
 
     @BeforeEach
     protected void setup() {
-        this.manager = new WorkManagerImpl();
+        this.manager = new QuartzWorkManagerImpl();
         this.manager.quartz = quartz;
         this.manager.init();
 
@@ -49,24 +47,14 @@ public class WorkManagerImplTest {
     }
 
     @Test
-    void scheduleForNewWork() throws Exception {
-        manager.schedule(resource);
-
-        verify(quartz).scheduleJob(any());
-    }
-
-    @Test
     void scheduleDoesNotRescheduleForExistingWork() throws Exception {
-        Trigger existingTrigger = mock(Trigger.class);
-        when(quartz.getTrigger(any())).thenReturn(existingTrigger);
-
-        manager.schedule(resource);
+        Work work = manager.schedule(resource);
 
         verify(quartz).scheduleJob(triggerArgumentCaptor.capture());
 
         Trigger trigger = triggerArgumentCaptor.getValue();
         assertThat(trigger.getKey().getName()).isEqualTo(RESOURCE_ID);
-        assertThat(trigger.getKey().getGroup()).isEqualTo(MANAGED_RESOURCES_GROUP);
+        assertThat(trigger.getKey().getGroup()).isEqualTo(work.getType());
         assertThat(trigger.getJobKey()).isNotNull();
 
         JobDataMap data = trigger.getJobDataMap();

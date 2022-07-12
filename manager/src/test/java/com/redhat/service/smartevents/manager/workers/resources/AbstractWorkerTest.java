@@ -9,12 +9,12 @@ import javax.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.quartz.JobExecutionContext;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -23,7 +23,6 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
-import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeJobExecutionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -62,9 +61,9 @@ public class AbstractWorkerTest {
         // Persist Bridge so that it can be found by the Worker
         bridgeDAO.persist(bridge);
 
-        JobExecutionContext context = makeJobExecutionContext(bridge, maxRetries + 1);
+        Work work = WorkerTestUtils.makeWork(bridge, maxRetries + 1);
 
-        worker.handleWork(context);
+        worker.handleWork(work);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
     }
@@ -76,9 +75,9 @@ public class AbstractWorkerTest {
         // Persist Bridge so that it can be found by the Worker
         bridgeDAO.persist(bridge);
 
-        JobExecutionContext context = makeJobExecutionContext(bridge, ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(timeoutSeconds * 2L));
+        Work work = WorkerTestUtils.makeWork(bridge, ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(timeoutSeconds * 2L));
 
-        worker.handleWork(context);
+        worker.handleWork(work);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
     }

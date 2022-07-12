@@ -10,8 +10,6 @@ import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +24,10 @@ import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
-
-import static com.redhat.service.smartevents.manager.workers.WorkManager.STATE_FIELD_ID;
 
 @ApplicationScoped
 public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
@@ -52,10 +49,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected String getId(JobExecutionContext context) {
+    protected String getId(Work work) {
         // The ID of the ManagedResource to process is the child of that stored directly in the JobDetail.
-        JobDataMap data = context.getTrigger().getJobDataMap();
-        String processorId = data.getString(STATE_FIELD_ID);
+        String processorId = work.getManagedResourceId();
         ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
 
         if (Objects.isNull(connectorEntity)) {
@@ -68,7 +64,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     @ActivateRequestContext
-    public ConnectorEntity createDependencies(JobExecutionContext context, ConnectorEntity connectorEntity) {
+    public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());
@@ -174,7 +170,7 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     @ActivateRequestContext
-    public ConnectorEntity deleteDependencies(JobExecutionContext context, ConnectorEntity connectorEntity) {
+    public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 connectorEntity.getName(),
                 connectorEntity.getId());

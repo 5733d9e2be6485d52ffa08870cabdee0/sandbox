@@ -1,11 +1,21 @@
 package com.redhat.service.smartevents.manager.workers;
 
-import org.quartz.JobExecutionContext;
-
 import com.redhat.service.smartevents.manager.models.ManagedResource;
+import com.redhat.service.smartevents.manager.models.Work;
 
+/**
+ * Handles completion of {@link Work} for a {@link ManagedResource}.
+ *
+ * @param <T>
+ */
 public interface Worker<T extends ManagedResource> {
 
-    T handleWork(JobExecutionContext context);
+    /**
+     * Execute work.
+     *
+     * @param work The {@link Work} to execute.
+     * @return The updated resource.
+     */
+    T handleWork(Work work);
 
 }

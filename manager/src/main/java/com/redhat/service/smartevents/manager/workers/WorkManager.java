@@ -1,22 +1,37 @@
 package com.redhat.service.smartevents.manager.workers;
 
-import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.ManagedResource;
+import com.redhat.service.smartevents.manager.models.Work;
 
 public interface WorkManager {
 
-    String MANAGED_RESOURCES_GROUP = "ManagedResourcesTriggers";
+    /**
+     * Request {@link Work} be scheduled for the given {@link ManagedResource}.
+     *
+     * @param managedResource
+     * @return The {@link Work}.
+     */
+    Work schedule(ManagedResource managedResource);
 
-    // Whilst Quartz supports use of Serialisable objects as JobData, Quarkus configures Quartz to force
-    // use of String keys and values when using a JDBC JobStore. Therefore, these properties are always
-    // stored as Strings and the serialization/de-serialisation handled by RHOSE.
-    // See https://quarkusio.zulipchat.com/#narrow/stream/187030-users/topic/Quartz.3A.20JDBC.20JobStore.3A.20useProperties
-    String STATE_FIELD_ID = "id";
-    String STATE_FIELD_ATTEMPTS = "attempts";
-    String STATE_FIELD_SUBMITTED_AT = "submittedAt";
+    /**
+     * Request the {@link Work} is re-scheduled.
+     *
+     * @param work
+     */
+    void reschedule(Work work);
 
-    void schedule(Bridge bridge);
+    /**
+     * Request the {@link Work} is re-scheduled and a failed attempt is recorded.
+     *
+     * @param work
+     */
+    void rescheduleAfterFailure(Work work);
 
-    void schedule(Processor processor);
-
+    /**
+     * Checks if {@link Work} remains to be completed for the {@link ManagedResource}.
+     *
+     * @param managedResource
+     * @return true if {@link Work} remains incomplete for the {@link ManagedResource}.
+     */
+    boolean exists(ManagedResource managedResource);
 }
