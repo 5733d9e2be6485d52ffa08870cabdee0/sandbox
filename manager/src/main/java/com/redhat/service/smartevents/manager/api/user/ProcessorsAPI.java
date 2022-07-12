@@ -125,7 +125,8 @@ public class ProcessorsAPI {
         String orgId = identityResolver.resolveOrganisationId(jwt);
 
         // validate service limit
-        validateServiceLimitToCreateNewProcessor(bridgeId);
+        validateBridgeActive(bridgeId);
+        validateServiceLimitQuota(bridgeId);
 
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -149,7 +150,7 @@ public class ProcessorsAPI {
         String customerId = identityResolver.resolve(jwt);
 
         // validate service limit
-        validateServiceLimitToUpdateExistingProcessor(bridgeId);
+        validateBridgeActive(bridgeId);
 
         Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -176,7 +177,7 @@ public class ProcessorsAPI {
      * 
      * @param bridgeId Bridge id.
      */
-    private void validateServiceLimitToCreateNewProcessor(String bridgeId) {
+    private void validateServiceLimitQuota(String bridgeId) {
         QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridgeId);
         long maxAllowedProcessors = bridgeQuotaLimit.getProcessorLimit();
         long existingProcessorCount = processorService.getUserVisibleProcessorsCount(bridgeId);
@@ -191,7 +192,7 @@ public class ProcessorsAPI {
      * 
      * @param bridgeId Bridge id.
      */
-    private void validateServiceLimitToUpdateExistingProcessor(String bridgeId) {
+    private void validateBridgeActive(String bridgeId) {
         boolean activeBridge = bridgesService.isBridgeActive(bridgeId);
         if (!activeBridge) {
             throw new ServiceLimitExceedException("Bridge expired");
