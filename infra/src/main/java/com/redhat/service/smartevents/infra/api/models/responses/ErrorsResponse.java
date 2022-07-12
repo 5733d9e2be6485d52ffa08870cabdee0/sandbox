@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema
+@Schema(name = "ErrorsList")
 public class ErrorsResponse extends ListResponse<ErrorResponse> {
 
     public static ErrorsResponse toErrors(ErrorResponse error) {

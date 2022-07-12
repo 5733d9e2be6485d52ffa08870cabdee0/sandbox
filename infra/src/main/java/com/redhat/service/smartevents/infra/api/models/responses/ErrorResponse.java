@@ -14,6 +14,14 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeError;
         allOf = { BaseResponse.class })
 public class ErrorResponse extends BaseResponse {
 
+    // https://issues.redhat.com/browse/MGDOBR-935
+    @JsonProperty("id")
+    private String id;
+
+    // https://issues.redhat.com/browse/MGDOBR-935
+    @JsonProperty("href")
+    private String href;
+
     @JsonProperty("code")
     private String code;
 
@@ -31,6 +39,26 @@ public class ErrorResponse extends BaseResponse {
 
     protected ErrorResponse() {
         super("Error");
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getHref() {
+        return href;
+    }
+
+    @Override
+    public void setHref(String href) {
+        this.href = href;
     }
 
     public String getCode() {
@@ -51,7 +79,7 @@ public class ErrorResponse extends BaseResponse {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, reason);
+        return Objects.hash(id, href, name, code, reason);
     }
 
     @Override
@@ -63,6 +91,6 @@ public class ErrorResponse extends BaseResponse {
         if (getClass() != obj.getClass())
             return false;
         ErrorResponse other = (ErrorResponse) obj;
-        return Objects.equals(code, other.code) && Objects.equals(reason, other.reason);
+        return Objects.equals(id, other.id) && Objects.equals(href, other.href) && Objects.equals(name, other.name) && Objects.equals(code, other.code) && Objects.equals(reason, other.reason);
     }
 }
