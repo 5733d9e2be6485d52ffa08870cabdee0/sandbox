@@ -7,6 +7,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -29,7 +30,9 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicAction,
     Emitter<String> emitter;
 
     @Inject
-    AdminClient adminClient;
+    @ApplicationScoped
+    @Named("outboundAdminClient")
+    AdminClient outboundAdminClient;
 
     @Override
     public ActionInvoker build(ProcessorDTO processor, Action action) {
@@ -40,7 +43,7 @@ public class KafkaTopicActionInvokerBuilder implements KafkaTopicAction,
         }
 
         try {
-            Set<String> strings = adminClient.listTopics().names().get(DEFAULT_LIST_TOPICS_TIMEOUT, DEFAULT_LIST_TOPICS_TIMEUNIT);
+            Set<String> strings = outboundAdminClient.listTopics().names().get(DEFAULT_LIST_TOPICS_TIMEOUT, DEFAULT_LIST_TOPICS_TIMEUNIT);
             if (!strings.contains(requiredTopic)) {
                 throw new GatewayProviderException(
                         String.format("The requested topic '%s' for Action on Processor '%s' for bridge '%s' does not exist", requiredTopic, processor.getId(), processor.getBridgeId()));

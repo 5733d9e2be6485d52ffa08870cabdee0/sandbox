@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -138,10 +139,13 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getNonExistingBridge() {
-        ErrorResponse response = TestUtils.getBridge("not-the-id").then().statusCode(404).extract().as(ErrorResponse.class);
-        assertThat(response.getId()).isEqualTo("4");
-        assertThat(response.getCode()).endsWith("4");
-        assertThat(response.getReason()).isNotBlank();
+        ErrorsResponse response = TestUtils.getBridge("not-the-id").then().statusCode(404).extract().as(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
+
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("4");
+        assertThat(error.getCode()).endsWith("4");
+        assertThat(error.getReason()).isNotBlank();
     }
 
     @Test

@@ -155,7 +155,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge deletion and related Work creation should always be in the same transaction
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
-        bridge.setDeletionRequestedAt(ZonedDateTime.now());
+        bridge.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
         workManager.schedule(bridge);
         metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
 
@@ -185,14 +185,14 @@ public class BridgesServiceImpl implements BridgesService {
         Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
-        bridge.setModifiedAt(ZonedDateTime.now());
+        bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             metricsService.onOperationComplete(bridge, MetricsOperation.DELETE);
         } else if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY)) {
             if (Objects.isNull(bridge.getPublishedAt())) {
-                bridge.setPublishedAt(ZonedDateTime.now());
+                bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
                 metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
             }
         }

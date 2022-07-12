@@ -11,7 +11,8 @@
     "aws_queue_name_or_arn": {
       "title": "Queue Name",
       "description": "The SQS Queue Name or ARN",
-      "type": "string"
+      "type": "string",
+      "pattern": "^https:\/\/sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com\/[0-9]{12}\/([^\/]+)$"
     },
     "aws_delete_after_read": {
       "title": "Auto-delete Messages",
@@ -110,7 +111,10 @@
       "title": "Protocol",
       "description": "The underlying protocol used to communicate with SQS",
       "type": "string",
-      "example": "http or https",
+      "enum": [
+        "http",
+        "https"
+      ],
       "default": "https"
     },
     "aws_queue_u_r_l": {
@@ -134,36 +138,7 @@
       "description": "Milliseconds before the next poll of the selected stream",
       "type": "integer",
       "default": 500
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "produces": {
-          "$ref": "#/$defs/data_shape/produces"
-        }
-      }
-    },
-    "processors": {}
-  },
-  "$defs": {
-    "data_shape": {
-      "produces": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "format"
-        ],
-        "properties": {
-          "format": {
-            "type": "string",
-            "default": "application/octet-stream",
-            "enum": [
-              "application/octet-stream"
-            ]
-          }
-        }
-      }
     }
   }
 }
+

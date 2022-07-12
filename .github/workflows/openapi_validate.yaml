@@ -9,10 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js 15.x
         uses: actions/setup-node@v3
         with:
           node-version: 15.x
-      - run: npx @stoplight/spectral@5.9.0 lint ./openapi/rhose-api.yaml
+      - run: npx @stoplight/spectral@5.9.0 lint ./openapi/smartevents_mgmt.yaml

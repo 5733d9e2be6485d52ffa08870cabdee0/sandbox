@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Set;
@@ -128,7 +129,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     }
 
     protected boolean isTimeoutExceeded(Work work, ManagedResource managedResource) {
-        boolean isTimeoutExceeded = ZonedDateTime.now().minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
+        boolean isTimeoutExceeded = ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(timeoutSeconds).isAfter(work.getSubmittedAt());
         if (isTimeoutExceeded) {
             LOGGER.error(
                     "Timeout exceeded trying to create dependencies for '{}' [{}].",

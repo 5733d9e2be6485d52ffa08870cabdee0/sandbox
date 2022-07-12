@@ -14,7 +14,7 @@
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException",
     "id": 3,
-    "reason": "The requested item does not exist in out repository",
+    "reason": "We were unable to process your request. Please contact Red Hat support if the error persists.",
     "type": "USER"
   },
   {
@@ -180,9 +180,15 @@
     "type": "USER"
   },
   {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
+    "id": 32,
+    "reason": "Unable to deserialize Filter definition.",
+    "type": "USER"
+  },
+  {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException",
     "id": 31,
-      "reason": "Service limit exceed",
+    "reason": "Service limit exceed",
     "type": "USER"
   }
 ]

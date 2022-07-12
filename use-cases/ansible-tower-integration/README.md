@@ -1,7 +1,6 @@
 # Ansible Tower Integration
 
-This document describes how to setup and run a single-machine system to demonstrate the integration between OpenBridge
-and Ansible Tower.
+This document describes how to setup and run a single-machine system to demonstrate the integration between OpenBridge and Ansible Tower.
 
 This system allows to trigger [Ansible Tower job templates](https://docs.ansible.com/ansible-tower/latest/html/userguide/job_templates.html)
 from events flowing through SmartEvents pipelines.
@@ -14,19 +13,17 @@ The diagram above gives a high level picture of the components that build this d
 
 1. A local Kafka cluster, run via [Docker Compose](https://docs.docker.com/compose/).
 2. A local Ansible Tower instance, run via [Vagrant](https://www.vagrantup.com/).
-3. A local OpenBridge instance configured with a bridge and at least one processor to match events that must trigger
-   Ansible Tower job templates. How to configure it is described in the section below.
-4. The Ansible Gateway: a Quarkus application that acts as bridge between SmartEvents and the Ansible Tower installation.
-In the real world it is supposed to be deployed inside the customer infrastructure.
+3. A local OpenBridge instance configured with a bridge and at least one processor to match events that must trigger Ansible Tower job templates. How to configure it is described in the section below.
+4. The Ansible Gateway: a Quarkus application that acts as bridge between SmartEvents and the Ansible Tower installation. In the real world it is supposed to be deployed inside the customer
+   infrastructure.
 
 The flow of information is the following:
 
 1. Events are published to the local OpenBridge instance via its REST APIs. In this document we are using [curl](https://curl.se/)
-but whatever speaks REST can be used (e.g. [Postman](https://www.postman.com/)).
+   but whatever speaks REST can be used (e.g. [Postman](https://www.postman.com/)).
 2. The SmartEvents instance processes events and, if some of them match, specific new events formatted as `{"job_template_id": $ID}`
-are sent to a predetermined Kafka topic (in our case `ansible-gateway-in`). These events specify the ID (as integer) of the job template we want to trigger.
-3. The Ansible Gateway listens for new events on the topic described above and, once a new one comes, it triggers the
-corresponding job template in Ansible Tower via its REST APIs.
+   are sent to a predetermined Kafka topic (in our case `ansible-gateway-in`). These events specify the ID (as integer) of the job template we want to trigger.
+3. The Ansible Gateway listens for new events on the topic described above and, once a new one comes, it triggers the corresponding job template in Ansible Tower via its REST APIs.
 
 ## Setup
 
@@ -84,14 +81,12 @@ The output should look like this and contain the credentials:
   For help, visit  http://support.ansible.com/
 ```
 
-***WARNING:** HTTPS **must** be used with the web interface. The local instance uses a self signed certificate, which browsers usually mark as insecure.
-Ignore the warning and move on*.
+***WARNING:** HTTPS **must** be used with the web interface. The local instance uses a self signed certificate, which browsers usually mark as insecure. Ignore the warning and move on*.
 
-`Vagrantfile` is configured to export the 443 port to 10443, so the interface is reachable
-at `https://localhost:10443/`. With the credentials found above, log into the web interface.
+`Vagrantfile` is configured to export the 443 port to 10443, so the interface is reachable at `https://localhost:10443/`. With the credentials found above, log into the web interface.
 
-The final step requires to follow the instructions shown after the first login to **obtain a
-development subscription** and configure the license. Once completed, the Ansible Tower dashboard will be finally reachable.
+The final step requires to follow the instructions shown after the first login to **obtain a development subscription** and configure the license. Once completed, the Ansible Tower dashboard will be
+finally reachable.
 
 ### SmartEvents
 
@@ -121,7 +116,7 @@ export AUTH_TOKEN=$(
 Let's create the bridge to send events to with this request:
 
 ```bash
-curl --request POST 'http://localhost:8080/api/v1/bridges' \
+curl --request POST 'http://localhost:8080/api/smartevents_mgmt/v1/bridges' \
      --header "Authorization: Bearer $AUTH_TOKEN" \
      --header 'Content-Type: application/json' \
      --data-raw '{"name": "ansible-gw_bridge"}'
@@ -134,7 +129,7 @@ The response should look like:
     "kind": "Bridge",
     "id": "724439ac-a2ef-45e9-8b97-e6812afc0911",
     "name": "ansible-gw_bridge",
-    "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
+    "href": "/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
     "submitted_at": "2021-10-21T09:53:31.623948+0000",
     "status": "accepted"
 }
@@ -143,7 +138,7 @@ The response should look like:
 The bridge must be `ready` in order to proceed. Run this request:
 
 ```bash
-curl --request GET 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911' \
+curl --request GET 'http://localhost:8080/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911' \
      --header "Authorization: Bearer $AUTH_TOKEN"
 ```
 
@@ -154,7 +149,7 @@ until the response looks like:
     "kind": "Bridge",
     "id": "724439ac-a2ef-45e9-8b97-e6812afc0911",
     "name": "ansible-gw_bridge",
-    "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
+    "href": "/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
     "submitted_at": "2021-10-21T11:53:31.623948+0200",
     "status": "ready",
     "endpoint": "/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911"
@@ -163,12 +158,12 @@ until the response looks like:
 
 The `endpoint` field contains the URL path to send events to.
 
-#### Create Processor 
+#### Create Processor
 
 Let's create the processor that will send events to Ansible Gateway when it matches a specific filter:
 
 ```bash
-curl --request POST 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors' \
+curl --request POST 'http://localhost:8080/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors' \
      --header "Authorization: Bearer $AUTH_TOKEN" \
      --header 'Content-Type: application/json' \
      --data-raw '{
@@ -177,6 +172,9 @@ curl --request POST 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b9
              "name": "ansible-gw_kafka-action",
              "parameters": {
                  "topic": "ansible-gateway-in"
+                 "kafka_broker_url": "<url of the local kafka install>",
+                 "kafka_client_id": "<client id of a service account>",
+                 "kafka_client_secret": "<client secret of a service account>"
              },
              "type": "kafka_topic_sink_0.1"
          },
@@ -197,13 +195,13 @@ The response should look like:
 {
    "id": "4ac6a66b-44db-4804-ad11-4883e41d8f3f",
    "kind": "Processor",
-   "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f",
+   "href": "/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f",
    "name": "ansible-gw_process-status",
    "bridge": {
       "kind": "Bridge",
       "id": "724439ac-a2ef-45e9-8b97-e6812afc0911",
       "name": "ansible-gw_bridge",
-      "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
+      "href": "/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911",
       "submitted_at": "2021-10-21T11:53:31.623948+0200",
       "status": "ready",
       "endpoint": "/ingress/events/724439ac-a2ef-45e9-8b97-e6812afc0911"
@@ -223,7 +221,10 @@ The response should look like:
       "name": "ansible-gw_kafka-action",
       "type": "kafka_topic_sink_0.1",
       "parameters": {
-         "topic": "ansible-gateway-in"
+         "topic": "ansible-gateway-in",
+         "kafka_broker_url": "<url of the local kafka install>",
+         "kafka_client_id": "<client id of a service account>",
+         "kafka_client_secret": "<client secret of a service account>"
       }
    }
 }
@@ -232,7 +233,7 @@ The response should look like:
 The processor must be `ready` in order to proceed. Run this request:
 
 ```bash
-curl --request GET 'http://localhost:8080/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f' \
+curl --request GET 'http://localhost:8080/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f' \
      --header "Authorization: Bearer $AUTH_TOKEN"
 ```
 
@@ -242,7 +243,7 @@ until the response looks like:
 {
    "id": "4ac6a66b-44db-4804-ad11-4883e41d8f3f",
    "kind": "Processor",
-   "href": "/api/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f",
+   "href": "/api/smartevents_mgmt/v1/bridges/724439ac-a2ef-45e9-8b97-e6812afc0911/processors/4ac6a66b-44db-4804-ad11-4883e41d8f3f",
    "name": "ansible-gw_process-status",
    ...
    "status": "ready",
@@ -263,8 +264,8 @@ mvn clean compile quarkus:dev -f use-cases/ansible-tower-integration/ansible-gat
 
 ## Run
 
-To run the demo, simply send events matching the processor to the bridge endpoint. These are test events made only for this demo. This is the request (change the endpoint 
-according to the Bridge Ingress endpoint you have deployed):
+To run the demo, simply send events matching the processor to the bridge endpoint. These are test events made only for this demo. This is the request (change the endpoint according to the Bridge
+Ingress endpoint you have deployed):
 
 ```bash
 curl --request POST 'http://<your_bridge_ingress_endpoint>/events' \
@@ -283,5 +284,5 @@ curl --request POST 'http://<your_bridge_ingress_endpoint>/events' \
      }'
 ```
 
-If everything goes well, once each of these requests is successfully received by SmartEvents, a new job instance of type `Demo Job Template` should
-appear in the Jobs page of Ansible Tower dashboard. Verify by opening the page first and then sending new events.
+If everything goes well, once each of these requests is successfully received by SmartEvents, a new job instance of type `Demo Job Template` should appear in the Jobs page of Ansible Tower dashboard.
+Verify by opening the page first and then sending new events.

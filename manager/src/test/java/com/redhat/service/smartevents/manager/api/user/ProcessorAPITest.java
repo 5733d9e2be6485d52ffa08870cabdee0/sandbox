@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
@@ -487,7 +489,41 @@ public class ProcessorAPITest {
         action.setMapParameters(params);
 
         Response response = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", null, null, action));
-        assertThat(response.getStatusCode()).isEqualTo(202);
+        assertThat(response.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = TestConstants.DEFAULT_CUSTOMER_ID)
+    public void addProcessorWithWrongFilterDefinitionToBridge() {
+        BridgeResponse bridgeResponse = createAndDeployBridge();
+
+        String requestBody = "{" +
+                "\"name\": \"processorInvalid\"," +
+                "\"action\": {" +
+                "  \"type\": \"webhook_sink_0.1\"," +
+                "  \"parameters\": {" +
+                "    \"endpoint\": \"https://webhook.site/abcdef/\"" +
+                "  }" +
+                "}," +
+                "\"filters\": [" +
+                "  {" +
+                "    \"type\": \"InvalidType\"," +
+                "    \"key\": \"data.value\"," +
+                "    \"value\": \"test\"" +
+                "  }" +
+                "]" +
+                "}";
+
+        Response response = TestUtils.addProcessorToBridgeWithRequestBody(bridgeResponse.getId(), requestBody);
+        assertThat(response.getStatusCode()).isEqualTo(400);
+
+        ErrorsResponse errors = response.as(ErrorsResponse.class);
+        assertThat(errors.getItems()).hasSize(1);
+
+        ErrorResponse error = errors.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("32");
+        assertThat(error.getCode()).isEqualTo("OPENBRIDGE-32");
+        assertThat(error.getReason()).contains("InvalidType");
     }
 
     @Test

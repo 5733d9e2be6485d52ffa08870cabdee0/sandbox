@@ -1,0 +1,12 @@
+# Patching liveness probe failure threshold for manager to start properly on slow environments
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-bridge
+spec:
+  template:
+    spec:
+      containers:
+        - name: event-bridge-manager
+          livenessProbe:
+            failureThreshold: 10

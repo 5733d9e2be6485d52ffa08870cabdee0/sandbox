@@ -134,36 +134,6 @@
       "description": "Milliseconds before the next poll of the selected bucket",
       "type": "integer",
       "default": 500
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "produces": {
-          "$ref": "#/$defs/data_shape/produces"
-        }
-      }
-    },
-    "processors": {}
-  },
-  "$defs": {
-    "data_shape": {
-      "produces": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "format"
-        ],
-        "properties": {
-          "format": {
-            "type": "string",
-            "default": "application/octet-stream",
-            "enum": [
-              "application/octet-stream"
-            ]
-          }
-        }
-      }
     }
   }
 }

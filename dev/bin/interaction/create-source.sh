@@ -65,7 +65,7 @@ else
 fi
 
 printf "\n\nCreating the ${source_type} source with name $source_name\n"
-PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$source_payload" $MANAGER_URL/api/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
+PROCESSOR_ID=$(curl -s -X POST -H "Authorization: $OB_TOKEN" -H 'Accept: application/json' -H 'Content-Type: application/json' -d "$source_payload" $MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID/processors | jq -r .id)
 
 printf "\n\nSource ${source_type} created: $source_name\n"
 echo "export PROCESSOR_ID=$PROCESSOR_ID"

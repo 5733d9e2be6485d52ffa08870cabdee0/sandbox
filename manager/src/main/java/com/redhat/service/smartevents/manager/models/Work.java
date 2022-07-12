@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.models;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -101,8 +102,8 @@ public class Work {
 
     public static Work forResource(ManagedResource managedResource, String workerId) {
         Work w = new Work();
-        w.setSubmittedAt(ZonedDateTime.now());
-        w.setModifiedAt(ZonedDateTime.now());
+        w.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        w.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         w.setType(managedResource.getClass().getName());
         w.setManagedResourceId(managedResource.getId());
         w.setWorkerId(workerId);

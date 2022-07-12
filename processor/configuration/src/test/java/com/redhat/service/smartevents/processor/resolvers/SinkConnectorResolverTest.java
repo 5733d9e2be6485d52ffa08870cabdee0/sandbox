@@ -9,9 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
-import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
-import com.redhat.service.smartevents.processor.resolvers.custom.AwsLambdaActionResolver;
+import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -23,23 +22,28 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-class AwsLambdaActionResolverTest {
+class SinkConnectorResolverTest {
 
     private static final String TEST_BRIDGE_ID = "test-bridge-id";
     private static final String TEST_CUSTOMER_ID = "test-customer-id";
     private static final String TEST_PROCESSOR_ID = "test-processor-id";
     private static final String TEST_PROCESSOR_TOPIC_NAME = "ob-test-processor-id";
+    private static final String TEST_CHANNEL_PARAM = "myChannel";
+    private static final String TEST_WEBHOOK_PARAM = "myWebhook";
 
-    private static final String AWS_FUNCTION_PARAM = "aws_function";
-    private static final String AWS_REGION_PARAM = "aws_region";
-    private static final String AWS_ACCESS_KEY_ID_PARAM = "aws_access_key";
-    private static final String AWS_SECRET_ACCESS_KEY_PARAM = "aws_secret_key";
+    private static final String TEST_BROKER_URL = "testBrokerUrl";
+    private static final String TEST_CLIENT_ID = "testClientId";
+    private static final String TEST_CLIENT_SECRET = "testClientSecret";
+    private static final String TEST_SECURITY_PROTOCOL = "testSecurityProtocol";
 
     @Inject
-    AwsLambdaActionResolver awsLambdaActionResolver;
+    SinkConnectorResolver sinkConnectorResolver;
 
     @InjectMock
     GatewayConfiguratorService gatewayConfiguratorServiceMock;
+
+    @InjectMock
+    GatewayConfiguratorService gatewayConfiguratorService;
 
     @BeforeEach
     void beforeEach() {
@@ -47,33 +51,37 @@ class AwsLambdaActionResolverTest {
 
         when(gatewayConfiguratorServiceMock.getConnectorTopicName(TEST_PROCESSOR_ID)).thenReturn(TEST_PROCESSOR_TOPIC_NAME);
         when(gatewayConfiguratorServiceMock.getConnectorTopicName(not(eq(TEST_PROCESSOR_ID)))).thenThrow(new IllegalStateException());
+
+        when(gatewayConfiguratorService.getBootstrapServers()).thenReturn(TEST_BROKER_URL);
+        when(gatewayConfiguratorService.getClientId()).thenReturn(TEST_CLIENT_ID);
+        when(gatewayConfiguratorService.getClientSecret()).thenReturn(TEST_CLIENT_SECRET);
+        when(gatewayConfiguratorService.getSecurityProtocol()).thenReturn(TEST_SECURITY_PROTOCOL);
     }
 
     @Test
     void testTransform() {
         Action action = buildTestAction();
 
-        Action transformedAction = awsLambdaActionResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
+        Action transformedAction = sinkConnectorResolver.resolve(action, TEST_CUSTOMER_ID, TEST_BRIDGE_ID, TEST_PROCESSOR_ID);
 
         assertThat(transformedAction.getType()).isEqualTo(KafkaTopicAction.TYPE);
 
-        assertThat(transformedAction.getParameter(AWS_FUNCTION_PARAM)).isEqualTo("function");
-        assertThat(transformedAction.getParameter(AWS_REGION_PARAM)).isEqualTo("eu-north-1");
-        assertThat(transformedAction.getParameter(AWS_ACCESS_KEY_ID_PARAM)).isEqualTo("keyid");
-        assertThat(transformedAction.getParameter(AWS_SECRET_ACCESS_KEY_PARAM)).isEqualTo("key");
-
+        assertThat(transformedAction.getParameter(SlackAction.CHANNEL_PARAM)).isEqualTo(TEST_CHANNEL_PARAM);
+        assertThat(transformedAction.getParameter(SlackAction.WEBHOOK_URL_PARAM)).isEqualTo(TEST_WEBHOOK_PARAM);
         assertThat(transformedAction.getParameter(KafkaTopicAction.TOPIC_PARAM)).isEqualTo(TEST_PROCESSOR_TOPIC_NAME);
+
+        assertThat(transformedAction.getParameter(KafkaTopicAction.BROKER_URL)).isEqualTo(TEST_BROKER_URL);
+        assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_ID)).isEqualTo(TEST_CLIENT_ID);
+        assertThat(transformedAction.getParameter(KafkaTopicAction.CLIENT_SECRET)).isEqualTo(TEST_CLIENT_SECRET);
     }
 
     private Action buildTestAction() {
         Map<String, String> parameters = Map.of(
-                AWS_FUNCTION_PARAM, "function",
-                AWS_REGION_PARAM, "eu-north-1",
-                AWS_ACCESS_KEY_ID_PARAM, "keyid",
-                AWS_SECRET_ACCESS_KEY_PARAM, "key");
+                SlackAction.CHANNEL_PARAM, TEST_CHANNEL_PARAM,
+                SlackAction.WEBHOOK_URL_PARAM, TEST_WEBHOOK_PARAM);
 
         Action action = new Action();
-        action.setType(AwsLambdaAction.TYPE);
+        action.setType(SlackAction.TYPE);
         action.setMapParameters(parameters);
         return action;
     }

@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.processor.resolvers;
+package com.redhat.service.smartevents.processor.resolvers.custom;
 
 import java.util.Map;
 
@@ -10,7 +10,6 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.GatewayP
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.processor.actions.ansible.AnsibleTowerJobTemplateAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.processor.resolvers.custom.AnsibleTowerJobTemplateActionResolver;
 
 import io.quarkus.test.junit.QuarkusTest;
 
