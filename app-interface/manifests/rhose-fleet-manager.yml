@@ -315,7 +315,7 @@ parameters:
     value: fleet-manager
     description: the fleet-manager vault secret
   - name: QUARKUS_LOG_LEVEL
-    value: "DEBUG"
+    value: "INFO"
     description: the quarkus log level
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
