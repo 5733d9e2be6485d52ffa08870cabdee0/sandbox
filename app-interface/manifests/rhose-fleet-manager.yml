@@ -300,16 +300,16 @@ parameters:
     value: "latest"
     description: the fleet-manager image tag 
   - name: FLEET_MANAGER_LIMITS_CPU
-    value: "200m"
+    value: "2"
     description: the fleet-manager cpu limit
   - name: FLEET_MANAGER_LIMITS_MEMORY
-    value: "1000Mi"
+    value: "4000Mi"
     description: the fleet-manager memory limit
   - name: FLEET_MANAGER_REQUESTS_CPU
-    value: "50m"
+    value: "1"
     description: the fleet-manager cpu request
   - name: FLEET_MANAGER_REQUESTS_MEMORY
-    value: "250Mi"
+    value: "2000Mi"
     description: the fleet-manager memory request
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
