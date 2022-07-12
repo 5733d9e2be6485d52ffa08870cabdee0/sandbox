@@ -15,6 +15,7 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.camel.CamelService;
@@ -91,7 +92,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         }
 
         ProcessorDTO processorDTO = bridgeExecutor.toDTO();
-        if (processorDTO.getDefinition().getProcessing() == null) {
+        ProcessorDefinition definition = processorDTO.getDefinition();
+        if (definition != null && definition.getProcessing() == null) {
             LOGGER.info("---- No camel processing found. Provisioning executor.");
 
             // Check if the image of the executor has to be updated
