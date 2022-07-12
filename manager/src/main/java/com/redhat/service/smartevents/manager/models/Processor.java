@@ -32,7 +32,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
         @NamedQuery(name = "PROCESSOR.findByBridgeIdAndName",
                 query = "from Processor p where p.name=:name and p.bridge.id=:bridgeId"),
         @NamedQuery(name = "PROCESSOR.findByShardIdWithReadyDependencies",
-                query = "select p " +
+                query = "select distinct(p) " +
                         "from Processor p " +
                         "join fetch p.bridge " +
                         "left join p.connectorEntities as c " +

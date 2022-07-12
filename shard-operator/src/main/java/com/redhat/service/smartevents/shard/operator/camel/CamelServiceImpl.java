@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.camel;
 
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -30,38 +28,36 @@ public class CamelServiceImpl implements CamelService {
     CustomerNamespaceProvider customerNamespaceProvider;
 
     @Override
-    public Optional<CamelIntegration> fetchOrCreateCamelIntegration(BridgeExecutor bridgeExecutor, Secret secret) {
+    public CamelIntegration fetchOrCreateCamelIntegration(BridgeExecutor bridgeExecutor, Secret secret) {
         ProcessorDTO processorDTO = bridgeExecutor.toDTO();
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
         Processing processing = processorDTO.getDefinition().getProcessing();
-        if (processing != null) {
-            LOGGER.info("------ Creating a Camel Integration");
+        LOGGER.info("------ Creating a Camel Integration");
 
-            CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace.getMetadata().getName(), processing, secret);
+        CamelIntegration expectedIntegrationFromDTO = CamelIntegration.fromDTO(processorDTO, namespace.getMetadata().getName(), processing, secret);
 
-            LOGGER.info("------ integration expected: " + expectedIntegrationFromDTO);
+        LOGGER.info("------ integration expected: " + expectedIntegrationFromDTO);
 
-            CamelIntegration existingCamelIntegration = kubernetesClient
+        CamelIntegration existingCamelIntegration = kubernetesClient
+                .resources(CamelIntegration.class)
+                .inNamespace(namespace.getMetadata().getName())
+                .withName(CamelIntegration.resolveResourceName(processorDTO.getId()))
+                .get();
+
+        if (existingCamelIntegration == null || !expectedIntegrationFromDTO.getSpec().equals(existingCamelIntegration.getSpec())) {
+            LOGGER.info("------ Integration not found, creating...");
+
+            CamelIntegration createdResource = kubernetesClient
                     .resources(CamelIntegration.class)
                     .inNamespace(namespace.getMetadata().getName())
-                    .withName(CamelIntegration.resolveResourceName(processorDTO.getId()))
-                    .get();
+                    .createOrReplace(expectedIntegrationFromDTO);
 
-            if (existingCamelIntegration == null || !expectedIntegrationFromDTO.getSpec().equals(existingCamelIntegration.getSpec())) {
-                LOGGER.info("------ Integration not found, creating...");
+            LOGGER.info("------ Created resource: " + createdResource);
 
-                CamelIntegration createdResource = kubernetesClient
-                        .resources(CamelIntegration.class)
-                        .inNamespace(namespace.getMetadata().getName())
-                        .createOrReplace(expectedIntegrationFromDTO);
-
-                LOGGER.info("------ Created resource: " + createdResource);
-
-                return Optional.of(createdResource);
-            }
+            return createdResource;
         }
 
-        return Optional.empty();
+        return existingCamelIntegration;
     }
 }

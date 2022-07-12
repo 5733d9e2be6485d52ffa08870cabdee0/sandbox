@@ -35,8 +35,6 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
-import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -68,9 +66,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     ShardService shardService;
     @Inject
     WorkManager workManager;
-
-    @Inject
-    MetricsService metricsService;
 
     @Transactional
     @Override
@@ -171,7 +166,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         LOGGER.info("+++++  Connector entities created ");
 
         workManager.schedule(newProcessor);
-        metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 newProcessor.getId(),
@@ -271,7 +265,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -300,7 +293,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {
             p.setStatus(ManagedResourceStatus.DELETED);
             processorDAO.deleteById(processorDTO.getId());
-            metricsService.onOperationComplete(p, MetricsOperation.DELETE);
             return p;
         }
 
@@ -311,9 +303,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
                     p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
                 } else {
-                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
                 }
             }
         }
@@ -361,7 +351,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
-        metricsService.onOperationStart(processor, MetricsOperation.DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),

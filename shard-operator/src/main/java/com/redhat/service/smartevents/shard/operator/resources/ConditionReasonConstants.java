@@ -20,4 +20,5 @@ public class ConditionReasonConstants {
     public static final String KNATIVE_BROKER_NOT_READY = "KnativeBrokerNotReady";
     public static final String PROMETHEUS_UNAVAILABLE = "PrometheusUnavailable";
     public static final String SECRETS_NOT_FOUND = "SecretsNotFound";
+    public static final String CAMEL_NOT_READY = "CamelNotReady";
 }

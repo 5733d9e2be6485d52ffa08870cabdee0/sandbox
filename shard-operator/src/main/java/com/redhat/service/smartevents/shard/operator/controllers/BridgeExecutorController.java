@@ -151,18 +151,23 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         } else {
             LOGGER.info("---- Camel processing found. Not provisioning executor provisioning Camel resource instead");
 
-            Optional<CamelIntegration> camelIntegration = camelService.fetchOrCreateCamelIntegration(bridgeExecutor, secret);
-            if (camelIntegration.isPresent()) {
-                // this is an optional resource
-                LOGGER.debug("CameIntegration resource {} for BridgeExecutor: '{}' in namespace '{}' is ready", camelIntegration.get(),
-                        bridgeExecutor.getMetadata().getName(),
-                        bridgeExecutor.getMetadata().getNamespace());
-            }
+            CamelIntegration camelIntegration = camelService.fetchOrCreateCamelIntegration(bridgeExecutor, secret);
+            // this is an optional resource
+            LOGGER.info("CameIntegration resource {} for BridgeExecutor: '{}' in namespace '{}' is ready", camelIntegration,
+                    bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
+
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
+                    ConditionReasonConstants.CAMEL_NOT_READY,
+                    "Camel not ready",
+                    "Camel not ready");
         }
 
-        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         if (!bridgeExecutor.getStatus().isReady()) {
+            LOGGER.info("++++ BridgeExecutor: '{}' in namespace not ready notifying", bridgeExecutor);
+
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
