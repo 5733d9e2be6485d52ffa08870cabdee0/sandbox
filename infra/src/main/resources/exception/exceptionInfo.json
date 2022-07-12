@@ -180,15 +180,15 @@
     "type": "USER"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException",
     "id": 31,
-    "reason": "Unable to deserialize Filter definition.",
+    "reason": "Service limit exceeded",
     "type": "USER"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException",
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
     "id": 32,
-    "reason": "Service limit exceeded",
+    "reason": "Unable to deserialize Filter definition.",
     "type": "USER"
   }
 ]
