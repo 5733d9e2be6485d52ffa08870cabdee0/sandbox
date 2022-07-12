@@ -22,12 +22,14 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudRegionListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudRegionResponse;
 import com.redhat.service.smartevents.manager.dao.CloudProviderDAO;
+import com.redhat.service.smartevents.manager.models.CloudProvider;
 
 @Tag(name = "Cloud Providers", description = "List Supported Cloud Providers and Regions")
 @Path(APIConstants.CLOUD_PROVIDERS_BASE_PATH)
@@ -60,7 +62,13 @@ public class CloudProviderAPI {
     @GET
     @Path("{id}")
     public Response getCloudProvider(@PathParam("id") @NotEmpty String id) {
-        return Response.ok(CloudProviderResponse.from(cloudProviderDAO.findById(id))).build();
+
+        CloudProvider cloudProvider = cloudProviderDAO.findById(id);
+        if (cloudProvider == null) {
+            throw new ItemNotFoundException("Cloud Provider with id '" + id + "' does not exist.");
+        }
+
+        return Response.ok(CloudProviderResponse.from(cloudProvider)).build();
     }
 
     @APIResponses(value = {

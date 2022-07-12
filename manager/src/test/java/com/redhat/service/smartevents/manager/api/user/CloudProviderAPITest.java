@@ -103,4 +103,16 @@ public class CloudProviderAPITest {
                 .statusCode();
         assertThat(fourOhFour).isEqualTo(404);
     }
+
+    @Test
+    public void getCloudProvider_unknownCloudProvider() {
+        int fourOhFour = given()
+                .basePath(APIConstants.CLOUD_PROVIDERS_BASE_PATH + "/foobar")
+                .contentType(ContentType.JSON)
+                .when()
+                .get()
+                .andReturn()
+                .statusCode();
+        assertThat(fourOhFour).isEqualTo(404);
+    }
 }
