@@ -28,7 +28,6 @@
       "type": "boolean",
       "title": "SSL Verification Disabled",
       "description": "Specify if SSL verification has to be disabled",
-      "example": "false",
       "default": false
     }
   },
