@@ -181,14 +181,14 @@
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
-    "id": 32,
+    "id": 31,
     "reason": "Unable to deserialize Filter definition.",
     "type": "USER"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException",
-    "id": 31,
-    "reason": "Service limit exceed",
+    "id": 32,
+    "reason": "Service limit exceeded",
     "type": "USER"
   }
 ]

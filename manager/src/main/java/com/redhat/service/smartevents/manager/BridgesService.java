@@ -32,7 +32,20 @@ public interface BridgesService {
 
     BridgeResponse toResponse(Bridge bridge);
 
+    /**
+     * Provide count of bridges whose expireAt date is in future or null.
+     * 
+     * @param orgId Organisation Id
+     * @param instanceType instance type.
+     * @return Active bridge count.
+     */
     Long getActiveBridgeCount(String orgId, QuotaType instanceType);
 
+    /**
+     * Check whether bridge for given id is expire or not.
+     * 
+     * @param id Bridge Id.
+     * @return @True if active else @false.
+     */
     boolean isBridgeActive(String id);
 }

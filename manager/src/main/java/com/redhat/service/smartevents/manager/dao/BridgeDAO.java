@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +65,7 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countActiveBridgeByOrgAndInstanceType", Long.class);
         namedQuery.setParameter("organisationId", orgId);
         namedQuery.setParameter("instanceType", instanceType);
-        namedQuery.setParameter("currentTimeStamp", ZonedDateTime.now());
+        namedQuery.setParameter("currentTimeStamp", ZonedDateTime.now(ZoneOffset.UTC));
         return namedQuery.getSingleResult();
     }
 }

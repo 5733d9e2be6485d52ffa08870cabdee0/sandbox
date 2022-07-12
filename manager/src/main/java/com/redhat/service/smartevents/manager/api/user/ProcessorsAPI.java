@@ -173,7 +173,7 @@ public class ProcessorsAPI {
     }
 
     /**
-     * Validate weather user is allowed to create new processor instance under an bridge
+     * Validate whether user is allowed to create new processor instance under an bridge
      * 
      * @param bridgeId Bridge id.
      */
@@ -188,7 +188,7 @@ public class ProcessorsAPI {
     }
 
     /**
-     * Validate weather user is allowed to update existing processor instance under an bridge
+     * Validate whether user is allowed to update existing processor instance under an bridge
      * 
      * @param bridgeId Bridge id.
      */

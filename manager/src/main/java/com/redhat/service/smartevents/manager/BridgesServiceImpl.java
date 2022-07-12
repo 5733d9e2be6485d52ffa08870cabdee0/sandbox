@@ -72,7 +72,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         Bridge bridge = bridgeRequest.toEntity();
         bridge.setStatus(ManagedResourceStatus.ACCEPTED);
-        bridge.setSubmittedAt(ZonedDateTime.now());
+        bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setCustomerId(customerId);
         bridge.setOrganisationId(organisationId);
         bridge.setOwner(owner);
