@@ -239,6 +239,8 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MC_TOPIC_NAME
+                - name: QUARKUS_LOG_LEVEL
+                  value: ${QUARKUS_LOG_LEVEL}
                 - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
@@ -312,6 +314,9 @@ parameters:
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
     description: the fleet-manager vault secret
+  - name: QUARKUS_LOG_LEVEL
+    value: "DEBUG"
+    description: the quarkus log level
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
     description: the aws rds secret
