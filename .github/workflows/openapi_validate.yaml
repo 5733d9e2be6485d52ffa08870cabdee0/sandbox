@@ -14,9 +14,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 15.x
+####### rhoas-list-schema skipped due to https://issues.redhat.com/browse/MGDOBR-935
       - run: |
           npx @stoplight/spectral@5.9.0 lint \
           ./openapi/smartevents_mgmt.yaml \
-          --skip-rule rhoas-error-response \
-          --skip-rule rhoas-error-schema \
           --skip-rule rhoas-list-schema
