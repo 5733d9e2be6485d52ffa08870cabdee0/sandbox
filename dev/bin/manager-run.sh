@@ -40,7 +40,7 @@ mvn \
   -Devent-bridge.kafka.security.protocol=SASL_SSL \
   -Devent-bridge.rhoas.instance-api.host=https://admin-server-${bootstrap_server_host}/rest \
   -Devent-bridge.rhoas.mgmt-api.host=https://api.openshift.com \
-  -Devent-bridge.rhoas.sso.mas.auth-server-url=https://identity.api.openshift.com/auth/realms/rhoas \
+  -Devent-bridge.rhoas.sso.mas.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Devent-bridge.rhoas.sso.mas.client-id=${admin_client_id} \
   -Devent-bridge.rhoas.sso.mas.client-secret=${admin_client_secret} \
   -Dminikubeip=${MINIKUBE_IP} \
