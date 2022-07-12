@@ -11,6 +11,6 @@
   ],
   "default_quotas": [{
     "quota_type": "EVAL",
-    "quota": "1"
+    "quota": "30"
   }]
 }
