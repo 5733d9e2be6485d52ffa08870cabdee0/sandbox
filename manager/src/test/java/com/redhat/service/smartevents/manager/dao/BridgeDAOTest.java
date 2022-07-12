@@ -7,7 +7,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.redhat.service.smartevents.manager.models.QuotaType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +16,7 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;

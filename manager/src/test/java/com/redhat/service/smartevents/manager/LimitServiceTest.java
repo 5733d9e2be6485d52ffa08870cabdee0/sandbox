@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.QuotaLimit;
 import com.redhat.service.smartevents.manager.models.QuotaType;
@@ -41,10 +41,10 @@ public class LimitServiceTest {
 
         String orgId = "15247674";
         when(bridgesService.getActiveBridgeCount(orgId, QuotaType.EVAL))
-                .thenReturn(6L);
+                .thenReturn(36L);
         assertThatThrownBy(() -> {
             limitService.getOrganisationQuotaLimit(orgId);
-        }).isInstanceOf(ServiceLimitExceedException.class).hasMessage("Max allowed bridge instance limit exceed");
+        }).isInstanceOf(ServiceLimitException.class).hasMessage("Max allowed bridge instance limit exceed");
     }
 
     @Test

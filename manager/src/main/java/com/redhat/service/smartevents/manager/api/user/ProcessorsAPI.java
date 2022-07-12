@@ -30,7 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.LimitService;
@@ -183,7 +183,7 @@ public class ProcessorsAPI {
         long existingProcessorCount = processorService.getUserVisibleProcessorsCount(bridgeId);
 
         if (existingProcessorCount >= maxAllowedProcessors) {
-            throw new ServiceLimitExceedException("Max allowed processor instance limit exceed");
+            throw new ServiceLimitException("Max allowed processor instance limit exceed");
         }
     }
 
@@ -195,7 +195,7 @@ public class ProcessorsAPI {
     private void validateBridgeActive(String bridgeId) {
         boolean activeBridge = bridgesService.isBridgeActive(bridgeId);
         if (!activeBridge) {
-            throw new ServiceLimitExceedException("Bridge expired");
+            throw new ServiceLimitException("Bridge expired");
         }
     }
 }

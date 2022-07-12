@@ -426,7 +426,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetProcessorsCount() {
-        Long result = processorService.getUserVisibleProcessorsCount(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID);
+        Long result = processorService.getProcessorsCount(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(3L);
     }
 
@@ -692,7 +692,7 @@ class ProcessorServiceTest {
 
     @Test
     public void testGetUserVisibleProcessorsCount() {
-        long count =  processorService.getUserVisibleProcessorsCount(DEFAULT_BRIDGE_ID);
+        long count = processorService.getUserVisibleProcessorsCount(DEFAULT_BRIDGE_ID);
         assertThat(count).isEqualTo(1);
     }
 

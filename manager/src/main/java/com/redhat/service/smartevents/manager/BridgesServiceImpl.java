@@ -136,7 +136,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Override
     @Transactional
     public void deleteBridge(String id, String customerId) {
-        Long processorsCount = processorService.getUserVisibleProcessorsCount(id, customerId);
+        Long processorsCount = processorService.getProcessorsCount(id, customerId);
         ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(id, customerId);
 
         if (processorsCount != hiddenProcessors.getTotal()) {

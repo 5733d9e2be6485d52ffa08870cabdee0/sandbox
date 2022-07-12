@@ -186,7 +186,7 @@
     "type": "USER"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException",
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException",
     "id": 31,
     "reason": "Service limit exceed",
     "type": "USER"

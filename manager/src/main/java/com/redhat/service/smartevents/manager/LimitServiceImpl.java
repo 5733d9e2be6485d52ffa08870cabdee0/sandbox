@@ -16,7 +16,6 @@ import javax.validation.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.limits.InstanceQuota;
@@ -90,7 +89,7 @@ public class LimitServiceImpl implements LimitService {
             return QuotaType.EVAL;
         }
 
-        throw new ServiceLimitExceedException("Max allowed bridge instance limit exceed");
+        throw new ServiceLimitException("Max allowed bridge instance limit exceed");
     }
 
     private boolean isQuotaAvailable(String orgId, List<InstanceQuota> instanceQuotas, QuotaType instanceType) {
