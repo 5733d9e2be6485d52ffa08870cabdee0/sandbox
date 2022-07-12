@@ -23,7 +23,7 @@ public interface ProcessorService {
 
     Processor updateProcessorStatus(ProcessorDTO processorDTO);
 
-    Long getProcessorsCount(String bridgeId, String customerId);
+    Long getUserVisibleProcessorsCount(String bridgeId, String customerId);
 
     ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo);
 
@@ -35,5 +35,5 @@ public interface ProcessorService {
 
     ProcessorResponse toResponse(Processor processor);
 
-    long getProcessorsCount(String bridgeId);
+    long getUserVisibleProcessorsCount(String bridgeId);
 }

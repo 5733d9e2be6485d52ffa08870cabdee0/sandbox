@@ -27,8 +27,8 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
-        @NamedQuery(name = "BRIDGE.countActiveBridgeByOrganisationId",
-                query = "select count(b.id) from Bridge b where b.organisationId=:organisationId and (b.expireAt>:currentTimeStamp OR b.expireAt is null)"),
+        @NamedQuery(name = "BRIDGE.countActiveBridgeByOrgAndInstanceType",
+                query = "select count(b.id) from Bridge b where b.organisationId=:organisationId and b.instanceType=:instanceType and (b.expireAt>:currentTimeStamp OR b.expireAt is null)"),
 })
 @Entity
 @FilterDefs({
@@ -59,9 +59,9 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
     @Column(name = "owner")
     private String owner;
 
-    @Column(name = "instance_type")
+    @Column(name = "instance_type", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
-    private LimitInstanceType instanceType;
+    private QuotaType instanceType;
 
     @Column(name = "expire_at", updatable = false, columnDefinition = "TIMESTAMP")
     protected ZonedDateTime expireAt;
@@ -121,11 +121,11 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
         this.expireAt = expireAt;
     }
 
-    public LimitInstanceType getInstanceType() {
+    public QuotaType getInstanceType() {
         return instanceType;
     }
 
-    public void setInstanceType(LimitInstanceType instanceType) {
+    public void setInstanceType(QuotaType instanceType) {
         this.instanceType = instanceType;
     }
 

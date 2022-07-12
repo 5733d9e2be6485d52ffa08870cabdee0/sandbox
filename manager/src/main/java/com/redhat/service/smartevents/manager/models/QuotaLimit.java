@@ -1,24 +1,26 @@
 package com.redhat.service.smartevents.manager.models;
 
+import java.time.Duration;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class InstanceLimit {
+public class QuotaLimit {
 
-    @JsonProperty("instance_type")
-    private LimitInstanceType instanceType;
+    @JsonProperty("quota_type")
+    private QuotaType quotaType;
 
     @JsonProperty("processor_limit")
     private int processorLimit;
 
     @JsonProperty("bridge_duration")
-    private String bridgeDuration;
+    private Duration bridgeDuration;
 
-    public LimitInstanceType getInstanceType() {
-        return instanceType;
+    public QuotaType getQuotaType() {
+        return quotaType;
     }
 
-    public void setInstanceType(LimitInstanceType instanceType) {
-        this.instanceType = instanceType;
+    public void setQuotaType(QuotaType quotaType) {
+        this.quotaType = quotaType;
     }
 
     public int getProcessorLimit() {
@@ -29,11 +31,11 @@ public class InstanceLimit {
         this.processorLimit = processorLimit;
     }
 
-    public String getBridgeDuration() {
+    public Duration getBridgeDuration() {
         return bridgeDuration;
     }
 
-    public void setBridgeDuration(String bridgeDuration) {
+    public void setBridgeDuration(Duration bridgeDuration) {
         this.bridgeDuration = bridgeDuration;
     }
 }

@@ -1,23 +1,16 @@
 {
-  "instance_limits": [{
-    "instance_type": "EVAL",
-    "processor_limit": "6",
+  "quota_limits": [{
+    "quota_type": "EVAL",
+    "processor_limit": "30",
     "bridge_duration": "PT12H"
   },
     {
-      "instance_type": "STANDARD",
+      "quota_type": "STANDARD",
       "processor_limit": "30"
     }
   ],
   "default_quotas": [{
-    "instance_type": "EVAL",
+    "quota_type": "EVAL",
     "quota": "1"
-  }],
-  "organisation_quotas": [{
-    "org_id": "15247674",
-    "instance_quotas": [{
-      "instance_type": "EVAL",
-      "quota": 6
-    }]
   }]
 }

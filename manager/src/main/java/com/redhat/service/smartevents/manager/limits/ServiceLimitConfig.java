@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.limits;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -7,14 +8,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.manager.models.InstanceLimit;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
 
 public class ServiceLimitConfig {
 
-    @JsonProperty("instance_limits")
-    @NotEmpty(message = "Instance limits types can't be null or empty")
+    @JsonProperty("quota_limits")
+    @NotEmpty(message = "Quota limits can't be null or empty")
     @Valid
-    private List<InstanceLimit> instanceLimits;
+    private List<QuotaLimit> quotaLimits;
 
     @JsonProperty("default_quotas")
     @NotNull(message = "Default quotas can't be null or empty")
@@ -25,12 +26,16 @@ public class ServiceLimitConfig {
     @Valid
     private List<OrganisationQuotas> organisationQuotas;
 
-    public List<InstanceLimit> getInstanceLimits() {
-        return instanceLimits;
+    public ServiceLimitConfig() {
+        organisationQuotas = Collections.emptyList();
     }
 
-    public void setInstanceLimits(List<InstanceLimit> instanceLimits) {
-        this.instanceLimits = instanceLimits;
+    public List<QuotaLimit> getQuotaLimits() {
+        return quotaLimits;
+    }
+
+    public void setQuotaLimits(List<QuotaLimit> quotaLimits) {
+        this.quotaLimits = quotaLimits;
     }
 
     public List<InstanceQuota> getDefaultQuotas() {

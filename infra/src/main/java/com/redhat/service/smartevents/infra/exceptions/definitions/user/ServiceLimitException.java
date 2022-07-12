@@ -2,15 +2,15 @@ package com.redhat.service.smartevents.infra.exceptions.definitions.user;
 
 import javax.ws.rs.core.Response;
 
-public class ServiceLimitExceedException extends ServiceLimitException {
+public class ServiceLimitException extends ExternalUserException {
 
     private static final long serialVersionUID = 1L;
 
-    public ServiceLimitExceedException(String message) {
+    public ServiceLimitException(String message) {
         super(message);
     }
 
-    public ServiceLimitExceedException(String message, Throwable cause) {
+    public ServiceLimitException(String message, Throwable cause) {
         super(message, cause);
     }
 

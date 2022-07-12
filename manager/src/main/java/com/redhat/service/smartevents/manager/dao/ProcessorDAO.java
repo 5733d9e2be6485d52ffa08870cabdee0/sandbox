@@ -183,13 +183,10 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return countProcessorsOnBridge(p);
     }
 
-    public Long countByBridgeId(String bridgeId) {
+    public Long countUserVisibleByBridgeId(String bridgeId) {
         TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("PROCESSOR.countUserDefineProcessorByBridgeId", Long.class);
-        List<ProcessorType> processorTypes = Arrays.asList(ProcessorType.SINK, ProcessorType.SOURCE);
-        Parameters params = Parameters
-                .with(Processor.BRIDGE_ID_PARAM, bridgeId)
-                .with("processorType", processorTypes);
-        addParamsToNamedQuery(params, namedQuery);
+        namedQuery.setParameter(Processor.BRIDGE_ID_PARAM, bridgeId);
+        namedQuery.setParameter("processorType", USER_VISIBLE_PROCESSOR_TYPES);
         return namedQuery.getSingleResult();
     }
 }

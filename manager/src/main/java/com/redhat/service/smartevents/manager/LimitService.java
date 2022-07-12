@@ -1,11 +1,9 @@
 package com.redhat.service.smartevents.manager;
 
-import java.util.Optional;
-
-import com.redhat.service.smartevents.manager.models.InstanceLimit;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
 
 public interface LimitService {
-    Optional<InstanceLimit> getOrganisationInstanceLimit(String orgId);
+    QuotaLimit getOrganisationQuotaLimit(String orgId);
 
-    Optional<InstanceLimit> getBridgeInstanceLimit(String bridgeId);
+    QuotaLimit getBridgeQuotaLimit(String bridgeId);
 }

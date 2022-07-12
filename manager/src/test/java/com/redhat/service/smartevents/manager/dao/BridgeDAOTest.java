@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import com.redhat.service.smartevents.manager.models.QuotaType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,12 +23,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import static com.redhat.service.smartevents.infra.models.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_INSTANCE_TYPE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
+import static com.redhat.service.smartevents.manager.TestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -283,6 +279,19 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("0");
     }
 
+    @Test
+    public void testCountActiveBridge() {
+        Bridge activeBridge = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
+        bridgeDAO.persist(activeBridge);
+
+        Bridge expiredBridge = buildBridge("myID2", "myBridge2");
+        expiredBridge.setExpireAt(ZonedDateTime.now().minusHours(1));
+        bridgeDAO.persist(expiredBridge);
+
+        Long activeBridgeCount = bridgeDAO.countActiveBridge(DEFAULT_ORGANISATION_ID, QuotaType.EVAL);
+        assertThat(activeBridgeCount).isEqualTo(1L);
+    }
+
     private Bridge buildBridge(String id, String name) {
         Bridge bridge = new Bridge();
         bridge.setId(id);
@@ -295,6 +304,7 @@ public class BridgeDAOTest {
         bridge.setShardId(TestConstants.SHARD_ID);
         bridge.setDefinition(new BridgeDefinition());
         bridge.setInstanceType(DEFAULT_INSTANCE_TYPE);
+        bridge.setExpireAt(ZonedDateTime.now().plusHours(1));
 
         return bridge;
     }

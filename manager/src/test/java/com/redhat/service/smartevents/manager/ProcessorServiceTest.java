@@ -151,6 +151,8 @@ class ProcessorServiceTest {
                 .thenReturn(new ListResult<>(List.of(processor, provisioningProcessor, failedProcessor), 0, 3));
         when(processorDAO.countByBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(3L);
+        when(processorDAO.countUserVisibleByBridgeId(DEFAULT_BRIDGE_ID))
+                .thenReturn(1L);
     }
 
     private static Stream<Arguments> createProcessorParams() {
@@ -388,7 +390,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetProcessorsCount() {
-        Long result = processorService.getProcessorsCount(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID);
+        Long result = processorService.getUserVisibleProcessorsCount(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(3L);
     }
 
@@ -650,6 +652,12 @@ class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+    }
+
+    @Test
+    public void testGetUserVisibleProcessorsCount() {
+        long count =  processorService.getUserVisibleProcessorsCount(DEFAULT_BRIDGE_ID);
+        assertThat(count).isEqualTo(1);
     }
 
     private static Bridge createReadyBridge() {

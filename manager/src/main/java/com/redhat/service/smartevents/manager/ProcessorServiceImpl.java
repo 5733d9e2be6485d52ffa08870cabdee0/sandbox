@@ -288,7 +288,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Long getProcessorsCount(String bridgeId, String customerId) {
+    public Long getUserVisibleProcessorsCount(String bridgeId, String customerId) {
         return processorDAO.countByBridgeIdAndCustomerId(bridgeId, customerId);
     }
 
@@ -401,8 +401,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
-    public long getProcessorsCount(String bridgeId) {
-        return processorDAO.countByBridgeId(bridgeId);
+    public long getUserVisibleProcessorsCount(String bridgeId) {
+        return processorDAO.countUserVisibleByBridgeId(bridgeId);
     }
 
 }

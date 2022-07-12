@@ -8,6 +8,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 
 public interface BridgesService {
 
@@ -31,7 +32,7 @@ public interface BridgesService {
 
     BridgeResponse toResponse(Bridge bridge);
 
-    Long getActiveBridgeCount(String orgId);
+    Long getActiveBridgeCount(String orgId, QuotaType instanceType);
 
     boolean isBridgeActive(String id);
 }

@@ -5,13 +5,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,15 +79,11 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridge.setGeneration(0);
 
-        Optional<InstanceLimit> optOrganisationInstanceLimit = limitService.getOrganisationInstanceLimit(organisationId);
-        if (optOrganisationInstanceLimit.isPresent()) {
-            InstanceLimit organisationInstanceLimit = optOrganisationInstanceLimit.get();
-            bridge.setInstanceType(organisationInstanceLimit.getInstanceType());
-            String bridgeDuration = organisationInstanceLimit.getBridgeDuration();
-            if (StringUtils.isNotEmpty(bridgeDuration)) {
-                Duration duration = Duration.parse(bridgeDuration);
-                bridge.setExpireAt(ZonedDateTime.now(ZoneOffset.UTC).plus(duration));
-            }
+        QuotaLimit organisationQuotaLimit = limitService.getOrganisationQuotaLimit(organisationId);
+        bridge.setInstanceType(organisationQuotaLimit.getQuotaType());
+        Duration bridgeDuration = organisationQuotaLimit.getBridgeDuration();
+        if (Objects.nonNull(bridgeDuration)) {
+            bridge.setExpireAt(ZonedDateTime.now(ZoneOffset.UTC).plus(bridgeDuration));
         }
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
@@ -142,7 +136,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Override
     @Transactional
     public void deleteBridge(String id, String customerId) {
-        Long processorsCount = processorService.getProcessorsCount(id, customerId);
+        Long processorsCount = processorService.getUserVisibleProcessorsCount(id, customerId);
         ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(id, customerId);
 
         if (processorsCount != hiddenProcessors.getTotal()) {
@@ -244,8 +238,8 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public Long getActiveBridgeCount(String orgId) {
-        return bridgeDAO.countActiveBridgeByOrganisationId(orgId);
+    public Long getActiveBridgeCount(String orgId, QuotaType instanceType) {
+        return bridgeDAO.countActiveBridge(orgId, instanceType);
     }
 
     @Override

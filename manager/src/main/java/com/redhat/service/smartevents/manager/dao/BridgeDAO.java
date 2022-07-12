@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -59,9 +60,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 
-    public Long countActiveBridgeByOrganisationId(String orgId) {
-        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countActiveBridgeByOrganisationId", Long.class);
+    public Long countActiveBridge(String orgId, QuotaType instanceType) {
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countActiveBridgeByOrgAndInstanceType", Long.class);
         namedQuery.setParameter("organisationId", orgId);
+        namedQuery.setParameter("instanceType", instanceType);
         namedQuery.setParameter("currentTimeStamp", ZonedDateTime.now());
         return namedQuery.getSingleResult();
     }

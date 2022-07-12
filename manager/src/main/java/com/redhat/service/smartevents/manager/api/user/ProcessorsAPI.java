@@ -38,8 +38,8 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
-import com.redhat.service.smartevents.manager.models.InstanceLimit;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
 
 import io.quarkus.security.Authenticated;
 
@@ -125,7 +125,7 @@ public class ProcessorsAPI {
         String orgId = identityResolver.resolveOrganisationId(jwt);
 
         // validate service limit
-        validateServiceLimitToCreateNewProcessor(orgId, bridgeId);
+        validateServiceLimitToCreateNewProcessor(bridgeId);
 
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -174,13 +174,12 @@ public class ProcessorsAPI {
     /**
      * Validate weather user is allowed to create new processor instance under an bridge
      * 
-     * @param orgId Organisation id.
      * @param bridgeId Bridge id.
      */
-    private void validateServiceLimitToCreateNewProcessor(String orgId, String bridgeId) {
-        InstanceLimit bridgeInstanceLimit = limitService.getBridgeInstanceLimit(orgId).get();
-        long maxAllowedProcessors = bridgeInstanceLimit.getProcessorLimit();
-        long existingProcessorCount = processorService.getProcessorsCount(bridgeId);
+    private void validateServiceLimitToCreateNewProcessor(String bridgeId) {
+        QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridgeId);
+        long maxAllowedProcessors = bridgeQuotaLimit.getProcessorLimit();
+        long existingProcessorCount = processorService.getUserVisibleProcessorsCount(bridgeId);
 
         if (existingProcessorCount >= maxAllowedProcessors) {
             throw new ServiceLimitExceedException("Max allowed processor instance limit exceed");

@@ -17,6 +17,7 @@ import javax.validation.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitExceedException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.limits.InstanceQuota;
 import com.redhat.service.smartevents.manager.limits.OrganisationQuotas;
@@ -66,45 +67,46 @@ public class LimitServiceImpl implements LimitService {
     }
 
     @Override
-    public Optional<InstanceLimit> getOrganisationInstanceLimit(String orgId) {
-        LimitInstanceType availableInstanceQuotaType = getAvailableInstanceQuotaType(orgId);
-        return getInstanceLimit(availableInstanceQuotaType);
+    public QuotaLimit getOrganisationQuotaLimit(String orgId) {
+        QuotaType availableQuotaType = getAvailableQuotaType(orgId);
+        return getQuotaLimit(availableQuotaType);
     }
 
     @Override
-    public Optional<InstanceLimit> getBridgeInstanceLimit(String bridgeId) {
+    public QuotaLimit getBridgeQuotaLimit(String bridgeId) {
         Bridge bridge = bridgesService.getBridge(bridgeId);
-        LimitInstanceType bridgeInstanceType = bridge.getInstanceType();
-        return getInstanceLimit(bridgeInstanceType);
+        QuotaType bridgeInstanceType = bridge.getInstanceType();
+        return getQuotaLimit(bridgeInstanceType);
     }
 
-    private LimitInstanceType getAvailableInstanceQuotaType(String orgId) {
+    private QuotaType getAvailableQuotaType(String orgId) {
         List<InstanceQuota> instanceQuotas = getOrganisationInstanceQuotas(orgId);
-        long activeBridgeCount = bridgesService.getActiveBridgeCount(orgId);
-        long exceedBridgeCount = activeBridgeCount;
-        Optional<InstanceQuota> standardInstanceQuota = instanceQuotas.stream().filter(s -> s.getInstanceType().equals(LimitInstanceType.STANDARD)).findAny();
-        Optional<InstanceQuota> evalInstanceQuota = instanceQuotas.stream().filter(s -> s.getInstanceType().equals(LimitInstanceType.EVAL)).findAny();
-        if (standardInstanceQuota.isPresent()) {
-            exceedBridgeCount = activeBridgeCount - standardInstanceQuota.get().getQuota();
-            if (exceedBridgeCount < 0) {
-                return standardInstanceQuota.get().getInstanceType();
-            }
+
+        if (isQuotaAvailable(orgId, instanceQuotas, QuotaType.STANDARD)) {
+            return QuotaType.STANDARD;
         }
 
-        if (evalInstanceQuota.isPresent()) {
-            exceedBridgeCount = exceedBridgeCount - evalInstanceQuota.get().getQuota();
-            if (exceedBridgeCount < 0) {
-                return evalInstanceQuota.get().getInstanceType();
-            }
+        if (isQuotaAvailable(orgId, instanceQuotas, QuotaType.EVAL)) {
+            return QuotaType.EVAL;
         }
 
         throw new ServiceLimitExceedException("Max allowed bridge instance limit exceed");
     }
 
+    private boolean isQuotaAvailable(String orgId, List<InstanceQuota> instanceQuotas, QuotaType instanceType) {
+        Optional<InstanceQuota> instanceQuota = instanceQuotas.stream().filter(s -> s.getInstanceType().equals(instanceType)).findAny();
+        if (instanceQuota.isPresent()) {
+            Long activeBridgeCount = bridgesService.getActiveBridgeCount(orgId, instanceType);
+            long availableBridgeQuota = instanceQuota.get().getQuota() - activeBridgeCount;
+            return availableBridgeQuota > 0;
+        }
+        return false;
+    }
+
     private List<InstanceQuota> getOrganisationInstanceQuotas(String orgId) {
         Optional<OrganisationQuotas> optOrgOverride = fetchOrganisationOverride(orgId);
         if (optOrgOverride.isEmpty()) {
-            return fetchDefaultQuota();
+            return serviceLimit.getDefaultQuotas();
         } else {
             return optOrgOverride.get().getInstanceQuotas();
         }
@@ -114,12 +116,8 @@ public class LimitServiceImpl implements LimitService {
         return serviceLimit.getOrganisationQuotas().stream().filter(s -> orgId.equals(s.getOrgId())).findAny();
     }
 
-    private List<InstanceQuota> fetchDefaultQuota() {
-        return serviceLimit.getDefaultQuotas();
+    private QuotaLimit getQuotaLimit(QuotaType quotaType) {
+        return serviceLimit.getQuotaLimits().stream().filter(s -> s.getQuotaType().equals(quotaType)).findFirst()
+                .orElseThrow(() -> new ServiceLimitException("No quota limit define for type " + quotaType));
     }
-
-    private Optional<InstanceLimit> getInstanceLimit(LimitInstanceType instanceType) {
-        return serviceLimit.getInstanceLimits().stream().filter(s -> s.getInstanceType().equals(instanceType)).findFirst();
-    }
-
 }
