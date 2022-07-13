@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -290,7 +291,7 @@ public class BridgeDAOTest {
         bridge.setOwner(TestConstants.DEFAULT_USER_NAME);
         bridge.setName(name);
         bridge.setStatus(ACCEPTED);
-        bridge.setSubmittedAt(ZonedDateTime.now());
+        bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setShardId(TestConstants.SHARD_ID);
         bridge.setDefinition(new BridgeDefinition());
 

@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.connectors;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -94,7 +95,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setName(newConnectorName);
         newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         newConnectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
-        newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
+        newConnectorEntity.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
         newConnectorEntity.setConnectorTypeId(connectorTypeId);
@@ -133,7 +134,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         }
 
         if (processor.getGeneration() > 0) {
-            connectorEntity.setModifiedAt(ZonedDateTime.now());
+            connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
             connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDefinition(updatedConnectionDefinition);

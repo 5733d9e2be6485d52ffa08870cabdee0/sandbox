@@ -138,15 +138,6 @@
       "description": "Milliseconds before the next poll of the selected stream",
       "type": "integer",
       "default": 500
-    },
-    "data_shape": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "produces": {
-          "$ref": "#/$defs/data_shape/produces"
-        }
-      }
     }
   }
 }

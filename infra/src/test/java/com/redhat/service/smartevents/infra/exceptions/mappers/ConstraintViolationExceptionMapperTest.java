@@ -50,8 +50,9 @@ public class ConstraintViolationExceptionMapperTest {
 
     @BeforeEach
     void setup() {
-        this.mapper = new ConstraintViolationExceptionMapper();
-        this.mapper.bridgeErrorService = bridgeErrorService;
+        this.mapper = new ConstraintViolationExceptionMapper(bridgeErrorService);
+        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
+        this.mapper.init();
 
         lenient().when(constraintViolation.getMessage()).thenReturn("message");
         lenient().when(hibernateConstraintViolation.getMessage()).thenReturn("message");
@@ -59,43 +60,44 @@ public class ConstraintViolationExceptionMapperTest {
 
     @Test
     void testSingleDefaultViolationUnmapped() {
-        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
-
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(constraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("constraintViolation");
     }
 
     @Test
     void testSingleHibernateViolationWithoutDynamicPayload() {
-        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
-
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("hibernateConstraintViolation");
     }
 
     @Test
     void testSingleHibernateViolationWithDynamicPayloadUnmapped() {
         when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ItemNotFoundException("not-found"));
         when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.empty());
-        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("1");
-        assertThat(response.getCode()).isEqualTo("code");
-        assertThat(response.getReason()).isEqualTo("message");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("1");
+        assertThat(error.getCode()).isEqualTo("code");
+        assertThat(error.getReason()).isEqualTo("hibernateConstraintViolation");
     }
 
     @Test
@@ -105,18 +107,19 @@ public class ConstraintViolationExceptionMapperTest {
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(hibernateConstraintViolation));
 
-        ErrorResponse response = mapper.toResponse(violation).readEntity(ErrorResponse.class);
+        ErrorsResponse response = mapper.toResponse(violation).readEntity(ErrorsResponse.class);
+        assertThat(response.getItems()).hasSize(1);
 
-        assertThat(response.getId()).isEqualTo("2");
-        assertThat(response.getCode()).isEqualTo("mapped-code");
-        assertThat(response.getReason()).isEqualTo("not-found");
+        ErrorResponse error = response.getItems().get(0);
+        assertThat(error.getId()).isEqualTo("2");
+        assertThat(error.getCode()).isEqualTo("mapped-code");
+        assertThat(error.getReason()).isEqualTo("not-found");
     }
 
     @Test
     void testMultipleAllScenarios() {
         when(hibernateConstraintViolation.getDynamicPayload(ExternalUserException.class)).thenReturn(new ItemNotFoundException("not-found"));
         when(bridgeErrorService.getError(ItemNotFoundException.class)).thenReturn(Optional.of(MAPPED_ERROR));
-        when(bridgeErrorService.getError(UnclassifiedConstraintViolationException.class)).thenReturn(Optional.of(BRIDGE_ERROR));
 
         ConstraintViolationException violation = new ConstraintViolationException(Set.of(constraintViolation, hibernateConstraintViolation));
 
@@ -130,7 +133,7 @@ public class ConstraintViolationExceptionMapperTest {
         ErrorResponse error1 = sortedErrors.get(0);
         assertThat(error1.getId()).isEqualTo("1");
         assertThat(error1.getCode()).isEqualTo("code");
-        assertThat(error1.getReason()).isEqualTo("message");
+        assertThat(error1.getReason()).isEqualTo("constraintViolation");
 
         ErrorResponse error2 = sortedErrors.get(1);
         assertThat(error2.getId()).isEqualTo("2");

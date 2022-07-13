@@ -16,7 +16,7 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: 3
+      replicas: 1
       template:
         metadata:
           labels:
@@ -51,11 +51,11 @@ objects:
               name: rhose-fleet-manager
               resources:
                 limits:
-                  cpu: 4
-                  memory: 8192Mi
+                  cpu: ${FLEET_MANAGER_LIMITS_CPU}
+                  memory: ${FLEET_MANAGER_LIMITS_MEMORY}
                 requests:
-                  cpu: 2
-                  memory: 4096Mi
+                  cpu: ${FLEET_MANAGER_REQUESTS_CPU}
+                  memory: ${FLEET_MANAGER_REQUESTS_MEMORY}
               env:
                 - name: AWS_REGION
                   valueFrom:
@@ -239,6 +239,8 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MC_TOPIC_NAME
+                - name: QUARKUS_LOG_LEVEL
+                  value: ${QUARKUS_LOG_LEVEL}
                 - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
@@ -293,13 +295,28 @@ parameters:
     description: the connection parameters for secure rds instance
   - name: FLEET_MANAGER_IMAGE
     value: "quay.io/app-sre/rhose-fleet-manager"
-    description: the image of fleet-manager to deploy
+    description: the fleet-manager image name
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
-    description: the tag of fleet-manager to deploy
+    description: the fleet-manager image tag 
+  - name: FLEET_MANAGER_LIMITS_CPU
+    value: "2"
+    description: the fleet-manager cpu limit
+  - name: FLEET_MANAGER_LIMITS_MEMORY
+    value: "4000Mi"
+    description: the fleet-manager memory limit
+  - name: FLEET_MANAGER_REQUESTS_CPU
+    value: "1"
+    description: the fleet-manager cpu request
+  - name: FLEET_MANAGER_REQUESTS_MEMORY
+    value: "2000Mi"
+    description: the fleet-manager memory request
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
     description: the fleet-manager vault secret
+  - name: QUARKUS_LOG_LEVEL
+    value: "INFO"
+    description: the quarkus log level
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
     description: the aws rds secret
