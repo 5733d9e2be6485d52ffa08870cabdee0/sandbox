@@ -121,7 +121,10 @@
             <!-- Token authorization configuration, usable for local execution, values are taken from https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/blob/main/kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -->
             <bridge.client.id>kermit</bridge.client.id>
             <bridge.client.secret>N5TW1EfuIcQsplRsLXJ1aE3DZZMPN5ZH</bridge.client.secret>
+
+            <!-- Additional configuration  -->
             <cleanup.disable>false</cleanup.disable> <!-- Disable the whole test cleanup -->
+            <undefined.placeholder.check.enabled>true</undefined.placeholder.check.enabled> <!-- Check that all placeholders are specified in scenario -->
 
             <!--Manager and key-cloak url-->
             <event-bridge.manager.url></event-bridge.manager.url>
@@ -208,6 +211,7 @@
                 <include>**/RunPerformanceCucumberTest.java</include>
               </includes>
               <systemProperties>
+                <undefined.placeholder.check.enabled>false</undefined.placeholder.check.enabled> <!-- Disable the check as Hyperfoil placeholders use same format -->
                 <performance.slack.webhook.url></performance.slack.webhook.url>
                 <performance.hyperfoil.url></performance.hyperfoil.url>
               </systemProperties>
