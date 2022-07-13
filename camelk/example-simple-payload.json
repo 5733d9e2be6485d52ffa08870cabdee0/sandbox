@@ -1,12 +1,5 @@
 {
   "name": "myProcessor",
-  "filters": [
-    {
-      "type": "StringEquals",
-      "key": "source",
-      "value": "StorageService"
-    }
-  ],
   "processing": {
     "type": "cameldsl_0.1",
     "spec": {

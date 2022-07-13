@@ -16,6 +16,7 @@ export CLOUD_EVENT='{
     "dataschema": "#",
     "data": {
         "traceMessage" : '"\"$MESSAGE\""',
+        "myMessage" : '"\"$MESSAGE\""',
         "genus":"Citrullus",
         "name":"Watermelon",
         "id":25,
@@ -26,7 +27,7 @@ export CLOUD_EVENT='{
             "protein":0.6,
             "fat":0.2,
             "calories":30,
-            "sugar":6
+            "sugar": '"${1:-6}"'
           }
 
     }

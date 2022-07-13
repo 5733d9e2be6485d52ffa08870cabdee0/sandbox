@@ -1,0 +1,218 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"camel.apache.org/v1","kind":"Integration","metadata":{"annotations":{},"creationTimestamp":"2022-07-14T10:18:18Z","generation":3,"labels":{"app.kubernetes.io/created-by":"bridge-fleet-shard-operator","app.kubernetes.io/managed-by":"bridge-fleet-shard-operator"},"name":"ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398","namespace":"ob-1608dc1f-4139-49c5-ae22-afe73ed807d7","resourceVersion":"762019","uid":"952bb88e-cd7c-4d36-8d07-b53347737bd3"},"spec":{"flows":[{"from":{"parameters":{"brokers":"kafkaBrokerId:443","consumersCount":1,"groupId":"kafkaGroup","maxPollRecords":5000,"saslJaasConfig":"org.apache.kafka.common.security.plain.PlainLoginModule required username='clientId' password='clientSecret';","saslMechanism":"PLAIN","securityProtocol":"SASL_SSL","seekTo":"beginning"},"steps":[{"unmarshal":{"json":{}}},{"choice":{"otherwise":{"steps":[{"log":{"message":"Cannot process message ${body}"}},{"to":{"parameters":{"brokers":"kafkaBrokerId:443","consumersCount":1,"groupId":"kafkaGroup","maxPollRecords":5000,"saslJaasConfig":"org.apache.kafka.common.security.plain.PlainLoginModule required username='clientId' password='clientSecret';","saslMechanism":"PLAIN","securityProtocol":"SASL_SSL","seekTo":"beginning"},"uri":"kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-errorAction"}}]},"when":[{"simple":"${body[nutritions][sugar]} \u003c= 5","steps":[{"log":{"message":"++++- Lesser equal than 5 ${body}"}},{"to":{"parameters":{"brokers":"kafkaBrokerId:443","consumersCount":1,"groupId":"kafkaGroup","maxPollRecords":5000,"saslJaasConfig":"org.apache.kafka.common.security.plain.PlainLoginModule required username='clientId' password='clientSecret';","saslMechanism":"PLAIN","securityProtocol":"SASL_SSL","seekTo":"beginning"},"uri":"kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction1"}}]},{"simple":"${body[nutritions][sugar]} \u003e 5 \u0026\u0026 ${body[nutritions][sugar]} \u003c= 10","steps":[{"log":{"message":"++++- between 5 and 10 goes to mc ${body}"}},{"to":{"parameters":{"brokers":"kafkaBrokerId:443","consumersCount":1,"groupId":"kafkaGroup","maxPollRecords":5000,"saslJaasConfig":"org.apache.kafka.common.security.plain.PlainLoginModule required username='clientId' password='clientSecret';","saslMechanism":"PLAIN","securityProtocol":"SASL_SSL","seekTo":"beginning"},"uri":"kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction2"}}]}]}}],"uri":"kafka:lmolteni-brdg-33b0176e-e86a-4247-b3ef-b8080d6fc916"}}]},"status":{"conditions":[{"firstTruthyTime":"2022-07-14T11:24:18Z","lastTransitionTime":"2022-07-14T11:24:18Z","lastUpdateTime":"2022-07-14T11:24:18Z","message":"kit-cb78d3196evd35b9mff0","reason":"IntegrationKitAvailable","status":"True","type":"IntegrationKitAvailable"},{"lastTransitionTime":"2022-07-14T11:24:18Z","lastUpdateTime":"2022-07-14T11:24:18Z","message":"different controller strategy used (deployment)","reason":"CronJobNotAvailableReason","status":"False","type":"CronJobAvailable"},{"firstTruthyTime":"2022-07-14T11:24:18Z","lastTransitionTime":"2022-07-14T11:24:18Z","lastUpdateTime":"2022-07-14T11:24:18Z","message":"deployment name is ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398","reason":"DeploymentAvailable","status":"True","type":"DeploymentAvailable"},{"lastTransitionTime":"2022-07-14T11:24:18Z","lastUpdateTime":"2022-07-14T11:24:18Z","message":"no http service required","reason":"ServiceNotAvailable","status":"False","type":"ServiceAvailable"},{"lastTransitionTime":"2022-07-14T11:24:18Z","lastUpdateTime":"2022-07-14T11:24:18Z","message":"no host or service defined","reason":"IngressNotAvailable","status":"False","type":"ExposureAvailable"},{"firstTruthyTime":"2022-07-14T11:24:20Z","lastTransitionTime":"2022-07-14T11:24:20Z","lastUpdateTime":"2022-07-14T11:24:20Z","message":"1/1 ready replicas","reason":"DeploymentReady","status":"True","type":"Ready"}],"dependencies":["camel:core","camel:jackson","camel:kafka","mvn:org.apache.camel.k:camel-k-runtime","mvn:org.apache.camel.quarkus:camel-quarkus-yaml-dsl"],"digest":"vkWFiHMu9xfi_GoU8NEnPbkLO6VjaDrjlcE0TH7o2sxA","generatedSources":[{"content":"- from:\n    parameters:\n      brokers: kafkaBrokerId:443\n      consumersCount: 1\n      groupId: kafkaGroup\n      maxPollRecords: 5000\n      saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule required\n        username='clientId' password='clientSecret';\n      saslMechanism: PLAIN\n      securityProtocol: SASL_SSL\n      seekTo: beginning\n    steps:\n    - unmarshal:\n        json: {}\n    - choice:\n        otherwise:\n          steps:\n          - remove-headers: '*'\n          - marshal:\n              json: {}\n          - set-header:\n              constant: high-sugar\n              name: ce-type\n          - set-header:\n              constant: high\n              name: fruit-sugar-level\n          - log:\n              message: Cannot process message ${body}\n          - to:\n              parameters:\n                brokers: kafkaBrokerId:443\n                consumersCount: 1\n                groupId: kafkaGroup\n                maxPollRecords: 5000\n                saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule\n                  required username='clientId'\n                  password='clientSecret';\n                saslMechanism: PLAIN\n                securityProtocol: SASL_SSL\n                seekTo: beginning\n              uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-errorAction\n        when:\n        - simple: ${body[nutritions][sugar]} \u003c= 5\n          steps:\n          - log:\n              message: ++++- Lesser equal than 5 ${body}\n          - remove-headers: '*'\n          - marshal:\n              json: {}\n          - set-header:\n              constant: low-sugar\n              name: ce-type\n          - set-header:\n              constant: low\n              name: fruit-sugar-level\n          - to:\n              parameters:\n                brokers: kafkaBrokerId:443\n                consumersCount: 1\n                groupId: kafkaGroup\n                maxPollRecords: 5000\n                saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule\n                  required username='clientId'\n                  password='clientSecret';\n                saslMechanism: PLAIN\n                securityProtocol: SASL_SSL\n                seekTo: beginning\n              uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction1\n        - simple: ${body[nutritions][sugar]} \u003e 5 \u0026\u0026 ${body[nutritions][sugar]} \u003c=\n            10\n          steps:\n          - log:\n              message: ++++- between 5 and 10 goes to mc ${body}\n          - remove-headers: '*'\n          - marshal:\n              json: {}\n          - set-header:\n              constant: medium-sugar\n              name: ce-type\n          - set-header:\n              constant: medium\n              name: fruit-sugar-level\n          - to:\n              parameters:\n                brokers: kafkaBrokerId:443\n                consumersCount: 1\n                groupId: kafkaGroup\n                maxPollRecords: 5000\n                saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule\n                  required username='clientId'\n                  password='clientSecret';\n                saslMechanism: PLAIN\n                securityProtocol: SASL_SSL\n                seekTo: beginning\n              uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction2\n    uri: kafka:lmolteni-brdg-33b0176e-e86a-4247-b3ef-b8080d6fc916\n","name":"camel-k-embedded-flow.yaml"}],"image":"10.98.1.176/default/camel-k-kit-cb78d3196evd35b9mff0@sha256:319b9da59b4631ce94316b03f2d58cb6c1f24894799b08a71e7782e633ecac04","integrationKit":{"name":"kit-cb78d3196evd35b9mff0","namespace":"default"},"lastInitTimestamp":"2022-07-14T11:24:17Z","phase":"Running","profile":"Kubernetes","replicas":1,"runtimeProvider":"quarkus","runtimeVersion":"1.13.0","selector":"camel.apache.org/integration=ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398","version":"1.9.2"}}
+  creationTimestamp: "2022-07-14T10:18:18Z"
+  generation: 4
+  labels:
+    app.kubernetes.io/created-by: bridge-fleet-shard-operator
+    app.kubernetes.io/managed-by: bridge-fleet-shard-operator
+  name: ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398
+  namespace: ob-1608dc1f-4139-49c5-ae22-afe73ed807d7
+  resourceVersion: "763436"
+  uid: 952bb88e-cd7c-4d36-8d07-b53347737bd3
+spec:
+  flows:
+  - from:
+      parameters:
+        brokers: kafkaBrokerId:443
+        consumersCount: 1
+        groupId: kafkaGroup
+        maxPollRecords: 5000
+        saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule required
+          username='clientId' password='clientSecret';
+        saslMechanism: PLAIN
+        securityProtocol: SASL_SSL
+        seekTo: beginning
+      steps:
+      - unmarshal:
+          json: {}
+      - choice:
+          otherwise:
+            steps:
+            - log:
+                message: Cannot process message ${body}
+            - to:
+                parameters:
+                  brokers: kafkaBrokerId:443
+                  consumersCount: 1
+                  groupId: kafkaGroup
+                  maxPollRecords: 5000
+                  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                    required username='clientId'
+                    password='clientSecret';
+                  saslMechanism: PLAIN
+                  securityProtocol: SASL_SSL
+                  seekTo: beginning
+                uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-errorAction
+          when:
+          - simple: ${body[nutritions][sugar]} <= 5
+            steps:
+            - log:
+                message: ++++- Lesser equal than 5 ${body}
+            - to:
+                parameters:
+                  brokers: kafkaBrokerId:443
+                  consumersCount: 1
+                  groupId: kafkaGroup
+                  maxPollRecords: 5000
+                  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                    required username='clientId'
+                    password='clientSecret';
+                  saslMechanism: PLAIN
+                  securityProtocol: SASL_SSL
+                  seekTo: beginning
+                uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction1
+          - simple: ${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <=
+              10
+            steps:
+            - log:
+                message: ++++- between 5 and 10 goes to mc ${body}
+            - to:
+                parameters:
+                  brokers: kafkaBrokerId:443
+                  consumersCount: 1
+                  groupId: kafkaGroup
+                  maxPollRecords: 5000
+                  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                    required username='clientId'
+                    password='clientSecret';
+                  saslMechanism: PLAIN
+                  securityProtocol: SASL_SSL
+                  seekTo: beginning
+                uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction2
+      uri: kafka:lmolteni-brdg-33b0176e-e86a-4247-b3ef-b8080d6fc916
+status:
+  conditions:
+  - firstTruthyTime: "2022-07-14T11:25:42Z"
+    lastTransitionTime: "2022-07-14T11:25:42Z"
+    lastUpdateTime: "2022-07-14T11:25:42Z"
+    message: kit-cb78d3196evd35b9mff0
+    reason: IntegrationKitAvailable
+    status: "True"
+    type: IntegrationKitAvailable
+  - lastTransitionTime: "2022-07-14T11:25:42Z"
+    lastUpdateTime: "2022-07-14T11:25:42Z"
+    message: different controller strategy used (deployment)
+    reason: CronJobNotAvailableReason
+    status: "False"
+    type: CronJobAvailable
+  - firstTruthyTime: "2022-07-14T11:25:42Z"
+    lastTransitionTime: "2022-07-14T11:25:42Z"
+    lastUpdateTime: "2022-07-14T11:25:42Z"
+    message: deployment name is ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398
+    reason: DeploymentAvailable
+    status: "True"
+    type: DeploymentAvailable
+  - lastTransitionTime: "2022-07-14T11:25:42Z"
+    lastUpdateTime: "2022-07-14T11:25:42Z"
+    message: no http service required
+    reason: ServiceNotAvailable
+    status: "False"
+    type: ServiceAvailable
+  - lastTransitionTime: "2022-07-14T11:25:42Z"
+    lastUpdateTime: "2022-07-14T11:25:42Z"
+    message: no host or service defined
+    reason: IngressNotAvailable
+    status: "False"
+    type: ExposureAvailable
+  - firstTruthyTime: "2022-07-14T11:25:45Z"
+    lastTransitionTime: "2022-07-14T11:25:45Z"
+    lastUpdateTime: "2022-07-14T11:25:45Z"
+    message: 1/1 ready replicas
+    reason: DeploymentReady
+    status: "True"
+    type: Ready
+  dependencies:
+  - camel:core
+  - camel:jackson
+  - camel:kafka
+  - mvn:org.apache.camel.k:camel-k-runtime
+  - mvn:org.apache.camel.quarkus:camel-quarkus-yaml-dsl
+  digest: vOeqvvQod4ixJ3l5jiOBgtV2D4DZ8T5F2mKwklWKRXUY
+  generatedSources:
+  - content: |
+      - from:
+          parameters:
+            brokers: kafkaBrokerId:443
+            consumersCount: 1
+            groupId: kafkaGroup
+            maxPollRecords: 5000
+            saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule required
+              username='clientId' password='clientSecret';
+            saslMechanism: PLAIN
+            securityProtocol: SASL_SSL
+            seekTo: beginning
+          steps:
+          - unmarshal:
+              json: {}
+          - choice:
+              otherwise:
+                steps:
+                - log:
+                    message: Cannot process message ${body}
+                - to:
+                    parameters:
+                      brokers: kafkaBrokerId:443
+                      consumersCount: 1
+                      groupId: kafkaGroup
+                      maxPollRecords: 5000
+                      saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                        required username='clientId'
+                        password='clientSecret';
+                      saslMechanism: PLAIN
+                      securityProtocol: SASL_SSL
+                      seekTo: beginning
+                    uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-errorAction
+              when:
+              - simple: ${body[nutritions][sugar]} <= 5
+                steps:
+                - log:
+                    message: ++++- Lesser equal than 5 ${body}
+                - to:
+                    parameters:
+                      brokers: kafkaBrokerId:443
+                      consumersCount: 1
+                      groupId: kafkaGroup
+                      maxPollRecords: 5000
+                      saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                        required username='clientId'
+                        password='clientSecret';
+                      saslMechanism: PLAIN
+                      securityProtocol: SASL_SSL
+                      seekTo: beginning
+                    uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction1
+              - simple: ${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <=
+                  10
+                steps:
+                - log:
+                    message: ++++- between 5 and 10 goes to mc ${body}
+                - to:
+                    parameters:
+                      brokers: kafkaBrokerId:443
+                      consumersCount: 1
+                      groupId: kafkaGroup
+                      maxPollRecords: 5000
+                      saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                        required username='clientId'
+                        password='clientSecret';
+                      saslMechanism: PLAIN
+                      securityProtocol: SASL_SSL
+                      seekTo: beginning
+                    uri: kafka:lmolteni-prcs-8fd5aa45-36a2-4db1-810d-20722c61d398-slackAction2
+          uri: kafka:lmolteni-brdg-33b0176e-e86a-4247-b3ef-b8080d6fc916
+    name: camel-k-embedded-flow.yaml
+  image: 10.98.1.176/default/camel-k-kit-cb78d3196evd35b9mff0@sha256:319b9da59b4631ce94316b03f2d58cb6c1f24894799b08a71e7782e633ecac04
+  integrationKit:
+    name: kit-cb78d3196evd35b9mff0
+    namespace: default
+  lastInitTimestamp: "2022-07-14T11:25:42Z"
+  phase: Running
+  profile: Kubernetes
+  replicas: 1
+  runtimeProvider: quarkus
+  runtimeVersion: 1.13.0
+  selector: camel.apache.org/integration=ob-camel-8fd5aa45-36a2-4db1-810d-20722c61d398
+  version: 1.9.2

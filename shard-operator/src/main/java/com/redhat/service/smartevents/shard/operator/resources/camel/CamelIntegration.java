@@ -3,14 +3,20 @@ package com.redhat.service.smartevents.shard.operator.resources.camel;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.processors.Processing;
@@ -32,7 +38,7 @@ import static com.redhat.service.smartevents.shard.operator.resources.BridgeExec
 @Version("v1")
 @Group("camel.apache.org")
 @Kind("Integration")
-public class CamelIntegration extends CustomResource<CamelIntegrationSpec, CamelIntegrationStatus> implements Namespaced {
+public class CamelIntegration extends CustomResource<ObjectNode, CamelIntegrationStatus> implements Namespaced {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -54,67 +60,103 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
                         .buildWithDefaults())
                 .build();
 
-        LOGGER.info("------ name: " + name);
         LOGGER.info("------ metadata: " + metadata);
 
-        CamelIntegrationFlow camelIntegrationFlow = new CamelIntegrationFlow();
-
-        CamelIntegrationKafkaConnectionFrom camelIntegrationFrom = new CamelIntegrationKafkaConnectionFrom();
-
-        camelIntegrationFlow.setFrom(camelIntegrationFrom);
-
-        if (secret != null) {
-            String topic = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR);
-            camelIntegrationFrom.setUri(String.format("kafka:%s", topic));
+        CamelIntegration camelIntegration = new CamelIntegration();
+        if (secret == null) {
+            return camelIntegration;
         }
 
-        camelIntegrationFrom.setParameters(kafkaConnectionsParameter(secret));
-
-        LOGGER.info("------ camelIntegrationFrom: " + camelIntegrationFrom);
-
-        CamelIntegrationSpec camelIntegrationSpec = new CamelIntegrationSpec();
-
-        camelIntegrationSpec.setFlows(Collections.singletonList(camelIntegrationFlow));
-
-        CamelIntegration camelIntegration = new CamelIntegration();
-
-        camelIntegration.setSpec(camelIntegrationSpec);
         camelIntegration.setMetadata(metadata);
 
-        CamelIntegrationTo camelIntegrationTo = new CamelIntegrationTo();
+        ObjectNode spec = MAPPER.createObjectNode();
+        camelIntegration.setSpec(spec);
 
-        ObjectNode spec = processing.getSpec();
+        ArrayNode flows = MAPPER.createArrayNode();
+        spec.set("flows", flows);
 
-        String toLabel = spec.get("flow").get("from").get("steps").get(0).get("to").asText();
+        ObjectNode flow = MAPPER.createObjectNode();
+        flows.add(flow);
 
-        LOGGER.info("------ toLabel: " + toLabel);
+        ObjectNode from = MAPPER.createObjectNode();
+        flow.set("from", from);
 
-        Optional<Action> action = processorDTO.getDefinition()
-                .getResolvedActions()
-                .stream().filter(n -> {
-                    LOGGER.info("------ action name: " + n.getName());
-                    return n.getName().equals(toLabel);
-                }).findFirst();
+        ObjectNode inputSpec = processing.getSpec();
+        ArrayNode steps = getFlowSteps(inputSpec);
+        from.set("steps", steps);
 
-        action.ifPresent(a -> {
-            String toTopic = a.getParameter("topic");
+        TextNode value = bridgeTopic(secret);
+        from.set("uri", value);
 
-            CamelIntegrationKafkaConnectionTo to = new CamelIntegrationKafkaConnectionTo();
-            to.setParameters(kafkaConnectionsParameter(secret));
+        ObjectNode fromParameters = MAPPER.createObjectNode();
+        Map<String, JsonNode> fromKafkaParameters = transformToJsonMap(secret);
+        fromParameters.setAll(fromKafkaParameters);
+        from.set("parameters", fromParameters);
 
-            String kafkaToURI = String.format("kafka:%s", toTopic);
-            to.setUri(kafkaToURI);
-            camelIntegrationTo.setTo(to);
-            camelIntegrationFrom.getSteps().add(camelIntegrationTo);
-        });
+        List<JsonNode> tos = inputSpec.findValues("to");
+
+        for (JsonNode to : tos) {
+            List<Action> resolvedActions = processorDTO.getDefinition().getResolvedActions();
+            replaceToWithKafkaConnectionParameters(to, resolvedActions, fromKafkaParameters);
+        }
 
         LOGGER.info("------ camelIntegration: " + camelIntegration);
 
         return camelIntegration;
     }
 
-    private static String decodeBase64(Secret secret, String key) {
-        return new String(Base64.getDecoder().decode(secret.getData().get(key)));
+    private static void replaceToWithKafkaConnectionParameters(JsonNode to, List<Action> resolvedActions, Map<String, JsonNode> kafkaParameters) {
+        if (to instanceof ObjectNode) {
+            ObjectNode toObjectNode = (ObjectNode) to;
+            String toText = toObjectNode.get("uri").asText();
+
+            Optional<ObjectNode> optKafkaTo = convertTo(toText, resolvedActions, kafkaParameters);
+
+            optKafkaTo.ifPresent(kafkaToElement -> {
+                JsonNode kafkaTo = kafkaToElement.get("to");
+                toObjectNode.set("uri", kafkaTo.get("uri"));
+                toObjectNode.set("parameters", kafkaTo.get("parameters"));
+            });
+
+            if (optKafkaTo.isEmpty()) { // assume it's error
+                JsonNode steps1 = to.findParent("steps");
+                System.out.println(steps1);
+            }
+        }
+    }
+
+    private static Optional<ObjectNode> convertTo(String toLabel,
+            List<Action> resolvedActions,
+            Map<String, JsonNode> kafkaParameters) {
+
+        Optional<Action> action = findActionWithLabel(toLabel, resolvedActions);
+
+        LOGGER.info("---- Action for label {}: {}", toLabel, action);
+
+        return action.map(a -> {
+            String actionTopic = a.getParameter("topic");
+
+            ObjectNode to = MAPPER.createObjectNode();
+
+            ObjectNode fromParameters = MAPPER.createObjectNode();
+            fromParameters.setAll(kafkaParameters);
+            to.set("parameters", fromParameters);
+
+            String kafkaToURI = String.format("kafka:%s", actionTopic);
+            to.set("uri", new TextNode(kafkaToURI));
+
+            ObjectNode toStep = MAPPER.createObjectNode();
+            toStep.set("to", to);
+            return toStep;
+        });
+    }
+
+    private static Optional<Action> findActionWithLabel(String toLabel, List<Action> resolvedActions) {
+        return resolvedActions
+                .stream().filter(n -> {
+                    LOGGER.info("------ action name: " + n.getName());
+                    return n.getName().equals(toLabel);
+                }).findFirst();
     }
 
     // TODO CAMEL-POC secrets
@@ -141,10 +183,36 @@ public class CamelIntegration extends CustomResource<CamelIntegrationSpec, Camel
         return parameters;
     }
 
+    private static ArrayNode getFlowSteps(ObjectNode inputSpec) {
+        ObjectNode inputSingleFlow = (ObjectNode) inputSpec.get("flow");
+        return (ArrayNode) inputSingleFlow.get("from").get("steps");
+    }
+
+    private static TextNode bridgeTopic(Secret secret) {
+        String topic = decodeBase64(secret, GlobalConfigurationsConstants.KAFKA_TOPIC_ENV_VAR);
+        return new TextNode(String.format("kafka:%s", topic));
+    }
+
+    private static String decodeBase64(Secret secret, String key) {
+        return new String(Base64.getDecoder().decode(secret.getData().get(key)));
+    }
+
+    private static Map<String, JsonNode> transformToJsonMap(Secret secret) {
+        return kafkaConnectionsParameter(secret).entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> {
+                    Object value = e.getValue();
+                    if (value instanceof Number) {
+                        return new IntNode(Integer.parseInt(value.toString()));
+                    }
+                    return new TextNode(value.toString());
+                }));
+    }
+
     @Override
     public String toString() {
         return "CamelIntegration{" +
-                "spec=" + spec +
+                "spec=" + spec.toPrettyString() +
                 ", status=" + status +
                 '}';
     }

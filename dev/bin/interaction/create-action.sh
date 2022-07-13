@@ -58,16 +58,68 @@ elif [ "${action_type}" = 'camel' ]; then
       "type": "cameldsl_0.1",
       "spec": {
         "flow": {
-          "from": {
-            "uri": "rhose",
-            "steps": [
-              {
-                "to": "slackAction2"
+             "from": {
+                "uri": "rhose",
+                "steps": [
+                  {
+                    "unmarshal": {
+                      "json": {}
+                    }
+                  },
+                  {
+                    "choice": {
+                      "when": [
+                        {
+                          "simple": "${body[nutritions][sugar]} <= 5",
+                          "steps": [
+                            {
+                              "log": { "message" : "++++- Lesser equal than 5 ${body}" }
+                            },
+                            {
+                              "marshal": {
+                                "json": {}
+                              }
+                            },
+                            {
+                              "to": { "uri" : "slackAction1" }
+                            }
+                          ]
+                        },
+                        {
+                          "simple": "${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <= 10",
+                          "steps": [
+                            {
+                              "log": { "message" : "++++- between 5 and 10 goes to mc ${body}" }
+                            },
+                            {
+                              "marshal": {
+                                "json": {}
+                              }
+                            },
+                            {
+                              "to": { "uri" : "slackAction2" }
+                            }
+                          ]
+                        }
+                      ],
+                      "otherwise": {
+                        "steps": [
+                          {
+                            "marshal": {
+                              "json": {}
+                            }
+                          },
+                          {
+                            "to": { "uri" : "errorAction" }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
               }
-            ]
-          }
+           }
         }
-      }
     },
     "actions": [
       {
@@ -80,6 +132,14 @@ elif [ "${action_type}" = 'camel' ]; then
       },
       {
         "name": "slackAction2",
+        "type": "slack_sink_0.1",
+        "parameters": {
+          "slack_channel": "mc2",
+          "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""'
+        }
+      },
+      {
+        "name": "errorAction",
         "type": "slack_sink_0.1",
         "parameters": {
           "slack_channel": "mc2",
@@ -137,6 +197,8 @@ else
   exit 1
 fi
 
+
+echo $action_payload | jq .
 
 printf "\n\nCreating the ${action_type} action with name $action_name\n"
 
