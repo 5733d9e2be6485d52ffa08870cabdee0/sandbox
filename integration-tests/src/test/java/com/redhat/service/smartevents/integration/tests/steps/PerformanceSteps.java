@@ -30,8 +30,8 @@ public class PerformanceSteps {
     public void createBenchmarkOnHyperfoilWithContent(String hfInstance, DocString benchmarkRequest) {
         String resolvedBenchmarkRequest = ContextResolver.resolveWithScenarioContext(context, benchmarkRequest.getContent());
 
-        PerformanceResource.addBenchmark(context.getManagerToken(), resolvedBenchmarkRequest, benchmarkRequest.getContentType());
         context.getScenario().log("Benchmark created as below\n\"" + resolvedBenchmarkRequest + "\n\"");
+        PerformanceResource.addBenchmark(context.getManagerToken(), resolvedBenchmarkRequest, benchmarkRequest.getContentType());
     }
 
     @Then("^Run benchmark \"([^\"]*)\" on Hyperfoil \"([^\"]*)\" instance within (\\d+) (?:minute|minutes)$")

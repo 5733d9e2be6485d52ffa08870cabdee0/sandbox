@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.integration.tests.context.TestContext;
  */
 public class ContextResolver {
     private static final Pattern PLACEHOLDER_REGEX = Pattern.compile("\\$\\{.*\\}");
+    private static final boolean UNDEFINED_PLACEHOLDER_CHECK_ENABLED = Boolean.getBoolean("undefined.placeholder.check.enabled");
 
     private static final List<Resolver> RESOLVERS = Arrays.asList(
             new BridgeEndpointBaseResolver(),
@@ -31,7 +32,9 @@ public class ContextResolver {
                 }
             }
         }
-        verifyNoPlaceholderAvailableInContent(content);
+        if (UNDEFINED_PLACEHOLDER_CHECK_ENABLED) {
+            verifyNoPlaceholderAvailableInContent(content);
+        }
         return content;
     }
 
