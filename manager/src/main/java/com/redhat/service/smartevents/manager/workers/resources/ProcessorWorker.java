@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 

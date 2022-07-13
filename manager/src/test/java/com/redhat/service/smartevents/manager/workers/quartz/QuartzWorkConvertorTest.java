@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 
 import com.redhat.service.smartevents.manager.models.ManagedResource;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.Work;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

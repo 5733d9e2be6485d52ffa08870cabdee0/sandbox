@@ -1,7 +1,9 @@
-package com.redhat.service.smartevents.manager.models;
+package com.redhat.service.smartevents.manager.workers;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+
+import com.redhat.service.smartevents.manager.models.ManagedResource;
 
 public class Work {
 

@@ -19,8 +19,9 @@ import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 
 import io.quarkus.runtime.Quarkus;
@@ -86,7 +87,7 @@ public class QuartzWorkManagerImpl implements WorkManager {
             return quartz.checkExists(key);
         } catch (SchedulerException e) {
             String message = "Failed to check if a Job exists for resource of type '" + work.getType() + "' and id '" + work.getManagedResourceId() + "'";
-            throw new IllegalStateException(message, e);
+            throw new InternalPlatformException(message, e);
         }
     }
 
@@ -100,7 +101,7 @@ public class QuartzWorkManagerImpl implements WorkManager {
             quartz.scheduleJob(makeTrigger(work));
         } catch (SchedulerException e) {
             String message = "Failed to schedule work for resource of type '" + work.getType() + "' and id '" + work.getManagedResourceId() + "'";
-            throw new IllegalStateException(message, e);
+            throw new InternalPlatformException(message, e);
         }
     }
 
@@ -110,7 +111,7 @@ public class QuartzWorkManagerImpl implements WorkManager {
             quartz.rescheduleJob(key, makeTrigger(work));
         } catch (SchedulerException e) {
             String message = "Failed to reschedule work for resource of type '" + work.getType() + "' and id '" + work.getManagedResourceId() + "'";
-            throw new IllegalStateException(message, e);
+            throw new InternalPlatformException(message, e);
         }
     }
 

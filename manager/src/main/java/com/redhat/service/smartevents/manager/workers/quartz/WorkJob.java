@@ -3,18 +3,22 @@ package com.redhat.service.smartevents.manager.workers.quartz;
 import javax.inject.Inject;
 
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.Worker;
 import com.redhat.service.smartevents.manager.workers.resources.BridgeWorker;
 import com.redhat.service.smartevents.manager.workers.resources.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 
-// Single Job implementation that basically represents what we have now in the Work table queue.
+/**
+ * Single Job implementation that invokes the applicable {@link Worker} based on the {@link JobDataMap} .
+ */
 public class WorkJob implements Job {
 
     @Inject
@@ -38,7 +42,7 @@ public class WorkJob implements Job {
         } else if (Processor.class.getName().equals(work.getType())) {
             return processorWorker;
         }
-        throw new IllegalStateException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
+        throw new InternalPlatformException("Unable to locate worker for resource of type '" + work.getType() + "', with id '" + work.getManagedResourceId() + "'");
     }
 
 }

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 
 import org.quartz.JobDataMap;
 
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 
 import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkManagerImpl.STATE_FIELD_ATTEMPTS;
 import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkManagerImpl.STATE_FIELD_ID;
