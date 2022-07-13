@@ -11,14 +11,17 @@ Test steps are implemented in Java using [Cucumber JVM framework](https://github
 
 Main test scenarios are stored in [features folder](src/test/resources/features).
 
-Scenarios are splitted into dedicated feature files:
+Scenarios are split into dedicated feature files:
 - [bridge.feature](src/test/resources/features/bridge.feature) - Contains CRUD tests for Bridge
 - [ingress.feature](src/test/resources/features/ingress.feature) - Contains basic tests for exposed Bridge endpoint
 - [processor.feature](src/test/resources/features/processor.feature) - Contains CRUD tests for Processor
 - [processor-template.feature](src/test/resources/features/processor-template.feature) - Contains test coverage for Processor transformation template
 - [action-slack.feature](src/test/resources/features/action-slack.feature) (and other `action-xxx`)- Contains tests for specific Processor action
 
-In separate folder there is placed test scenario for running periodic check against existing Processor instance - [action-slack.feature](src/test/resources/periodical-slack-check-features/action-slack.feature)
+Rest of scenarios are kept in two different feature folders:
+
+- [performance-features](src/test/resources/performance-features) - Contains different performance test scenarios
+- [periodical-slack-check-features](src/test/resources/periodical-slack-check-features) - Contains test scenarios for running periodic check against existing Processor instance - [action-slack.feature](src/test/resources/periodical-slack-check-features/action-slack.feature)
 
 ### Test steps implementation
 
@@ -43,9 +46,12 @@ Test identifier is a specific resource identifier used in a scenario (for exampl
 It is possible to use various placeholders in feature files, allowing dynamic acess to runtime values and system identifiers. The placeholders use format `${placeholder-value}`.
 
 Currently, there is a possibility to use these placeholders in feature files:
-- ${env.`<System property name>`} to use a System property
+- ${bridge.`<Bridge name>`.endpoint.base} to use Bridge endpoint base URL (i.e. for http://localhost:80/something it will return http://localhost:80)
+- ${bridge.`<Bridge name>`.endpoint.path} to use Bridge endpoint path (i.e. for http://localhost:80/some/thing it will return /some/thing)
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
+- ${env.`<System property name>`} to use a System property
+- ${manager.authentication.token} to use a token for communication with Manager
 - ${uuid.`<Uuid name>`} to use unique identifier. Useful to distinguish historical data produced by the same test for example.
 
 ## Test execution
@@ -84,7 +90,7 @@ To properly run the tests locally you need to specify environment variables to a
 - `SLACK_CHANNEL` - Slack channel id (different from Slack channel name)
 - `WEBHOOK_SITE_UUID` - UUID to be used for tests interacting with webhook.site
 
-You can define these environment variables in localconfig.properties file or via the maven command, all environment variables is loaded before running the tests 
+You can define these environment variables in localconfig.properties file or via the maven command, all environment variables are loaded before running the tests 
 
 Check the [localconfig-example.properties](localconfig-example.properties) file for an example of how to use it.
 
@@ -98,3 +104,29 @@ By Default test runs with those authentication parameters for Keycloak:
 ```
 
 You can update the parameters needs to configure in `integration-tests/pom.xml` or via the maven command.
+
+### Performance testing
+
+In order to be able to run the [performance tests scenarios](src/test/resources/performance-features) locally you will need to have the following installed on your machine:
+
+- [Hyperfoil v0.21](https://hyperfoil.io/) - Benchmark framework for microservices (*)
+- [webhook-perf-test](https://github.com/afalhambra/webhook-perf-test) - Dummy app to consume cloud events from webhook Processor
+
+There is a dedicated Maven profile named `performance` located in `integration-tests/pom.xml`. There you can see the following system properties needed 
+to run these performance test scenarios:
+
+```xml
+<performance.slack.webhook.url></performance.slack.webhook.url>
+<performance.hyperfoil.url></performance.hyperfoil.url>
+```
+
+Once you have `Hyperfoil` and the `webhook-perf-test` up and running you can run the performance tests by either replacing the properties mentioned above in the pom
+file or by passing them as an argument via a Maven command. For example:
+```bash
+mvn clean verify -Pperformance -Dperformance.slack.webhook.url=<WEBHOOK_PERF_URL> -Dperformance.hyperfoil.url=<HYPERFOIL_URL> -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL>
+```
+
+> **_NOTE:_**  
+>- Hyperfoil needs to be started up in a clustered mode (i.e. standalone mode will not work). For more information, please
+refer to [Hyperfoil documentation](https://hyperfoil.io/)
+>- `webhook-perf-test` needs to be deployed locally into your Minikube cluster. Use the script provided [here](https://github.com/afalhambra/webhook-perf-test/blob/main/bin/minikube/deploy.sh) for the same.

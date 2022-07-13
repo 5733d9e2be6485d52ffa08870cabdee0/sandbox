@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -61,14 +62,23 @@ public class Hooks {
 
     @BeforeAll(order = 1)
     public static void webhookSiteRequestHistoryIsCleared() {
-        final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
-                .stream()
-                .filter(request -> {
-                    final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    return yesterday.isAfter(requestCreatedAt);
-                })
-                .forEach(request -> WebhookSiteResource.deleteRequest(request));
+        if (WebhookSiteResource.isSpecified()) {
+            final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
+            WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
+                    .stream()
+                    .filter(request -> {
+                        final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        return yesterday.isAfter(requestCreatedAt);
+                    })
+                    .forEach(WebhookSiteResource::deleteRequest);
+        }
+    }
+
+    @BeforeAll(order = 2)
+    public static void webhookPerformanceCleanUp() {
+        if (WebhookPerformanceResource.isSpecified()) {
+            WebhookPerformanceResource.deleteAll();
+        }
     }
 
     @Before
