@@ -6,6 +6,7 @@ Module contains integration tests verifying end to end functionality in real clu
 
 Tests are written using [Gherkin syntax](https://cucumber.io/docs/gherkin/reference/).
 Test steps are implemented in Java using [Cucumber JVM framework](https://github.com/cucumber/cucumber-jvm).
+For connection to external systems the test suite leverages [TNB - System X](https://github.com/tnb-software/TNB/tree/main/system-x).
 
 ### Test scenarios
 
@@ -29,7 +30,7 @@ Main tests are executed as [JUnit 5 test suite](src/test/java/com/redhat/service
 
 Test steps are stored in [steps folder](src/test/java/com/redhat/service/smartevents/integration/tests/steps). This folder contains also [hooks](src/test/java/com/redhat/service/smartevents/integration/tests/steps/Hooks.java) taking care of environment initialization and cleanup.
 
-Tests steps leverage Java REST client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/resources).
+Tests steps leverage Java client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/resources).
 
 Informations are passed between steps using injected context, it is implementation is in [context folder](src/test/java/com/redhat/service/smartevents/integration/tests/context). This package also contains a resolver interpreting placeholders in scenarios, replacing them with expected values.
 
@@ -52,6 +53,9 @@ Currently, there is a possibility to use these placeholders in feature files:
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
 - ${env.`<System property name>`} to use a System property
 - ${manager.authentication.token} to use a token for communication with Manager
+- ${slack.channel.`<Channel name>`.name} to use actual channel name
+- ${slack.channel.`<Channel name>`.webhook.url} to use a WebHook URL for sending message to the specified channel
+- ${slack.token} to use a token for communication with Slack
 - ${uuid.`<Uuid name>`} to use unique identifier. Useful to distinguish historical data produced by the same test for example.
 
 ## Test execution
@@ -76,7 +80,7 @@ For remote testing you can execute tests using Maven command:
 
 ```bash
 export OPENSHIFT_OFFLINE_TOKEN=<openshift-offline-token> # To obtain it, go to https://console.redhat.com/openshift/token
-mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL> -Dbridge.client.id=<CLIENT_ID>
+mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL> -Dbridge.client.id=<CLIENT_ID> -Dtest.credentials.file=localconfig.yaml
 # Example:
 # <CLIENT_ID>="cloud-services"
 # <KEYCLOAK_URL>="https://sso.redhat.com/auth/realms/redhat-external"
@@ -84,15 +88,14 @@ mvn clean verify -Pcucumber -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.
 
 ### Remote system access configuration
 
-To properly run the tests locally you need to specify environment variables to access remote systems - Slack and webhook.site:
-- `SLACK_WEBHOOK_URL` - Slack WebHook URL
-- `SLACK_WEBHOOK_TOKEN` - Access token for Slack WebHook
-- `SLACK_CHANNEL` - Slack channel id (different from Slack channel name)
+To properly run the tests locally you need to specify environment variable to access webhook.site:
 - `WEBHOOK_SITE_UUID` - UUID to be used for tests interacting with webhook.site
 
-You can define these environment variables in localconfig.properties file or via the maven command, all environment variables are loaded before running the tests 
+You can define this environment variable in localconfig.properties file or via the maven command, all environment variables are loaded before running the tests
 
 Check the [localconfig-example.properties](localconfig-example.properties) file for an example of how to use it.
+
+Also you need to create a localconfig.yaml file containing external system credentials and URLs for TNB framework. Check the [localconfig-example.yaml](localconfig-example.yaml) file for an example of how to use it.
 
 ### Keycloak token authentication
 
