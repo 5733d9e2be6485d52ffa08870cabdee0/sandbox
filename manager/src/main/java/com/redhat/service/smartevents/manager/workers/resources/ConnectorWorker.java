@@ -63,6 +63,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
+    // This is invoked by Quartz on a context that lacks a RequestContext by default.
+    // The Worker calls into ConnectorsApiClient that needs a RequestContext to be active.
+    // We therefore activate the RequestContext here.
     @ActivateRequestContext
     public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
@@ -169,6 +172,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
+    // This is invoked by Quartz on a context that lacks a RequestContext by default.
+    // The Worker calls into ConnectorsApiClient that needs a RequestContext to be active.
+    // We therefore activate the RequestContext here.
     @ActivateRequestContext
     public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",

@@ -53,7 +53,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         T managedResource = load(id);
         if (Objects.isNull(managedResource)) {
             //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
-            throw new IllegalStateException(String.format("Resource with id '%s' no longer exists in the database.", id));
+            throw new IllegalStateException(String.format("Resource of type '%s' with id '%s' no longer exists in the database.", work.getType(), id));
         }
 
         // Fail when we've had enough
@@ -70,7 +70,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 updated = createDependencies(work, managedResource);
                 complete = isProvisioningComplete(updated);
             } catch (Exception e) {
-                LOGGER.error(String.format("Failed to create dependencies for '%s'.", id), e);
+                LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
             }
@@ -79,7 +79,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 updated = deleteDependencies(work, managedResource);
                 complete = isDeprovisioningComplete(updated);
             } catch (Exception e) {
-                LOGGER.info(String.format("Failed to delete dependencies for '%s'.", id), e);
+                LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
             }

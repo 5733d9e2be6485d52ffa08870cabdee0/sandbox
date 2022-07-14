@@ -118,11 +118,6 @@ class BridgeWorkerTest {
     }
 
     @Transactional
-    protected void persist(Bridge bridge) {
-        bridgeDAO.persist(bridge);
-    }
-
-    @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResourceAndErrorHandlerNotPresent(ManagedResourceStatus status,
