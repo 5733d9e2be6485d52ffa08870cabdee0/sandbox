@@ -39,6 +39,8 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean install -Dquickly
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
       - name: Run integration tests
         env:
           DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
@@ -51,7 +53,7 @@ jobs:
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}
