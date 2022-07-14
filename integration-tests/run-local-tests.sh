@@ -47,4 +47,5 @@ set -x # activate printing executed commands
 mvn clean verify $ARGS \
   -Pcucumber \
   -Devent-bridge.manager.url=${MANAGER_URL} \
-  -Dkeycloak.realm.url=${KEYCLOAK_URL}/auth/realms/event-bridge-fm
+  -Dkeycloak.realm.url=${KEYCLOAK_URL}/auth/realms/event-bridge-fm \
+  -Dtest.credentials.file=localconfig.yaml

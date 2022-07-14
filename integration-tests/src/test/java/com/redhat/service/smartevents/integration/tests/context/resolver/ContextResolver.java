@@ -21,6 +21,9 @@ public class ContextResolver {
             new BridgeIdResolver(),
             new CloudEventIdResolver(),
             new ManagerAuthenticationTokenResolver(),
+            new SlackChannelNameResolver(),
+            new SlackChannelWebHookUrlResolver(),
+            new SlackTokenResolver(),
             new SystemPropertyResolver(),
             new UuidResolver());
 
