@@ -105,8 +105,16 @@ public class ProcessorRequest {
         return processing;
     }
 
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
+    }
+
     public Set<Action> getActions() {
         return actions;
+    }
+
+    public void setActions(Set<Action> actions) {
+        this.actions = actions;
     }
 
     public boolean hasActions() {
