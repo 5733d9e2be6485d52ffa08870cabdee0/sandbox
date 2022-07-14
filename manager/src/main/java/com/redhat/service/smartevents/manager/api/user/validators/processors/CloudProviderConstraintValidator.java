@@ -1,7 +1,6 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -24,10 +23,6 @@ public class CloudProviderConstraintValidator extends BaseConstraintValidator<Va
 
     static final String REGION_PARAM = "region";
 
-    static final String CLOUD_PROVIDER_REQUIRED = "Cloud Provider cannot be null or empty.";
-
-    static final String CLOUD_REGION_REQUIRED = "Cloud Region cannot be null or empty.";
-
     static final String CLOUD_PROVIDER_NOT_VALID = "The requested Cloud Provider '{id}' is not valid.";
 
     static final String CLOUD_PROVIDER_NOT_ENABLED = "The requested Cloud Provider '{id}' is not enabled.";
@@ -44,13 +39,7 @@ public class CloudProviderConstraintValidator extends BaseConstraintValidator<Va
 
         boolean valid = true;
 
-        if (StringUtils.isEmpty(bridgeRequest.getCloudProvider())) {
-            addConstraintViolation(context, CLOUD_PROVIDER_REQUIRED, new HashMap<>(), InvalidCloudProviderException::new);
-            valid = false;
-        }
-
-        if (StringUtils.isEmpty(bridgeRequest.getRegion())) {
-            addConstraintViolation(context, CLOUD_REGION_REQUIRED, new HashMap<>(), InvalidRegionException::new);
+        if (StringUtils.isEmpty(bridgeRequest.getCloudProvider()) || StringUtils.isEmpty(bridgeRequest.getRegion())) {
             valid = false;
         }
 

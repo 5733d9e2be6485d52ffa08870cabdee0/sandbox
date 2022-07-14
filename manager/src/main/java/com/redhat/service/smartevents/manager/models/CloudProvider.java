@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager.models;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -80,6 +81,6 @@ public class CloudProvider {
         if (this.regions == null) {
             return Optional.empty();
         }
-        return this.regions.stream().filter(r -> r.getName().equals(name)).findFirst();
+        return this.regions.stream().filter(r -> Objects.equals(r.getName(), name)).findFirst();
     }
 }

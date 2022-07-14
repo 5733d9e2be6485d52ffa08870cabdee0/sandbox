@@ -60,18 +60,8 @@ public class CloudProviderConstraintValidatorTest {
         BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, cp.getId(), null);
 
         Set<String> violations = Set.of(
-                "Cloud Region cannot be null or empty.");
-
-        validateConstraintMessage(br, violations);
-    }
-
-    @Test
-    public void validate_emptyRegion() {
-        CloudProvider cp = cloudProviderDAO.findById(DEFAULT_CLOUD_PROVIDER);
-        BridgeRequest br = new BridgeRequest(DEFAULT_BRIDGE_NAME, cp.getId(), "");
-
-        Set<String> violations = Set.of(
-                "Cloud Region cannot be null or empty.");
+                "Cloud Region cannot be null or empty.",
+                "The supplied Cloud Provider details are not valid.");
 
         validateConstraintMessage(br, violations);
     }
@@ -108,7 +98,8 @@ public class CloudProviderConstraintValidatorTest {
 
         Set<String> violations = Set.of(
                 "Cloud Region cannot be null or empty.",
-                "Cloud Provider cannot be null or empty.");
+                "Cloud Provider cannot be null or empty.",
+                "The supplied Cloud Provider details are not valid.");
 
         validateConstraintMessage(br, violations);
     }
@@ -119,7 +110,8 @@ public class CloudProviderConstraintValidatorTest {
 
         Set<String> violations = Set.of(
                 "Cloud Region cannot be null or empty.",
-                "Cloud Provider cannot be null or empty.");
+                "Cloud Provider cannot be null or empty.",
+                "The supplied Cloud Provider details are not valid.");
 
         validateConstraintMessage(br, violations);
     }
@@ -169,8 +161,8 @@ public class CloudProviderConstraintValidatorTest {
 
     private void validateConstraintMessage(BridgeRequest br, Set<String> expectedMessages) {
         Set<ConstraintViolation<BridgeRequest>> violations = validatorFactory.getValidator().validate(br);
-        assertThat(violations).hasSize(expectedMessages.size());
-
-        violations.forEach((v) -> assertThat(expectedMessages).contains(v.getMessage()));
+        assertThat(violations)
+                .hasSize(expectedMessages.size())
+                .allSatisfy((v) -> expectedMessages.contains(v.getMessage()));
     }
 }

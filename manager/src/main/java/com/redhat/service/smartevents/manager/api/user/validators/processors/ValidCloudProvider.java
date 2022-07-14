@@ -13,7 +13,7 @@ import javax.validation.Payload;
 @Constraint(validatedBy = CloudProviderConstraintValidator.class)
 public @interface ValidCloudProvider {
 
-    String message() default "The supplied Cloud Provider details are not valid";
+    String message() default "The supplied Cloud Provider details are not valid.";
 
     Class<?>[] groups() default {};
 
