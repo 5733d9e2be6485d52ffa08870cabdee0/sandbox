@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -160,8 +162,13 @@ public class BridgesAPITest {
         ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
                 .as(ErrorsResponse.class);
 
-        ErrorResponse errorResponse = errorsResponse.getItems().get(0);
-        assertThat(errorResponse.getCode()).isEqualTo(errorDAO.findByException(InvalidCloudProviderException.class).getCode());
+        Set<String> expectedErrorCodes = Set.of(
+                errorDAO.findByException(InvalidCloudProviderException.class).getCode(),
+                errorDAO.findByException(InvalidRegionException.class).getCode());
+
+        assertThat(errorsResponse.getItems())
+                .hasSize(2)
+                .allSatisfy((e) -> expectedErrorCodes.contains(e.getCode()));
     }
 
     @Test
@@ -170,8 +177,12 @@ public class BridgesAPITest {
         ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
                 .as(ErrorsResponse.class);
 
-        ErrorResponse errorResponse = errorsResponse.getItems().get(0);
-        assertThat(errorResponse.getCode()).isEqualTo(errorDAO.findByException(InvalidRegionException.class).getCode());
+        Set<String> expectedErrorCodes = Set.of(
+                errorDAO.findByException(InvalidRegionException.class).getCode());
+
+        assertThat(errorsResponse.getItems())
+                .hasSize(1)
+                .allSatisfy((e) -> expectedErrorCodes.contains(e));
     }
 
     @Test
