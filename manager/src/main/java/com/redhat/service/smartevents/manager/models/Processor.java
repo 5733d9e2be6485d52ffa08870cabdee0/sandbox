@@ -44,7 +44,11 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "    (" +
                         "      (p.status='PREPARING' and p.dependencyStatus='READY') " +
                         "      or " +
+                        "      (p.status='PROVISIONING' and p.dependencyStatus='READY') " +
+                        "      or " +
                         "      (p.status='DEPROVISION' and p.dependencyStatus='DELETED') " +
+                        "      or " +
+                        "      (p.status='DELETING' and p.dependencyStatus='DELETED') " +
                         "    )" +
                         "  )" +
                         ") or (" +

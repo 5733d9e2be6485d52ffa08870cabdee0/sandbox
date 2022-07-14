@@ -162,7 +162,9 @@ public class BridgesServiceTest {
         bridge.setStatus(PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        assertThat(bridgesService.findByShardIdWithReadyDependencies(SHARD_ID)).isEmpty();
+        // PROVISIONING Bridges are also notified to the Shard Operator.
+        // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
+        assertThat(bridgesService.findByShardIdWithReadyDependencies(SHARD_ID)).hasSize(1);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);

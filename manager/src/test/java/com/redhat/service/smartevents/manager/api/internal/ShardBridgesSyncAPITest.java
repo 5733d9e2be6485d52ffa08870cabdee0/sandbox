@@ -322,11 +322,13 @@ public class ShardBridgesSyncAPITest {
         bridge.setStatus(PROVISIONING);
         TestUtils.updateBridge(bridge).then().statusCode(200);
 
+        // PROVISIONING Bridges are also notified to the Shard Operator.
+        // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployOrDelete.clear();
             bridgesToDeployOrDelete.addAll(TestUtils.getBridgesToDeployOrDelete().as(new TypeRef<List<BridgeDTO>>() {
             }));
-            assertThat(bridgesToDeployOrDelete).isEmpty();
+            assertThat(bridgesToDeployOrDelete.stream().filter(x -> x.getStatus().equals(PROVISIONING)).count()).isEqualTo(1);
         });
     }
 

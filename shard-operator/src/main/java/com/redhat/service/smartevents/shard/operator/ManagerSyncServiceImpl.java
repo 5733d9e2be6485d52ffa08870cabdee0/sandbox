@@ -62,6 +62,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         return managerClient.fetchBridgesToDeployOrDelete()
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
                     if (y.getStatus().equals(ManagedResourceStatus.PREPARING)) { // Bridges to deploy
+                        LOGGER.info("Found Bridge '{}' in PREPARING state. Moving to PROVISIONING.", y.getId());
                         y.setStatus(ManagedResourceStatus.PROVISIONING);
                         return managerClient.notifyBridgeStatusChange(y)
                                 .subscribe().with(
@@ -71,7 +72,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
+                    if (y.getStatus().equals(ManagedResourceStatus.PROVISIONING)) { // Bridges that were being provisioned (before the Operator failed).
+                        LOGGER.info("Found Bridge '{}' in PROVISIONING state. Attempting to continue with PROVISIONING.", y.getId());
+                        return Uni.createFrom().voidItem().subscribe().with(success -> createBridgeIngress(y));
+                    }
                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
+                        LOGGER.info("Found Bridge '{}' in DEPROVISION state. Moving to DELETING.", y.getId());
                         y.setStatus(ManagedResourceStatus.DELETING);
                         return managerClient.notifyBridgeStatusChange(y)
                                 .subscribe().with(
@@ -80,6 +86,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                             deleteBridgeIngress(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
+                    }
+                    if (y.getStatus().equals(ManagedResourceStatus.DELETING)) { // Bridges that were being deleted (before the Operator failed).
+                        LOGGER.info("Found Bridge '{}' in DELETING state. Attempting to continue with DELETING.", y.getId());
+                        return Uni.createFrom().voidItem().subscribe().with(success -> deleteBridgeIngress(y));
                     }
                     LOGGER.warn("Manager included a Bridge '{}' instance with an illegal status '{}'", y.getId(), y.getStatus());
                     return Uni.createFrom().voidItem();
@@ -90,6 +100,7 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         return managerClient.fetchProcessorsToDeployOrDelete()
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
                     if (ManagedResourceStatus.PREPARING.equals(y.getStatus())) {
+                        LOGGER.info("Found Processor '{}' in PREPARING state. Moving to PROVISIONING.", y.getId());
                         y.setStatus(ManagedResourceStatus.PROVISIONING);
                         return managerClient.notifyProcessorStatusChange(y)
                                 .subscribe().with(
@@ -99,7 +110,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
                     }
+                    if (y.getStatus().equals(ManagedResourceStatus.PROVISIONING)) { // Processors that were being provisioned (before the Operator failed).
+                        LOGGER.info("Found Processor '{}' in PROVISIONING state. Attempting to continue with PROVISIONING.", y.getId());
+                        return Uni.createFrom().voidItem().subscribe().with(success -> createBridgeExecutor(y));
+                    }
                     if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
+                        LOGGER.info("Found Processor '{}' in DEPROVISION state. Moving to DELETING.", y.getId());
                         y.setStatus(ManagedResourceStatus.DELETING);
                         return managerClient.notifyProcessorStatusChange(y)
                                 .subscribe().with(
@@ -108,6 +124,10 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                                             deleteBridgeExecutor(y);
                                         },
                                         failure -> failedToSendUpdateToManager(y, failure));
+                    }
+                    if (y.getStatus().equals(ManagedResourceStatus.DELETING)) { // Processors that were being deleted (before the Operator failed).
+                        LOGGER.info("Found Processor '{}' in DELETING state. Attempting to continue with DELETING.", y.getId());
+                        return Uni.createFrom().voidItem().subscribe().with(success -> deleteBridgeExecutor(y));
                     }
                     return Uni.createFrom().voidItem();
                 }).collect(Collectors.toList())));
