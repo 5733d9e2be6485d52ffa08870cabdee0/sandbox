@@ -68,7 +68,7 @@ public class CamelToProcessorRequest {
         ObjectNode inputParameters = (ObjectNode) toObjectNode.get("parameters");
         HashMap<String, String> parameters = new HashMap<>();
 
-        for (Iterator<Map.Entry<String, JsonNode>> iterator = inputParameters.fields(); iterator.hasNext(); ) {
+        for (Iterator<Map.Entry<String, JsonNode>> iterator = inputParameters.fields(); iterator.hasNext();) {
             Map.Entry<String, JsonNode> kv = iterator.next();
             parameters.put(kv.getKey(), kv.getValue().asText());
         }

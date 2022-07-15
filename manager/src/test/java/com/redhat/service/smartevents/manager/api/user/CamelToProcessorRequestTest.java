@@ -2,11 +2,12 @@ package com.redhat.service.smartevents.manager.api.user;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.manager.api.models.requests.CamelProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

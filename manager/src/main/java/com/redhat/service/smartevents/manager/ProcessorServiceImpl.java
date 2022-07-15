@@ -416,6 +416,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setActions(definition.getRequestedActions());
             processorResponse.setSource(definition.getRequestedSource());
             processorResponse.setProcessing(definition.getProcessing());
         }

@@ -212,7 +212,7 @@ public class CamelIntegration extends CustomResource<ObjectNode, CamelIntegratio
     @Override
     public String toString() {
         return "CamelIntegration{" +
-                "spec=" + spec.toPrettyString() +
+                "spec=" + (spec != null ? spec.toPrettyString() : spec) +
                 ", status=" + status +
                 '}';
     }

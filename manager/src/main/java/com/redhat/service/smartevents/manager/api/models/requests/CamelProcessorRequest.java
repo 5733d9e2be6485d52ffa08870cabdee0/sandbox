@@ -4,9 +4,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidProcessorGateway;
 
-@ValidProcessorGateway
 public class CamelProcessorRequest {
 
     @NotEmpty(message = "Processor name cannot be null or empty")

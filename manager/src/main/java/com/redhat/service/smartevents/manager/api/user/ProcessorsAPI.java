@@ -15,7 +15,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.redhat.service.smartevents.manager.api.models.requests.CamelProcessorRequest;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -27,20 +26,21 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.manager.ProcessorService;
+import com.redhat.service.smartevents.manager.api.models.requests.CamelProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.models.Processor;
 
 import io.quarkus.security.Authenticated;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Tag(name = "Processors", description = "The API that allow the user to retrieve, create or delete Processors of a Bridge instance.")
 @SecuritySchemes(value = {
@@ -131,9 +131,9 @@ public class ProcessorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(summary = "Create a Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
+    @Operation(summary = "Create a Camel Processor of a Bridge instance", description = "Create a Processor of a Bridge instance for the authenticated user.")
     @POST
-    @Path("{bridgeId}/processors")
+    @Path("{bridgeId}/camelProcessors")
     public Response addCamelProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid CamelProcessorRequest camelProcessorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
