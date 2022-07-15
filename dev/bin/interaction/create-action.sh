@@ -89,7 +89,7 @@ elif [ "${action_type}" = 'camel' ]; then
                           "simple": "${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <= 10",
                           "steps": [
                             {
-                              "log": { "message" : "++++- between 5 and 10 goes to mc ${body}" }
+                              "log": { "message" : "++++- between 5 and 10 goes to http ${body}" }
                             },
                             {
                               "marshal": {
@@ -97,7 +97,7 @@ elif [ "${action_type}" = 'camel' ]; then
                               }
                             },
                             {
-                              "to": { "uri" : "slackAction2" }
+                              "to": { "uri" : "httpAction" }
                             }
                           ]
                         }
@@ -131,11 +131,10 @@ elif [ "${action_type}" = 'camel' ]; then
         }
       },
       {
-        "name": "slackAction2",
-        "type": "slack_sink_0.1",
+        "name": "httpAction",
+        "type": "http_sink_0.1",
         "parameters": {
-          "slack_channel": "mc2",
-          "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""'
+            "http_url": '"\"$HTTP_WEBHOOK_ACTION\""'
         }
       },
       {
