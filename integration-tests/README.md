@@ -58,7 +58,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 
 ### Local testing
 
-If you deployed application locally (either by using [startMinikubeDeployLocalDev.sh script](../kustomize/startMinikubeDeployLocalDev.sh) or [running manager and operator locally](../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
+If you deployed application locally (by [running manager and operator locally](../dev/README.md)) you can use [run-local-tests.sh](run-local-tests.sh) script to launch the tests with all local parameters set automatically.
 
 Script has 3 options:
 - `-t TAGS`  
