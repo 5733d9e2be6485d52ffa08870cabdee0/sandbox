@@ -45,7 +45,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     void setup(@Observes StartupEvent event) {
         if (name.isEmpty() || namespace.isEmpty()) {
             LOGGER.error(
-                    "'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform. The application keeps running due to https://issues.redhat.com/browse/CVP-2366 but the functionalitis are compromised.");
+                    "'event-bridge.istio.gateway.name' and 'event-bridge.istio.gateway.namespace' config property must be set on k8s platform. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
             return;
         }
 
@@ -56,13 +56,13 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
         }
         if (gatewayService == null) {
             LOGGER.error(
-                    "Could not retrieve the istio gateway service. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/CVP-2366 but the functionalitis are compromised.");
+                    "Could not retrieve the istio gateway service. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
             return;
         }
         Optional<ServicePort> http2Port = gatewayService.getSpec().getPorts().stream().filter(x -> "http2".equals(x.getName())).findFirst();
         if (http2Port.isEmpty()) {
             LOGGER.error(
-                    "Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/CVP-2366 but the functionalitis are compromised.");
+                    "Could not retrieve the http2 port for the istio gateway service. Please make sure it was properly deployed. The application keeps running due to https://issues.redhat.com/browse/MGDOBR-940 but the functionalitis are compromised.");
             return;
         }
         gatewayServiceHttp2Port = http2Port.get().getPort();
