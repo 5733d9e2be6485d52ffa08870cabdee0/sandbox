@@ -7,26 +7,88 @@ action_type='camel-new'
 action_payload='{
   "name": '"\"$action_name\""',
     "flow": [
-        {
-            "from": {
-                "uri": "rhose",
-                "steps": [
-                    {
-                      "log": { "message" : "Received a message using the new API" }
-                    },
+    {
+       "from": {
+          "uri": "rhose",
+          "steps": [
+            {
+              "unmarshal": {
+                "json": {}
+              }
+            },
+            {
+              "choice": {
+                "when": [
+                  {
+                    "simple": "${body[nutritions][sugar]} <= 5",
+                    "steps": [
+                      {
+                        "log": { "message" : "++++- Lesser equal than 5 ${body}" }
+                      },
+                      {
+                        "marshal": {
+                          "json": {}
+                        }
+                      },
                     {
                         "to": {
-                            "uri": "rhoc:slack_sink_0.1:mySlack",
+                            "uri": "rhoc:slack_sink_0.1:slackAction1",
                             "parameters": {
                                 "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL\""',
                                 "slack_channel": "mc"
                             }
                         }
                     }
-                ]
+                    ]
+                  },
+                  {
+                    "simple": "${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <= 10",
+                    "steps": [
+                      {
+                        "log": { "message" : "++++- between 5 and 10 goes to mc ${body}" }
+                      },
+                      {
+                        "marshal": {
+                          "json": {}
+                        }
+                      },
+                {
+                        "to": {
+                            "uri": "rhoc:slack_sink_0.1:slackAction2",
+                            "parameters": {
+                                "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""',
+                                "slack_channel": "mc2"
+                            }
+                        }
+                    }
+                    ]
+                  }
+                ],
+                "otherwise": {
+                  "steps": [
+                    {
+                      "marshal": {
+                        "json": {}
+                      }
+                    },
+                {
+                        "to": {
+                            "uri": "rhoc:slack_sink_0.1:errorAction",
+                            "parameters": {
+                                "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""',
+                                "slack_channel": "mc2"
+                            }
+                        }
+                    }
+                  ]
+                }
+              }
             }
+          ]
+          }
         }
-    ]
+      ]
+    }
 }'
 
 echo $action_payload
