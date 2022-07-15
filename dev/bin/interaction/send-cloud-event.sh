@@ -34,6 +34,8 @@ export CLOUD_EVENT='{
 }'
 
 
+echo $CLOUD_EVENT | jq .
+
 BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
 
 echo "Sending cloud event to $BRIDGE_ENDPOINT"
