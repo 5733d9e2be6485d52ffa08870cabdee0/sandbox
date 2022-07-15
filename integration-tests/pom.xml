@@ -116,7 +116,7 @@
             <cucumber.execution.parallel.config.strategy>fixed</cucumber.execution.parallel.config.strategy>
             <cucumber.execution.parallel.config.fixed.parallelism>${parallel.concurrency.number}</cucumber.execution.parallel.config.fixed.parallelism>
 
-            <sonar.exclusion>**/RunCucumberTest.java</sonar.exclusion>
+            <sonar.exclusions>**/RunCucumberTest.java, **/RunPerformanceCucumberTest.java</sonar.exclusions>
 
             <!-- Token authorization configuration, usable for local execution, values are taken from https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/blob/main/kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -->
             <bridge.client.id>kermit</bridge.client.id>
@@ -184,6 +184,34 @@
               <includes>
                 <include>**/RunPeriodicalSlackActionSuite.java</include>
               </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>performance</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>**/RunPerformanceCucumberTest.java</include>
+              </includes>
+              <systemProperties>
+                <performance.slack.webhook.url></performance.slack.webhook.url>
+                <performance.hyperfoil.url></performance.hyperfoil.url>
+              </systemProperties>
             </configuration>
           </plugin>
         </plugins>

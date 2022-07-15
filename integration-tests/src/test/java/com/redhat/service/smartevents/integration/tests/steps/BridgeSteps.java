@@ -140,7 +140,7 @@ public class BridgeSteps {
                         .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId()).then().log().all()))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
-                .failFast(
+                .failFast("Failed to create a Bridge",
                         () -> BridgeResource
                                 .getBridgeDetailsResponse(context.getManagerToken(), bridgeContext.getId())
                                 .then()

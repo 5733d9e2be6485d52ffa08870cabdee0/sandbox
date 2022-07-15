@@ -87,10 +87,10 @@ function configure_kafka {
     echo "$OPS_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
     exit
   fi
-  MC_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
-  MC_SA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${MC_SA_NAME}.json"
-  if [[ ! -f $MC_SA_CREDENTIALS_FILE ]] ; then
-    echo "$MC_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
+  MANAGED_CONNECTORS_SA_NAME="${MANAGED_KAFKA_INSTANCE_NAME}-mc"
+  MANAGED_CONNECTORS_SA_CREDENTIALS_FILE="${CREDENTIALS_FOLDER}/${MANAGED_CONNECTORS_SA_NAME}.json"
+  if [[ ! -f $MANAGED_CONNECTORS_SA_CREDENTIALS_FILE ]] ; then
+    echo "$MANAGED_CONNECTORS_SA_CREDENTIALS_FILE. Please follow the 'Managed Kafka instance setup' dev/README.md instructions to setup them."
     exit
   fi
 }
@@ -147,11 +147,11 @@ function getManagedKafkaOpsSAClientSecret {
 }
 
 function getManagedKafkaMcSAClientId {
-  echo "$( getSAClientId "${MC_SA_CREDENTIALS_FILE}" )"
+  echo "$( getSAClientId "${MANAGED_CONNECTORS_SA_CREDENTIALS_FILE}" )"
 }
 
 function getManagedKafkaMcSAClientSecret {
-  echo "$( getSAClientSecret "${MC_SA_CREDENTIALS_FILE}" )"
+  echo "$( getSAClientSecret "${MANAGED_CONNECTORS_SA_CREDENTIALS_FILE}" )"
 }
 
 for configuration_profile in "$@"; do configure "$configuration_profile"; done

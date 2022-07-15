@@ -9,13 +9,12 @@ import io.restassured.RestAssured;
 public class WebhookSiteResource {
 
     private static final String ENDPOINT_BASE_URL = "https://webhook.site";
-
-    private static final String ENDPOINT_UUID = Utils.getSystemProperty("webhook.site.uuid");
+    private static final String ENDPOINT_UUID = "webhook.site.uuid";
 
     private static final String ENDPOINT_TEST_UUID = Utils.getSystemProperty("webhook.site.uuid.second");
 
     public static List<WebhookSiteRequest> requests(WebhookSiteQuerySorting sorting) {
-        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", ENDPOINT_UUID, sorting.getValue())
+        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", getEndpointUuid(), sorting.getValue())
                 .then()
                 .extract()
                 .body()
@@ -34,9 +33,18 @@ public class WebhookSiteResource {
         RestAssured
                 .given()
                 .delete(ENDPOINT_BASE_URL + "/token/{webhookUuid}/request/{requestUuid}",
-                        ENDPOINT_UUID,
+                        getEndpointUuid(),
                         request.getUuid())
                 .then()
                 .statusCode(200);
+    }
+
+    private static String getEndpointUuid() {
+        return Utils.getSystemProperty(ENDPOINT_UUID);
+    }
+
+    public static boolean isSpecified() {
+        String endpointUuid = System.getProperty(ENDPOINT_UUID);
+        return endpointUuid != null && !endpointUuid.isBlank();
     }
 }
