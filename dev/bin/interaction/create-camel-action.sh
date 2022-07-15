@@ -45,7 +45,7 @@ action_payload='{
                     "simple": "${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <= 10",
                     "steps": [
                       {
-                        "log": { "message" : "++++- between 5 and 10 goes to mc ${body}" }
+                        "log": { "message" : "++++- between 5 and 10 goes to http webhook ${body}" }
                       },
                       {
                         "marshal": {
@@ -54,10 +54,9 @@ action_payload='{
                       },
                 {
                         "to": {
-                            "uri": "rhoc:slack_sink_0.1:slackAction2",
+                            "uri": "rhoc:http_sink_0.1:httpAction",
                             "parameters": {
-                                "slack_webhook_url": '"\"$SLACK_WEBHOOK_URL2\""',
-                                "slack_channel": "mc2"
+                                "http_url": '"\"$HTTP_WEBHOOK_ACTION\""'
                             }
                         }
                     }
