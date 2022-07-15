@@ -108,7 +108,7 @@ public class BridgeSteps {
     @When("^update the Bridge \"([^\"]*)\" with body:$")
     public void updateBridge(String testBridgeName, String bridgeRequestJson) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        String systemBridgeName = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeContext.getId()).getName();
+        String systemBridgeName = bridgeContext.getName();
 
         BridgeResponse response;
         String resolvedBridgeRequestJson = ContextResolver.resolveWithScenarioContext(context, bridgeRequestJson);
