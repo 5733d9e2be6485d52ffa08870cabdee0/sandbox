@@ -146,6 +146,10 @@ jobs:
           kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
       - name: Prepare test configuration for E2E tests
         uses: ./.github/actions/e2e-test-config
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       - name: Run integration tests
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
