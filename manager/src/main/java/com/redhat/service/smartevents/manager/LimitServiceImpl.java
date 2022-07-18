@@ -74,8 +74,7 @@ public class LimitServiceImpl implements LimitService {
     }
 
     @Override
-    public QuotaLimit getBridgeQuotaLimit(String bridgeId) {
-        Bridge bridge = bridgesService.getBridge(bridgeId);
+    public QuotaLimit getBridgeQuotaLimit(Bridge bridge) {
         QuotaType bridgeInstanceType = bridge.getInstanceType();
         return getQuotaLimit(bridgeInstanceType);
     }

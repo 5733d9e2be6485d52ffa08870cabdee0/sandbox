@@ -47,5 +47,5 @@ public interface BridgesService {
      * @param id Bridge Id.
      * @return @True if expired else @false.
      */
-    boolean isBridgeExpired(String id);
+    boolean isBridgeExpired(Bridge bridge);
 }

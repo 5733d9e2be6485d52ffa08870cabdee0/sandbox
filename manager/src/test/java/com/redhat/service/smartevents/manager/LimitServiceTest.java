@@ -49,10 +49,8 @@ public class LimitServiceTest {
 
     @Test
     public void testGetBridgeInstanceLimit() {
-        String bridgeId = "123";
         Bridge bridge = Fixtures.createBridge();
-        when(bridgesService.getBridge(bridgeId)).thenReturn(bridge);
-        QuotaLimit quotaLimit = limitService.getBridgeQuotaLimit(bridgeId);
+        QuotaLimit quotaLimit = limitService.getBridgeQuotaLimit(bridge);
         assertThat(quotaLimit.getQuotaType()).isEqualByComparingTo(QuotaType.EVAL);
     }
 }

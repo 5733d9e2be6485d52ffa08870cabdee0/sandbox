@@ -92,12 +92,14 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
-        // validate service limit
-        validateBridgeActive(bridgeId);
-        validateServiceLimitQuota(bridgeId);
 
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // validate service limit
+        validateBridgeActive(bridge);
+        validateServiceLimitQuota(bridge);
+
         return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
     }
 
@@ -172,11 +174,11 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
-        // validate service limit
-        validateBridgeActive(bridgeId);
-
         // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
-        bridgesService.getReadyBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // validate service limit
+        validateBridgeActive(bridge);
 
         // Extract existing definition
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
@@ -424,12 +426,12 @@ public class ProcessorServiceImpl implements ProcessorService {
     /**
      * Validate whether user is allowed to create new processor instance under an bridge
      *
-     * @param bridgeId Bridge id.
+     * @param bridge Bridge.
      */
-    private void validateServiceLimitQuota(String bridgeId) {
-        QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridgeId);
+    private void validateServiceLimitQuota(Bridge bridge) {
+        QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridge);
         long maxAllowedProcessors = bridgeQuotaLimit.getProcessorLimit();
-        long existingProcessorCount = getUserVisibleProcessorsCount(bridgeId);
+        long existingProcessorCount = getUserVisibleProcessorsCount(bridge.getId());
 
         if (existingProcessorCount >= maxAllowedProcessors) {
             throw new ServiceLimitException("Max allowed processor instance limit exceed");
@@ -439,10 +441,10 @@ public class ProcessorServiceImpl implements ProcessorService {
     /**
      * Validate whether user is allowed to update existing processor instance under an bridge
      *
-     * @param bridgeId Bridge id.
+     * @param bridge Bridge.
      */
-    private void validateBridgeActive(String bridgeId) {
-        boolean bridgeExpired = bridgesService.isBridgeExpired(bridgeId);
+    private void validateBridgeActive(Bridge bridge) {
+        boolean bridgeExpired = bridgesService.isBridgeExpired(bridge);
         if (bridgeExpired) {
             throw new ServiceLimitException("Bridge expired");
         }

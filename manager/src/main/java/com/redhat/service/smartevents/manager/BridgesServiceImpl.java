@@ -246,8 +246,7 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public boolean isBridgeExpired(String id) {
-        Bridge bridge = getBridge(id);
+    public boolean isBridgeExpired(Bridge bridge) {
         ZonedDateTime expireAt = bridge.getExpireAt();
         if (Objects.isNull(expireAt)) {
             return false;
