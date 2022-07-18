@@ -73,7 +73,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setCustomerId(customerId);
         bridge.setOrganisationId(organisationId);
         bridge.setOwner(owner);
-        bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
+        bridge.setShardId(shardService.getAssignedShard(bridge.getId()).getId());
         bridge.setGeneration(0);
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel

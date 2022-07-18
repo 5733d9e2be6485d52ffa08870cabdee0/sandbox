@@ -35,7 +35,7 @@ public class ShardServiceImpl implements ShardService {
     }
 
     @Override
-    public String getAssignedShardId(String id) {
+    public Shard getAssignedShard(String id) {
         List<Shard> shards = shardDAO.findByType(ShardType.TRADITIONAL);
 
         // add the assignment logic here
@@ -43,7 +43,7 @@ public class ShardServiceImpl implements ShardService {
             LOGGER.error("The number of 'TRADITIONAL' shards is not equal to 1. This situation is not supported yet. Using the first in the list.");
         }
 
-        return shards.get(0).getId();
+        return shards.get(0);
     }
 
     @Override

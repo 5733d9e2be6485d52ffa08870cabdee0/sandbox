@@ -93,6 +93,7 @@ public class DatabaseManagerUtils {
         Shard traditional = new Shard();
         traditional.setId(TestConstants.SHARD_ID);
         traditional.setType(ShardType.TRADITIONAL);
+        traditional.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
         shardDAO.persist(traditional);
     }
 }
