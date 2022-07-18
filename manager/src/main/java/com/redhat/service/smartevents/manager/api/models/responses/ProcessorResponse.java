@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.manager.api.models.responses;
 
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,6 +21,7 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
         super("Processor");
     }
 
+    @NotNull
     @JsonProperty("type")
     private ProcessorType type;
 
