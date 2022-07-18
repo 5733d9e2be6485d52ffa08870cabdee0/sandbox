@@ -29,7 +29,10 @@ import com.redhat.service.smartevents.manager.api.models.responses.BridgeRespons
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
-import com.redhat.service.smartevents.manager.models.*;
+import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
@@ -238,19 +241,19 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public Long getActiveBridgeCount(String orgId, QuotaType instanceType) {
-        return bridgeDAO.countActiveBridge(orgId, instanceType);
+    public Long getBridgeCount(String orgId, QuotaType instanceType) {
+        return bridgeDAO.countBridge(orgId, instanceType);
     }
 
     @Override
-    public boolean isBridgeActive(String id) {
+    public boolean isBridgeExpired(String id) {
         Bridge bridge = getBridge(id);
         ZonedDateTime expireAt = bridge.getExpireAt();
         if (Objects.isNull(expireAt)) {
-            return true;
+            return false;
         }
 
-        return ZonedDateTime.now(ZoneOffset.UTC).isBefore(expireAt);
+        return ZonedDateTime.now(ZoneOffset.UTC).isAfter(expireAt);
     }
 
 }

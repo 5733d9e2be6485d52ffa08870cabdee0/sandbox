@@ -34,7 +34,7 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
                 query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
-        @NamedQuery(name = "BRIDGE.countActiveBridgeByOrgAndInstanceType",
+        @NamedQuery(name = "BRIDGE.countBridgeByOrgAndInstanceType",
                 query = "select count(b.id) from Bridge b where b.organisationId=:organisationId and b.instanceType=:instanceType and (b.expireAt>:currentTimeStamp OR b.expireAt is null)"),
 })
 @Entity
@@ -50,6 +50,9 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
+    public static final String ORGANISATION_ID_PARAM = "organisationId";
+    public static final String INSTANCE_TYPE_PARAM = "instanceType";
+    public static final String CURRENT_TIMESTAMP_PARAM = "currentTimeStamp";
 
     @Column(name = "endpoint")
     private String endpoint;

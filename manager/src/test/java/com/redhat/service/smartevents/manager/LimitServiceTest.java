@@ -30,7 +30,7 @@ public class LimitServiceTest {
     public void testGetOrganisationServiceLimit_withInLimit() {
 
         String orgId = "15247674";
-        when(bridgesService.getActiveBridgeCount(orgId, QuotaType.EVAL))
+        when(bridgesService.getBridgeCount(orgId, QuotaType.EVAL))
                 .thenReturn(1L);
         QuotaLimit organisationInstanceLimit = limitService.getOrganisationQuotaLimit(orgId);
         assertThat(organisationInstanceLimit.getQuotaType()).isEqualTo(QuotaType.EVAL);
@@ -40,7 +40,7 @@ public class LimitServiceTest {
     public void testGetOrganisationServiceLimit_LimitExceed() {
 
         String orgId = "15247674";
-        when(bridgesService.getActiveBridgeCount(orgId, QuotaType.EVAL))
+        when(bridgesService.getBridgeCount(orgId, QuotaType.EVAL))
                 .thenReturn(36L);
         assertThatThrownBy(() -> {
             limitService.getOrganisationQuotaLimit(orgId);

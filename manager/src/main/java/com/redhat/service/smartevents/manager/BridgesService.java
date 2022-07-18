@@ -39,13 +39,13 @@ public interface BridgesService {
      * @param instanceType instance type.
      * @return Active bridge count.
      */
-    Long getActiveBridgeCount(String orgId, QuotaType instanceType);
+    Long getBridgeCount(String orgId, QuotaType instanceType);
 
     /**
-     * Check whether bridge for given id is expire or not.
+     * Check whether bridge for given id has expired or not.
      * 
      * @param id Bridge Id.
-     * @return @True if active else @false.
+     * @return @True if expired else @false.
      */
-    boolean isBridgeActive(String id);
+    boolean isBridgeExpired(String id);
 }

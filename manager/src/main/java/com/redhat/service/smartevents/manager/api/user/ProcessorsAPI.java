@@ -63,13 +63,7 @@ public class ProcessorsAPI {
     IdentityResolver identityResolver;
 
     @Inject
-    LimitService limitService;
-
-    @Inject
     JsonWebToken jwt;
-
-    @Inject
-    BridgesService bridgesService;
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
@@ -122,11 +116,6 @@ public class ProcessorsAPI {
     public Response addProcessorToBridge(@NotEmpty @PathParam("bridgeId") String bridgeId, @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
         String owner = identityResolver.resolveOwner(jwt);
-        String orgId = identityResolver.resolveOrganisationId(jwt);
-
-        // validate service limit
-        validateBridgeActive(bridgeId);
-        validateServiceLimitQuota(bridgeId);
 
         Processor processor = processorService.createProcessor(bridgeId, customerId, owner, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
@@ -148,10 +137,6 @@ public class ProcessorsAPI {
     public Response updateProcessor(@NotEmpty @PathParam("bridgeId") String bridgeId, @NotEmpty @PathParam("processorId") String processorId,
             @Valid ProcessorRequest processorRequest) {
         String customerId = identityResolver.resolve(jwt);
-
-        // validate service limit
-        validateBridgeActive(bridgeId);
-
         Processor processor = processorService.updateProcessor(bridgeId, processorId, customerId, processorRequest);
         return Response.accepted(processorService.toResponse(processor)).build();
     }
@@ -170,32 +155,5 @@ public class ProcessorsAPI {
     public Response deleteProcessor(@PathParam("bridgeId") String bridgeId, @PathParam("processorId") String processorId) {
         processorService.deleteProcessor(bridgeId, processorId, identityResolver.resolve(jwt));
         return Response.accepted().build();
-    }
-
-    /**
-     * Validate whether user is allowed to create new processor instance under an bridge
-     * 
-     * @param bridgeId Bridge id.
-     */
-    private void validateServiceLimitQuota(String bridgeId) {
-        QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridgeId);
-        long maxAllowedProcessors = bridgeQuotaLimit.getProcessorLimit();
-        long existingProcessorCount = processorService.getUserVisibleProcessorsCount(bridgeId);
-
-        if (existingProcessorCount >= maxAllowedProcessors) {
-            throw new ServiceLimitException("Max allowed processor instance limit exceed");
-        }
-    }
-
-    /**
-     * Validate whether user is allowed to update existing processor instance under an bridge
-     * 
-     * @param bridgeId Bridge id.
-     */
-    private void validateBridgeActive(String bridgeId) {
-        boolean activeBridge = bridgesService.isBridgeActive(bridgeId);
-        if (!activeBridge) {
-            throw new ServiceLimitException("Bridge expired");
-        }
     }
 }

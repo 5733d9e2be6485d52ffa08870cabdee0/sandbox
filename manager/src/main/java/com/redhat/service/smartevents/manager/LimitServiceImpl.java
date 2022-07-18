@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.validation.*;
+import javax.validation.Valid;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,8 +21,10 @@ import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.limits.InstanceQuota;
 import com.redhat.service.smartevents.manager.limits.OrganisationQuotas;
 import com.redhat.service.smartevents.manager.limits.ServiceLimitConfig;
-import com.redhat.service.smartevents.manager.models.*;
 
+import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 import io.quarkus.runtime.Startup;
 
 @Startup
@@ -95,7 +97,7 @@ public class LimitServiceImpl implements LimitService {
     private boolean isQuotaAvailable(String orgId, List<InstanceQuota> instanceQuotas, QuotaType instanceType) {
         Optional<InstanceQuota> instanceQuota = instanceQuotas.stream().filter(s -> s.getInstanceType().equals(instanceType)).findAny();
         if (instanceQuota.isPresent()) {
-            Long activeBridgeCount = bridgesService.getActiveBridgeCount(orgId, instanceType);
+            Long activeBridgeCount = bridgesService.getBridgeCount(orgId, instanceType);
             long availableBridgeQuota = instanceQuota.get().getQuota() - activeBridgeCount;
             return availableBridgeQuota > 0;
         }

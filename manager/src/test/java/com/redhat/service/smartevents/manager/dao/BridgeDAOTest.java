@@ -24,7 +24,13 @@ import io.quarkus.test.junit.QuarkusTest;
 import static com.redhat.service.smartevents.infra.models.QueryFilterInfo.QueryFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
-import static com.redhat.service.smartevents.manager.TestConstants.*;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_INSTANCE_TYPE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -289,7 +295,7 @@ public class BridgeDAOTest {
         expiredBridge.setExpireAt(ZonedDateTime.now().minusHours(1));
         bridgeDAO.persist(expiredBridge);
 
-        Long activeBridgeCount = bridgeDAO.countActiveBridge(DEFAULT_ORGANISATION_ID, QuotaType.EVAL);
+        Long activeBridgeCount = bridgeDAO.countBridge(DEFAULT_ORGANISATION_ID, QuotaType.EVAL);
         assertThat(activeBridgeCount).isEqualTo(1L);
     }
 

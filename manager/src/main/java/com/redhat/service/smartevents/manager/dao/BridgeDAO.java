@@ -61,11 +61,11 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
     }
 
-    public Long countActiveBridge(String orgId, QuotaType instanceType) {
-        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countActiveBridgeByOrgAndInstanceType", Long.class);
-        namedQuery.setParameter("organisationId", orgId);
-        namedQuery.setParameter("instanceType", instanceType);
-        namedQuery.setParameter("currentTimeStamp", ZonedDateTime.now(ZoneOffset.UTC));
+    public Long countBridge(String orgId, QuotaType instanceType) {
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countBridgeByOrgAndInstanceType", Long.class);
+        namedQuery.setParameter(Bridge.ORGANISATION_ID_PARAM, orgId);
+        namedQuery.setParameter(Bridge.INSTANCE_TYPE_PARAM, instanceType);
+        namedQuery.setParameter(Bridge.CURRENT_TIMESTAMP_PARAM, ZonedDateTime.now(ZoneOffset.UTC));
         return namedQuery.getSingleResult();
     }
 }

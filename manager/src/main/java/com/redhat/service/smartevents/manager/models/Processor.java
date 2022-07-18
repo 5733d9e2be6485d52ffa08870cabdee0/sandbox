@@ -78,6 +78,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
+    public static final String PROCESSOR_TYPE = "processorType";
 
     @Column(name = "type", updatable = false, nullable = false)
     @Enumerated(EnumType.STRING)
