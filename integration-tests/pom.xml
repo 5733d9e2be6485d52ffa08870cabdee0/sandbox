@@ -27,6 +27,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.redhat.cloud</groupId>
+      <artifactId>kafka-instance-sdk</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
@@ -138,6 +143,14 @@
             <keycloak.realm.url></keycloak.realm.url>
 
             <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
+
+            <!-- Managed Kafka properties -->
+            <event-bridge.rhoas.sso.mas.auth-server-url>${keycloak.realm.url}</event-bridge.rhoas.sso.mas.auth-server-url>
+            <event-bridge.kafka.bootstrap.servers>${env.MANAGED_KAFKA_BOOTSTRAP_SERVER}</event-bridge.kafka.bootstrap.servers>
+            <event-bridge.rhoas.sso.mas.client-id>${env.MANAGED_KAFKA_ADMIN_CLIENT_ID}</event-bridge.rhoas.sso.mas.client-id>
+            <event-bridge.rhoas.sso.mas.client-secret>${env.MANAGED_KAFKA_ADMIN_CLIENT_SECRET}</event-bridge.rhoas.sso.mas.client-secret>
+            <event-bridge.kafka.client.id>${env.MANAGED_KAFKA_OPS_CLIENT_ID}</event-bridge.kafka.client.id>
+            <event-bridge.kafka.client.secret>${env.MANAGED_KAFKA_OPS_CLIENT_SECRET}</event-bridge.kafka.client.secret>
           </systemProperties>
         </configuration>
       </plugin>
