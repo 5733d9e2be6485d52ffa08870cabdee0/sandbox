@@ -30,16 +30,12 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.manager.BridgesService;
-import com.redhat.service.smartevents.manager.LimitService;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.QuotaLimit;
 
 import io.quarkus.security.Authenticated;
 

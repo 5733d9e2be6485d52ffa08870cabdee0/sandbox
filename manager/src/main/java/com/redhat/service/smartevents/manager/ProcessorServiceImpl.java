@@ -10,18 +10,17 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
-import com.redhat.service.smartevents.manager.models.QuotaLimit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
@@ -41,6 +40,7 @@ import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;

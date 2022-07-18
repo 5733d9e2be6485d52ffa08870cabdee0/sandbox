@@ -21,10 +21,10 @@ import com.redhat.service.smartevents.manager.config.ConfigurationLoader;
 import com.redhat.service.smartevents.manager.limits.InstanceQuota;
 import com.redhat.service.smartevents.manager.limits.OrganisationQuotas;
 import com.redhat.service.smartevents.manager.limits.ServiceLimitConfig;
-
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.QuotaLimit;
 import com.redhat.service.smartevents.manager.models.QuotaType;
+
 import io.quarkus.runtime.Startup;
 
 @Startup
