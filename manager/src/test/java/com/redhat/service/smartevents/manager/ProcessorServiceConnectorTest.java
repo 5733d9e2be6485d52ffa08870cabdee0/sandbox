@@ -122,7 +122,7 @@ class ProcessorServiceConnectorTest {
         //There will be 2 re-tries at 5s each. Add 5s to be certain everything completes.
         await().atMost(15, SECONDS).untilAsserted(() -> {
             ConnectorEntity connector = connectorsDAO.findByProcessorIdAndName(processor.getId(),
-                    resourceNamesProvider.getProcessorConnectorName(processor.getId()));
+                    resourceNamesProvider.getProcessorConnectorName(processor.getId(), "actionName"));
 
             assertThat(connector).isNotNull();
             assertThat(connector.getError()).isNullOrEmpty();

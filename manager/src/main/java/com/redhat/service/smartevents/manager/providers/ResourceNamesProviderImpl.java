@@ -39,12 +39,12 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     }
 
     @Override
-    public String getProcessorConnectorName(String processorId) {
-        return getProcessorTopicName(processorId);
+    public String getProcessorConnectorName(String processorId, String actionName) {
+        return getProcessorTopicName(processorId, actionName);
     }
 
     @Override
-    public String getProcessorTopicName(String processorId) {
-        return String.format("%s%s-%s", validatedResourcePrefix, PROCESSOR_SHORTNAME, processorId);
+    public String getProcessorTopicName(String processorId, String actionName) {
+        return String.format("%s%s-%s-%s", validatedResourcePrefix, PROCESSOR_SHORTNAME, processorId, actionName);
     }
 }

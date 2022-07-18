@@ -1,0 +1,82 @@
+apiVersion: camel.apache.org/v1alpha1
+kind: Kamelet
+metadata:
+  name: fruits-processor
+  annotations:
+    camel.apache.org/kamelet.support.level: "Preview"
+    camel.apache.org/catalog.version: "main-SNAPSHOT"
+    camel.apache.org/provider: "Apache Software Foundation"
+    camel.apache.org/kamelet.group: "Kafka"
+  labels:
+    camel.apache.org/kamelet.type: "source"
+spec:
+  definition:
+    title: "Kafka Not Secured Source"
+    description: |-
+      Receive data from Kafka topics on an insecure broker.
+    required:
+      - topic
+      - brokers
+    type: object
+    properties:
+      topic:
+        title: Topic Names
+        description: Comma separated list of Kafka topic names
+        type: string
+      brokers:
+        title: Brokers
+        description: Comma separated list of Kafka Broker URLs
+        type: string
+  dependencies:
+    - "github:apache.camel-kamelets:camel-kamelets-utils:main-SNAPSHOT"
+    - "camel:kafka"
+    - "camel:kamelet"
+    - "camel:jackson"
+    - "camel:core"
+    - "camel:log"
+  flow:
+    from:
+      uri: "kafka:fruits?brokers=my-cluster-kafka-bootstrap.kafka:9092"
+      steps:
+        - log:
+            message: "Received Body ${body}"
+        - unmarshal:
+            json: {}
+        - choice:
+            when:
+              - simple: "${body[nutritions][sugar]} <= 5"
+                steps:
+                  - remove-headers: "*"
+                  - marshal:
+                      json: {}
+                  - set-header:
+                      name: ce-type
+                      constant: low-sugar
+                  - set-header:
+                      name: fruit-sugar-level
+                      constant: low
+                  - to: "log:low?showAll=true&multiline=true"
+              - simple: "${body[nutritions][sugar]} > 5 || ${body[nutritions][sugar]} <= 10"
+                steps:
+                  - remove-headers: "*"
+                  - marshal:
+                      json: {}
+                  - set-header:
+                      name: ce-type
+                      constant: medium-sugar
+                  - set-header:
+                      name: fruit-sugar-level
+                      constant: medium
+                  - to: "log:medium?showAll=true&multiline=true"
+            otherwise:
+              steps:
+                - remove-headers: "*"
+                - marshal:
+                    json: {}
+                - set-header:
+                    name: ce-type
+                    constant: high-sugar
+                - set-header:
+                    name: fruit-sugar-level
+                    constant: high
+                - to: "log:high?showAll=true&multiline=true"

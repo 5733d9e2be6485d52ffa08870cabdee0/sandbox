@@ -1,0 +1,56 @@
+spec:
+  flows:
+  - from:
+      parameters:
+        brokers: kafkaBrokerId:443
+        consumersCount: 1
+        groupId: kafkaGroup
+        maxPollRecords: 5000
+        saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule required
+          username='clientId' password='clientSecret';
+        saslMechanism: PLAIN
+        securityProtocol: SASL_SSL
+        seekTo: beginning
+      steps:
+      - choice:
+          otherwise:
+            steps:
+            - log:
+                message: Cannot process message ${body}
+          when:
+          - simple: ${body[nutritions][sugar]} <= 5
+            steps:
+            - log:
+                message: ++++- Lesser equal than 5 ${body}
+            - to:
+                parameters:
+                  brokers: kafkaBrokerId:443
+                  consumersCount: 1
+                  groupId: kafkaGroup
+                  maxPollRecords: 5000
+                  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                    required username='clientId'
+                    password='clientSecret';
+                  saslMechanism: PLAIN
+                  securityProtocol: SASL_SSL
+                  seekTo: beginning
+                uri: kafka:lmolteni-prcs-467726ee-db4a-4d8d-94dc-38fb3083bd35-slackAction2
+          - simple: ${body[nutritions][sugar]} > 5 && ${body[nutritions][sugar]} <=
+              10
+            steps:
+            - log:
+                message: ++++- between 5 and 10 goes to mc ${body}
+            - to:
+                parameters:
+                  brokers: kafkaBrokerId:443
+                  consumersCount: 1
+                  groupId: kafkaGroup
+                  maxPollRecords: 5000
+                  saslJaasConfig: org.apache.kafka.common.security.plain.PlainLoginModule
+                    required username='clientId'
+                    password='clientSecret';
+                  saslMechanism: PLAIN
+                  securityProtocol: SASL_SSL
+                  seekTo: beginning
+                uri: kafka:lmolteni-prcs-467726ee-db4a-4d8d-94dc-38fb3083bd35-slackAction1
+      uri: kafka:lmolteni-brdg-33b0176e-e86a-4247-b3ef-b8080d6fc916

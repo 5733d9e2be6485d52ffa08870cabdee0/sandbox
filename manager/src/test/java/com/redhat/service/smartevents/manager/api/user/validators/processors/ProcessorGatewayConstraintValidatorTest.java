@@ -1,7 +1,9 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -89,13 +91,29 @@ class ProcessorGatewayConstraintValidatorTest {
     @Test
     void isValid_multipleGatewaysIsNotValid() {
         ProcessorRequestForTests p = new ProcessorRequestForTests();
-        p.setAction(buildTestAction());
+        p.setAction(buildTestAction("actionName"));
         p.setSource(buildTestSource());
 
         assertThat(constraintValidator.isValid(p, validatorContextMock)).isFalse();
         verify(gatewayConfiguratorMock, never()).getValidator(any());
         verify(validatorMock, never()).isValid(any());
         verifyErrorMessage(MULTIPLE_GATEWAY_ERROR);
+    }
+
+    @Test
+    void isValid_multipleActionsAreValid() {
+        ProcessorRequestForTests p = new ProcessorRequestForTests();
+
+        Action action1 = buildTestAction("action1");
+        Action action2 = buildTestAction("action2");
+
+        Set<Action> actions = new HashSet<>();
+        actions.add(action1);
+        actions.add(action2);
+
+        p.setActions(actions);
+
+        assertThat(constraintValidator.isValid(p, validatorContextMock)).isTrue();
     }
 
     @ParameterizedTest
@@ -206,11 +224,12 @@ class ProcessorGatewayConstraintValidatorTest {
     }
 
     private static Stream<Arguments> gateways() {
-        return Stream.of(buildTestAction(), buildTestSource()).map(Arguments::of);
+        return Stream.of(buildTestAction("actionName"), buildTestSource()).map(Arguments::of);
     }
 
-    private static Action buildTestAction() {
+    private static Action buildTestAction(String actionName) {
         Action action = new Action();
+        action.setName(actionName);
         action.setType(TEST_ACTION_TYPE);
         Map<String, String> params = new HashMap<>();
         params.put(TEST_PARAM_NAME, TEST_PARAM_VALUE);

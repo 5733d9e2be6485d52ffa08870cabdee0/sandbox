@@ -60,6 +60,24 @@ public class TestSupport {
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {
+        return newRequestedProcessorDTO(getProcessorDefinition());
+    }
+
+    public static ProcessorDTO newRequestedProcessorDTO(ProcessorDefinition processorDefinition) {
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setType(PROCESSOR_TYPE);
+        dto.setId(PROCESSOR_ID);
+        dto.setName(PROCESSOR_NAME);
+        dto.setDefinition(processorDefinition);
+        dto.setBridgeId(BRIDGE_ID);
+        dto.setCustomerId(CUSTOMER_ID);
+        dto.setOwner(USER_NAME);
+        dto.setStatus(PREPARING);
+        dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
+        return dto;
+    }
+
+    private static ProcessorDefinition getProcessorDefinition() {
         Set<BaseFilter> filters = new HashSet<>();
         filters.add(new StringEquals("key", "value"));
 
@@ -72,18 +90,6 @@ public class TestSupport {
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         a.setMapParameters(params);
 
-        ProcessorDefinition definition = new ProcessorDefinition(filters, transformationTemplate, a);
-
-        ProcessorDTO dto = new ProcessorDTO();
-        dto.setType(PROCESSOR_TYPE);
-        dto.setId(PROCESSOR_ID);
-        dto.setName(PROCESSOR_NAME);
-        dto.setDefinition(definition);
-        dto.setBridgeId(BRIDGE_ID);
-        dto.setCustomerId(CUSTOMER_ID);
-        dto.setOwner(USER_NAME);
-        dto.setStatus(PREPARING);
-        dto.setKafkaConnection(KAFKA_CONNECTION_DTO);
-        return dto;
+        return new ProcessorDefinition(filters, transformationTemplate, a);
     }
 }

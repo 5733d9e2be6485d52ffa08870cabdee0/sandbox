@@ -1,0 +1,138 @@
+{
+  "name": "myProcessor",
+  "filters": [
+    {
+      "type": "StringEquals",
+      "key": "source",
+      "value": "StorageService"
+    }
+  ],
+  "processing": {
+    "type": "cameldsl_0.1",
+    "spec": {
+      "flow": {
+        "from": {
+          "uri": "rhose",
+          "steps": [
+            {
+              "unmarshal": {
+                "json": {}
+              }
+            },
+            {
+              "choice": {
+                "when": [
+                  {
+                    "jq": ".nutritions.sugar <= 5",
+                    "steps": [
+                      {
+                        "removeHeaders": "*"
+                      },
+                      {
+                        "marshal": {
+                          "json": {}
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "ce-type",
+                          "constant": "low-sugar"
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "fruit-sugar-level",
+                          "constant": "low"
+                        }
+                      },
+                      {
+                        "to": "mySlackAction"
+                      }
+                    ]
+                  },
+                  {
+                    "jq": ".nutritions.sugar > 5 | .nutritions.sugar <= 10",
+                    "steps": [
+                      {
+                        "removeHeaders": "*"
+                      },
+                      {
+                        "marshal": {
+                          "json": {}
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "ce-type",
+                          "constant": "medium-sugar"
+                        }
+                      },
+                      {
+                        "setHeader": {
+                          "name": "fruit-sugar-level",
+                          "constant": "medium"
+                        }
+                      },
+                      {
+                        "to": "myServiceNowAction"
+                      }
+                    ]
+                  }
+                ],
+                "otherwise": {
+                  "steps": [
+                    {
+                      "removeHeaders": "*"
+                    },
+                    {
+                      "marshal": {
+                        "json": {}
+                      }
+                    },
+                    {
+                      "setHeader": {
+                        "name": "ce-type",
+                        "constant": "high-sugar"
+                      }
+                    },
+                    {
+                      "setHeader": {
+                        "name": "fruit-sugar-level",
+                        "constant": "high"
+                      }
+                    },
+                    {
+                      "to": "error"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "actions": [
+    {
+      "action": {
+        "name": "mySlackAction",
+        "type": "slack_sink_0.1",
+        "parameters": {
+          "slack_channel": "mychannel",
+          "slack_webhook_url": "slack.com/url"
+        }
+      }
+    },
+    {
+      "action": {
+        "name": "myServiceNowAction",
+        "type": "service_now_sink_0.1",
+        "parameters": {
+          "url": "service.now/url",
+          "token": "accesstoken"
+        }
+      }
+    }
+  ]
+}

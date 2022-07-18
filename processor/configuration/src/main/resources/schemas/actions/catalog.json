@@ -40,5 +40,11 @@
     "name": "Webhook",
     "description": "Send the event to a webhook.",
     "isConnector": false
+  },
+  {
+    "id": "http_sink_0.1",
+    "name": "Http Sink",
+    "description": "Send the event to HTTP using MC.",
+    "isConnector": true
   }
 ]

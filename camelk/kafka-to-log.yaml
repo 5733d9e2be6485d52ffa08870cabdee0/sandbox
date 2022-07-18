@@ -1,0 +1,19 @@
+apiVersion: camel.apache.org/v1
+kind: Integration
+metadata:
+  name: kafka.yaml
+spec:
+  flows:
+    - from:
+        uri: "kafka:lmolteni-topic"
+        parameters:
+          brokers: "brokerUrl:443"
+          securityProtocol: "SASL_SSL"
+          saslMechanism: "PLAIN"
+          saslJaasConfig: "org.apache.kafka.common.security.plain.PlainLoginModule required username='clientId' password='secret';"
+          maxPollRecords: 5000
+          consumersCount: 1
+          seekTo: "beginning"
+          groupId: "kafkaGroup"
+        steps:
+          - to: "log:${body}"

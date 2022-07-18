@@ -21,9 +21,10 @@ import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAct
 
 public class Fixtures {
 
-    public static Action createKafkaAction() {
+    public static Action createKafkaAction(String actionName) {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
+        action.setName(actionName);
         Map<String, String> params = new HashMap<>();
         params.put(KafkaTopicAction.TOPIC_PARAM, "myTopic");
         action.setMapParameters(params);
@@ -64,17 +65,17 @@ public class Fixtures {
     }
 
     public static ConnectorEntity createSourceConnector(Processor p, ManagedResourceStatus status) {
-        return createConnector(p, status, ConnectorType.SOURCE, "test_source_0.1");
+        return createConnector(p, status, ConnectorType.SOURCE, "test_source_0.1", TestConstants.DEFAULT_CONNECTOR_NAME);
     }
 
     public static ConnectorEntity createSinkConnector(Processor p, ManagedResourceStatus status) {
-        return createConnector(p, status, ConnectorType.SINK, "test_sink_0.1");
+        return createConnector(p, status, ConnectorType.SINK, "test_sink_0.1", TestConstants.DEFAULT_CONNECTOR_NAME);
     }
 
-    private static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, ConnectorType type, String connectorTypeId) {
+    public static ConnectorEntity createConnector(Processor p, ManagedResourceStatus status, ConnectorType type, String connectorTypeId, String defaultConnectorName) {
         ConnectorEntity connector = new ConnectorEntity();
         connector.setType(type);
-        connector.setName(TestConstants.DEFAULT_CONNECTOR_NAME);
+        connector.setName(defaultConnectorName);
         connector.setProcessor(p);
         connector.setStatus(status);
         connector.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));

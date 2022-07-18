@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,6 +10,12 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 
 public class ProcessorDefinition {
+
+    @JsonProperty("requestedActions")
+    private List<Action> requestedActions;
+
+    @JsonProperty("resolvedActions")
+    private List<Action> resolvedActions;
 
     @JsonProperty("filters")
     private Set<BaseFilter> filters;
@@ -24,6 +31,9 @@ public class ProcessorDefinition {
 
     @JsonProperty("resolvedAction")
     private Action resolvedAction;
+
+    @JsonProperty("processing")
+    private Processing processing;
 
     public ProcessorDefinition() {
     }
@@ -44,6 +54,18 @@ public class ProcessorDefinition {
         this.transformationTemplate = transformationTemplate;
         this.requestedSource = requestedSource;
         this.resolvedAction = resolvedAction;
+    }
+
+    public ProcessorDefinition(Set<BaseFilter> filters, String transformationTemplate,
+            Action requestedAction,
+            Action resolvedAction,
+            Processing processing,
+            List<Action> requestedActions,
+            List<Action> resolvedActions) {
+        this(filters, transformationTemplate, requestedAction, resolvedAction);
+        this.processing = processing;
+        this.requestedActions = requestedActions;
+        this.resolvedActions = resolvedActions;
     }
 
     public Set<BaseFilter> getFilters() {
@@ -86,6 +108,30 @@ public class ProcessorDefinition {
         this.resolvedAction = resolvedAction;
     }
 
+    public Processing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(Processing processing) {
+        this.processing = processing;
+    }
+
+    public List<Action> getRequestedActions() {
+        return requestedActions;
+    }
+
+    public void setRequestedActions(List<Action> requestedActions) {
+        this.requestedActions = requestedActions;
+    }
+
+    public List<Action> getResolvedActions() {
+        return resolvedActions;
+    }
+
+    public void setResolvedActions(List<Action> resolvedActions) {
+        this.resolvedActions = resolvedActions;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -95,12 +141,26 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
+        return Objects.equals(resolvedActions, that.resolvedActions) && Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate)
+                && Objects.equals(requestedAction, that.requestedAction) && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction)
+                && Objects.equals(processing, that.processing);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
+        return Objects.hash(resolvedActions, filters, transformationTemplate, requestedAction, requestedSource, resolvedAction, processing);
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessorDefinition{" +
+                "multipleActions=" + resolvedActions +
+                ", filters=" + filters +
+                ", transformationTemplate='" + transformationTemplate + '\'' +
+                ", requestedAction=" + requestedAction +
+                ", requestedSource=" + requestedSource +
+                ", resolvedAction=" + resolvedAction +
+                ", processing=" + processing +
+                '}';
     }
 }

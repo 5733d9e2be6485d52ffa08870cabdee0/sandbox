@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,8 +35,6 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
-import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -67,9 +66,6 @@ public class ProcessorServiceImpl implements ProcessorService {
     ShardService shardService;
     @Inject
     WorkManager workManager;
-
-    @Inject
-    MetricsService metricsService;
 
     @Transactional
     @Override
@@ -125,21 +121,51 @@ public class ProcessorServiceImpl implements ProcessorService {
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
         String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
 
-        Action resolvedAction = processorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+        ProcessorDefinition definition;
 
-        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
+        List<Action> requestedActions = new ArrayList<>();
+        List<Action> resolvedActions = new ArrayList<>();
+        if (processorRequest.getActions() != null) { // Camel Processing
+            for (Action requested : processorRequest.getActions()) {
+                LOGGER.info("+++++ Resolving multiple actions: {} type: {} parameters: {}", requested.getName(), requested.getType(), requested.getParameters());
+                Action resolvedAction = resolveAction(requested, customerId, bridge.getId(), newProcessor.getId());
+                LOGGER.info("+++++ Resolved action: {} type {}", resolvedAction.getType(), resolvedAction.getParameters());
+                requestedActions.add(requested);
+                resolvedActions.add(resolvedAction);
+            }
+
+            LOGGER.info("+++++ requested actionsof size: {}", requestedActions.size());
+            LOGGER.info("+++++ multiple resolved actions of size: {}", resolvedActions.size());
+
+            definition = processorType == ProcessorType.SOURCE
+                    ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), null)
+                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, null, null,
+                            processorRequest.getProcessing(),
+                            requestedActions,
+                            resolvedActions);
+        } else { // NON-camel processing
+
+            Action resolvedAction = processorType == ProcessorType.SOURCE
+                    ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
+                    : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
+
+            definition = processorType == ProcessorType.SOURCE
+                    ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
+                    : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction,
+                            processorRequest.getProcessing(),
+                            new ArrayList<>(), new ArrayList<>());
+        }
+
+        LOGGER.info("+++++  Processor definition: {} ", definition);
 
         newProcessor.setDefinition(definition);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
         connectorService.createConnectorEntity(newProcessor);
+        LOGGER.info("+++++  Connector entities created ");
+
         workManager.schedule(newProcessor);
-        metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 newProcessor.getId(),
@@ -239,7 +265,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -268,7 +293,6 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {
             p.setStatus(ManagedResourceStatus.DELETED);
             processorDAO.deleteById(processorDTO.getId());
-            metricsService.onOperationComplete(p, MetricsOperation.DELETE);
             return p;
         }
 
@@ -279,9 +303,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
                     p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
                 } else {
-                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
                 }
             }
         }
@@ -329,7 +351,6 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
-        metricsService.onOperationStart(processor, MetricsOperation.DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),
@@ -372,7 +393,7 @@ public class ProcessorServiceImpl implements ProcessorService {
             case ERROR_HANDLER:
                 return resourceNamesProvider.getBridgeErrorTopicName(processor.getBridge().getId());
             case SOURCE:
-                return resourceNamesProvider.getProcessorTopicName(processor.getId());
+                return resourceNamesProvider.getProcessorTopicName(processor.getId(), "");
             default:
                 return resourceNamesProvider.getBridgeTopicName(processor.getBridge().getId());
         }
@@ -395,7 +416,9 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
             processorResponse.setAction(definition.getRequestedAction());
+            processorResponse.setActions(definition.getRequestedActions());
             processorResponse.setSource(definition.getRequestedSource());
+            processorResponse.setProcessing(definition.getProcessing());
         }
 
         if (processor.getBridge() != null) {

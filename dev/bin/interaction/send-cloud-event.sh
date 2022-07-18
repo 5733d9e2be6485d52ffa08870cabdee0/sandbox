@@ -15,10 +15,26 @@ export CLOUD_EVENT='{
     "subject": "blobServices/default/containers/{storage-container}/blobs/{new-file}",
     "dataschema": "#",
     "data": {
-        "myMessage" : '"\"$MESSAGE\""'
+        "traceMessage" : '"\"$MESSAGE\""',
+        "myMessage" : '"\"$MESSAGE\""',
+        "genus":"Citrullus",
+        "name":"Watermelon",
+        "id":25,
+        "family":"Cucurbitaceae",
+        "order":"Cucurbitales",
+        "nutritions":
+          {"carbohydrates":8,
+            "protein":0.6,
+            "fat":0.2,
+            "calories":30,
+            "sugar": '"${1:-6}"'
+          }
+
     }
 }'
 
+
+echo $CLOUD_EVENT | jq .
 
 BRIDGE_ENDPOINT=$(curl -s -H "Authorization: $OB_TOKEN" -X GET "$MANAGER_URL/api/smartevents_mgmt/v1/bridges/$BRIDGE_ID" | jq -r .endpoint)
 
