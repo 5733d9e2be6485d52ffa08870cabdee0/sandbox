@@ -223,6 +223,11 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         return false;
     }
 
+    @Override
+    protected void recordError(Work work, Exception e) {
+        // NOP. Errors are recorded by ProcessorWorker.
+    }
+
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {
         // Step 1 - Delete Kafka Topic
         LOGGER.debug("Deleting Kafka Topic for '{}' [{}]",

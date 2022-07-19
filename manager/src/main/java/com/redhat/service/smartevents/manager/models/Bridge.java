@@ -15,6 +15,7 @@ import org.hibernate.annotations.FilterDefs;
 import org.hibernate.annotations.Filters;
 import org.hibernate.annotations.ParamDef;
 
+import com.redhat.service.smartevents.infra.exceptions.HasBridgeErrorInformation;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 
 @NamedQueries({
@@ -46,7 +47,7 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
         @Filter(name = "byStatus", condition = "status in (:status)")
 })
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })
-public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
+public class Bridge extends ManagedDefinedResource<BridgeDefinition> implements HasBridgeErrorInformation {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
 
@@ -70,6 +71,12 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     @Column(name = "region", nullable = false, updatable = false)
     private String region;
+
+    @Column(name = "bridge_error_id")
+    private Integer bridgeErrorId;
+
+    @Column(name = "bridge_error_uuid")
+    private String bridgeErrorUUID;
 
     public Bridge() {
     }
@@ -96,6 +103,16 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public String getOwner() {
         return owner;
+    }
+
+    @Override
+    public Integer getBridgeErrorId() {
+        return bridgeErrorId;
+    }
+
+    @Override
+    public String getBridgeErrorUUID() {
+        return bridgeErrorUUID;
     }
 
     public void setEndpoint(String endpoint) {
@@ -132,6 +149,14 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public void setBridgeErrorId(Integer bridgeErrorId) {
+        this.bridgeErrorId = bridgeErrorId;
+    }
+
+    public void setBridgeErrorUUID(String bridgeErrorUUID) {
+        this.bridgeErrorUUID = bridgeErrorUUID;
     }
 
     /*

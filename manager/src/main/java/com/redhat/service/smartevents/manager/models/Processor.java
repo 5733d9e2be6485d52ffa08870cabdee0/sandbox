@@ -22,6 +22,7 @@ import org.hibernate.annotations.Filters;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.TypeDef;
 
+import com.redhat.service.smartevents.infra.exceptions.HasBridgeErrorInformation;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
@@ -85,7 +86,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
         @Filter(name = "byType", condition = "type in (:ptype)")
 })
 @TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
-public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
+public class Processor extends ManagedDefinedResource<ProcessorDefinition> implements HasBridgeErrorInformation {
 
     public static final String BRIDGE_ID_PARAM = "bridgeId";
 
@@ -105,6 +106,12 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     @Column(name = "owner")
     private String owner;
+
+    @Column(name = "bridge_error_id")
+    private Integer bridgeErrorId;
+
+    @Column(name = "bridge_error_uuid")
+    private String bridgeErrorUUID;
 
     public ProcessorType getType() {
         return type;
@@ -144,6 +151,24 @@ public class Processor extends ManagedDefinedResource<ProcessorDefinition> {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public Integer getBridgeErrorId() {
+        return bridgeErrorId;
+    }
+
+    public void setBridgeErrorId(Integer bridgeErrorId) {
+        this.bridgeErrorId = bridgeErrorId;
+    }
+
+    @Override
+    public String getBridgeErrorUUID() {
+        return bridgeErrorUUID;
+    }
+
+    public void setBridgeErrorUUID(String bridgeErrorUUID) {
+        this.bridgeErrorUUID = bridgeErrorUUID;
     }
 
     /*

@@ -4,16 +4,19 @@ import java.time.Duration;
 
 import javax.inject.Inject;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -32,9 +35,12 @@ import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -59,10 +65,20 @@ public class BridgeIngressServiceTest {
     @InjectMock
     ManagerClient managerClient;
 
+    @InjectMock
+    TemplateProvider templateProvider;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesResourcePatcher.cleanUp();
+
+        when(templateProvider.loadBridgeIngressSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressConfigMapTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressAuthorizationPolicyTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressBrokerTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(any(), any())).thenCallRealMethod();
     }
 
     @Test
@@ -223,6 +239,48 @@ public class BridgeIngressServiceTest {
             assertThat(d.getId()).isEqualTo(dto.getId());
             assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
             assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        });
+    }
+
+    @Test
+    public void testBridgeIngressCreationWhenSpecAlreadyExistsAsFailed() {
+        // Given a PROVISIONING Bridge
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+
+        // Mock an exception being thrown by the controller
+        // k8s max-reties is set to 1 in application.properties, overriding the default
+        // See https://github.com/quarkiverse/quarkus-operator-sdk/issues/380#issuecomment-1211343353
+        reset(templateProvider);
+        when(templateProvider.loadBridgeIngressSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeIngressConfigMapTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> {
+                        assertThat(d.getId()).isEqualTo(dto.getId());
+                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+                    });
+                });
+
+        // Re-try creation
+        bridgeIngressService.createBridgeIngress(dto);
+
+        verify(managerClient, times(2)).notifyBridgeStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
         });
     }
 

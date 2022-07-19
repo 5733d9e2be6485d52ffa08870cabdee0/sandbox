@@ -9,6 +9,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.ProcessorService;
@@ -46,6 +48,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Inject
     DnsService dnsService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     protected PanacheRepositoryBase<Bridge, String> getDao() {
@@ -98,6 +103,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
             } else if (errorHandler.getStatus() == ManagedResourceStatus.FAILED) {
                 bridge.setStatus(ManagedResourceStatus.FAILED);
                 bridge.setDependencyStatus(ManagedResourceStatus.FAILED);
+                propagateProcessorError(bridge);
             }
         }
 
@@ -177,6 +183,13 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         Optional<Processor> optErrorHandler = processorService.getErrorHandler(bridge.getId(), bridge.getCustomerId());
         if (optErrorHandler.isEmpty()) {
             bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        } else {
+            Processor errorHandler = optErrorHandler.get();
+            if (errorHandler.getStatus() == ManagedResourceStatus.FAILED) {
+                bridge.setStatus(ManagedResourceStatus.FAILED);
+                bridge.setDependencyStatus(ManagedResourceStatus.FAILED);
+                propagateProcessorError(bridge);
+            }
         }
 
         return persist(bridge);
@@ -200,4 +213,29 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         //As far as the Worker mechanism is concerned work for a Bridge is complete when the dependencies are complete.
         return DEPROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
     }
+
+    @Override
+    protected void recordError(Work work, Exception e) {
+        String bridgeId = work.getManagedResourceId();
+        Bridge bridge = getDao().findById(bridgeId);
+        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+        bridge.setBridgeErrorId(bridgeErrorInstance.getId());
+        bridge.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        persist(bridge);
+    }
+
+    // The ErrorHandler Processor is a special type. It is not visible to Users and hence
+    // should it fail to be provisioned (or de-provisioned) the User is unaware of the reason.
+    // Therefore, propagate the error associated with the Error Handler Processor to the Bridge.
+    protected void propagateProcessorError(Bridge bridge) {
+        String bridgeId = bridge.getId();
+        String customerId = bridge.getCustomerId();
+        processorService.getErrorHandler(bridgeId, customerId)
+                .ifPresent(errorHandler -> {
+                    bridge.setBridgeErrorId(errorHandler.getBridgeErrorId());
+                    bridge.setBridgeErrorUUID(errorHandler.getBridgeErrorUUID());
+                    persist(bridge);
+                });
+    }
+
 }

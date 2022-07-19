@@ -1,0 +1,72 @@
+package com.redhat.service.smartevents.infra.exceptions;
+
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException;
+
+import io.quarkus.runtime.Quarkus;
+
+@ApplicationScoped
+public class BridgeErrorHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BridgeErrorHelper.class);
+
+    private static final String USER_MESSAGE = "[%s] %s. Please contact support quoting UUID: %s";
+
+    private static final String USER_MESSAGE_UNKNOWN = "An error has occurred. Please contact support quoting UUID: %s";
+
+    @Inject
+    BridgeErrorService bridgeErrorService;
+
+    BridgeError deploymentFailedException;
+
+    @PostConstruct
+    protected void setup() {
+        Optional<BridgeError> error = bridgeErrorService.getError(UnspecifiedProvisioningFailureException.class);
+        if (error.isPresent()) {
+            deploymentFailedException = error.get();
+        } else {
+            LOGGER.error("{} error is not defined in the ErrorsService.", UnspecifiedProvisioningFailureException.class.getSimpleName());
+            Quarkus.asyncExit(1);
+        }
+    }
+
+    public BridgeErrorInstance getBridgeErrorInstance(Exception e) {
+        LOGGER.info("Mapping '{}' to BridgeError", e.getClass().getName(), e);
+        return bridgeErrorService.getError(e.getClass())
+                .map(b -> {
+                    BridgeErrorInstance bei = new BridgeErrorInstance(b);
+                    LOGGER.info("Mapped '{}' to '{}'", e.getClass().getName(), bei);
+                    return bei;
+                })
+                .orElseGet(() -> {
+                    LOGGER.info("'{}' not found in error catalog. Falling back to generic UnspecifiedProvisioningFailureException.", e.getClass().getName());
+                    BridgeErrorInstance bei = new BridgeErrorInstance(deploymentFailedException);
+                    LOGGER.info("Mapped '{}' to '{}'", e.getClass().getName(), bei);
+                    return bei;
+                });
+    }
+
+    public String makeUserMessage(HasBridgeErrorInformation hasBridgeErrorInformation) {
+        Integer bridgeErrorId = hasBridgeErrorInformation.getBridgeErrorId();
+        String bridgeErrorUUID = hasBridgeErrorInformation.getBridgeErrorUUID();
+        if (Objects.isNull(bridgeErrorId)) {
+            return null;
+        }
+        StringBuilder message = new StringBuilder();
+        bridgeErrorService
+                .getError(bridgeErrorId)
+                .ifPresentOrElse(bei -> message.append(String.format(USER_MESSAGE, bei.getCode(), bei.getReason(), bridgeErrorUUID)),
+                        () -> message.append(String.format(USER_MESSAGE_UNKNOWN, bridgeErrorUUID)));
+        return message.toString();
+    }
+
+}

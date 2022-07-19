@@ -3,9 +3,11 @@ package com.redhat.service.smartevents.manager;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -36,6 +41,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
@@ -179,7 +185,7 @@ public class BridgesServiceTest {
 
         // Emulate Shard setting Bridge status to PROVISIONING
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
-        bridgesService.updateBridge(updateDTO);
+        bridgesService.updateBridgeStatus(updateDTO);
 
         // PROVISIONING Bridges are also notified to the Shard Operator.
         // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
@@ -187,6 +193,8 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);
+        assertThat(retrievedBridge.getBridgeErrorId()).isNull();
+        assertThat(retrievedBridge.getBridgeErrorUUID()).isNull();
     }
 
     @Test
@@ -200,7 +208,7 @@ public class BridgesServiceTest {
 
         // Emulate Shard setting Bridge status to PROVISIONING
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
-        bridgesService.updateBridge(updateDTO);
+        bridgesService.updateBridgeStatus(updateDTO);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);
@@ -209,7 +217,7 @@ public class BridgesServiceTest {
 
         // Once ready it should have its published date set
         updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
-        bridgesService.updateBridge(updateDTO);
+        bridgesService.updateBridgeStatus(updateDTO);
 
         Bridge publishedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge.getStatus()).isEqualTo(READY);
@@ -218,12 +226,33 @@ public class BridgesServiceTest {
         assertThat(publishedAt).isNotNull();
 
         //Check calls to set PublishedAt at idempotent
-        bridgesService.updateBridge(updateDTO);
+        bridgesService.updateBridgeStatus(updateDTO);
 
         Bridge publishedBridge2 = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge2.getStatus()).isEqualTo(READY);
         assertThat(publishedBridge2.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(publishedBridge2.getPublishedAt()).isEqualTo(publishedAt);
+    }
+
+    @Test
+    public void testUpdateBridgeStatusIncludingBridgeError() {
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
+
+        //Wait for Workers to complete
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
+
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+
+        // Emulate Shard setting Bridge status to FAILED with Error
+        BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
+        bridgesService.updateBridgeStatus(updateDTO);
+
+        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
+        assertThat(retrievedBridge.getStatus()).isEqualTo(FAILED);
+        assertThat(retrievedBridge.getBridgeErrorId()).isEqualTo(1);
+        assertThat(retrievedBridge.getBridgeErrorUUID()).isEqualTo(bei.getUUID());
     }
 
     @Test
@@ -257,7 +286,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testDeleteBridge_whenStatusIsFailed() {
-        Bridge bridge = createPersistBridge(ManagedResourceStatus.FAILED);
+        Bridge bridge = createPersistBridge(FAILED);
 
         bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId());
 
@@ -334,13 +363,20 @@ public class BridgesServiceTest {
     }
 
     @Test
+    @Transactional
     void testUpdateBridgeErrorHandlerWithNoChange() {
         // Create Bridge without an Error Handler defined
-        createPersistBridge(TestConstants.DEFAULT_BRIDGE_ID, READY);
+        Bridge existingBridge = createPersistBridge(TestConstants.DEFAULT_BRIDGE_ID, READY);
+        existingBridge.setBridgeErrorId(1);
+        existingBridge.setBridgeErrorUUID(UUID.randomUUID().toString());
+        bridgeDAO.persist(existingBridge);
 
         BridgeRequest request = new BridgeRequestForTests(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         Bridge updatedBridge = bridgesService.updateBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
         BridgeResponse updatedResponse = bridgesService.toResponse(updatedBridge);
+
+        assertThat(updatedBridge.getBridgeErrorId()).isEqualTo(existingBridge.getBridgeErrorId());
+        assertThat(updatedBridge.getBridgeErrorUUID()).isEqualTo(existingBridge.getBridgeErrorUUID());
 
         // The Bridge created at the beginning of this test does not have an Error Handler
         // Therefore we do not expect there to have been any changes or Work scheduled.
@@ -356,6 +392,9 @@ public class BridgesServiceTest {
         BridgeRequest request = new BridgeRequestForTests(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, TestUtils.createWebhookAction());
         Bridge updatedBridge = bridgesService.updateBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
         BridgeResponse updatedResponse = bridgesService.toResponse(updatedBridge);
+
+        assertThat(updatedBridge.getBridgeErrorId()).isNull();
+        assertThat(updatedBridge.getBridgeErrorUUID()).isNull();
 
         // The Bridge should move into ACCEPTED state to provision the Error Handler
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
@@ -381,6 +420,7 @@ public class BridgesServiceTest {
         assertThat(response.getErrorHandler()).isEqualTo(bridge.getDefinition().getErrorHandler());
         assertThat(response.getCloudProvider()).isEqualTo(bridge.getCloudProvider());
         assertThat(response.getRegion()).isEqualTo(bridge.getRegion());
+        assertThat(response.getStatusMessage()).isNull();
     }
 
     protected Bridge createPersistBridge(ManagedResourceStatus status) {

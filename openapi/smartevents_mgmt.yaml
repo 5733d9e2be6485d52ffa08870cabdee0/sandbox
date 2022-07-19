@@ -1098,6 +1098,8 @@ components:
           type: string
         region:
           type: string
+        status_message:
+          type: string
     CloudProviderListResponse:
       required:
       - kind
@@ -1477,6 +1479,8 @@ components:
           $ref: '#/components/schemas/Action'
         source:
           $ref: '#/components/schemas/Source'
+        status_message:
+          type: string
     ProcessorSchemaEntryResponse:
       required:
       - kind
