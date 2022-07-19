@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.api.user;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,8 +25,11 @@ import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.utils.SimpleTestVaultServiceImpl;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -59,6 +63,11 @@ public class BridgesAPITest {
 
     @InjectMock
     RhoasService rhoasServiceMock;
+
+    @BeforeAll
+    public static void setup() {
+        QuarkusMock.installMockForType(new SimpleTestVaultServiceImpl(), VaultService.class);
+    }
 
     @BeforeEach
     public void cleanUp() {

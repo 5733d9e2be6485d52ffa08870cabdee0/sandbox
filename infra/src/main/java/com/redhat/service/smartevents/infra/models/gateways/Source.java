@@ -7,4 +7,9 @@ public class Source extends Gateway {
     public ProcessorType getProcessorType() {
         return ProcessorType.SOURCE;
     }
+
+    @Override
+    public Source deepCopy() {
+        return super.deepCopy(new Source());
+    }
 }

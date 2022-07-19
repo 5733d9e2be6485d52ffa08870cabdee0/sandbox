@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,11 +39,14 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.utils.SimpleTestVaultServiceImpl;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
@@ -80,6 +84,11 @@ public class ProcessorAPITest {
     @SuppressWarnings("unused")
     //Although this is unused, we need to inject it to set-up RHOAS
     RhoasService rhoasServiceMock;
+
+    @BeforeAll
+    public static void setup() {
+        QuarkusMock.installMockForType(new SimpleTestVaultServiceImpl(), VaultService.class);
+    }
 
     @BeforeEach
     public void cleanUp() {

@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -95,12 +96,25 @@ public class ProcessorDefinition {
             return false;
         }
         ProcessorDefinition that = (ProcessorDefinition) o;
-        return Objects.equals(filters, that.filters) && Objects.equals(transformationTemplate, that.transformationTemplate) && Objects.equals(requestedAction, that.requestedAction)
-                && Objects.equals(requestedSource, that.requestedSource) && Objects.equals(resolvedAction, that.resolvedAction);
+        return Objects.equals(filters, that.filters)
+                && Objects.equals(transformationTemplate, that.transformationTemplate)
+                && Objects.equals(requestedAction, that.requestedAction)
+                && Objects.equals(requestedSource, that.requestedSource)
+                && Objects.equals(resolvedAction, that.resolvedAction);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(filters, transformationTemplate, requestedAction, requestedSource, resolvedAction);
+    }
+
+    public ProcessorDefinition deepCopy() {
+        ProcessorDefinition definitionCopy = new ProcessorDefinition();
+        definitionCopy.setFilters(filters == null ? null : new HashSet<>(filters));
+        definitionCopy.setTransformationTemplate(transformationTemplate);
+        definitionCopy.setRequestedAction(requestedAction == null ? null : requestedAction.deepCopy());
+        definitionCopy.setRequestedSource(requestedSource == null ? null : requestedSource.deepCopy());
+        definitionCopy.setResolvedAction(resolvedAction == null ? null : resolvedAction.deepCopy());
+        return definitionCopy;
     }
 }

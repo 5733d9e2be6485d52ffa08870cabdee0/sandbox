@@ -44,6 +44,8 @@ import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
+import static com.redhat.service.smartevents.manager.SecretsService.mergeProcessorDefinitions;
+
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
 
@@ -63,6 +65,8 @@ public class ProcessorServiceImpl implements ProcessorService {
     BridgesService bridgesService;
     @Inject
     ConnectorsService connectorService;
+    @Inject
+    SecretsService secretsService;
     @Inject
     ShardService shardService;
     @Inject
@@ -121,22 +125,17 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setBridge(bridge);
         newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
         newProcessor.setOwner(owner);
+        newProcessor.setHasSecrets(false);
 
-        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
-        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
-
-        Action resolvedAction = processorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridge.getId(), newProcessor.getId())
-                : resolveAction(processorRequest.getAction(), customerId, bridge.getId(), newProcessor.getId());
-
-        ProcessorDefinition definition = processorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
-                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
-
+        ProcessorDefinition definition = processorRequestToDefinition(processorRequest, processorType, newProcessor.getId(), bridgeId, customerId);
         newProcessor.setDefinition(definition);
+
+        // this updates the processor "definition" and "hasSecrets" fields if required
+        secretsService.maskProcessor(newProcessor);
 
         // Processor, Connector and Work should always be created in the same transaction
         processorDAO.persist(newProcessor);
+
         connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
         metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
@@ -147,13 +146,26 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
+    }
 
+    private ProcessorDefinition processorRequestToDefinition(ProcessorRequest processorRequest, ProcessorType processorType, String processorId, String bridgeId, String customerId) {
+        Set<BaseFilter> requestedFilters = processorRequest.getFilters();
+        String requestedTransformationTemplate = processorRequest.getTransformationTemplate();
+
+        Action resolvedAction = processorType == ProcessorType.SOURCE
+                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
+                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
+
+        return processorType == ProcessorType.SOURCE
+                ? new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getSource(), resolvedAction)
+                : new ProcessorDefinition(requestedFilters, requestedTransformationTemplate, processorRequest.getAction(), resolvedAction);
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
         return gatewayConfigurator.getActionResolver(action.getType())
                 .map(actionResolver -> actionResolver.resolve(action, customerId, bridgeId, processorId))
-                .orElse(action);
+                // we need to deep copy the action even if it's the same because the mask/unmask of secrets may cause issues otherwise
+                .orElse(action.deepCopy());
     }
 
     private Action resolveSource(Source source, String customerId, String bridgeId, String processorId) {
@@ -178,12 +190,10 @@ public class ProcessorServiceImpl implements ProcessorService {
                     processorId,
                     customerId));
         }
+
         ProcessorDefinition existingDefinition = existingProcessor.getDefinition();
-        Set<BaseFilter> existingFilters = existingDefinition.getFilters();
-        String existingTransformationTemplate = existingDefinition.getTransformationTemplate();
         Action existingAction = existingDefinition.getRequestedAction();
         Source existingSource = existingDefinition.getRequestedSource();
-        Action existingResolvedAction = existingDefinition.getResolvedAction();
 
         // Validate update.
         // Name cannot be updated.
@@ -193,38 +203,26 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SINK) {
-            if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Action Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE) {
-            if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
 
-        // Construct updated definition
-        Set<BaseFilter> updatedFilters = processorRequest.getFilters();
-        String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Source updatedSource = processorRequest.getSource();
-        Action updatedAction = processorRequest.getAction();
-        Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
-                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
-        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+        ProcessorDefinition unmaskedExistingDefinition = secretsService.getUnmaskedProcessorDefinition(existingProcessor);
+        ProcessorDefinition requestedDefinition = processorRequestToDefinition(processorRequest, existingProcessor.getType(), existingProcessor.getId(), bridgeId, customerId);
+        ProcessorDefinition unmaskedRequestedDefinition = mergeProcessorDefinitions(unmaskedExistingDefinition, requestedDefinition);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
         // See https://issues.redhat.com/browse/MGDOBR-59. The individual components of the ProcessorDefinition
         // are separated here to make the required change more explicit.
-        if (Objects.equals(existingFilters, updatedFilters)
-                && Objects.equals(existingTransformationTemplate, updatedTransformationTemplate)
-                && Objects.equals(existingAction, updatedAction)
-                && Objects.equals(existingSource, updatedSource)
-                && Objects.equals(existingResolvedAction, updatedResolvedAction)) {
+        if (Objects.equals(unmaskedExistingDefinition.getFilters(), unmaskedRequestedDefinition.getFilters())
+                && Objects.equals(unmaskedExistingDefinition.getTransformationTemplate(), unmaskedRequestedDefinition.getTransformationTemplate())
+                && Objects.equals(unmaskedExistingDefinition.getRequestedAction(), unmaskedRequestedDefinition.getRequestedAction())
+                && Objects.equals(unmaskedExistingDefinition.getRequestedSource(), unmaskedRequestedDefinition.getRequestedSource())
+                && Objects.equals(unmaskedExistingDefinition.getResolvedAction(), unmaskedRequestedDefinition.getResolvedAction())) {
             return existingProcessor;
         }
 
@@ -232,8 +230,11 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
-        existingProcessor.setDefinition(updatedDefinition);
+        existingProcessor.setDefinition(unmaskedRequestedDefinition);
         existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
+
+        // this updates the processor "definition" and "hasSecrets" fields if required
+        secretsService.maskProcessor(existingProcessor);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -347,7 +348,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         dto.setType(processor.getType());
         dto.setId(processor.getId());
         dto.setName(processor.getName());
-        dto.setDefinition(processor.getDefinition());
+        dto.setDefinition(secretsService.getUnmaskedProcessorDefinition(processor));
         dto.setBridgeId(processor.getBridge().getId());
         dto.setCustomerId(processor.getBridge().getCustomerId());
         dto.setOwner(processor.getOwner());

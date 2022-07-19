@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.infra.models.gateways;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,12 +35,12 @@ public abstract class Gateway {
 
     @NotNull(message = "A gateway type must be specified")
     @JsonProperty("type")
-    private String type;
+    protected String type;
 
     @JsonProperty("parameters")
     // ObjectNode is not rendered properly by swagger
     @Schema(implementation = Object.class, required = true)
-    private ObjectNode parameters;
+    protected ObjectNode parameters;
 
     public String getType() {
         return type;
@@ -58,9 +59,30 @@ public abstract class Gateway {
     }
 
     // mapParameters is included in openapi.yaml. We have to exclude it manually
+    @JsonIgnore
     @Schema(hidden = true)
     public void setMapParameters(Map<String, String> parameters) {
         this.parameters = mapToObjectNode(parameters);
+    }
+
+    /**
+     * For each field of the received {@link ObjectNode}, replaces the current parameter value
+     * or creates it if it doesn't exist.
+     *
+     * @param otherParameters the object containing the new values to be inserted
+     */
+    @JsonIgnore
+    @Schema(hidden = true)
+    public void mergeParameters(ObjectNode otherParameters) {
+        Iterator<Map.Entry<String, JsonNode>> it = otherParameters.fields();
+        while (it.hasNext()) {
+            Map.Entry<String, JsonNode> otherParameterEntry = it.next();
+            this.parameters.set(otherParameterEntry.getKey(), otherParameterEntry.getValue());
+        }
+    }
+
+    public void setParameter(String key, JsonNode value) {
+        this.parameters.set(key, value);
     }
 
     public String getParameter(String key) {
@@ -113,5 +135,14 @@ public abstract class Gateway {
     @Override
     public int hashCode() {
         return Objects.hash(type, parameters);
+    }
+
+    @JsonIgnore
+    public abstract Gateway deepCopy();
+
+    protected <T extends Gateway> T deepCopy(T destination) {
+        destination.type = type;
+        destination.parameters = parameters.deepCopy();
+        return destination;
     }
 }

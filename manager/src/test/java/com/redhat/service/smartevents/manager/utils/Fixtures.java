@@ -40,12 +40,11 @@ public class Fixtures {
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
-        Action requestedAction = new Action();
-        Action resolvedAction = new Action();
+        Action requestedAction = createKafkaAction();
+        Action resolvedAction = createKafkaAction();
         p.setDefinition(new ProcessorDefinition(new HashSet<>(), "",
                 requestedAction,
                 resolvedAction));
-
         return p;
     }
 
