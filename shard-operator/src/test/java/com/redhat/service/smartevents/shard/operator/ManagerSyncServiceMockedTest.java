@@ -49,13 +49,13 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubBridgeUpdate();
 
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"} }",
                         bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
                         bridge.getCustomerId());
         String expectedJsonUpdateFailedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
+                String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"} }",
                         bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
@@ -81,14 +81,14 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubBridgeUpdate();
 
         String expectedJsonUpdateDeletingRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                         bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
                         bridge.getCustomerId());
         String expectedJsonUpdateDeletedRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                        "{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"} }",
                         bridge.getId(),
                         bridge.getName(),
                         bridge.getEndpoint(),
@@ -113,12 +113,12 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubProcessorUpdate();
 
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getCustomerId());
         String expectedJsonUpdateFailedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getCustomerId());
@@ -143,12 +143,12 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubProcessorUpdate();
 
         String expectedJsonUpdateDeletingRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getCustomerId());
         String expectedJsonUpdateDeletedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getCustomerId());

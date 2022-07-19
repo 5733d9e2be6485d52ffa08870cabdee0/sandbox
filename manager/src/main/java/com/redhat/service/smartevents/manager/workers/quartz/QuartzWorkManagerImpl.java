@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.Inte
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.manager.workers.errors.WorkErrorRecorder;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -48,10 +49,14 @@ public class QuartzWorkManagerImpl implements WorkManager {
     @Inject
     org.quartz.Scheduler quartz;
 
+    @Inject
+    WorkErrorRecorder workErrorRecorder;
+
     private JobDetail workJob;
 
     @PostConstruct
     public void init() {
+        // Lookup Job
         try {
             workJob = JobBuilder.newJob(WorkJob.class).storeDurably().build();
             quartz.addJob(workJob, false);
@@ -63,6 +68,9 @@ public class QuartzWorkManagerImpl implements WorkManager {
 
     @Override
     public Work schedule(ManagedResource managedResource) {
+        // Delete any existing status information
+        workErrorRecorder.deleteErrors(managedResource.getId());
+
         Work work = Work.forResource(managedResource);
         doSchedule(work);
         return work;

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.SchedulerException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -99,7 +98,7 @@ class ConnectorWorkerTest {
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
             RhoasTopicAccessType expectedTopicAccessType,
-            ManagedResourceStatus expectedResourceStatus) throws SchedulerException {
+            ManagedResourceStatus expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
@@ -148,7 +147,7 @@ class ConnectorWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForUpdateTest")
-    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) throws SchedulerException {
+    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setGeneration(patchConnector ? 1 : 0);
@@ -195,7 +194,7 @@ class ConnectorWorkerTest {
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
-            RhoasTopicAccessType expectedTopicAccessType) throws SchedulerException {
+            RhoasTopicAccessType expectedTopicAccessType) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity

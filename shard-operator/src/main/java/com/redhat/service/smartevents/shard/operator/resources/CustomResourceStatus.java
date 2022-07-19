@@ -9,17 +9,16 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.javaoperatorsdk.operator.api.ObservedGenerationAware;
 
 /**
  * Common interface for Kubernetes Custom Resource status
  */
-public abstract class CustomResourceStatus {
+public abstract class CustomResourceStatus implements ObservedGenerationAware {
 
     private final Set<Condition> conditions;
+    private Long generation;
 
     @JsonCreator
     public CustomResourceStatus(@JsonProperty("conditions") final HashSet<Condition> initialConditions) {
@@ -47,28 +46,6 @@ public abstract class CustomResourceStatus {
     @JsonIgnore
     public final boolean isConditionTypeTrue(final String conditionType) {
         return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.True.equals(c.getStatus()));
-    }
-
-    @JsonIgnore
-    public void setConditionsFromDeployment(final Deployment d) {
-        if (d.getStatus() == null) {
-            this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
-            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        } else if (Readiness.isDeploymentReady(d)) {
-            this.markConditionTrue(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_AVAILABLE);
-            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        } else {
-            if (DeploymentStatusUtils.isTimeoutFailure(d)) {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(d));
-                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(d)) {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(d));
-                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            } else {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
-                this.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.DEPLOYMENT_PROGRESSING);
-            }
-        }
     }
 
     public void markConditionFalse(final String conditionType, final String reason, final String message, final String errorCode) {
@@ -104,5 +81,15 @@ public abstract class CustomResourceStatus {
 
     public void markConditionTrue(final String conditionType) {
         markConditionTrue(conditionType, null);
+    }
+
+    @Override
+    public void setObservedGeneration(Long generation) {
+        this.generation = generation;
+    }
+
+    @Override
+    public Long getObservedGeneration() {
+        return generation;
     }
 }

@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.BridgeStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
@@ -835,13 +836,14 @@ public class ProcessorAPITest {
         });
 
         //Emulate Shard updating Bridge status
-        BridgeDTO dto = new BridgeDTO();
-        dto.setId(bridgeResponse.getId());
-        dto.setStatus(READY);
-        dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        dto.setEndpoint("https://foo.bridges.redhat.com");
+        BridgeDTO bridgeDTO = new BridgeDTO();
+        bridgeDTO.setId(bridgeResponse.getId());
+        bridgeDTO.setStatus(READY);
+        bridgeDTO.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        bridgeDTO.setEndpoint("https://foo.bridges.redhat.com");
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridgeDTO);
 
-        Response deployment = TestUtils.updateBridge(dto);
+        Response deployment = TestUtils.updateBridge(statusWrapperDTO);
         assertThat(deployment.getStatusCode()).isEqualTo(200);
         return bridgeResponse;
     }

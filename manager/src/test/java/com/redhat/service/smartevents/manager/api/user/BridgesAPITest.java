@@ -10,6 +10,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.BridgeStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -317,14 +318,15 @@ public class BridgesAPITest {
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
-        TestUtils.updateBridge(
-                new BridgeDTO(bridgeResponse.getId(),
-                        bridgeResponse.getName(),
-                        bridgeResponse.getEndpoint(),
-                        DEFAULT_CUSTOMER_ID,
-                        DEFAULT_USER_NAME,
-                        READY,
-                        new KafkaConnectionDTO()));
+        BridgeDTO bridgeDTO = new BridgeDTO(bridgeResponse.getId(),
+                bridgeResponse.getName(),
+                bridgeResponse.getEndpoint(),
+                DEFAULT_CUSTOMER_ID,
+                DEFAULT_USER_NAME,
+                READY,
+                new KafkaConnectionDTO());
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridgeDTO);
+        TestUtils.updateBridge(statusWrapperDTO);
 
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction())).then().statusCode(202);
 

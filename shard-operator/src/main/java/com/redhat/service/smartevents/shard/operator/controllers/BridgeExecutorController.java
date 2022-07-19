@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
@@ -21,6 +22,7 @@ import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorSe
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
+import com.redhat.service.smartevents.shard.operator.resources.CustomResourceStatus;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -34,16 +36,18 @@ import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
-        EventSourceInitializer<BridgeExecutor> {
+        EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
 
@@ -60,7 +64,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     ServiceMonitorService monitorService;
 
     @Inject
-    BridgeErrorService bridgeErrorService;
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
@@ -97,12 +101,16 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
+            setStatusFromDeployment(bridgeExecutor, deployment);
 
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+                String message = DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment);
+                BridgeError bridgeError = bridgeErrorHelper.getBridgeError(new ProvisioningFailureException(message));
+                notifyManagerOfFailure(bridgeExecutor, bridgeError);
             } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+                String message = DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment);
+                BridgeError bridgeError = bridgeErrorHelper.getBridgeError(new ProvisioningFailureException(message));
+                notifyManagerOfFailure(bridgeExecutor, bridgeError);
             }
 
             return UpdateControl.updateStatus(bridgeExecutor);
@@ -126,13 +134,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
-                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
-                    ConditionReasonConstants.PROMETHEUS_UNAVAILABLE,
-                    prometheusNotAvailableError.getReason(),
-                    prometheusNotAvailableError.getCode());
-            notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
+            BridgeError bridgeError = bridgeErrorHelper.getBridgeError(new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE));
+            setStatusFromBridgeError(bridgeExecutor, bridgeError);
+            notifyManagerOfFailure(bridgeExecutor, bridgeError);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -158,10 +162,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         return DeleteControl.defaultDelete();
     }
 
-    private void notifyDeploymentFailure(BridgeExecutor bridgeExecutor, String failureReason) {
-        LOGGER.warn("Processor deployment BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
+    @Override
+    public Optional<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, RetryInfo retryInfo, RuntimeException e) {
+        if (retryInfo.isLastAttempt()) {
+            BridgeError bridgeError = bridgeErrorHelper.getBridgeError(e);
+            setStatusFromBridgeError(bridgeExecutor, bridgeError);
+            notifyManagerOfFailure(bridgeExecutor, bridgeError);
+        }
+        return Optional.of(bridgeExecutor);
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
@@ -173,4 +181,57 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                         success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
     }
+
+    private void notifyManagerOfFailure(BridgeExecutor bridgeExecutor, BridgeError bridgeError) {
+        LOGGER.error("Processor BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), bridgeError.getReason());
+
+        ProcessorDTO dto = bridgeExecutor.toDTO();
+        dto.setStatus(ManagedResourceStatus.FAILED);
+
+        managerClient.notifyProcessorFailure(dto, bridgeError)
+                .subscribe().with(
+                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
+    }
+
+    private void setStatusFromBridgeError(BridgeExecutor bridgeExecutor, BridgeError bridgeError) {
+        CustomResourceStatus resourceStatus = bridgeExecutor.getStatus();
+        resourceStatus.markConditionFalse(ConditionTypeConstants.READY,
+                bridgeError.getReason(),
+                bridgeError.getReason(),
+                bridgeError.getCode());
+        resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+    }
+
+    private void setStatusFromDeployment(BridgeExecutor bridgeExecutor, Deployment deployment) {
+        CustomResourceStatus resourceStatus = bridgeExecutor.getStatus();
+        if (deployment.getStatus() == null) {
+            resourceStatus.markConditionFalse(ConditionTypeConstants.READY,
+                    ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
+            resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+        } else if (Readiness.isDeploymentReady(deployment)) {
+            resourceStatus.markConditionTrue(ConditionTypeConstants.READY,
+                    ConditionReasonConstants.DEPLOYMENT_AVAILABLE);
+            resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+        } else {
+            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
+                resourceStatus.markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.DEPLOYMENT_FAILED,
+                        DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+                resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                resourceStatus.markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.DEPLOYMENT_FAILED,
+                        DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+                resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            } else {
+                resourceStatus.markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
+                resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION,
+                        ConditionReasonConstants.DEPLOYMENT_PROGRESSING);
+            }
+        }
+    }
+
 }

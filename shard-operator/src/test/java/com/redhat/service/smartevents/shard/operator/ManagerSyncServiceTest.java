@@ -59,14 +59,14 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubBridgeUpdate();
         String expectedJsonUpdateProvisioningRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                        "{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"} }",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getEndpoint(),
                         bridge1.getCustomerId());
         String expectedJsonUpdateAvailableRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
+                        "{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null} }",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getCustomerId());
@@ -105,7 +105,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                 bridge1.getId(),
                 bridge1.getName(),
                 bridge1.getCustomerId());
@@ -126,11 +126,11 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DEPROVISION, 1);
         stubBridgesToDeployOrDelete(List.of(bridge1));
         stubBridgeUpdate();
-        String expectedJsonUpdateDeprovisioningRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+        String expectedJsonUpdateDeprovisioningRequest = String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                 bridge1.getId(),
                 bridge1.getName(),
                 bridge1.getCustomerId());
-        String expectedJsonUpdateRequest = String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+        String expectedJsonUpdateRequest = String.format("{ \"bridge\": {\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"\", \"customerId\": \"%s\", \"status\": \"deleted\"} }",
                 bridge1.getId(),
                 bridge1.getName(),
                 bridge1.getCustomerId());
@@ -176,7 +176,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         processor.setStatus(ManagedResourceStatus.READY);
         processor.setKafkaConnection(null); // the kafka connection is not included in the shard update for the manager
 
-        assertJsonRequest(objectMapper.writeValueAsString(processor), APIConstants.SHARD_API_BASE_PATH + "processors");
+        assertJsonRequest(String.format("{ \"processor\": %s }", objectMapper.writeValueAsString(processor)),
+                APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
     @Test
@@ -192,7 +193,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
         String expectedJsonUpdateRequestForDeprovisioning =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getBridgeId(),
@@ -217,13 +218,13 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
         String expectedJsonUpdateRequestForDeprovisioning =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getBridgeId(),
                         processor.getCustomerId());
         String expectedJsonUpdateRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                String.format("{ \"processor\": {\"id\": \"%s\", \"name\": \"%s\", \"bridgeId\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"} }",
                         processor.getId(),
                         processor.getName(),
                         processor.getBridgeId(),

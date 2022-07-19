@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.BridgeStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -163,9 +163,9 @@ public class TestUtils {
                 .get(APIConstants.SHARD_API_BASE_PATH);
     }
 
-    public static Response updateBridge(BridgeDTO bridgeDTO) {
+    public static Response updateBridge(BridgeStatusWrapperDTO statusWrapperDTO) {
         return jsonRequest()
-                .body(bridgeDTO)
+                .body(statusWrapperDTO)
                 .put(APIConstants.SHARD_API_BASE_PATH);
     }
 
@@ -174,9 +174,9 @@ public class TestUtils {
                 .get(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
-    public static Response updateProcessor(ProcessorDTO processorDTO) {
+    public static Response updateProcessor(ProcessorStatusWrapperDTO statusWrapperDTO) {
         return jsonRequest()
-                .body(processorDTO)
+                .body(statusWrapperDTO)
                 .put(APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 

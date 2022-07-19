@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -25,6 +26,7 @@ import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -42,6 +44,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.manager.workers.errors.WorkErrorRecorder;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 
 @ApplicationScoped
@@ -71,10 +74,12 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    WorkErrorRecorder workErrorRecorder;
+
     @Transactional
     @Override
     public Processor getProcessor(String bridgeId, String processorId, String customerId) {
-
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridge.getId(), processorId, bridge.getCustomerId());
         if (processor == null) {
@@ -257,12 +262,19 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
+    public Processor updateProcessorStatus(ProcessorStatusWrapperDTO statusWrapperDTO) {
+        ProcessorDTO processorDTO = statusWrapperDTO.getProcessor();
         Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
         Processor p = processorDAO.findById(processorDTO.getId());
         if (p == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
                     processorDTO.getCustomerId()));
+        }
+
+        // If an exception happened; make sure to record it.
+        BridgeError error = statusWrapperDTO.getException();
+        if (Objects.nonNull(error)) {
+            workErrorRecorder.recordError(p.getId(), error);
         }
 
         if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {

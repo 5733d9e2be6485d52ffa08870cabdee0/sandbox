@@ -13,7 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.SchedulerException;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
@@ -83,7 +82,7 @@ public class ProcessorWorkerTest {
     @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PREPARING" })
-    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) throws SchedulerException {
+    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
@@ -104,7 +103,7 @@ public class ProcessorWorkerTest {
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) throws SchedulerException {
+            boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
@@ -145,7 +144,7 @@ public class ProcessorWorkerTest {
     @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
-    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) throws SchedulerException {
+    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);
@@ -166,7 +165,7 @@ public class ProcessorWorkerTest {
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) throws SchedulerException {
+            boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setStatus(status);

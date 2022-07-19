@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
@@ -20,6 +21,7 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.BridgeStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -33,6 +35,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.manager.workers.errors.WorkErrorRecorder;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -59,6 +62,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     MetricsService metricsService;
+
+    @Inject
+    WorkErrorRecorder workErrorRecorder;
 
     @Override
     @Transactional
@@ -171,11 +177,18 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridge(BridgeDTO bridgeDTO) {
+    public Bridge updateBridgeStatus(BridgeStatusWrapperDTO statusWrapperDTO) {
+        BridgeDTO bridgeDTO = statusWrapperDTO.getBridge();
         Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
         bridge.setStatus(bridgeDTO.getStatus());
         bridge.setEndpoint(bridgeDTO.getEndpoint());
         bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        // If an exception happened; make sure to record it.
+        BridgeError error = statusWrapperDTO.getException();
+        if (Objects.nonNull(error)) {
+            workErrorRecorder.recordError(bridge.getId(), error);
+        }
 
         if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
