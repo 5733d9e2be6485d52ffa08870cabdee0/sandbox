@@ -1,9 +1,12 @@
 package com.redhat.service.smartevents.infra.api.models.responses;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(name = "ObjectReference")
 public abstract class BaseResponse {
 
     @JsonProperty("kind")

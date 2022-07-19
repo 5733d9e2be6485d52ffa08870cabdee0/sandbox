@@ -27,6 +27,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
@@ -63,11 +64,11 @@ public class BridgesAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeListResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Unauthorized.", responseCode = "401"),
-            @APIResponse(description = "Forbidden.", responseCode = "403"),
-            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "Get the list of Bridge instances", description = "Get the list of Bridge instances for the authenticated user.")
     @GET
@@ -79,10 +80,10 @@ public class BridgesAPI {
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "Create a Bridge instance", description = "Create a Bridge instance for the authenticated user.")
     @POST
@@ -97,11 +98,11 @@ public class BridgesAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
-            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "Get a Bridge instance", description = "Get a Bridge instance of the authenticated user by ID.")
     @GET
@@ -113,11 +114,11 @@ public class BridgesAPI {
 
     @APIResponses(value = {
             @APIResponse(description = "Accepted.", responseCode = "202"),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Unauthorized.", responseCode = "401"),
             @APIResponse(description = "Forbidden.", responseCode = "403"),
-            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "Delete a Bridge instance", description = "Delete a Bridge instance of the authenticated user by ID.")
     @DELETE
