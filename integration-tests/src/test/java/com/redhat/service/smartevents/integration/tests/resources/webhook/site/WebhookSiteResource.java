@@ -14,6 +14,8 @@ public class WebhookSiteResource {
     public static List<WebhookSiteRequest> requests(WebhookSiteQuerySorting sorting) {
         return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", getEndpointUuid(), sorting.getValue())
                 .then()
+                .log().ifValidationFails()
+                .statusCode(200)
                 .extract()
                 .body()
                 .jsonPath().getList("data", WebhookSiteRequest.class);
@@ -26,6 +28,7 @@ public class WebhookSiteResource {
                         getEndpointUuid(),
                         request.getUuid())
                 .then()
+                .log().ifValidationFails()
                 .statusCode(200);
     }
 
