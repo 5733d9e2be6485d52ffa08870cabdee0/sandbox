@@ -7,9 +7,11 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidCloudProvider;
 import com.redhat.service.smartevents.manager.api.user.validators.processors.ValidErrorHandler;
 import com.redhat.service.smartevents.manager.models.Bridge;
 
+@ValidCloudProvider
 @ValidErrorHandler
 public class BridgeRequest {
 
@@ -21,15 +23,33 @@ public class BridgeRequest {
     @Valid
     private Action errorHandler;
 
+    @NotEmpty(message = "Cloud Provider cannot be null or empty.")
+    @JsonProperty("cloud_provider")
+    private String cloudProvider;
+
+    @NotEmpty(message = "Region cannot be null or empty.")
+    @JsonProperty("region")
+    private String region;
+
+    public String getCloudProvider() {
+        return cloudProvider;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
     public BridgeRequest() {
     }
 
-    public BridgeRequest(String name) {
+    public BridgeRequest(String name, String cloudProvider, String region) {
         this.name = name;
+        this.cloudProvider = cloudProvider;
+        this.region = region;
     }
 
-    public BridgeRequest(String name, Action errorHandler) {
-        this.name = name;
+    public BridgeRequest(String name, String cloudProvider, String region, Action errorHandler) {
+        this(name, cloudProvider, region);
         this.errorHandler = errorHandler;
     }
 

@@ -4,8 +4,8 @@ Feature: SendToBridge Action tests
     Given authenticate against Manager
 
   Scenario: Send Cloud Event to SendToBridge with bridgeId defined
-    Given create a new Bridge "bridge1"
-    And create a new Bridge "bridge2"
+    Given create a new Bridge "bridge1" in cloud provider "aws" and region "us-east-1"
+    And create a new Bridge "bridge2" in cloud provider "aws" and region "us-east-1"
 
     And the Bridge "bridge1" is existing with status "ready" within 4 minutes
     And the Bridge "bridge2" is existing with status "ready" within 4 minutes

@@ -70,12 +70,17 @@ public class ConfigurationLoaderTest {
         assertThat(loadedProvider.getName()).isEqualTo("aws");
         assertThat(loadedProvider.getDisplayName()).isEqualTo("Amazon Web Services");
         assertThat(loadedProvider.isEnabled()).isTrue();
-        assertThat(loadedProvider.getRegions()).hasSize(1);
+        assertThat(loadedProvider.getRegions()).hasSize(2);
 
         CloudRegion loadedRegion = loadedProvider.getRegions().get(0);
         assertThat(loadedRegion.getName()).isEqualTo("us-east-1");
         assertThat(loadedRegion.getDisplayName()).isEqualTo("US East, N. Virginia");
         assertThat(loadedRegion.isEnabled()).isTrue();
+
+        loadedRegion = loadedProvider.getRegions().get(1);
+        assertThat(loadedRegion.getName()).isEqualTo("eu-west-1");
+        assertThat(loadedRegion.getDisplayName()).isEqualTo("EU West, London");
+        assertThat(loadedRegion.isEnabled()).isFalse();
     }
 
     @Test

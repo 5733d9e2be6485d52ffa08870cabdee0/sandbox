@@ -1,0 +1,33 @@
+[
+  {
+    "id": "aws",
+    "name": "aws",
+    "display_name": "Amazon Web Services",
+    "enabled": "true",
+    "regions": [
+      {
+        "name": "us-east-1",
+        "display_name": "US East, N. Virginia",
+        "enabled": "true"
+      },
+      {
+        "name": "eu-west-1",
+        "display_name": "EU West, London",
+        "enabled": "false"
+      }
+    ]
+  },
+  {
+    "id": "gcp",
+    "name": "gcp",
+    "display_name": "Google Compute Cloud",
+    "enabled": "false",
+    "regions": [
+      {
+        "name": "us-east-1",
+        "display_name": "US East, N. Virginia",
+        "enabled" : "false"
+      }
+    ]
+  }
+]

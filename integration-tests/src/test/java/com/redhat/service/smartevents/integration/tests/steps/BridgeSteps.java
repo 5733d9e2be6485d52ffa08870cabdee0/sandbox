@@ -51,9 +51,9 @@ public class BridgeSteps {
                 .statusCode(responseCode);
     }
 
-    @When("^create a new Bridge \"([^\"]*)\"$")
-    public void createNewBridge(String testBridgeName) {
-        createNewBridgeWithSupplier(testBridgeName, (context, systemBridgeName) -> BridgeResource.addBridge(context.getManagerToken(), systemBridgeName));
+    @When("^create a new Bridge \"([^\"]*)\" in cloud provider \"([^\"]*)\" and region \"([^\"]*)\"$")
+    public void createNewBridge(String testBridgeName, String cloudProvider, String region) {
+        createNewBridgeWithSupplier(testBridgeName, (context, systemBridgeName) -> BridgeResource.addBridge(context.getManagerToken(), systemBridgeName, cloudProvider, region));
     }
 
     @When("^create a new Bridge with body:$")
@@ -95,13 +95,6 @@ public class BridgeSteps {
         assertThat(response.getSubmittedAt()).isNotNull();
 
         context.newBridge(testBridgeName, response.getId(), systemBridgeName);
-    }
-
-    @Given("^create a new Bridge \"([^\"]*)\" is failing with HTTP response code (\\d+)$")
-    public void createNewBridgeIsFailingWithHTTPResponseCode(String testBridgeName, int responseCode) {
-        BridgeResource.addBridgeResponse(context.getManagerToken(), testBridgeName)
-                .then()
-                .statusCode(responseCode);
     }
 
     @When("^create a fake Bridge \"([^\"]*)\"$")
