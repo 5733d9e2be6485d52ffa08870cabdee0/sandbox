@@ -227,7 +227,7 @@
               </includes>
               <systemProperties>
                 <undefined.placeholder.check.enabled>false</undefined.placeholder.check.enabled> <!-- Disable the check as Hyperfoil placeholders use same format -->
-                <performance.slack.webhook.url></performance.slack.webhook.url>
+                <performance.webhook.url></performance.webhook.url>
                 <performance.hyperfoil.url></performance.hyperfoil.url>
               </systemProperties>
             </configuration>

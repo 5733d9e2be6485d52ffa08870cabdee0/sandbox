@@ -4,7 +4,7 @@ import com.redhat.service.smartevents.integration.tests.common.Constants;
 
 import io.restassured.response.Response;
 
-public class PerformanceResource {
+public class HyperfoilResource {
 
     private static final String HYPERFOIL_URL = System.getProperty("performance.hyperfoil.url");
     private static final String BASE_BENCHMARK_URL = HYPERFOIL_URL + "/benchmark/";
@@ -43,8 +43,13 @@ public class PerformanceResource {
                 .get(BASE_BENCHMARK_URL + perfTestName + "/start");
     }
 
-    public static Response getRunStatusDetailsResponse(String token, String idRun) {
+    public static Response getRunStatusDetailsResponse(String token, String runId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .get(BASE_RUN_URL + idRun);
+                .get(BASE_RUN_URL + runId);
+    }
+
+    public static Response getBenchmarkStatsDetailResponse(String token, String runId) {
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
+                .get(BASE_RUN_URL + runId + "/stats/total");
     }
 }

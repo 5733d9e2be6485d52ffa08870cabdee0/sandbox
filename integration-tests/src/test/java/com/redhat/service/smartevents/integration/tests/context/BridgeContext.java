@@ -2,8 +2,8 @@ package com.redhat.service.smartevents.integration.tests.context;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import com.redhat.service.smartevents.integration.tests.common.EndPointParser;
 
 import io.cucumber.java.Scenario;
 
@@ -11,8 +11,6 @@ import io.cucumber.java.Scenario;
  * Shared bridge context
  */
 public class BridgeContext {
-
-    private static final Pattern ENDPOINT_URL_REGEX = Pattern.compile("^(https?:\\/\\/[^/?#]+)([a-z0-9\\-._~%!$&'()*+,;=:@/]*)");
 
     private String name;
     private String id;
@@ -55,11 +53,10 @@ public class BridgeContext {
 
     public void setEndPoint(String endPoint) {
         this.endPoint = endPoint;
-        Matcher matcher = ENDPOINT_URL_REGEX.matcher(endPoint);
-        if (matcher.find()) {
-            endPointBaseUrl = matcher.group(1);
-            endPointPath = matcher.group(2);
-        }
+        endPointBaseUrl = EndPointParser.getEndpointBaseUrl(endPoint)
+                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint base url for " + endPoint));
+        endPointPath = EndPointParser.getEndpointPathUrl(endPoint)
+                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint path for " + endPoint));
     }
 
     public ProcessorContext newProcessor(String processorName, String processorId) {
