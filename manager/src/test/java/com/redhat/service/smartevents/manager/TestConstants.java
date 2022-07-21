@@ -10,6 +10,7 @@ public class TestConstants {
     public static final String DEFAULT_BRIDGE_NAME = "myBridge";
 
     public static final String SHARD_ID = DEFAULT_CUSTOMER_ID;
+    public static final String DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME = "router." + SHARD_ID + ".com";
 
     public static final ProcessorType DEFAULT_PROCESSOR_TYPE = ProcessorType.SINK;
     public static final String DEFAULT_PROCESSOR_ID = "myProcessorId";

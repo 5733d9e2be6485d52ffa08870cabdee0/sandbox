@@ -119,7 +119,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
-        newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
+        newProcessor.setShardId(shardService.getAssignedShard(newProcessor.getId()).getId());
         newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();

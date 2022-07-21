@@ -29,6 +29,9 @@ public class Shard {
     @Enumerated(EnumType.STRING)
     private ShardType type;
 
+    @Column(name = "router_canonical_hostname")
+    private String routerCanonicalHostname;
+
     public String getId() {
         return id;
     }
@@ -43,6 +46,14 @@ public class Shard {
 
     public void setType(ShardType type) {
         this.type = type;
+    }
+
+    public String getRouterCanonicalHostname() {
+        return routerCanonicalHostname;
+    }
+
+    public void setRouterCanonicalHostname(String routerCanonicalHostname) {
+        this.routerCanonicalHostname = routerCanonicalHostname;
     }
 
     /*

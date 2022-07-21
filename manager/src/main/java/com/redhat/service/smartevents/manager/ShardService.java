@@ -1,8 +1,10 @@
 package com.redhat.service.smartevents.manager;
 
+import com.redhat.service.smartevents.manager.models.Shard;
+
 public interface ShardService {
 
-    String getAssignedShardId(String id);
+    Shard getAssignedShard(String id);
 
     boolean isAuthorizedShard(String shardId);
 
