@@ -38,15 +38,6 @@ import io.restassured.http.ContentType;
 import static io.restassured.RestAssured.given;
 
 public class KafkaResource {
-    public static boolean isKafkaBootstrapServerDefined() {
-        String kafkaBootstrapServer = System.getProperty("event-bridge.kafka.bootstrap.servers");
-        if ((kafkaBootstrapServer != null) && (!kafkaBootstrapServer.isEmpty())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public static void createKafkaTopic(String topicName) {
         KafkaConnectionParameters kafkaConnectionParameters = KafkaConnectionParameters.getInstance();
         ApiClient apiClient = createApiClient();
