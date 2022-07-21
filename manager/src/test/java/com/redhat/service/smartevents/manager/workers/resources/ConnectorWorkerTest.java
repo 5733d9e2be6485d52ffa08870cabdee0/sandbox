@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.quartz.SchedulerException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -25,9 +28,9 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -36,6 +39,7 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.atMostOnce;
@@ -57,7 +61,7 @@ class ConnectorWorkerTest {
     @InjectMock
     ConnectorsApiClient connectorsApi;
 
-    @Inject
+    @InjectMock
     WorkManager workManager;
 
     @Inject
@@ -82,8 +86,7 @@ class ConnectorWorkerTest {
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
-        Work work = new Work();
-        work.setManagedResourceId(TEST_RESOURCE_ID);
+        Work work = makeWork(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
@@ -96,7 +99,7 @@ class ConnectorWorkerTest {
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
             RhoasTopicAccessType expectedTopicAccessType,
-            ManagedResourceStatus expectedResourceStatus) {
+            ManagedResourceStatus expectedResourceStatus) throws SchedulerException {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
@@ -107,7 +110,8 @@ class ConnectorWorkerTest {
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
 
-        Work work = workManager.schedule(connectorEntity);
+        // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         Connector connector = new Connector();
         connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
@@ -123,8 +127,9 @@ class ConnectorWorkerTest {
         verify(connectorsApi).createConnector(connectorEntity);
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
+        verify(workManager).reschedule(work);
 
-        // This emulates a subsequent invocation by WorkManager
+        // This emulates a subsequent invocation
         refreshed = worker.handleWork(work);
 
         verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
@@ -137,13 +142,13 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        assertThat(workManager.exists(work)).isTrue();
+        verify(workManager, times(2)).reschedule(work);
     }
 
     @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForUpdateTest")
-    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
+    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) throws SchedulerException {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setGeneration(patchConnector ? 1 : 0);
@@ -166,7 +171,8 @@ class ConnectorWorkerTest {
         // Update ConnectorEntity with new definition
         connectorEntity.setDefinition(updatedDefinition);
 
-        Work work = workManager.schedule(connectorEntity);
+        // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
 
@@ -179,7 +185,7 @@ class ConnectorWorkerTest {
             assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         }
 
-        assertThat(workManager.exists(work)).isTrue();
+        verify(workManager).reschedule(work);
     }
 
     @Transactional
@@ -189,7 +195,7 @@ class ConnectorWorkerTest {
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
-            RhoasTopicAccessType expectedTopicAccessType) {
+            RhoasTopicAccessType expectedTopicAccessType) throws SchedulerException {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
@@ -200,7 +206,8 @@ class ConnectorWorkerTest {
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
 
-        Work work = workManager.schedule(connectorEntity);
+        // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
+        Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         Connector connector = new Connector();
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
@@ -208,6 +215,7 @@ class ConnectorWorkerTest {
         // Managed Connector will initially be available before it is deleted
         when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
+        int refreshCount = 1;
         ConnectorEntity refreshed = worker.handleWork(work);
 
         if (connectorState != ConnectorState.DELETED) {
@@ -218,6 +226,7 @@ class ConnectorWorkerTest {
 
             // This emulates a subsequent invocation by WorkManager
             refreshed = worker.handleWork(work);
+            refreshCount = 2;
         }
 
         verify(rhoasService).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
@@ -225,7 +234,7 @@ class ConnectorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        assertThat(workManager.exists(work)).isTrue();
+        verify(workManager, times(refreshCount)).reschedule(work);
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {

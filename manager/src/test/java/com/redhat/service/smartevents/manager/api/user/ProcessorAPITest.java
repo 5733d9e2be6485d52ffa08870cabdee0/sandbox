@@ -26,7 +26,6 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.ProcessorRequestForTests;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -39,12 +38,12 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.sendtobridge.SendToBridgeAction;
 import com.redhat.service.smartevents.processor.actions.slack.SlackAction;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
@@ -61,7 +60,6 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 public class ProcessorAPITest {
 
     @Inject
@@ -72,6 +70,9 @@ public class ProcessorAPITest {
 
     @Inject
     BridgeDAO bridgeDAO;
+
+    @Inject
+    WorkManager workManager;
 
     @InjectMock
     JsonWebToken jwt;
@@ -705,15 +706,20 @@ public class ProcessorAPITest {
                 bridge.getId(),
                 new ProcessorRequest("myProcessor", filters, "template", TestUtils.createKafkaAction()));
 
-        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
-        setProcessorAsReady(processor.getId());
+        // We have to wait until the existing Work to provision the Processor is complete.
+        ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        Processor processor = processorDAO.findById(processorResponse.getId());
+        await().atMost(5, SECONDS).pollInterval(1, SECONDS).untilAsserted(() -> {
+            assertThat(workManager.exists(processor)).isFalse();
+        });
 
+        setProcessorAsReady(processorResponse.getId());
         Response response = TestUtils.updateProcessor(bridge.getId(),
-                processor.getId(),
-                new ProcessorRequest(processor.getName(),
+                processorResponse.getId(),
+                new ProcessorRequest(processorResponse.getName(),
                         filters,
                         "template-updated",
-                        processor.getAction()));
+                        processorResponse.getAction()));
         assertThat(response.getStatusCode()).isEqualTo(202);
 
         ProcessorResponse updated = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
@@ -783,16 +789,21 @@ public class ProcessorAPITest {
                 bridge.getId(),
                 new ProcessorRequest("myProcessor", filters, null, TestUtils.createKafkaAction()));
 
-        ProcessorResponse processor = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
-        setProcessorAsReady(processor.getId());
+        // We have to wait until the existing Work to provision the Processor is complete.
+        ProcessorResponse processorResponse = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
+        Processor processor = processorDAO.findById(processorResponse.getId());
+        await().atMost(5, SECONDS).pollInterval(1, SECONDS).untilAsserted(() -> {
+            assertThat(workManager.exists(processor)).isFalse();
+        });
 
+        setProcessorAsReady(processorResponse.getId());
         Set<BaseFilter> updatedFilters = Set.of(new StringEquals("key1", "value1"), new StringEquals("key2", "value2"));
         Response response = TestUtils.updateProcessor(bridge.getId(),
-                processor.getId(),
-                new ProcessorRequest(processor.getName(),
+                processorResponse.getId(),
+                new ProcessorRequest(processorResponse.getName(),
                         updatedFilters,
-                        processor.getTransformationTemplate(),
-                        processor.getAction()));
+                        processorResponse.getTransformationTemplate(),
+                        processorResponse.getAction()));
         assertThat(response.getStatusCode()).isEqualTo(202);
 
         ProcessorResponse updated = TestUtils.getProcessor(bridge.getId(), createResponse.as(ProcessorResponse.class).getId()).as(ProcessorResponse.class);
