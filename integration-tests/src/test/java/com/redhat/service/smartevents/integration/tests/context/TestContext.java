@@ -16,6 +16,7 @@ public class TestContext {
     private Map<String, BridgeContext> bridges = new HashMap<>();
     private Map<String, String> cloudEvents = new HashMap<>();
     private Map<String, String> uuids = new HashMap<>();
+    private Map<String, String> kafkaTopics = new HashMap<>();
 
     private Scenario scenario;
 
@@ -74,6 +75,17 @@ public class TestContext {
             this.uuids.put(uuidName, uuidValue);
         }
         return this.uuids.get(uuidName);
+    }
+
+    public String getKafkaTopic(String topicName) {
+        if (!this.kafkaTopics.containsKey(topicName)) {
+            String uuidValue = UUID.randomUUID().toString().substring(0, 8);
+            String uniqueTopicName = topicName + "-" + uuidValue;
+            scenario.log("Generating new Kafka topic name '" + uniqueTopicName);
+            this.kafkaTopics.put(topicName, uniqueTopicName);
+        }
+
+        return this.kafkaTopics.get(topicName);
     }
 
     public Scenario getScenario() {
