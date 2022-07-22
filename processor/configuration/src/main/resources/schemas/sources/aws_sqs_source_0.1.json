@@ -12,7 +12,6 @@
       "title": "Queue Name",
       "description": "The SQS Queue Name or ARN",
       "type": "string",
-      "pattern": "^https:\/\/sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com\/[0-9]{12}\/([^\/]+)$"
     },
     "aws_delete_after_read": {
       "title": "Auto-delete Messages",
