@@ -3,27 +3,30 @@ package com.redhat.service.smartevents.integration.tests.resources.webhook.perfo
 import java.util.Optional;
 
 import com.redhat.service.smartevents.integration.tests.common.Constants;
+import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.resources.ResourceUtils;
 
 import io.restassured.response.Response;
 
 public class WebhookPerformanceResource {
 
-    private static final String BASE_ENDPOINT_URL = System.getProperty("performance.slack.webhook.url");
+    private static final String BASE_ENDPOINT_URL = System.getProperty("performance.webhook.url");
+    public static final String ENDPOINT_BASE_URL = Utils.getEndpointBaseUrl(BASE_ENDPOINT_URL).orElse(null);
+    public static final String ENDPOINT_PATH_URL = Utils.getEndpointPathUrl(BASE_ENDPOINT_URL).orElse(null);
 
-    public static long getAllEventsCount() {
-        return getAllEventsResponse()
+    public static <T extends Number> T getCountEventsReceived(String bridgeId, Class<T> clazz) {
+        return getCountEventsReceivedResponse(bridgeId)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
                 .extract()
                 .body()
-                .jsonPath().getList("id").size();
+                .as(clazz);
     }
 
-    public static Response getAllEventsResponse() {
+    public static Response getCountEventsReceivedResponse(String bridgeId) {
         return ResourceUtils.newRequest(Optional.empty(), Constants.JSON_CONTENT_TYPE)
-                .get(BASE_ENDPOINT_URL);
+                .get(BASE_ENDPOINT_URL + "/" + bridgeId + "/count");
     }
 
     public static Response deleteAllResponse() {

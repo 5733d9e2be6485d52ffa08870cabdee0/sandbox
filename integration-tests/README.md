@@ -119,14 +119,14 @@ There is a dedicated Maven profile named `performance` located in `integration-t
 to run these performance test scenarios:
 
 ```xml
-<performance.slack.webhook.url></performance.slack.webhook.url>
+<performance.webhook.url></performance.webhook.url>
 <performance.hyperfoil.url></performance.hyperfoil.url>
 ```
 
 Once you have `Hyperfoil` and the `webhook-perf-test` up and running you can run the performance tests by either replacing the properties mentioned above in the pom
 file or by passing them as an argument via a Maven command. For example:
 ```bash
-mvn clean verify -Pperformance -Dperformance.slack.webhook.url=<WEBHOOK_PERF_URL> -Dperformance.hyperfoil.url=<HYPERFOIL_URL> -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL>
+mvn clean verify -Pperformance -Dperformance.webhook.url=<WEBHOOK_PERF_URL> -Dperformance.hyperfoil.url=<HYPERFOIL_URL> -Devent-bridge.manager.url=<MANAGER_URL> -Dkeycloak.realm.url=<KEYCLOAK_URL>
 ```
 
 > **_NOTE:_**  
