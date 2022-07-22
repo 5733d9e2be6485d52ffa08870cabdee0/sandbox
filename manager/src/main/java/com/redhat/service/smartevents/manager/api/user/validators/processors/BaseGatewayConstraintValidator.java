@@ -72,7 +72,7 @@ abstract class BaseGatewayConstraintValidator<A extends Annotation, T> implement
         return v.isValid();
     }
 
-    protected static void addConstraintViolation(ConstraintValidatorContext context,
+    protected void addConstraintViolation(ConstraintValidatorContext context,
             String message,
             Map<String, Object> messageParams,
             Function<String, ExternalUserException> userExceptionSupplier) {
