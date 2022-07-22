@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:bf769e52483a8cd99d4a3d6ee40bc7cef133cbb0-jvm
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:4db3da21e9d47cf901a2b11e1a2848efb1456219-jvm
   EVENT_BRIDGE_ISTIO_GATEWAY_NAME: istio-ingressgateway
   EVENT_BRIDGE_ISTIO_GATEWAY_NAMESPACE: istio-system
   EVENT_BRIDGE_K8S_PLATFORM: openshift
