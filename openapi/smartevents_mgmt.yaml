@@ -762,10 +762,16 @@ components:
       - PLATFORM
       type: string
     BridgeListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -773,12 +779,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     BridgeRequest:
       required:
       - name
@@ -791,35 +800,55 @@ components:
         error_handler:
           $ref: '#/components/schemas/Action'
     BridgeResponse:
+      required:
+      - kind
+      - id
+      - href
+      - submitted_at
+      - status
+      - owner
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
         href:
           type: string
+          nullable: false
         submitted_at:
           format: date-time
           type: string
+          nullable: false
         published_at:
           format: date-time
           type: string
         status:
-          $ref: '#/components/schemas/ManagedResourceStatus'
+          allOf:
+          - $ref: '#/components/schemas/ManagedResourceStatus'
+          - nullable: false
         owner:
           type: string
+          nullable: false
         endpoint:
           type: string
         error_handler:
           $ref: '#/components/schemas/Action'
     CloudProviderListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -827,32 +856,52 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     CloudProviderResponse:
+      required:
+      - kind
+      - id
+      - href
+      - display_name
+      - enabled
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
         href:
           type: string
+          nullable: false
         display_name:
           type: string
+          nullable: false
         enabled:
           type: boolean
+          nullable: false
     CloudRegionListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -860,28 +909,46 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     CloudRegionResponse:
+      required:
+      - kind
+      - name
+      - display_name
+      - enabled
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         name:
           type: string
+          nullable: false
         display_name:
           type: string
+          nullable: false
         enabled:
           type: boolean
+          nullable: false
     ErrorListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -889,32 +956,49 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     ErrorResponse:
+      required:
+      - kind
+      - id
+      - href
+      - code
+      - reason
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
         href:
           type: string
+          nullable: false
         code:
           type: string
+          nullable: false
         reason:
           type: string
+          nullable: false
     ErrorsResponse:
+      required:
+      - kind
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -931,19 +1015,28 @@ components:
       - failed
       type: string
     ProcessorCatalogResponse:
+      required:
+      - kind
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
             $ref: '#/components/schemas/ProcessorSchemaEntryResponse'
     ProcessorListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -951,12 +1044,15 @@ components:
         page:
           format: int64
           type: integer
+          nullable: false
         size:
           format: int64
           type: integer
+          nullable: false
         total:
           format: int64
           type: integer
+          nullable: false
     ProcessorRequest:
       required:
       - name
@@ -978,28 +1074,45 @@ components:
         source:
           $ref: '#/components/schemas/Source'
     ProcessorResponse:
+      required:
+      - kind
+      - id
+      - href
+      - submitted_at
+      - status
+      - owner
+      - type
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
         href:
           type: string
+          nullable: false
         submitted_at:
           format: date-time
           type: string
+          nullable: false
         published_at:
           format: date-time
           type: string
         status:
-          $ref: '#/components/schemas/ManagedResourceStatus'
+          allOf:
+          - $ref: '#/components/schemas/ManagedResourceStatus'
+          - nullable: false
         owner:
           type: string
+          nullable: false
         type:
-          $ref: '#/components/schemas/ProcessorType'
+          allOf:
+          - $ref: '#/components/schemas/ProcessorType'
+          - nullable: false
         filters:
           uniqueItems: true
           type: array
@@ -1012,20 +1125,33 @@ components:
         source:
           $ref: '#/components/schemas/Source'
     ProcessorSchemaEntryResponse:
+      required:
+      - kind
+      - id
+      - name
+      - description
+      - type
+      - href
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
+          nullable: false
         description:
           type: string
+          nullable: false
         type:
           type: string
+          nullable: false
         href:
           type: string
+          nullable: false
     ProcessorType:
       enum:
       - source
