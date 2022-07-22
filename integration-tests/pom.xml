@@ -138,6 +138,11 @@
             <keycloak.realm.url></keycloak.realm.url>
 
             <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
+
+            <ansible.endpoint>${env.ANSIBLE_ENDPOINT}</ansible.endpoint>
+            <ansible.username>${env.ANSIBLE_USERNAME}</ansible.username>
+            <ansible.password>${env.ANSIBLE_PASSWORD}</ansible.password>
+            <ansible.ssl.verification.disabled>true</ansible.ssl.verification.disabled>
           </systemProperties>
         </configuration>
       </plugin>
