@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.manager.api.models.responses;
 
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -9,7 +7,6 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BridgeResponse extends BaseManagedResourceResponse {
 
-    @NotNull
     @JsonProperty("endpoint")
     private String endpoint;
 

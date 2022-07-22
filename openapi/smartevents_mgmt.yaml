@@ -807,7 +807,6 @@ components:
       - submitted_at
       - status
       - owner
-      - endpoint
       type: object
       properties:
         kind:
@@ -837,7 +836,6 @@ components:
           nullable: false
         endpoint:
           type: string
-          nullable: false
         error_handler:
           $ref: '#/components/schemas/Action'
     CloudProviderListResponse:
