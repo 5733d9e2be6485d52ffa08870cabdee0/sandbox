@@ -23,7 +23,11 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
                         "( " +
                         "  (status='PREPARING' and dependencyStatus='READY') " +
                         "  or " +
+                        "  (status='PROVISIONING' and dependencyStatus='READY') " +
+                        "  or " +
                         "  (status='DEPROVISION' and dependencyStatus='DELETED') " +
+                        "  or " +
+                        "  (status='DELETING' and dependencyStatus='DELETED') " +
                         ")"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),

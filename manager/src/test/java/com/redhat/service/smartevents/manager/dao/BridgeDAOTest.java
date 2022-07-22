@@ -61,6 +61,14 @@ public class BridgeDAOTest {
         retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
+        // Emulate dependencies being completed and Operator started provisioning
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setDependencyStatus(READY);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges.size()).isEqualTo(1);
+
         // Emulate de-provision request
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         bridge.setDependencyStatus(READY);
@@ -70,6 +78,14 @@ public class BridgeDAOTest {
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being deleted
+        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges.size()).isEqualTo(1);
+
+        // Emulate dependencies being deleted and Operator started deleting
+        bridge.setStatus(ManagedResourceStatus.DELETING);
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         bridgeDAO.persist(bridge);
 
