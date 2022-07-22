@@ -48,6 +48,10 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "    )" +
                         "  )" +
                         ") or (" +
+                        "  p.bridge.status='PREPARING' and p.type='ERROR_HANDLER' and p.status='PREPARING' and p.dependencyStatus='READY'" +
+                        ") or (" +
+                        "  p.bridge.status='PREPARING' and p.type='ERROR_HANDLER' and p.status='DEPROVISION' and p.dependencyStatus='DELETED'" +
+                        ") or (" +
                         "  p.bridge.status='DEPROVISION' and p.type='ERROR_HANDLER' and p.status='DEPROVISION' and p.dependencyStatus='DELETED'" +
                         ")"),
         @NamedQuery(name = "PROCESSOR.findByIdBridgeIdAndCustomerId",
