@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.shard.operator;
 
 import java.util.List;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 
@@ -18,4 +19,9 @@ public interface ManagerClient {
     Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(BridgeDTO bridgeDTO);
 
     Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorDTO processorDTO);
+
+    Uni<HttpResponse<Buffer>> notifyBridgeFailure(BridgeDTO bridgeDTO, BridgeError e);
+
+    Uni<HttpResponse<Buffer>> notifyProcessorFailure(ProcessorDTO processorDTO, BridgeError e);
+
 }

@@ -184,5 +184,17 @@
     "id": 32,
     "reason": "Unable to deserialize Filter definition.",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException",
+    "id": 33,
+    "reason": "<Overridden>",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException",
+    "id": 33,
+    "reason": "An error occurred handling your request. Please contact the Help Desk for support quoting the date and time of this error.",
+    "type": "PLATFORM"
   }
 ]

@@ -54,7 +54,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
                 KAFKA_CONNECTION_DTO);
         stubBridgeUpdate();
         String expectedJsonUpdate =
-                "{\"id\": \"bridgeStatusChange-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"owner\": \"myUserName\", \"status\": \"provisioning\"}";
+                "{ \"bridge\": {\"id\": \"bridgeStatusChange-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"owner\": \"myUserName\", \"status\": \"provisioning\"} }";
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
@@ -79,7 +79,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
         assertThat(latch.await(60, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
+                .withRequestBody(equalToJson(String.format("{ \"processor\": %s }", objectMapper.writeValueAsString(processor)), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 

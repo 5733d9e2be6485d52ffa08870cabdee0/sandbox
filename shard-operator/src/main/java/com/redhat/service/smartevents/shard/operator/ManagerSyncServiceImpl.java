@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -44,6 +45,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Inject
     BridgeExecutorService bridgeExecutorService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     @Scheduled(every = "30s")
@@ -136,9 +140,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         try {
             runnable.run();
         } catch (Exception e) {
-            LOGGER.warn("{} of Bridge '{}' failed", operation.getPrettyName(), bridge.getId(), e);
+            LOGGER.error("{} of Bridge '{}' failed", operation.getPrettyName(), bridge.getId(), e);
             bridge.setStatus(failedStatus);
-            managerClient.notifyBridgeStatusChange(bridge)
+            managerClient.notifyBridgeFailure(bridge, bridgeErrorHelper.getBridgeError(e))
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Bridge '{}' has been sent to the manager successfully", bridge.getId()),
                             failure -> failedToSendUpdateToManager(bridge, failure));
@@ -168,9 +172,9 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
         try {
             runnable.run();
         } catch (Exception e) {
-            LOGGER.warn("{} of Processor '{}' failed", operation.getPrettyName(), processor.getId(), e);
+            LOGGER.error("{} of Processor '{}' failed", operation.getPrettyName(), processor.getId(), e);
             processor.setStatus(failedStatus);
-            managerClient.notifyProcessorStatusChange(processor)
+            managerClient.notifyProcessorFailure(processor, bridgeErrorHelper.getBridgeError(e))
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Processor '{}' has been sent to the manager successfully", processor.getId()),
                             failure -> failedToSendUpdateToManager(processor, failure));

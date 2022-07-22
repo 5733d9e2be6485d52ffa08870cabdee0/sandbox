@@ -12,9 +12,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.BridgeStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringEquals;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
@@ -99,7 +101,8 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_USER_NAME,
                 READY,
                 new KafkaConnectionDTO());
-        TestUtils.updateBridge(bridge);
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridge);
+        TestUtils.updateBridge(statusWrapperDTO);
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -138,7 +141,8 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_USER_NAME,
                 READY,
                 new KafkaConnectionDTO());
-        TestUtils.updateBridge(bridge);
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridge);
+        TestUtils.updateBridge(statusWrapperDTO);
 
         //Create a Processor for the Bridge
         Set<BaseFilter> filters = Collections.singleton(new StringEquals("json.key", "value"));
@@ -176,7 +180,7 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_USER_NAME,
                 READY,
                 new KafkaConnectionDTO());
-        TestUtils.updateBridge(bridge);
+        TestUtils.updateBridge(new BridgeStatusWrapperDTO(bridge));
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
@@ -189,8 +193,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         processor.setStatus(READY);
-
-        TestUtils.updateProcessor(processor);
+        TestUtils.updateProcessor(new ProcessorStatusWrapperDTO(processor));
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
             processors.clear();
@@ -211,7 +214,8 @@ public class ShardBridgesSyncAPITest {
                 DEFAULT_USER_NAME,
                 READY,
                 new KafkaConnectionDTO());
-        TestUtils.updateBridge(bridge);
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridge);
+        TestUtils.updateBridge(statusWrapperDTO);
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest(DEFAULT_PROCESSOR_NAME, TestUtils.createKafkaAction()));
 
         final List<ProcessorDTO> processors = new ArrayList<>();
@@ -224,8 +228,7 @@ public class ShardBridgesSyncAPITest {
 
         ProcessorDTO processor = processors.get(0);
         processor.setStatus(READY);
-
-        TestUtils.updateProcessor(processor);
+        TestUtils.updateProcessor(new ProcessorStatusWrapperDTO(processor));
 
         String metrics = given()
                 .filter(new ResponseLoggingFilter())
@@ -286,9 +289,9 @@ public class ShardBridgesSyncAPITest {
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
-
         bridge.setStatus(READY);
-        TestUtils.updateBridge(bridge).then().statusCode(200);
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridge);
+        TestUtils.updateBridge(statusWrapperDTO).then().statusCode(200);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
@@ -317,7 +320,8 @@ public class ShardBridgesSyncAPITest {
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
         bridge.setStatus(PROVISIONING);
-        TestUtils.updateBridge(bridge).then().statusCode(200);
+        BridgeStatusWrapperDTO statusWrapperDTO = new BridgeStatusWrapperDTO(bridge);
+        TestUtils.updateBridge(statusWrapperDTO).then().statusCode(200);
 
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridgesToDeployOrDelete.clear();
@@ -341,9 +345,8 @@ public class ShardBridgesSyncAPITest {
         });
 
         BridgeDTO bridge = bridgesToDeployOrDelete.get(0);
-
         bridge.setStatus(READY);
-        TestUtils.updateBridge(bridge).then().statusCode(200);
+        TestUtils.updateBridge(new BridgeStatusWrapperDTO(bridge)).then().statusCode(200);
 
         TestUtils.deleteBridge(bridge.getId()).then().statusCode(202);
 
@@ -351,7 +354,7 @@ public class ShardBridgesSyncAPITest {
         assertThat(bridgeResponse.getStatus()).isEqualTo(DEPROVISION);
 
         bridge.setStatus(DELETED);
-        TestUtils.updateBridge(bridge).then().statusCode(200);
+        TestUtils.updateBridge(new BridgeStatusWrapperDTO(bridge)).then().statusCode(200);
 
         TestUtils.getBridge(bridge.getId()).then().statusCode(404);
     }
@@ -364,7 +367,7 @@ public class ShardBridgesSyncAPITest {
         when(jwt.containsClaim(ACCOUNT_ID_SERVICE_ACCOUNT_ATTRIBUTE_CLAIM)).thenReturn(true);
         TestUtils.getBridgesToDeployOrDelete().then().statusCode(403);
         TestUtils.getProcessorsToDeployOrDelete().then().statusCode(403);
-        TestUtils.updateBridge(new BridgeDTO()).then().statusCode(403);
-        TestUtils.updateProcessor(new ProcessorDTO()).then().statusCode(403);
+        TestUtils.updateBridge(new BridgeStatusWrapperDTO(new BridgeDTO())).then().statusCode(403);
+        TestUtils.updateProcessor(new ProcessorStatusWrapperDTO(new ProcessorDTO())).then().statusCode(403);
     }
 }

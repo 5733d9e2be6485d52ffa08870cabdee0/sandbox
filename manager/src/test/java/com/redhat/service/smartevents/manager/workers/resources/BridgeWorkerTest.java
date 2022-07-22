@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.SchedulerException;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -25,8 +24,10 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.dao.WorkErrorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.WorkError;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
@@ -80,6 +81,9 @@ class BridgeWorkerTest {
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
+    @Inject
+    WorkErrorDAO workErrorDAO;
+
     @BeforeEach
     public void setup() {
         databaseManagerUtils.cleanUp();
@@ -115,6 +119,11 @@ class BridgeWorkerTest {
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(any());
+
+        if (throwRhoasError) {
+            List<WorkError> workErrors = workErrorDAO.findByManagedResourceId(bridge.getId());
+            assertThat(workErrors).isNotEmpty();
+        }
     }
 
     @Transactional
@@ -133,7 +142,7 @@ class BridgeWorkerTest {
     void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
-            boolean isWorkComplete) throws SchedulerException {
+            boolean isWorkComplete) {
         doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, true);
     }
 
@@ -173,6 +182,11 @@ class BridgeWorkerTest {
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
+
+        if (throwRhoasError) {
+            List<WorkError> workErrors = workErrorDAO.findByManagedResourceId(bridge.getId());
+            assertThat(workErrors).isNotEmpty();
+        }
     }
 
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
@@ -208,6 +222,11 @@ class BridgeWorkerTest {
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
+
+        if (throwRhoasError) {
+            List<WorkError> workErrors = workErrorDAO.findByManagedResourceId(bridge.getId());
+            assertThat(workErrors).isNotEmpty();
+        }
     }
 
     @Transactional
@@ -253,6 +272,11 @@ class BridgeWorkerTest {
         }
 
         verify(workManager, times(isWorkComplete ? 1 : 2)).reschedule(work);
+
+        if (throwRhoasError) {
+            List<WorkError> workErrors = workErrorDAO.findByManagedResourceId(bridge.getId());
+            assertThat(workErrors).isNotEmpty();
+        }
     }
 
     private static Stream<Arguments> deletionWorkWithKnownResourceParams() {

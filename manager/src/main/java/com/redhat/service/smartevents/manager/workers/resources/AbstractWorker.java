@@ -12,11 +12,13 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.manager.workers.Worker;
+import com.redhat.service.smartevents.manager.workers.errors.WorkErrorRecorder;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
@@ -29,6 +31,9 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 
 public abstract class AbstractWorker<T extends ManagedResource> implements Worker<T> {
+
+    private static final String RETRIES_FAILURE_MESSAGE = "The maximum number of re-tries for Resource of type '%s' with Id '%s' was exceeded.";
+    private static final String TIMEOUT_FAILURE_MESSAGE = "The timeout to process Work for Resource of type '%s' with Id '%s' was exceeded.";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
@@ -47,6 +52,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     @Inject
     WorkManager workManager;
 
+    @Inject
+    WorkErrorRecorder workErrorRecorder;
+
     @Override
     public T handleWork(Work work) {
         String id = getId(work);
@@ -57,9 +65,18 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         }
 
         // Fail when we've had enough
-        if (areRetriesExceeded(work, managedResource) || isTimeoutExceeded(work, managedResource)) {
+        boolean areRetriesExceeded = areRetriesExceeded(work, managedResource);
+        boolean isTimeoutExceeded = isTimeoutExceeded(work, managedResource);
+        if (areRetriesExceeded || isTimeoutExceeded) {
             managedResource.setStatus(FAILED);
             persist(managedResource);
+
+            String message = areRetriesExceeded ? RETRIES_FAILURE_MESSAGE : TIMEOUT_FAILURE_MESSAGE;
+            workErrorRecorder.recordError(id,
+                    new ProvisioningFailureException(String.format(message,
+                            work.getType(),
+                            work.getManagedResourceId())));
+
             return managedResource;
         }
 
@@ -73,6 +90,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
+                workErrorRecorder.recordError(id, e);
             }
         } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
@@ -82,6 +100,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
+                workErrorRecorder.recordError(id, e);
             }
         }
 
@@ -141,4 +160,5 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected abstract boolean isProvisioningComplete(T managedResource);
 
     protected abstract boolean isDeprovisioningComplete(T managedResource);
+
 }

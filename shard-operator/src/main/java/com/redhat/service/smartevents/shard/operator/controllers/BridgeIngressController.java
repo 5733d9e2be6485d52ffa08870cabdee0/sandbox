@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,6 +12,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
@@ -32,16 +35,18 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress> {
+        EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -59,6 +64,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -148,6 +156,16 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         return DeleteControl.defaultDelete();
     }
 
+    @Override
+    public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
+        if (retryInfo.isLastAttempt()) {
+            LOGGER.warn("Bridge BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+                    bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), e.getMessage());
+            notifyManagerOfFailure(bridgeIngress, e);
+        }
+        return Optional.of(bridgeIngress);
+    }
+
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
         BridgeDTO dto = bridgeIngress.toDTO();
         dto.setStatus(status);
@@ -156,6 +174,25 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
                         failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId(), failure));
+    }
+
+    private void notifyManagerOfFailure(BridgeIngress bridgeIngress, Exception e) {
+        LOGGER.error("Processor BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), e.getMessage());
+
+        BridgeError bridgeError = bridgeErrorHelper.getBridgeError(e);
+        bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY,
+                bridgeError.getReason(),
+                e.getMessage(),
+                bridgeError.getCode());
+
+        BridgeDTO dto = bridgeIngress.toDTO();
+        dto.setStatus(ManagedResourceStatus.FAILED);
+
+        managerClient.notifyBridgeFailure(dto, bridgeError)
+                .subscribe().with(
+                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
     }
 
     private String extractBrokerPath(KnativeBroker broker) {

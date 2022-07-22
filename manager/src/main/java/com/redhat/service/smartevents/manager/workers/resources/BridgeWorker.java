@@ -83,8 +83,6 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
      * Creates error handler processor if required
      *
      * @param bridge input bridge
-     * @return true if the work can proceed (either the error handler processor
-     *         is not required or it's created and ready), false otherwise.
      */
     private void createErrorHandlerProcessor(Bridge bridge) {
         // If an ErrorHandler is not needed, consider it ready

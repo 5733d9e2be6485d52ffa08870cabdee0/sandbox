@@ -26,6 +26,7 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorStatusWrapperDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
@@ -292,7 +293,9 @@ class ProcessorServiceTest {
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
 
-        Processor updated = processorService.updateProcessorStatus(updateDto);
+        ProcessorStatusWrapperDTO statusWrapperDTO = new ProcessorStatusWrapperDTO(updateDto);
+
+        Processor updated = processorService.updateProcessorStatus(statusWrapperDTO);
 
         assertThat(updated.getStatus()).isEqualTo(FAILED);
     }
@@ -306,13 +309,15 @@ class ProcessorServiceTest {
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
 
-        Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
+        ProcessorStatusWrapperDTO statusWrapperDTO = new ProcessorStatusWrapperDTO(updateDto);
+
+        Processor publishedProcessor = processorService.updateProcessorStatus(statusWrapperDTO);
 
         assertThat(publishedProcessor.getStatus()).isEqualTo(READY);
         assertThat(publishedProcessor.getPublishedAt()).isNotNull();
 
         //Check calls to set PublishedAt at idempotent
-        Processor publishedProcessor2 = processorService.updateProcessorStatus(updateDto);
+        Processor publishedProcessor2 = processorService.updateProcessorStatus(statusWrapperDTO);
 
         assertThat(publishedProcessor2.getStatus()).isEqualTo(READY);
         assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedProcessor.getPublishedAt());
@@ -323,7 +328,9 @@ class ProcessorServiceTest {
         ProcessorDTO processor = new ProcessorDTO();
         processor.setBridgeId(NON_EXISTING_BRIDGE_ID);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
+        ProcessorStatusWrapperDTO statusWrapperDTO = new ProcessorStatusWrapperDTO(processor);
+
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(statusWrapperDTO));
     }
 
     @Test
@@ -335,7 +342,9 @@ class ProcessorServiceTest {
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
+        ProcessorStatusWrapperDTO statusWrapperDTO = new ProcessorStatusWrapperDTO(updateDto);
+
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(statusWrapperDTO));
     }
 
     @Test
