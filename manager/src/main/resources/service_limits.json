@@ -1,0 +1,16 @@
+{
+  "quota_limits": [{
+    "quota_type": "EVAL",
+    "processor_limit": "30",
+    "bridge_duration": "PT12H"
+  },
+    {
+      "quota_type": "STANDARD",
+      "processor_limit": "30"
+    }
+  ],
+  "default_quotas": [{
+    "quota_type": "EVAL",
+    "quota": "30"
+  }]
+}

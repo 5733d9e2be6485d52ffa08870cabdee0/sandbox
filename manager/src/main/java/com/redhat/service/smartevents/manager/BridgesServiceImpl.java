@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -30,6 +31,8 @@ import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
@@ -60,6 +63,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    LimitService limitService;
+
     @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
@@ -75,6 +81,13 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShardId(bridge.getId()));
         bridge.setGeneration(0);
+
+        QuotaLimit organisationQuotaLimit = limitService.getOrganisationQuotaLimit(organisationId);
+        bridge.setInstanceType(organisationQuotaLimit.getQuotaType());
+        Duration bridgeDuration = organisationQuotaLimit.getBridgeDuration();
+        if (Objects.nonNull(bridgeDuration)) {
+            bridge.setExpireAt(ZonedDateTime.now(ZoneOffset.UTC).plus(bridgeDuration));
+        }
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
@@ -226,4 +239,20 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         return response;
     }
+
+    @Override
+    public Long getBridgeCount(String orgId, QuotaType instanceType) {
+        return bridgeDAO.countBridge(orgId, instanceType);
+    }
+
+    @Override
+    public boolean isBridgeExpired(Bridge bridge) {
+        ZonedDateTime expireAt = bridge.getExpireAt();
+        if (Objects.isNull(expireAt)) {
+            return false;
+        }
+
+        return ZonedDateTime.now(ZoneOffset.UTC).isAfter(expireAt);
+    }
+
 }

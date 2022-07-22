@@ -34,4 +34,6 @@ public interface ProcessorService {
     ProcessorDTO toDTO(Processor processor);
 
     ProcessorResponse toResponse(Processor processor);
+
+    long getUserVisibleProcessorsCount(String bridgeId);
 }

@@ -8,6 +8,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 
 public interface BridgesService {
 
@@ -30,4 +31,21 @@ public interface BridgesService {
     BridgeDTO toDTO(Bridge bridge);
 
     BridgeResponse toResponse(Bridge bridge);
+
+    /**
+     * Provide count of bridges whose expireAt date is in future or null.
+     * 
+     * @param orgId Organisation Id
+     * @param instanceType instance type.
+     * @return Active bridge count.
+     */
+    Long getBridgeCount(String orgId, QuotaType instanceType);
+
+    /**
+     * Check whether bridge for given id has expired or not.
+     * 
+     * @param id Bridge Id.
+     * @return @True if expired else @false.
+     */
+    boolean isBridgeExpired(Bridge bridge);
 }

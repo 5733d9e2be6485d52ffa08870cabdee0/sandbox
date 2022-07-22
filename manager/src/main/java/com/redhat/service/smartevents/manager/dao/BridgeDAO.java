@@ -1,16 +1,20 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -55,5 +59,13 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         List<Bridge> bridges = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
 
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);
+    }
+
+    public Long countBridge(String orgId, QuotaType instanceType) {
+        TypedQuery<Long> namedQuery = getEntityManager().createNamedQuery("BRIDGE.countBridgeByOrgAndInstanceType", Long.class);
+        namedQuery.setParameter(Bridge.ORGANISATION_ID_PARAM, orgId);
+        namedQuery.setParameter(Bridge.INSTANCE_TYPE_PARAM, instanceType);
+        namedQuery.setParameter(Bridge.CURRENT_TIMESTAMP_PARAM, ZonedDateTime.now(ZoneOffset.UTC));
+        return namedQuery.getSingleResult();
     }
 }

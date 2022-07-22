@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
+import com.redhat.service.smartevents.manager.models.QuotaType;
 
 public class TestConstants {
     public static final String DEFAULT_BRIDGE_ID = "myId";
@@ -23,4 +24,5 @@ public class TestConstants {
     public static final int DEFAULT_PAGE_SIZE = 10;
 
     public static final String DEFAULT_CONNECTOR_NAME = "myConnector";
+    public static final QuotaType DEFAULT_INSTANCE_TYPE = QuotaType.EVAL;
 }

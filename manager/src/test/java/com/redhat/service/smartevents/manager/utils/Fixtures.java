@@ -60,6 +60,7 @@ public class Fixtures {
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setEndpoint("https://bridge.redhat.com");
         b.setDefinition(new BridgeDefinition());
+        b.setInstanceType(TestConstants.DEFAULT_INSTANCE_TYPE);
         return b;
     }
 

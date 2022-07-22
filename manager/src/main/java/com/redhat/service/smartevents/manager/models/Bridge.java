@@ -1,9 +1,12 @@
 package com.redhat.service.smartevents.manager.models;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
@@ -30,7 +33,9 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
         @NamedQuery(name = "BRIDGE.findByIdAndCustomerId",
                 query = "from Bridge where id=:id and customer_id=:customerId"),
         @NamedQuery(name = "BRIDGE.findByCustomerId",
-                query = "from Bridge where customer_id=:customerId order by submitted_at desc")
+                query = "from Bridge where customer_id=:customerId order by submitted_at desc"),
+        @NamedQuery(name = "BRIDGE.countBridgeByOrgAndInstanceType",
+                query = "select count(b.id) from Bridge b where b.organisationId=:organisationId and b.instanceType=:instanceType and (b.expireAt>:currentTimeStamp OR b.expireAt is null)"),
 })
 @Entity
 @FilterDefs({
@@ -45,6 +50,9 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public static final String CUSTOMER_ID_PARAM = "customerId";
+    public static final String ORGANISATION_ID_PARAM = "organisationId";
+    public static final String INSTANCE_TYPE_PARAM = "instanceType";
+    public static final String CURRENT_TIMESTAMP_PARAM = "currentTimeStamp";
 
     @Column(name = "endpoint")
     private String endpoint;
@@ -60,6 +68,13 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     @Column(name = "owner")
     private String owner;
+
+    @Column(name = "instance_type", nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private QuotaType instanceType;
+
+    @Column(name = "expire_at", updatable = false, columnDefinition = "TIMESTAMP")
+    protected ZonedDateTime expireAt;
 
     public Bridge() {
     }
@@ -106,6 +121,22 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public ZonedDateTime getExpireAt() {
+        return expireAt;
+    }
+
+    public void setExpireAt(ZonedDateTime expireAt) {
+        this.expireAt = expireAt;
+    }
+
+    public QuotaType getInstanceType() {
+        return instanceType;
+    }
+
+    public void setInstanceType(QuotaType instanceType) {
+        this.instanceType = instanceType;
     }
 
     /*

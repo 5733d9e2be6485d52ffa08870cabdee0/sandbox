@@ -34,6 +34,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import static com.redhat.service.smartevents.infra.models.QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder.filter;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SINK;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.SOURCE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,6 +96,7 @@ public class ProcessorDAOTest {
         b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setShardId(TestConstants.SHARD_ID);
         b.setDefinition(new BridgeDefinition());
+        b.setInstanceType(TestConstants.DEFAULT_INSTANCE_TYPE);
 
         bridgeDAO.persist(b);
         return b;
@@ -261,6 +263,14 @@ public class ProcessorDAOTest {
 
         Long result = processorDAO.countByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID);
         assertThat(result).isEqualTo(2L);
+    }
+
+    @Test
+    public void testCountUserVisibleByBridgeId() {
+        Bridge b = createBridge();
+        createProcessor(b, "foo", SINK);
+        createProcessor(b, "poo", ERROR_HANDLER);
+        assertThat(processorDAO.countUserVisibleByBridgeId(b.getId())).isEqualTo(1);
     }
 
     @Test

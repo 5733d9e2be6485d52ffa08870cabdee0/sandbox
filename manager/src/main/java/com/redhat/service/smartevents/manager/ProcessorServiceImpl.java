@@ -20,6 +20,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadReque
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ServiceLimitException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
@@ -39,6 +40,7 @@ import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.models.QuotaLimit;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
@@ -71,6 +73,9 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    LimitService limitService;
+
     @Transactional
     @Override
     public Processor getProcessor(String bridgeId, String processorId, String customerId) {
@@ -87,8 +92,13 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
+
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // validate service limit
+        validateBridgeActive(bridge);
+        validateServiceLimitQuota(bridge);
 
         return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
     }
@@ -165,7 +175,10 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Transactional
     public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
         // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
-        bridgesService.getReadyBridge(bridgeId, customerId);
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+
+        // validate service limit
+        validateBridgeActive(bridge);
 
         // Extract existing definition
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
@@ -403,5 +416,37 @@ public class ProcessorServiceImpl implements ProcessorService {
         }
 
         return processorResponse;
+    }
+
+    @Override
+    public long getUserVisibleProcessorsCount(String bridgeId) {
+        return processorDAO.countUserVisibleByBridgeId(bridgeId);
+    }
+
+    /**
+     * Validate whether user is allowed to create new processor instance under an bridge
+     *
+     * @param bridge Bridge.
+     */
+    private void validateServiceLimitQuota(Bridge bridge) {
+        QuotaLimit bridgeQuotaLimit = limitService.getBridgeQuotaLimit(bridge);
+        long maxAllowedProcessors = bridgeQuotaLimit.getProcessorLimit();
+        long existingProcessorCount = getUserVisibleProcessorsCount(bridge.getId());
+
+        if (existingProcessorCount >= maxAllowedProcessors) {
+            throw new ServiceLimitException("Max allowed processor instance limit exceed");
+        }
+    }
+
+    /**
+     * Validate whether user is allowed to update existing processor instance under an bridge
+     *
+     * @param bridge Bridge.
+     */
+    private void validateBridgeActive(Bridge bridge) {
+        boolean bridgeExpired = bridgesService.isBridgeExpired(bridge);
+        if (bridgeExpired) {
+            throw new ServiceLimitException("Bridge expired");
+        }
     }
 }
