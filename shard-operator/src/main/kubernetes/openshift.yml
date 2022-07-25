@@ -129,15 +129,15 @@ subjects:
 apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
-  name: smart-events-shard-operator
+  name: shard-operator
 spec:
   template:
     metadata:
-      name: smart-events-shard-operator
+      name: shard-operator
     spec:
       containers:
-        - name: smart-events-shard-operator
+        - name: shard-operator
           env:
-            - name: SMART_EVENTS_EXECUTOR_IMAGE
-              value: smart-events-executor:latest
+            - name: EVENT_BRIDGE_EXECUTOR_IMAGE
+              value: openbridge/executor:latest
 ---
