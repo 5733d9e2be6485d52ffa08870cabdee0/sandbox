@@ -43,6 +43,7 @@ mvn \
   -Devent-bridge.rhoas.sso.mas.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Devent-bridge.rhoas.sso.mas.client-id=${admin_client_id} \
   -Devent-bridge.rhoas.sso.mas.client-secret=${admin_client_secret} \
+  -Devent-bridge.k8s.orchestrator=minikube \
   -Dminikubeip=${MINIKUBE_IP} \
   -Drhoas.ops-account.client-id=${ops_client_id} \
   -Dmanaged-connectors.namespace.id=${MANAGED_CONNECTORS_NAMESPACE_ID} \

@@ -63,6 +63,11 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
         working-directory: kustomize
+      - name: Set Kind hostname in the Manager configuration
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/manager/patches/deploy-config.yaml
+        working-directory: kustomize
       - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
         run: |
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
