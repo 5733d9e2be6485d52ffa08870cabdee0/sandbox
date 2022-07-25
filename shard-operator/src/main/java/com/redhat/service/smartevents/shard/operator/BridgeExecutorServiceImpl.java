@@ -42,7 +42,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     public static final String KAFKA_ERROR_STRATEGY_IGNORE = "ignore";
     public static final String KAFKA_ERROR_STRATEGY_DLQ = "dead-letter-queue";
 
-    @ConfigProperty(name = "event-bridge.executor.image")
+    @ConfigProperty(name = "SMART_EVENTS_EXECUTOR_IMAGE")
     String executorImage;
 
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
@@ -70,7 +70,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
         final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
 
-        BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
+        BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), getExecutorImage());
 
         BridgeExecutor existing = kubernetesClient
                 .resources(BridgeExecutor.class)
@@ -149,7 +149,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
                 kubernetesClient
                         .resources(BridgeExecutor.class)
                         .inNamespace(namespace)
-                        .delete(BridgeExecutor.fromDTO(processorDTO, namespace, executorImage));
+                        .delete(BridgeExecutor.fromDTO(processorDTO, namespace, getExecutorImage()));
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeExecutor '{}' not deleted. Notifying manager that it has been deleted.", processorDTO.getId());
