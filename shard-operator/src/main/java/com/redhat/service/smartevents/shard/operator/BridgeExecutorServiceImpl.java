@@ -42,7 +42,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     public static final String KAFKA_ERROR_STRATEGY_IGNORE = "ignore";
     public static final String KAFKA_ERROR_STRATEGY_DLQ = "dead-letter-queue";
 
-    @ConfigProperty(name = "SMART_EVENTS_EXECUTOR_IMAGE")
+    @ConfigProperty(name = "SMART_EVENTS_EXECUTOR_IMAGE", defaultValue = "openbridge/executor:latest")
     String executorImage;
 
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
