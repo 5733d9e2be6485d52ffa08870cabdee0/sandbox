@@ -45,9 +45,9 @@ rules:
       - patch
       - update
   - apiGroups:
-      - networking.k8s.io
+      - route.openshift.io
     resources:
-      - ingresses
+      - routes
     verbs:
       - get
       - list
@@ -56,6 +56,12 @@ rules:
       - delete
       - patch
       - update
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes/custom-host
+    verbs:
+      - create
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -68,6 +74,12 @@ rules:
       - delete
       - patch
       - update
+  - apiGroups:
+      - config.openshift.io
+    resources:
+      - ingresses
+    verbs:
+      - get
   - apiGroups:
       - eventing.knative.dev
     resources:
