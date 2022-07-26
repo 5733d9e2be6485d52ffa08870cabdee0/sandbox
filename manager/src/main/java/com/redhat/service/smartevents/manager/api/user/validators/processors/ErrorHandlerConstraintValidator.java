@@ -24,9 +24,8 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
     }
 
     @Inject
-    public ErrorHandlerConstraintValidator(GatewayConfigurator gatewayConfigurator, GatewayConfigurator gatewayConfigurator1) {
+    public ErrorHandlerConstraintValidator(GatewayConfigurator gatewayConfigurator) {
         super(gatewayConfigurator);
-        this.gatewayConfigurator = gatewayConfigurator1;
     }
 
     @Override

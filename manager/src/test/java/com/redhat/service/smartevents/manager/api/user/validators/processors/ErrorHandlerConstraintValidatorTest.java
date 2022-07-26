@@ -1,70 +1,87 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Collections;
 
-import javax.validation.ConstraintValidatorContext;
-
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintViolationBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
-import com.redhat.service.smartevents.infra.models.gateways.Gateway;
+import com.redhat.service.smartevents.infra.models.gateways.Source;
+import com.redhat.service.smartevents.infra.validations.ValidationResult;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
+import com.redhat.service.smartevents.processor.validators.GatewayValidator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 
+@ExtendWith(MockitoExtension.class)
 class ErrorHandlerConstraintValidatorTest {
 
     ErrorHandlerConstraintValidator errorHandlerConstraintValidator;
 
-    @BeforeEach
-    public void init() {
-        errorHandlerConstraintValidator = new ErrorHandlerConstraintValidator() {
-            @Override
-            protected boolean isValidGateway(Gateway gateway, ConstraintValidatorContext context) {
-                return true;
-            }
+    @Mock
+    GatewayConfigurator gatewayConfiguratorMock;
+    @Mock
+    GatewayValidator validatorMock;
+    @Mock
+    HibernateConstraintValidatorContext validatorContextMock;
+    @Mock
+    HibernateConstraintViolationBuilder builderMock;
 
-            @Override
-            protected void addConstraintViolation(ConstraintValidatorContext context, String message, Map<String, Object> messageParams,
-                    Function<String, ExternalUserException> userExceptionSupplier) {
-            }
-        };
+    @BeforeEach
+    public void beforeEach() {
+        lenient().when(validatorMock.isValid(any(Action.class))).thenReturn(ValidationResult.valid());
+        lenient().when(validatorMock.isValid(any(Source.class))).thenReturn(ValidationResult.valid());
+
+        lenient().when(gatewayConfiguratorMock.getValidator(any(String.class))).thenReturn(validatorMock);
+
+        lenient().when(validatorContextMock.buildConstraintViolationWithTemplate(any(String.class))).thenReturn(builderMock);
+        lenient().when(validatorContextMock.unwrap(HibernateConstraintValidatorContext.class)).thenReturn(validatorContextMock);
+
+        errorHandlerConstraintValidator = new ErrorHandlerConstraintValidator(gatewayConfiguratorMock);
     }
 
     @Test
     public void nullErrorHandlerIsValid() {
         BridgeRequest bridgeRequest = new BridgeRequest("bridge", null);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, null)).isTrue();
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
     }
 
     @Test
     public void webhookActionIsValid() {
         Action action = new Action();
         action.setType(WebhookAction.TYPE);
+        action.setMapParameters(Collections.emptyMap());
         BridgeRequest bridgeRequest = new BridgeRequest("bridge", action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, null)).isTrue();
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
     }
 
     @Test
     public void kafkaActionIsValid() {
         Action action = new Action();
         action.setType(KafkaTopicAction.TYPE);
+        action.setMapParameters(Collections.emptyMap());
         BridgeRequest bridgeRequest = new BridgeRequest("bridge", action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, null)).isTrue();
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isTrue();
     }
 
     @Test
     public void awsLambdaActionIsInvalid() {
         Action action = new Action();
         action.setType(AwsLambdaAction.TYPE);
+        action.setMapParameters(Collections.emptyMap());
         BridgeRequest bridgeRequest = new BridgeRequest("bridge", action);
-        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, null)).isFalse();
+        assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, validatorContextMock)).isFalse();
     }
 
 }
