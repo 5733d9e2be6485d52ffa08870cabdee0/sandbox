@@ -109,6 +109,7 @@ public class KafkaResource {
         consumer.subscribe(Collections.singleton(topicName));
 
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(15));
+        consumer.close();
 
         return StreamSupport.stream(records.spliterator(), false).map(s -> s.value()).collect(Collectors.toList());
     }
