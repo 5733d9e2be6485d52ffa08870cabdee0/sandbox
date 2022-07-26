@@ -40,5 +40,11 @@
     "name": "Webhook",
     "description": "Send the event to a webhook.",
     "isConnector": false
+  },
+  {
+    "id": "logger_sink_0.1",
+    "name": "logger",
+    "description": "Log event.",
+    "isConnector": false
   }
 ]

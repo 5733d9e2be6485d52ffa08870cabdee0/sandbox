@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "test": {
+      "type": "string",
+      "title": "Test",
+      "description": "Test.",
+      "example": "test"
+    }
+  },
+  "required": [
+    "test"
+  ]
+}
