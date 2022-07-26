@@ -1036,18 +1036,23 @@ components:
           type: boolean
           nullable: false
     Error:
+      required:
+      - id
+      - reason
       type: object
       allOf:
       - $ref: '#/components/schemas/ObjectReference'
       properties:
         id:
           type: string
+          nullable: false
         href:
           type: string
         code:
           type: string
         reason:
           type: string
+          nullable: false
     ErrorListResponse:
       required:
       - kind
@@ -1075,34 +1080,7 @@ components:
           format: int64
           type: integer
           nullable: false
-    ErrorResponse:
-      required:
-      - kind
-      - id
-      - href
-      - code
-      - reason
     ErrorsList:
-      type: object
-      properties:
-        kind:
-          type: string
-          nullable: false
-        id:
-          type: string
-          nullable: false
-        name:
-          type: string
-        href:
-          type: string
-          nullable: false
-        code:
-          type: string
-          nullable: false
-        reason:
-          type: string
-          nullable: false
-    ErrorsResponse:
       required:
       - kind
       type: object
@@ -1117,22 +1095,32 @@ components:
     List:
       allOf:
       - $ref: '#/components/schemas/ListResponse'
-      - type: object
+      - required:
+        - page
+        - size
+        - total
+        type: object
         properties:
           page:
             format: int64
             type: integer
+            nullable: false
           size:
             format: int64
             type: integer
+            nullable: false
           total:
             format: int64
             type: integer
+            nullable: false
     ListResponse:
+      required:
+      - kind
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         items:
           type: array
           items:
@@ -1149,16 +1137,23 @@ components:
       - failed
       type: string
     ObjectReference:
+      required:
+      - kind
+      - id
+      - href
       type: object
       properties:
         kind:
           type: string
+          nullable: false
         id:
           type: string
+          nullable: false
         name:
           type: string
         href:
           type: string
+          nullable: false
     ProcessorCatalogResponse:
       required:
       - kind
