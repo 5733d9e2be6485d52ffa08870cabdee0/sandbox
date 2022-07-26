@@ -1,23 +1,32 @@
 package com.redhat.service.smartevents.manager.api.models.responses;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProcessorSchemaEntryResponse {
+
+    @NotNull
     @JsonProperty("kind")
     private final String kind = "ProcessorSchemaEntry";
 
+    @NotNull
     @JsonProperty("id")
     private String id;
 
+    @NotNull
     @JsonProperty("name")
     private String name;
 
+    @NotNull
     @JsonProperty("description")
     private String description;
 
+    @NotNull
     @JsonProperty("type")
     private String type;
 
+    @NotNull
     @JsonProperty("href")
     private String href;
 

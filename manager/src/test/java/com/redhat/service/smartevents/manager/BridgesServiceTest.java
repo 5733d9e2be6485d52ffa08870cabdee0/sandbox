@@ -23,7 +23,6 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
@@ -40,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
 public class BridgesServiceTest {
 
@@ -162,7 +160,9 @@ public class BridgesServiceTest {
         bridge.setStatus(PROVISIONING);
         bridgesService.updateBridge(bridgesService.toDTO(bridge));
 
-        assertThat(bridgesService.findByShardIdWithReadyDependencies(SHARD_ID)).isEmpty();
+        // PROVISIONING Bridges are also notified to the Shard Operator.
+        // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
+        assertThat(bridgesService.findByShardIdWithReadyDependencies(SHARD_ID)).hasSize(1);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);

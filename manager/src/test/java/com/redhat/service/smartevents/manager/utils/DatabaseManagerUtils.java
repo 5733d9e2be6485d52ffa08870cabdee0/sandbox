@@ -9,7 +9,6 @@ import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
-import com.redhat.service.smartevents.manager.dao.WorkDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
 import com.redhat.service.smartevents.manager.models.ShardType;
 
@@ -35,9 +34,6 @@ public class DatabaseManagerUtils {
     @Inject
     ShardDAO shardDAO;
 
-    @Inject
-    WorkDAO workDAO;
-
     /**
      * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dynamically, the processor
      * will cascade the removal of filters that belongs to it.
@@ -62,7 +58,6 @@ public class DatabaseManagerUtils {
     @Transactional
     public void cleanUp() {
         // Clean up
-        deleteAllWork();
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
@@ -75,10 +70,6 @@ public class DatabaseManagerUtils {
 
     private void deleteAllBridges() {
         bridgeDAO.getEntityManager().createQuery("DELETE FROM Bridge").executeUpdate();
-    }
-
-    private void deleteAllWork() {
-        workDAO.getEntityManager().createQuery("DELETE FROM Work").executeUpdate();
     }
 
     private void deleteAllConnectors() {

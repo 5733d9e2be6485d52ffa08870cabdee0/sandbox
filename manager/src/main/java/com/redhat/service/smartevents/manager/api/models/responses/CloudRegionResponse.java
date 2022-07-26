@@ -1,19 +1,25 @@
 package com.redhat.service.smartevents.manager.api.models.responses;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.manager.models.CloudRegion;
 
 public class CloudRegionResponse {
 
+    @NotNull
     @JsonProperty("kind")
     private final String kind = "CloudRegion";
 
+    @NotNull
     @JsonProperty("name")
     private String name;
 
+    @NotNull
     @JsonProperty("display_name")
     private String displayName;
 
+    @NotNull
     @JsonProperty("enabled")
     private boolean enabled;
 
