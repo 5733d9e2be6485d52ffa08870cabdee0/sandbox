@@ -10,7 +10,6 @@ import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -83,7 +82,6 @@ public class DatabaseManagerUtils {
     private void registerDefaultShard() {
         Shard traditional = new Shard();
         traditional.setId(TestConstants.SHARD_ID);
-        traditional.setType(ShardType.TRADITIONAL);
         shardDAO.persist(traditional);
     }
 }

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,13 +27,12 @@ public class ShardServiceTest {
     @Test
     public void testGetAssignedShardId() {
         databaseManagerUtils.cleanUp();
-        Shard traditional = new Shard();
-        traditional.setType(ShardType.TRADITIONAL);
-        shardDAO.persist(traditional);
+        Shard shard = new Shard();
+        shardDAO.persist(shard);
 
         String id = shardService.getAssignedShardId("myId");
 
-        assertThat(id).isEqualTo(traditional.getId());
+        assertThat(id).isEqualTo(shard.getId());
     }
 
     @Test
