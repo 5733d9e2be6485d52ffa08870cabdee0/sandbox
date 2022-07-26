@@ -27,11 +27,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.redhat.cloud</groupId>
-      <artifactId>kafka-instance-sdk</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
@@ -143,14 +138,6 @@
             <keycloak.realm.url></keycloak.realm.url>
 
             <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
-
-            <!-- Managed Kafka properties -->
-            <managed.kafka.sso.auth-server-url>${keycloak.realm.url}</managed.kafka.sso.auth-server-url>
-            <kafka.bootstrap.servers>${env.MANAGED_KAFKA_BOOTSTRAP_SERVER}</kafka.bootstrap.servers>
-            <kafka.admin.client-id>${env.MANAGED_KAFKA_ADMIN_CLIENT_ID}</kafka.admin.client-id>
-            <kafka.admin.client-secret>${env.MANAGED_KAFKA_ADMIN_CLIENT_SECRET}</kafka.admin.client-secret>
-            <kafka.ops.client.id>${env.MANAGED_KAFKA_OPS_CLIENT_ID}</kafka.ops.client.id>
-            <kafka.ops.client.secret>${env.MANAGED_KAFKA_OPS_CLIENT_SECRET}</kafka.ops.client.secret>
           </systemProperties>
         </configuration>
       </plugin>

@@ -19,7 +19,6 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
-import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
@@ -137,14 +136,6 @@ public class Hooks {
                                 break;
                         }
                     });
-
-            cleanKafkaTopics();
-        }
-    }
-
-    private void cleanKafkaTopics() {
-        for (String topic : context.allKafkaTopics()) {
-            KafkaResource.deleteKafkaTopic(topic);
         }
     }
 }
