@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Shard;
 import com.redhat.service.smartevents.manager.models.ShardType;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
@@ -33,9 +34,11 @@ public class ShardDAOTest {
     public void testFindByType() {
         Shard traditional = new Shard();
         traditional.setType(ShardType.TRADITIONAL);
+        traditional.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
 
         Shard knative = new Shard();
         knative.setType(ShardType.KNATIVE);
+        knative.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
 
         shardDAO.persist(traditional);
         shardDAO.persist(knative);
