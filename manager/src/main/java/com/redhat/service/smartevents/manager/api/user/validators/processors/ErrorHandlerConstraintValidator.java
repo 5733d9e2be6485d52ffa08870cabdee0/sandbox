@@ -2,7 +2,6 @@ package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

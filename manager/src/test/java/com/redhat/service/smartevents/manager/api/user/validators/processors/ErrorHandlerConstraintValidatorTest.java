@@ -5,6 +5,9 @@ import java.util.function.Function;
 
 import javax.validation.ConstraintValidatorContext;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
@@ -12,13 +15,10 @@ import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.actions.aws.AwsLambdaAction;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ErrorHandlerConstraintValidatorTest {
-
 
     ErrorHandlerConstraintValidator errorHandlerConstraintValidator;
 
@@ -31,7 +31,8 @@ class ErrorHandlerConstraintValidatorTest {
             }
 
             @Override
-            protected void addConstraintViolation(ConstraintValidatorContext context, String message, Map<String, Object> messageParams, Function<String, ExternalUserException> userExceptionSupplier) {
+            protected void addConstraintViolation(ConstraintValidatorContext context, String message, Map<String, Object> messageParams,
+                    Function<String, ExternalUserException> userExceptionSupplier) {
             }
         };
     }
@@ -41,7 +42,6 @@ class ErrorHandlerConstraintValidatorTest {
         BridgeRequest bridgeRequest = new BridgeRequest("bridge", null);
         assertThat(errorHandlerConstraintValidator.isValid(bridgeRequest, null)).isTrue();
     }
-
 
     @Test
     public void webhookActionIsValid() {
