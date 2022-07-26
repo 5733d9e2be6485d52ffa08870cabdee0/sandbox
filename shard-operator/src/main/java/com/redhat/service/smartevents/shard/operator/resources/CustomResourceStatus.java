@@ -13,11 +13,12 @@ import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
 
 /**
  * Common interface for Kubernetes Custom Resource status
  */
-public abstract class CustomResourceStatus {
+public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus {
 
     private final Set<Condition> conditions;
 
