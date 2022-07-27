@@ -16,7 +16,6 @@ import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 
@@ -60,7 +59,6 @@ public class ShardBridgesSyncSegmentationAPITest {
         Shard shard = new Shard();
         shard.setId(TestConstants.SHARD_ID);
         shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
-        shard.setType(ShardType.TRADITIONAL);
         when(shardService.getAssignedShard(any(String.class))).thenReturn(shard);
     }
 

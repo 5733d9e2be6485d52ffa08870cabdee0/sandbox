@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -28,13 +27,14 @@ public class ShardServiceTest {
     @Test
     public void testGetAssignedShard() {
         databaseManagerUtils.cleanUp();
-        Shard traditional = new Shard();
-        traditional.setType(ShardType.TRADITIONAL);
-        traditional.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
-        shardDAO.persist(traditional);
+        Shard shard = new Shard();
+        shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+        shardDAO.persist(shard);
 
-        assertThat(shardService.getAssignedShard("myId").getId()).isEqualTo(traditional.getId());
-        assertThat(shardService.getAssignedShard("myId").getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+        Shard retrieved = shardService.getAssignedShard("myId");
+
+        assertThat(retrieved.getId()).isEqualTo(shard.getId());
+        assertThat(retrieved.getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
     }
 
     @Test
