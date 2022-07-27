@@ -25,8 +25,7 @@ public class ContextResolver {
             new SlackChannelWebHookUrlResolver(),
             new SlackTokenResolver(),
             new SystemPropertyResolver(),
-            new UuidResolver(),
-            new KafkaTopicResolver());
+            new UuidResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
         if (isPlaceholderFound(content)) {
