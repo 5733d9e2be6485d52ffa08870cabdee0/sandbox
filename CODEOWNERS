@@ -1,3 +1,0 @@
-# Notify the UI team if there is a change in the manager API or in the source/action definition or catalog
-processor/configuration/src/main/resources/schemas/** @5733d9e2be6485d52ffa08870cabdee0/frontend
-openapi/smartevents_mgmt.yaml @5733d9e2be6485d52ffa08870cabdee0/frontend
