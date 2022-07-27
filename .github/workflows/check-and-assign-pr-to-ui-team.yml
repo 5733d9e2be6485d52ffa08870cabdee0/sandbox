@@ -1,16 +1,17 @@
-name: Check and Assign PR to UI team
+name: Check and Ask review to UI team
 on:
-  pull_request:
-    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
     paths:
-      # assign to UI team only if there is a change in a json schema/catalog or in the manager API
-      - 'processor/configuration/src/main/resources/schemas/*'
+      # request review from UI team only if there is a change in a json schema/catalog or in the manager API
+      - 'processor/configuration/src/main/resources/schemas/**'
       - 'openapi/smartevents_mgmt.yaml'
 jobs:
-  assign:
+  review:
     runs-on: ubuntu-latest
     steps:
-      - uses: delivery-much/actions-assigner@v1
+      - uses: rowi1de/auto-assign-review-teams@v1.1.3
         with:
-          token: ${{ secrets.GH_TOKEN }}
-          reviewers: vpellegrino,kelvah
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          teams: 'frontend'
+          include-draft: true
