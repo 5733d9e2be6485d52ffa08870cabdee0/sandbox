@@ -139,7 +139,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, filter().by(DEFAULT_BRIDGE_NAME).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
@@ -157,7 +157,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, filter().by(DEFAULT_BRIDGE_NAME.substring(0, 5)).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
@@ -177,7 +177,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, filter().by(READY).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge2.getId());
@@ -197,7 +197,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, filter().by(DEFAULT_BRIDGE_NAME).by(ACCEPTED).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(2);
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
@@ -276,7 +276,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(0, 2, filter().by(READY).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(2);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(5);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
         assertThat(retrievedBridges.getPage()).isZero();
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("8");
         assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("6");
@@ -285,7 +285,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(1, 2, filter().by(READY).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(2);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(5);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
         assertThat(retrievedBridges.getPage()).isEqualTo(1);
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("4");
         assertThat(retrievedBridges.getItems().get(1).getId()).isEqualTo("2");
@@ -294,7 +294,7 @@ public class BridgeDAOTest {
                 new QueryResourceInfo(2, 2, filter().by(READY).build()));
         assertThat(retrievedBridges).isNotNull();
         assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(5);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(10);
         assertThat(retrievedBridges.getPage()).isEqualTo(2);
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo("0");
     }

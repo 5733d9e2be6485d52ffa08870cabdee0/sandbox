@@ -34,6 +34,11 @@ public abstract class ListResponse<T> {
         return kind;
     }
 
+    /**
+     * Gets the items.
+     * 
+     * @return The items.
+     */
     public List<T> getItems() {
         return items;
     }

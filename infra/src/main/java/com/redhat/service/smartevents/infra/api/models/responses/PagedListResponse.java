@@ -36,6 +36,11 @@ public abstract class PagedListResponse<T> extends ListResponse<T> {
     @JsonProperty("total")
     private long total;
 
+    /**
+     * Gets the page number.
+     * 
+     * @return The page number
+     */
     public long getPage() {
         return page;
     }
@@ -44,6 +49,12 @@ public abstract class PagedListResponse<T> extends ListResponse<T> {
         this.page = page;
     }
 
+    /**
+     * Gets the number of items *after* any potential filtering has been applied. {@see QueryFilterInfo}.
+     * This is identical to {@see ListResponse#getItems().size()}.
+     * 
+     * @return The number of items
+     */
     public long getSize() {
         return size;
     }
@@ -52,6 +63,11 @@ public abstract class PagedListResponse<T> extends ListResponse<T> {
         this.size = size;
     }
 
+    /**
+     * Gets the total number of items *before* any potential filtering has been applied. {@see QueryFilterInfo}.
+     * 
+     * @return The total number of items.
+     */
     public long getTotal() {
         return total;
     }

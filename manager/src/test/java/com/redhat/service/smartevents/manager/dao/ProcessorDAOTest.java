@@ -233,7 +233,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         Processor p1 = createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(0, 100));
+        ListResult<Processor> listResult = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isEqualTo(2L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
@@ -244,7 +244,7 @@ public class ProcessorDAOTest {
     @Test
     public void findByBridgeIdAndCustomerId_noProcessors() {
         Bridge b = createBridge();
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(0, 100));
+        ListResult<Processor> listResult = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(0, 100));
         assertThat(listResult.getPage()).isZero();
         assertThat(listResult.getSize()).isZero();
         assertThat(listResult.getTotal()).isZero();
@@ -256,7 +256,7 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         createProcessor(b, "bar");
 
-        ListResult<Processor> listResult = processorDAO.findByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(1, 1));
+        ListResult<Processor> listResult = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), TestConstants.DEFAULT_CUSTOMER_ID, new QueryProcessorResourceInfo(1, 1));
         assertThat(listResult.getPage()).isEqualTo(1L);
         assertThat(listResult.getSize()).isEqualTo(1L);
         assertThat(listResult.getTotal()).isEqualTo(2L);
@@ -281,11 +281,11 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo");
         createProcessor(b, "bar");
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -295,7 +295,7 @@ public class ProcessorDAOTest {
         Processor p1 = createProcessor(b, "foo1");
         Processor p2 = createProcessor(b, "foo2");
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by("foo").build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(2L);
@@ -315,11 +315,11 @@ public class ProcessorDAOTest {
         p.setStatus(READY);
         processorDAO.persist(p);
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -329,11 +329,11 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo", SOURCE);
         createProcessor(b, "bar");
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -346,11 +346,11 @@ public class ProcessorDAOTest {
         p.setStatus(READY);
         processorDAO.persist(p);
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -360,11 +360,11 @@ public class ProcessorDAOTest {
         Processor p = createProcessor(b, "foo", SOURCE);
         createProcessor(b, "bar");
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -377,11 +377,11 @@ public class ProcessorDAOTest {
         p.setStatus(READY);
         processorDAO.persist(p);
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getStatus()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -394,11 +394,11 @@ public class ProcessorDAOTest {
         p.setStatus(READY);
         processorDAO.persist(p);
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(p.getName()).by(p.getStatus()).by(p.getType()).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(1L);
-        assertThat(results.getTotal()).isEqualTo(1L);
+        assertThat(results.getTotal()).isEqualTo(2L);
         assertThat(results.getItems().get(0).getId()).isEqualTo(p.getId());
     }
 
@@ -413,7 +413,7 @@ public class ProcessorDAOTest {
         p2.setStatus(READY);
         processorDAO.persist(p2);
 
-        ListResult<Processor> results = processorDAO.findByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
+        ListResult<Processor> results = processorDAO.findUserVisibleByBridgeIdAndCustomerId(b.getId(), b.getCustomerId(),
                 new QueryProcessorResourceInfo(0, 100, filter().by(ACCEPTED).by(READY).build()));
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(2L);

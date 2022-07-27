@@ -42,6 +42,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         Parameters parameters = Parameters.with("customerId", customerId);
         PanacheQuery<Bridge> query = find("#BRIDGE.findByCustomerId", parameters);
 
+        // Count before applying filters
+        long total = query.count();
+
+        // Filter by Name and/or Status
         String filterName = queryInfo.getFilterInfo().getFilterName();
         Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterName)) {
@@ -51,7 +55,6 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
             query.filter("byStatus", Parameters.with("status", filterStatus));
         }
 
-        long total = query.count();
         List<Bridge> bridges = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
 
         return new ListResult<>(bridges, queryInfo.getPageNumber(), total);

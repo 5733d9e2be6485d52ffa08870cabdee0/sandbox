@@ -107,10 +107,6 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         return findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo, HIDDEN_PROCESSOR_TYPES);
     }
 
-    public ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
-        return findByBridgeIdAndCustomerId(bridgeId, customerId, queryInfo, null);
-    }
-
     private ListResult<Processor> findByBridgeIdAndCustomerId(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo, Set<ProcessorType> restrictTypes) {
 
         /*
@@ -140,19 +136,26 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         Parameters parameters = Parameters.with("customerId", customerId).and("bridgeId", bridgeId);
         PanacheQuery<Processor> query = find("#PROCESSOR.findByBridgeIdAndCustomerIdNoFilter", parameters);
 
-        // filter by name
+        // Count before applying User-defined filter of Name and/or Status
+        // The total count must be the total for any applied "restrictTypes" but not the "queryInfo.filterType"
+        // "restrictTypes" is a System restriction whereas "queryInfo.filterType" is a User restriction.
+        PanacheQuery<Processor> count = find("#PROCESSOR.findByBridgeIdAndCustomerIdNoFilter", parameters);
+        count.filter(BY_TYPE_FILTER_NAME, Parameters.with(BY_TYPE_FILTER_PARAM, restrictTypes));
+        long total = count.count();
+
+        // Filter by name
         String filterName = queryInfo.getFilterInfo().getFilterName();
         if (Objects.nonNull(filterName)) {
             query.filter("byName", Parameters.with("name", filterName + "%"));
         }
 
-        // filter by status
+        // Filter by status
         Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query.filter("byStatus", Parameters.with("status", filterStatus));
         }
 
-        // filter by type, considering onlyUserVisible flag
+        // Filter by type, considering onlyUserVisible flag
         ProcessorType filterType = queryInfo.getFilterInfo().getFilterType();
         if (restrictTypes != null) {
             if (Objects.isNull(filterType)) {
@@ -170,7 +173,6 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
             }
         }
 
-        long total = query.count();
         List<Processor> processors = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
         List<String> ids = processors.stream().map(Processor::getId).collect(Collectors.toList());
 
