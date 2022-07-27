@@ -3,31 +3,16 @@ package com.redhat.service.smartevents.manager.models;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 
-@NamedQueries({
-        @NamedQuery(name = "SHARD.findByType",
-                query = "from Shard where type=:type")
-})
 @Entity
 public class Shard {
 
     public static final String ID_PARAM = "id";
 
-    public static final String TYPE_PARAM = "type";
-
     @Id
     private String id = UUID.randomUUID().toString();
-
-    @Column(nullable = false, name = "type")
-    @Enumerated(EnumType.STRING)
-    private ShardType type;
 
     public String getId() {
         return id;
@@ -35,14 +20,6 @@ public class Shard {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public ShardType getType() {
-        return type;
-    }
-
-    public void setType(ShardType type) {
-        this.type = type;
     }
 
     /*
