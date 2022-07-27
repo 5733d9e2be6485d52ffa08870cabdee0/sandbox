@@ -12,7 +12,6 @@ SSO_REDHAT_URL=https://sso.redhat.com
 OPENSHIFT_OFFLINE_TOKEN=<REPLACE>
 KEYCLOAK_URL=http://$MINIKUBE_IP:30007
 MANAGER_URL=http://localhost:8080
-ERROR_HANDLER_WEBHOOK_URL=https://examplewebhook.com
 KEYCLOAK_USERNAME=username
 KEYCLOAK_PASSWORD=password
 SLACK_WEBHOOK_URL=webhook_url
@@ -25,7 +24,10 @@ S3_SECRET_KEY=secretkey
 
 # Kafka
 KAFKA_TOPIC=topic
-KAFKA_ERROR_TOPIC=this is used in the kcat-error.sh file, but it's always generated internally
 KAFKA_BROKER_URL=kafka-url:443
 KAFKA_CLIENT_ID=srvc-acct-example
 KAFKA_CLIENT_SECRET=secret-example
+
+# Error handling (https://webhook.site)
+ERROR_HANDLER_WEBHOOK_URL=https://examplewebhook.com
+KAFKA_ERROR_TOPIC=this is used in the kcat-error.sh file, useful to inspect error messages when sending to kafka
