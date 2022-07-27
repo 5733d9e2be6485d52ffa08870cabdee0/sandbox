@@ -25,10 +25,10 @@ public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvide
     @ConfigProperty(name = "event-bridge.dns.hosted-zone-id")
     protected String hostedZoneId;
 
-    @ConfigProperty(name = "quarkus.secretsmanager.aws.credentials.static-provider.access-key-id")
+    @ConfigProperty(name = "event-bridge.dns.aws.route53.access-key-id")
     String awsAccessKeyId;
 
-    @ConfigProperty(name = "quarkus.secretsmanager.aws.credentials.static-provider.secret-access-key")
+    @ConfigProperty(name = "event-bridge.dns.aws.route53.secret-access-key")
     String awsSecretAccessKey;
 
     @PostConstruct
