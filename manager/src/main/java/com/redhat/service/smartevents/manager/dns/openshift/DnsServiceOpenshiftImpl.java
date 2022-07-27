@@ -13,6 +13,7 @@ import com.amazonaws.services.route53.model.Change;
 import com.amazonaws.services.route53.model.ChangeAction;
 import com.amazonaws.services.route53.model.ChangeBatch;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
+import com.amazonaws.services.route53.model.InvalidChangeBatchException;
 import com.amazonaws.services.route53.model.RRType;
 import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
@@ -55,7 +56,9 @@ public class DnsServiceOpenshiftImpl implements DnsService {
     public Boolean createDnsRecord(String bridgeId) {
         LOGGER.info(String.format("creating DNS zone for bridge '%s'", bridgeId));
         ResourceRecordSet resourceRecordSet = buildResourceRecordSet(buildBridgeHost(bridgeId), bridgeId);
-        Change addStateChange = new Change(ChangeAction.CREATE, resourceRecordSet);
+
+        // idempotency guarantee : if a resource set exists Route 53 updates it with the values in the request.
+        Change addStateChange = new Change(ChangeAction.UPSERT, resourceRecordSet);
         ChangeBatch changeBatch = new ChangeBatch(List.of(addStateChange));
         return Uni.createFrom().future(
                 dnsConfigOpenshiftProvider.getAmazonRouteClient()
@@ -76,6 +79,8 @@ public class DnsServiceOpenshiftImpl implements DnsService {
                                 .withChangeBatch(changeBatch)
                                 .withHostedZoneId(
                                         dnsConfigOpenshiftProvider.getHostedZoneId())))
+                .onFailure(InvalidChangeBatchException.class)
+                .recoverWithNull()
                 .onItem()
                 .transformToUni(x -> Uni.createFrom().item(true))
                 .await().atMost(DEFAULT_TIMEOUT);
