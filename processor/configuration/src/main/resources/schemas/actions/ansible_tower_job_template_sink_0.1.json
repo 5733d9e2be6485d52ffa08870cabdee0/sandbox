@@ -1,7 +1,7 @@
 {
   "type": "object",
   "additionalProperties": false,
-  "properties": {
+  "properties": { 
     "endpoint": {
       "type": "string",
       "title": "Endpoint",
