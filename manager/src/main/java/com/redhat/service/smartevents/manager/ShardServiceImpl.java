@@ -34,7 +34,7 @@ public class ShardServiceImpl implements ShardService {
     }
 
     @Override
-    public String getAssignedShardId(String id) {
+    public Shard getAssignedShard(String id) {
         List<Shard> shards = shardDAO.listAll();
 
         // add the assignment logic here
@@ -42,7 +42,7 @@ public class ShardServiceImpl implements ShardService {
             LOGGER.warn("There are more than 1 available shards but no assignment strategy has been implemented. This situation is not supported yet. Using the first in the list.");
         }
 
-        return shards.get(0).getId();
+        return shards.get(0);
     }
 
     @Override
