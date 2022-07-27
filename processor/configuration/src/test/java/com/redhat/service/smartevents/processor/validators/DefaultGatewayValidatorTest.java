@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -56,6 +57,15 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     }
 
     @Test
+    void testGooglePubSubSource() {
+        Map<String, String> params = new HashMap<>();
+        params.put(GooglePubSubSource.GCP_SERVICE_ACCOUNT_KEY_PARAM, "key");
+        params.put(GooglePubSubSource.GCP_PROJECT_ID_PARAM, "id");
+        params.put(GooglePubSubSource.GCP_SUBSCRIPTION_NAME, "sub");
+        assertValidationIsValid(sourceWith(GooglePubSubSource.TYPE, params));
+    }
+
+    @Test
     void testGooglePubsubAction() {
         Map<String, String> params = new HashMap<>();
         params.put(GooglePubSubAction.GCP_PROJECT_ID_PARAM, "id");
@@ -89,19 +99,9 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
         params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
         params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "notavalidurl");
+        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "QUEUENAME");
 
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
-
-        params.clear();
-        params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "https://localhost:8080");
-
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
+        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
 
         params.clear();
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");

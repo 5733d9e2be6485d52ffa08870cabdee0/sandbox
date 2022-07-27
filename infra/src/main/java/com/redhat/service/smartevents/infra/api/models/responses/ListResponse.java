@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -21,6 +23,7 @@ public abstract class ListResponse<T> {
         this.kind = kind;
     }
 
+    @NotNull
     @JsonProperty("kind")
     private final String kind;
 

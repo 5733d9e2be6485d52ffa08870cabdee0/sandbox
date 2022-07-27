@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dao;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,8 +65,8 @@ public class ProcessorDAOTest {
         p.setBridge(bridge);
         p.setName(name);
         p.setStatus(ManagedResourceStatus.ACCEPTED);
-        p.setSubmittedAt(ZonedDateTime.now());
-        p.setPublishedAt(ZonedDateTime.now());
+        p.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         p.setShardId(TestConstants.SHARD_ID);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
 
@@ -90,8 +91,8 @@ public class ProcessorDAOTest {
         b.setOrganisationId(TestConstants.DEFAULT_CUSTOMER_ID);
         b.setOwner(TestConstants.DEFAULT_USER_NAME);
         b.setStatus(ManagedResourceStatus.READY);
-        b.setSubmittedAt(ZonedDateTime.now());
-        b.setPublishedAt(ZonedDateTime.now());
+        b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
+        b.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setShardId(TestConstants.SHARD_ID);
         b.setDefinition(new BridgeDefinition());
 
@@ -148,9 +149,21 @@ public class ProcessorDAOTest {
         r.setDependencyStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
+        //In the process of being provisioned
+        Processor s = createProcessor(b, "mary");
+        s.setStatus(ManagedResourceStatus.PROVISIONING);
+        s.setDependencyStatus(ManagedResourceStatus.READY);
+        processorDAO.getEntityManager().merge(s);
+
+        //In the process of being deleted
+        Processor t = createProcessor(b, "sue");
+        t.setStatus(ManagedResourceStatus.DELETING);
+        t.setDependencyStatus(ManagedResourceStatus.DELETED);
+        processorDAO.getEntityManager().merge(t);
+
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors).hasSize(2);
-        processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
+        assertThat(processors).hasSize(4);
+        processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank", "mary", "sue"));
     }
 
     @Test

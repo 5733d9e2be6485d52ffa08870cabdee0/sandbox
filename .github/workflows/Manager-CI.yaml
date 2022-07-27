@@ -1,8 +1,8 @@
 name: Manager - CI
 on:
   pull_request_target:
-    types: [opened, labeled, unlabeled, synchronize]
-    branches:    
+    types: [ opened, labeled, unlabeled, synchronize ]
+    branches:
       - 'main'
     paths-ignore:
       - 'LICENSE'
@@ -21,7 +21,7 @@ jobs:
       FLEET_SHARD_MINIKUBE_CONTAINER_NAME: openbridge/fleet-shard:${{ github.sha }}
       EXECUTOR_CONTAINER_NAME: openbridge/executor:${{ github.sha }}
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
-      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
       group: event-bridge-manager-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -77,8 +77,8 @@ jobs:
           MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
           MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
           MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
-          MANAGED_KAFKA_MC_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MC_CLIENT_ID }}
-          MANAGED_KAFKA_MC_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MC_CLIENT_SECRET }}
+          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID }}
+          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET }}
           MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
           MANAGED_CONNECTORS_NAMESPACE_ID: ${{ secrets.MANAGED_CONNECTORS_NAMESPACE_ID }}
         run: |
@@ -92,8 +92,8 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1$MANAGED_CONNECTORS_NAMESPACE_ID|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MC_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MC_CLIENT_SECRET|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET|" kustomization.yaml
           sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
           sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
         working-directory: kustomize/overlays/minikube/manager
@@ -144,15 +144,24 @@ jobs:
         run: |
           kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
           kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
-      - name: Run integration tests
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+      - name: Run integration tests
+        env:
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Print operator log
         if: always()

@@ -1,49 +1,43 @@
 package com.redhat.service.smartevents.integration.tests.resources;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import com.redhat.service.smartevents.integration.tests.common.Utils;
+import io.cucumber.java.AfterAll;
+import io.cucumber.java.BeforeAll;
 
-import io.restassured.http.ContentType;
-
-import static io.restassured.RestAssured.given;
+import software.tnb.common.service.ServiceFactory;
+import software.tnb.slack.account.SlackAccount;
+import software.tnb.slack.service.Slack;
+import software.tnb.slack.validation.MessageRequestConfig;
 
 public class SlackResource {
 
-    private final static String SLACK_URI = "https://slack.com/api/conversations.history";
-    private final static String SLACK_CHANNEL = Utils.getSystemProperty("slack.channel");
-    private final static String SLACK_TOKEN = Utils.getSystemProperty("slack.webhook.token");
-    private final static String SLACK_WEBHOOK = Utils.getSystemProperty("slack.webhook.url");
+    public static Slack slack = ServiceFactory.create(Slack.class);
 
-    public static List<String> getListOfSlackMessages() {
-        final LocalDateTime oneHourAgo = LocalDateTime.now(ZoneId.systemDefault()).minusHours(1);
-        return given()
-                .auth()
-                .oauth2(SLACK_TOKEN)
-                .contentType(ContentType.JSON)
-                .queryParam("channel", SLACK_CHANNEL)
-                .queryParam("oldest", oneHourAgo.toEpochSecond(ZonedDateTime.now().getOffset()))
-                .when()
-                .get(SLACK_URI)
-                .then()
-                .log().ifValidationFails()
-                .statusCode(200)
-                .extract()
-                .jsonPath()
-                .getList("messages.text");
+    // Manually triggering beforeAll and afterAll as these methods are intended to be triggered as JUnit5 Extension, however Cucumber support JUnit5 Extensions.
+
+    @BeforeAll
+    public static void beforeAll() throws Exception {
+        slack.beforeAll(null);
     }
 
-    public static int postToSlackWebhookUrl(final String message) {
-        return given()
-                .auth()
-                .oauth2(SLACK_TOKEN)
-                .contentType(ContentType.JSON)
-                .body("{\"text\": \"" + message + "\"}")
-                .when()
-                .post(SLACK_WEBHOOK)
-                .getStatusCode();
+    @AfterAll
+    public static void afterAll() throws Exception {
+        slack.afterAll(null);
+    }
+
+    public static SlackAccount account() {
+        return slack.account();
+    }
+
+    public static List<String> getListOfSlackMessages(String channelName) {
+        ZonedDateTime oneHourAgo = ZonedDateTime.now(ZoneOffset.UTC).minusHours(1);
+        return slack.validation().getMessages(new MessageRequestConfig().setChannelName(channelName).setOldest(Long.toString(oneHourAgo.toEpochSecond())));
+    }
+
+    public static void postToSlackWebhookUrl(String message, String channelName) {
+        slack.validation().sendMessageToChannelName(message, channelName);
     }
 }

@@ -1,10 +1,12 @@
 # Filters
 
-When a new `Processor` is requested using the endpoint `/api/v1/bridges/{id}/processors` it is possible to specify one or more `Filters` to apply to `Events` sent to your Bridge instance.
+When a new `Processor` is requested using the endpoint `/api/smartevents_mgmt/v1/bridges/{id}/processors` it is possible to specify one or more `Filters` to apply to `Events` sent to your Bridge
+instance.
 
 For **source processors** (containing a [Source](SOURCES.md)), if the `Filter` you provide matches an `Event` then it is injected in the system.
 
-For **sink processors** (containing an [Action](ACTIONS.md)), if the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the associated `Processor` are invoked.
+For **sink processors** (containing an [Action](ACTIONS.md)), if the `Filter` you provide matches an `Event` then the [Transformation](TRANSFORMATIONS.md) and [Action](ACTIONS.md) of the
+associated `Processor` are invoked.
 
 If you do not specify a `Filter` definition for your `Processor`, then your `Processor` will match all `Events`.
 
@@ -12,28 +14,26 @@ If there are multiple `Filters` defined for a `Processor`, then all `Filters` mu
 
 ## Properties of a Filter
 
-Every `Filter` has 3 properties to specify: 
+Every `Filter` has 3 properties to specify:
 
 - `type`: the type of the `Filter`. This must be one of the supported `Filter` types listed below
-  - Attempting to use an unknown `Filter` type will result in an Error from the Bridge API.
-- `key`: The field in the `Event` that you want to filter on. 
-  - This must be a single field only. Arrays of fields to match on are not yet supported. 
+    - Attempting to use an unknown `Filter` type will result in an Error from the Bridge API.
+- `key`: The field in the `Event` that you want to filter on.
+    - This must be a single field only. Arrays of fields to match on are not yet supported.
 - `value(s)`: The value or values to compare to the field identified by the key.
 
-All Events sent to the Bridge must be in CloudEvent format. 
-You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `id`, `source`, `type`, `version`,
-as well as custom attributes you have defined. 
-It is also possible to access `CloudEvent` data (like `data.key1`) which is accessed using the dot notation to navigate the `Event` structure.
+All Events sent to the Bridge must be in CloudEvent format. You can use the `key` property of your `Filter` to access Attributes of the `CloudEvent` e.g `id`, `source`, `type`, `version`, as well as
+custom attributes you have defined. It is also possible to access `CloudEvent` data (like `data.key1`) which is accessed using the dot notation to navigate the `Event` structure.
 
 ## Supported Filter Types
 
-The available `Filter` types are: 
+The available `Filter` types are:
 
 ### StringEquals
 
-The `StringEquals` evaluates to `true` if the **key** value is equals to the specified `Filter` **value**. 
+The `StringEquals` evaluates to `true` if the **key** value is equals to the specified `Filter` **value**.
 
-Assuming that the Filter is the following 
+Assuming that the Filter is the following
 
 ```json
 
@@ -48,7 +48,8 @@ Assuming that the Filter is the following
 }
 ```
 
-Then an event like 
+Then an event like
+
 ```json
 {
   ...
@@ -80,6 +81,7 @@ Assuming that the `Filter` is the following
 ```
 
 Then an event like
+
 ```json
 {
   ...
@@ -111,6 +113,7 @@ Assuming that the `Filter` is the following
 ```
 
 Then an event like
+
 ```json
 {
   ...
@@ -142,6 +145,7 @@ Assuming that the `Filter` is the following
 ```
 
 Then an event like
+
 ```json
 {
   ...
@@ -173,6 +177,7 @@ Assuming that the `Filter` is the following
 ```
 
 Then an event like
+
 ```json
 {
   ...
@@ -186,8 +191,7 @@ Would evaluate the `Filter` to `true`.
 
 ## Combining filters
 
-When a `Filter` array contain more than one entry, the entries are ANDed, meaning all entries must match for the `Filter` to be true.
-Assume a `Filter` of:
+When a `Filter` array contain more than one entry, the entries are ANDed, meaning all entries must match for the `Filter` to be true. Assume a `Filter` of:
 
 ```json
 
@@ -208,7 +212,6 @@ Assume a `Filter` of:
 ```
 
 In this case a CloudEvent like:
-
 
 ```json
 {

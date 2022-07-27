@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.manager.metrics;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -74,11 +75,11 @@ public class MetricsServiceImpl implements MetricsService {
     private Duration calculateOperationDuration(ManagedResource managedResource, MetricsOperation operation) {
         switch (operation) {
             case PROVISION:
-                return Duration.between(managedResource.getSubmittedAt(), ZonedDateTime.now());
+                return Duration.between(managedResource.getSubmittedAt(), ZonedDateTime.now(ZoneOffset.UTC));
             case MODIFY:
-                return Duration.between(managedResource.getModifiedAt(), ZonedDateTime.now());
+                return Duration.between(managedResource.getModifiedAt(), ZonedDateTime.now(ZoneOffset.UTC));
             case DELETE:
-                return Duration.between(managedResource.getDeletionRequestedAt(), ZonedDateTime.now());
+                return Duration.between(managedResource.getDeletionRequestedAt(), ZonedDateTime.now(ZoneOffset.UTC));
             default:
                 throw new IllegalStateException(String.format("Unable to calculate operation duration for MetricsOperation '%s'", operation));
         }

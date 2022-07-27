@@ -39,18 +39,27 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean install -Dquickly
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       - name: Run integration tests
         env:
           STABLE_CLUSTER_MANAGER_URL: ${{ secrets.STABLE_CLUSTER_MANAGER_URL }}
           STABLE_SSO_CLIENT_ID: ${{ secrets.STABLE_SSO_CLIENT_ID }}
           STABLE_SSO_CLIENT_SECRET: ${{ secrets.STABLE_SSO_CLIENT_SECRET }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
-          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}

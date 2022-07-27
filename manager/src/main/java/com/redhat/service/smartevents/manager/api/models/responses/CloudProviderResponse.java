@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.api.models.responses;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.BaseResponse;
@@ -9,9 +11,11 @@ public class CloudProviderResponse extends BaseResponse {
 
     private static final String KIND = "CloudProvider";
 
+    @NotNull
     @JsonProperty("display_name")
     String displayName;
 
+    @NotNull
     @JsonProperty("enabled")
     boolean enabled;
 

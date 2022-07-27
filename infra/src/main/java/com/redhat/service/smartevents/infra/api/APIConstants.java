@@ -6,39 +6,44 @@ package com.redhat.service.smartevents.infra.api;
 public class APIConstants {
 
     /**
+     * Base Path for the Smart Events application.
+     */
+    public static final String ROOT = "/api/smartevents_mgmt/v1";
+
+    /**
      * Base Path for the Cloud Providers API
      */
-    public static final String CLOUD_PROVIDERS_BASE_PATH = "/api/v1/cloud_providers";
+    public static final String CLOUD_PROVIDERS_BASE_PATH = ROOT + "/cloud_providers";
 
     /**
      * Base Path for the user-facing API
      */
-    public static final String USER_API_BASE_PATH = "/api/v1/bridges/";
+    public static final String USER_API_BASE_PATH = ROOT + "/bridges/";
 
     /**
      * Base Path for the error API
      */
-    public static final String ERROR_API_BASE_PATH = "/api/v1/errors/";
+    public static final String ERROR_API_BASE_PATH = ROOT + "/errors/";
 
     /**
      * Base Path for the source processors schema API
      */
-    public static final String SOURCES_SCHEMA_API_BASE_PATH = "/api/v1/schemas/sources/";
+    public static final String SOURCES_SCHEMA_API_BASE_PATH = ROOT + "/schemas/sources/";
 
     /**
      * Base Path for the actions processors API
      */
-    public static final String ACTIONS_SCHEMA_API_BASE_PATH = "/api/v1/schemas/actions/";
+    public static final String ACTIONS_SCHEMA_API_BASE_PATH = ROOT + "/schemas/actions/";
 
     /**
      * Base Path for the schema API
      */
-    public static final String SCHEMA_API_BASE_PATH = "/api/v1/schemas/";
+    public static final String SCHEMA_API_BASE_PATH = ROOT + "/schemas/";
 
     /**
      * Base Path for Shard facing API.
      */
-    public static final String SHARD_API_BASE_PATH = "/api/v1/shard/bridges/";
+    public static final String SHARD_API_BASE_PATH = ROOT + "/shard/bridges/";
 
     /**
      * Account id attribute claim key for an account token.

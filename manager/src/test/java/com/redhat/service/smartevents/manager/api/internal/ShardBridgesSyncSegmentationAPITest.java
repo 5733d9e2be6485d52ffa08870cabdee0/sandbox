@@ -14,13 +14,11 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
@@ -35,7 +33,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 public class ShardBridgesSyncSegmentationAPITest {
 
     @Inject
