@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.sources.azure.AzureEventHubSource;
 import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
@@ -63,6 +64,19 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(GooglePubSubSource.GCP_PROJECT_ID_PARAM, "id");
         params.put(GooglePubSubSource.GCP_SUBSCRIPTION_NAME, "sub");
         assertValidationIsValid(sourceWith(GooglePubSubSource.TYPE, params));
+    }
+
+    @Test
+    void testAzureEventHubSource() {
+        Map<String, String> params = new HashMap<>();
+        params.put(AzureEventHubSource.AZURE_NAMESPACE_NAME, "namespace");
+        params.put(AzureEventHubSource.AZURE_EVENTHUB_NAME, "name");
+        params.put(AzureEventHubSource.AZURE_SHARED_ACCESS_NAME, "sharedAccessName");
+        params.put(AzureEventHubSource.AZURE_SHARD_ACCESS_KEY, "sharedAccessKey");
+        params.put(AzureEventHubSource.AZURE_BLOB_ACCOUNT_NAME, "blobAccountName");
+        params.put(AzureEventHubSource.AZURE_BLOB_ACCESS_KEY, "blobAccessKey");
+        params.put(AzureEventHubSource.AZURE_BLOB_CONTAINER_NAME, "blobContainerName");
+        assertValidationIsValid(sourceWith(AzureEventHubSource.TYPE, params));
     }
 
     @Test
