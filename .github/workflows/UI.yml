@@ -1,0 +1,16 @@
+name: Check and Assign PR to UI team
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      # assign to UI team only if there is a change in a json schema/catalog or in the manager API
+      - 'processor/configuration/src/main/resources/schemas/*'
+      - 'openapi/smartevents_mgmt.yaml'
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: delivery-much/actions-assigner@v1
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          reviewers: vpellegrino,kelvah
