@@ -22,20 +22,23 @@ public class SlackSteps {
         this.context = context;
     }
 
-    @Then("^Slack channel contains message with text \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void slackActionTest(String messageText, int timeoutMinutes) {
+    @Then("^Slack channel \"([^\"]*)\" contains message with text \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void slackActionTest(String channelName, String messageText, int timeoutMinutes) {
         String messageTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, messageText);
+        String channelNameWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, channelName);
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> assertThat(SlackResource.getListOfSlackMessages()).as("Searching for message containing text: '%s'", messageTextWithoutPlaceholders)
+                        () -> assertThat(SlackResource.getListOfSlackMessages(channelNameWithoutPlaceholders))
+                                .as("Searching for message on channel '%s' containing text: '%s'", channelNameWithoutPlaceholders, messageTextWithoutPlaceholders)
                                 .anyMatch(msg -> msg.contains(messageTextWithoutPlaceholders)));
     }
 
-    @And("^create message with text \"([^\"]*)\" on slack channel$")
-    public void createMessageOnSlackChannel(String messageText) {
+    @And("^create message with text \"([^\"]*)\" on slack channel \"([^\"]*)\"$")
+    public void createMessageOnSlackChannel(String messageText, String channelName) {
         String messageTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, messageText);
-        assertThat(SlackResource.postToSlackWebhookUrl(messageTextWithoutPlaceholders)).isEqualTo(200);
+        String channelNameWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, channelName);
+        SlackResource.postToSlackWebhookUrl(messageTextWithoutPlaceholders, channelNameWithoutPlaceholders);
     }
 }

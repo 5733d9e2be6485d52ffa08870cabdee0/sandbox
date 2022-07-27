@@ -35,7 +35,6 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
@@ -60,7 +59,6 @@ import static org.mockito.Mockito.when;
  * Test interaction between {@link ProcessorService} and Managed Connectors client APIs
  */
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
 class ProcessorServiceConnectorTest {
 

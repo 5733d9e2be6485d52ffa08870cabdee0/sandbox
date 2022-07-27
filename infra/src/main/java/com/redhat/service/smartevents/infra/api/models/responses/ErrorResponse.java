@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.infra.api.models.responses;
 
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.api.APIConstants;
@@ -10,9 +12,11 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse extends BaseResponse {
 
+    @NotNull
     @JsonProperty("code")
     private String code;
 
+    @NotNull
     @JsonProperty("reason")
     private String reason;
 

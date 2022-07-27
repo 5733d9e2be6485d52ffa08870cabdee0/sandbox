@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.infra.api.models.responses;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -22,12 +24,15 @@ public abstract class PagedListResponse<T> extends ListResponse<T> {
         super(kind);
     }
 
+    @NotNull
     @JsonProperty("page")
     private long page;
 
+    @NotNull
     @JsonProperty("size")
     private long size;
 
+    @NotNull
     @JsonProperty("total")
     private long total;
 

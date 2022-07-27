@@ -149,9 +149,21 @@ public class ProcessorDAOTest {
         r.setDependencyStatus(ManagedResourceStatus.DELETED);
         processorDAO.getEntityManager().merge(r);
 
+        //In the process of being provisioned
+        Processor s = createProcessor(b, "mary");
+        s.setStatus(ManagedResourceStatus.PROVISIONING);
+        s.setDependencyStatus(ManagedResourceStatus.READY);
+        processorDAO.getEntityManager().merge(s);
+
+        //In the process of being deleted
+        Processor t = createProcessor(b, "sue");
+        t.setStatus(ManagedResourceStatus.DELETING);
+        t.setDependencyStatus(ManagedResourceStatus.DELETED);
+        processorDAO.getEntityManager().merge(t);
+
         List<Processor> processors = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
-        assertThat(processors).hasSize(2);
-        processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank"));
+        assertThat(processors).hasSize(4);
+        processors.forEach((px) -> assertThat(px.getName()).isIn("foo", "frank", "mary", "sue"));
     }
 
     @Test

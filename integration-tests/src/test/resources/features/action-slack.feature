@@ -14,8 +14,8 @@ Feature: Slack Action tests
       "action": {
         "type": "slack_sink_0.1",
         "parameters": {
-            "slack_channel": "${env.slack.channel.name}",
-            "slack_webhook_url": "${env.slack.webhook.url}"
+            "slack_channel": "${slack.channel.mc.name}",
+            "slack_webhook_url": "${slack.channel.mc.webhook.url}"
           }
       }
     }
@@ -39,4 +39,4 @@ Feature: Slack Action tests
     }
     """
 
-    Then Slack channel contains message with text "${cloud-event.my-id.id}" within 1 minute
+    Then Slack channel "${slack.channel.mc.name}" contains message with text "${cloud-event.my-id.id}" within 1 minute

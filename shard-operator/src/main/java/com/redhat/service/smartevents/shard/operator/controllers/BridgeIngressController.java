@@ -75,12 +75,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Override
     public UpdateControl<BridgeIngress> reconcile(BridgeIngress bridgeIngress, Context context) {
-        LOGGER.debug("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeIngress: '{}' in namespace '{}'", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
         if (secret == null) {
-            LOGGER.debug("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
+            LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
             return UpdateControl.noUpdate();
         }
 
@@ -106,14 +106,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
 
         if (!networkResource.isReady()) {
-            LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
             bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
-        LOGGER.debug("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
+        LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
         if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
             bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
@@ -155,7 +155,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         managerClient.notifyBridgeStatusChange(dto)
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId()));
+                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId(), failure));
     }
 
     private String extractBrokerPath(KnativeBroker broker) {

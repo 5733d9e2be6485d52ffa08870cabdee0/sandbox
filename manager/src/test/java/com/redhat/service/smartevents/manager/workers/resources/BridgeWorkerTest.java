@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.quartz.SchedulerException;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -24,10 +27,10 @@ import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -37,6 +40,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
+import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,7 +68,7 @@ class BridgeWorkerTest {
     @InjectMock
     ProcessorService processorServiceMock;
 
-    @Inject
+    @InjectMock
     WorkManager workManager;
 
     @Inject
@@ -85,13 +89,11 @@ class BridgeWorkerTest {
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
-        Work work = new Work();
-        work.setManagedResourceId(TEST_RESOURCE_ID);
+        Work work = makeWork(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
-    @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
@@ -102,7 +104,7 @@ class BridgeWorkerTest {
         bridge.setStatus(status);
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
         if (throwRhoasError) {
             when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
@@ -111,8 +113,8 @@ class BridgeWorkerTest {
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
 
     @Transactional
@@ -131,7 +133,7 @@ class BridgeWorkerTest {
     void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
-            boolean isWorkComplete) {
+            boolean isWorkComplete) throws SchedulerException {
         doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, true);
     }
 
@@ -146,7 +148,7 @@ class BridgeWorkerTest {
         bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
         List<Processor> processors = errorHandlerProcessorPresent
                 ? List.of(createErrorHandlerProcessor(bridge))
@@ -170,7 +172,7 @@ class BridgeWorkerTest {
                 .createErrorHandlerProcessor(eq(bridge.getId()), eq(TestConstants.DEFAULT_CUSTOMER_ID), eq(TestConstants.DEFAULT_USER_NAME), any());
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
@@ -192,7 +194,7 @@ class BridgeWorkerTest {
         bridge.setStatus(status);
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
         when(processorServiceMock.getHiddenProcessors(any(), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
@@ -204,8 +206,8 @@ class BridgeWorkerTest {
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     @Transactional
@@ -221,7 +223,7 @@ class BridgeWorkerTest {
         bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
         when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
                 .thenReturn(new ListResult<>(List.of(createErrorHandlerProcessor(bridge)), 0, 1));
@@ -229,7 +231,7 @@ class BridgeWorkerTest {
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isNotEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isTrue();
+        verify(workManager).reschedule(work);
 
         when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
@@ -250,7 +252,7 @@ class BridgeWorkerTest {
             assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         }
 
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        verify(workManager, times(isWorkComplete ? 1 : 2)).reschedule(work);
     }
 
     private static Stream<Arguments> deletionWorkWithKnownResourceParams() {

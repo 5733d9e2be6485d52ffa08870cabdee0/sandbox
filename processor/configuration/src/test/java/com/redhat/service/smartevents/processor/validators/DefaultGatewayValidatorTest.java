@@ -99,19 +99,9 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
         params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
         params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "notavalidurl");
+        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "QUEUENAME");
 
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
-
-        params.clear();
-        params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "https://localhost:8080");
-
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, params),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
+        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
 
         params.clear();
         params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
