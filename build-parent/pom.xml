@@ -54,6 +54,7 @@
     <version.io.github.classgraph>4.8.143</version.io.github.classgraph>
     <version.com.redhat.cloud>0.15.5</version.com.redhat.cloud>
     <version.json-schema-validator>1.0.69</version.json-schema-validator>
+    <version.com.amazonaws>1.12.258</version.com.amazonaws>
     <version.assertj.version>3.23.1</version.assertj.version>
     <!-- Versions are misaligned, kafka cannot be updated to 0.19 https://issues.redhat.com/browse/MGDOBR-531 -->
     <version.com.redhat.cloud-connectors>0.20.0</version.com.redhat.cloud-connectors>
@@ -161,6 +162,11 @@
         <groupId>com.amazonaws.secretsmanager</groupId>
         <artifactId>aws-secretsmanager-caching-java</artifactId>
         <version>${version.com.amazonaws.secretsmanager}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-route53</artifactId>
+        <version>${version.com.amazonaws}</version>
       </dependency>
       <dependency>
         <groupId>io.quarkiverse.loggingjson</groupId>
