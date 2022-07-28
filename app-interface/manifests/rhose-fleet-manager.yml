@@ -251,6 +251,11 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: SHARD_ID
+                - name: SHARD_ROUTER_CANONICAL_HOSTNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: SHARD_ROUTER_CANONICAL_HOSTNAME
               ports:
                 - containerPort: 8080
               livenessProbe:
