@@ -575,6 +575,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorsList'
+        "404":
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorsList'
         "500":
           description: Internal error.
           content:
