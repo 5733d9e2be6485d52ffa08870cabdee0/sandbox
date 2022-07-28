@@ -24,7 +24,7 @@ import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift", enableIfMissing = true)
+@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsServiceOpenshiftImpl implements DnsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceOpenshiftImpl.class);
@@ -54,7 +54,7 @@ public class DnsServiceOpenshiftImpl implements DnsService {
      */
     @Override
     public Boolean createDnsRecord(String bridgeId) {
-        LOGGER.info(String.format("creating DNS zone for bridge '%s'", bridgeId));
+        LOGGER.info("Creating DNS zone for bridge '{}'", bridgeId);
         ResourceRecordSet resourceRecordSet = buildResourceRecordSet(buildBridgeHost(bridgeId), bridgeId);
 
         // idempotency guarantee : if a resource set exists Route 53 updates it with the values in the request.
@@ -70,6 +70,7 @@ public class DnsServiceOpenshiftImpl implements DnsService {
 
     @Override
     public Boolean deleteDnsRecord(String bridgeId) {
+        LOGGER.info("Deleting DNS zone for bridge '{}'", bridgeId);
         ResourceRecordSet resourceRecordSet = buildResourceRecordSet(buildBridgeHost(bridgeId), bridgeId);
         Change addStateChange = new Change(ChangeAction.DELETE, resourceRecordSet);
         ChangeBatch changeBatch = new ChangeBatch(List.of(addStateChange));
@@ -79,6 +80,7 @@ public class DnsServiceOpenshiftImpl implements DnsService {
                                 .withChangeBatch(changeBatch)
                                 .withHostedZoneId(
                                         dnsConfigOpenshiftProvider.getHostedZoneId())))
+                // idempotency guarantee : if the Dns zone does not exist the client we ignore the InvalidChangeBatchException raised by the aws client
                 .onFailure(InvalidChangeBatchException.class)
                 .recoverWithNull()
                 .onItem()
