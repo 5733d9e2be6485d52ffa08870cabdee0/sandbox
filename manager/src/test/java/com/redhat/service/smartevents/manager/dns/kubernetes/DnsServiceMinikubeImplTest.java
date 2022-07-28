@@ -11,7 +11,7 @@ public class DnsServiceMinikubeImplTest {
     private static final String MINIKUBE_IP = "192.168.2.1";
 
     @Test
-    public void test() {
+    public void testMinikubeDnsService() {
         DnsServiceMinikubeImpl dnsServiceMinikube = new DnsServiceMinikubeImpl();
         dnsServiceMinikube.minikubeIp = MINIKUBE_IP;
 
