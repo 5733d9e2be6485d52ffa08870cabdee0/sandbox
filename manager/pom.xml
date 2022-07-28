@@ -90,6 +90,10 @@
       <groupId>io.quarkiverse.amazonservices</groupId>
       <artifactId>quarkus-amazon-secretsmanager</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-route53</artifactId>
+    </dependency>
     <!-- needed for aws secret manager async client   -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
