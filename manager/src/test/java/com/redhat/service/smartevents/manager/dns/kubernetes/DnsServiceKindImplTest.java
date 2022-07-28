@@ -11,7 +11,7 @@ public class DnsServiceKindImplTest {
     private static final String KIND_CONTROL_PLANE_ADDRESS = "kind-control-plane";
 
     @Test
-    public void test() {
+    public void testKindDnsService() {
         DnsServiceKindImpl dnsServiceKind = new DnsServiceKindImpl();
         dnsServiceKind.overrideHostname = KIND_CONTROL_PLANE_ADDRESS;
 
