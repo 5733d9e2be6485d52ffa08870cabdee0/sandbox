@@ -6,7 +6,7 @@ Feature: Kafka Action tests
   @kafkaaction
   Scenario: Send message to Kafka topic using the Kafka action
     And create a new Kafka topic "topic1"
-    And create a new Bridge "mybridge"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
     And add a Processor to the Bridge "mybridge" with body:
