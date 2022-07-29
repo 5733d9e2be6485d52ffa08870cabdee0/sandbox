@@ -27,24 +27,38 @@
       "type" : "string",
       "x-group" : "credentials"
     },
-    "azure_shared_access_key": {
-      "title": "Share Access Key",
-      "description": "The key for the Event Hubs SAS key name.",
-      "type": "string",
-      "x-group": "credentials",
-      "format": "base64"
+    "azure_shared_access_key" : {
+      "title" : "Share Access Key",
+      "x-group" : "credentials",
+      "oneOf" : [ {
+        "title" : "Share Access Key",
+        "description" : "The key for EventHubs SAS key name",
+        "type" : "string",
+        "format" : "password"
+      }, {
+        "description" : "An opaque reference to the azure_shared_access_key",
+        "type" : "object",
+        "properties" : { }
+      } ]
     },
     "azure_blob_account_name" : {
       "title" : "Azure Storage Blob Account Name",
       "description" : "The name of the Storage Blob account.",
       "type" : "string"
     },
-    "azure_blob_access_key": {
-      "title": "Azure Storage Blob Access Key",
-      "description": "The key for the Azure Storage Blob service that is associated with the Storage Blob account name.",
-      "type": "string",
-      "x-group": "credentials",
-      "format": "base64"
+    "azure_blob_access_key" : {
+      "title" : "Azure Storage Blob Access Key",
+      "x-group" : "credentials",
+      "oneOf" : [ {
+        "title" : "Azure Storage Blob Access Key",
+        "description" : "The key for Azure Storage Blob service associated with the Blob account name",
+        "type" : "string",
+        "format" : "password"
+      }, {
+        "description" : "An opaque reference to the azure_blob_access_key",
+        "type" : "object",
+        "properties" : { }
+      } ]
     },
     "azure_blob_container_name" : {
       "title" : "Azure Storage Blob Container Name",
