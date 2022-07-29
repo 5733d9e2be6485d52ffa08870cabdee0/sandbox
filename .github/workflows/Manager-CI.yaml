@@ -63,6 +63,11 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
           sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
         working-directory: kustomize
+      - name: Set Kind hostname in the Manager configuration
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/manager/patches/deploy-config.yaml
+        working-directory: kustomize
       - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
         run: |
           sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
@@ -152,11 +157,16 @@ jobs:
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       - name: Run integration tests
         env:
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Print operator log
         if: always()

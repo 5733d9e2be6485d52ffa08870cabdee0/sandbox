@@ -1,7 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user.validators.processors;
 
 import java.util.Collections;
-import java.util.Objects;
+import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,6 +11,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Unsuppor
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
 @ApplicationScoped
@@ -23,24 +24,23 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
     }
 
     @Inject
-    public ErrorHandlerConstraintValidator(GatewayConfigurator gatewayConfigurator, GatewayConfigurator gatewayConfigurator1) {
+    public ErrorHandlerConstraintValidator(GatewayConfigurator gatewayConfigurator) {
         super(gatewayConfigurator);
-        this.gatewayConfigurator = gatewayConfigurator1;
     }
 
     @Override
-    public boolean isValid(BridgeRequest value, ConstraintValidatorContext context) {
-        Action action = value.getErrorHandler();
+    public boolean isValid(BridgeRequest bridgeRequest, ConstraintValidatorContext context) {
+        Action errorHandlerAction = bridgeRequest.getErrorHandler();
 
-        if (action == null) {
+        if (errorHandlerAction == null) {
             return true;
         }
 
-        if (!isValidGateway(action, context)) {
+        if (!isValidGateway(errorHandlerAction, context)) {
             return false;
         }
 
-        if (!Objects.equals(action.getType(), WebhookAction.TYPE)) {
+        if (!List.of(WebhookAction.TYPE, KafkaTopicAction.TYPE).contains(errorHandlerAction.getType())) {
             addConstraintViolation(context,
                     UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR,
                     Collections.emptyMap(),
