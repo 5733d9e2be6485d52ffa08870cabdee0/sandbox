@@ -10,12 +10,12 @@
   "properties": {
     "aws_bucket_name_or_arn": {
       "title": "Bucket Name",
-      "description": "The S3 Bucket name or ARN",
+      "description": "The S3 Bucket name or Amazon Resource Name (ARN).",
       "type": "string"
     },
     "aws_delete_after_read": {
       "title": "Auto-delete Objects",
-      "description": "Delete objects after consuming them",
+      "description": "Specifies to delete objects after consuming them.",
       "type": "boolean",
       "default": true
     },
@@ -25,7 +25,7 @@
       "oneOf": [
         {
           "title": "Access Key",
-          "description": "The access key obtained from AWS",
+          "description": "The access key obtained from AWS.",
           "type": "string",
           "format": "password"
         },
@@ -42,7 +42,7 @@
       "oneOf": [
         {
           "title": "Secret Key",
-          "description": "The secret key obtained from AWS",
+          "description": "The secret key obtained from AWS.",
           "type": "string",
           "format": "password"
         },
@@ -55,7 +55,7 @@
     },
     "aws_region": {
       "title": "AWS Region",
-      "description": "The AWS region to connect to",
+      "description": "The AWS region to access.",
       "type": "string",
       "example": "eu-west-1",
       "enum": [
@@ -96,44 +96,43 @@
     },
     "aws_auto_create_bucket": {
       "title": "Autocreate Bucket",
-      "description": "Setting the autocreation of the S3 bucket bucketName.",
+      "description": "Specifies to automatically create the S3 bucket.",
       "type": "boolean",
       "default": false
     },
     "aws_include_body": {
       "title": "Include Body",
-      "description": "If it is true, the exchange will be consumed and put into the body and closed. If false the S3Object stream will be put raw into the body and the headers will be set with the S3 object metadata.",
+      "description": "If true, the exchange is consumed and put into the body and closed. If false, the S3Object stream is put raw into the body and the headers are set with the S3 object metadata.",
       "type": "boolean",
       "default": true
     },
     "aws_prefix": {
       "title": "Prefix",
-      "description": "The AWS S3 bucket prefix to consider while searching",
+      "description": "The AWS S3 bucket prefix to consider while searching.",
       "type": "string",
       "example": "folder/"
     },
     "aws_ignore_body": {
       "title": "Ignore Body",
-      "description": "If it is true, the S3 Object Body will be ignored completely, if it is set to false the S3 Object will be put in the body. Setting this to true, will override any behavior defined by includeBody option.",
+      "description": "If true, the S3 Object body is ignored. Setting this to true overrides any behavior defined by the `includeBody` option. If false, the S3 object is put in the body.",
       "type": "boolean",
       "default": false
     },
     "aws_uri_endpoint_override": {
       "title": "Overwrite Endpoint URI",
-      "description": "Set the overriding endpoint URI. This option needs to be used in combination with overrideEndpoint option.",
+      "description": "The overriding endpoint URI. To use this option, you must also select the `overrideEndpoint` option.",
       "type": "string"
     },
     "aws_override_endpoint": {
       "title": "Endpoint Overwrite",
-      "description": "Set the need for overiding the endpoint URI. This option needs to be used in combination with uriEndpointOverride setting.",
+      "description": "Select this option to override the endpoint URI. To use this option, you must also provide a URI for the `uriEndpointOverride` option.",
       "type": "boolean",
       "default": false
     },
     "aws_delay": {
       "title": "Delay",
-      "description": "Milliseconds before the next poll of the selected bucket",
+      "description": "The number of milliseconds before the next poll of the selected bucket.",
       "type": "integer",
       "default": 500
     }
   }
-}
