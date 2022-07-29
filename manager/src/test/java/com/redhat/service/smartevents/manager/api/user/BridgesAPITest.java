@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager.api.user;
 
+import java.util.Set;
+
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -9,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorDAO;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidCloudProviderException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -36,8 +41,10 @@ import static com.redhat.service.smartevents.infra.api.APIConstants.USER_NAME_AT
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +65,9 @@ public class BridgesAPITest {
     @InjectMock
     @SuppressWarnings("unused")
     RhoasService rhoasServiceMock;
+
+    @Inject
+    BridgeErrorDAO errorDAO;
 
     @InjectMock
     @SuppressWarnings("unused")
@@ -91,13 +101,13 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
     }
 
     @Test
     public void createBridgeNoAuthentication() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(401);
     }
 
@@ -111,7 +121,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridge() {
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -121,13 +131,16 @@ public class BridgesAPITest {
         assertThat(retrievedBridge.getId()).isEqualTo(bridge.getId());
         assertThat(retrievedBridge.getName()).isEqualTo(bridge.getName());
         assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
+        assertThat(retrievedBridge.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(retrievedBridge.getRegion()).isEqualTo(DEFAULT_REGION);
+        assertThat(retrievedBridge.getErrorHandler()).isNull();
     }
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getBridgeWithErrorHandler() {
         Action errorHandler = createWebhookAction();
-        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, errorHandler));
+        Response bridgeCreateResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION, errorHandler));
         bridgeCreateResponse.then().statusCode(202);
 
         BridgeResponse bridge = bridgeCreateResponse.as(BridgeResponse.class);
@@ -139,6 +152,37 @@ public class BridgesAPITest {
         assertThat(retrievedBridge.getEndpoint()).isEqualTo(bridge.getEndpoint());
         assertThat(retrievedBridge.getErrorHandler()).isNotNull();
         assertThat(retrievedBridge.getErrorHandler()).isEqualTo(errorHandler);
+        assertThat(retrievedBridge.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(retrievedBridge.getRegion()).isEqualTo(DEFAULT_REGION);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void createBridge_withInvalidCloudProvider() {
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
+                .as(ErrorsResponse.class);
+
+        Set<String> expectedErrorCodes = Set.of(
+                errorDAO.findByException(InvalidCloudProviderException.class).getCode(),
+                errorDAO.findByException(InvalidRegionException.class).getCode());
+
+        assertThat(errorsResponse.getItems())
+                .hasSize(2)
+                .allSatisfy((e) -> expectedErrorCodes.contains(e.getCode()));
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void createBridge_withInvalidRegion() {
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
+                .as(ErrorsResponse.class);
+
+        Set<String> expectedErrorCodes = Set.of(
+                errorDAO.findByException(InvalidRegionException.class).getCode());
+
+        assertThat(errorsResponse.getItems())
+                .hasSize(1)
+                .allSatisfy((e) -> expectedErrorCodes.contains(e));
     }
 
     @Test
@@ -161,7 +205,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testCreateAndGetBridge() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
 
         BridgeListResponse bridgeListResponse = TestUtils.getBridges().as(BridgeListResponse.class);
@@ -172,6 +216,8 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getStatus()).isEqualTo(ACCEPTED);
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
 
         assertThat(bridgeResponse.getEndpoint()).isNull();
     }
@@ -198,6 +244,8 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
     }
 
     @Test
@@ -222,6 +270,8 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
     }
 
     @Test
@@ -247,6 +297,8 @@ public class BridgesAPITest {
         assertThat(bridgeResponse1.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse1.getId());
         assertThat(bridgeResponse1.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse1.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse1.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse1.getRegion()).isEqualTo(DEFAULT_REGION);
 
         BridgeResponse bridgeResponse2 = bridgeListResponse.getItems().get(1);
         assertThat(bridgeResponse2.getName()).isEqualTo(bridge1.getName());
@@ -254,6 +306,8 @@ public class BridgesAPITest {
         assertThat(bridgeResponse2.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse2.getId());
         assertThat(bridgeResponse2.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse2.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse2.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse2.getRegion()).isEqualTo(DEFAULT_REGION);
     }
 
     @Test
@@ -316,7 +370,7 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testDeleteBridgeWithActiveProcessors() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         TestUtils.updateBridge(
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
@@ -334,9 +388,9 @@ public class BridgesAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testAlreadyExistingBridge() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(202);
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME))
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
                 .then().statusCode(400);
     }
 }

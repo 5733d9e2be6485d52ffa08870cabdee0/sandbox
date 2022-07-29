@@ -34,16 +34,16 @@ done
 shift "$((OPTIND-1))"
 
 if [ "${bridge_error_type}" = "none" ]; then
-    bridge_payload='{"name": '"\"$BRIDGE_NAME\""' }'
+    bridge_payload='{"name": '"\"$BRIDGE_NAME\""', "cloud_provider": "aws", "region": "us-east-1" }'
 elif [ "${bridge_error_type}" = 'webhook' ]; then
-    bridge_payload='{"name": '"\"$BRIDGE_NAME\""',
+    bridge_payload='{"name": '"\"$BRIDGE_NAME\""', "cloud_provider": "aws", "region": "us-east-1",
                     "error_handler": { "type": "webhook_sink_0.1",
                                                      "parameters": {
                                                          "endpoint": '"\"$ERROR_HANDLER_WEBHOOK_URL\""'
                                                      }
                                                    }}'
 elif [ "${bridge_error_type}" = 'kafka' ]; then
-      bridge_payload='{"name": '"\"$BRIDGE_NAME\""',
+      bridge_payload='{"name": '"\"$BRIDGE_NAME\""', "cloud_provider": "aws", "region": "us-east-1",
                       "error_handler": {
       "type": "kafka_topic_sink_0.1",
       "parameters": {
