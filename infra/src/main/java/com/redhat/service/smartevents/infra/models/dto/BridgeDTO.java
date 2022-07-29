@@ -2,8 +2,10 @@ package com.redhat.service.smartevents.infra.models.dto;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BridgeDTO {
 
     @JsonProperty("id")
