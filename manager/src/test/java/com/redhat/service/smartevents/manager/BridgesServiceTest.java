@@ -254,11 +254,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testToDTO() {
-        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME);
-        bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
-
-        //Wait for Workers to complete
-        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
+        Bridge bridge = createPersistBridge(READY);
 
         BridgeDTO bridgeDTO = bridgesService.toDTO(bridge);
 

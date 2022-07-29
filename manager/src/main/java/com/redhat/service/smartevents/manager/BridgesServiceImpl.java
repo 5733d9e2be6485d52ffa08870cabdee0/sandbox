@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +33,18 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
-import com.redhat.service.smartevents.manager.providers.TlsCertificateProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
+
+    @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
+    String tlsCertificate;
+
+    @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
+    String tlsKey;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -51,9 +57,6 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
-
-    @Inject
-    TlsCertificateProvider tlsCertificateProvider;
 
     @Inject
     ShardService shardService;
@@ -211,8 +214,8 @@ public class BridgesServiceImpl implements BridgesService {
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
         dto.setEndpoint(bridge.getEndpoint());
-        dto.setTlsCertificate(tlsCertificateProvider.getTlsCertificate());
-        dto.setTlsKey(tlsCertificateProvider.getTlsKey());
+        dto.setTlsCertificate(tlsCertificate);
+        dto.setTlsKey(tlsKey);
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
         dto.setOwner(bridge.getOwner());
