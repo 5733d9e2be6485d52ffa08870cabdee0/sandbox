@@ -15,6 +15,12 @@ public class BridgeDTO {
     @JsonProperty("endpoint")
     private String endpoint;
 
+    @JsonProperty("tlsCertificate")
+    private String tlsCertificate;
+
+    @JsonProperty("tlsKey")
+    private String tlsKey;
+
     @JsonProperty("customerId")
     private String customerId;
 
@@ -30,10 +36,12 @@ public class BridgeDTO {
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String customerId, String owner, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
+    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
+        this.tlsCertificate = tlsCertificate;
+        this.tlsKey = tlsKey;
         this.customerId = customerId;
         this.owner = owner;
         this.status = status;
@@ -54,6 +62,14 @@ public class BridgeDTO {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public void setTlsCertificate(String tlsCertificate) {
+        this.tlsCertificate = tlsCertificate;
+    }
+
+    public void setTlsKey(String tlsKey) {
+        this.tlsKey = tlsKey;
     }
 
     public void setId(String id) {
@@ -82,6 +98,14 @@ public class BridgeDTO {
 
     public String getEndpoint() {
         return endpoint;
+    }
+
+    public String getTlsCertificate() {
+        return tlsCertificate;
+    }
+
+    public String getTlsKey() {
+        return tlsKey;
     }
 
     public String getName() {
@@ -118,6 +142,9 @@ public class BridgeDTO {
         return "BridgeDTO{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", endpoint='" + endpoint + '\'' +
+                ", tlsCertificate='REDACTED'" +
+                ", tlsKey='REDACTED'" +
                 ", endpoint='" + endpoint + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", owner='" + owner + '\'' +

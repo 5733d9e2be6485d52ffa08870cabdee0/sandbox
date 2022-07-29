@@ -32,6 +32,7 @@ import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
+import com.redhat.service.smartevents.manager.providers.TlsCertificateProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 
 @ApplicationScoped
@@ -50,6 +51,9 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
+
+    @Inject
+    TlsCertificateProvider tlsCertificateProvider;
 
     @Inject
     ShardService shardService;
@@ -205,6 +209,8 @@ public class BridgesServiceImpl implements BridgesService {
         dto.setId(bridge.getId());
         dto.setName(bridge.getName());
         dto.setEndpoint(bridge.getEndpoint());
+        dto.setTlsCertificate(tlsCertificateProvider.getTlsCertificate());
+        dto.setTlsKey(tlsCertificateProvider.getTlsKey());
         dto.setStatus(bridge.getStatus());
         dto.setCustomerId(bridge.getCustomerId());
         dto.setOwner(bridge.getOwner());

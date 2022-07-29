@@ -51,8 +51,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     GatewayConfigurator gatewayConfigurator;
+
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
+
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
@@ -61,10 +63,13 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     BridgesService bridgesService;
+
     @Inject
     ConnectorsService connectorService;
+
     @Inject
     ShardService shardService;
+
     @Inject
     WorkManager workManager;
 

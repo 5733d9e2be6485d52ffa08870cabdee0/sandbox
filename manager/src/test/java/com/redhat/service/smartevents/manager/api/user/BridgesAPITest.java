@@ -321,6 +321,8 @@ public class BridgesAPITest {
                 new BridgeDTO(bridgeResponse.getId(),
                         bridgeResponse.getName(),
                         bridgeResponse.getEndpoint(),
+                        null,
+                        null,
                         DEFAULT_CUSTOMER_ID,
                         DEFAULT_USER_NAME,
                         READY,

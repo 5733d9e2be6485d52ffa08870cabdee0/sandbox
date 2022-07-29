@@ -22,6 +22,8 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
         return new BridgeDTO("bridgesDeployed-" + suffix,
                 "myName-" + suffix,
                 "",
+                TestSupport.BRIDGE_TLS_CERTIFICATE,
+                TestSupport.BRIDGE_TLS_KEY,
                 TestSupport.CUSTOMER_ID,
                 TestSupport.USER_NAME,
                 status,
