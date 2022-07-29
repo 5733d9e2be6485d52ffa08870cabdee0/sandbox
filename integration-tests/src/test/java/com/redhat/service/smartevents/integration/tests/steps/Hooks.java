@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
+import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
@@ -89,6 +90,9 @@ public class Hooks {
     @After
     public void cleanUp() {
         if (!Boolean.parseBoolean(DISABLE_CLEANUP)) {
+            // Delete Kafka topics and related ACLs
+            cleanKafkaTopics();
+
             String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
             // Remove all bridges/processors created
             context.getAllBridges().values()
@@ -136,6 +140,12 @@ public class Hooks {
                                 break;
                         }
                     });
+        }
+    }
+
+    private void cleanKafkaTopics() {
+        for (String topic : context.allKafkaTopics()) {
+            KafkaResource.deleteKafkaTopic(topic);
         }
     }
 }
