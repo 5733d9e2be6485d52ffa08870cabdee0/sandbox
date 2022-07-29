@@ -817,7 +817,7 @@ public class ProcessorAPITest {
     }
 
     private BridgeResponse createBridge() {
-        BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME);
+        BridgeRequest r = new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION);
         BridgeResponse bridgeResponse = TestUtils.createBridge(r).as(BridgeResponse.class);
         return bridgeResponse;
     }

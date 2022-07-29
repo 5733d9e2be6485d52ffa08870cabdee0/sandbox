@@ -79,6 +79,8 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setOwner(owner);
         bridge.setShardId(shardService.getAssignedShard(bridge.getId()).getId());
         bridge.setGeneration(0);
+        bridge.setCloudProvider(bridgeRequest.getCloudProvider());
+        bridge.setRegion(bridgeRequest.getRegion());
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
@@ -230,6 +232,8 @@ public class BridgesServiceImpl implements BridgesService {
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
+        response.setCloudProvider(bridge.getCloudProvider());
+        response.setRegion(bridge.getRegion());
         return response;
     }
 }
