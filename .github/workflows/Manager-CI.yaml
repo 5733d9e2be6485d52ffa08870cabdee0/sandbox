@@ -147,8 +147,8 @@ jobs:
         working-directory: kustomize
       - name: Wait for operator and manager to start
         run: |
-          kubectl wait --for=condition=available --timeout=240s deployment/event-bridge-shard-operator -n event-bridge-operator
           kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge-shard-operator -n event-bridge-operator
       - name: Prepare test configuration for E2E tests
         uses: ./.github/actions/e2e-test-config
         env:
