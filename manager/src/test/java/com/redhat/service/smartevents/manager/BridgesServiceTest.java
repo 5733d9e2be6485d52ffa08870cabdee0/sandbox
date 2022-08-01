@@ -12,6 +12,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLi
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
@@ -28,7 +29,10 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_ENDPOINT;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_TLS_CERTIFICATE;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_TLS_KEY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
@@ -247,6 +251,21 @@ public class BridgesServiceTest {
     public void testDeleteBridge_whenStatusIsNotReady() {
         Bridge bridge = createPersistBridge(PROVISIONING);
         assertThatExceptionOfType(BridgeLifecycleException.class).isThrownBy(() -> bridgesService.deleteBridge(bridge.getId(), bridge.getCustomerId()));
+    }
+
+    @Test
+    public void testToDTO() {
+        Bridge bridge = createPersistBridge(READY);
+
+        BridgeDTO bridgeDTO = bridgesService.toDTO(bridge);
+
+        assertThat(bridgeDTO.getId()).hasSizeGreaterThan(0);
+        assertThat(bridgeDTO.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
+        assertThat(bridgeDTO.getEndpoint()).isEqualTo(DEFAULT_BRIDGE_ENDPOINT);
+        assertThat(bridgeDTO.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridgeDTO.getOwner()).isEqualTo(DEFAULT_CUSTOMER_ID);
+        assertThat(bridgeDTO.getTlsCertificate()).isEqualTo(DEFAULT_BRIDGE_TLS_CERTIFICATE);
+        assertThat(bridgeDTO.getTlsKey()).isEqualTo(DEFAULT_BRIDGE_TLS_KEY);
     }
 
     private Bridge createPersistBridge(ManagedResourceStatus status) {

@@ -64,6 +64,8 @@ import static org.mockito.Mockito.when;
 public class ShardBridgesSyncAPITest {
 
     private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
+    private static final String TEST_BRIDGE_TLS_CERTIFICATE = "certificate";
+    private static final String TEST_BRIDGE_TLS_KEY = "key";
     private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT;
 
     @Inject
@@ -97,6 +99,8 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -136,6 +140,9 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeId,
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -174,6 +181,9 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -209,6 +219,9 @@ public class ShardBridgesSyncAPITest {
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
