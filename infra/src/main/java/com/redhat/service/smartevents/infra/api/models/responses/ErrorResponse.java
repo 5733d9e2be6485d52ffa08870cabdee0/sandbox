@@ -12,18 +12,8 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "Error",
-        allOf = { BaseResponse.class })
+@Schema(name = "Error")
 public class ErrorResponse extends BaseResponse {
-
-    // https://issues.redhat.com/browse/MGDOBR-935
-    @NotNull
-    @JsonProperty("id")
-    private String id;
-
-    // https://issues.redhat.com/browse/MGDOBR-935
-    @JsonProperty("href")
-    private String href;
 
     @JsonProperty("code")
     private String code;
