@@ -25,22 +25,25 @@ public class ShardServiceTest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @Test
-    public void testGetAssignedShardId() {
+    public void testGetAssignedShard() {
         databaseManagerUtils.cleanUp();
         Shard shard = new Shard();
+        shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
         shardDAO.persist(shard);
 
-        String id = shardService.getAssignedShardId("myId");
+        Shard retrieved = shardService.getAssignedShard("myId");
 
-        assertThat(id).isEqualTo(shard.getId());
+        assertThat(retrieved.getId()).isEqualTo(shard.getId());
+        assertThat(retrieved.getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
     }
 
     @Test
     public void testGetDefaultAssignedShardId() {
         databaseManagerUtils.cleanUpAndInitWithDefaultShard();
 
-        String id = shardService.getAssignedShardId("myId");
+        Shard shard = shardService.getAssignedShard("myId");
 
-        assertThat(id).isEqualTo(TestConstants.SHARD_ID);
+        assertThat(shard.getId()).isEqualTo(TestConstants.SHARD_ID);
+        assertThat(shard.getRouterCanonicalHostname()).isEqualTo(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
     }
 }

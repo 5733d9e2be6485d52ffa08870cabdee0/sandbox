@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
-import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.manager.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -300,17 +300,12 @@ public class BridgeDAOTest {
     }
 
     private Bridge buildBridge(String id, String name) {
-        Bridge bridge = new Bridge();
+        Bridge bridge = Fixtures.createBridge();
         bridge.setId(id);
-        bridge.setCustomerId(DEFAULT_CUSTOMER_ID);
-        bridge.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
-        bridge.setOwner(TestConstants.DEFAULT_USER_NAME);
         bridge.setName(name);
         bridge.setStatus(ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setShardId(TestConstants.SHARD_ID);
-        bridge.setDefinition(new BridgeDefinition());
-
         return bridge;
     }
 }

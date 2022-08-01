@@ -7,6 +7,8 @@ Feature: Error handling tests
     """
     {
         "name": "ehBridge",
+        "cloud_provider": "aws",
+        "region": "us-east-1",
         "error_handler": {
             "type": "webhook_sink_0.1",
             "parameters": {

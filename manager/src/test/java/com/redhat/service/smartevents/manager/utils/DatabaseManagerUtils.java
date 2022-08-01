@@ -80,8 +80,9 @@ public class DatabaseManagerUtils {
     }
 
     private void registerDefaultShard() {
-        Shard traditional = new Shard();
-        traditional.setId(TestConstants.SHARD_ID);
-        shardDAO.persist(traditional);
+        Shard shard = new Shard();
+        shard.setId(TestConstants.SHARD_ID);
+        shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+        shardDAO.persist(shard);
     }
 }

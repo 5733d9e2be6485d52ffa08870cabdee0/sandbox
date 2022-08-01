@@ -46,9 +46,11 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDGE_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CLOUD_PROVIDER;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_ORGANISATION_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
+import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_REGION;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.TestConstants.SHARD_ID;
 import static io.restassured.RestAssured.given;
@@ -62,6 +64,8 @@ import static org.mockito.Mockito.when;
 public class ShardBridgesSyncAPITest {
 
     private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
+    private static final String TEST_BRIDGE_TLS_CERTIFICATE = "certificate";
+    private static final String TEST_BRIDGE_TLS_KEY = "key";
     private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT;
 
     @Inject
@@ -90,11 +94,13 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithKafkaAction() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -128,12 +134,15 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void getProcessorsWithSendToBridgeAction() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeId,
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -168,10 +177,13 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void updateProcessorStatus() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -203,10 +215,13 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void metricsAreProduced() {
-        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME)).as(BridgeResponse.class);
+        BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
                 TEST_BRIDGE_ENDPOINT,
+                TEST_BRIDGE_TLS_CERTIFICATE,
+                TEST_BRIDGE_TLS_KEY,
+
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -255,7 +270,7 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDeploy() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -275,7 +290,7 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesToDelete() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -305,7 +320,7 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testNotifyDeployment() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
@@ -332,7 +347,7 @@ public class ShardBridgesSyncAPITest {
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testNotifyDeletion() {
-        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployOrDelete = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
