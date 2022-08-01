@@ -42,8 +42,9 @@ public class DnsServiceOpenshiftImpl implements DnsService {
     }
 
     @Override
-    public String buildBridgeHost(String bridgeId) {
-        return bridgeId + dnsConfigOpenshiftProvider.getSubdomain();
+    public String buildBridgeEndpoint(String bridgeId, String customerId) {
+        // Need to append the path to the broker until https://github.com/knative/eventing/issues/6467 gets fixed
+        return "https://" + buildBridgeHost(bridgeId) + "/ob-" + customerId + "/ob-" + bridgeId;
     }
 
     /**
@@ -97,5 +98,9 @@ public class DnsServiceOpenshiftImpl implements DnsService {
         ResourceRecord resourceRecord = new ResourceRecord(shardService.getAssignedShard(bridgeId).getRouterCanonicalHostname());
         resourceRecordSet.setResourceRecords(List.of(resourceRecord));
         return resourceRecordSet;
+    }
+
+    private String buildBridgeHost(String bridgeId) {
+        return bridgeId + dnsConfigOpenshiftProvider.getSubdomain();
     }
 }

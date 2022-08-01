@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -262,25 +263,23 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
-        Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
-        Processor p = processorDAO.findById(processorDTO.getId());
-        if (p == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getCustomerId()));
+    public Processor updateProcessorStatus(UpdateManagedResourceStatusDTO updateDTO) {
+        Processor p = processorDAO.findById(updateDTO.getId());
+        if (p == null || !p.getBridge().getCustomerId().equals(updateDTO.getId())) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", updateDTO.getId()));
         }
 
-        if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {
+        if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
             p.setStatus(ManagedResourceStatus.DELETED);
-            processorDAO.deleteById(processorDTO.getId());
+            processorDAO.deleteById(updateDTO.getId());
             metricsService.onOperationComplete(p, MetricsOperation.DELETE);
             return p;
         }
 
         boolean provisioningCallback = p.getStatus() == ManagedResourceStatus.PROVISIONING;
-        p.setStatus(processorDTO.getStatus());
+        p.setStatus(updateDTO.getStatus());
 
-        if (ManagedResourceStatus.READY == processorDTO.getStatus()) {
+        if (ManagedResourceStatus.READY == updateDTO.getStatus()) {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
                     p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));

@@ -51,7 +51,8 @@ public class DnsServiceOpenshiftImplTest {
     @Test
     public void testBuildBridgeHost() {
         DnsService dnsService = new DnsServiceOpenshiftImpl(shardService, dnsConfigOpenshiftProvider);
-        assertThat(dnsService.buildBridgeHost(TestConstants.DEFAULT_BRIDGE_ID)).isEqualTo(TestConstants.DEFAULT_BRIDGE_ID + SUBDOMAIN);
+        assertThat(dnsService.buildBridgeEndpoint(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .isEqualTo("https://" + TestConstants.DEFAULT_BRIDGE_ID + SUBDOMAIN + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
     }
 
     @Test

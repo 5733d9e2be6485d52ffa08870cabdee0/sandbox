@@ -16,8 +16,8 @@ public class DnsServiceMinikubeImpl implements DnsService {
     String minikubeIp;
 
     @Override
-    public String buildBridgeHost(String bridgeId) {
-        return minikubeIp;
+    public String buildBridgeEndpoint(String bridgeId, String customerId) {
+        return "http://" + minikubeIp + "/ob-" + customerId + "/ob-" + bridgeId;
     }
 
     @Override

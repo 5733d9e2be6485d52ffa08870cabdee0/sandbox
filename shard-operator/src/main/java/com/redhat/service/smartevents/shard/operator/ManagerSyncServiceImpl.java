@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -63,8 +64,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
                     if (y.getStatus().equals(ManagedResourceStatus.PREPARING)) { // Bridges to deploy
                         LOGGER.info("Found Bridge '{}' in PREPARING state. Moving to PROVISIONING.", y.getId());
-                        y.setStatus(ManagedResourceStatus.PROVISIONING);
-                        return managerClient.notifyBridgeStatusChange(y)
+                        UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(y.getId(), y.getCustomerId(), ManagedResourceStatus.PROVISIONING);
+                        return managerClient.notifyBridgeStatusChange(updateDto)
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.info("Provisioning notification for Bridge '{}' has been sent to the manager successfully", y.getId());
@@ -79,8 +80,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                     }
                     if (y.getStatus().equals(ManagedResourceStatus.DEPROVISION)) { // Bridges to delete
                         LOGGER.info("Found Bridge '{}' in DEPROVISION state. Moving to DELETING.", y.getId());
-                        y.setStatus(ManagedResourceStatus.DELETING);
-                        return managerClient.notifyBridgeStatusChange(y)
+                        UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(y.getId(), y.getCustomerId(), ManagedResourceStatus.DELETING);
+                        return managerClient.notifyBridgeStatusChange(updateDto)
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.info("Deleting notification for Bridge '{}' has been sent to the manager successfully", y.getId());
@@ -103,8 +104,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                 .onItem().transformToUni(x -> Uni.createFrom().item(x.stream().map(y -> {
                     if (ManagedResourceStatus.PREPARING.equals(y.getStatus())) {
                         LOGGER.info("Found Processor '{}' in PREPARING state. Moving to PROVISIONING.", y.getId());
-                        y.setStatus(ManagedResourceStatus.PROVISIONING);
-                        return managerClient.notifyProcessorStatusChange(y)
+                        UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(y.getId(), y.getCustomerId(), ManagedResourceStatus.PROVISIONING);
+                        return managerClient.notifyProcessorStatusChange(updateDto)
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.info("Provisioning notification for Processor '{}' has been sent to the manager successfully", y.getId());
@@ -119,8 +120,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
                     }
                     if (ManagedResourceStatus.DEPROVISION.equals(y.getStatus())) { // Processor to delete
                         LOGGER.info("Found Processor '{}' in DEPROVISION state. Moving to DELETING.", y.getId());
-                        y.setStatus(ManagedResourceStatus.DELETING);
-                        return managerClient.notifyProcessorStatusChange(y)
+                        UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(y.getId(), y.getCustomerId(), ManagedResourceStatus.DELETING);
+                        return managerClient.notifyProcessorStatusChange(updateDto)
                                 .subscribe().with(
                                         success -> {
                                             LOGGER.info("Deleting notification for Processor '{}' has been sent to the manager successfully", y.getId());
@@ -161,8 +162,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             runnable.run();
         } catch (Exception e) {
             LOGGER.warn("{} of Bridge '{}' failed", operation.getPrettyName(), bridge.getId(), e);
-            bridge.setStatus(failedStatus);
-            managerClient.notifyBridgeStatusChange(bridge)
+            UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(bridge.getId(), bridge.getCustomerId(), failedStatus);
+            managerClient.notifyBridgeStatusChange(updateDto)
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Bridge '{}' has been sent to the manager successfully", bridge.getId()),
                             failure -> failedToSendUpdateToManager(bridge, failure));
@@ -193,8 +194,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             runnable.run();
         } catch (Exception e) {
             LOGGER.warn("{} of Processor '{}' failed", operation.getPrettyName(), processor.getId(), e);
-            processor.setStatus(failedStatus);
-            managerClient.notifyProcessorStatusChange(processor)
+            UpdateManagedResourceStatusDTO updateDto = new UpdateManagedResourceStatusDTO(processor.getId(), processor.getCustomerId(), failedStatus);
+            managerClient.notifyProcessorStatusChange(updateDto)
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Processor '{}' has been sent to the manager successfully", processor.getId()),
                             failure -> failedToSendUpdateToManager(processor, failure));

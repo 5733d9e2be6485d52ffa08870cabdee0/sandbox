@@ -1,5 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.resources;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import com.google.common.base.Strings;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -48,23 +51,19 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
     }
 
     public static BridgeIngress fromDTO(BridgeDTO bridgeDTO, String namespace) {
-        return new Builder()
-                .withNamespace(namespace)
-                .withBridgeName(bridgeDTO.getName())
-                .withCustomerId(bridgeDTO.getCustomerId())
-                .withOwner(bridgeDTO.getOwner())
-                .withBridgeId(bridgeDTO.getId())
-                .build();
-    }
-
-    public BridgeDTO toDTO() {
-        BridgeDTO bridgeDTO = new BridgeDTO();
-        bridgeDTO.setId(this.getSpec().getId());
-        bridgeDTO.setCustomerId(this.getSpec().getCustomerId());
-        bridgeDTO.setOwner(this.getSpec().getOwner());
-        bridgeDTO.setName(this.getSpec().getBridgeName());
-        bridgeDTO.setEndpoint(this.getStatus().getEndpoint());
-        return bridgeDTO;
+        try {
+            return new Builder()
+                    .withNamespace(namespace)
+                    .withBridgeName(bridgeDTO.getName())
+                    .withCustomerId(bridgeDTO.getCustomerId())
+                    .withOwner(bridgeDTO.getOwner())
+                    .withBridgeId(bridgeDTO.getId())
+                    .withHost(new URL(bridgeDTO.getEndpoint()).getHost())
+                    .build();
+        } catch (MalformedURLException e) {
+            // TODO: refactor
+            throw new IllegalArgumentException("Not a valid endpoint " + bridgeDTO.getEndpoint());
+        }
     }
 
     public static String resolveResourceName(String id) {
@@ -78,6 +77,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
         private String bridgeName;
         private String customerId;
         private String owner;
+        private String host;
 
         private Builder() {
 
@@ -108,6 +108,11 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             return this;
         }
 
+        public Builder withHost(final String host) {
+            this.host = host;
+            return this;
+        }
+
         public BridgeIngress build() {
             this.validate();
             ObjectMeta meta = new ObjectMetaBuilder()
@@ -124,6 +129,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             bridgeIngressSpec.setCustomerId(customerId);
             bridgeIngressSpec.setOwner(owner);
             bridgeIngressSpec.setId(bridgeId);
+            bridgeIngressSpec.setHost(host);
 
             BridgeIngress bridgeIngress = new BridgeIngress();
             bridgeIngress.setSpec(bridgeIngressSpec);
@@ -138,6 +144,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
             requireNonNull(Strings.emptyToNull(this.bridgeId), "[BridgeIngress] Id can't be null");
             requireNonNull(Strings.emptyToNull(this.bridgeName), "[BridgeIngress] Name can't be null");
             requireNonNull(Strings.emptyToNull(this.namespace), "[BridgeIngress] Namespace can't be null");
+            requireNonNull(Strings.emptyToNull(this.host), "[BridgeIngress] Host can't be null");
         }
     }
 }

@@ -15,7 +15,8 @@ public class DnsServiceKindImplTest {
         DnsServiceKindImpl dnsServiceKind = new DnsServiceKindImpl();
         dnsServiceKind.overrideHostname = KIND_CONTROL_PLANE_ADDRESS;
 
-        assertThat(dnsServiceKind.buildBridgeHost(TestConstants.DEFAULT_BRIDGE_ID)).isEqualTo(KIND_CONTROL_PLANE_ADDRESS);
+        assertThat(dnsServiceKind.buildBridgeEndpoint(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .isEqualTo("http://" + KIND_CONTROL_PLANE_ADDRESS + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
         assertThat(dnsServiceKind.createDnsRecord(TestConstants.DEFAULT_BRIDGE_ID)).isTrue();
         assertThat(dnsServiceKind.deleteDnsRecord(TestConstants.DEFAULT_BRIDGE_ID)).isTrue();
     }

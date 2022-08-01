@@ -30,6 +30,7 @@ import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.ShardService;
@@ -82,15 +83,13 @@ public class ShardBridgesSyncAPI {
     @Operation(hidden = true, summary = "Update a Processor.", description = "Update a Processor.")
     @PUT
     @Path("processors")
-    public Response updateProcessorStatus(ProcessorDTO processorDTO) {
+    public Response updateProcessorStatus(UpdateManagedResourceStatusDTO updateDTO) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
-        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}' with status '{}'",
-                processorDTO.getId(),
-                processorDTO.getBridgeId(),
-                processorDTO.getCustomerId(),
-                processorDTO.getStatus());
-        processorService.updateProcessorStatus(processorDTO);
+        LOGGER.info("Processing update from shard for Processor with id '{}' with status '{}'",
+                updateDTO.getId(),
+                updateDTO.getStatus());
+        processorService.updateProcessorStatus(updateDTO);
         return Response.ok().build();
     }
 
@@ -150,11 +149,11 @@ public class ShardBridgesSyncAPI {
     })
     @Operation(hidden = true, summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
     @PUT
-    public Response updateBridge(BridgeDTO dto) {
+    public Response updateBridge(UpdateManagedResourceStatusDTO updateDTO) {
         String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
-        LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
-        bridgesService.updateBridge(dto);
+        LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", updateDTO.getId(), updateDTO.getStatus());
+        bridgesService.updateBridge(updateDTO);
         return Response.ok().build();
     }
 

@@ -5,6 +5,7 @@ import java.util.List;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
@@ -25,7 +26,7 @@ public interface BridgesService {
 
     List<Bridge> findByShardIdWithReadyDependencies(String shardId);
 
-    Bridge updateBridge(BridgeDTO bridgeDTO);
+    Bridge updateBridge(UpdateManagedResourceStatusDTO updateDTO);
 
     BridgeDTO toDTO(Bridge bridge);
 

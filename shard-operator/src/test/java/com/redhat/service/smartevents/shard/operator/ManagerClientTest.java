@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -45,18 +46,10 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1",
-                "myName-1",
-                "myEndpoint",
-                null,
-                null,
-                "myCustomerId",
-                "myUserName",
-                PROVISIONING,
-                KAFKA_CONNECTION_DTO);
+        UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
         stubBridgeUpdate();
         String expectedJsonUpdate =
-                "{\"id\": \"bridgeStatusChange-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"owner\": \"myUserName\", \"status\": \"provisioning\"}";
+                "{\"id\": \"bridgeStatusChange-1\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
@@ -71,17 +64,17 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
+        UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO("processorStatusChange-1", "myCustomerId", PROVISIONING);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addProcessorUpdateRequestListener(latch);
 
-        managerClient.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyProcessorStatusChange(dto).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
+                .withRequestBody(equalToJson(objectMapper.writeValueAsString(dto), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 

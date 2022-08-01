@@ -16,8 +16,8 @@ public class DnsServiceKindImpl implements DnsService {
     String overrideHostname;
 
     @Override
-    public String buildBridgeHost(String bridgeId) {
-        return overrideHostname;
+    public String buildBridgeEndpoint(String bridgeId, String customerId) {
+        return "http://" + overrideHostname + "/ob-" + customerId + "/ob-" + bridgeId;
     }
 
     @Override

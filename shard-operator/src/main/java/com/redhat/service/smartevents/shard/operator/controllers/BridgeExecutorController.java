@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
@@ -165,12 +165,10 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
-        ProcessorDTO dto = bridgeExecutor.toDTO();
-        dto.setStatus(status);
-
-        managerClient.notifyProcessorStatusChange(dto)
+        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO(bridgeExecutor.getSpec().getId(), bridgeExecutor.getSpec().getCustomerId(), status);
+        managerClient.notifyProcessorStatusChange(updateDTO)
                 .subscribe().with(
-                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
+                        success -> LOGGER.info("Updating Processor with id '{}' done", updateDTO.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", updateDTO.getId(), failure));
     }
 }

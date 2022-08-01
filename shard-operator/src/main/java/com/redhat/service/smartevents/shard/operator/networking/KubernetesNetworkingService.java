@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.shard.operator.networking;
 
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +9,7 @@ import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPath;
 import io.fabric8.kubernetes.api.model.networking.v1.HTTPIngressPathBuilder;
@@ -46,7 +45,7 @@ public class KubernetesNetworkingService implements NetworkingService {
     }
 
     @Override
-    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, String path) {
+    public NetworkResource fetchOrCreateBrokerNetworkIngress(BridgeIngress bridgeIngress, Secret secret, String path) {
         Service service = istioGatewayProvider.getIstioGatewayService();
         Ingress expected = buildIngress(bridgeIngress, service, istioGatewayProvider.getIstioGatewayServicePort(), path);
 
@@ -121,11 +120,6 @@ public class KubernetesNetworkingService implements NetworkingService {
             LOGGER.info("Ingress '{}' not ready yet", ingress.getMetadata().getName());
             return new NetworkResource("", false);
         }
-        String host = ingress.getStatus().getLoadBalancer().getIngress().get(0).getIp();
-        if (host == null) {
-            host = Optional.ofNullable(System.getenv("INGRESS_OVERRIDE_HOSTNAME")).orElse(ingress.getStatus().getLoadBalancer().getIngress().get(0).getHostname());
-        }
-        String endpoint = NetworkingConstants.HTTP_SCHEME + host + ingress.getSpec().getRules().get(0).getHttp().getPaths().get(0).getPath();
-        return new NetworkResource(endpoint, true);
+        return new NetworkResource(null, true);
     }
 }
