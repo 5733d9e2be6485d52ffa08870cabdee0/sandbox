@@ -48,6 +48,8 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1",
                 "myName-1",
                 "myEndpoint",
+                null,
+                null,
                 "myCustomerId",
                 "myUserName",
                 PROVISIONING,
@@ -115,7 +117,16 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void fetchBridgesToDeployOrDelete() throws JsonProcessingException {
-        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1", "myName-1", "myEndpoint", "myCustomerId", "myUserName", PROVISIONING, KAFKA_CONNECTION_DTO);
+        BridgeDTO dto = new BridgeDTO(
+                "bridgeStatusChange-1",
+                "myName-1",
+                "myEndpoint",
+                null,
+                null,
+                "myCustomerId",
+                "myUserName",
+                PROVISIONING,
+                KAFKA_CONNECTION_DTO);
         stubBridgesToDeployOrDelete(List.of(dto));
 
         assertThat(managerClient.fetchBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);

@@ -13,8 +13,8 @@ import io.restassured.response.Response;
 
 public class BridgeResource {
 
-    public static BridgeResponse addBridge(String token, String bridgeName) {
-        return addBridgeResponse(token, bridgeName)
+    public static BridgeResponse addBridge(String token, String bridgeName, String cloudProvider, String region) {
+        return addBridgeResponse(token, bridgeName, cloudProvider, region)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(202)
@@ -31,9 +31,9 @@ public class BridgeResource {
                 .as(BridgeResponse.class);
     }
 
-    public static Response addBridgeResponse(String token, String bridgeName) {
+    public static Response addBridgeResponse(String token, String bridgeName, String cloudProvider, String region) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .body(new BridgeRequest(bridgeName))
+                .body(new BridgeRequest(bridgeName, cloudProvider, region))
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 

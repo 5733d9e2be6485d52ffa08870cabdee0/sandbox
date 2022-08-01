@@ -59,11 +59,17 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
     @Column(name = "shard_id")
     private String shardId;
 
-    @Column(name = "organisation_id")
+    @Column(name = "organisation_id", nullable = false, updatable = false)
     private String organisationId;
 
-    @Column(name = "owner")
+    @Column(name = "owner", nullable = false, updatable = false)
     private String owner;
+
+    @Column(name = "cloud_provider", nullable = false, updatable = false)
+    private String cloudProvider;
+
+    @Column(name = "region", nullable = false, updatable = false)
+    private String region;
 
     public Bridge() {
     }
@@ -110,6 +116,22 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public String getCloudProvider() {
+        return cloudProvider;
+    }
+
+    public void setCloudProvider(String cloudProvider) {
+        this.cloudProvider = cloudProvider;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     /*
