@@ -15,6 +15,7 @@ import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
@@ -39,6 +40,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
     @Inject
     ProcessorService processorService;
+
+    @Inject
+    DnsService dnsService;
 
     @Override
     protected PanacheRepositoryBase<Bridge, String> getDao() {
@@ -74,6 +78,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
 
         // We don't need to wait for the Bridge to be READY to create the Error Handler.
         createErrorHandlerProcessor(bridge);
+
+        // Create DNS record
+        dnsService.createDnsRecord(bridge.getId());
 
         bridge.setDependencyStatus(ManagedResourceStatus.READY);
         return persist(bridge);
@@ -139,6 +146,9 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         // Delete back-channel topic
         rhoasService.deleteTopicAndRevokeAccessFor(resourceNamesProvider.getBridgeErrorTopicName(bridge.getId()),
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+
+        // Delete DNS entry
+        dnsService.deleteDnsRecord(bridge.getId());
 
         // ...otherwise the Bridge's dependencies are DELETED
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
