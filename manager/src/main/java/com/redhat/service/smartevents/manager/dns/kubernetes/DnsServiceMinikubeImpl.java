@@ -6,10 +6,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.properties.IfBuildProperty;
+import io.quarkus.arc.lookup.LookupIfProperty;
 
 @ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "minikube")
+@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "minikube")
 public class DnsServiceMinikubeImpl implements DnsService {
 
     @ConfigProperty(name = "minikubeip")

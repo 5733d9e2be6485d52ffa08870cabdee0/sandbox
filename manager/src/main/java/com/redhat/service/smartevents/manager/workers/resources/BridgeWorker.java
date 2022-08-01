@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.manager.workers.resources;
 import java.util.Objects;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     ProcessorService processorService;
 
     @Inject
-    DnsService dnsService;
+    Instance<DnsService> dnsService;
 
     @Override
     protected PanacheRepositoryBase<Bridge, String> getDao() {
@@ -80,7 +81,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         createErrorHandlerProcessor(bridge);
 
         // Create DNS record
-        dnsService.createDnsRecord(bridge.getId());
+        dnsService.get().createDnsRecord(bridge.getId());
 
         bridge.setDependencyStatus(ManagedResourceStatus.READY);
         return persist(bridge);
@@ -148,7 +149,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
                 RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
 
         // Delete DNS entry
-        dnsService.deleteDnsRecord(bridge.getId());
+        dnsService.get().deleteDnsRecord(bridge.getId());
 
         // ...otherwise the Bridge's dependencies are DELETED
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);

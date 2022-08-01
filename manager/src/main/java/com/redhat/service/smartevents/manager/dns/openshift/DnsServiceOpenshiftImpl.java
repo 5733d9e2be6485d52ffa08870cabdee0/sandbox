@@ -20,11 +20,11 @@ import com.amazonaws.services.route53.model.ResourceRecordSet;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.properties.IfBuildProperty;
+import io.quarkus.arc.lookup.LookupIfProperty;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
+@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsServiceOpenshiftImpl implements DnsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceOpenshiftImpl.class);

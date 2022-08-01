@@ -11,10 +11,12 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.route53.AmazonRoute53Async;
 import com.amazonaws.services.route53.AmazonRoute53AsyncClientBuilder;
 
-import io.quarkus.arc.properties.IfBuildProperty;
+import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.lookup.LookupIfProperty;
 
 @ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
+@DefaultBean
+@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvider {
 
     private AmazonRoute53Async client;
