@@ -3,9 +3,6 @@ package com.redhat.service.smartevents.manager.dns.openshift;
 import java.time.Duration;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,22 +17,18 @@ import com.amazonaws.services.route53.model.ResourceRecordSet;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.lookup.LookupIfProperty;
 import io.smallrye.mutiny.Uni;
 
-@ApplicationScoped
-@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsServiceOpenshiftImpl implements DnsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceOpenshiftImpl.class);
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(5);
 
-    DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider;
+    private final DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider;
 
-    ShardService shardService;
+    private final ShardService shardService;
 
-    @Inject
     public DnsServiceOpenshiftImpl(ShardService shardService, DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider) {
         this.shardService = shardService;
         this.dnsConfigOpenshiftProvider = dnsConfigOpenshiftProvider;

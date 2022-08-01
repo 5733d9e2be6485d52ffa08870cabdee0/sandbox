@@ -1,19 +1,20 @@
 package com.redhat.service.smartevents.manager.dns.kubernetes;
 
-import javax.enterprise.context.ApplicationScoped;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.lookup.LookupIfProperty;
-
-@ApplicationScoped
-@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "minikube")
 public class DnsServiceMinikubeImpl implements DnsService {
 
-    @ConfigProperty(name = "minikubeip")
-    String minikubeIp;
+    private final String minikubeIp;
+
+    public DnsServiceMinikubeImpl() {
+        this(ConfigProvider.getConfig().getValue("minikubeip", String.class));
+    }
+
+    public DnsServiceMinikubeImpl(String minikubeIp) {
+        this.minikubeIp = minikubeIp;
+    }
 
     @Override
     public String buildBridgeHost(String bridgeId) {

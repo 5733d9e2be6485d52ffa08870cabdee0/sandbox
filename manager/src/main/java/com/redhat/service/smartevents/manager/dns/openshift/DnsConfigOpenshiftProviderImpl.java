@@ -1,9 +1,6 @@
 package com.redhat.service.smartevents.manager.dns.openshift;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -11,31 +8,32 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.route53.AmazonRoute53Async;
 import com.amazonaws.services.route53.AmazonRoute53AsyncClientBuilder;
 
-import io.quarkus.arc.DefaultBean;
-import io.quarkus.arc.lookup.LookupIfProperty;
-
-@ApplicationScoped
-@DefaultBean
-@LookupIfProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvider {
 
-    private AmazonRoute53Async client;
+    private final AmazonRoute53Async client;
 
-    @ConfigProperty(name = "event-bridge.dns.subdomain")
     protected String subdomain;
 
-    @ConfigProperty(name = "event-bridge.dns.hosted-zone-id")
     protected String hostedZoneId;
 
-    @ConfigProperty(name = "event-bridge.dns.aws.route53.access-key-id")
-    String awsAccessKeyId;
+    protected String awsAccessKeyId;
 
-    @ConfigProperty(name = "event-bridge.dns.aws.route53.secret-access-key")
-    String awsSecretAccessKey;
+    protected String awsSecretAccessKey;
 
-    @PostConstruct
-    void init() {
-        BasicAWSCredentials awsCred = new BasicAWSCredentials(awsAccessKeyId, awsSecretAccessKey);
+    public DnsConfigOpenshiftProviderImpl() {
+        this(ConfigProvider.getConfig().getValue("event-bridge.dns.subdomain", String.class),
+                ConfigProvider.getConfig().getValue("event-bridge.dns.hosted-zone-id", String.class),
+                ConfigProvider.getConfig().getValue("event-bridge.dns.aws.route53.access-key-id", String.class),
+                ConfigProvider.getConfig().getValue("event-bridge.dns.aws.route53.secret-access-key", String.class));
+    }
+
+    public DnsConfigOpenshiftProviderImpl(String subdomain, String hostedZoneId, String awsAccessKeyId, String awsSecretAccessKey) {
+        this.subdomain = subdomain;
+        this.hostedZoneId = hostedZoneId;
+        this.awsAccessKeyId = awsAccessKeyId;
+        this.awsSecretAccessKey = awsSecretAccessKey;
+
+        BasicAWSCredentials awsCred = new BasicAWSCredentials(this.awsAccessKeyId, this.awsSecretAccessKey);
 
         this.client = AmazonRoute53AsyncClientBuilder
                 .standard()

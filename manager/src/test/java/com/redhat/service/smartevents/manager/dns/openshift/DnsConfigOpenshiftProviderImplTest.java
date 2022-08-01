@@ -13,13 +13,7 @@ public class DnsConfigOpenshiftProviderImplTest {
 
     @Test
     public void testConfigProvider() {
-        DnsConfigOpenshiftProviderImpl dnsConfigProvider = new DnsConfigOpenshiftProviderImpl();
-        dnsConfigProvider.subdomain = SUBDOMAIN;
-        dnsConfigProvider.hostedZoneId = HOSTED_ZONE_ID;
-        dnsConfigProvider.awsAccessKeyId = AWS_ACCESS_KEY_ID;
-        dnsConfigProvider.awsSecretAccessKey = AWS_SECRET_ACCESS_KEY;
-
-        dnsConfigProvider.init();
+        DnsConfigOpenshiftProviderImpl dnsConfigProvider = new DnsConfigOpenshiftProviderImpl(SUBDOMAIN, HOSTED_ZONE_ID, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
 
         assertThat(dnsConfigProvider.getSubdomain()).isEqualTo(SUBDOMAIN);
         assertThat(dnsConfigProvider.getHostedZoneId()).isEqualTo(HOSTED_ZONE_ID);
