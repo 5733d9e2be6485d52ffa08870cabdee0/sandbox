@@ -14,7 +14,7 @@ import com.amazonaws.services.route53.AmazonRoute53AsyncClientBuilder;
 import io.quarkus.arc.properties.IfBuildProperty;
 
 @ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift", enableIfMissing = true)
+@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "openshift")
 public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvider {
 
     private AmazonRoute53Async client;
