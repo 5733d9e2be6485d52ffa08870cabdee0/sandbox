@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.manager.dns;
 
-import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -13,7 +13,7 @@ import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftPr
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProviderImpl;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsServiceOpenshiftImpl;
 
-@Dependent
+@Singleton
 public class DnsServiceProducer {
 
     @ConfigProperty(name = "event-bridge.k8s.orchestrator")
