@@ -162,7 +162,7 @@
             <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
-            <event-bridge.k8s.platform>${event-bridge.k8s.platform}</event-bridge.k8s.platform>
+            <event-bridge.k8s.orcstrator>${event-bridge.k8s.orchestrator}</event-bridge.k8s.orcstrator>
           </systemPropertyVariables>
           <!-- Don't reuse VM forks for different test classes, seems that Quarkus classloader is not properly garbaged, causing OOM. -->
           <reuseForks>false</reuseForks>
@@ -179,7 +179,7 @@
         <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
         <quarkus.profile>minikube</quarkus.profile>
-        <event-bridge.k8s.platform>k8s</event-bridge.k8s.platform>
+        <event-bridge.k8s.orchestrator>k8s</event-bridge.k8s.orchestrator>
       </properties>
       <dependencies>
         <dependency>
@@ -199,7 +199,7 @@
         <quarkus.openshift.namespace>${namespace}</quarkus.openshift.namespace>
         <quarkus.openshift.deploy>false</quarkus.openshift.deploy>
         <quarkus.profile>openshift</quarkus.profile>
-        <event-bridge.k8s.platform>openshift</event-bridge.k8s.platform>
+        <event-bridge.k8s.orchestrator>openshift</event-bridge.k8s.orchestrator>
       </properties>
     </profile>
     <profile>

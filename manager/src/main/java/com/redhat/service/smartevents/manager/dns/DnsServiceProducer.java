@@ -4,8 +4,8 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
+import com.redhat.service.smartevents.infra.app.Orchestrator;
+import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceKindImpl;
 import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceMinikubeImpl;
@@ -16,24 +16,24 @@ import com.redhat.service.smartevents.manager.dns.openshift.DnsServiceOpenshiftI
 @Singleton
 public class DnsServiceProducer {
 
-    @ConfigProperty(name = "event-bridge.k8s.orchestrator")
-    String orchestrator;
+    @Inject
+    OrchestratorConfigProvider orchestratorConfigProvider;
 
     @Inject
     ShardService shardService;
 
     @Produces
     public DnsService init() {
-        if (orchestrator.equals("openshift")) {
+        if (Orchestrator.OPENSHIFT.equals(orchestratorConfigProvider.getOrchestrator())) {
             DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider = new DnsConfigOpenshiftProviderImpl();
             return new DnsServiceOpenshiftImpl(shardService, dnsConfigOpenshiftProvider);
         }
-        if (orchestrator.equals("minikube")) {
+        if (Orchestrator.MINIKUBE.equals(orchestratorConfigProvider.getOrchestrator())) {
             return new DnsServiceMinikubeImpl();
         }
-        if (orchestrator.equals("kind")) {
+        if (Orchestrator.KIND.equals(orchestratorConfigProvider.getOrchestrator())) {
             return new DnsServiceKindImpl();
         }
-        throw new IllegalArgumentException("Invalid 'event-bridge.k8s.orchestrator' property value.");
+        throw new IllegalArgumentException(String.format("Invalid orchestrator configuration '%s'.", orchestratorConfigProvider.getOrchestrator()));
     }
 }
