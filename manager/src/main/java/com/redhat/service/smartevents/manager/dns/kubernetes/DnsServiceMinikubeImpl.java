@@ -1,10 +1,14 @@
 package com.redhat.service.smartevents.manager.dns.kubernetes;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
 public class DnsServiceMinikubeImpl implements DnsService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceMinikubeImpl.class);
 
     private final String minikubeIp;
 
@@ -13,6 +17,7 @@ public class DnsServiceMinikubeImpl implements DnsService {
     }
 
     public DnsServiceMinikubeImpl(String minikubeIp) {
+        LOGGER.info("Using Minikube implementation for DNS - the BridgeIngress endpoint is the minikube address and there is no interaction with AWS Route53.");
         this.minikubeIp = minikubeIp;
     }
 

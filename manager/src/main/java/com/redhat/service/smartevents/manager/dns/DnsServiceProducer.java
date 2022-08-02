@@ -13,7 +13,6 @@ import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceMinikubeI
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProvider;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProviderImpl;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsServiceOpenshiftImpl;
-import io.quarkus.arc.profile.UnlessBuildProfile;
 
 @Singleton
 public class DnsServiceProducer {

@@ -30,6 +30,7 @@ public class DnsServiceOpenshiftImpl implements DnsService {
     private final ShardService shardService;
 
     public DnsServiceOpenshiftImpl(ShardService shardService, DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider) {
+        LOGGER.info("Using Openshift implementation for DNS - a CNAME record is going to be created on AWS Route53 for each BridgeIngress");
         this.shardService = shardService;
         this.dnsConfigOpenshiftProvider = dnsConfigOpenshiftProvider;
     }
