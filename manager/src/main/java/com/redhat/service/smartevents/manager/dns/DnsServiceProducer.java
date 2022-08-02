@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.dns;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -12,6 +13,7 @@ import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceMinikubeI
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProvider;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProviderImpl;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsServiceOpenshiftImpl;
+import io.quarkus.arc.profile.UnlessBuildProfile;
 
 @Singleton
 public class DnsServiceProducer {
@@ -23,6 +25,7 @@ public class DnsServiceProducer {
     ShardService shardService;
 
     @Produces
+    @ApplicationScoped
     public DnsService init() {
         if (Orchestrator.OPENSHIFT.equals(orchestratorConfigProvider.getOrchestrator())) {
             DnsConfigOpenshiftProvider dnsConfigOpenshiftProvider = new DnsConfigOpenshiftProviderImpl();
