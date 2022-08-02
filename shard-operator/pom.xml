@@ -162,7 +162,7 @@
             <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
-            <event-bridge.k8s.orcstrator>${event-bridge.k8s.orchestrator}</event-bridge.k8s.orcstrator>
+            <event-bridge.k8s.orchestrator>${event-bridge.k8s.orchestrator}</event-bridge.k8s.orchestrator>
           </systemPropertyVariables>
           <!-- Don't reuse VM forks for different test classes, seems that Quarkus classloader is not properly garbaged, causing OOM. -->
           <reuseForks>false</reuseForks>

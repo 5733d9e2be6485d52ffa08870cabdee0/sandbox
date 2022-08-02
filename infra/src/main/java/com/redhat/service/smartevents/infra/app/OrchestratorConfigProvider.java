@@ -32,6 +32,8 @@ public class OrchestratorConfigProvider {
                         String.format("event-bridge.k8s.orchestrator configuration not recognized. Options are [%s]",
                                 Arrays.stream(Orchestrator.values()).map(Orchestrator::toString).collect(Collectors.joining(","))));
             }
+        } else {
+            LOGGER.info("No orchestrator configuration was provided.");
         }
     }
 
