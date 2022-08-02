@@ -24,7 +24,7 @@ public class OrchestratorConfigProvider {
     @PostConstruct
     void init() {
         if (orchestratorConfig.isPresent()) {
-            LOGGER.info("Selected orchestrator is '{}'", orchestratorConfig);
+            LOGGER.info("Selected orchestrator is '{}'", orchestratorConfig.get());
             try {
                 this.orchestrator = Orchestrator.parse(orchestratorConfig.get());
             } catch (IllegalArgumentException e) {
