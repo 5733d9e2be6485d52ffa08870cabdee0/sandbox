@@ -66,7 +66,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                         bridge1.getCustomerId());
         String expectedJsonUpdateAvailableRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"https://ob-bridgesdeployed-1.apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
+                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"http://apps.openbridge-test.fdvfn.p2.openshiftapps.com/ob-55029811/ob-bridgesdeployed-1\", \"tlsCertificate\": null, \"tlsKey\": null, \"customerId\": \"%s\", \"owner\": \"myUserName\", \"status\": \"ready\", \"kafkaConnection\": null}",
                         bridge1.getId(),
                         bridge1.getName(),
                         bridge1.getCustomerId());
