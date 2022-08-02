@@ -256,6 +256,23 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: SHARD_ROUTER_CANONICAL_HOSTNAME
+                - name: EVENT_BRIDGE_DNS_HOSTED_ZONE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_HOSTED_ZONE_ID
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_CERTIFICATE
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_CERTIFICATE
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_KEY
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN
+                  value: .bf2.smartevents-stage.rhcloud.redhat.com
               ports:
                 - containerPort: 8080
               livenessProbe:
