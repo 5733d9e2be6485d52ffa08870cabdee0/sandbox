@@ -177,7 +177,7 @@
       <properties>
         <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
         <quarkus.profile>minikube</quarkus.profile>
-        <event-bridge.k8s.orchestrator>k8s</event-bridge.k8s.orchestrator>
+        <event-bridge.k8s.orchestrator>minikube</event-bridge.k8s.orchestrator>
       </properties>
       <dependencies>
         <dependency>
