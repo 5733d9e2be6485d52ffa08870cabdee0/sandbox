@@ -17,6 +17,9 @@ jobs:
         uses: ./.github/actions/free-disk-space
       - name: Add mask
         run: |
+          echo "::add-mask::${{ secrets.ANSIBLE_ENDPOINT }}"
+          echo "::add-mask::${{ secrets.ANSIBLE_USERNAME }}"
+          echo "::add-mask::${{ secrets.ANSIBLE_PASSWORD }}"
           echo "::add-mask::${{ secrets.DEV_CLUSTER_MANAGER_URL }}"
           echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_ID }}"
           echo "::add-mask::${{ secrets.DEV_SSO_CLIENT_SECRET }}"
@@ -47,6 +50,9 @@ jobs:
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       - name: Run integration tests
         env:
+          ANSIBLE_ENDPOINT: ${{ secrets.ANSIBLE_ENDPOINT }}
+          ANSIBLE_USERNAME: ${{ secrets.ANSIBLE_USERNAME }}
+          ANSIBLE_PASSWORD: ${{ secrets.ANSIBLE_PASSWORD }}
           DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
           DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
           DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
