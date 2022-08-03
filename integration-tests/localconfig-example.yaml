@@ -7,3 +7,7 @@ services:
           name: mc
           webhook_url: some-webhook-url
           channel_id: some-channel-id
+        general:
+          name: general
+          webhook_url: some-webhook-url
+          channel_id: some-channel-id
