@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.amazonaws.services.route53.AmazonRoute53Async;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsRequest;
 import com.amazonaws.services.route53.model.ChangeResourceRecordSetsResult;
+import com.redhat.service.smartevents.infra.utils.Constants;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.dns.DnsService;
@@ -52,7 +53,7 @@ public class DnsServiceOpenshiftImplTest {
     public void testBuildBridgeHost() {
         DnsService dnsService = new DnsServiceOpenshiftImpl(shardService, dnsConfigOpenshiftProvider);
         assertThat(dnsService.buildBridgeEndpoint(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .isEqualTo("https://" + TestConstants.DEFAULT_BRIDGE_ID + SUBDOMAIN + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
+                .isEqualTo(Constants.HTTPS_SCHEME + TestConstants.DEFAULT_BRIDGE_ID + SUBDOMAIN + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
     }
 
     @Test

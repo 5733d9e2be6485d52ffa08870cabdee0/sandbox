@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.dns.kubernetes;
 
 import org.junit.jupiter.api.Test;
 
+import com.redhat.service.smartevents.infra.utils.Constants;
 import com.redhat.service.smartevents.manager.TestConstants;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +16,7 @@ public class DnsServiceMinikubeImplTest {
         DnsServiceMinikubeImpl dnsServiceMinikube = new DnsServiceMinikubeImpl(MINIKUBE_IP);
 
         assertThat(dnsServiceMinikube.buildBridgeEndpoint(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .isEqualTo("http://" + MINIKUBE_IP + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
+                .isEqualTo(Constants.HTTP_SCHEME + MINIKUBE_IP + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);
         assertThat(dnsServiceMinikube.createDnsRecord(TestConstants.DEFAULT_BRIDGE_ID)).isTrue();
         assertThat(dnsServiceMinikube.deleteDnsRecord(TestConstants.DEFAULT_BRIDGE_ID)).isTrue();
     }

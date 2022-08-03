@@ -4,6 +4,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.utils.Constants;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.dns.KnativeBrokerPathBuilder;
 
@@ -24,7 +25,7 @@ public class DnsServiceMinikubeImpl implements DnsService {
 
     @Override
     public String buildBridgeEndpoint(String bridgeId, String customerId) {
-        return "http://" + minikubeIp + KnativeBrokerPathBuilder.build(customerId, bridgeId);
+        return Constants.HTTP_SCHEME + minikubeIp + KnativeBrokerPathBuilder.build(customerId, bridgeId);
     }
 
     @Override
