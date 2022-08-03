@@ -16,6 +16,7 @@ import com.amazonaws.services.route53.model.ResourceRecord;
 import com.amazonaws.services.route53.model.ResourceRecordSet;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.DnsService;
+import com.redhat.service.smartevents.manager.dns.KnativeBrokerPathBuilder;
 
 import io.smallrye.mutiny.Uni;
 
@@ -38,7 +39,7 @@ public class DnsServiceOpenshiftImpl implements DnsService {
     @Override
     public String buildBridgeEndpoint(String bridgeId, String customerId) {
         // Need to append the path to the broker until https://github.com/knative/eventing/issues/6467 gets fixed
-        return "https://" + buildBridgeHost(bridgeId) + "/ob-" + customerId + "/ob-" + bridgeId;
+        return "https://" + buildBridgeHost(bridgeId) + KnativeBrokerPathBuilder.build(customerId, bridgeId);
     }
 
     /**

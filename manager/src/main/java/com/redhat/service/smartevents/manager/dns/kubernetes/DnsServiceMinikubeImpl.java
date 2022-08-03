@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
+import com.redhat.service.smartevents.manager.dns.KnativeBrokerPathBuilder;
 
 public class DnsServiceMinikubeImpl implements DnsService {
 
@@ -23,7 +24,7 @@ public class DnsServiceMinikubeImpl implements DnsService {
 
     @Override
     public String buildBridgeEndpoint(String bridgeId, String customerId) {
-        return "http://" + minikubeIp + "/ob-" + customerId + "/ob-" + bridgeId;
+        return "http://" + minikubeIp + KnativeBrokerPathBuilder.build(customerId, bridgeId);
     }
 
     @Override

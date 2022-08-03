@@ -63,10 +63,8 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
 
-    private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
     private static final String TEST_BRIDGE_TLS_CERTIFICATE = "certificate";
     private static final String TEST_BRIDGE_TLS_KEY = "key";
-    private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
@@ -98,7 +96,7 @@ public class ShardBridgesSyncAPITest {
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                TestConstants.DEFAULT_BRIDGE_ENDPOINT,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
@@ -217,7 +215,7 @@ public class ShardBridgesSyncAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                TestConstants.DEFAULT_BRIDGE_ENDPOINT,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
 
