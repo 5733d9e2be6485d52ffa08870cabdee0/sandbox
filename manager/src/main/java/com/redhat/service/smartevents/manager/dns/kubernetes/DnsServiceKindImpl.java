@@ -1,19 +1,25 @@
 package com.redhat.service.smartevents.manager.dns.kubernetes;
 
-import javax.enterprise.context.ApplicationScoped;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.properties.IfBuildProperty;
-
-@ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "kind")
 public class DnsServiceKindImpl implements DnsService {
 
-    @ConfigProperty(name = "event-bridge.dns.ingress.override.hostname")
-    String overrideHostname;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceKindImpl.class);
+
+    private final String overrideHostname;
+
+    public DnsServiceKindImpl() {
+        this(ConfigProvider.getConfig().getValue("event-bridge.dns.ingress.override.hostname", String.class));
+    }
+
+    public DnsServiceKindImpl(String overrideHostname) {
+        LOGGER.info("Using Kind implementation for DNS - the BridgeIngress endpoint is the kind control plane address and there is no interaction with AWS Route53.");
+        this.overrideHostname = overrideHostname;
+    }
 
     @Override
     public String buildBridgeEndpoint(String bridgeId, String customerId) {

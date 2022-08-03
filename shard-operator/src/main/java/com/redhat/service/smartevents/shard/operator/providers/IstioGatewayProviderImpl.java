@@ -10,9 +10,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.app.Orchestrator;
+import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressServiceImpl;
-import com.redhat.service.smartevents.shard.operator.app.Platform;
-import com.redhat.service.smartevents.shard.operator.app.PlatformConfigProvider;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
@@ -40,7 +40,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
     OpenShiftClient openShiftClient;
 
     @Inject
-    PlatformConfigProvider platformConfigProvider;
+    OrchestratorConfigProvider orchestratorConfigProvider;
 
     void setup(@Observes StartupEvent event) {
         if (name.isEmpty() || namespace.isEmpty()) {
@@ -49,7 +49,7 @@ public class IstioGatewayProviderImpl implements IstioGatewayProvider {
             return;
         }
 
-        if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
+        if (Orchestrator.OPENSHIFT.equals(orchestratorConfigProvider.getOrchestrator())) {
             gatewayService = extractOpenshiftGatewayService(openShiftClient);
         } else {
             gatewayService = extractK8sGatewayService(openShiftClient);

@@ -4,8 +4,8 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.redhat.service.smartevents.shard.operator.app.Platform;
-import com.redhat.service.smartevents.shard.operator.app.PlatformConfigProvider;
+import com.redhat.service.smartevents.infra.app.Orchestrator;
+import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 
@@ -18,7 +18,7 @@ public class NetworkingServiceProducer {
     OpenShiftClient client;
 
     @Inject
-    PlatformConfigProvider platformConfigProvider;
+    OrchestratorConfigProvider orchestratorConfigProvider;
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
@@ -28,7 +28,7 @@ public class NetworkingServiceProducer {
 
     @Produces
     public NetworkingService getService() {
-        if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
+        if (Orchestrator.OPENSHIFT.equals(orchestratorConfigProvider.getOrchestrator())) {
             return new OpenshiftNetworkingService(client, templateProvider, istioGatewayProvider);
         }
         return new KubernetesNetworkingService(client, templateProvider, istioGatewayProvider);

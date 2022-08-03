@@ -4,6 +4,8 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.redhat.service.smartevents.infra.app.Orchestrator;
+import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
 import com.redhat.service.smartevents.shard.operator.utils.networking.KubernetesNetworkingTestUtils;
 import com.redhat.service.smartevents.shard.operator.utils.networking.NetworkingTestUtils;
 import com.redhat.service.smartevents.shard.operator.utils.networking.OpenshiftNetworkingTestUtils;
@@ -17,11 +19,11 @@ public class NetworkingTestUtilsProvider {
     OpenShiftClient openShiftClient;
 
     @Inject
-    PlatformConfigProvider platformConfigProvider;
+    OrchestratorConfigProvider orchestratorConfigProvider;
 
     @Produces
     public NetworkingTestUtils produceNetworkingTestUtilsBean() {
-        if (Platform.OPENSHIFT.equals(platformConfigProvider.getPlatform())) {
+        if (Orchestrator.OPENSHIFT.equals(orchestratorConfigProvider.getOrchestrator())) {
             return new OpenshiftNetworkingTestUtils(openShiftClient);
         }
         return new KubernetesNetworkingTestUtils(openShiftClient);

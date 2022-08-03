@@ -12,8 +12,7 @@ public class DnsServiceMinikubeImplTest {
 
     @Test
     public void testMinikubeDnsService() {
-        DnsServiceMinikubeImpl dnsServiceMinikube = new DnsServiceMinikubeImpl();
-        dnsServiceMinikube.minikubeIp = MINIKUBE_IP;
+        DnsServiceMinikubeImpl dnsServiceMinikube = new DnsServiceMinikubeImpl(MINIKUBE_IP);
 
         assertThat(dnsServiceMinikube.buildBridgeEndpoint(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
                 .isEqualTo("http://" + MINIKUBE_IP + "/ob-" + TestConstants.DEFAULT_CUSTOMER_ID + "/ob-" + TestConstants.DEFAULT_BRIDGE_ID);

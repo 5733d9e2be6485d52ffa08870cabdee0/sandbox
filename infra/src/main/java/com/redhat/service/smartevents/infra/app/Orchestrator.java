@@ -1,12 +1,13 @@
-package com.redhat.service.smartevents.shard.operator.app;
+package com.redhat.service.smartevents.infra.app;
 
-public enum Platform {
+public enum Orchestrator {
     OPENSHIFT("openshift"),
-    KUBERNETES("k8s");
+    MINIKUBE("minikube"),
+    KIND("kind");
 
     private String value;
 
-    Platform(String value) {
+    Orchestrator(String value) {
         this.value = value;
     }
 
@@ -19,12 +20,12 @@ public enum Platform {
         return this.getValue();
     }
 
-    public static Platform parse(String value) {
-        for (Platform v : values()) {
+    public static Orchestrator parse(String value) {
+        for (Orchestrator v : values()) {
             if (v.getValue().equalsIgnoreCase(value)) {
                 return v;
             }
         }
-        throw new IllegalArgumentException(String.format("Platform %s not valid", value));
+        throw new IllegalArgumentException(String.format("Orchestrator %s not valid", value));
     }
 }

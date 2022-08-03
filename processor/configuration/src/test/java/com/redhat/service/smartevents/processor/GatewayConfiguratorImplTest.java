@@ -25,6 +25,7 @@ import com.redhat.service.smartevents.processor.resolvers.custom.KafkaTopicActio
 import com.redhat.service.smartevents.processor.resolvers.custom.SendToBridgeActionResolver;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.sources.azure.AzureEventHubSource;
 import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 import com.redhat.service.smartevents.processor.validators.DefaultGatewayValidator;
@@ -50,7 +51,8 @@ class GatewayConfiguratorImplTest {
             AwsS3Source.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
             AwsSqsSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
             SlackSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
-            GooglePubSubSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class));
+            GooglePubSubSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class),
+            AzureEventHubSource.TYPE, expect(DefaultGatewayValidator.class, SourceConnectorResolver.class));
 
     @Inject
     GatewayConfiguratorImpl configurator;
