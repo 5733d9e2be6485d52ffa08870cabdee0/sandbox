@@ -152,7 +152,7 @@ public class BridgesServiceTest {
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
-        assertThat(bridge.getEndpoint()).isNull();
+        assertThat(bridge.getEndpoint()).isNotNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(DEFAULT_CUSTOMER_ID, new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);

@@ -305,7 +305,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public Processor updateProcessorStatus(UpdateManagedResourceStatusDTO updateDTO) {
         Processor p = processorDAO.findById(updateDTO.getId());
-        if (p == null || !p.getBridge().getCustomerId().equals(updateDTO.getId())) {
+        if (p == null || !p.getBridge().getCustomerId().equals(updateDTO.getCustomerId())) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", updateDTO.getId()));
         }
 

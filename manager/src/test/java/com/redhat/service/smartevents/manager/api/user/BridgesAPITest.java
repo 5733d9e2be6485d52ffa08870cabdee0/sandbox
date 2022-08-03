@@ -229,8 +229,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
         assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
-
-        assertThat(bridgeResponse.getEndpoint()).isNull();
+        assertThat(bridgeResponse.getEndpoint()).isNotNull();
     }
 
     @Test
