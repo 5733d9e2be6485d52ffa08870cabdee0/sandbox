@@ -40,6 +40,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "p.shardId=:shardId and " +
                         "(" +
                         "  (" +
+                        // Status combinations to support SINK/SOURCE Processors
                         "    p.bridge.status='READY' and " +
                         "    (" +
                         "      (p.status='PREPARING' and p.dependencyStatus='READY') " +
@@ -51,6 +52,13 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
                         "      (p.status='DELETING' and p.dependencyStatus='DELETED') " +
                         "    )" +
                         "  )" +
+                        // Status combinations to support updating a Bridge's ERROR_HANDLER Processor
+                        // In these scenarios the Bridge will not be READY as its life-cycle is dependent
+                        // on that of the ERROR_HANDLER Processor.
+                        ") or (" +
+                        "  p.bridge.status='PREPARING' and p.type='ERROR_HANDLER' and p.status='PREPARING' and p.dependencyStatus='READY'" +
+                        ") or (" +
+                        "  p.bridge.status='PREPARING' and p.type='ERROR_HANDLER' and p.status='DEPROVISION' and p.dependencyStatus='DELETED'" +
                         ") or (" +
                         "  p.bridge.status='DEPROVISION' and p.type='ERROR_HANDLER' and p.status='DEPROVISION' and p.dependencyStatus='DELETED'" +
                         ")"),

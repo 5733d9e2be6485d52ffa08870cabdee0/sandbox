@@ -4,6 +4,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
@@ -105,6 +107,61 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
+    @Override
+    @Transactional
+    public Bridge updateBridge(String bridgeId, String customerId, BridgeRequest bridgeRequest) {
+        // Extract existing definition
+        Bridge existingBridge = getBridge(bridgeId, customerId);
+
+        if (!existingBridge.isActionable()) {
+            throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in an actionable state.",
+                    bridgeId,
+                    customerId));
+        }
+
+        BridgeDefinition existingDefinition = existingBridge.getDefinition();
+
+        // Validate update.
+        // Name cannot be updated.
+        if (!Objects.equals(existingBridge.getName(), bridgeRequest.getName())) {
+            throw new BadRequestException("It is not possible to update the Bridge's name.");
+        }
+        // Cloud Provider cannot be updated.
+        if (!Objects.equals(existingBridge.getCloudProvider(), bridgeRequest.getCloudProvider())) {
+            throw new BadRequestException("It is not possible to update the Bridge's Cloud Provider.");
+        }
+        // Cloud Region cannot be updated.
+        if (!Objects.equals(existingBridge.getRegion(), bridgeRequest.getRegion())) {
+            throw new BadRequestException("It is not possible to update the Bridge's Region.");
+        }
+
+        // Construct updated definition
+        Action updatedErrorHandler = bridgeRequest.getErrorHandler();
+        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler);
+
+        // No need to update CRD if the definition is unchanged
+        if (Objects.equals(existingDefinition, updatedDefinition)) {
+            return existingBridge;
+        }
+
+        // Create new definition copying existing properties
+        existingBridge.setModifiedAt(ZonedDateTime.now());
+        existingBridge.setStatus(ManagedResourceStatus.ACCEPTED);
+        existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
+        existingBridge.setDefinition(updatedDefinition);
+        existingBridge.setGeneration(existingBridge.getGeneration() + 1);
+
+        // Bridge and Work should always be created in the same transaction
+        workManager.schedule(existingBridge);
+        metricsService.onOperationStart(existingBridge, MetricsOperation.MODIFY);
+
+        LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for update",
+                existingBridge.getId(),
+                existingBridge.getCustomerId());
+
+        return existingBridge;
+    }
+
     @Transactional
     @Override
     public Bridge getBridge(String id) {
@@ -142,19 +199,17 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     public void deleteBridge(String id, String customerId) {
         Long processorsCount = processorService.getProcessorsCount(id, customerId);
-        ListResult<Processor> hiddenProcessors = processorService.getHiddenProcessors(id, customerId);
+        Optional<Processor> errorHandler = processorService.getErrorHandler(id, customerId);
 
-        if (processorsCount != hiddenProcessors.getTotal()) {
+        if (processorsCount > (errorHandler.isPresent() ? 1 : 0)) {
             // See https://issues.redhat.com/browse/MGDOBR-43
             throw new BridgeLifecycleException("It is not possible to delete a Bridge instance with active Processors.");
         }
 
         Bridge bridge = findByIdAndCustomerId(id, customerId);
-        if (!isBridgeDeletable(bridge)) {
+        if (!bridge.isActionable()) {
             throw new BridgeLifecycleException("Bridge could only be deleted if its in READY/FAILED state.");
         }
-
-        hiddenProcessors.getItems().forEach(p -> processorService.deleteProcessor(id, p.getId(), customerId));
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
 
@@ -165,11 +220,6 @@ public class BridgesServiceImpl implements BridgesService {
         metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
-    }
-
-    private boolean isBridgeDeletable(Bridge bridge) {
-        // bridge could only be deleted if its in READY or FAILED state
-        return bridge.getStatus() == ManagedResourceStatus.READY || bridge.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Transactional
