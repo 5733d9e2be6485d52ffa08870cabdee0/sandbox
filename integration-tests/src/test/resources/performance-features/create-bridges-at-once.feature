@@ -26,7 +26,9 @@ Feature: Create Bridges performance tests
                   POST: /api/smartevents_mgmt/v1/bridges
                   body: |
                     {
-                      "name": "perf-${bridgeNameSuffix}"
+                      "name": "perf-${bridgeNameSuffix}",
+                      "cloud_provider": "aws",
+                      "region": "us-east-1"
                     }
                   headers:
                     content-type: application/json

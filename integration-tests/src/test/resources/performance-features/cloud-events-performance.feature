@@ -2,7 +2,7 @@ Feature: Sending cloud events performance tests
 
   Background:
     Given authenticate against Manager
-    And create a new Bridge "my-perf-bridge"
+    And create a new Bridge "my-perf-bridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "my-perf-bridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "my-perf-bridge" is available within 2 minutes
     And add a Processor to the Bridge "my-perf-bridge" with body:
