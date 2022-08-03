@@ -37,8 +37,6 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
-import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
@@ -350,9 +348,9 @@ public class ProcessorServiceImpl implements ProcessorService {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
                     p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-//                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
+                    //                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
                 } else {
-//                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
+                    //                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
                 }
             }
         }
@@ -394,7 +392,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
-//        metricsService.onOperationStart(processor, MetricsOperation.DELETE);
+        //        metricsService.onOperationStart(processor, MetricsOperation.DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),
