@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -84,6 +85,8 @@ public class BridgeIngressServiceTest {
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET).length()).isGreaterThan(0);
         assertThat(secret.getData().get(GlobalConfigurationsConstants.KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET).length()).isGreaterThan(0);
+        assertThat(secret.getData().get(GlobalConfigurationsConstants.TLS_KEY_SECRET).length()).isGreaterThan(0);
     }
 
     @Test
@@ -167,8 +170,11 @@ public class BridgeIngressServiceTest {
         // Re-try creation
         bridgeIngressService.createBridgeIngress(dto);
 
-        assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyBridgeStatusChange(new UpdateManagedResourceStatusDTO(dto.getId(), dto.getCustomerId(), ManagedResourceStatus.READY));
+        ArgumentCaptor<UpdateManagedResourceStatusDTO> updateDTO = ArgumentCaptor.forClass(UpdateManagedResourceStatusDTO.class);
+        verify(managerClient).notifyBridgeStatusChange(updateDTO.capture());
+        assertThat(updateDTO.getValue().getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(updateDTO.getValue().getId()).isEqualTo(dto.getId());
+        assertThat(updateDTO.getValue().getCustomerId()).isEqualTo(dto.getCustomerId());
     }
 
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {

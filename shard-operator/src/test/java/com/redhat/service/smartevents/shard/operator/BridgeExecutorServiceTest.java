@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
@@ -194,8 +195,11 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyProcessorStatusChange(new UpdateManagedResourceStatusDTO(dto.getId(), dto.getCustomerId(), ManagedResourceStatus.READY));
+        ArgumentCaptor<UpdateManagedResourceStatusDTO> updateDTO = ArgumentCaptor.forClass(UpdateManagedResourceStatusDTO.class);
+        verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
+        assertThat(updateDTO.getValue().getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(updateDTO.getValue().getId()).isEqualTo(dto.getId());
+        assertThat(updateDTO.getValue().getCustomerId()).isEqualTo(dto.getCustomerId());
     }
 
     private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {

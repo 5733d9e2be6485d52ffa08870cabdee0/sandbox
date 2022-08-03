@@ -27,6 +27,7 @@ public class TestSupport {
     public static final String BRIDGE_ID = "my-id";
     public static final String BRIDGE_NAME = "my-name";
     public static final String BRIDGE_ENDPOINT = "http://localhost:8080";
+    public static final String BRIDGE_HOST = "localhost";
     public static final String BRIDGE_TLS_CERTIFICATE = "tlsCertificate";
     public static final String BRIDGE_TLS_KEY = "tlsKey";
     public static final ProcessorType PROCESSOR_TYPE = ProcessorType.SINK;

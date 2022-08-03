@@ -82,7 +82,6 @@ public class OpenshiftNetworkingService implements NetworkingService {
                         .withPrimaryResourceFromParent());
         // Inherit namespace from service and not from bridgeIngress
         route.getMetadata().setNamespace(service.getMetadata().getNamespace());
-        route.getMetadata().getAnnotations().replace(NetworkingConstants.OPENSHIFT_REWRITE_ANNOTATION, "/" + bridgeIngress.getSpec().getCustomerId() + "/" + bridgeIngress.getSpec().getId());
 
         // We have to provide the host manually in order not to exceed the 63 char limit in the dns label https://issues.redhat.com/browse/MGDOBR-271
         route.getSpec().setHost(bridgeIngress.getSpec().getHost());

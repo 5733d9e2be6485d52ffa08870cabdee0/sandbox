@@ -137,6 +137,7 @@ public class BridgeIngressControllerTest {
                 .withBridgeName(TestSupport.BRIDGE_NAME)
                 .withCustomerId(TestSupport.CUSTOMER_ID)
                 .withNamespace(KubernetesResourceUtil.sanitizeName(TestSupport.CUSTOMER_ID))
+                .withHost(TestSupport.BRIDGE_HOST)
                 .build();
     }
 }
