@@ -34,6 +34,7 @@ import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -152,7 +153,28 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
-    public void testBridgeIngressCreationWhenSpecAlreadyExists() {
+    public void testBridgeIngressCreationWhenSpecAlreadyExistsAsProvisioning() {
+        // Given a PROVISIONING Bridge
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+
+        // When
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Then
+        // Manager is not notified
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+
+        // Re-try creation
+        bridgeIngressService.createBridgeIngress(dto);
+
+        // Manager is still not notified as the BridgeIngress is not yet ready
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+    }
+
+    @Test
+    public void testBridgeIngressCreationWhenSpecAlreadyExistsAsReady() {
         // Given a PROVISIONING Bridge
         BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 

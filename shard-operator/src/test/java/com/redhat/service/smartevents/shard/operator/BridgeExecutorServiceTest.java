@@ -41,6 +41,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
@@ -182,7 +183,29 @@ public class BridgeExecutorServiceTest {
     }
 
     @Test
-    public void testBridgeExecutorCreationWhenSpecAlreadyExists() {
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsProvisioning() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        // Manager is not notified
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Manager is still not notified as the BridgeExecutor is not yet ready
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsReady() {
         // Given a PROVISIONING Processor
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
         dto.setStatus(PROVISIONING);
