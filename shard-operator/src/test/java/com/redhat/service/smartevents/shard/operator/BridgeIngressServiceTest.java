@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -167,7 +168,7 @@ public class BridgeIngressServiceTest {
         bridgeIngressService.createBridgeIngress(dto);
 
         assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyBridgeStatusChange(dto);
+        verify(managerClient).notifyBridgeStatusChange(new UpdateManagedResourceStatusDTO(dto.getId(), dto.getCustomerId(), ManagedResourceStatus.READY));
     }
 
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {

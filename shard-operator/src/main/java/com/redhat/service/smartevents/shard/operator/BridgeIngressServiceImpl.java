@@ -74,8 +74,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         } else {
             LOGGER.info("BridgeIngress '{}' already exists. Notifying manager that it is ready.", bridgeDTO.getId());
-            bridgeDTO.setStatus(ManagedResourceStatus.READY);
-            managerClient.notifyBridgeStatusChange(bridgeDTO).subscribe().with(
+            UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.READY);
+            managerClient.notifyBridgeStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Ready notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
         }
@@ -92,8 +92,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
-            UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);
-            managerClient.notifyBridgeStatusChange(dto)
+            UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);
+            managerClient.notifyBridgeStatusChange(updateDTO)
                     .subscribe().with(
                             success -> LOGGER.debug("Deleted notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                             failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));

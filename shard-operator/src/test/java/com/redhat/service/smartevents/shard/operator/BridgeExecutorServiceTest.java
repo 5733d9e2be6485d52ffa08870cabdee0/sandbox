@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
@@ -194,7 +195,7 @@ public class BridgeExecutorServiceTest {
         bridgeExecutorService.createBridgeExecutor(dto);
 
         assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyProcessorStatusChange(dto);
+        verify(managerClient).notifyProcessorStatusChange(new UpdateManagedResourceStatusDTO(dto.getId(), dto.getCustomerId(), ManagedResourceStatus.READY));
     }
 
     private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {

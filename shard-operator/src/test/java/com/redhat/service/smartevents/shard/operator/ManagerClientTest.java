@@ -46,7 +46,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
+        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
         stubBridgeUpdate();
         String expectedJsonUpdate =
                 "{\"id\": \"bridgeStatusChange-1\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
@@ -54,7 +54,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
 
-        managerClient.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyBridgeStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(30, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH))
@@ -64,17 +64,17 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO("processorStatusChange-1", "myCustomerId", PROVISIONING);
+        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO("processorStatusChange-1", "myCustomerId", PROVISIONING);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addProcessorUpdateRequestListener(latch);
 
-        managerClient.notifyProcessorStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyProcessorStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(dto), true, true))
+                .withRequestBody(equalToJson(objectMapper.writeValueAsString(updateDTO), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
@@ -110,7 +110,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void fetchBridgesToDeployOrDelete() throws JsonProcessingException {
-        BridgeDTO dto = new BridgeDTO(
+        BridgeDTO updateDTO = new BridgeDTO(
                 "bridgeStatusChange-1",
                 "myName-1",
                 "myEndpoint",
@@ -120,7 +120,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
                 "myUserName",
                 PROVISIONING,
                 KAFKA_CONNECTION_DTO);
-        stubBridgesToDeployOrDelete(List.of(dto));
+        stubBridgesToDeployOrDelete(List.of(updateDTO));
 
         assertThat(managerClient.fetchBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
     }

@@ -148,12 +148,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
-        UpdateManagedResourceStatusDTO dto = new UpdateManagedResourceStatusDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
+        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
 
-        managerClient.notifyBridgeStatusChange(dto)
+        managerClient.notifyBridgeStatusChange(updateDTO)
                 .subscribe().with(
-                        success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId(), failure));
+                        success -> LOGGER.info("Updating Bridge with id '{}' done", updateDTO.getId()),
+                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", updateDTO.getId(), failure));
     }
 
     private String extractBrokerPath(KnativeBroker broker) {
