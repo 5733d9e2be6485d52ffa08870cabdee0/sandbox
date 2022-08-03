@@ -361,7 +361,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetUserVisibleProcessors() {
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
@@ -376,7 +376,7 @@ class ProcessorServiceTest {
         when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
@@ -386,7 +386,7 @@ class ProcessorServiceTest {
     @Test
     void testGetUserVisibleProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.getUserVisibleProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     @Test
@@ -395,7 +395,7 @@ class ProcessorServiceTest {
 
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
@@ -412,7 +412,7 @@ class ProcessorServiceTest {
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     private static Stream<Arguments> getUserVisibleProcessorsWhenBridgeIsStatus() {

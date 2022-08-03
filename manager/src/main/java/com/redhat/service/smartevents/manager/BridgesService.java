@@ -13,6 +13,8 @@ public interface BridgesService {
 
     Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest);
 
+    Bridge updateBridge(String bridgeId, String customerId, BridgeRequest bridgeRequest);
+
     Bridge getBridge(String id);
 
     Bridge getBridge(String id, String customerId);

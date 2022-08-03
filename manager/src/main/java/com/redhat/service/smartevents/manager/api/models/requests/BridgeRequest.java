@@ -17,19 +17,19 @@ public class BridgeRequest {
 
     @NotEmpty(message = "Bridge name cannot be null or empty")
     @JsonProperty("name")
-    private String name;
+    protected String name;
 
     @JsonProperty("error_handler")
     @Valid
-    private Action errorHandler;
+    protected Action errorHandler;
 
     @NotEmpty(message = "Cloud Provider cannot be null or empty.")
     @JsonProperty("cloud_provider")
-    private String cloudProvider;
+    protected String cloudProvider;
 
     @NotEmpty(message = "Region cannot be null or empty.")
     @JsonProperty("region")
-    private String region;
+    protected String region;
 
     public String getCloudProvider() {
         return cloudProvider;
