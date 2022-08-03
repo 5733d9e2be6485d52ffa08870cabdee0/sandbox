@@ -1,19 +1,25 @@
 package com.redhat.service.smartevents.manager.dns.kubernetes;
 
-import javax.enterprise.context.ApplicationScoped;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.manager.dns.DnsService;
 
-import io.quarkus.arc.properties.IfBuildProperty;
-
-@ApplicationScoped
-@IfBuildProperty(name = "event-bridge.k8s.orchestrator", stringValue = "minikube")
 public class DnsServiceMinikubeImpl implements DnsService {
 
-    @ConfigProperty(name = "minikubeip")
-    String minikubeIp;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DnsServiceMinikubeImpl.class);
+
+    private final String minikubeIp;
+
+    public DnsServiceMinikubeImpl() {
+        this(ConfigProvider.getConfig().getValue("minikubeip", String.class));
+    }
+
+    public DnsServiceMinikubeImpl(String minikubeIp) {
+        LOGGER.info("Using Minikube implementation for DNS - the BridgeIngress endpoint is the minikube address and there is no interaction with AWS Route53.");
+        this.minikubeIp = minikubeIp;
+    }
 
     @Override
     public String buildBridgeHost(String bridgeId) {

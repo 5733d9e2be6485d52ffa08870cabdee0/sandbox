@@ -12,8 +12,7 @@ public class DnsServiceKindImplTest {
 
     @Test
     public void testKindDnsService() {
-        DnsServiceKindImpl dnsServiceKind = new DnsServiceKindImpl();
-        dnsServiceKind.overrideHostname = KIND_CONTROL_PLANE_ADDRESS;
+        DnsServiceKindImpl dnsServiceKind = new DnsServiceKindImpl(KIND_CONTROL_PLANE_ADDRESS);
 
         assertThat(dnsServiceKind.buildBridgeHost(TestConstants.DEFAULT_BRIDGE_ID)).isEqualTo(KIND_CONTROL_PLANE_ADDRESS);
         assertThat(dnsServiceKind.createDnsRecord(TestConstants.DEFAULT_BRIDGE_ID)).isTrue();
