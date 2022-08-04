@@ -89,7 +89,7 @@ public class BridgeSteps {
         BridgeResponse response = bridgeCreator.apply(context, systemBridgeName);
         assertThat(response.getName()).isEqualTo(systemBridgeName);
         assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
-        assertThat(response.getEndpoint()).isNotNull();
+        assertThat(response.getEndpoint()).isNull();
         assertThat(response.getPublishedAt()).isNull();
         assertThat(response.getHref()).isNotNull();
         assertThat(response.getSubmittedAt()).isNotNull();

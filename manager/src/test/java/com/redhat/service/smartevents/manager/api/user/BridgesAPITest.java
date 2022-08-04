@@ -229,7 +229,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
         assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
-        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNull();
     }
 
     @Test
@@ -253,7 +253,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getStatus()).isEqualTo(bridge1.getStatus());
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
-        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNull();
         assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
         assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
     }
@@ -279,7 +279,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse.getStatus()).isEqualTo(bridge2.getStatus());
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
-        assertThat(bridgeResponse.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNull();
         assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
         assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
     }
@@ -306,7 +306,7 @@ public class BridgesAPITest {
         assertThat(bridgeResponse1.getStatus()).isEqualTo(bridge2.getStatus());
         assertThat(bridgeResponse1.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse1.getId());
         assertThat(bridgeResponse1.getSubmittedAt()).isNotNull();
-        assertThat(bridgeResponse1.getEndpoint()).isNotNull();
+        assertThat(bridgeResponse1.getEndpoint()).isNull();
         assertThat(bridgeResponse1.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
         assertThat(bridgeResponse1.getRegion()).isEqualTo(DEFAULT_REGION);
 

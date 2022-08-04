@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.redhat.service.smartevents.manager.dns.DnsService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,9 @@ public class ShardBridgesSyncAPITest {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    DnsService dnsService;
+
     @InjectMock
     JsonWebToken jwt;
 
@@ -134,10 +138,11 @@ public class ShardBridgesSyncAPITest {
     public void getProcessorsWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
+        String endpoint = dnsService.buildBridgeEndpoint(bridgeResponse.getId(), DEFAULT_CUSTOMER_ID);
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeId,
                 bridgeResponse.getName(),
-                bridgeResponse.getEndpoint(),
+                endpoint,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
@@ -168,7 +173,7 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getDefinition().getRequestedAction().getParameter(SendToBridgeAction.BRIDGE_ID_PARAM)).isEqualTo(bridgeId);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
         assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(bridgeResponse.getEndpoint());
+        assertThat(processor.getDefinition().getResolvedAction().getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(endpoint);
     }
 
     @Test
