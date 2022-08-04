@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -177,6 +178,7 @@ public class BridgeExecutorServiceTest {
     }
 
     @Test
+    @Disabled("See https://issues.redhat.com/browse/MGDOBR-991")
     public void testBridgeExecutorCreationWhenSpecAlreadyExists() {
         // Given
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();

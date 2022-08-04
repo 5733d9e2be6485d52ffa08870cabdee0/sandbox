@@ -25,7 +25,7 @@
       "oneOf": [
         {
           "title": "Access Key",
-          "description": "The access key obtained from AWS",
+          "description": "The access key obtained from AWS.",
           "type": "string",
           "format": "password"
         },
@@ -42,7 +42,7 @@
       "oneOf": [
         {
           "title": "Secret Key",
-          "description": "The secret key obtained from AWS",
+          "description": "The secret key obtained from AWS.",
           "type": "string",
           "format": "password"
         },
@@ -55,7 +55,7 @@
     },
     "aws_region": {
       "title": "AWS Region",
-      "description": "The AWS region to connect to",
+      "description": "The AWS region to access.",
       "type": "string",
       "example": "eu-west-1",
       "enum": [
@@ -110,10 +110,7 @@
       "title": "Protocol",
       "description": "The underlying protocol used to communicate with SQS",
       "type": "string",
-      "enum": [
-        "http",
-        "https"
-      ],
+      "example": "http or https",
       "default": "https"
     },
     "aws_queue_u_r_l": {
@@ -123,18 +120,18 @@
     },
     "aws_uri_endpoint_override": {
       "title": "Overwrite Endpoint URI",
-      "description": "Set the overriding endpoint URI. This option needs to be used in combination with overrideEndpoint option.",
+      "description": "The overriding endpoint URI. To use this option, you must also select the `overrideEndpoint` option.",
       "type": "string"
     },
     "aws_override_endpoint": {
       "title": "Endpoint Overwrite",
-      "description": "Set the need for overiding the endpoint URI. This option needs to be used in combination with uriEndpointOverride setting.",
+      "description": "Select this option to override the endpoint URI. To use this option, you must also provide a URI for the `uriEndpointOverride` option.",
       "type": "boolean",
       "default": false
     },
     "aws_delay": {
       "title": "Delay",
-      "description": "Milliseconds before the next poll of the selected stream",
+      "description": "The number of milliseconds before the next poll of the selected stream",
       "type": "integer",
       "default": 500
     }
