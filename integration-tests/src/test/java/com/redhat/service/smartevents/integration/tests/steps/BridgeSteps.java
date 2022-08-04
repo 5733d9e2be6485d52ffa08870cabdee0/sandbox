@@ -24,6 +24,7 @@ import com.redhat.service.smartevents.integration.tests.resources.BridgeResource
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -104,6 +105,24 @@ public class BridgeSteps {
         bridgeContext.setDeleted(true);
     }
 
+    @When("^update the Bridge \"([^\"]*)\" with body:$")
+    public void updateBridge(String testBridgeName, String bridgeRequestJson) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String systemBridgeName = bridgeContext.getName();
+
+        BridgeResponse response;
+        String resolvedBridgeRequestJson = ContextResolver.resolveWithScenarioContext(context, bridgeRequestJson);
+        String updatedBridgeRequestJson = resolvedBridgeRequestJson.replaceAll(NAME_REGEX, String.format(NAME_REPLACE_TEMPLATE, systemBridgeName));
+        try (InputStream resourceStream = new ByteArrayInputStream(updatedBridgeRequestJson.getBytes(StandardCharsets.UTF_8))) {
+            response = BridgeResource.updateBridge(context.getManagerToken(), bridgeContext.getId(), resourceStream);
+        } catch (IOException e) {
+            throw new RuntimeException("Error opening inputstream", e);
+        }
+
+        assertThat(response.getKind()).isEqualTo("Bridge");
+        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
+    }
+
     @And("^the list of Bridge instances is containing the Bridge \"([^\"]*)\"$")
     public void listOfBridgeInstancesIsContainingBridge(String testBridgeName) {
         BridgeContext bridgeContext = context.getBridge(testBridgeName);
@@ -177,8 +196,21 @@ public class BridgeSteps {
                                 .statusCode(404));
     }
 
+    @And("^the Bridge \"([^\"]*)\" has errorHandler of type \"([^\"]*)\" and parameters:$")
+    public void bridgeHasErrorHandlerOfTypeAndParameters(String testBridgeName, String actionType, DataTable parametersDatatable) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        BridgeResponse response = BridgeResource
+                .getBridgeDetails(context.getManagerToken(), bridgeContext.getId());
+        assertThat(response.getErrorHandler().getType()).isEqualTo(actionType);
+        parametersDatatable.asMap().forEach((key, value) -> {
+            String parameterTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, value);
+            assertThat(response.getErrorHandler().getParameter(key)).isEqualTo(parameterTextWithoutPlaceholders);
+        });
+    }
+
     private boolean isBridgeExisting(String bridgeName) {
         return BridgeResource.getBridgeList(context.getManagerToken()).getItems().stream()
                 .anyMatch(b -> b.getName().equals(bridgeName));
     }
+
 }

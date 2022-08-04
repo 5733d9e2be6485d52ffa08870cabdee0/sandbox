@@ -43,6 +43,19 @@ public class BridgeResource {
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
+    public static Response updateBridgeResponse(String token, String bridgeId, InputStream bridgeRequest) {
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
+                .body(bridgeRequest).put(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
+    }
+
+    public static BridgeResponse updateBridge(String token, String bridgeId, InputStream bridgeRequest) {
+        return updateBridgeResponse(token, bridgeId, bridgeRequest).then()
+                .log().ifValidationFails()
+                .statusCode(202)
+                .extract()
+                .as(BridgeResponse.class);
+    }
+
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .get(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
