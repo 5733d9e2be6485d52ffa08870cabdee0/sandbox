@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.shard.operator;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -20,6 +21,9 @@ import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvi
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.Condition;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
+import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -73,12 +77,28 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             // create or update the secrets for the bridgeIngress
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         } else {
-            LOGGER.info("BridgeIngress '{}' already exists. Notifying manager that it is ready.", bridgeDTO.getId());
-            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.READY);
+            LOGGER.info("BridgeIngress '{}' already exists. Notifying manager about its status '{}'.", bridgeDTO.getId(), extractStatus(existing));
+            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), extractStatus(existing));
             managerClient.notifyBridgeStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Ready notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
         }
+    }
+
+    private ManagedResourceStatus extractStatus(BridgeIngress bridgeIngress) {
+        Optional<Condition> augmentation = bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION);
+        Optional<Condition> ready = bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.READY);
+        if (augmentation.isPresent()) {
+            if (ConditionStatus.True.equals(augmentation.get().getStatus())) {
+                return ManagedResourceStatus.PROVISIONING;
+            }
+        }
+        if (ready.isPresent()) {
+            if (ConditionStatus.True.equals(ready.get().getStatus())) {
+                return ManagedResourceStatus.READY;
+            }
+        }
+        return ManagedResourceStatus.FAILED;
     }
 
     @Override

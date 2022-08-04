@@ -115,10 +115,14 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
-        bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        notifyManager(bridgeIngress, ManagedResourceStatus.READY);
-        return UpdateControl.updateStatus(bridgeIngress);
+        if (!bridgeIngress.getStatus().isReady()) {
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
+            return UpdateControl.updateStatus(bridgeIngress);
+        }
+
+        return UpdateControl.noUpdate();
     }
 
     @Override
