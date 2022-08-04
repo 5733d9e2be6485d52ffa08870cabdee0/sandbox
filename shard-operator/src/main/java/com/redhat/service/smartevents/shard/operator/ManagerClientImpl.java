@@ -17,6 +17,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTP
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.exceptions.DeserializationException;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
@@ -82,7 +83,7 @@ public class ManagerClientImpl implements ManagerClient {
     }
 
     @Override
-    public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ManagedResourceStatusUpdateDTO dto) {
+    public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorManagedResourceStatusUpdateDTO dto) {
         LOGGER.debug("Notifying manager about the new status of the Processor '{}'", dto.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(dto))
                 .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(ManagerRequestType.UPDATE, success))
