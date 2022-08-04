@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -195,6 +196,7 @@ public class BridgesServiceTest {
 
         //Wait for Workers to complete
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
+        ZonedDateTime modifiedAt = bridge.getModifiedAt();
 
         // Emulate Shard setting Bridge status to PROVISIONING
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
@@ -202,6 +204,7 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);
+        assertThat(retrievedBridge.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(retrievedBridge.getPublishedAt()).isNull();
 
         // Once ready it should have its published date set
@@ -210,6 +213,7 @@ public class BridgesServiceTest {
 
         Bridge publishedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge.getStatus()).isEqualTo(READY);
+        assertThat(publishedBridge.getModifiedAt()).isEqualTo(modifiedAt);
         ZonedDateTime publishedAt = publishedBridge.getPublishedAt();
         assertThat(publishedAt).isNotNull();
 
@@ -218,6 +222,7 @@ public class BridgesServiceTest {
 
         Bridge publishedBridge2 = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge2.getStatus()).isEqualTo(READY);
+        assertThat(publishedBridge2.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(publishedBridge2.getPublishedAt()).isEqualTo(publishedAt);
     }
 
@@ -355,6 +360,28 @@ public class BridgesServiceTest {
         // The Bridge should move into ACCEPTED state to provision the Error Handler
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
         assertThat(updatedResponse.getErrorHandler()).isNotNull();
+    }
+
+    @Test
+    void testToResponse() {
+        Bridge bridge = createPersistBridge(READY);
+        bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
+
+        BridgeResponse response = bridgesService.toResponse(bridge);
+
+        assertThat(response.getId()).isEqualTo(bridge.getId());
+        assertThat(response.getId()).isEqualTo(bridge.getId());
+        assertThat(response.getName()).isEqualTo(bridge.getName());
+        assertThat(response.getEndpoint()).isEqualTo(bridge.getEndpoint());
+        assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
+        assertThat(response.getPublishedAt()).isEqualTo(bridge.getPublishedAt());
+        assertThat(response.getModifiedAt()).isEqualTo(bridge.getModifiedAt());
+        assertThat(response.getStatus()).isEqualTo(bridge.getStatus());
+        assertThat(response.getHref()).contains(bridge.getId());
+        assertThat(response.getOwner()).isEqualTo(bridge.getOwner());
+        assertThat(response.getErrorHandler()).isEqualTo(bridge.getDefinition().getErrorHandler());
+        assertThat(response.getCloudProvider()).isEqualTo(bridge.getCloudProvider());
+        assertThat(response.getRegion()).isEqualTo(bridge.getRegion());
     }
 
     protected Bridge createPersistBridge(ManagedResourceStatus status) {

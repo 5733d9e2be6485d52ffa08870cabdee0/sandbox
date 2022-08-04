@@ -239,7 +239,6 @@ public class BridgesServiceImpl implements BridgesService {
     public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
         bridge.setStatus(updateDTO.getStatus());
-        bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
         if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
@@ -289,6 +288,7 @@ public class BridgesServiceImpl implements BridgesService {
         }
         response.setSubmittedAt(bridge.getSubmittedAt());
         response.setPublishedAt(bridge.getPublishedAt());
+        response.setModifiedAt(bridge.getModifiedAt());
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
