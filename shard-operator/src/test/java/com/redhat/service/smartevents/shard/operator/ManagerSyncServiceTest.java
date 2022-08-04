@@ -189,8 +189,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         String expectedJsonUpdateRequestForDeprovisioning =
                 String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\", \"status\": \"deleting\"}",
                         processor.getId(),
-                        processor.getBridgeId(),
-                        processor.getCustomerId());
+                        processor.getCustomerId(),
+                        processor.getBridgeId());
 
         // The BridgeExecutorController delete loop does not execute so only one update can be captured
         // See https://issues.redhat.com/browse/MGDOBR-128
@@ -213,14 +213,13 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         String expectedJsonUpdateRequestForDeprovisioning =
                 String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\",  \"status\": \"deleting\"}",
                         processor.getId(),
-                        processor.getBridgeId(),
-                        processor.getCustomerId());
+                        processor.getCustomerId(),
+                        processor.getBridgeId());
         String expectedJsonUpdateRequest =
                 String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\", \"status\": \"deleted\"}",
                         processor.getId(),
-                        processor.getBridgeId(),
-
-                        processor.getCustomerId());
+                        processor.getCustomerId(),
+                        processor.getBridgeId());
 
         // The BridgeExecutorController does not need to execute if the CRD is not deployed
         CountDownLatch latch = new CountDownLatch(1);

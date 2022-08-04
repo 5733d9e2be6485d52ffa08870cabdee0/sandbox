@@ -284,7 +284,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setId(bridge.getId());
         response.setName(bridge.getName());
         // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
-        if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())){
+        if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())) {
             response.setEndpoint(bridge.getEndpoint());
         }
         response.setSubmittedAt(bridge.getSubmittedAt());
