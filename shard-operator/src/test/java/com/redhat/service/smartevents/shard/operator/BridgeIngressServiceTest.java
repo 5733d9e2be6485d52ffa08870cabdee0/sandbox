@@ -6,15 +6,12 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
-import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -30,7 +27,6 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -146,30 +142,6 @@ public class BridgeIngressServiceTest {
         // Then
         BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
         assertThat(bridgeIngress).isNull();
-    }
-
-    @Test
-    @Disabled("See https://issues.redhat.com/browse/MGDOBR-991")
-    public void testBridgeIngressCreationWhenSpecAlreadyExists() {
-        // Given
-        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
-
-        // When
-        bridgeIngressService.createBridgeIngress(dto);
-
-        // Then
-        BridgeIngress bridgeIngress = kubernetesClient
-                .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
-                .get();
-        assertThat(bridgeIngress).isNotNull();
-
-        // Re-try creation
-        bridgeIngressService.createBridgeIngress(dto);
-
-        assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyBridgeStatusChange(dto);
     }
 
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {

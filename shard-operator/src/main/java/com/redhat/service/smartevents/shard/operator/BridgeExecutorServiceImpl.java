@@ -183,11 +183,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_ERROR_TOPIC_ENV_VAR, Base64.getEncoder().encodeToString(processorDTO.getKafkaConnection().getErrorTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KAFKA_GROUP_ID_ENV_VAR, Base64.getEncoder().encodeToString(bridgeExecutor.getSpec().getId().getBytes()));
 
-        Secret existing = kubernetesClient
-                .secrets()
-                .inNamespace(bridgeExecutor.getMetadata().getNamespace())
-                .withName(bridgeExecutor.getMetadata().getName())
-                .get();
+        Secret existing = fetchBridgeExecutorSecret(bridgeExecutor);
 
         if (existing == null || !expected.getData().equals(existing.getData())) {
             kubernetesClient

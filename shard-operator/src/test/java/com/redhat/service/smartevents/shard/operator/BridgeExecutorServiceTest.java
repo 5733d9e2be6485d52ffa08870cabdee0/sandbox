@@ -7,10 +7,8 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
@@ -26,11 +24,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -48,9 +44,6 @@ public class BridgeExecutorServiceTest {
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
-
-    @InjectMock
-    ManagerClient managerClient;
 
     @BeforeEach
     public void setup() {
@@ -173,30 +166,6 @@ public class BridgeExecutorServiceTest {
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNull();
-    }
-
-    @Test
-    @Disabled("See https://issues.redhat.com/browse/MGDOBR-991")
-    public void testBridgeExecutorCreationWhenSpecAlreadyExists() {
-        // Given
-        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
-
-        // When
-        bridgeExecutorService.createBridgeExecutor(dto);
-
-        // Then
-        BridgeExecutor bridgeExecutor = kubernetesClient
-                .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
-                .get();
-        assertThat(bridgeExecutor).isNotNull();
-
-        // Re-try creation
-        bridgeExecutorService.createBridgeExecutor(dto);
-
-        assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyProcessorStatusChange(dto);
     }
 
     private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {
