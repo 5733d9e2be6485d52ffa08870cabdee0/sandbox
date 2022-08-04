@@ -6,6 +6,7 @@ import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
@@ -148,6 +149,7 @@ public class BridgeIngressServiceTest {
     }
 
     @Test
+    @Disabled("See https://issues.redhat.com/browse/MGDOBR-991")
     public void testBridgeIngressCreationWhenSpecAlreadyExists() {
         // Given
         BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
