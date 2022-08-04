@@ -42,9 +42,8 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
                             List<LoggedRequest> findAll = wireMockServer.findAll(putRequestedFor(urlEqualTo(url))
                                     .withRequestBody(equalToJson(expectedJsonRequest, true, true))
                                     .withHeader("Content-Type", equalTo("application/json")));
-                            assertThat(findAll).hasSize(1);
+                            assertThat(findAll).hasSizeGreaterThanOrEqualTo(1);
                         });
-
     }
 
 }
