@@ -138,10 +138,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
-        bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
-        return UpdateControl.updateStatus(bridgeExecutor);
+        if (!bridgeExecutor.getStatus().isReady()) {
+            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
+            return UpdateControl.updateStatus(bridgeExecutor);
+        }
+
+        return UpdateControl.noUpdate();
     }
 
     @Override
