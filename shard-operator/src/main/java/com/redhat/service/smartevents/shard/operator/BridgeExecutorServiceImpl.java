@@ -3,7 +3,6 @@ package com.redhat.service.smartevents.shard.operator;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -24,9 +23,6 @@ import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurati
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
-import com.redhat.service.smartevents.shard.operator.resources.Condition;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentSpecUtils;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
@@ -92,29 +88,13 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
         } else {
-            LOGGER.info("BridgeExecutor '{}' already exists. Notifying manager about its status '{}'.", processorDTO.getId(), extractStatus(existing));
+            LOGGER.info("BridgeExecutor '{}' already exists. Notifying manager that it is ready.", processorDTO.getId());
             ProcessorManagedResourceStatusUpdateDTO updateDTO =
-                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), extractStatus(existing));
+                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatus.READY);
             managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Ready notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));
         }
-    }
-
-    private ManagedResourceStatus extractStatus(BridgeExecutor bridgeExecutor) {
-        Optional<Condition> augmentation = bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION);
-        Optional<Condition> ready = bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.READY);
-        if (augmentation.isPresent()) {
-            if (ConditionStatus.True.equals(augmentation.get().getStatus())) {
-                return ManagedResourceStatus.PROVISIONING;
-            }
-        }
-        if (ready.isPresent()) {
-            if (ConditionStatus.True.equals(ready.get().getStatus())) {
-                return ManagedResourceStatus.READY;
-            }
-        }
-        return ManagedResourceStatus.FAILED;
     }
 
     @Override
