@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -46,7 +47,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
         stubBridgeUpdate();
         String expectedJsonUpdate =
                 "{\"id\": \"bridgeStatusChange-1\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
@@ -64,7 +65,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO("processorStatusChange-1", "myCustomerId", PROVISIONING);
+        ProcessorManagedResourceStatusUpdateDTO updateDTO = new ProcessorManagedResourceStatusUpdateDTO("processorStatusChange-1", "myCustomerId", "bridgeId", PROVISIONING);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected

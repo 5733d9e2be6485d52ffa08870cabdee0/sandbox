@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
@@ -148,7 +148,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
-        UpdateManagedResourceStatusDTO updateDTO = new UpdateManagedResourceStatusDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
 
         managerClient.notifyBridgeStatusChange(updateDTO)
                 .subscribe().with(

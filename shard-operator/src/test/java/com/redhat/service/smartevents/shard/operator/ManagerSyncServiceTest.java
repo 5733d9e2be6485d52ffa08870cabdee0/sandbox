@@ -16,7 +16,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
@@ -169,7 +169,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                         });
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 
-        assertJsonRequest(objectMapper.writeValueAsString(new UpdateManagedResourceStatusDTO(processor.getId(), processor.getCustomerId(), ManagedResourceStatus.READY)),
+        assertJsonRequest(
+                objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatus.READY)),
                 APIConstants.SHARD_API_BASE_PATH + "processors");
     }
 
@@ -186,8 +187,9 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
         String expectedJsonUpdateRequestForDeprovisioning =
-                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\", \"status\": \"deleting\"}",
                         processor.getId(),
+                        processor.getBridgeId(),
                         processor.getCustomerId());
 
         // The BridgeExecutorController delete loop does not execute so only one update can be captured
@@ -209,12 +211,15 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         stubProcessorsToDeployOrDelete(List.of(processor));
         stubProcessorUpdate();
         String expectedJsonUpdateRequestForDeprovisioning =
-                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\",  \"status\": \"deleting\"}",
                         processor.getId(),
+                        processor.getBridgeId(),
                         processor.getCustomerId());
         String expectedJsonUpdateRequest =
-                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"bridgeId\": \"%s\", \"status\": \"deleted\"}",
                         processor.getId(),
+                        processor.getBridgeId(),
+
                         processor.getCustomerId());
 
         // The BridgeExecutorController does not need to execute if the CRD is not deployed

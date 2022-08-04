@@ -25,7 +25,7 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -236,7 +236,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridge(UpdateManagedResourceStatusDTO updateDTO) {
+    public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
         bridge.setStatus(updateDTO.getStatus());
         bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));

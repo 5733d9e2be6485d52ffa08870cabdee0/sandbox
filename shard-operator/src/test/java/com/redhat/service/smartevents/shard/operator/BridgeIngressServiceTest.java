@@ -11,7 +11,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -170,7 +170,7 @@ public class BridgeIngressServiceTest {
         // Re-try creation
         bridgeIngressService.createBridgeIngress(dto);
 
-        ArgumentCaptor<UpdateManagedResourceStatusDTO> updateDTO = ArgumentCaptor.forClass(UpdateManagedResourceStatusDTO.class);
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
         verify(managerClient).notifyBridgeStatusChange(updateDTO.capture());
         assertThat(updateDTO.getValue().getStatus()).isEqualTo(ManagedResourceStatus.READY);
         assertThat(updateDTO.getValue().getId()).isEqualTo(dto.getId());

@@ -1,20 +1,24 @@
 package com.redhat.service.smartevents.infra.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateManagedResourceStatusDTO {
+public class ManagedResourceStatusUpdateDTO {
 
+    @JsonProperty("id")
     private String id;
 
+    @JsonProperty("customerId")
     private String customerId;
 
+    @JsonProperty("status")
     private ManagedResourceStatus status;
 
-    public UpdateManagedResourceStatusDTO() {
+    public ManagedResourceStatusUpdateDTO() {
     }
 
-    public UpdateManagedResourceStatusDTO(String id, String customerId, ManagedResourceStatus status) {
+    public ManagedResourceStatusUpdateDTO(String id, String customerId, ManagedResourceStatus status) {
         this.id = id;
         this.customerId = customerId;
         this.status = status;

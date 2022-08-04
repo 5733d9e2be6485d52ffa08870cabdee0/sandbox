@@ -26,7 +26,7 @@ import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.infra.models.dto.UpdateManagedResourceStatusDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
@@ -163,7 +163,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
-
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
@@ -303,10 +302,12 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(UpdateManagedResourceStatusDTO updateDTO) {
+    public Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
+        Bridge bridge = bridgesService.getBridge(updateDTO.getBridgeId());
         Processor p = processorDAO.findById(updateDTO.getId());
-        if (p == null || !p.getBridge().getCustomerId().equals(updateDTO.getCustomerId())) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist.", updateDTO.getId()));
+        if (bridge == null || p == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", updateDTO.getId(), updateDTO.getBridgeId(),
+                    updateDTO.getCustomerId()));
         }
 
         if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {

@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.common.base.Strings;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InvalidURLException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
@@ -61,8 +62,7 @@ public class BridgeIngress extends CustomResource<BridgeIngressSpec, BridgeIngre
                     .withHost(new URL(bridgeDTO.getEndpoint()).getHost())
                     .build();
         } catch (MalformedURLException e) {
-            // TODO: refactor
-            throw new IllegalArgumentException("Not a valid endpoint " + bridgeDTO.getEndpoint());
+            throw new InvalidURLException("Could not extract host from " + bridgeDTO.getEndpoint());
         }
     }
 
