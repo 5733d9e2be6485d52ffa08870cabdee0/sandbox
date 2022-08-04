@@ -99,7 +99,6 @@ public class OpenshiftNetworkingService implements NetworkingService {
         return route;
     }
 
-    // TODO: refactor as we don't need anymore NetworkResource
     private NetworkResource buildNetworkingResource(Route route, String path) {
         if (route.getStatus() != null && "Admitted".equals(route.getStatus().getIngress().get(0).getConditions().get(0).getType())) {
             return new NetworkResource(null, true);
