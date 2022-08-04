@@ -156,6 +156,8 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
       - name: Run integration tests
         env:
           MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
