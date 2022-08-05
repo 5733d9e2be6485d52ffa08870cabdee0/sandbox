@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.integration.tests.resources;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 import io.restassured.http.ContentType;
@@ -11,13 +12,11 @@ import io.restassured.response.Response;
 
 public class IngressResource {
 
-    public static Response optionsJsonEmptyEventResponse(String token, String endpoint) {
+    public static Response optionsJsonEmptyEventResponse(String token, String endpoint) throws IOException {
         try (ByteArrayInputStream cloudEventStream = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8))) {
             return ResourceUtils.newRequest(token, ContentType.JSON.toString())
                     .body(cloudEventStream)
                     .options(endpoint);
-        } catch (IOException e) {
-            throw new RuntimeException("Error with inputstream", e);
         }
     }
 

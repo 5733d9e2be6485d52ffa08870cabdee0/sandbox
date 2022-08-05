@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.integration.tests.steps;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -10,9 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,11 +21,12 @@ import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.IngressResource;
-
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
 
 public class IngressSteps {
 
@@ -43,7 +42,13 @@ public class IngressSteps {
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
-                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                        () -> {
+                            try {
+                                IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Error with inputstream", e);
+                            }
+                        }))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
@@ -57,11 +62,23 @@ public class IngressSteps {
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
-                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                        () -> {
+                            try {
+                                IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Error with inputstream", e);
+                            }
+                        }))
                 .atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
-                        .then()
-                        .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
+                .untilAsserted(() -> {
+                    try {
+                        IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
+                                .then()
+                                .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503)));
+                    } catch (UnknownHostException ignored) {
+                        // The DNS was properly deleted and the record expired.
+                    }
+                });
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")
