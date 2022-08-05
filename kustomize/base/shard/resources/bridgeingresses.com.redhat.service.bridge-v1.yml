@@ -27,13 +27,13 @@ spec:
                 type: string
               bridgeName:
                 type: string
+              host:
+                type: string
               image:
                 type: string
             type: object
           status:
             properties:
-              endpoint:
-                type: string
               conditions:
                 items:
                   properties:
