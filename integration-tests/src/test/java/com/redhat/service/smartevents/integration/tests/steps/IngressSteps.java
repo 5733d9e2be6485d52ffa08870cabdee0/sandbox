@@ -16,6 +16,8 @@ import javax.net.ssl.SSLException;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +35,8 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 
 public class IngressSteps {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngressSteps.class);
 
     private TestContext context;
 
@@ -79,8 +83,9 @@ public class IngressSteps {
                         IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                                 .then()
                                 .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503)));
-                    } catch (UnknownHostException | SSLException ignored) {
+                    } catch (UnknownHostException | SSLException e) {
                         // The DNS was properly deleted and the record expired.
+                        LOGGER.info("An exception '{}' was raised when trying to call the bridge ingress, considering the bridge as deleted.", e.getMessage());
                     }
                 });
     }
