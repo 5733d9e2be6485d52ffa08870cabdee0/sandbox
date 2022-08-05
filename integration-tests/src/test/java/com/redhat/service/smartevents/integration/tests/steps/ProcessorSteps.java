@@ -239,30 +239,4 @@ public class ProcessorSteps {
         return ProcessorResource.getProcessor(context.getManagerToken(),
                 bridgeContext.getId(), processorId).getSource();
     }
-
-    @And("update existing Processor with modified webhook url to the Bridge {string} with body:")
-    public void updateExistingProcessorWithModifiedWebhookUrlToTheBridgeWithBody(String testBridgeName, String processorRequestJson) {
-        BridgeContext bridgeContext = context.getBridge(testBridgeName);
-        processorRequestJson = ContextResolver.resolveWithScenarioContext(context, processorRequestJson);
-
-        JsonObject json = new JsonObject(processorRequestJson);
-        String processorName = json.getString("name");
-        ProcessorContext processorContext = bridgeContext.getProcessor(processorName);
-
-        ProcessorResponse response;
-        try (InputStream resourceStream = new ByteArrayInputStream(
-                processorRequestJson.getBytes(StandardCharsets.UTF_8))) {
-            response = ProcessorResource.updateProcessor(context.getManagerToken(),
-                    bridgeContext.getId(), processorContext.getId(), resourceStream);
-        } catch (IOException e) {
-            throw new RuntimeException("Error with inputstream", e);
-        }
-
-        bridgeContext.newProcessor(processorName, response.getId());
-
-        assertThat(response.getName()).isEqualTo(processorName);
-        assertThat(response.getKind()).isEqualTo("Processor");
-        assertThat(response.getHref()).isNotNull();
-        assertThat(response.getStatus()).isEqualTo(ManagedResourceStatus.ACCEPTED);
-    }
 }

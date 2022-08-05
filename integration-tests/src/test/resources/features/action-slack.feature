@@ -74,15 +74,16 @@ Feature: Slack Action tests
         }
     }
     """
+    Then Slack channel "${slack.channel.general.name}" contains message with text "${cloud-event.test-id.id}" within 1 minute
 
-    And update existing Processor with modified webhook url to the Bridge "mybridge" with body:
+    When update the Processor "slackProcessor" of the Bridge "mybridge" with body:
     """
     {
       "name": "slackProcessor",
       "action": {
         "type": "slack_sink_0.1",
         "parameters": {
-            "slack_channel": "${slack.channel.general.name}",
+            "slack_channel": "${slack.channel.mc.name}",
             "slack_webhook_url": "${slack.channel.mc.webhook.url}"
           }
       }
