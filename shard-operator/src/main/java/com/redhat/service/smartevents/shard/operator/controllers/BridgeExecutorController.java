@@ -138,6 +138,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
+        // Only issue a Status Update once.
+        // This is a work-around for non-deterministic Unit Tests.
+        // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
