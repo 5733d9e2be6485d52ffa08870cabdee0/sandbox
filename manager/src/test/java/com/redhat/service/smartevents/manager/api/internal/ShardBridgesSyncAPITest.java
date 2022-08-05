@@ -23,6 +23,7 @@ import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
@@ -63,16 +64,17 @@ import static org.mockito.Mockito.when;
 @QuarkusTest
 public class ShardBridgesSyncAPITest {
 
-    private static final String TEST_BRIDGE_ENDPOINT = "http://www.example.com/test-endpoint";
     private static final String TEST_BRIDGE_TLS_CERTIFICATE = "certificate";
     private static final String TEST_BRIDGE_TLS_KEY = "key";
-    private static final String TEST_BRIDGE_WEBHOOK = TEST_BRIDGE_ENDPOINT;
 
     @Inject
     DatabaseManagerUtils databaseManagerUtils;
 
     @Inject
     MetricsService metricsService;
+
+    @Inject
+    DnsService dnsService;
 
     @InjectMock
     JsonWebToken jwt;
@@ -98,7 +100,7 @@ public class ShardBridgesSyncAPITest {
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                TestConstants.DEFAULT_BRIDGE_ENDPOINT,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
                 DEFAULT_CUSTOMER_ID,
@@ -136,13 +138,13 @@ public class ShardBridgesSyncAPITest {
     public void getProcessorsWithSendToBridgeAction() {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         String bridgeId = bridgeResponse.getId();
+        String endpoint = dnsService.buildBridgeEndpoint(bridgeResponse.getId(), DEFAULT_CUSTOMER_ID);
         //Emulate the Shard having deployed the Bridge
         BridgeDTO bridge = new BridgeDTO(bridgeId,
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                endpoint,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
-
                 DEFAULT_CUSTOMER_ID,
                 DEFAULT_USER_NAME,
                 READY,
@@ -171,7 +173,7 @@ public class ShardBridgesSyncAPITest {
         assertThat(processor.getDefinition().getRequestedAction().getParameter(SendToBridgeAction.BRIDGE_ID_PARAM)).isEqualTo(bridgeId);
         assertThat(processor.getDefinition().getResolvedAction()).isNotNull();
         assertThat(processor.getDefinition().getResolvedAction().getType()).isEqualTo(WebhookAction.TYPE);
-        assertThat(processor.getDefinition().getResolvedAction().getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(TEST_BRIDGE_WEBHOOK);
+        assertThat(processor.getDefinition().getResolvedAction().getParameter(WebhookAction.ENDPOINT_PARAM)).isEqualTo(endpoint);
     }
 
     @Test
@@ -180,7 +182,7 @@ public class ShardBridgesSyncAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                TestConstants.DEFAULT_BRIDGE_ENDPOINT,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
 
@@ -218,7 +220,7 @@ public class ShardBridgesSyncAPITest {
         BridgeResponse bridgeResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION)).as(BridgeResponse.class);
         BridgeDTO bridge = new BridgeDTO(bridgeResponse.getId(),
                 bridgeResponse.getName(),
-                TEST_BRIDGE_ENDPOINT,
+                TestConstants.DEFAULT_BRIDGE_ENDPOINT,
                 TEST_BRIDGE_TLS_CERTIFICATE,
                 TEST_BRIDGE_TLS_KEY,
 
@@ -284,7 +286,7 @@ public class ShardBridgesSyncAPITest {
         assertThat(bridge.getName()).isEqualTo(DEFAULT_BRIDGE_NAME);
         assertThat(bridge.getCustomerId()).isEqualTo(DEFAULT_CUSTOMER_ID);
         assertThat(bridge.getStatus()).isEqualTo(PREPARING);
-        assertThat(bridge.getEndpoint()).isNull();
+        assertThat(bridge.getEndpoint()).isNotNull();
     }
 
     @Test

@@ -25,7 +25,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Processo
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
@@ -65,7 +65,6 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -285,12 +284,11 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor updated = processorService.updateProcessorStatus(updateDto);
 
@@ -299,12 +297,11 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
 
@@ -320,20 +317,22 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus_bridgeDoesNotExist() {
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridgeId(NON_EXISTING_BRIDGE_ID);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(NON_EXISTING_BRIDGE_ID);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }
 
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }

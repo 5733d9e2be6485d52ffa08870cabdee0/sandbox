@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.models.Processor;
@@ -26,7 +27,7 @@ public interface ProcessorService {
 
     List<Processor> findByShardIdWithReadyDependencies(String shardId);
 
-    Processor updateProcessorStatus(ProcessorDTO processorDTO);
+    Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO);
 
     Long getProcessorsCount(String bridgeId, String customerId);
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
@@ -73,8 +74,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
             createOrUpdateBridgeIngressSecret(bridgeIngress, bridgeDTO);
         } else {
             LOGGER.info("BridgeIngress '{}' already exists. Notifying manager that it is ready.", bridgeDTO.getId());
-            bridgeDTO.setStatus(ManagedResourceStatus.READY);
-            managerClient.notifyBridgeStatusChange(bridgeDTO).subscribe().with(
+            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.READY);
+            managerClient.notifyBridgeStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Ready notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
         }
@@ -91,8 +92,8 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         if (!bridgeDeleted) {
             // TODO: we might need to review this use case and have a manager to look at a queue of objects not deleted and investigate. Unfortunately the API does not give us a reason.
             LOGGER.warn("BridgeIngress '{}' not deleted. Notifying manager that it has been deleted.", bridgeDTO.getId());
-            bridgeDTO.setStatus(ManagedResourceStatus.DELETED);
-            managerClient.notifyBridgeStatusChange(bridgeDTO)
+            ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeDTO.getId(), bridgeDTO.getCustomerId(), ManagedResourceStatus.DELETED);
+            managerClient.notifyBridgeStatusChange(updateDTO)
                     .subscribe().with(
                             success -> LOGGER.debug("Deleted notification for BridgeIngress '{}' has been sent to the manager successfully", bridgeDTO.getId()),
                             failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", BridgeDTO.class.getSimpleName(), failure));
@@ -109,6 +110,9 @@ public class BridgeIngressServiceImpl implements BridgeIngressService {
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_PROTOCOL_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSecurityProtocol().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_TOPIC_NAME_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getTopic().getBytes()));
         expected.getData().put(GlobalConfigurationsConstants.KNATIVE_KAFKA_SASL_MECHANISM_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getKafkaConnection().getSaslMechanism().getBytes()));
+
+        expected.getData().put(GlobalConfigurationsConstants.TLS_CERTIFICATE_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getTlsCertificate().getBytes()));
+        expected.getData().put(GlobalConfigurationsConstants.TLS_KEY_SECRET, Base64.getEncoder().encodeToString(bridgeDTO.getTlsKey().getBytes()));
 
         Secret existing = kubernetesClient
                 .secrets()

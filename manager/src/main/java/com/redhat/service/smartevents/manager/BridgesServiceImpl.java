@@ -25,10 +25,12 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
@@ -69,6 +71,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    DnsService dnsService;
+
     @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
@@ -86,6 +91,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setGeneration(0);
         bridge.setCloudProvider(bridgeRequest.getCloudProvider());
         bridge.setRegion(bridgeRequest.getRegion());
+        bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
@@ -230,16 +236,15 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridge(BridgeDTO bridgeDTO) {
-        Bridge bridge = getBridge(bridgeDTO.getId(), bridgeDTO.getCustomerId());
-        bridge.setStatus(bridgeDTO.getStatus());
-        bridge.setEndpoint(bridgeDTO.getEndpoint());
+    public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
+        Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
+        bridge.setStatus(updateDTO.getStatus());
         bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
 
-        if (bridgeDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
+        if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
             metricsService.onOperationComplete(bridge, MetricsOperation.DELETE);
-        } else if (bridgeDTO.getStatus().equals(ManagedResourceStatus.READY)) {
+        } else if (updateDTO.getStatus().equals(ManagedResourceStatus.READY)) {
             if (Objects.isNull(bridge.getPublishedAt())) {
                 bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
                 metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
@@ -278,7 +283,10 @@ public class BridgesServiceImpl implements BridgesService {
         BridgeResponse response = new BridgeResponse();
         response.setId(bridge.getId());
         response.setName(bridge.getName());
-        response.setEndpoint(bridge.getEndpoint());
+        // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
+        if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())) {
+            response.setEndpoint(bridge.getEndpoint());
+        }
         response.setSubmittedAt(bridge.getSubmittedAt());
         response.setPublishedAt(bridge.getPublishedAt());
         response.setStatus(bridge.getStatus());

@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
@@ -151,7 +152,7 @@ public class BridgesServiceTest {
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
-        assertThat(bridge.getEndpoint()).isNull();
+        assertThat(bridge.getEndpoint()).isNotNull();
 
         ListResult<Bridge> bridges = bridgesService.getBridges(DEFAULT_CUSTOMER_ID, new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE));
         assertThat(bridges.getSize()).isEqualTo(1);
@@ -176,8 +177,8 @@ public class BridgesServiceTest {
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
 
         // Emulate Shard setting Bridge status to PROVISIONING
-        bridge.setStatus(PROVISIONING);
-        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
+        bridgesService.updateBridge(updateDTO);
 
         // PROVISIONING Bridges are also notified to the Shard Operator.
         // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
@@ -196,16 +197,16 @@ public class BridgesServiceTest {
         Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
 
         // Emulate Shard setting Bridge status to PROVISIONING
-        bridge.setStatus(PROVISIONING);
-        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), PROVISIONING);
+        bridgesService.updateBridge(updateDTO);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);
         assertThat(retrievedBridge.getPublishedAt()).isNull();
 
         // Once ready it should have its published date set
-        bridge.setStatus(READY);
-        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+        updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
+        bridgesService.updateBridge(updateDTO);
 
         Bridge publishedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge.getStatus()).isEqualTo(READY);
@@ -213,7 +214,7 @@ public class BridgesServiceTest {
         assertThat(publishedAt).isNotNull();
 
         //Check calls to set PublishedAt at idempotent
-        bridgesService.updateBridge(bridgesService.toDTO(bridge));
+        bridgesService.updateBridge(updateDTO);
 
         Bridge publishedBridge2 = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(publishedBridge2.getStatus()).isEqualTo(READY);

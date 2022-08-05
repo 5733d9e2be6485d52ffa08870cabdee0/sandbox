@@ -9,9 +9,11 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
@@ -195,8 +197,12 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        assertThat(dto.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        verify(managerClient).notifyProcessorStatusChange(dto);
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+        verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
+        assertThat(updateDTO.getValue().getStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(updateDTO.getValue().getId()).isEqualTo(dto.getId());
+        assertThat(updateDTO.getValue().getCustomerId()).isEqualTo(dto.getCustomerId());
+        assertThat(updateDTO.getValue().getBridgeId()).isEqualTo(dto.getBridgeId());
     }
 
     private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {

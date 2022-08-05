@@ -19,6 +19,8 @@ public class BridgeIngressSpec {
 
     private String id;
 
+    private String host;
+
     public String getImage() {
         return image;
     }
@@ -37,6 +39,10 @@ public class BridgeIngressSpec {
 
     public String getOwner() {
         return owner;
+    }
+
+    public String getHost() {
+        return host;
     }
 
     public void setOwner(String owner) {
@@ -59,6 +65,10 @@ public class BridgeIngressSpec {
         this.id = id;
     }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -72,11 +82,12 @@ public class BridgeIngressSpec {
                 && Objects.equals(customerId, that.customerId)
                 && Objects.equals(owner, that.owner)
                 && Objects.equals(bridgeName, that.bridgeName)
-                && Objects.equals(id, that.id);
+                && Objects.equals(id, that.id)
+                && Objects.equals(host, that.host);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(image, customerId, bridgeName, id);
+        return Objects.hash(image, customerId, bridgeName, id, host);
     }
 }

@@ -196,6 +196,11 @@
     "id": 34,
     "reason": "The selected Region is not valid.",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.InvalidURLException",
+    "id": 35,
+    "reason": "Shard Operator received an invalid URL for the BridgeIngress endpoint.",
+    "type": "PLATFORM"
   }
-
 ]

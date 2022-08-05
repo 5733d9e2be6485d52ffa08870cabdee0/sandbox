@@ -11,8 +11,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
@@ -103,7 +103,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         // Nothing to check for Authorization Policy
 
-        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, path);
+        NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, path);
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
@@ -115,15 +115,10 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
 
-        if (!bridgeIngress.getStatus().isReady() || !networkResource.getEndpoint().equals(bridgeIngress.getStatus().getEndpoint())) {
-            bridgeIngress.getStatus().setEndpoint(networkResource.getEndpoint());
-            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
-            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            notifyManager(bridgeIngress, ManagedResourceStatus.READY);
-            return UpdateControl.updateStatus(bridgeIngress);
-        }
-
-        return UpdateControl.noUpdate();
+        bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.READY);
+        bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+        notifyManager(bridgeIngress, ManagedResourceStatus.READY);
+        return UpdateControl.updateStatus(bridgeIngress);
     }
 
     @Override
@@ -149,13 +144,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     }
 
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
-        BridgeDTO dto = bridgeIngress.toDTO();
-        dto.setStatus(status);
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
 
-        managerClient.notifyBridgeStatusChange(dto)
+        managerClient.notifyBridgeStatusChange(updateDTO)
                 .subscribe().with(
-                        success -> LOGGER.info("Updating Bridge with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", dto.getId(), failure));
+                        success -> LOGGER.info("Updating Bridge with id '{}' done", updateDTO.getId()),
+                        failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", updateDTO.getId(), failure));
     }
 
     private String extractBrokerPath(KnativeBroker broker) {
