@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
+
+import org.awaitility.Awaitility;
+import org.hamcrest.Matchers;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.service.smartevents.infra.utils.CloudEventUtils;
@@ -21,12 +26,11 @@ import com.redhat.service.smartevents.integration.tests.common.Constants;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.IngressResource;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
-import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 public class IngressSteps {
 
@@ -75,7 +79,7 @@ public class IngressSteps {
                         IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
                                 .then()
                                 .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503)));
-                    } catch (UnknownHostException ignored) {
+                    } catch (UnknownHostException | SSLException ignored) {
                         // The DNS was properly deleted and the record expired.
                     }
                 });
