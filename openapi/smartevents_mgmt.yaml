@@ -1113,30 +1113,6 @@ components:
         enabled:
           type: boolean
           nullable: false
-    Error:
-      required:
-      - kind
-      - reason
-      - id
-      - href
-      type: object
-      properties:
-        kind:
-          type: string
-          nullable: false
-        name:
-          type: string
-        code:
-          type: string
-        reason:
-          type: string
-          nullable: false
-        id:
-          type: string
-          nullable: false
-        href:
-          type: string
-          nullable: false
     ErrorListResponse:
       required:
       - kind
@@ -1151,7 +1127,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/ModelError'
         page:
           format: int64
           type: integer
@@ -1175,7 +1151,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/ModelError'
     List:
       allOf:
       - $ref: '#/components/schemas/ListResponse'
@@ -1220,6 +1196,30 @@ components:
       - deleted
       - failed
       type: string
+    ModelError:
+      required:
+      - kind
+      - reason
+      - id
+      - href
+      type: object
+      properties:
+        kind:
+          type: string
+          nullable: false
+        name:
+          type: string
+        code:
+          type: string
+        reason:
+          type: string
+          nullable: false
+        id:
+          type: string
+          nullable: false
+        href:
+          type: string
+          nullable: false
     ObjectReference:
       required:
       - kind

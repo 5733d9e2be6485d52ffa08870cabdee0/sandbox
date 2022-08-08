@@ -12,7 +12,7 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "Error")
+@Schema(name = "ModelError")
 public class ErrorResponse extends BaseResponse {
 
     @JsonProperty("code")
