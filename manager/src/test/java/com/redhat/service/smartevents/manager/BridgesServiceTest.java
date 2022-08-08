@@ -370,7 +370,6 @@ public class BridgesServiceTest {
         BridgeResponse response = bridgesService.toResponse(bridge);
 
         assertThat(response.getId()).isEqualTo(bridge.getId());
-        assertThat(response.getId()).isEqualTo(bridge.getId());
         assertThat(response.getName()).isEqualTo(bridge.getName());
         assertThat(response.getEndpoint()).isEqualTo(bridge.getEndpoint());
         assertThat(response.getSubmittedAt()).isEqualTo(bridge.getSubmittedAt());
