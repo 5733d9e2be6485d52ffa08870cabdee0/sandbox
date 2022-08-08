@@ -423,6 +423,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setStatus(processor.getStatus());
         processorResponse.setPublishedAt(processor.getPublishedAt());
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
+        processorResponse.setModifiedAt(processor.getModifiedAt());
         processorResponse.setOwner(processor.getOwner());
 
         if (processor.getDefinition() != null) {

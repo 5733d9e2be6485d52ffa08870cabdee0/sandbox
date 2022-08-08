@@ -22,6 +22,10 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
     @JsonProperty("published_at")
     private ZonedDateTime publishedAt;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
+    @JsonProperty("modified_at")
+    private ZonedDateTime modifiedAt;
+
     @NotNull
     @JsonProperty("status")
     private ManagedResourceStatus status;
@@ -42,6 +46,10 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
         return publishedAt;
     }
 
+    public ZonedDateTime getModifiedAt() {
+        return modifiedAt;
+    }
+
     public ManagedResourceStatus getStatus() {
         return status;
     }
@@ -52,6 +60,10 @@ public abstract class BaseManagedResourceResponse extends BaseResponse {
 
     public void setPublishedAt(ZonedDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    public void setModifiedAt(ZonedDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
     }
 
     public void setStatus(ManagedResourceStatus status) {

@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -304,6 +306,7 @@ class ProcessorServiceTest {
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
+        ZonedDateTime modifiedAt = publishedProcessor.getModifiedAt();
 
         assertThat(publishedProcessor.getStatus()).isEqualTo(READY);
         assertThat(publishedProcessor.getPublishedAt()).isNotNull();
@@ -312,6 +315,7 @@ class ProcessorServiceTest {
         Processor publishedProcessor2 = processorService.updateProcessorStatus(updateDto);
 
         assertThat(publishedProcessor2.getStatus()).isEqualTo(READY);
+        assertThat(publishedProcessor2.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedProcessor.getPublishedAt());
     }
 
@@ -667,6 +671,7 @@ class ProcessorServiceTest {
     void testToResponse() {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
+        p.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
@@ -682,6 +687,7 @@ class ProcessorServiceTest {
         assertThat(r.getId()).isEqualTo(p.getId());
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getModifiedAt()).isEqualTo(p.getModifiedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
