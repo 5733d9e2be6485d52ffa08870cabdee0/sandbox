@@ -1,0 +1,239 @@
+name: Manager - CI -AWS
+on:
+  pull_request_target:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    branches:
+      - 'MGDOBR-1007'
+    paths-ignore:
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
+      - 'app-interface/**'
+jobs:
+  start-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.KSUTA_AWS_REGION }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ami-0b63d53248c088b08
+          ec2-instance-type: t2.large
+          subnet-id: subnet-69dc4258
+          security-group-id: sg-0dc576a4c740c8ba9
+  event-bridge-build:
+    needs: start-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    env:
+      FLEET_MANAGER_CONTAINER_NAME: openbridge/fleet-manager:${{ github.sha }}
+      FLEET_SHARD_MINIKUBE_CONTAINER_NAME: openbridge/fleet-shard:${{ github.sha }}
+      EXECUTOR_CONTAINER_NAME: openbridge/executor:${{ github.sha }}
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
+    concurrency:
+      group: event-bridge-manager-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 60
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    name: Build all images and run E2E tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Check labels
+        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        run: |
+          echo "Please add the 'safe to test' label in order to run 'Manager - CI' pipeline if it's safe to test this code"
+          exit 1
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+      - name: Set up KinD
+        run: |
+          kind create cluster --config .github/kind-config.yaml
+          kubectl get nodes
+          kubectl cluster-info
+      - name: Install Ingres on KinD
+        shell: bash
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
+          # waiting for resources to be created
+          sleep 5
+          kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+      - name: Add ${{ env.KIND_MAIN_NODE_HOSTNAME }} host to machine hosts
+        shell: bash
+        run: echo "127.0.0.1 ${{ env.KIND_MAIN_NODE_HOSTNAME }}" | sudo tee -a /etc/hosts
+      - uses: imranismail/setup-kustomize@v1
+      - name: Use built Fleet manager and operator images
+        run: |
+          kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
+          kustomize edit set image event-bridge-shard-operator=$FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+        working-directory: kustomize/overlays/minikube
+      - name: Use built Ingress and Executor images
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/shard/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Set Kind hostname in the Manager configuration
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/manager/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
+        run: |
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/istio/jwt-request-authentication.yaml
+        working-directory: kustomize
+      - name: Configure external Managed Kafka cluster
+        shell: bash
+        env:
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID }}
+          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET }}
+          MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
+          MANAGED_CONNECTORS_NAMESPACE_ID: ${{ secrets.MANAGED_CONNECTORS_NAMESPACE_ID }}
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_OPS_CLIENT_SECRET|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=).*|\1https://admin-server-$MANAGED_KAFKA_BOOTSTRAP_SERVER/rest|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_SECRET|" kustomization.yaml
+          sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1$MANAGED_CONNECTORS_NAMESPACE_ID|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET|" kustomization.yaml
+          sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
+          sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
+        working-directory: kustomize/overlays/minikube/manager
+      - name: Build all images and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Pminikube -Dquickly
+      - name: Build and Publish JVM Container - Fleet Manager
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
+          kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Executor
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
+          kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install knative
+        run: |
+          chmod +x dev/bin/knative-installer.sh
+          ./dev/bin/knative-installer.sh
+      - name: Install all resources
+        run: kustomize build kustomize/overlays/minikube | kubectl apply -f -
+        continue-on-error: true
+      - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
+        run: kustomize build kustomize/overlays/minikube | kubectl apply -f -
+      - name: Wait for Keycloak to start
+        run: |
+          kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
+          timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
+      - name: Configure bearer token for tests
+        run: |
+          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')
+          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Update all resources and delete current operator pod(to refresh operator config)
+        run: |
+          kustomize build kustomize/overlays/minikube | kubectl apply -f -
+          kubectl delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
+      - name: Wait for operator and manager to start
+        run: |
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
+      - name: Run integration tests
+        env:
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          working-directory: integration-tests
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Print manager log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge -n event-bridge-manager
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: ./integration-tests/target/cucumber-logs/
+  stop-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - event-bridge-build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.KSUTA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.KSUTA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.KSUTA_AWS_REGION }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
