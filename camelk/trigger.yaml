@@ -1,0 +1,16 @@
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: prova1-trigger
+  namespace: ob-1608dc1f-4139-49c5-ae22-afe73ed807d7
+spec:
+  broker: ob-3ff92639-1dfe-48e2-a5b8-0e3180ce1179
+  filter:
+    attributes:
+      type: Microsoft.Storage.BlobCreated
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: ob-camel-b20329a0-9d94-4e7d-aa10-a5287cd979c5
+    uri: /example
