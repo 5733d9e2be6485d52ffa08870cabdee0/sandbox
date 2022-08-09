@@ -12,17 +12,17 @@ Feature: Sending cloud events performance tests
         "action": {
             "type": "webhook_sink_0.1",
             "parameters": {
-                "endpoint": "${env.performance.slack.webhook.url}"
+                "endpoint": "${env.performance.webhook.url}"
             }
         },
-        "transformationTemplate" : "{\"bridgeId\": \"{data.bridgeId}\", \"message\": \"{data.message}\"}"
+        "transformationTemplate" : "{\"bridgeId\": \"{data.bridgeId}\", \"message\": \"{data.message}\", \"submitted_at\": \"{data.submitted_at}\"}"
     }
     """
     And the Processor "my-perf-processor" of the Bridge "my-perf-bridge" is existing with status "ready" within 3 minutes
 
-  @performance
+  @send-cloud-events
   Scenario Outline: Sending Cloud Event scenario with usersPerSec <usersPerSec>
-    When Create benchmark on Hyperfoil "hf-controller" instance with content:
+    When create benchmark with content:
       """text/vnd.yaml
       name: rhose-send-cloud-events
       agents:
@@ -30,7 +30,7 @@ Feature: Sending cloud events performance tests
       - agent-two
       http:
       - host: ${bridge.my-perf-bridge.endpoint.base}
-        sharedConnections: 5
+        sharedConnections: 10
         connectionStrategy: ALWAYS_NEW
       phases:
       - steadyState:
@@ -42,6 +42,8 @@ Feature: Sending cloud events performance tests
             maxDuration: 6m
             scenario:
             - send-cloud-event:
+              - timestamp:
+                  toVar: submitted_at
               - httpRequest:
                   POST: ${bridge.my-perf-bridge.endpoint.path}
                   body: |
@@ -49,10 +51,11 @@ Feature: Sending cloud events performance tests
                       "specversion": "1.0",
                       "type": "webhook.site.invoked",
                       "source": "WebhookActionTestService",
-                      "id": "webhook-test",
+                      "id": "webhook-perf-test",
                       "data": {
                           "bridgeId": "${bridge.my-perf-bridge.id}",
-                          "message": "hello bridge"
+                          "message": "hello bridge",
+                          "submitted_at": "${submitted_at}"
                         }
                     }
                   headers:
@@ -77,15 +80,19 @@ Feature: Sending cloud events performance tests
                       "id": "webhook-test",
                       "data": {
                           "bridgeId": "${bridge.my-perf-bridge.id}",
-                          "message": "hello bridge"
+                          "message": "hello bridge",
+                          "submitted_at": ""
                         }
                     }
                   headers:
                     content-type: application/cloudevents+json
                     authorization: Bearer ${manager.authentication.token}
       """
-    Then Run benchmark "rhose-send-cloud-events" on Hyperfoil "hf-controller" instance within 15 minutes
-    And number of cloud events sent is greater than 0
+    Then run benchmark "rhose-send-cloud-events" within 15 minutes
+    And the benchmark run "rhose-send-cloud-events" was executed successfully
+    And the total of events received for benchmark "rhose-send-cloud-events" run of Bridge "my-perf-bridge" is equal to the total of cloud events sent in:
+      | phase | steadyState |
+      | metric | send-cloud-event |
 
     Examples:
       | usersPerSec |

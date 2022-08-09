@@ -9,21 +9,21 @@ import io.restassured.response.Response;
 
 public class WebhookPerformanceResource {
 
-    private static final String BASE_ENDPOINT_URL = System.getProperty("performance.slack.webhook.url");
+    private static final String BASE_ENDPOINT_URL = System.getProperty("performance.webhook.url");
 
-    public static long getAllEventsCount() {
-        return getAllEventsResponse()
+    public static <T extends Number> T getCountEventsReceived(String bridgeId, Class<T> clazz) {
+        return getCountEventsReceivedResponse(bridgeId)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
                 .extract()
                 .body()
-                .jsonPath().getList("id").size();
+                .as(clazz);
     }
 
-    public static Response getAllEventsResponse() {
+    public static Response getCountEventsReceivedResponse(String bridgeId) {
         return ResourceUtils.newRequest(Optional.empty(), Constants.JSON_CONTENT_TYPE)
-                .get(BASE_ENDPOINT_URL);
+                .get(BASE_ENDPOINT_URL + "/" + bridgeId + "/count");
     }
 
     public static Response deleteAllResponse() {
