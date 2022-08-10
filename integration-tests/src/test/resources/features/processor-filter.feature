@@ -87,7 +87,7 @@ Feature: Tests of Processor Filter update
       }
     }
     """
-    Then Webhook site does not contains request with text "${cloud-event.filter-InvalidEvent-test.id}" within 10 seconds
+    Then Webhook site with id "${env.webhook.site.uuid}" does not contains request with text "${cloud-event.filter-InvalidEvent-test.id}" within 10 seconds
 
 
   Scenario: Messages are sent to Processor with matching filter
