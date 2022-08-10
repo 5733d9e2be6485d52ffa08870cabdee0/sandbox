@@ -3,7 +3,7 @@ package com.redhat.service.smartevents.integration.tests.context;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PerfTestContext extends TestContext {
+public class PerfTestContext {
 
     private final Map<String, String> benchmarkRuns = new HashMap<>();
 
