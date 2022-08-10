@@ -5,7 +5,7 @@ Feature: Create Bridges performance tests
 
   @create-bridges-at-once
   Scenario Outline: Create and delete many Bridges at once
-    When Create benchmark on Hyperfoil "hf-controller" instance with content:
+    When create benchmark with content:
       """text/vnd.yaml
       name: rhose-create-bridges
       http:
@@ -102,7 +102,7 @@ Feature: Create Bridges performance tests
                   duration: 5s
               - restartSequence
       """
-    Then Run benchmark "rhose-create-bridges" on Hyperfoil "hf-controller" instance within 15 minutes
+    Then run benchmark "rhose-create-bridges" within 15 minutes
 
     Examples:
       | bridges | shared-connections |

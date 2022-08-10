@@ -88,6 +88,11 @@
       <artifactId>system-x-slack</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-hyperfoil</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
