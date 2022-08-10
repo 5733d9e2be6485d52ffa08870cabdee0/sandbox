@@ -30,12 +30,6 @@ public class WebhookSiteSteps {
     public void webhookSiteWithIdContainsRequest(String webhookID, String requestText, int timeoutMinutes) {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
         String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookID);
-        /*
-         * System.out.println(webhookTest);
-         * System.out.println(requestText);
-         * System.out.println(timeoutMinutes);
-         */
-
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
@@ -44,7 +38,6 @@ public class WebhookSiteSteps {
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
-        //.anyMatch(requestContent -> requestContent.contains(webhookTest)));
     }
 
     @Then("^Webhook site with id \"(.*)\" does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
