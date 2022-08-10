@@ -73,7 +73,7 @@ Feature: Tests of Processor Filter update
       }
     }
     """
-    Then Webhook site contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
+    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
 
     And send a cloud event to the Ingress of the Bridge "mybridge":
     """
@@ -127,7 +127,7 @@ Feature: Tests of Processor Filter update
         }
     }
     """
-    Then Webhook site contains request with text "${cloud-event.filter-test.id}" within 1 minute
+    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text "${cloud-event.filter-test.id}" within 1 minute
 
 
     When send a cloud event to the Ingress of the Bridge "mybridge":

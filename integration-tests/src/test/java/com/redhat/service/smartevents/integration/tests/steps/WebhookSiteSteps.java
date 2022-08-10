@@ -26,27 +26,36 @@ public class WebhookSiteSteps {
         this.context = context;
     }
 
-    @Then("^Webhook site contains request with text \"(.*)\" within (\\d+) (?:minute|minutes)$")
-    public void webhookSiteContainsRequest(String requestText, int timeoutMinutes) {
+    @Then("^Webhook site with id \"(.*)\" contains request with text \"(.*)\" within (\\d+) (?:minute|minutes)$")
+    public void webhookSiteWithIdContainsRequest(String webhookID, String requestText, int timeoutMinutes) {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookID);
+        /*
+         * System.out.println(webhookTest);
+         * System.out.println(requestText);
+         * System.out.println(timeoutMinutes);
+         */
+
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(WebhookSiteResource.requests(WebhookSiteQuerySorting.NEWEST))
+                .untilAsserted(() -> assertThat(WebhookSiteResource.requests(webhookTest, WebhookSiteQuerySorting.NEWEST))
                         .map(request -> request.getContent())
                         .as("Searching for request containing text: '%s'",
                                 requestTextWithoutPlaceholders)
                         .anyMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders)));
+        //.anyMatch(requestContent -> requestContent.contains(webhookTest)));
     }
 
-    @Then("^Webhook site does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
-    public void webhookSiteDoesNotContainsRequest(String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
+    @Then("^Webhook site with id \"(.*)\" does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
+    public void webhookSiteWithIdDoesNotContainsRequest(String webhookID, String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
+        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookID);
         ChronoUnit parsedTimeoutChronoUnits = ChronoUnitConverter.parseChronoUnits(timeoutChronoUnits);
         Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
         while (timeoutTime.isAfter(Instant.now())) {
             TimeUnit.of(ChronoUnit.SECONDS).sleep(1);
-            assertThat(WebhookSiteResource.requests(WebhookSiteQuerySorting.NEWEST))
+            assertThat(WebhookSiteResource.requests(webhookTest, WebhookSiteQuerySorting.NEWEST))
                     .map(WebhookSiteRequest::getContent)
                     .as("Checking that WebHook site doesn't contain request containing text: '%s'", requestTextWithoutPlaceholders)
                     .noneMatch(requestContent -> requestContent.contains(requestTextWithoutPlaceholders));

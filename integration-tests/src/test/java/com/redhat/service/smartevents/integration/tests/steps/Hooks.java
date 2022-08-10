@@ -65,13 +65,15 @@ public class Hooks {
     public static void webhookSiteRequestHistoryIsCleared() {
         if (WebhookSiteResource.isSpecified()) {
             final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-            WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
+            String webhookID = Utils.getSystemProperty("webhook.site.uuid");
+
+            WebhookSiteResource.requests(webhookID, WebhookSiteQuerySorting.OLDEST)
                     .stream()
                     .filter(request -> {
                         final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                         return yesterday.isAfter(requestCreatedAt);
                     })
-                    .forEach(WebhookSiteResource::deleteRequest);
+                    .forEach(webhookID1 -> WebhookSiteResource.deleteRequest(webhookID1, webhookID));
         }
     }
 
