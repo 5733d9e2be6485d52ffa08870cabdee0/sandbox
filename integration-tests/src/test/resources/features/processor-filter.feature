@@ -143,7 +143,7 @@ Feature: Tests of Processor Filter update
     }
     """
 
-    Then Webhook site does not contains request with text "${cloud-event.filter-invalidtest.id}" within 10 seconds
+    Then Webhook site with id "${env.webhook.site.uuid}" does not contains request with text "${cloud-event.filter-invalidtest.id}" within 10 seconds
 
 
 
