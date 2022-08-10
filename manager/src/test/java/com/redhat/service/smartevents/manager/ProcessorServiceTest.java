@@ -275,7 +275,7 @@ class ProcessorServiceTest {
         processor2.setStatus(DEPROVISION);
         processor2.setDependencyStatus(DELETED);
 
-        when(processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID))
+        when(processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID))
                 .thenReturn(List.of(processor1, processor2));
 
         List<Processor> processors = processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);

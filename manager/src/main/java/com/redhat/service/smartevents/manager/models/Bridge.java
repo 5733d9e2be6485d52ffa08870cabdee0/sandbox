@@ -18,7 +18,7 @@ import org.hibernate.annotations.ParamDef;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
+        @NamedQuery(name = "BRIDGE.findByShardIdToDeployOrDelete",
                 query = "from Bridge where shard_id=:shardId and " +
                         "( " +
                         "  (status='PREPARING' and dependencyStatus='READY') " +

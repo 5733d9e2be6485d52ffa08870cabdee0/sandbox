@@ -50,7 +50,7 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Bridge> retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being completed
@@ -58,7 +58,7 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate dependencies being completed and Operator started provisioning
@@ -66,7 +66,7 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate de-provision request
@@ -74,14 +74,14 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being deleted
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate dependencies being deleted and Operator started deleting
@@ -89,7 +89,7 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 
