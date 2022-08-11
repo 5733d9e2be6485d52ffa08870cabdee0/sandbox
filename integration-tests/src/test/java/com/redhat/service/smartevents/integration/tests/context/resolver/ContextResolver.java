@@ -20,13 +20,14 @@ public class ContextResolver {
             new BridgeEndpointPathResolver(),
             new BridgeIdResolver(),
             new CloudEventIdResolver(),
+            new KafkaTopicResolver(),
             new ManagerAuthenticationTokenResolver(),
             new SlackChannelNameResolver(),
             new SlackChannelWebHookUrlResolver(),
             new SlackTokenResolver(),
             new SystemPropertyResolver(),
-            new UuidResolver(),
-            new KafkaTopicResolver());
+            new TestDataResolver(),
+            new UuidResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
         if (isPlaceholderFound(content)) {
