@@ -231,7 +231,7 @@ public class BridgesServiceImpl implements BridgesService {
     @Transactional
     @Override
     public List<Bridge> findByShardIdWithReadyDependencies(String shardId) {
-        return bridgeDAO.findByShardIdWithReadyDependencies(shardId);
+        return bridgeDAO.findByShardIdToDeployOrDelete(shardId);
     }
 
     @Transactional

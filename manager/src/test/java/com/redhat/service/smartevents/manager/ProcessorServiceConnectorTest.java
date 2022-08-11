@@ -290,12 +290,12 @@ class ProcessorServiceConnectorTest {
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).contains(processor.getId());
     }
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
     }
 

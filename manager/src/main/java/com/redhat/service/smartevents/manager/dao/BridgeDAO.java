@@ -20,10 +20,10 @@ import io.quarkus.panache.common.Parameters;
 @Transactional
 public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
 
-    public List<Bridge> findByShardIdWithReadyDependencies(String shardId) {
+    public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
         Parameters params = Parameters
                 .with("shardId", shardId);
-        return find("#BRIDGE.findByShardIdWithReadyDependencies", params).list();
+        return find("#BRIDGE.findByShardIdToDeployOrDelete", params).list();
     }
 
     public Bridge findByNameAndCustomerId(String name, String customerId) {
