@@ -3,7 +3,7 @@ description: 'Istio setup'
 inputs:
   istio-version:
     description: "The istio version"
-    default: 1.13.2
+    default: 1.14.3
     required: true
 
 runs:

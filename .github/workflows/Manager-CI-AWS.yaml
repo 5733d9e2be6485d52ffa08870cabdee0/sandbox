@@ -35,8 +35,8 @@ jobs:
           mode: start
           github-token: ${{ secrets.KSUTA_GH_PERSONAL_ACCESS_TOKEN }}
           ec2-image-id: ami-0b63d53248c088b08
-          ec2-instance-type: t2.large
-          subnet-id: subnet-69dc4258
+          ec2-instance-type: t2.xlarge
+          subnet-id: subnet-30717c3e
           security-group-id: sg-0dc576a4c740c8ba9
   event-bridge-build:
     needs: start-runner # required to start the main job when the runner is ready
@@ -80,7 +80,7 @@ jobs:
       - name: Install Ingres on KinD
         shell: bash
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.4/deploy/static/provider/kind/deploy.yaml
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.0/deploy/static/provider/kind/deploy.yaml
           # waiting for resources to be created
           sleep 5
           kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
@@ -200,8 +200,16 @@ jobs:
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Dgroups=wip -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
+      - name: Print nginx log1
+        if: always()
+        run: |
+          kubectl logs deployment/ingress-nginx-controller -n ingress-nginx
+      - name: Print ingress
+        if: always()
+        run: |
+          kubectl get ingress -n istio-system -o yaml
       - name: Print operator log
         if: always()
         run: |

@@ -1,5 +1,6 @@
 Feature: Bridge tests
 
+  @wip
   Scenario: Bridge is created and correctly deleted
     Given authenticate against Manager
     And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
