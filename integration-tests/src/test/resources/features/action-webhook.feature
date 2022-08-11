@@ -9,7 +9,7 @@ Feature: Webhook Action tests
 
   Scenario: Webhook is correctly called
 
-    And add a Processor to the Bridge "mybridge" with body:
+    Given add a Processor to the Bridge "mybridge" with body:
     """
     {
       "name": "myProcessor",

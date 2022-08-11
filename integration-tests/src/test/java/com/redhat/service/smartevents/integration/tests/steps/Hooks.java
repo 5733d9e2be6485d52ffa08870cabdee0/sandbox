@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class Hooks {
 
+    private static final String webhookId = Utils.getSystemProperty("webhook.site.uuid");
     private static final String DISABLE_CLEANUP = Utils.getSystemProperty("cleanup.disable");
 
     private TestContext context;
@@ -65,15 +66,14 @@ public class Hooks {
     public static void webhookSiteRequestHistoryIsCleared() {
         if (WebhookSiteResource.isSpecified()) {
             final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-            String webhookID = Utils.getSystemProperty("webhook.site.uuid");
-
-            WebhookSiteResource.requests(webhookID, WebhookSiteQuerySorting.OLDEST)
+           // String webhookId = Utils.getSystemProperty("webhook.site.uuid");
+            WebhookSiteResource.requests(webhookId, WebhookSiteQuerySorting.OLDEST)
                     .stream()
                     .filter(request -> {
                         final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                         return yesterday.isAfter(requestCreatedAt);
                     })
-                    .forEach(webhookID1 -> WebhookSiteResource.deleteRequest(webhookID1, webhookID));
+                    .forEach(request -> WebhookSiteResource.deleteRequest(request, webhookId));
         }
     }
 

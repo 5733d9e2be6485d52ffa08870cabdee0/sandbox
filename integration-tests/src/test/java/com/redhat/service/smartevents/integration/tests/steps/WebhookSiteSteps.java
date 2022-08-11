@@ -27,9 +27,9 @@ public class WebhookSiteSteps {
     }
 
     @Then("^Webhook site with id \"(.*)\" contains request with text \"(.*)\" within (\\d+) (?:minute|minutes)$")
-    public void webhookSiteWithIdContainsRequest(String webhookID, String requestText, int timeoutMinutes) {
+    public void webhookSiteWithIdContainsRequest(String webhookId, String requestText, int timeoutMinutes) {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
-        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookID);
+        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookId);
         Awaitility.await()
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(1))
@@ -41,9 +41,9 @@ public class WebhookSiteSteps {
     }
 
     @Then("^Webhook site with id \"(.*)\" does not contains request with text \"([^\"]*)\" within (\\d+) (second|seconds|minute|minutes)$")
-    public void webhookSiteWithIdDoesNotContainsRequest(String webhookID, String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
+    public void webhookSiteWithIdDoesNotContainsRequest(String webhookId, String requestText, long timeoutAmount, String timeoutChronoUnits) throws InterruptedException {
         String requestTextWithoutPlaceholders = ContextResolver.resolveWithScenarioContext(context, requestText);
-        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookID);
+        String webhookTest = ContextResolver.resolveWithScenarioContext(context, webhookId);
         ChronoUnit parsedTimeoutChronoUnits = ChronoUnitConverter.parseChronoUnits(timeoutChronoUnits);
         Instant timeoutTime = Instant.now().plus(Duration.of(timeoutAmount, parsedTimeoutChronoUnits));
         while (timeoutTime.isAfter(Instant.now())) {
