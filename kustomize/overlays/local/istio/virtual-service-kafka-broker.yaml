@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: broker-virtual-service
+  namespace: knative-eventing
+spec:
+  gateways:
+    - broker-gateway
+  hosts:
+    - '*'
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: kafka-broker-ingress
+            port:
+              number: 80
