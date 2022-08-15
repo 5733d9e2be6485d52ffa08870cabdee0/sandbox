@@ -272,9 +272,10 @@ objects:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_KEY
                 - name: EVENT_BRIDGE_DNS_SUBDOMAIN
-                  value: .bf2.smartevents-stage.rhcloud.redhat.com
-                - name: EVENT_BRIDGE_K8S_ORCHESTRATOR
-                  value: openshift
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN
               ports:
                 - containerPort: 8080
               livenessProbe:
