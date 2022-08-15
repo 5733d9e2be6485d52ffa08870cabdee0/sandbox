@@ -69,12 +69,6 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/manager/patches/deploy-config.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/manager/patches/deploy-config.yaml
         working-directory: kustomize
-      - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
-        run: |
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/istio/jwt-request-authentication.yaml
-        working-directory: kustomize
       - name: Configure external Managed Kafka cluster
         shell: bash
         env:
@@ -103,6 +97,28 @@ jobs:
           sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
           sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
         working-directory: kustomize/overlays/minikube/manager
+      - name: Configure Red Hat SSO for shard
+        shell: bash
+        env:
+          DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
+          DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
+          DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID: ${{ secrets.DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID }}
+          DEV_WEBHOOK_CLIENT_ID: ${{ secrets.DEV_WEBHOOK_CLIENT_ID }}
+          DEV_WEBHOOK_CLIENT_SECRET: ${{ secrets.DEV_WEBHOOK_CLIENT_SECRET }}
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID=).*|\1$DEV_EVENT_BRIDGE_SSO_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET=).*|\1$DEV_EVENT_BRIDGE_SSO_SECRET|" kustomization.yaml
+          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID=).*|\1$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID|" kustomization.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_ID=).*|\1$DEV_WEBHOOK_CLIENT_ID|" kustomization.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET=).*|\1$DEV_WEBHOOK_CLIENT_SECRET|" kustomization.yaml
+        working-directory: kustomize/overlays/minikube/shard
+      - name: Configure shard id
+        shell: bash
+        env:
+          DEV_SHARD_ID: ${{ secrets.DEV_SHARD_ID }}
+        run: |
+          sed -i -E "s|(.*SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/minikube/manager/kustomization.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/minikube/shard/kustomization.yaml
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
@@ -132,15 +148,6 @@ jobs:
       - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
         run: kustomize build overlays/minikube | oc apply -f -
         working-directory: kustomize
-      - name: Wait for Keycloak to start
-        run: |
-          kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
-          timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
-      - name: Configure bearer token for tests
-        run: |
-          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')
-          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
-        working-directory: kustomize
       - name: Update all resources and delete current operator pod(to refresh operator config)
         run: |
           kustomize build overlays/minikube | oc apply -f -
@@ -160,6 +167,8 @@ jobs:
           SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
       - name: Run integration tests
         env:
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
           MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
           MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
           MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
@@ -169,7 +178,7 @@ jobs:
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Print operator log
         if: always()
