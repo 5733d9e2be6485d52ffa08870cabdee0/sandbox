@@ -9,8 +9,8 @@ public class WebhookSiteResource {
     private static final String ENDPOINT_BASE_URL = "https://webhook.site";
     private static final String ENDPOINT_UUID = "webhook.site.uuid";
 
-    public static List<WebhookSiteRequest> requests(String webhookID, WebhookSiteQuerySorting sorting) {
-        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", webhookID, sorting.getValue())
+    public static List<WebhookSiteRequest> requests(String webhookId, WebhookSiteQuerySorting sorting) {
+        return RestAssured.get(ENDPOINT_BASE_URL + "/token/{webhookUuid}/requests?sorting={sorting}", webhookId, sorting.getValue())
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
