@@ -72,7 +72,7 @@ public class Hooks {
                         final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                         return yesterday.isAfter(requestCreatedAt);
                     })
-                    .forEach(request -> WebhookSiteResource.deleteRequest(request, webhookId));
+                    .forEach(request -> WebhookSiteResource.deleteRequest(request, WEBHOOKID));
         }
     }
 
