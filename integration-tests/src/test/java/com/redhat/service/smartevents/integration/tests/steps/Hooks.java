@@ -64,10 +64,11 @@ public class Hooks {
     }
 
     @BeforeAll(order = 1)
-    public static void deleteWebhookSiteRequestHistory(){
+    public static void deleteWebhookSiteRequestHistory() {
         webhookSiteRequestHistoryIsCleared(WEBHOOK_ID);
         webhookSiteRequestHistoryIsCleared(WEBHOOK_ID_SECOND);
     }
+
     public static void webhookSiteRequestHistoryIsCleared(String webhookId) {
         if (WebhookSiteResource.isSpecified()) {
             final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);

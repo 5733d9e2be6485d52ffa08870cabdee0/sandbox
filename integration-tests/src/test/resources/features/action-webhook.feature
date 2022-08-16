@@ -75,7 +75,7 @@ Feature: Webhook Action tests
       """
 
     And the Processor "testProcessor" of the Bridge "mybridge" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid.second}|
+      | endpoint | https://webhook.site/${env.webhook.site.uuid.second} |
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "testProcessor"
     And the Processor "testProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
     And wait for 10 seconds
