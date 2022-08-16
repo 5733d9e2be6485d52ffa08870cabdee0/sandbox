@@ -19,7 +19,7 @@ public class WebhookSiteResource {
                 .jsonPath().getList("data", WebhookSiteRequest.class);
     }
 
-    public static void deleteRequest(final WebhookSiteRequest request, Object webhookID) {
+    public static void deleteRequest(final WebhookSiteRequest request, String webhookID) {
         RestAssured
                 .given()
                 .delete(ENDPOINT_BASE_URL + "/token/{webhookUuid}/request/{requestUuid}",
