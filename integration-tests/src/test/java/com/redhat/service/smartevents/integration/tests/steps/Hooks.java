@@ -66,7 +66,6 @@ public class Hooks {
     public static void webhookSiteRequestHistoryIsCleared() {
         if (WebhookSiteResource.isSpecified()) {
             final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-           // String webhookId = Utils.getSystemProperty("webhook.site.uuid");
             WebhookSiteResource.requests(webhookId, WebhookSiteQuerySorting.OLDEST)
                     .stream()
                     .filter(request -> {

@@ -9,7 +9,7 @@ Feature: Webhook Action tests
 
   Scenario: Webhook is correctly called
 
-    Given add a Processor to the Bridge "mybridge" with body:
+    Given docker-compose -f dev/docker-compose/docker-compose.yml up -dadd a Processor to the Bridge "mybridge" with body:
     """
     {
       "name": "myProcessor",
