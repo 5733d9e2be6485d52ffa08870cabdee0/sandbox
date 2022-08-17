@@ -43,6 +43,14 @@ public class HyperfoilResource {
         return run.toString();
     }
 
+    public static Object getAllStatsJson(String idRun) {
+        try {
+            return validation.getDefaultApi().getAllStatsJson(idRun);
+        } catch (ApiException e) {
+            throw new RuntimeException("error while invoking Hyperfoil API", e);
+        }
+    }
+
     public static String runBenchmark(String perfTestName) {
         Run run = validation.runBenchmark(perfTestName);
         return run.getId();

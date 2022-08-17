@@ -11,3 +11,13 @@ services:
           name: general
           webhook_url: some-webhook-url
           channel_id: some-channel-id
+  # Performance specific section, can be skipped for non performance tests
+  horreum:
+    credentials:
+      tests:
+        send-cloud-events-1-users:
+          token: some-token
+        send-cloud-events-4-users:
+          token: some-token
+        send-cloud-events-8-users:
+          token: some-token

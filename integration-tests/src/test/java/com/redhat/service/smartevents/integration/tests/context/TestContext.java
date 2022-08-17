@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.integration.tests.context;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,7 @@ public class TestContext {
     private static final String KAFKA_TOPIC_PREFIX = "it-test-";
 
     private String managerToken;
+    private Instant startTime;
 
     private Map<String, BridgeContext> bridges = new HashMap<>();
     private Map<String, String> cloudEvents = new HashMap<>();
@@ -102,6 +104,14 @@ public class TestContext {
 
     public void setScenario(Scenario scenario) {
         this.scenario = scenario;
+    }
+
+    public Instant getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Instant startTime) {
+        this.startTime = startTime;
     }
 
     /**
