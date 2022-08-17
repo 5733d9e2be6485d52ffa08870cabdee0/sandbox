@@ -1,0 +1,24 @@
+name: Managed Connectors Cleanup
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  run-managed-connectors-delete-script:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+         ref: "dev"
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.MANAGED_CONNECTORS_CONTROL_PLANE_URL }}"
+      - name: Run Managed connector delete script
+        env:
+          MANAGED_CONNECTORS_CONTROL_PLANE_URL: ${{ secrets.MANAGED_CONNECTORS_CONTROL_PLANE_URL }}
+        run: |
+          ./.dev/bin/interaction/delete-managed-connectors.sh
