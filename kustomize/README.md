@@ -63,13 +63,6 @@ You can run this command to setup `MANAGER_URL` and `KEYCLOAK_URL` variables to 
 
 Environment can take a significant time to start completely, check status of all components in minikube.
 
-The Minikube startup and provisioning of all required services is scripted in `startMinikubeDeployLocalDev.sh`. The script has following requirements:
-
-- `minikube` binary available on path
-- `kustomize` tool installed
-- `jq` tool installed
-- `kubectl` tool installed
-
 ## Demo cluster deployment
 
 ### Cluster prerequisites

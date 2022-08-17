@@ -21,6 +21,8 @@ jobs:
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL }}"
           echo "::add-mask::${{ secrets.SLACK_WEBHOOK_TOKEN }}"
           echo "::add-mask::${{ secrets.SLACK_CHANNEL }}"
+          echo "::add-mask::${{ secrets.SLACK_WEBHOOK_URL_SECOND }}"
+          echo "::add-mask::${{ secrets.SLACK_CHANNEL_SECOND }}"
           echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
           echo "::add-mask::${{ secrets.CI_MAIL_USERNAME }}"
           echo "::add-mask::${{ secrets.CI_MAIL_PASSWORD }}"
@@ -34,19 +36,24 @@ jobs:
         uses: ./.github/actions/maven
         with:
           maven-command: clean install -Dquickly
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
       - name: Run periodical slack check
         env:
           DEV_CLUSTER_MANAGER_URL: ${{ secrets.DEV_CLUSTER_MANAGER_URL }}
           DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
           DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
-          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
           REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT: ${{ secrets.REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT
+          maven-command: clean verify -Pperiodical-slack-check -Dparallel -Devent-bridge.manager.url=$DEV_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dremote.cluster.bridge.endpoint=$REMOTE_CLUSTER_LONG_RUNNING_BRIDGE_ENDPOINT -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}

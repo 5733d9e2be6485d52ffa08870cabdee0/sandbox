@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.integration.tests.context;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,11 +12,15 @@ import io.cucumber.java.Scenario;
  */
 public class TestContext {
 
+    private static final String KAFKA_TOPIC_PREFIX = "it-test-";
+
     private String managerToken;
 
     private Map<String, BridgeContext> bridges = new HashMap<>();
     private Map<String, String> cloudEvents = new HashMap<>();
     private Map<String, String> uuids = new HashMap<>();
+    private Map<String, String> kafkaTopics = new HashMap<>();
+    private Map<String, String> testData = new HashMap<>();
 
     private Scenario scenario;
 
@@ -76,6 +81,21 @@ public class TestContext {
         return this.uuids.get(uuidName);
     }
 
+    public String getKafkaTopic(String topicName) {
+        if (!this.kafkaTopics.containsKey(topicName)) {
+            String uuidValue = UUID.randomUUID().toString().substring(0, 8);
+            String uniqueTopicName = KAFKA_TOPIC_PREFIX + topicName + "-" + uuidValue;
+            scenario.log("Generating new Kafka topic name '" + uniqueTopicName);
+            this.kafkaTopics.put(topicName, uniqueTopicName);
+        }
+
+        return this.kafkaTopics.get(topicName);
+    }
+
+    public Collection<String> allKafkaTopics() {
+        return this.kafkaTopics.values();
+    }
+
     public Scenario getScenario() {
         return this.scenario;
     }
@@ -103,5 +123,13 @@ public class TestContext {
             throw new RuntimeException("Cloud event with id " + testCloudEventId + " not found.");
         }
         return cloudEvents.get(testCloudEventId);
+    }
+
+    public String getTestData(String key) {
+        return this.testData.get(key);
+    }
+
+    public void setTestData(String key, String value) {
+        this.testData.put(key, value);
     }
 }

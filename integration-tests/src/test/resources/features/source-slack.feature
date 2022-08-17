@@ -2,7 +2,7 @@ Feature: Slack Source tests
 
   Background:
     Given authenticate against Manager
-    And create a new Bridge "mybridge"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
@@ -15,8 +15,8 @@ Feature: Slack Source tests
       "source": {
         "type": "slack_source_0.1",
         "parameters": {
-            "slack_channel": "${env.slack.channel.name}",
-            "slack_token": "${env.slack.webhook.token}",
+            "slack_channel": "${slack.channel.mc.name}",
+            "slack_token": "${slack.token}",
             "slack_delay": "5s"
           }
       },
@@ -36,8 +36,8 @@ Feature: Slack Source tests
       "action": {
         "type": "slack_sink_0.1",
         "parameters": {
-            "slack_channel": "${env.slack.channel.name}",
-            "slack_webhook_url": "${env.slack.webhook.url}"
+            "slack_channel": "${slack.channel.mc.name}",
+            "slack_webhook_url": "${slack.channel.mc.webhook.url}"
           }
       },
       "transformationTemplate": "Message {data.text} was observed"
@@ -48,8 +48,7 @@ Feature: Slack Source tests
     And the Processor "slackForwardProcessor" of the Bridge "mybridge" is existing with status "ready" within 5 minutes
     And the Processor "slackForwardProcessor" of the Bridge "mybridge" has action of type "slack_sink_0.1"
 
+    And create message with text "Slack Event Source Feature trigger ${uuid.slack.source.trigger}" on slack channel "${slack.channel.mc.name}"
 
-    And create message with text "Slack Event Source Feature trigger ${uuid.slack.source.trigger}" on slack channel
-
-    Then Slack channel contains message with text "Message Slack Event Source Feature trigger ${uuid.slack.source.trigger} was observed" within 1 minute
+    Then Slack channel "${slack.channel.mc.name}" contains message with text "Message Slack Event Source Feature trigger ${uuid.slack.source.trigger} was observed" within 1 minute
 

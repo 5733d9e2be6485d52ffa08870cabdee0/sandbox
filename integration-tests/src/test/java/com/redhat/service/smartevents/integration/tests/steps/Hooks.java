@@ -19,6 +19,8 @@ import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
+import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
+import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
@@ -36,6 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class Hooks {
 
+    private static final String WEBHOOK_ID = Utils.getSystemProperty("webhook.site.uuid");
+    private static final String WEBHOOK_ID_SECOND = Utils.getSystemProperty("webhook.site.uuid.second");
     private static final String DISABLE_CLEANUP = Utils.getSystemProperty("cleanup.disable");
 
     private TestContext context;
@@ -60,15 +64,29 @@ public class Hooks {
     }
 
     @BeforeAll(order = 1)
-    public static void webhookSiteRequestHistoryIsCleared() {
-        final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        WebhookSiteResource.requests(WebhookSiteQuerySorting.OLDEST)
-                .stream()
-                .filter(request -> {
-                    final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    return yesterday.isAfter(requestCreatedAt);
-                })
-                .forEach(request -> WebhookSiteResource.deleteRequest(request));
+    public static void deleteWebhookSiteRequestHistory() {
+        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID);
+        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID_SECOND);
+    }
+
+    public static void webhookSiteRequestHistoryIsCleared(String webhookId) {
+        if (WebhookSiteResource.isSpecified()) {
+            final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
+            WebhookSiteResource.requests(webhookId, WebhookSiteQuerySorting.OLDEST)
+                    .stream()
+                    .filter(request -> {
+                        final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        return yesterday.isAfter(requestCreatedAt);
+                    })
+                    .forEach(request -> WebhookSiteResource.deleteRequest(request, webhookId));
+        }
+    }
+
+    @BeforeAll(order = 2)
+    public static void webhookPerformanceCleanUp() {
+        if (WebhookPerformanceResource.isSpecified()) {
+            WebhookPerformanceResource.deleteAll();
+        }
     }
 
     @Before
@@ -79,6 +97,9 @@ public class Hooks {
     @After
     public void cleanUp() {
         if (!Boolean.parseBoolean(DISABLE_CLEANUP)) {
+            // Delete Kafka topics and related ACLs
+            cleanKafkaTopics();
+
             String token = Optional.ofNullable(context.getManagerToken()).orElse(BridgeUtils.retrieveBridgeToken());
             // Remove all bridges/processors created
             context.getAllBridges().values()
@@ -126,6 +147,12 @@ public class Hooks {
                                 break;
                         }
                     });
+        }
+    }
+
+    private void cleanKafkaTopics() {
+        for (String topic : context.allKafkaTopics()) {
+            KafkaResource.deleteKafkaTopic(topic);
         }
     }
 }

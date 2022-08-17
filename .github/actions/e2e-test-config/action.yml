@@ -1,0 +1,16 @@
+name: 'Prepare test configuration'
+description: 'Prepare test configuration for E2E tests'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure test config file for E2E tests and copy it to integration-tests module
+      shell: bash
+      run: |
+        sed -i "s|<SLACK_WEBHOOK_TOKEN>|$SLACK_WEBHOOK_TOKEN|" e2e-test-config.yaml
+        sed -i "s|<SLACK_WEBHOOK_URL>|$SLACK_WEBHOOK_URL|" e2e-test-config.yaml
+        sed -i "s|<SLACK_CHANNEL>|$SLACK_CHANNEL|" e2e-test-config.yaml
+        sed -i "s|<SLACK_WEBHOOK_URL_SECOND>|$SLACK_WEBHOOK_URL_SECOND|" e2e-test-config.yaml
+        sed -i "s|<SLACK_CHANNEL_SECOND>|$SLACK_CHANNEL_SECOND|" e2e-test-config.yaml 
+        cp e2e-test-config.yaml ../integration-tests
+      working-directory: .github

@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.Processo
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
@@ -67,7 +69,6 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
 import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
@@ -278,7 +279,7 @@ class ProcessorServiceTest {
         processor2.setStatus(DEPROVISION);
         processor2.setDependencyStatus(DELETED);
 
-        when(processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID))
+        when(processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID))
                 .thenReturn(List.of(processor1, processor2));
 
         List<Processor> processors = processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
@@ -289,12 +290,11 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor updated = processorService.updateProcessorStatus(updateDto);
 
@@ -303,14 +303,14 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
+        ZonedDateTime modifiedAt = publishedProcessor.getModifiedAt();
 
         assertThat(publishedProcessor.getStatus()).isEqualTo(READY);
         assertThat(publishedProcessor.getPublishedAt()).isNotNull();
@@ -319,25 +319,28 @@ class ProcessorServiceTest {
         Processor publishedProcessor2 = processorService.updateProcessorStatus(updateDto);
 
         assertThat(publishedProcessor2.getStatus()).isEqualTo(READY);
+        assertThat(publishedProcessor2.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedProcessor.getPublishedAt());
     }
 
     @Test
     void testUpdateProcessorStatus_bridgeDoesNotExist() {
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridgeId(NON_EXISTING_BRIDGE_ID);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(NON_EXISTING_BRIDGE_ID);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }
 
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }
@@ -365,7 +368,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetUserVisibleProcessors() {
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
@@ -380,7 +383,7 @@ class ProcessorServiceTest {
         when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
@@ -390,7 +393,7 @@ class ProcessorServiceTest {
     @Test
     void testGetUserVisibleProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.getUserVisibleProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     @Test
@@ -399,7 +402,7 @@ class ProcessorServiceTest {
 
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
@@ -416,7 +419,7 @@ class ProcessorServiceTest {
         when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
 
         assertThatExceptionOfType(BridgeLifecycleException.class)
-                .isThrownBy(() -> processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
     }
 
     private static Stream<Arguments> getUserVisibleProcessorsWhenBridgeIsStatus() {
@@ -675,6 +678,7 @@ class ProcessorServiceTest {
     void testToResponse() {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
+        p.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
@@ -690,6 +694,7 @@ class ProcessorServiceTest {
         assertThat(r.getId()).isEqualTo(p.getId());
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getModifiedAt()).isEqualTo(p.getModifiedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);

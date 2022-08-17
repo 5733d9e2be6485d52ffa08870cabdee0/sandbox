@@ -13,11 +13,20 @@ import com.redhat.service.smartevents.integration.tests.context.TestContext;
  */
 public class ContextResolver {
     private static final Pattern PLACEHOLDER_REGEX = Pattern.compile("\\$\\{.*\\}");
+    private static final boolean UNDEFINED_PLACEHOLDER_CHECK_ENABLED = Boolean.getBoolean("undefined.placeholder.check.enabled");
 
     private static final List<Resolver> RESOLVERS = Arrays.asList(
+            new BridgeEndpointBaseResolver(),
+            new BridgeEndpointPathResolver(),
             new BridgeIdResolver(),
             new CloudEventIdResolver(),
+            new KafkaTopicResolver(),
+            new ManagerAuthenticationTokenResolver(),
+            new SlackChannelNameResolver(),
+            new SlackChannelWebHookUrlResolver(),
+            new SlackTokenResolver(),
             new SystemPropertyResolver(),
+            new TestDataResolver(),
             new UuidResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
@@ -28,7 +37,9 @@ public class ContextResolver {
                 }
             }
         }
-        verifyNoPlaceholderAvailableInContent(content);
+        if (UNDEFINED_PLACEHOLDER_CHECK_ENABLED) {
+            verifyNoPlaceholderAvailableInContent(content);
+        }
         return content;
     }
 

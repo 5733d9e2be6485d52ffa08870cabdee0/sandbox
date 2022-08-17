@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.control.ActivateRequestContext;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -23,7 +24,7 @@ import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.models.ConnectorEntity;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -48,6 +49,24 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
+    protected String getId(Work work) {
+        // The ID of the ManagedResource to process is the child of that stored directly in the JobDetail.
+        String processorId = work.getManagedResourceId();
+        ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
+
+        if (Objects.isNull(connectorEntity)) {
+            //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
+            throw new IllegalStateException(String.format("Connector for Processor with id '%s' cannot be found in the database.", processorId));
+        }
+
+        return connectorEntity.getId();
+    }
+
+    @Override
+    // This is invoked by Quartz on a context that lacks a RequestContext by default.
+    // The Worker calls into ConnectorsApiClient that needs a RequestContext to be active.
+    // We therefore activate the RequestContext here.
+    @ActivateRequestContext
     public ConnectorEntity createDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Creating dependencies for '{}' [{}]",
                 connectorEntity.getName(),
@@ -153,6 +172,10 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
+    // This is invoked by Quartz on a context that lacks a RequestContext by default.
+    // The Worker calls into ConnectorsApiClient that needs a RequestContext to be active.
+    // We therefore activate the RequestContext here.
+    @ActivateRequestContext
     public ConnectorEntity deleteDependencies(Work work, ConnectorEntity connectorEntity) {
         LOGGER.info("Destroying dependencies for '{}' [{}]",
                 connectorEntity.getName(),

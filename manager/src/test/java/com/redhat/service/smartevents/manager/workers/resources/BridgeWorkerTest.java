@@ -1,7 +1,8 @@
 package com.redhat.service.smartevents.manager.workers.resources;
 
-import java.util.Collections;
-import java.util.List;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -14,20 +15,21 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.TestConstants;
+import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
+import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
-import com.redhat.service.smartevents.manager.models.Work;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import com.redhat.service.smartevents.test.resource.PostgresResource;
@@ -36,10 +38,20 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
+import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -59,12 +71,15 @@ class BridgeWorkerTest {
     RhoasService rhoasServiceMock;
 
     @InjectMock
+    DnsService dnsServiceMock;
+
+    @InjectMock
     ResourceNamesProvider resourceNamesProviderMock;
 
     @InjectMock
     ProcessorService processorServiceMock;
 
-    @Inject
+    @InjectMock
     WorkManager workManager;
 
     @Inject
@@ -81,38 +96,43 @@ class BridgeWorkerTest {
         databaseManagerUtils.cleanUp();
         when(resourceNamesProviderMock.getBridgeTopicName(any())).thenReturn(TEST_TOPIC_NAME);
         when(resourceNamesProviderMock.getBridgeErrorTopicName(any())).thenReturn(TEST_ERROR_HANDLER_TOPIC_NAME);
+        when(processorServiceMock.getErrorHandler(anyString(), anyString())).thenReturn(Optional.empty());
     }
 
     @Test
     void handleWorkProvisioningWithUnknownResource() {
-        Work work = new Work();
-        work.setManagedResourceId(TEST_RESOURCE_ID);
+        Work work = makeWork(TEST_RESOURCE_ID, 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         assertThatCode(() -> worker.handleWork(work)).isInstanceOf(IllegalStateException.class);
     }
 
-    @Transactional
     @ParameterizedTest
     @MethodSource("provisionWorkWithKnownResourceParams")
     void testProvisionWorkWithKnownResource(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
+            boolean throwDnsError,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
         if (throwRhoasError) {
-            when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
+            when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("rhoas error"));
+        }
+
+        if (throwDnsError) {
+            when(dnsServiceMock.createDnsRecord(any())).thenThrow(new InternalPlatformException("dns error"));
         }
 
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
 
     @Transactional
@@ -121,43 +141,107 @@ class BridgeWorkerTest {
     void testProvisionWorkWithKnownResourceAndErrorHandlerNotPresent(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
+            boolean throwDnsError,
             boolean isWorkComplete) {
-        doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, false);
+        doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
+                dependencyStatusWhenComplete,
+                throwRhoasError,
+                throwDnsError,
+                isWorkComplete);
     }
 
     @Transactional
     @ParameterizedTest
-    @MethodSource("provisionWorkWithKnownResourceParams")
+    @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
     void testProvisionWorkWithKnownResourceAndErrorHandlerPresent(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
-            boolean isWorkComplete) {
-        doTestProvisionworkWithKnownResourceAndErrorHandler(status, dependencyStatusWhenComplete, throwRhoasError, isWorkComplete, true);
+            boolean throwDnsError,
+            boolean isWorkComplete,
+            ManagedResourceStatus errorHandlerStatus) {
+        doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
+                dependencyStatusWhenComplete,
+                throwRhoasError,
+                throwDnsError,
+                isWorkComplete,
+                true,
+                errorHandlerStatus);
     }
 
-    private void doTestProvisionworkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentUpdating(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
+            boolean throwDnsError,
             boolean isWorkComplete,
-            boolean errorHandlerProcessorPresent) {
+            ManagedResourceStatus errorHandlerStatus) {
+        doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
+                dependencyStatusWhenComplete,
+                throwRhoasError,
+                throwDnsError,
+                isWorkComplete,
+                true,
+                errorHandlerStatus);
+
+        Bridge bridge = bridgeDAO.findById(TestConstants.DEFAULT_BRIDGE_ID);
+        bridge.setStatus(ACCEPTED);
+        bridge.setGeneration(bridge.getGeneration() + 1);
+
+        Work work = WorkerTestUtils.makeWork(bridge);
+
+        worker.handleWork(work);
+
+        verify(processorServiceMock,
+                times(throwRhoasError ? 0 : 1)).updateErrorHandlerProcessor(eq(bridge.getId()),
+                        anyString(),
+                        eq(bridge.getCustomerId()),
+                        any(ProcessorRequest.class));
+    }
+
+    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean throwDnsError,
+            boolean isWorkComplete) {
+        doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
+                dependencyStatusWhenComplete,
+                throwRhoasError,
+                throwDnsError,
+                isWorkComplete,
+                false,
+                READY);
+    }
+
+    private void doTestProvisionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean throwDnsError,
+            boolean isWorkComplete,
+            boolean errorHandlerProcessorPresent,
+            ManagedResourceStatus errorHandlerStatus) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
         bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
-        List<Processor> processors = errorHandlerProcessorPresent
-                ? List.of(createErrorHandlerProcessor(bridge))
-                : Collections.emptyList();
-
-        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .thenReturn(new ListResult<>(processors, 0, processors.size()));
+        when(processorServiceMock.getErrorHandler(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(errorHandlerProcessorPresent
+                        ? Optional.of(createErrorHandlerProcessor(bridge, errorHandlerStatus))
+                        : Optional.empty());
 
         if (throwRhoasError) {
             when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any()))
-                    .thenThrow(new InternalPlatformException("error"));
+                    .thenThrow(new InternalPlatformException("rhoas error"));
+        }
+
+        if (throwDnsError) {
+            when(dnsServiceMock.createDnsRecord(any())).thenThrow(new InternalPlatformException("dns error"));
+
         }
 
         Bridge refreshed = worker.handleWork(work);
@@ -168,17 +252,34 @@ class BridgeWorkerTest {
                 .createTopicAndGrantAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(processorServiceMock, times(throwRhoasError || errorHandlerProcessorPresent ? 0 : 1))
                 .createErrorHandlerProcessor(eq(bridge.getId()), eq(TestConstants.DEFAULT_CUSTOMER_ID), eq(TestConstants.DEFAULT_USER_NAME), any());
+        verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     private static Stream<Arguments> provisionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, false),
-                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, false, true),
-                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, true, false));
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.READY, false, false, true),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, false, false),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, false, true, false),
+                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PROVISIONING, true, true, false),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, false, false, true),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, true, false, false),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, false, true, false),
+                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, true, true, false));
+    }
+
+    private static Stream<Arguments> provisionWorkWithKnownResourceParamsWithErrorHandler() {
+        return Stream.of(
+                Arguments.of(ACCEPTED, READY, false, false, true, READY),
+                Arguments.of(ACCEPTED, PROVISIONING, true, false, false, READY),
+                Arguments.of(PREPARING, READY, false, false, true, READY),
+                Arguments.of(PREPARING, PROVISIONING, true, false, false, READY),
+                Arguments.of(ACCEPTED, FAILED, false, false, true, FAILED),
+                Arguments.of(ACCEPTED, PROVISIONING, true, false, false, FAILED),
+                Arguments.of(PREPARING, FAILED, false, false, true, FAILED),
+                Arguments.of(PREPARING, PROVISIONING, true, false, false, FAILED));
     }
 
     @Transactional
@@ -187,84 +288,122 @@ class BridgeWorkerTest {
     void testDeletionWorkWithKnownResource(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
+            boolean throwDnsError,
             boolean isWorkComplete) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(status);
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
-        when(processorServiceMock.getHiddenProcessors(any(), any()))
-                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
+        when(processorServiceMock.getErrorHandler(any(), any())).thenReturn(Optional.empty());
 
         if (throwRhoasError) {
-            doThrow(new InternalPlatformException("error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
+            doThrow(new InternalPlatformException("rhoas error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(eq(TEST_TOPIC_NAME), any());
+        }
+
+        if (throwDnsError) {
+            doThrow(new InternalPlatformException("dns error")).when(dnsServiceMock).deleteDnsRecord(eq(bridge.getId()));
         }
 
         Bridge refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
+        verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     @Transactional
     @ParameterizedTest
-    @MethodSource("deletionWorkWithKnownResourceParams")
+    @MethodSource("deletionWorkWithKnownResourceParamsWithErrorHandler")
     void testDeletionWorkWithKnownResourceAndErrorHandler(ManagedResourceStatus status,
             ManagedResourceStatus dependencyStatusWhenComplete,
             boolean throwRhoasError,
-            boolean isWorkComplete) {
+            boolean throwDnsError,
+            boolean isWorkComplete,
+            boolean isErrorHandlerDeleted) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
         bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
         bridgeDAO.persist(bridge);
 
-        Work work = workManager.schedule(bridge);
+        Work work = WorkerTestUtils.makeWork(bridge);
 
-        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .thenReturn(new ListResult<>(List.of(createErrorHandlerProcessor(bridge)), 0, 1));
+        // The ErrorHandler Processor will first exist
+        when(processorServiceMock.getErrorHandler(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                .thenReturn(Optional.of(createErrorHandlerProcessor(bridge, READY)));
 
-        Bridge refreshed = worker.handleWork(work);
-
-        assertThat(refreshed.getDependencyStatus()).isNotEqualTo(dependencyStatusWhenComplete);
-        assertThat(workManager.exists(work)).isTrue();
-
-        when(processorServiceMock.getHiddenProcessors(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
-                .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
-
-        if (throwRhoasError) {
-            doThrow(new InternalPlatformException("error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(any(), any());
-
-            Bridge refreshed2 = worker.handleWork(work);
-
-            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+        // The ErrorHandler Processor may then be successfully deleted
+        if (isErrorHandlerDeleted) {
+            when(processorServiceMock.getErrorHandler(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                    .thenReturn(Optional.empty());
         } else {
-            Bridge refreshed2 = worker.handleWork(work);
-
-            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
-            assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+            when(processorServiceMock.getErrorHandler(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
+                    .thenReturn(Optional.of(createErrorHandlerProcessor(bridge, READY)));
         }
 
-        assertThat(workManager.exists(work)).isNotEqualTo(isWorkComplete);
+        if (throwRhoasError) {
+            doThrow(new InternalPlatformException("rhoas error")).when(rhoasServiceMock).deleteTopicAndRevokeAccessFor(any(), any());
+        }
+
+        if (throwDnsError) {
+            doThrow(new InternalPlatformException("dns error")).when(dnsServiceMock).deleteDnsRecord(any());
+        }
+
+        Bridge refreshed1 = worker.handleWork(work);
+
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
+        assertThat(refreshed1.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+
+        if (throwRhoasError) {
+            verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+        } else {
+            verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_ERROR_HANDLER_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
+
+            if (isErrorHandlerDeleted) {
+                assertThat(refreshed1.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+                verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
+            } else {
+                assertThat(refreshed1.getDependencyStatus()).isEqualTo(DELETING);
+
+                Bridge refreshed2 = worker.handleWork(work);
+
+                assertThat(refreshed2.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+                verify(workManager, times(isWorkComplete ? 1 : 2)).reschedule(work);
+            }
+        }
     }
 
     private static Stream<Arguments> deletionWorkWithKnownResourceParams() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, false, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, false),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, false));
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, false, false, true),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, false, true, false),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, false, false),
+                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, true, true, false),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, false, false, true),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, false, true, false),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, false, false),
+                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, true, true, false));
     }
 
-    private static Processor createErrorHandlerProcessor(Bridge bridge) {
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+    private static Stream<Arguments> deletionWorkWithKnownResourceParamsWithErrorHandler() {
+        return Stream.of(
+                Arguments.of(DEPROVISION, DELETED, false, false, true, true, READY),
+                Arguments.of(DEPROVISION, DELETING, true, false, false, true, READY),
+                Arguments.of(DELETING, DELETED, false, false, true, true, READY),
+                Arguments.of(DELETING, DELETING, true, false, false, true, READY),
+                Arguments.of(DEPROVISION, DELETING, false, false, false, false, READY),
+                Arguments.of(DEPROVISION, DELETING, true, false, false, false, READY),
+                Arguments.of(DELETING, DELETING, false, false, false, false, READY),
+                Arguments.of(DELETING, DELETING, true, false, false, false, READY));
+    }
+
+    private static Processor createErrorHandlerProcessor(Bridge bridge, ManagedResourceStatus status) {
+        Processor processor = Fixtures.createProcessor(bridge, status);
         processor.setType(ProcessorType.ERROR_HANDLER);
         return processor;
     }
-
 }

@@ -9,7 +9,7 @@
   "properties": {
     "gcp_project_id": {
       "title": "Project Id",
-      "description": "The Google Cloud PubSub Project Id",
+      "description": "The Google Cloud Pub/Sub Project ID.",
       "type": "string"
     },
     "gcp_destination_name": {
@@ -19,10 +19,20 @@
     },
     "gcp_service_account_key": {
       "title": "Service Account Key",
-      "description": "The Service account key that can be used as credentials for the PubSub publisher/subscriber in base64 encoding.",
-      "type": "string",
       "x-group": "credentials",
-      "format": "base64"
+      "oneOf": [
+        {
+          "title": "Service Account Key",
+          "description": "The service account key to use as credentials for the Pub/Sub publisher/subscriber. You must encode this value in base64.",
+          "type": "string",
+          "format": "password"
+        },
+        {
+          "description": "An opaque reference to the aws_access_key",
+          "type": "object",
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

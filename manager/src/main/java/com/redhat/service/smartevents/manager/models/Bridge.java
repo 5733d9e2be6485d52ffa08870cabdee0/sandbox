@@ -18,12 +18,16 @@ import org.hibernate.annotations.ParamDef;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 
 @NamedQueries({
-        @NamedQuery(name = "BRIDGE.findByShardIdWithReadyDependencies",
+        @NamedQuery(name = "BRIDGE.findByShardIdToDeployOrDelete",
                 query = "from Bridge where shard_id=:shardId and " +
                         "( " +
                         "  (status='PREPARING' and dependencyStatus='READY') " +
                         "  or " +
+                        "  (status='PROVISIONING' and dependencyStatus='READY') " +
+                        "  or " +
                         "  (status='DEPROVISION' and dependencyStatus='DELETED') " +
+                        "  or " +
+                        "  (status='DELETING' and dependencyStatus='DELETED') " +
                         ")"),
         @NamedQuery(name = "BRIDGE.findByNameAndCustomerId",
                 query = "from Bridge where name=:name and customer_id=:customerId"),
@@ -55,11 +59,17 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
     @Column(name = "shard_id")
     private String shardId;
 
-    @Column(name = "organisation_id")
+    @Column(name = "organisation_id", nullable = false, updatable = false)
     private String organisationId;
 
-    @Column(name = "owner")
+    @Column(name = "owner", nullable = false, updatable = false)
     private String owner;
+
+    @Column(name = "cloud_provider", nullable = false, updatable = false)
+    private String cloudProvider;
+
+    @Column(name = "region", nullable = false, updatable = false)
+    private String region;
 
     public Bridge() {
     }
@@ -106,6 +116,22 @@ public class Bridge extends ManagedDefinedResource<BridgeDefinition> {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public String getCloudProvider() {
+        return cloudProvider;
+    }
+
+    public void setCloudProvider(String cloudProvider) {
+        this.cloudProvider = cloudProvider;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     /*

@@ -3,6 +3,7 @@ package com.redhat.service.smartevents.integration.tests.steps;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.SSLException;
 
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
@@ -43,7 +46,13 @@ public class IngressSteps {
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
-                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                        () -> {
+                            try {
+                                IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Error with inputstream", e);
+                            }
+                        }))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
@@ -57,11 +66,24 @@ public class IngressSteps {
 
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(
-                        () -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)))
+                        () -> {
+                            try {
+                                IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Error with inputstream", e);
+                            }
+                        }))
                 .atMost(Duration.ofMinutes(timeoutMinutes)).pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
-                        .then()
-                        .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503))));
+                .untilAsserted(() -> {
+                    try {
+                        IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
+                                .then()
+                                .statusCode(Matchers.anyOf(Matchers.is(404), Matchers.is(503)));
+                    } catch (UnknownHostException | SSLException e) {
+                        // The DNS was properly deleted and the record expired.
+                        context.getScenario().log("An exception '" + e.getMessage() + "' was raised when trying to call the bridge ingress, considering the bridge as deleted.");
+                    }
+                });
     }
 
     @When("^send a cloud event to the Ingress of the Bridge \"([^\"]*)\":$")

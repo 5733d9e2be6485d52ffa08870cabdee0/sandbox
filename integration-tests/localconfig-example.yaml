@@ -1,0 +1,13 @@
+services:
+  slack-tnb:
+    credentials:
+      token: xoxb-some-slack-token-value
+      channels:
+        mc:
+          name: mc
+          webhook_url: some-webhook-url
+          channel_id: some-channel-id
+        general:
+          name: general
+          webhook_url: some-webhook-url
+          channel_id: some-channel-id

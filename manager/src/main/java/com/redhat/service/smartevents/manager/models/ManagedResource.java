@@ -123,4 +123,10 @@ public class ManagedResource {
     public void setGeneration(long generation) {
         this.generation = generation;
     }
+
+    public boolean isActionable() {
+        // A ManagedResource can only be modified or deleted if it's in READY or FAILED state
+        return getStatus() == ManagedResourceStatus.READY || getStatus() == ManagedResourceStatus.FAILED;
+    }
+
 }

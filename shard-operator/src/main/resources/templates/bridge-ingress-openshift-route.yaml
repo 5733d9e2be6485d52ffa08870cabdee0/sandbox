@@ -11,12 +11,15 @@ metadata:
     operator-sdk/primary-resource-name: ""
     operator-sdk/primary-resource-namespace: ""
 spec:
+  host: ""
   to:
     kind: Service
     name: ""
   port:
     targetPort: http2
   tls:
+    key: ""
+    certificate: ""
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
   wildcardPolicy: None

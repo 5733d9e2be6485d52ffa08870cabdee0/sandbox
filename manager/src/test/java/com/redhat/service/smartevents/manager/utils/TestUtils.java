@@ -147,6 +147,12 @@ public class TestUtils {
                 .post(APIConstants.USER_API_BASE_PATH);
     }
 
+    public static Response updateBridge(String bridgeId, BridgeRequest request) {
+        return jsonRequest()
+                .body(request)
+                .put(APIConstants.USER_API_BASE_PATH + bridgeId);
+    }
+
     public static Response deleteBridge(String id) {
         return jsonRequest()
                 .delete(APIConstants.USER_API_BASE_PATH + id);

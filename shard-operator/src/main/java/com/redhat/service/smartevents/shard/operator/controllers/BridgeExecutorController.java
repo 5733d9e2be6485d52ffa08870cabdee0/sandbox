@@ -14,7 +14,7 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
@@ -76,12 +76,12 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
     @Override
     public UpdateControl<BridgeExecutor> reconcile(BridgeExecutor bridgeExecutor, Context context) {
-        LOGGER.debug("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Create or update BridgeProcessor: '{}' in namespace '{}'", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 
         if (secret == null) {
-            LOGGER.debug("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
+            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
             return UpdateControl.noUpdate();
         }
 
@@ -94,7 +94,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
         if (!Readiness.isDeploymentReady(deployment)) {
-            LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
             bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
@@ -107,12 +107,12 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
             return UpdateControl.updateStatus(bridgeExecutor);
         }
-        LOGGER.debug("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
         if (service.getStatus() == null) {
-            LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
@@ -122,7 +122,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
         if (serviceMonitor.isPresent()) {
             // this is an optional resource
-            LOGGER.debug("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
@@ -136,14 +136,18 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
-        LOGGER.debug("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
+        // Only issue a Status Update once.
+        // This is a work-around for non-deterministic Unit Tests.
+        // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!bridgeExecutor.getStatus().isReady()) {
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
+
         return UpdateControl.noUpdate();
     }
 
@@ -165,12 +169,11 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
-        ProcessorDTO dto = bridgeExecutor.toDTO();
-        dto.setStatus(status);
-
-        managerClient.notifyProcessorStatusChange(dto)
+        ProcessorManagedResourceStatusUpdateDTO updateDTO =
+                new ProcessorManagedResourceStatusUpdateDTO(bridgeExecutor.getSpec().getId(), bridgeExecutor.getSpec().getCustomerId(), bridgeExecutor.getSpec().getBridgeId(), status);
+        managerClient.notifyProcessorStatusChange(updateDTO)
                 .subscribe().with(
-                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
-                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId()));
+                        success -> LOGGER.info("Updating Processor with id '{}' done", updateDTO.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", updateDTO.getId(), failure));
     }
 }

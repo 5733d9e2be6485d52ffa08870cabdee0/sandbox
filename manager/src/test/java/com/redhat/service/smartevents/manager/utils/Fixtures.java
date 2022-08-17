@@ -59,6 +59,8 @@ public class Fixtures {
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setEndpoint("https://bridge.redhat.com");
         b.setDefinition(new BridgeDefinition());
+        b.setCloudProvider(TestConstants.DEFAULT_CLOUD_PROVIDER);
+        b.setRegion(TestConstants.DEFAULT_REGION);
         return b;
     }
 
@@ -84,5 +86,4 @@ public class Fixtures {
         connector.setConnectorExternalId("connectorExternalId");
         return connector;
     }
-
 }
