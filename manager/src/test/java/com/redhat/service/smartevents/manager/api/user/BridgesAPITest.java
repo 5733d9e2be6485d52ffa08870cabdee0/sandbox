@@ -34,9 +34,9 @@ import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
 import com.redhat.service.smartevents.manager.utils.SimpleTestVaultServiceImpl;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
+import com.redhat.service.smartevents.manager.vault.VaultService;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
-import com.redhat.service.smartevents.manager.vault.VaultService;
 
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
