@@ -11,3 +11,8 @@ services:
           name: general
           webhook_url: <SLACK_WEBHOOK_URL_SECOND>
           channel_id: <SLACK_CHANNEL_SECOND>
+  aws:
+    credentials:
+      access_key: <IT_AWS_ACCESS_KEY_ID>
+      secret_key: <IT_AWS_SECRET_ACCESS_KEY>
+      region: us-east-1
