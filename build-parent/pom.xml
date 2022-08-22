@@ -267,6 +267,12 @@
       </dependency>
       <dependency>
         <groupId>software.tnb</groupId>
+        <artifactId>system-x-aws-sqs</artifactId>
+        <version>${version.software.tnb}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>software.tnb</groupId>
         <artifactId>system-x-horreum</artifactId>
         <version>${version.software.tnb}</version>
         <scope>test</scope>

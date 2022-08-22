@@ -18,6 +18,7 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
+import com.redhat.service.smartevents.integration.tests.resources.AwsSqsResource;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
 import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
@@ -99,6 +100,9 @@ public class Hooks {
     @After
     public void cleanUp() {
         if (!Boolean.parseBoolean(DISABLE_CLEANUP)) {
+            // Delete AWS SQS queues
+            cleanAwsSQSQueues();
+
             // Delete Kafka topics and related ACLs
             cleanKafkaTopics();
 
@@ -155,6 +159,12 @@ public class Hooks {
     private void cleanKafkaTopics() {
         for (String topic : context.allKafkaTopics()) {
             KafkaResource.deleteKafkaTopic(topic);
+        }
+    }
+
+    private void cleanAwsSQSQueues() {
+        for (String queueName : context.allSqsQueues()) {
+            AwsSqsResource.deleteQueue(queueName);
         }
     }
 }
