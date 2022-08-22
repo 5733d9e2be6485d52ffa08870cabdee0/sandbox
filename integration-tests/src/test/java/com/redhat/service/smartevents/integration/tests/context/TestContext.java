@@ -13,7 +13,7 @@ import io.cucumber.java.Scenario;
  */
 public class TestContext {
 
-    private static final String KAFKA_TOPIC_PREFIX = "it-test-";
+    private static final String CONTEXT_PREFIX = "it-test-";
 
     private String managerToken;
     private Instant startTime;
@@ -23,10 +23,19 @@ public class TestContext {
     private Map<String, String> uuids = new HashMap<>();
     private Map<String, String> kafkaTopics = new HashMap<>();
     private Map<String, String> testData = new HashMap<>();
+    private Map<String, String> sqsQueues = new HashMap<>();
 
     private Scenario scenario;
 
     public TestContext() {
+    }
+
+    public String getSqsQueue(String queueName) {
+        return getUniqueName(this.sqsQueues, queueName);
+    }
+
+    public Collection<String> allSqsQueues() {
+        return this.sqsQueues.values();
     }
 
     public String getManagerToken() {
@@ -75,23 +84,11 @@ public class TestContext {
     }
 
     public String getUuid(String uuidName) {
-        if (!this.uuids.containsKey(uuidName)) {
-            String uuidValue = UUID.randomUUID().toString();
-            scenario.log("Generating new uuid '" + uuidName + "' value '" + uuidValue + "'");
-            this.uuids.put(uuidName, uuidValue);
-        }
-        return this.uuids.get(uuidName);
+        return getUniqueName(this.uuids, uuidName);
     }
 
     public String getKafkaTopic(String topicName) {
-        if (!this.kafkaTopics.containsKey(topicName)) {
-            String uuidValue = UUID.randomUUID().toString().substring(0, 8);
-            String uniqueTopicName = KAFKA_TOPIC_PREFIX + topicName + "-" + uuidValue;
-            scenario.log("Generating new Kafka topic name '" + uniqueTopicName);
-            this.kafkaTopics.put(topicName, uniqueTopicName);
-        }
-
-        return this.kafkaTopics.get(topicName);
+        return getUniqueName(this.kafkaTopics, topicName);
     }
 
     public Collection<String> allKafkaTopics() {
@@ -141,5 +138,15 @@ public class TestContext {
 
     public void setTestData(String key, String value) {
         this.testData.put(key, value);
+    }
+
+    private String getUniqueName(Map<String, String> map, String name) {
+        if (!map.containsKey(name)) {
+            String uuidValue = UUID.randomUUID().toString().substring(0, 8);
+            String uniqueName = CONTEXT_PREFIX + name + "-" + uuidValue;
+            scenario.log("Generating new uuid '" + name + "' value '" + uuidValue + "'");
+            map.put(name, uniqueName);
+        }
+        return map.get(name);
     }
 }

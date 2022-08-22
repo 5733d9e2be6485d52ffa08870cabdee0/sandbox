@@ -30,25 +30,30 @@ Main tests are executed as [JUnit 5 test suite](src/test/java/com/redhat/service
 
 Test steps are stored in [steps folder](src/test/java/com/redhat/service/smartevents/integration/tests/steps). This folder contains also [hooks](src/test/java/com/redhat/service/smartevents/integration/tests/steps/Hooks.java) taking care of environment initialization and cleanup.
 
-Tests steps leverage Java client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/resources).
+Test steps leverage Java client classes for various services stored in [resources package](src/test/java/com/redhat/service/smartevents/integration/tests/resources).
 
-Informations are passed between steps using injected context, it is implementation is in [context folder](src/test/java/com/redhat/service/smartevents/integration/tests/context). This package also contains a resolver interpreting placeholders in scenarios, replacing them with expected values.
+Information is passed between steps using injected context, it is implementation is in [context folder](src/test/java/com/redhat/service/smartevents/integration/tests/context). This package also contains a resolver interpreting placeholders in scenarios, replacing them with expected values.
 
 ### Test identifiers vs system identifiers
 
-In the tests we put a strong emphasis for test independence and ability to execute tests in parallel. Therefore all identifiers used to create resources (Bridges, Processors) and send cloud events have to be unique.
-On the other side sometimes in the test we need to reference this resources ids, i.e. to check its value in external systems.
+In the tests we put a strong emphasis for test independence and ability to execute tests in parallel. Therefore, all identifiers used to create resources (Bridges, Processors) and send cloud events have to be unique.
+On the other side sometimes in the test we need to reference these resources ids, i.e. to check its value in external systems.
 
 To combine both requirements we introduced a concept of test identifier and system identifier.
 Test identifier is a specific resource identifier used in a scenario (for example Bridge name). When a Bridge is created the test engine takes the test identifier, generates a unique system identifier corresponding to the test identifier and store the test to system identifier mapping in a context. System identifier is then used as a real value when interacting with remote system.
 
 ### Feature file placeholders
 
-It is possible to use various placeholders in feature files, allowing dynamic acess to runtime values and system identifiers. The placeholders use format `${placeholder-value}`.
+It is possible to use various placeholders in feature files, allowing dynamic access to runtime values and system identifiers. The placeholders use format `${placeholder-value}`.
 
 Currently, there is a possibility to use these placeholders in feature files:
+- ${aws.access-key} to use an AWS access key belonging to a particular AWS account to connect to
+- ${aws.region} to use a particular AWS region belonging to an AWS account to connect to
+- ${aws.secret-key} to use an AWS secret key belonging to a particular AWS account to connect to
+- ${aws.sqs.`<Queue name>`} to use an AWS SQS queue
 - ${bridge.`<Bridge name>`.endpoint.base} to use Bridge endpoint base URL (i.e. for http://localhost:80/something it will return http://localhost:80)
 - ${bridge.`<Bridge name>`.endpoint.path} to use Bridge endpoint path (i.e. for http://localhost:80/some/thing it will return /some/thing)
+- ${bridge.`<Bridge name>`.processor.`<Processor name>`.id} to use actual "Processor id" linked to a specific Bridge
 - ${bridge.`<Bridge name>`.id} to use actual "Bridge id"
 - ${cloud-event.`<Cloud event id>`.id} to use "System cloud event id" (Cloud event id which is actually used for Cloud event invocation)
 - ${env.`<System property name>`} to use a System property
@@ -56,6 +61,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 - ${slack.channel.`<Channel name>`.name} to use actual channel name
 - ${slack.channel.`<Channel name>`.webhook.url} to use a WebHook URL for sending message to the specified channel
 - ${slack.token} to use a token for communication with Slack
+- ${topic.`<Topic name>`} to use a unique Kafka topic name
 - ${uuid.`<Uuid name>`} to use unique identifier. Useful to distinguish historical data produced by the same test for example.
 
 ## Test execution
