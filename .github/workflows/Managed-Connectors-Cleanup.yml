@@ -22,4 +22,4 @@ jobs:
         env:
           MANAGED_CONNECTORS_CONTROL_PLANE_URL: ${{ secrets.MANAGED_CONNECTORS_CONTROL_PLANE_URL }}
         run: |
-          ./dev/bin/interaction/delete-managed-connectors.sh
+          ./.github/scripts/delete-managed-connectors.sh
