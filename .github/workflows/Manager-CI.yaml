@@ -3,7 +3,7 @@ on:
   pull_request_target:
     types: [ opened, labeled, unlabeled, synchronize ]
     branches:
-      - 'main'
+      - 'MGDOBR-1015-updated'
     paths-ignore:
       - 'LICENSE'
       - '**/.gitignore'
