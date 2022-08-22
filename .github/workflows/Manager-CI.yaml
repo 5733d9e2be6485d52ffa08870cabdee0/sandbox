@@ -160,6 +160,8 @@ jobs:
       - name: Prepare test configuration for E2E tests
         uses: ./.github/actions/e2e-test-config
         env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}

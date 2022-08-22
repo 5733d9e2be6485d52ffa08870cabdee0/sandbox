@@ -11,6 +11,11 @@ services:
           name: general
           webhook_url: some-webhook-url
           channel_id: some-channel-id
+  aws:
+    credentials:
+      access_key: some-access-key
+      secret_key: some-secret-key
+      region: some-region
   # Performance specific section, can be skipped for non performance tests
   horreum:
     credentials:
