@@ -2,7 +2,10 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -14,6 +17,8 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -29,6 +34,7 @@ import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -44,6 +50,9 @@ import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurati
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
+
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -52,10 +61,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     GatewayConfigurator gatewayConfigurator;
-
+    @Inject
+    GatewaySecretsHandler gatewaySecretsHandler;
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
-
     @Inject
     ResourceNamesProvider resourceNamesProvider;
 
@@ -64,13 +73,10 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     BridgesService bridgesService;
-
     @Inject
     ConnectorsService connectorService;
-
     @Inject
     ShardService shardService;
-
     @Inject
     WorkManager workManager;
 
@@ -238,28 +244,26 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getType(), existingProcessorType)) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessorType == ProcessorType.SINK) {
-            if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Action Type.");
         }
-        if (existingProcessorType == ProcessorType.SOURCE) {
-            if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
+
+        // for sensitive fields we may receive either a string with the new value or an empty object
+        // if it remains unchanged (since the caller can't know the current real value)
+        // thus, before comparing the requested action/source with the existing one, we must unmask
+        // the sensitive fields with the original values (if those are unchanged) or with the new ones
+        Action updatedAction = mergeGatewaySecrets(processorRequest.getAction(), existingAction);
+        Source updatedSource = mergeGatewaySecrets(processorRequest.getSource(), existingSource);
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Source updatedSource = processorRequest.getSource();
-        Action updatedAction = processorRequest.getAction();
-        Action updatedResolvedAction = existingProcessorType == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
-                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
-        ProcessorDefinition updatedDefinition = existingProcessorType == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+        Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
+                ? resolveSource(updatedSource, customerId, bridgeId, processorId)
+                : resolveAction(updatedAction, customerId, bridgeId, processorId);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -272,6 +276,10 @@ public class ProcessorServiceImpl implements ProcessorService {
                 && Objects.equals(existingResolvedAction, updatedResolvedAction)) {
             return existingProcessor;
         }
+
+        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
 
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -292,6 +300,24 @@ public class ProcessorServiceImpl implements ProcessorService {
                 existingProcessor.getBridge().getId());
 
         return existingProcessor;
+    }
+
+    private <T extends Gateway> T mergeGatewaySecrets(T requestedGateway, T existingGateway) {
+        if (requestedGateway == null || requestedGateway.getParameters() == null) {
+            return requestedGateway;
+        }
+        Map<String, String> secretValues = new HashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedGateway.getParameters().fields();
+        while (parametersIterator.hasNext()) {
+            Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
+            if (parameterEntry.getValue().equals(emptyObjectNode())) {
+                // this parameter is an unchanged sensitive field,
+                // so we must replace it with the current real value
+                secretValues.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
+            }
+        }
+        secretValues.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
+        return requestedGateway;
     }
 
     @Transactional
@@ -430,8 +456,12 @@ public class ProcessorServiceImpl implements ProcessorService {
             ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            processorResponse.setAction(definition.getRequestedAction());
-            processorResponse.setSource(definition.getRequestedSource());
+            if (definition.getRequestedAction() != null) {
+                processorResponse.setAction(gatewaySecretsHandler.mask(definition.getRequestedAction()));
+            }
+            if (definition.getRequestedSource() != null) {
+                processorResponse.setSource(gatewaySecretsHandler.mask(definition.getRequestedSource()));
+            }
         }
 
         if (processor.getBridge() != null) {

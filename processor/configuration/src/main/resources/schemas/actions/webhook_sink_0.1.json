@@ -14,15 +14,25 @@
       "type": "string",
       "title": "Basic Auth Username",
       "description": "The username for basic auth.",
-      "example": "kermit",
-      "format": "password"
+      "example": "kermit"
     },
     "basic_auth_password": {
-      "type": "string",
       "title": "Basic Auth Password",
-      "description": "The password for basic auth.",
-      "example": "mypassword",
-      "format": "password"
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Basic Auth Password",
+          "description": "The password for basic auth.",
+          "type": "string",
+          "format": "password",
+          "example": "mypassword"
+        },
+        {
+          "description": "An opaque reference to the basic_auth_password",
+          "type": "object",
+          "properties": {}
+        }
+      ]
     },
     "ssl_verification_disabled": {
       "type": "boolean",
