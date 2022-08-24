@@ -88,12 +88,12 @@ jobs:
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME-jvm executor/
           docker push $EXECUTOR_CONTAINER_NAME-jvm
 
-      # Build shart operator with Minikube profile if 'shard-operator' or any 'general' modules have changed
+      # Build shart operator if 'shard-operator' or any 'general' modules have changed
       - name: Build Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         uses: ./.github/actions/maven
         with:
-          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip -Pminikube
+          maven-command: package --batch-mode -Dmaven.test.skip=true -Dcheckstyle.skip
       - name: Build and Publish JVM Container - Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         run: |

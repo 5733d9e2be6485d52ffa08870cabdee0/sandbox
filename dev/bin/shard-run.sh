@@ -15,6 +15,5 @@ mvn \
   -Dminikubeip=${MINIKUBE_IP} \
   -Dquarkus.http.port=1337 \
   -Devent-bridge.logging.json=false \
-  -Pminikube \
   -f "${SCRIPT_DIR_PATH}/../../shard-operator/pom.xml" \
   clean compile quarkus:dev $@
