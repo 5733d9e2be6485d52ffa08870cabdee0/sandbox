@@ -31,12 +31,15 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
+import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.api.models.responses.ErrorListResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
+import com.redhat.service.smartevents.manager.models.Error;
 
 import io.quarkus.security.Authenticated;
 
@@ -145,5 +148,22 @@ public class BridgesAPI {
     public Response deleteBridge(@PathParam("bridgeId") String bridgeId) {
         bridgesService.deleteBridge(bridgeId, identityResolver.resolve(jwt));
         return Response.accepted().build();
+    }
+
+    @APIResponses(value = {
+            @APIResponse(description = "Success.", responseCode = "200",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BridgeListResponse.class))),
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Unauthorized.", responseCode = "401", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Forbidden.", responseCode = "403", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
+    })
+    @Operation(summary = "Get the list of Bridge instances", description = "Get the list of Bridge instances for the authenticated user.")
+    @GET
+    @Path("{bridgeId}/errors")
+    public Response getBridgeErrors(@PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
+        ListResult<Error> errors = bridgesService.getBridgeErrors(bridgeId, identityResolver.resolve(jwt), queryInfo);
+        return Response.ok(PagedListResponse.fill(errors, new ErrorListResponse(), bridgesService::toResponse)).build();
     }
 }
