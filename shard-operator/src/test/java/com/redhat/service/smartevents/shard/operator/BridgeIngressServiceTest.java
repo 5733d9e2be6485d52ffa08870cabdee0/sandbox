@@ -11,7 +11,7 @@ import org.mockito.ArgumentCaptor;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -21,6 +21,7 @@ import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePat
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -48,7 +49,7 @@ public class BridgeIngressServiceTest {
     KubernetesClient kubernetesClient;
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
@@ -144,12 +145,20 @@ public class BridgeIngressServiceTest {
         // When
         bridgeIngressService.createBridgeIngress(dto);
         waitUntilBridgeIngressExists(dto);
+
+        BridgeIngress bridgeIngressExisting = fetchBridgeIngress(dto);
+        assertThat(bridgeIngressExisting).isNotNull();
+
+        String nameSpaceName = bridgeIngressExisting.getMetadata().getNamespace();
+        Namespace namespaceExisting = fetchNamespace(nameSpaceName);
+        assertThat(namespaceExisting).isNotNull();
+
         bridgeIngressService.deleteBridgeIngress(dto);
-        waitUntilBridgeIngressDoesntExist(dto);
 
         // Then
-        BridgeIngress bridgeIngress = fetchBridgeIngress(dto);
-        assertThat(bridgeIngress).isNull();
+        waitUntilBridgeIngressDoesntExist(dto);
+        Namespace namespaceDeleted = fetchNamespace(nameSpaceName);
+        assertThat(namespaceDeleted).isNull();
     }
 
     @Test
@@ -229,7 +238,7 @@ public class BridgeIngressServiceTest {
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {
         return kubernetesClient
                 .resources(BridgeIngress.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
     }
@@ -237,7 +246,7 @@ public class BridgeIngressServiceTest {
     private Secret fetchBridgeIngressSecret(BridgeDTO dto) {
         return kubernetesClient
                 .secrets()
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
     }
@@ -245,7 +254,7 @@ public class BridgeIngressServiceTest {
     private ConfigMap fetchBridgeIngressConfigMap(BridgeDTO dto) {
         return kubernetesClient
                 .configMaps()
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
     }
@@ -261,8 +270,15 @@ public class BridgeIngressServiceTest {
     private KnativeBroker fetchBridgeIngressKnativeBroker(BridgeDTO dto) {
         return kubernetesClient
                 .resources(KnativeBroker.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
+                .get();
+    }
+
+    private Namespace fetchNamespace(String namespace) {
+        return kubernetesClient
+                .namespaces()
+                .withName(namespace)
                 .get();
     }
 

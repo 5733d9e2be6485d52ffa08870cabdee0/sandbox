@@ -13,7 +13,7 @@ import org.mockito.ArgumentCaptor;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -56,7 +56,7 @@ public class BridgeExecutorServiceTest {
     KubernetesClient kubernetesClient;
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
@@ -84,7 +84,7 @@ public class BridgeExecutorServiceTest {
         // Then
         BridgeExecutor bridgeExecutor = kubernetesClient
                 .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getBridgeId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
         assertThat(bridgeExecutor).isNotNull();
@@ -117,7 +117,7 @@ public class BridgeExecutorServiceTest {
                 () -> {
                     // The deployment is deployed by the controller
                     Deployment deployment = kubernetesClient.apps().deployments()
-                            .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                            .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getBridgeId()))
                             .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                             .get();
                     assertThat(deployment).isNotNull();
@@ -269,21 +269,21 @@ public class BridgeExecutorServiceTest {
     private BridgeExecutor fetchBridgeExecutor(ProcessorDTO dto) {
         return kubernetesClient
                 .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getBridgeId()))
                 .withName(BridgeIngress.resolveResourceName(dto.getId()))
                 .get();
     }
 
     private Deployment fetchBridgeExecutorDeployment(ProcessorDTO dto) {
         return kubernetesClient.apps().deployments()
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getBridgeId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
     }
 
     private Secret fetchBridgeExecutorSecret(ProcessorDTO dto) {
         return kubernetesClient.secrets()
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getBridgeId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
     }

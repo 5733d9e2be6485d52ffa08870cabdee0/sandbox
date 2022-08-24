@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
@@ -74,7 +74,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String customerBridgeNamespace1 = customerBridgeNamespaceProvider.resolveName(bridge1.getCustomerId(), bridge1.getId());
+        String customerBridgeNamespace2 = customerBridgeNamespaceProvider.resolveName(bridge2.getCustomerId(), bridge2.getId());
         String firstBridgeName = BridgeIngress.resolveResourceName(bridge1.getId());
         String secondBridgeName = BridgeIngress.resolveResourceName(bridge2.getId());
         Awaitility.await()
@@ -82,8 +83,8 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> {
-                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerBridgeNamespace1);
+                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerBridgeNamespace2);
                             kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
                             kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
                         });
@@ -157,7 +158,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         addProcessorUpdateRequestListener(latch);
         managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
 
-        String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
+        String customerNamespace = customerBridgeNamespaceProvider.resolveName(processor.getCustomerId(), processor.getBridgeId());
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
         Awaitility.await()
                 .atMost(Duration.ofMinutes(3))

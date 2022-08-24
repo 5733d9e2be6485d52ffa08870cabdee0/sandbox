@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.shard.operator.providers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,16 +21,16 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
-public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider {
+public class CustomerBridgeNamespaceProviderImpl implements CustomerBridgeNamespaceProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerNamespaceProviderImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerBridgeNamespaceProviderImpl.class);
 
     @Inject
     KubernetesClient kubernetesClient;
 
     @Override
-    public Namespace fetchOrCreateCustomerNamespace(String customerId) {
-        final String name = this.resolveName(customerId);
+    public Namespace fetchOrCreateCustomerBridgeNamespace(String customerId, String bridgeId) {
+        final String name = this.resolveName(customerId, bridgeId);
         final Namespace namespace = kubernetesClient.namespaces().withName(name).get();
         if (namespace == null) {
             return kubernetesClient.namespaces().createOrReplace(
@@ -62,8 +63,11 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
             // deletion can be tricky with finalizers, pending objects, etc.
             // let's start simple and build on top of the constraints and scenarios as we evolve.
             if (!kubernetesClient.namespaces().withName(namespace.getMetadata().getName()).delete()) {
-                LOGGER.warn("Namespace '{}' hasn't been deleted", namespace.getMetadata().getName());
+                LOGGER.warn("Namespace '{}' has not been deleted.", namespace.getMetadata().getName());
             }
+        } else {
+            LOGGER.warn("Namespace '{}' has not been deleted as it contained other resources.", namespace.getMetadata().getName());
+            existingResources(BridgeIngress.class, namespace).forEach(r -> LOGGER.debug("Namespace '{}' contains: {}", namespace.getMetadata().getName(), r));
         }
     }
 
@@ -94,8 +98,13 @@ public class CustomerNamespaceProviderImpl implements CustomerNamespaceProvider 
         return isEmptyOf(BridgeIngress.class, namespace);
     }
 
-    private <T extends HasMetadata> boolean isEmptyOf(Class<T> managedShardResource, final Namespace namespace) {
-        final KubernetesResourceList<T> list = kubernetesClient.resources(managedShardResource).inNamespace(namespace.getMetadata().getName()).list();
-        return list == null || list.getItems().isEmpty();
+    private <T extends HasMetadata> boolean isEmptyOf(Class<T> managedShardResource, Namespace namespace) {
+        return existingResources(managedShardResource, namespace).isEmpty();
     }
+
+    private <T extends HasMetadata> List<T> existingResources(Class<T> managedShardResource, Namespace namespace) {
+        final KubernetesResourceList<T> list = kubernetesClient.resources(managedShardResource).inNamespace(namespace.getMetadata().getName()).list();
+        return list == null ? Collections.emptyList() : list.getItems();
+    }
+
 }

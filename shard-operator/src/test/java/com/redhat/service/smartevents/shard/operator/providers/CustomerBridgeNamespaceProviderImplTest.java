@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @QuarkusTest
 @WithOpenShiftTestServer
 @QuarkusTestResource(value = KeycloakResource.class, restrictToAnnotatedClass = true)
-class CustomerNamespaceProviderImplTest {
+class CustomerBridgeNamespaceProviderImplTest {
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     BridgeIngressService bridgeIngressService;
@@ -50,17 +50,17 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceIsCreated() {
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("123");
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace("123", "456");
         assertThat(namespace).isNotNull();
-        assertThat(customerNamespaceProvider.resolveName("123")).isEqualTo(namespace.getMetadata().getName());
+        assertThat(customerBridgeNamespaceProvider.resolveName("123", "456")).isEqualTo(namespace.getMetadata().getName());
     }
 
     @Test
     void testRawNamespaceIsFetchedEnsureLabels() {
-        final String name = customerNamespaceProvider.resolveName("xyz");
+        final String name = customerBridgeNamespaceProvider.resolveName("zyx", "abc");
         kubernetesClient.namespaces().create(new NamespaceBuilder().withNewMetadata().withName(name).and().build());
 
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("xyz");
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace("zyx", "abc");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();
@@ -71,7 +71,7 @@ class CustomerNamespaceProviderImplTest {
 
     @Test
     void testNamespaceIsFetchedEnsureOwnLabels() {
-        final String name = customerNamespaceProvider.resolveName("zyx");
+        final String name = customerBridgeNamespaceProvider.resolveName("xyz", "abc");
         kubernetesClient.namespaces().create(
                 new NamespaceBuilder()
                         .withNewMetadata()
@@ -79,7 +79,7 @@ class CustomerNamespaceProviderImplTest {
                         .addToLabels(Collections.singletonMap("app", "test"))
                         .and().build());
 
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace("zyx");
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace("xyz", "abc");
         assertThat(namespace).isNotNull();
         assertThat(name).isEqualTo(namespace.getMetadata().getName());
         assertThat(namespace.getMetadata().getLabels()).isNotNull();
@@ -99,12 +99,12 @@ class CustomerNamespaceProviderImplTest {
                 .atMost(Duration.ofSeconds(5))
                 .until(() -> kubernetesClient
                         .resources(BridgeIngress.class)
-                        .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                        .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                         .withName(BridgeIngress.resolveResourceName(dto.getId()))
                         .get() != null);
         // try to delete the namespace...
-        customerNamespaceProvider.deleteNamespaceIfEmpty(kubernetesClient.namespaces().withName("ob-cooper").get());
-        final Namespace namespace = kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get();
+        customerBridgeNamespaceProvider.deleteNamespaceIfEmpty(kubernetesClient.namespaces().withName("ob-cooper-" + dto.getId()).get());
+        final Namespace namespace = kubernetesClient.namespaces().withName(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId())).get();
         assertThat(namespace).isNotNull();
     }
 
@@ -118,7 +118,7 @@ class CustomerNamespaceProviderImplTest {
                 .atMost(Duration.ofSeconds(5))
                 .until(() -> kubernetesClient
                         .resources(BridgeIngress.class)
-                        .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                        .inNamespace(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId()))
                         .withName(BridgeIngress.resolveResourceName(dto.getId()))
                         .get() != null);
         // there's only one bridge there
@@ -127,9 +127,9 @@ class CustomerNamespaceProviderImplTest {
                 .atMost(Duration.ofSeconds(60))
                 .until(() -> kubernetesClient.resources(BridgeIngress.class).withName(BridgeIngress.resolveResourceName(dto.getId())).get() == null);
 
-        customerNamespaceProvider.cleanUpEmptyNamespaces();
+        customerBridgeNamespaceProvider.cleanUpEmptyNamespaces();
         Awaitility.await()
                 .atMost(Duration.ofSeconds(60))
-                .until(() -> kubernetesClient.namespaces().withName(customerNamespaceProvider.resolveName(dto.getCustomerId())).get() == null);
+                .until(() -> kubernetesClient.namespaces().withName(customerBridgeNamespaceProvider.resolveName(dto.getCustomerId(), dto.getId())).get() == null);
     }
 }

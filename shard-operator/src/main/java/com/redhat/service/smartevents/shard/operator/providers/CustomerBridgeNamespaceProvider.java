@@ -8,19 +8,21 @@ import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 /**
  * Service Interface for customer namespace handling.
  */
-public interface CustomerNamespaceProvider {
+public interface CustomerBridgeNamespaceProvider {
 
     /**
      * String format for the owned Bridge Namespace name.
      */
-    String NS_PREFIX_FORMAT = "ob-%s";
+    String NS_PREFIX_FORMAT = "ob-%s-%s";
 
     /**
-     * Creates a new namespace with the given customer ID. If the namespace already exists, return it instead.
+     * Creates a new namespace with the given Customer ID and Bridge ID. If the namespace already exists, return it instead.
      *
+     * @param customerId The Customer ID
+     * @param bridgeId The Bridge ID
      * @return the new namespace or the existing namespace based on the customer identification
      */
-    Namespace fetchOrCreateCustomerNamespace(String customerId);
+    Namespace fetchOrCreateCustomerBridgeNamespace(String customerId, String bridgeId);
 
     /**
      * Deletes the given custom namespace if owned by the Shard Operator, and it does not have any OpenBridge CRs.
@@ -37,8 +39,8 @@ public interface CustomerNamespaceProvider {
      *
      * @see <a href="https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names">Object Names and IDs</a>
      */
-    default String resolveName(final String customerId) {
-        final String sanitizedName = KubernetesResourceUtil.sanitizeName(String.format(NS_PREFIX_FORMAT, customerId)).toLowerCase(Locale.ROOT);
+    default String resolveName(final String customerId, final String bridgeId) {
+        final String sanitizedName = KubernetesResourceUtil.sanitizeName(String.format(NS_PREFIX_FORMAT, customerId, bridgeId)).toLowerCase(Locale.ROOT);
         if (KubernetesResourceUtil.isValidName(sanitizedName)) {
             return sanitizedName;
         }

@@ -17,7 +17,7 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
+import com.redhat.service.smartevents.shard.operator.providers.CustomerBridgeNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
@@ -53,7 +53,7 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
     KubernetesClient kubernetesClient;
 
     @Inject
-    CustomerNamespaceProvider customerNamespaceProvider;
+    CustomerBridgeNamespaceProvider customerBridgeNamespaceProvider;
 
     @Inject
     TemplateProvider templateProvider;
@@ -69,7 +69,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void createBridgeExecutor(ProcessorDTO processorDTO) {
-        final Namespace namespace = customerNamespaceProvider.fetchOrCreateCustomerNamespace(processorDTO.getCustomerId());
+        String customerId = processorDTO.getCustomerId();
+        String bridgeId = processorDTO.getBridgeId();
+        final Namespace namespace = customerBridgeNamespaceProvider.fetchOrCreateCustomerBridgeNamespace(customerId, bridgeId);
 
         BridgeExecutor expected = BridgeExecutor.fromDTO(processorDTO, namespace.getMetadata().getName(), executorImage);
 
@@ -152,7 +154,9 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
     @Override
     public void deleteBridgeExecutor(ProcessorDTO processorDTO) {
-        final String namespace = customerNamespaceProvider.resolveName(processorDTO.getCustomerId());
+        String customerId = processorDTO.getCustomerId();
+        String bridgeId = processorDTO.getBridgeId();
+        final String namespace = customerBridgeNamespaceProvider.resolveName(customerId, bridgeId);
         final boolean bridgeDeleted =
                 kubernetesClient
                         .resources(BridgeExecutor.class)
