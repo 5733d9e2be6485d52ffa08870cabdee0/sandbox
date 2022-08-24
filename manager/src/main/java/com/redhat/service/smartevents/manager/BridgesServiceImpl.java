@@ -74,6 +74,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     DnsService dnsService;
 
+    @Inject
+    ErrorHandlerService errorHandlerService;
+
     @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
@@ -94,8 +97,10 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
-        Action errorHandler = bridgeRequest.getErrorHandler();
-        bridge.setDefinition(new BridgeDefinition(Objects.nonNull(errorHandler) ? errorHandler : null));
+        Action errorHandler = Objects.nonNull(bridgeRequest.getErrorHandler())
+                ? bridgeRequest.getErrorHandler()
+                : errorHandlerService.getDefaultErrorHandlerAction();
+        bridge.setDefinition(new BridgeDefinition(errorHandler));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
@@ -295,6 +300,10 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
+
+        if (errorHandlerService.getDefaultErrorHandlerAction().equals(response.getErrorHandler())) {
+            response.setErrorHandler(null);
+        }
         return response;
     }
 }

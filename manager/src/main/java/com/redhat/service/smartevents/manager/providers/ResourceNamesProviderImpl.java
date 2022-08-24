@@ -29,6 +29,11 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     }
 
     @Override
+    public String getGlobalErrorTopicName() {
+        return String.format("%s%s", validatedResourcePrefix, "err");
+    }
+
+    @Override
     public String getBridgeTopicName(String bridgeId) {
         return String.format("%s%s-%s", validatedResourcePrefix, BRIDGE_SHORTNAME, bridgeId);
     }
