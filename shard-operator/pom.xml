@@ -189,7 +189,7 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${project.build.directory}/kubernetes/openshift.yml</file>
+                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>
                       <type>yml</type>
                       <classifier>kubernetes</classifier>
                     </artifact>
