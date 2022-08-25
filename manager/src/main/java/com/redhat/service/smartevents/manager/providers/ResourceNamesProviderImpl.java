@@ -13,7 +13,7 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     public static final String PROCESSOR_SHORTNAME = "prcs";
     public static final String ERROR_TOPIC_SUFFIX = "err";
 
-    private static final String VALIDATION_REGEX = "^[a-z][a-z0-9]{0,18}-$";
+    private static final String VALIDATION_REGEX = "^[a-z][a-z0-9]{0,19}$";
 
     @ConfigProperty(name = RESOURCE_PREFIX_PROPERTY)
     String resourcePrefix;
