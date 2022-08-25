@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.manager.dao.ErrorDAO;
-import com.redhat.service.smartevents.manager.models.Error;
+import com.redhat.service.smartevents.manager.models.ProcessingError;
 
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
@@ -40,15 +40,15 @@ public class ErrorHandlerProcessor {
             Map<String, String> headers = parseHeaders(message.getHeaders());
             JsonNode payload = parsePayload(message.getPayload());
 
-            Error error = new Error();
-            error.setBridgeId(headers.get("rhose-bridge-id"));
-            error.setRecordedAt(ZonedDateTime.now(ZoneOffset.UTC));
-            error.setHeaders(headers);
-            error.setPayload(payload);
+            ProcessingError processingError = new ProcessingError();
+            processingError.setBridgeId(headers.get("rhose-bridge-id"));
+            processingError.setRecordedAt(ZonedDateTime.now(ZoneOffset.UTC));
+            processingError.setHeaders(headers);
+            processingError.setPayload(payload);
 
-            errorDAO.persist(error);
+            errorDAO.persist(processingError);
 
-            LOGGER.debug("Persisted error {} for bridge {}", error.getId(), error.getBridgeId());
+            LOGGER.debug("Persisted error {} for bridge {}", processingError.getId(), processingError.getBridgeId());
         } catch (Exception e) {
             LOGGER.error("Error when deserializing error message {}. Message acked anyway.", message, e);
         }

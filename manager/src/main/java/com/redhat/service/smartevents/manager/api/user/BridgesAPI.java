@@ -37,9 +37,9 @@ import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ErrorListResponse;
+import com.redhat.service.smartevents.manager.api.models.responses.ProcessingErrorListResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Error;
+import com.redhat.service.smartevents.manager.models.ProcessingError;
 
 import io.quarkus.security.Authenticated;
 
@@ -163,7 +163,7 @@ public class BridgesAPI {
     @GET
     @Path("{bridgeId}/errors")
     public Response getBridgeErrors(@PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {
-        ListResult<Error> errors = bridgesService.getBridgeErrors(bridgeId, identityResolver.resolve(jwt), queryInfo);
-        return Response.ok(PagedListResponse.fill(errors, new ErrorListResponse(), bridgesService::toResponse)).build();
+        ListResult<ProcessingError> errors = bridgesService.getBridgeErrors(bridgeId, identityResolver.resolve(jwt), queryInfo);
+        return Response.ok(PagedListResponse.fill(errors, new ProcessingErrorListResponse(), bridgesService::toResponse)).build();
     }
 }

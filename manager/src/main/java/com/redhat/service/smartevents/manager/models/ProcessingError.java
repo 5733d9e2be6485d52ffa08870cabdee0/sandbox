@@ -25,7 +25,7 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 })
 @Entity
 @Table(name = "ERROR")
-public class Error {
+public class ProcessingError {
 
     @Id
     @SequenceGenerator(name = "errorId", sequenceName = "ERROR_ID_SEQUENCE", allocationSize = 1)

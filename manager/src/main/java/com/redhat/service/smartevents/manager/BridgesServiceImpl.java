@@ -29,14 +29,14 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpda
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.manager.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ErrorDAO;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Error;
+import com.redhat.service.smartevents.manager.models.ProcessingError;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
@@ -268,7 +268,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public ListResult<Error> getBridgeErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+    public ListResult<ProcessingError> getBridgeErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
         Bridge bridge = getReadyBridge(bridgeId, customerId);
         return errorDAO.findByBridgeIdOrdered(bridge.getId(), queryInfo);
     }
@@ -326,11 +326,11 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     @Override
-    public ErrorResponse toResponse(Error error) {
-        ErrorResponse response = new ErrorResponse();
-        response.setRecordedAt(error.getRecordedAt());
-        response.setHeaders(error.getHeaders());
-        response.setPayload(error.getPayload());
+    public ProcessingErrorResponse toResponse(ProcessingError processingError) {
+        ProcessingErrorResponse response = new ProcessingErrorResponse();
+        response.setRecordedAt(processingError.getRecordedAt());
+        response.setHeaders(processingError.getHeaders());
+        response.setPayload(processingError.getPayload());
         return response;
     }
 }
