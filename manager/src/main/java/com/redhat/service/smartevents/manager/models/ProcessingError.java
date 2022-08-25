@@ -20,15 +20,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @NamedQueries({
-        @NamedQuery(name = "ERROR.findByBridgeIdOrdered",
-                query = "from Error where bridge_id=:bridgeId order by id desc")
+        @NamedQuery(name = "PROCESSING_ERROR.findByBridgeIdOrdered",
+                query = "from ProcessingError where bridge_id=:bridgeId order by id desc")
 })
 @Entity
-@Table(name = "ERROR")
+@Table(name = "PROCESSING_ERROR")
 public class ProcessingError {
 
     @Id
-    @SequenceGenerator(name = "errorId", sequenceName = "ERROR_ID_SEQUENCE", allocationSize = 1)
+    @SequenceGenerator(name = "errorId", sequenceName = "PROCESSING_ERROR_ID_SEQUENCE", allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "errorId")
     private Long id;
 

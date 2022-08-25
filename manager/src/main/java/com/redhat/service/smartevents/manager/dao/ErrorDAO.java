@@ -18,7 +18,7 @@ import io.quarkus.panache.common.Parameters;
 public class ErrorDAO implements PanacheRepositoryBase<ProcessingError, Long> {
 
     public ListResult<ProcessingError> findByBridgeIdOrdered(String bridgeId, QueryResourceInfo queryInfo) {
-        PanacheQuery<ProcessingError> query = find("#ERROR.findByBridgeIdOrdered", Parameters.with("bridgeId", bridgeId));
+        PanacheQuery<ProcessingError> query = find("#PROCESSING_ERROR.findByBridgeIdOrdered", Parameters.with("bridgeId", bridgeId));
         long total = query.count();
         List<ProcessingError> processingErrors = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
         return new ListResult<>(processingErrors, queryInfo.getPageNumber(), total);

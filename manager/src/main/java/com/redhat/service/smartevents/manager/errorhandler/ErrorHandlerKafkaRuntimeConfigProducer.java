@@ -13,6 +13,7 @@ import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 
+import io.quarkus.arc.profile.UnlessBuildProfile;
 import io.smallrye.common.annotation.Identifier;
 
 public class ErrorHandlerKafkaRuntimeConfigProducer {
@@ -26,6 +27,7 @@ public class ErrorHandlerKafkaRuntimeConfigProducer {
 
     @Produces
     @ApplicationScoped
+    @UnlessBuildProfile("test")
     @Identifier("error-handler")
     public Map<String, Object> createKafkaRuntimeConfig() {
         String topic = resourceNamesProvider.getGlobalErrorTopicName();

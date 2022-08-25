@@ -1,6 +1,6 @@
-create sequence ERROR_ID_SEQUENCE;
+create sequence PROCESSING_ERROR_ID_SEQUENCE;
 
-create table ERROR
+create table PROCESSING_ERROR
 (
     id                 bigint       NOT NULL PRIMARY KEY,
     bridge_id          varchar(255) NOT NULL,
@@ -9,4 +9,4 @@ create table ERROR
     payload            jsonb        NOT NULL
 );
 
-create index ERROR_INDEX on ERROR(bridge_id, id);
+create index PROCESSING_ERROR_INDEX on PROCESSING_ERROR(bridge_id, id);
