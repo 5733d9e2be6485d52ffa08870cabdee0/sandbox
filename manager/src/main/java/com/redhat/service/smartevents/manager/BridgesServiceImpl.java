@@ -103,9 +103,10 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
-        Action errorHandler = Objects.nonNull(bridgeRequest.getErrorHandler())
-                ? bridgeRequest.getErrorHandler()
-                : errorHandlerService.getDefaultErrorHandlerAction();
+        Action reqErrorHandler = bridgeRequest.getErrorHandler();
+        Action errorHandler = Objects.nonNull(reqErrorHandler) && ENDPOINT_ERROR_HANDLER_TYPE.equals(reqErrorHandler.getType())
+                ? errorHandlerService.getDefaultErrorHandlerAction()
+                : reqErrorHandler;
         bridge.setDefinition(new BridgeDefinition(errorHandler));
 
         // Bridge and Work creation should always be in the same transaction
@@ -310,13 +311,17 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
-        response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
 
-        if (errorHandlerService.getDefaultErrorHandlerAction().equals(response.getErrorHandler())) {
-            response.setErrorHandler(null);
+        if (errorHandlerService.getDefaultErrorHandlerAction().equals(bridge.getDefinition().getErrorHandler())) {
+            Action endpointAction = new Action();
+            endpointAction.setType(ENDPOINT_ERROR_HANDLER_TYPE);
+            response.setErrorHandler(endpointAction);
+        } else {
+            response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         }
+
         return response;
     }
 

@@ -14,6 +14,8 @@ import com.redhat.service.smartevents.manager.models.Error;
 
 public interface BridgesService {
 
+    String ENDPOINT_ERROR_HANDLER_TYPE = "endpoint";
+
     Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest);
 
     Bridge updateBridge(String bridgeId, String customerId, BridgeRequest bridgeRequest);

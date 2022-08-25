@@ -14,6 +14,8 @@ import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
+import static com.redhat.service.smartevents.manager.BridgesService.ENDPOINT_ERROR_HANDLER_TYPE;
+
 @ApplicationScoped
 public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
 
@@ -33,6 +35,10 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
         Action errorHandlerAction = bridgeRequest.getErrorHandler();
 
         if (errorHandlerAction == null) {
+            return true;
+        }
+
+        if (ENDPOINT_ERROR_HANDLER_TYPE.equals(errorHandlerAction.getType())) {
             return true;
         }
 
