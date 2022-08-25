@@ -32,18 +32,18 @@ public class ProcessingError {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "errorId")
     private Long id;
 
-    @Column(name = "bridge_id", nullable = false)
+    @Column(name = "bridge_id", nullable = false, updatable = false)
     private String bridgeId;
 
-    @Column(name = "recorded_at", nullable = false, columnDefinition = "TIMESTAMP")
+    @Column(name = "recorded_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     protected ZonedDateTime recordedAt;
 
     @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "headers", nullable = false, columnDefinition = JsonTypes.JSON_BIN)
+    @Column(name = "headers", nullable = false, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
     protected Map<String, String> headers;
 
     @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "payload", nullable = false, columnDefinition = JsonTypes.JSON_BIN)
+    @Column(name = "payload", nullable = false, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
     protected JsonNode payload;
 
     public Long getId() {
