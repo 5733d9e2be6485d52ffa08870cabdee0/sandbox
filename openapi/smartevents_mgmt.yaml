@@ -1092,8 +1092,6 @@ components:
           nullable: false
         endpoint:
           type: string
-        error_endpoint:
-          type: string
         error_handler:
           $ref: '#/components/schemas/Action'
         cloud_provider:
