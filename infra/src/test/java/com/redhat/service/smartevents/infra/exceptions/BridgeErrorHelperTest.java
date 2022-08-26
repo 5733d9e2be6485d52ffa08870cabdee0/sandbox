@@ -26,7 +26,7 @@ public class BridgeErrorHelperTest {
         this.helper = new BridgeErrorHelper();
         this.helper.bridgeErrorService = service;
 
-        when(service.getError(UnspecifiedProvisioningFailureException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.USER)));
+        when(service.getError(UnspecifiedProvisioningFailureException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.PLATFORM)));
 
         this.helper.setup();
     }
@@ -53,7 +53,7 @@ public class BridgeErrorHelperTest {
         assertThat(bei.getId()).isEqualTo(1);
         assertThat(bei.getCode()).isEqualTo("code");
         assertThat(bei.getReason()).isEqualTo("reason");
-        assertThat(bei.getType()).isEqualTo(BridgeErrorType.USER);
+        assertThat(bei.getType()).isEqualTo(BridgeErrorType.PLATFORM);
         assertThat(bei.getUUID()).isNotNull();
     }
 
