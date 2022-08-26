@@ -189,9 +189,6 @@
     </profile>
     <profile>
       <id>openshift</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <quarkus.openshift.deploy>false</quarkus.openshift.deploy>
         <quarkus.profile>openshift</quarkus.profile>
