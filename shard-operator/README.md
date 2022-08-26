@@ -52,7 +52,7 @@ kubectl create secret generic keycloak-secrets --from-literal=KEYCLOAK_USER=admi
 kubectl create -f ../kustomize/base/manager/resources/keycloak.yaml -n mynamespace
 kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n mynamespace
 ## generate the resources (if namespace not provided, it uses the default - not recommended)
-mvn clean install -Dquarkus.container-image.build=true -Dnamespace=mynamespace
+mvn clean install -Pminikube -Dnamespace=mynamespace
 ## apply the CRD
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
 kubectl apply -f target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
