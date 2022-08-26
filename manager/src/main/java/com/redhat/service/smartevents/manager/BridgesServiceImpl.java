@@ -98,11 +98,8 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setEndpoint(dnsService.buildBridgeEndpoint(bridge.getId(), customerId));
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
-        Action reqErrorHandler = bridgeRequest.getErrorHandler();
-        Action errorHandler = Objects.nonNull(reqErrorHandler) && ENDPOINT_ERROR_HANDLER_TYPE.equals(reqErrorHandler.getType())
-                ? processingErrorService.getDefaultErrorHandlerAction()
-                : reqErrorHandler;
-        bridge.setDefinition(new BridgeDefinition(errorHandler));
+        Action errorHandler = bridgeRequest.getErrorHandler();
+        bridge.setDefinition(new BridgeDefinition(errorHandler, resolveErrorHandler(errorHandler)));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
@@ -144,7 +141,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Construct updated definition
         Action updatedErrorHandler = bridgeRequest.getErrorHandler();
-        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler);
+        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolveErrorHandler(updatedErrorHandler));
 
         // No need to update CRD if the definition is unchanged
         if (Objects.equals(existingDefinition, updatedDefinition)) {
@@ -167,6 +164,12 @@ public class BridgesServiceImpl implements BridgesService {
                 existingBridge.getCustomerId());
 
         return existingBridge;
+    }
+
+    private Action resolveErrorHandler(Action errorHandler) {
+        return Objects.nonNull(errorHandler) && ENDPOINT_ERROR_HANDLER_TYPE.equals(errorHandler.getType())
+                ? processingErrorService.getDefaultErrorHandlerAction()
+                : errorHandler;
     }
 
     @Transactional
@@ -299,16 +302,9 @@ public class BridgesServiceImpl implements BridgesService {
         response.setStatus(bridge.getStatus());
         response.setHref(APIConstants.USER_API_BASE_PATH + bridge.getId());
         response.setOwner(bridge.getOwner());
+        response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
-
-        if (processingErrorService.getDefaultErrorHandlerAction().equals(bridge.getDefinition().getErrorHandler())) {
-            Action endpointAction = new Action();
-            endpointAction.setType(ENDPOINT_ERROR_HANDLER_TYPE);
-            response.setErrorHandler(endpointAction);
-        } else {
-            response.setErrorHandler(bridge.getDefinition().getErrorHandler());
-        }
 
         return response;
     }
