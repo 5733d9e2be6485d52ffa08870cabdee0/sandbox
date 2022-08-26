@@ -8,7 +8,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -19,10 +18,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
-@NamedQueries({
-        @NamedQuery(name = "PROCESSING_ERROR.findByBridgeIdOrdered",
-                query = "from ProcessingError where bridge_id=:bridgeId order by id desc")
-})
+@NamedQuery(name = "PROCESSING_ERROR.findByBridgeIdOrdered",
+        query = "from ProcessingError where bridge_id=:bridgeId order by id desc")
 @Entity
 @Table(name = "PROCESSING_ERROR")
 public class ProcessingError {
