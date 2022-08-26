@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.api.models.responses;
+package com.redhat.service.smartevents.processingerrors.api.models;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

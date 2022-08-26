@@ -29,18 +29,16 @@ import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpda
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
-import com.redhat.service.smartevents.manager.dao.ErrorDAO;
 import com.redhat.service.smartevents.manager.dns.DnsService;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.ProcessingError;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -55,9 +53,6 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     BridgeDAO bridgeDAO;
-
-    @Inject
-    ErrorDAO errorDAO;
 
     @Inject
     ProcessorService processorService;
@@ -81,7 +76,7 @@ public class BridgesServiceImpl implements BridgesService {
     DnsService dnsService;
 
     @Inject
-    ErrorHandlerService errorHandlerService;
+    ProcessingErrorService processingErrorService;
 
     @Override
     @Transactional
@@ -105,7 +100,7 @@ public class BridgesServiceImpl implements BridgesService {
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action reqErrorHandler = bridgeRequest.getErrorHandler();
         Action errorHandler = Objects.nonNull(reqErrorHandler) && ENDPOINT_ERROR_HANDLER_TYPE.equals(reqErrorHandler.getType())
-                ? errorHandlerService.getDefaultErrorHandlerAction()
+                ? processingErrorService.getDefaultErrorHandlerAction()
                 : reqErrorHandler;
         bridge.setDefinition(new BridgeDefinition(errorHandler));
 
@@ -266,13 +261,6 @@ public class BridgesServiceImpl implements BridgesService {
         return bridge;
     }
 
-    @Transactional
-    @Override
-    public ListResult<ProcessingError> getBridgeErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
-        Bridge bridge = getReadyBridge(bridgeId, customerId);
-        return errorDAO.findByBridgeIdOrdered(bridge.getId(), queryInfo);
-    }
-
     @Override
     public BridgeDTO toDTO(Bridge bridge) {
         KafkaConnectionDTO kafkaConnectionDTO = new KafkaConnectionDTO(
@@ -314,7 +302,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
 
-        if (errorHandlerService.getDefaultErrorHandlerAction().equals(bridge.getDefinition().getErrorHandler())) {
+        if (processingErrorService.getDefaultErrorHandlerAction().equals(bridge.getDefinition().getErrorHandler())) {
             Action endpointAction = new Action();
             endpointAction.setType(ENDPOINT_ERROR_HANDLER_TYPE);
             response.setErrorHandler(endpointAction);
@@ -322,15 +310,6 @@ public class BridgesServiceImpl implements BridgesService {
             response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         }
 
-        return response;
-    }
-
-    @Override
-    public ProcessingErrorResponse toResponse(ProcessingError processingError) {
-        ProcessingErrorResponse response = new ProcessingErrorResponse();
-        response.setRecordedAt(processingError.getRecordedAt());
-        response.setHeaders(processingError.getHeaders());
-        response.setPayload(processingError.getPayload());
         return response;
     }
 }

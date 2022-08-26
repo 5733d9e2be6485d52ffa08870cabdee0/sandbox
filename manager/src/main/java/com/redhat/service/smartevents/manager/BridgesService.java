@@ -8,9 +8,7 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ProcessingErrorResponse;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.ProcessingError;
 
 public interface BridgesService {
 
@@ -34,11 +32,7 @@ public interface BridgesService {
 
     Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO);
 
-    ListResult<ProcessingError> getBridgeErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo);
-
     BridgeDTO toDTO(Bridge bridge);
 
     BridgeResponse toResponse(Bridge bridge);
-
-    ProcessingErrorResponse toResponse(ProcessingError processingError);
 }

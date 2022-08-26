@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.models;
+package com.redhat.service.smartevents.processingerrors.models;
 
 import java.time.ZonedDateTime;
 import java.util.Map;

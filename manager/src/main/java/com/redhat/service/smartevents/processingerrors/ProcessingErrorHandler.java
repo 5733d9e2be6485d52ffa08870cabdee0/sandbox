@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.errorhandler;
+package com.redhat.service.smartevents.processingerrors;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
@@ -19,22 +19,22 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.service.smartevents.manager.dao.ErrorDAO;
-import com.redhat.service.smartevents.manager.models.ProcessingError;
+import com.redhat.service.smartevents.processingerrors.dao.ProcessingErrorDAO;
+import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 @ApplicationScoped
-public class ErrorHandlerProcessor {
+public class ProcessingErrorHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlerProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorHandler.class);
 
     @Inject
-    ErrorDAO errorDAO;
+    ProcessingErrorDAO processingErrorDAO;
     @Inject
     ObjectMapper objectMapper;
 
-    @Incoming("error-handler")
+    @Incoming("processing-errors")
     public CompletionStage<Void> processError(final IncomingKafkaRecord<Integer, String> message) {
         try {
             Map<String, String> headers = parseHeaders(message.getHeaders());
@@ -46,7 +46,7 @@ public class ErrorHandlerProcessor {
             processingError.setHeaders(headers);
             processingError.setPayload(payload);
 
-            errorDAO.persist(processingError);
+            processingErrorDAO.persist(processingError);
 
             LOGGER.debug("Persisted error {} for bridge {}", processingError.getId(), processingError.getBridgeId());
         } catch (Exception e) {

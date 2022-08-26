@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.manager.errorhandler;
+package com.redhat.service.smartevents.processingerrors;
 
 import java.util.Map;
 
@@ -16,9 +16,9 @@ import com.redhat.service.smartevents.rhoas.RhoasTopicAccessType;
 import io.quarkus.arc.profile.UnlessBuildProfile;
 import io.smallrye.common.annotation.Identifier;
 
-public class ErrorHandlerKafkaRuntimeConfigProducer {
+public class ProcessingErrorKafkaRuntimeConfigProducer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlerKafkaRuntimeConfigProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorKafkaRuntimeConfigProducer.class);
 
     @Inject
     ResourceNamesProvider resourceNamesProvider;
@@ -28,7 +28,7 @@ public class ErrorHandlerKafkaRuntimeConfigProducer {
     @Produces
     @ApplicationScoped
     @UnlessBuildProfile("test")
-    @Identifier("error-handler")
+    @Identifier("processing-errors")
     public Map<String, Object> createKafkaRuntimeConfig() {
         String topic = resourceNamesProvider.getGlobalErrorTopicName();
         rhoasService.createTopicAndGrantAccessFor(topic, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
