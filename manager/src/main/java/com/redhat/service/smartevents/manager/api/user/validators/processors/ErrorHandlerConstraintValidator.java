@@ -19,7 +19,8 @@ import static com.redhat.service.smartevents.manager.BridgesService.ENDPOINT_ERR
 @ApplicationScoped
 public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
 
-    static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type \"" + WebhookAction.TYPE + "\" are supported";
+    static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type \"" + ENDPOINT_ERROR_HANDLER_TYPE + "\", " +
+            "\"" + KafkaTopicAction.TYPE + "\" and \"" + WebhookAction.TYPE + "\" are supported";
 
     protected ErrorHandlerConstraintValidator() {
         //CDI proxy
