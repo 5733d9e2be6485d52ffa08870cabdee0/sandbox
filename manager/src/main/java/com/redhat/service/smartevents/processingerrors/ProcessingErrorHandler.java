@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.processingerrors.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
+import io.smallrye.reactive.messaging.annotations.Blocking;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
 @ApplicationScoped
@@ -35,6 +36,7 @@ public class ProcessingErrorHandler {
     ObjectMapper objectMapper;
 
     @Incoming("processing-errors")
+    @Blocking
     public CompletionStage<Void> processError(final IncomingKafkaRecord<Integer, String> message) {
         try {
             Map<String, String> headers = parseHeaders(message.getHeaders());
