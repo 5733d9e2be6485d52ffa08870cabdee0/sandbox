@@ -33,15 +33,15 @@ public class ProcessingError {
     private String bridgeId;
 
     @Column(name = "recorded_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    protected ZonedDateTime recordedAt;
+    private ZonedDateTime recordedAt;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "headers", nullable = false, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
-    protected Map<String, String> headers;
+    private Map<String, String> headers;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(name = "payload", nullable = false, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
-    protected JsonNode payload;
+    private JsonNode payload;
 
     public Long getId() {
         return id;

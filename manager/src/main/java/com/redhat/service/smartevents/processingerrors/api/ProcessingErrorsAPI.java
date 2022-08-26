@@ -66,7 +66,7 @@ public class ProcessingErrorsAPI {
             @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
-    @Operation(summary = "Get the Bridge instance processing errors", description = "Get the list of processing errors of the specified Bridge instance for the authenticated user.")
+    @Operation(summary = "Get the list of errors for a particular Bridge instance", description = "Get the list of errors for a particular Bridge instance for the authenticated user.")
     @GET
     @Path("{bridgeId}/errors")
     public Response getBridgeErrors(@PathParam("bridgeId") String bridgeId, @Valid @BeanParam QueryResourceInfo queryInfo) {

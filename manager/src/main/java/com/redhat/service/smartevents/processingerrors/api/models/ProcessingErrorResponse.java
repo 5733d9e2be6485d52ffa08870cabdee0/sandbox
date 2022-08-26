@@ -14,10 +14,10 @@ public class ProcessingErrorResponse {
     private ZonedDateTime recordedAt;
 
     @JsonProperty("headers")
-    protected Map<String, String> headers;
+    private Map<String, String> headers;
 
     @JsonProperty("payload")
-    protected JsonNode payload;
+    private JsonNode payload;
 
     public ZonedDateTime getRecordedAt() {
         return recordedAt;
