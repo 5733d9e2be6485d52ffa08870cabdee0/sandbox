@@ -8,19 +8,18 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException;
-import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
-import static com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition.ENDPOINT_ERROR_HANDLER_TYPE;
-
 @ApplicationScoped
 public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
 
-    static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type \"" + ENDPOINT_ERROR_HANDLER_TYPE + "\", " +
+    static final String UNSUPPORTED_ERROR_HANDLER_TYPE_ERROR = "Only error handlers of type " +
+            "\"" + ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE + "\", " +
             "\"" + KafkaTopicAction.TYPE + "\" and \"" + WebhookAction.TYPE + "\" are supported";
 
     protected ErrorHandlerConstraintValidator() {
@@ -40,7 +39,7 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
             return true;
         }
 
-        if (BridgeDefinition.isEndpointErrorHandlerAction(errorHandlerAction)) {
+        if (ProcessingErrorService.isEndpointErrorHandlerAction(errorHandlerAction)) {
             return true;
         }
 

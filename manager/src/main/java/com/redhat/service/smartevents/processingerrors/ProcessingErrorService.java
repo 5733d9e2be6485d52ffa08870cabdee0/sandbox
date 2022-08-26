@@ -8,11 +8,15 @@ import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
 public interface ProcessingErrorService {
 
-    Action getEndpointErrorHandlerResolvedAction();
+    String ENDPOINT_ERROR_HANDLER_TYPE = "endpoint";
 
-    String getErrorEndpoint(String bridgeId);
+    static boolean isEndpointErrorHandlerAction(Action action) {
+        return action != null && ENDPOINT_ERROR_HANDLER_TYPE.equals(action.getType());
+    }
 
     ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo);
+
+    Action resolveAndUpdateErrorHandler(String bridgeId, Action errorHandler);
 
     ProcessingErrorResponse toResponse(ProcessingError processingError);
 }

@@ -39,8 +39,35 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
     @Inject
     BridgesService bridgesService;
 
+    @Transactional
     @Override
-    public Action getEndpointErrorHandlerResolvedAction() {
+    public ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
+        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
+        if (!ProcessingErrorService.isEndpointErrorHandlerAction(bridge.getDefinition().getErrorHandler())) {
+            throw new BadRequestException(String.format("Bridge %s is not configured to store processing errors", bridgeId));
+        }
+        return processingErrorDAO.findByBridgeIdOrdered(bridge.getId(), queryInfo);
+    }
+
+    @Override
+    public Action resolveAndUpdateErrorHandler(String bridgeId, Action errorHandler) {
+        if (!ProcessingErrorService.isEndpointErrorHandlerAction(errorHandler)) {
+            return errorHandler;
+        }
+        errorHandler.setMapParameters(Map.of("endpoint", getErrorEndpoint(bridgeId)));
+        return getEndpointErrorHandlerResolvedAction();
+    }
+
+    @Override
+    public ProcessingErrorResponse toResponse(ProcessingError processingError) {
+        ProcessingErrorResponse response = new ProcessingErrorResponse();
+        response.setRecordedAt(processingError.getRecordedAt());
+        response.setHeaders(processingError.getHeaders());
+        response.setPayload(processingError.getPayload());
+        return response;
+    }
+
+    private Action getEndpointErrorHandlerResolvedAction() {
         Action action = new Action();
         action.setType("kafka_topic_sink_0.1");
         action.setMapParameters(Map.of(
@@ -51,27 +78,7 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
         return action;
     }
 
-    @Override
-    public String getErrorEndpoint(String bridgeId) {
+    private String getErrorEndpoint(String bridgeId) {
         return eventBridgeManagerUrl + APIConstants.USER_API_BASE_PATH + bridgeId + "/errors";
-    }
-
-    @Transactional
-    @Override
-    public ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo) {
-        Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
-        if (!bridge.getDefinition().hasEndpointErrorHandler()) {
-            throw new BadRequestException(String.format("Bridge %s is not configured to store processing errors", bridgeId));
-        }
-        return processingErrorDAO.findByBridgeIdOrdered(bridge.getId(), queryInfo);
-    }
-
-    @Override
-    public ProcessingErrorResponse toResponse(ProcessingError processingError) {
-        ProcessingErrorResponse response = new ProcessingErrorResponse();
-        response.setRecordedAt(processingError.getRecordedAt());
-        response.setHeaders(processingError.getHeaders());
-        response.setPayload(processingError.getPayload());
-        return response;
     }
 }

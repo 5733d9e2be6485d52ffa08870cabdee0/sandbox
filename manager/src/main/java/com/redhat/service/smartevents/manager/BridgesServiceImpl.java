@@ -99,7 +99,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
-        bridge.setDefinition(new BridgeDefinition(errorHandler, resolveErrorHandler(errorHandler)));
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridge.getId(), errorHandler);
+        bridge.setDefinition(new BridgeDefinition(errorHandler, resolvedErrorHandler));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
@@ -141,7 +142,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Construct updated definition
         Action updatedErrorHandler = bridgeRequest.getErrorHandler();
-        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolveErrorHandler(updatedErrorHandler));
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridgeId, updatedErrorHandler);
+        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolvedErrorHandler);
 
         // No need to update CRD if the definition is unchanged
         if (Objects.equals(existingDefinition, updatedDefinition)) {
@@ -164,12 +166,6 @@ public class BridgesServiceImpl implements BridgesService {
                 existingBridge.getCustomerId());
 
         return existingBridge;
-    }
-
-    private Action resolveErrorHandler(Action errorHandler) {
-        return BridgeDefinition.isEndpointErrorHandlerAction(errorHandler)
-                ? processingErrorService.getEndpointErrorHandlerResolvedAction()
-                : errorHandler;
     }
 
     @Transactional
@@ -295,9 +291,6 @@ public class BridgesServiceImpl implements BridgesService {
         // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
         if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())) {
             response.setEndpoint(bridge.getEndpoint());
-            if (bridge.getDefinition().hasEndpointErrorHandler()) {
-                response.setErrorEndpoint(processingErrorService.getErrorEndpoint(bridge.getId()));
-            }
         }
         response.setSubmittedAt(bridge.getSubmittedAt());
         response.setPublishedAt(bridge.getPublishedAt());
