@@ -25,7 +25,7 @@ public interface ProcessorService {
 
     Processor updateErrorHandlerProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest);
 
-    List<Processor> findByShardIdWithReadyDependencies(String shardId);
+    List<Processor> findByShardIdToDeployOrDelete(String shardId);
 
     Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO);
 

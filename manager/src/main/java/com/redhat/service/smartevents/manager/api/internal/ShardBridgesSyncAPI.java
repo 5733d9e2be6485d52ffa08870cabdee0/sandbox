@@ -110,7 +110,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        List<Processor> processorToDeployOrDelete = processorService.findByShardIdWithReadyDependencies(shardId);
+        List<Processor> processorToDeployOrDelete = processorService.findByShardIdToDeployOrDelete(shardId);
         LOGGER.info("Found {} processor(s) to deploy or delete", processorToDeployOrDelete.size());
         return Response.ok(processorToDeployOrDelete
                 .stream()
@@ -133,7 +133,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
-        List<Bridge> bridgesToDeployOrDelete = bridgesService.findByShardIdWithReadyDependencies(shardId);
+        List<Bridge> bridgesToDeployOrDelete = bridgesService.findByShardIdToDeployOrDelete(shardId);
         LOGGER.info("Found {} bridge(s) to deploy or delete", bridgesToDeployOrDelete.size());
         return Response.ok(bridgesToDeployOrDelete
                 .stream()
