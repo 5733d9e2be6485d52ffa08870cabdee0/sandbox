@@ -10,6 +10,9 @@ public class BridgeResponse extends BaseManagedResourceResponse {
     @JsonProperty("endpoint")
     private String endpoint;
 
+    @JsonProperty("error_endpoint")
+    private String errorEndpoint;
+
     @JsonProperty("error_handler")
     private Action errorHandler;
 
@@ -29,6 +32,14 @@ public class BridgeResponse extends BaseManagedResourceResponse {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getErrorEndpoint() {
+        return errorEndpoint;
+    }
+
+    public void setErrorEndpoint(String errorEndpoint) {
+        this.errorEndpoint = errorEndpoint;
     }
 
     public Action getErrorHandler() {

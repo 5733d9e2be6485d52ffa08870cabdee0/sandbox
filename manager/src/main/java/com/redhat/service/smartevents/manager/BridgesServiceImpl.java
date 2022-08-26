@@ -167,8 +167,8 @@ public class BridgesServiceImpl implements BridgesService {
     }
 
     private Action resolveErrorHandler(Action errorHandler) {
-        return Objects.nonNull(errorHandler) && ENDPOINT_ERROR_HANDLER_TYPE.equals(errorHandler.getType())
-                ? processingErrorService.getDefaultErrorHandlerAction()
+        return BridgeDefinition.isEndpointErrorHandlerAction(errorHandler)
+                ? processingErrorService.getEndpointErrorHandlerResolvedAction()
                 : errorHandler;
     }
 
@@ -295,6 +295,9 @@ public class BridgesServiceImpl implements BridgesService {
         // Return the endpoint only if the resource is READY or FAILED https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1006#discussion_r937488097
         if (ManagedResourceStatus.READY.equals(bridge.getStatus()) || ManagedResourceStatus.FAILED.equals(bridge.getStatus())) {
             response.setEndpoint(bridge.getEndpoint());
+            if (bridge.getDefinition().hasEndpointErrorHandler()) {
+                response.setErrorEndpoint(processingErrorService.getErrorEndpoint(bridge.getId()));
+            }
         }
         response.setSubmittedAt(bridge.getSubmittedAt());
         response.setPublishedAt(bridge.getPublishedAt());

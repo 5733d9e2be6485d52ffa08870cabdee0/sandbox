@@ -7,11 +7,17 @@ import com.redhat.service.smartevents.infra.models.gateways.Action;
 
 public class BridgeDefinition {
 
+    public static final String ENDPOINT_ERROR_HANDLER_TYPE = "endpoint";
+
     @JsonProperty("error_handler")
     private Action errorHandler;
 
     @JsonProperty("resolved_error_handler")
     private Action resolvedErrorHandler;
+
+    public static boolean isEndpointErrorHandlerAction(Action action) {
+        return action != null && ENDPOINT_ERROR_HANDLER_TYPE.equals(action.getType());
+    }
 
     public BridgeDefinition() {
     }
@@ -19,6 +25,10 @@ public class BridgeDefinition {
     public BridgeDefinition(Action errorHandler, Action resolvedErrorHandler) {
         this.errorHandler = errorHandler;
         this.resolvedErrorHandler = resolvedErrorHandler;
+    }
+
+    public boolean hasEndpointErrorHandler() {
+        return isEndpointErrorHandlerAction(errorHandler);
     }
 
     public Action getErrorHandler() {

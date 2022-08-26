@@ -8,13 +8,14 @@ import javax.inject.Inject;
 import javax.validation.ConstraintValidatorContext;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.UnsupportedErrorHandlerGatewayException;
+import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 
-import static com.redhat.service.smartevents.manager.BridgesService.ENDPOINT_ERROR_HANDLER_TYPE;
+import static com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition.ENDPOINT_ERROR_HANDLER_TYPE;
 
 @ApplicationScoped
 public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValidator<ValidErrorHandler, BridgeRequest> {
@@ -39,7 +40,7 @@ public class ErrorHandlerConstraintValidator extends BaseGatewayConstraintValida
             return true;
         }
 
-        if (ENDPOINT_ERROR_HANDLER_TYPE.equals(errorHandlerAction.getType())) {
+        if (BridgeDefinition.isEndpointErrorHandlerAction(errorHandlerAction)) {
             return true;
         }
 

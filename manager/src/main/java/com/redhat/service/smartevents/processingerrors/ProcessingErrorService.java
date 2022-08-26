@@ -8,7 +8,9 @@ import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
 public interface ProcessingErrorService {
 
-    Action getDefaultErrorHandlerAction();
+    Action getEndpointErrorHandlerResolvedAction();
+
+    String getErrorEndpoint(String bridgeId);
 
     ListResult<ProcessingError> getProcessingErrors(String bridgeId, String customerId, QueryResourceInfo queryInfo);
 
