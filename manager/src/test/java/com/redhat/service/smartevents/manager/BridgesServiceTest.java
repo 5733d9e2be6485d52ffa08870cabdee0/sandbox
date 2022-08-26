@@ -82,7 +82,7 @@ public class BridgesServiceTest {
 
     @Test
     public void testGetEmptyBridgesToDeploy() {
-        List<Bridge> bridges = bridgesService.findByShardIdWithReadyDependencies(SHARD_ID);
+        List<Bridge> bridges = bridgesService.findByShardIdToDeployOrDelete(SHARD_ID);
         assertThat(bridges.size()).isZero();
     }
 
@@ -183,7 +183,7 @@ public class BridgesServiceTest {
 
         // PROVISIONING Bridges are also notified to the Shard Operator.
         // This ensures Bridges are not dropped should the Shard fail after notifying the Managed a Bridge is being provisioned.
-        assertThat(bridgesService.findByShardIdWithReadyDependencies(SHARD_ID)).hasSize(1);
+        assertThat(bridgesService.findByShardIdToDeployOrDelete(SHARD_ID)).hasSize(1);
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);

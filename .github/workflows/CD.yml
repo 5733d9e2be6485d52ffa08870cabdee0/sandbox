@@ -88,7 +88,7 @@ jobs:
           docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME-jvm executor/
           docker push $EXECUTOR_CONTAINER_NAME-jvm
 
-      # Build shart operator if 'shard-operator' or any 'general' modules have changed
+      # Build shard operator if 'shard-operator' or any 'general' modules have changed
       - name: Build Minikube Fleet Shard
         if: steps.filter.outputs.shard-operator == 'true'
         uses: ./.github/actions/maven
