@@ -57,7 +57,7 @@ mvn clean install -Dquarkus.container-image.build=true -Dnamespace=mynamespace
 kubectl apply -f target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
 kubectl apply -f target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
 ## install the operator (it's wise to install in a separated ns, so you can just delete it after your tests)
-kubectl apply -f target/kubernetes/minikube.yml -n mynamespace
+kubectl apply -f target/kubernetes/kubernetes.yml -n mynamespace
 kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n mynamespace
 ## install the sample
 kubectl apply -f src/main/kubernetes/sample.yml -n mynamespace
