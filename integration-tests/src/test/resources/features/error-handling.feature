@@ -75,6 +75,8 @@ Feature: Error handling tests
     And the Bridge "ehBridgeUpdate" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "ehBridgeUpdate" is available within 2 minutes
 
+    And create a new Kafka topic "topic1"
+
     When update the Bridge "ehBridgeUpdate" with body:
     """
     {
@@ -82,16 +84,22 @@ Feature: Error handling tests
         "cloud_provider": "aws",
         "region": "us-east-1",
         "error_handler": {
-            "type": "webhook_sink_0.1",
+            "type": "kafka_topic_sink_0.1",
             "parameters": {
-                "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+                "topic": "${topic.topic1}",
+                "kafka_broker_url": "${env.kafka.bootstrap.servers}",
+                "kafka_client_id": "${env.kafka.ops.client.id}",
+                "kafka_client_secret": "${env.kafka.ops.client.secret}"
             }
         }
     }
     """
     And the Bridge "ehBridgeUpdate" is existing with status "ready" within 4 minutes
-    And the Bridge "ehBridgeUpdate" has errorHandler of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid} |
+    And the Bridge "ehBridgeUpdate" has errorHandler of type "kafka_topic_sink_0.1" and parameters:
+      | topic | ${topic.topic1} |
+      | kafka_broker_url | ${env.kafka.bootstrap.servers} |
+      | kafka_client_id | ${env.kafka.ops.client.id} |
+      | kafka_client_secret | ${env.kafka.ops.client.secret} |
     And the Ingress of Bridge "ehBridgeUpdate" is available within 2 minutes
 
     And add a Processor to the Bridge "ehBridgeUpdate" with body:
@@ -125,7 +133,7 @@ Feature: Error handling tests
         }
     }
     """
-    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text ""id":"${cloud-event.error-handling-update-test.id}","source":"mySource","type":"myType","subject":"mySubject"" within 1 minute
+    Then Kafka topic "topic1" contains message with text of ""id":"${cloud-event.error-handling-update-test.id}","source":"mySource","type":"myType","subject":"mySubject""
 
   @pollingerrorhandler
   Scenario: Poll based error handling strategy is configured and an endpoint is available to fetch the last 'N' errors sent to the DLQ for the Bridge

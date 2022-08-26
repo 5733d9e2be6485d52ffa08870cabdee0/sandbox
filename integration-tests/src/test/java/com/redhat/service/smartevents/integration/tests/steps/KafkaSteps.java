@@ -31,7 +31,7 @@ public class KafkaSteps {
         KafkaResource.deleteKafkaTopic(uniqueTopicName);
     }
 
-    @Then("^Kafka topic \"([^\"]*)\" contains message with text of \"([^\"]*)\"$")
+    @Then("^Kafka topic \"([^\"]*)\" contains message with text of \"(.*)\"$")
     public void topicContainsString(String topicName, String message) {
         String uniqueTopicName = context.getKafkaTopic(topicName);
         List<String> data = KafkaResource.readTopic(uniqueTopicName);

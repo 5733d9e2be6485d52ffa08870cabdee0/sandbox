@@ -18,7 +18,6 @@ import org.keycloak.representations.AccessTokenResponse;
 import com.openshift.cloud.api.kas.auth.AclsApi;
 import com.openshift.cloud.api.kas.auth.TopicsApi;
 import com.openshift.cloud.api.kas.auth.invoker.ApiClient;
-import com.openshift.cloud.api.kas.auth.invoker.ApiException;
 import com.openshift.cloud.api.kas.auth.invoker.Configuration;
 import com.openshift.cloud.api.kas.auth.invoker.auth.OAuth;
 import com.openshift.cloud.api.kas.auth.models.AclBinding;
@@ -46,8 +45,9 @@ public class KafkaResource {
                 .name(topicName)
                 .settings(new TopicSettings().numPartitions(1));
         try {
+            Thread.sleep(5000);
             topicsApi.createTopic(newTopicInput);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error creating new topic", e);
         }
 
@@ -68,17 +68,17 @@ public class KafkaResource {
                 .permission(AclPermissionType.ALLOW);
         try {
             aclsApi.createAcl(aclBindingRead);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             try {
                 topicsApi.deleteTopic(topicName);
-            } catch (ApiException ex) {
+            } catch (Exception ex) {
                 throw new RuntimeException("Error deleting topic", ex);
             }
             throw new RuntimeException("Error assigning READ ACL to topic", e);
         }
         try {
             aclsApi.createAcl(aclBindingWrite);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             try {
                 topicsApi.deleteTopic(topicName);
                 aclsApi.deleteAcls(AclResourceTypeFilter.TOPIC,
@@ -87,8 +87,8 @@ public class KafkaResource {
                         "User:" + kafkaConnectionParameters.getOpsClientID(),
                         AclOperationFilter.READ,
                         AclPermissionTypeFilter.ALLOW);
-            } catch (ApiException ex) {
-                throw new RuntimeException(ex);
+            } catch (Exception ex) {
+                throw new RuntimeException("Error cleaning up topic after creating of ACL failed", ex);
             }
             throw new RuntimeException("Error assigning WRITE ACL to topic", e);
         }
@@ -118,7 +118,7 @@ public class KafkaResource {
         TopicsApi topicsApi = new TopicsApi(apiClient);
         try {
             topicsApi.deleteTopic(topicName);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error deleting topic", e);
         }
     }
