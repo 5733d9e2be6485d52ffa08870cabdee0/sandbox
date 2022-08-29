@@ -24,6 +24,12 @@ import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 @ApplicationScoped
 public class ProcessingErrorServiceImpl implements ProcessingErrorService {
 
+    public static final String ENDPOINT_RESOLVED_ERROR_HANDLER_TYPE = "kafka_topic_sink_0.1";
+    public static final String ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_TOPIC = "topic";
+    public static final String ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_BROKER_URL = "kafka_broker_url";
+    public static final String ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_CLIENT_ID = "kafka_client_id";
+    public static final String ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_CLIENT_SECRET = "kafka_client_secret";
+
     @ConfigProperty(name = "event-bridge.manager.url")
     String eventBridgeManagerUrl;
 
@@ -69,12 +75,12 @@ public class ProcessingErrorServiceImpl implements ProcessingErrorService {
 
     private Action getEndpointErrorHandlerResolvedAction() {
         Action action = new Action();
-        action.setType("kafka_topic_sink_0.1");
+        action.setType(ENDPOINT_RESOLVED_ERROR_HANDLER_TYPE);
         action.setMapParameters(Map.of(
-                "topic", resourceNamesProvider.getGlobalErrorTopicName(),
-                "kafka_broker_url", internalKafkaConfigurationProvider.getBootstrapServers(),
-                "kafka_client_id", internalKafkaConfigurationProvider.getClientId(),
-                "kafka_client_secret", internalKafkaConfigurationProvider.getClientSecret()));
+                ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_TOPIC, resourceNamesProvider.getGlobalErrorTopicName(),
+                ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_BROKER_URL, internalKafkaConfigurationProvider.getBootstrapServers(),
+                ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_CLIENT_ID, internalKafkaConfigurationProvider.getClientId(),
+                ENDPOINT_RESOLVED_ERROR_HANDLER_PARAM_KAFKA_CLIENT_SECRET, internalKafkaConfigurationProvider.getClientSecret()));
         return action;
     }
 
