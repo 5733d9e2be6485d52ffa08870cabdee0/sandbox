@@ -7,8 +7,10 @@ import com.redhat.service.smartevents.infra.api.models.responses.PagedListRespon
 @Schema
 public class ProcessingErrorListResponse extends PagedListResponse<ProcessingErrorResponse> {
 
+    public static final String KIND = "ProcessingErrorList";
+
     public ProcessingErrorListResponse() {
-        super("ProcessingErrorList");
+        super(KIND);
     }
 
 }
