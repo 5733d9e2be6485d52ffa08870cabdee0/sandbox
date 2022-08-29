@@ -28,6 +28,7 @@ import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 @ApplicationScoped
 public class ProcessingErrorHandler {
 
+    public static final String RHOSE_BRIDGE_ID_HEADER = "rhose-bridge-id";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorHandler.class);
 
     @Inject
@@ -42,17 +43,24 @@ public class ProcessingErrorHandler {
             Map<String, String> headers = parseHeaders(message.getHeaders());
             JsonNode payload = parsePayload(message.getPayload());
 
-            ProcessingError processingError = new ProcessingError();
-            processingError.setBridgeId(headers.get("rhose-bridge-id"));
-            processingError.setRecordedAt(ZonedDateTime.now(ZoneOffset.UTC));
-            processingError.setHeaders(headers);
-            processingError.setPayload(payload);
+            String bridgeId = headers.get(RHOSE_BRIDGE_ID_HEADER);
+            if (bridgeId != null && !bridgeId.isBlank()) {
+                ProcessingError processingError = new ProcessingError();
+                processingError.setBridgeId(bridgeId);
+                processingError.setRecordedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                processingError.setHeaders(headers);
+                processingError.setPayload(payload);
 
-            processingErrorDAO.persist(processingError);
+                processingErrorDAO.persist(processingError);
 
-            LOGGER.debug("Persisted error {} for bridge {}", processingError.getId(), processingError.getBridgeId());
+                LOGGER.debug("Persisted error {} for bridge {}", processingError.getId(), processingError.getBridgeId());
+            } else {
+                LOGGER.error("Received message without bridge ID. Message acked anyway.\nheaders = {}\npayload = {}\n",
+                        message.getHeaders(), message.getPayload());
+            }
         } catch (Exception e) {
-            LOGGER.error("Error when deserializing error message {}. Message acked anyway.", message, e);
+            LOGGER.error("Error when deserializing error message. Message acked anyway.\nheaders = {}\npayload = {}\n",
+                    message.getHeaders(), message.getPayload(), e);
         }
         return message.ack();
     }
@@ -68,6 +76,6 @@ public class ProcessingErrorHandler {
     }
 
     private JsonNode parsePayload(String payload) throws JsonProcessingException {
-        return objectMapper.readTree(payload);
+        return payload == null ? null : objectMapper.readTree(payload);
     }
 }
