@@ -65,7 +65,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private void createConnectorEntity(Processor processor, Action action) {
+    protected void createConnectorEntity(Processor processor, Action action) {
         if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
             return;
         }
@@ -77,7 +77,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, Source source) {
+    protected void createConnectorEntity(Processor processor, Source source) {
         if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
             return;
         }

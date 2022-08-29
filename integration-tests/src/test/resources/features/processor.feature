@@ -2,7 +2,7 @@ Feature: Processor tests
 
   Scenario: Processor is created, deployed and correctly deleted
     Given authenticate against Manager
-    And create a new Bridge "mybridge"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
@@ -26,9 +26,3 @@ Feature: Processor tests
     When delete the Processor "myProcessor" of the Bridge "mybridge"
 
     Then the Processor "myProcessor" of the Bridge "mybridge" is not existing within 2 minutes
-
-    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{operation="provision",resource="bridge",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{operation="provision",resource="processor",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_operation_success_count_total{operation="delete",resource="processor",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_operation_count_total{operation="provision",resource="processor",}' count is at least 1
-    And the Manager metric 'managed_services_api_rhose_operation_count_total{operation="delete",resource="processor",}' count is at least 1

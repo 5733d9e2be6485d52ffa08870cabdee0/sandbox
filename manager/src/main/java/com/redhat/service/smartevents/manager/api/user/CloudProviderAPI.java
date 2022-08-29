@@ -20,13 +20,16 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudProviderResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudRegionListResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.CloudRegionResponse;
 import com.redhat.service.smartevents.manager.dao.CloudProviderDAO;
+import com.redhat.service.smartevents.manager.models.CloudProvider;
 
 @Tag(name = "Cloud Providers", description = "List Supported Cloud Providers and Regions")
 @Path(APIConstants.CLOUD_PROVIDERS_BASE_PATH)
@@ -40,8 +43,8 @@ public class CloudProviderAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CloudProviderListResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "List Supported Cloud Providers.", description = "Returns the list of supported Cloud Providers.")
     @GET
@@ -52,21 +55,28 @@ public class CloudProviderAPI {
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CloudProviderListResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Not found.", responseCode = "404", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "Get Cloud Provider.", description = "Get details of the Cloud Provider specified by id.")
     @GET
     @Path("{id}")
     public Response getCloudProvider(@PathParam("id") @NotEmpty String id) {
-        return Response.ok(CloudProviderResponse.from(cloudProviderDAO.findById(id))).build();
+
+        CloudProvider cloudProvider = cloudProviderDAO.findById(id);
+        if (cloudProvider == null) {
+            throw new ItemNotFoundException("Cloud Provider with id '" + id + "' does not exist.");
+        }
+
+        return Response.ok(CloudProviderResponse.from(cloudProvider)).build();
     }
 
     @APIResponses(value = {
             @APIResponse(description = "Success.", responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = CloudRegionListResponse.class))),
-            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON)),
-            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            @APIResponse(description = "Bad request.", responseCode = "400", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class))),
+            @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorsResponse.class)))
     })
     @Operation(summary = "List Supported Cloud Regions.", description = "Returns the list of supported Regions of the specified Cloud Provider.")
     @GET

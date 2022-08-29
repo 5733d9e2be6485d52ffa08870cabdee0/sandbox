@@ -31,6 +31,7 @@ public class TemplateProviderTest {
             .withNamespace("ns")
             .withBridgeId("12345")
             .withCustomerId("12456")
+            .withHost("localhost")
             .build();
 
     private static final BridgeExecutor BRIDGE_EXECUTOR = BridgeExecutor.fromBuilder()

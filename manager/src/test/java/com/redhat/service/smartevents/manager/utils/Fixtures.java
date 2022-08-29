@@ -40,12 +40,11 @@ public class Fixtures {
         p.setBridge(b);
         p.setShardId(TestConstants.SHARD_ID);
         p.setOwner(TestConstants.DEFAULT_USER_NAME);
-        Action requestedAction = new Action();
-        Action resolvedAction = new Action();
+        Action requestedAction = createKafkaAction();
+        Action resolvedAction = createKafkaAction();
         p.setDefinition(new ProcessorDefinition(new HashSet<>(), "",
                 requestedAction,
                 resolvedAction));
-
         return p;
     }
 
@@ -60,6 +59,8 @@ public class Fixtures {
         b.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         b.setEndpoint("https://bridge.redhat.com");
         b.setDefinition(new BridgeDefinition());
+        b.setCloudProvider(TestConstants.DEFAULT_CLOUD_PROVIDER);
+        b.setRegion(TestConstants.DEFAULT_REGION);
         return b;
     }
 
@@ -85,5 +86,4 @@ public class Fixtures {
         connector.setConnectorExternalId("connectorExternalId");
         return connector;
     }
-
 }

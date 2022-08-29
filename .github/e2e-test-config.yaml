@@ -1,0 +1,13 @@
+services:
+  slack-tnb:
+    credentials:
+      token: <SLACK_WEBHOOK_TOKEN>
+      channels:
+        mc:
+          name: mc
+          webhook_url: <SLACK_WEBHOOK_URL>
+          channel_id: <SLACK_CHANNEL>
+        general:
+          name: general
+          webhook_url: <SLACK_WEBHOOK_URL_SECOND>
+          channel_id: <SLACK_CHANNEL_SECOND>

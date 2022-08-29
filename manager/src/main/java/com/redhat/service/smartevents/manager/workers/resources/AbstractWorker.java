@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
-import com.redhat.service.smartevents.manager.models.Work;
+import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.manager.workers.Worker;
 
@@ -49,17 +49,15 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     @Override
     public T handleWork(Work work) {
-        T managedResource = load(work);
+        String id = getId(work);
+        T managedResource = load(id);
         if (Objects.isNull(managedResource)) {
             //Work has been scheduled but cannot be found. Something (horribly) wrong has happened.
-            workManager.complete(work);
-            String message = String.format("Resource of type '%s' with id '%s' no longer exists in the database.", work.getType(), work.getManagedResourceId());
-            throw new IllegalStateException(message);
+            throw new IllegalStateException(String.format("Resource of type '%s' with id '%s' no longer exists in the database.", work.getType(), id));
         }
 
         // Fail when we've had enough
         if (areRetriesExceeded(work, managedResource) || isTimeoutExceeded(work, managedResource)) {
-            workManager.complete(work);
             managedResource.setStatus(FAILED);
             persist(managedResource);
             return managedResource;
@@ -72,44 +70,33 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 updated = createDependencies(work, managedResource);
                 complete = isProvisioningComplete(updated);
             } catch (Exception e) {
-                LOGGER.error(
-                        "Failed to create dependencies for '{}' [{}].\n"
-                                + "Work status: {}\n"
-                                + "{}",
-                        managedResource.getName(),
-                        managedResource.getId(),
-                        work,
-                        e);
+                LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
-                workManager.recordAttempt(work);
+                workManager.rescheduleAfterFailure(work);
             }
         } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = deleteDependencies(work, managedResource);
                 complete = isDeprovisioningComplete(updated);
             } catch (Exception e) {
-                LOGGER.info("Failed to delete dependencies for '{}' [{}].\n"
-                        + "Work status: {}\n"
-                        + "{}",
-                        managedResource.getName(),
-                        managedResource.getId(),
-                        work,
-                        e);
+                LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
-                workManager.recordAttempt(work);
+                workManager.rescheduleAfterFailure(work);
             }
         }
 
-        if (complete) {
-            workManager.complete(work);
+        if (!complete) {
+            workManager.reschedule(work);
         }
 
         return updated;
     }
 
+    protected abstract String getId(Work work);
+
     @Transactional
-    protected T load(Work work) {
-        return getDao().findById(work.getManagedResourceId());
+    protected T load(String id) {
+        return getDao().findById(id);
     }
 
     @Transactional

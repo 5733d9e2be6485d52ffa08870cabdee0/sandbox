@@ -21,7 +21,9 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
     protected BridgeDTO makeBridgeDTO(ManagedResourceStatus status, int suffix) {
         return new BridgeDTO("bridgesDeployed-" + suffix,
                 "myName-" + suffix,
-                "",
+                TestSupport.BRIDGE_ENDPOINT,
+                TestSupport.BRIDGE_TLS_CERTIFICATE,
+                TestSupport.BRIDGE_TLS_KEY,
                 TestSupport.CUSTOMER_ID,
                 TestSupport.USER_NAME,
                 status,
@@ -42,7 +44,6 @@ abstract class AbstractManagerSyncServiceTest extends AbstractShardWireMockTest 
                                     .withHeader("Content-Type", equalTo("application/json")));
                             assertThat(findAll).hasSize(1);
                         });
-
     }
 
 }

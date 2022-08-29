@@ -17,6 +17,9 @@ public class GlobalConfigurationsConstants {
     public static final String KNATIVE_KAFKA_BOOTSTRAP_SERVERS_SECRET = "bootstrap.servers";
     public static final String KNATIVE_KAFKA_TOPIC_NAME_SECRET = "topic.name";
 
+    public static final String TLS_CERTIFICATE_SECRET = "tls.certificate";
+    public static final String TLS_KEY_SECRET = "tls.key";
+
     public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_CONFIGMAP = "default.topic.partitions";
     public static final String KNATIVE_KAFKA_TOPIC_PARTITIONS_VALUE_CONFIGMAP = "1";
     public static final String KNATIVE_KAFKA_REPLICATION_FACTOR_VALUE_CONFIGMAP = "1";

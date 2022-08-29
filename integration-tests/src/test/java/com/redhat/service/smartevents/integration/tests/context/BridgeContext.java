@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.integration.tests.context;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.redhat.service.smartevents.integration.tests.common.EndPointParser;
+
 import io.cucumber.java.Scenario;
 
 /**
@@ -16,6 +18,8 @@ public class BridgeContext {
     private Map<String, ProcessorContext> processors = new HashMap<>();
 
     private String endPoint;
+    private String endPointBaseUrl;
+    private String endPointPath;
 
     private boolean deleted;
 
@@ -39,8 +43,20 @@ public class BridgeContext {
         return this.endPoint;
     }
 
+    public String getEndPointBaseUrl() {
+        return endPointBaseUrl;
+    }
+
+    public String getEndPointPath() {
+        return endPointPath;
+    }
+
     public void setEndPoint(String endPoint) {
         this.endPoint = endPoint;
+        endPointBaseUrl = EndPointParser.getEndpointBaseUrl(endPoint)
+                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint base url for " + endPoint));
+        endPointPath = EndPointParser.getEndpointPathUrl(endPoint)
+                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint path for " + endPoint));
     }
 
     public ProcessorContext newProcessor(String processorName, String processorId) {

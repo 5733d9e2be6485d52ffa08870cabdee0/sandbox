@@ -4,8 +4,8 @@ Feature: SendToBridge Action tests
     Given authenticate against Manager
 
   Scenario: Send Cloud Event to SendToBridge with bridgeId defined
-    Given create a new Bridge "bridge1"
-    And create a new Bridge "bridge2"
+    Given create a new Bridge "bridge1" in cloud provider "aws" and region "us-east-1"
+    And create a new Bridge "bridge2" in cloud provider "aws" and region "us-east-1"
 
     And the Bridge "bridge1" is existing with status "ready" within 4 minutes
     And the Bridge "bridge2" is existing with status "ready" within 4 minutes
@@ -35,7 +35,7 @@ Feature: SendToBridge Action tests
       "name": "webhookProcessor",
       "action": {
         "parameters": {
-          "endpoint": "${env.slack.webhook.url}"
+          "endpoint": "${slack.channel.mc.webhook.url}"
         },
         "type": "webhook_sink_0.1"
       },
@@ -44,7 +44,7 @@ Feature: SendToBridge Action tests
     """
     And the Processor "webhookProcessor" of the Bridge "bridge2" is existing with status "ready" within 3 minutes
     And the Processor "webhookProcessor" of the Bridge "bridge2" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | ${env.slack.webhook.url} |
+      | endpoint | ${slack.channel.mc.webhook.url} |
 
     When send a cloud event to the Ingress of the Bridge "bridge1":
     """
@@ -59,4 +59,4 @@ Feature: SendToBridge Action tests
     }
     """
     
-    Then Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
+    Then Slack channel "${slack.channel.mc.name}" contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute

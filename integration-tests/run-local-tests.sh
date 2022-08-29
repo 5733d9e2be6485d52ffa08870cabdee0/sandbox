@@ -8,6 +8,7 @@ usage() {
     echo 'Options:'
     echo '  -t $TAGS            Tags to use for selecting scenario'
     echo '  -p                  To be set if you want to run the tests in parallel mode'
+    echo '  -P                  To run performance tests'
     echo '  -k                  Keep created data, aka do not perform cleanup. Mostly used for local test run and debug.'
     echo
     echo 'Examples:'
@@ -19,12 +20,14 @@ usage() {
 }
 
 ARGS=
+MAVEN_PROFILE="cucumber"
 
-while getopts "t:pkh" i
+while getopts "t:pPkh" i
 do
     case "$i"
     in
         p) ARGS="${ARGS} -Dparallel" ;;
+        P) MAVEN_PROFILE="performance" ;;
         t) ARGS="${ARGS} -Dgroups=${OPTARG}" ;;
         k) ARGS="${ARGS} -Dcleanup.disable" ;;
         h) usage; exit 0 ;;
@@ -45,6 +48,7 @@ cd ${INTEGRATION_TESTS_DIR}
 set -x # activate printing executed commands
 
 mvn clean verify $ARGS \
-  -Pcucumber \
+  -P$MAVEN_PROFILE \
   -Devent-bridge.manager.url=${MANAGER_URL} \
-  -Dkeycloak.realm.url=${KEYCLOAK_URL}/auth/realms/event-bridge-fm
+  -Dkeycloak.realm.url=${KEYCLOAK_URL}/auth/realms/event-bridge-fm \
+  -Dtest.credentials.file=localconfig.yaml

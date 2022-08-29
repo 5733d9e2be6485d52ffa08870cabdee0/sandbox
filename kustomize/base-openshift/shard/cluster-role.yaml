@@ -6,9 +6,18 @@ rules:
   - apiGroups:
       - com.redhat.service.bridge
     resources:
-      - '*'
+      - bridgeexecutors
+      - bridgeexecutors/status
+      - bridgeingresses
+      - bridgeingresses/status
     verbs:
-      - '*'
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
   - apiGroups:
       - apiextensions.k8s.io
     resources:
@@ -16,6 +25,7 @@ rules:
     verbs:
       - get
       - list
+      - watch
   - apiGroups:
       - ""
       - extensions
@@ -27,7 +37,25 @@ rules:
       - secrets
       - configmaps
     verbs:
-      - '*'
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
   - apiGroups:
       - route.openshift.io
     resources:
@@ -35,17 +63,17 @@ rules:
     verbs:
       - create
   - apiGroups:
-      - route.openshift.io
-    resources:
-      - routes
-    verbs:
-      - '*'
-  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
     verbs:
-      - '*'
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
   - apiGroups:
       - config.openshift.io
     resources:
@@ -58,11 +86,23 @@ rules:
       - brokers
       - triggers
     verbs:
-      - '*'
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
   - apiGroups:
       - security.istio.io
     resources:
       - requestauthentications
       - authorizationpolicies
     verbs:
-      - '*'
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update

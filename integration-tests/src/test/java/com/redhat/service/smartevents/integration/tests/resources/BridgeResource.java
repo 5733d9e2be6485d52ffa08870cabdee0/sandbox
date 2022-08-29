@@ -13,8 +13,8 @@ import io.restassured.response.Response;
 
 public class BridgeResource {
 
-    public static BridgeResponse addBridge(String token, String bridgeName) {
-        return addBridgeResponse(token, bridgeName)
+    public static BridgeResponse addBridge(String token, String bridgeName, String cloudProvider, String region) {
+        return addBridgeResponse(token, bridgeName, cloudProvider, region)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(202)
@@ -31,9 +31,9 @@ public class BridgeResource {
                 .as(BridgeResponse.class);
     }
 
-    public static Response addBridgeResponse(String token, String bridgeName) {
+    public static Response addBridgeResponse(String token, String bridgeName, String cloudProvider, String region) {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
-                .body(new BridgeRequest(bridgeName))
+                .body(new BridgeRequest(bridgeName, cloudProvider, region))
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
     }
 
@@ -41,6 +41,19 @@ public class BridgeResource {
         return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
                 .body(bridgeRequest)
                 .post(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH);
+    }
+
+    public static Response updateBridgeResponse(String token, String bridgeId, InputStream bridgeRequest) {
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
+                .body(bridgeRequest).put(BridgeUtils.MANAGER_URL + APIConstants.USER_API_BASE_PATH + bridgeId);
+    }
+
+    public static BridgeResponse updateBridge(String token, String bridgeId, InputStream bridgeRequest) {
+        return updateBridgeResponse(token, bridgeId, bridgeRequest).then()
+                .log().ifValidationFails()
+                .statusCode(202)
+                .extract()
+                .as(BridgeResponse.class);
     }
 
     public static Response getBridgeDetailsResponse(String token, String bridgeId) {

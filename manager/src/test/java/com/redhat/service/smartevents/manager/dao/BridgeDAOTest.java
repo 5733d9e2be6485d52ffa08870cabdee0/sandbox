@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
-import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.TestConstants;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
+import com.redhat.service.smartevents.manager.utils.Fixtures;
 
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -50,7 +50,7 @@ public class BridgeDAOTest {
         Bridge bridge = buildBridge(DEFAULT_BRIDGE_ID, DEFAULT_BRIDGE_NAME);
         bridgeDAO.persist(bridge);
 
-        List<Bridge> retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Bridge> retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being completed
@@ -58,7 +58,15 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges.size()).isEqualTo(1);
+
+        // Emulate dependencies being completed and Operator started provisioning
+        bridge.setStatus(ManagedResourceStatus.PROVISIONING);
+        bridge.setDependencyStatus(READY);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
 
         // Emulate de-provision request
@@ -66,14 +74,22 @@ public class BridgeDAOTest {
         bridge.setDependencyStatus(READY);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges).isEmpty();
 
         // Emulate dependencies being deleted
         bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
         bridgeDAO.persist(bridge);
 
-        retrievedBridges = bridgeDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
+        assertThat(retrievedBridges.size()).isEqualTo(1);
+
+        // Emulate dependencies being deleted and Operator started deleting
+        bridge.setStatus(ManagedResourceStatus.DELETING);
+        bridge.setDependencyStatus(ManagedResourceStatus.DELETED);
+        bridgeDAO.persist(bridge);
+
+        retrievedBridges = bridgeDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(retrievedBridges.size()).isEqualTo(1);
     }
 
@@ -284,17 +300,12 @@ public class BridgeDAOTest {
     }
 
     private Bridge buildBridge(String id, String name) {
-        Bridge bridge = new Bridge();
+        Bridge bridge = Fixtures.createBridge();
         bridge.setId(id);
-        bridge.setCustomerId(DEFAULT_CUSTOMER_ID);
-        bridge.setOrganisationId(TestConstants.DEFAULT_ORGANISATION_ID);
-        bridge.setOwner(TestConstants.DEFAULT_USER_NAME);
         bridge.setName(name);
         bridge.setStatus(ACCEPTED);
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         bridge.setShardId(TestConstants.SHARD_ID);
-        bridge.setDefinition(new BridgeDefinition());
-
         return bridge;
     }
 }

@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 
 @ApplicationScoped
 public class ShardServiceImpl implements ShardService {
@@ -35,15 +34,15 @@ public class ShardServiceImpl implements ShardService {
     }
 
     @Override
-    public String getAssignedShardId(String id) {
-        List<Shard> shards = shardDAO.findByType(ShardType.TRADITIONAL);
+    public Shard getAssignedShard(String id) {
+        List<Shard> shards = shardDAO.listAll();
 
         // add the assignment logic here
         if (shards.size() != 1) {
-            LOGGER.error("The number of 'TRADITIONAL' shards is not equal to 1. This situation is not supported yet. Using the first in the list.");
+            LOGGER.warn("There are more than 1 available shards but no assignment strategy has been implemented. This situation is not supported yet. Using the first in the list.");
         }
 
-        return shards.get(0).getId();
+        return shards.get(0);
     }
 
     @Override

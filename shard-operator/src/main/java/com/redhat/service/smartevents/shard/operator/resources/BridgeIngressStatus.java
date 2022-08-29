@@ -17,17 +17,7 @@ public class BridgeIngressStatus extends CustomResourceStatus {
         }
     };
 
-    private String endpoint;
-
     public BridgeIngressStatus() {
         super(INGRESS_CONDITIONS);
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
     }
 }

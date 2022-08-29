@@ -14,13 +14,12 @@ import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.TestConstants;
-import com.redhat.service.smartevents.manager.WorkerSchedulerProfile;
 import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
+import com.redhat.service.smartevents.manager.models.Shard;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.common.mapper.TypeRef;
@@ -35,7 +34,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 public class ShardBridgesSyncSegmentationAPITest {
 
     @Inject
@@ -58,7 +56,10 @@ public class ShardBridgesSyncSegmentationAPITest {
         when(shardService.isAuthorizedShard(any(String.class))).thenReturn(true);
 
         // Always assign to the default shard id
-        when(shardService.getAssignedShardId(any(String.class))).thenReturn(TestConstants.SHARD_ID);
+        Shard shard = new Shard();
+        shard.setId(TestConstants.SHARD_ID);
+        shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+        when(shardService.getAssignedShard(any(String.class))).thenReturn(shard);
     }
 
     /**
@@ -70,7 +71,7 @@ public class ShardBridgesSyncSegmentationAPITest {
     public void testShardSegmentation() {
         // the bridge gets assigned to the default shard
         mockJwt(TestConstants.SHARD_ID);
-        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME));
+        TestUtils.createBridge(new BridgeRequest(TestConstants.DEFAULT_BRIDGE_NAME, TestConstants.DEFAULT_CLOUD_PROVIDER, TestConstants.DEFAULT_REGION));
 
         final List<BridgeDTO> bridgesToDeployForDefaultShard = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {

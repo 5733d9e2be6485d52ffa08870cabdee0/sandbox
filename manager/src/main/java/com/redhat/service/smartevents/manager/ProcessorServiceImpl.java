@@ -2,8 +2,12 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -13,6 +17,8 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
@@ -25,8 +31,10 @@ import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
+import com.redhat.service.smartevents.infra.models.gateways.Gateway;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
@@ -37,12 +45,14 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
 import com.redhat.service.smartevents.manager.metrics.MetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
+import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
+
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
 public class ProcessorServiceImpl implements ProcessorService {
@@ -51,6 +61,8 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Inject
     GatewayConfigurator gatewayConfigurator;
+    @Inject
+    GatewaySecretsHandler gatewaySecretsHandler;
     @Inject
     InternalKafkaConfigurationProvider internalKafkaConfigurationProvider;
     @Inject
@@ -85,12 +97,21 @@ public class ProcessorServiceImpl implements ProcessorService {
     }
 
     @Override
+    public Optional<Processor> getErrorHandler(String bridgeId, String customerId) {
+        ListResult<Processor> hiddenProcessors = processorDAO.findHiddenByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
+        return hiddenProcessors.getItems()
+                .stream()
+                .filter(p -> p.getType() == ProcessorType.ERROR_HANDLER)
+                .findFirst();
+    }
+
+    @Override
     @Transactional
     public Processor createProcessor(String bridgeId, String customerId, String owner, ProcessorRequest processorRequest) {
         // We cannot deploy Processors to a Bridge that is not available. This throws an Exception if the Bridge is not READY.
         Bridge bridge = bridgesService.getReadyBridge(bridgeId, customerId);
 
-        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest);
+        return doCreateProcessor(bridge, customerId, owner, processorRequest.getType(), processorRequest, 0);
     }
 
     @Override
@@ -100,13 +121,13 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         ProcessorType processorType = processorRequest.getType();
         if (processorType != ProcessorType.SINK) {
-            throw new InternalPlatformException("Unable to configure error handler");
+            throw new InternalPlatformException("Unable to create Error Handler processor. An Action must be defined.");
         }
 
-        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest);
+        return doCreateProcessor(bridge, customerId, owner, ProcessorType.ERROR_HANDLER, processorRequest, bridge.getGeneration());
     }
 
-    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest) {
+    private Processor doCreateProcessor(Bridge bridge, String customerId, String owner, ProcessorType processorType, ProcessorRequest processorRequest, long generation) {
         String bridgeId = bridge.getId();
         if (processorDAO.findByBridgeIdAndName(bridgeId, processorRequest.getName()) != null) {
             throw new AlreadyExistingItemException("Processor with name '" + processorRequest.getName() + "' already exists for bridge with id '" + bridgeId + "' for customer '" + customerId + "'");
@@ -119,7 +140,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         newProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         newProcessor.setBridge(bridge);
-        newProcessor.setShardId(shardService.getAssignedShardId(newProcessor.getId()));
+        newProcessor.setShardId(shardService.getAssignedShard(newProcessor.getId()).getId());
+        newProcessor.setGeneration(generation);
         newProcessor.setOwner(owner);
 
         Set<BaseFilter> requestedFilters = processorRequest.getFilters();
@@ -147,7 +169,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 newProcessor.getBridge().getId());
 
         return newProcessor;
-
     }
 
     private Action resolveAction(Action action, String customerId, String bridgeId, String processorId) {
@@ -166,14 +187,44 @@ public class ProcessorServiceImpl implements ProcessorService {
     public Processor updateProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
         // Attempt to load the Bridge. We cannot update a Processor if the Bridge is not available.
         bridgesService.getReadyBridge(bridgeId, customerId);
-
-        // Extract existing definition
         Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
-        if (existingProcessor.getType() == ProcessorType.ERROR_HANDLER) {
-            throw new BadRequestException("It is not possible to update this Processor.");
-        }
+        long nextGeneration = existingProcessor.getGeneration() + 1;
 
-        if (!isManagedResourceActionable(existingProcessor)) {
+        return doUpdateProcessor(bridgeId,
+                processorId,
+                customerId,
+                processorRequest.getType(),
+                processorRequest,
+                nextGeneration);
+    }
+
+    @Override
+    @Transactional
+    public Processor updateErrorHandlerProcessor(String bridgeId, String processorId, String customerId, ProcessorRequest processorRequest) {
+        Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
+        long nextGeneration = bridge.getGeneration();
+
+        return doUpdateProcessor(bridgeId,
+                processorId,
+                customerId,
+                ProcessorType.ERROR_HANDLER,
+                processorRequest,
+                nextGeneration);
+    }
+
+    // The parameters to this method are part of a larger hack around ErrorHandlers. ProcessorRequest infers its type
+    // from whether it has an Action or a Source defined. However, an ErrorHandler also has an Action defined and hence
+    // the inference fails. Therefore, the ProcessorType is passed explicitly to this method and not extracted from
+    // ProcessorRequest. See the creation related methods for similar m_a_g_i_c.
+    private Processor doUpdateProcessor(String bridgeId,
+            String processorId,
+            String customerId,
+            ProcessorType existingProcessorType,
+            ProcessorRequest processorRequest,
+            long nextGeneration) {
+        Processor existingProcessor = getProcessor(bridgeId, processorId, customerId);
+
+        if (!existingProcessor.isActionable()) {
             throw new ProcessorLifecycleException(String.format("Processor with id '%s' for customer '%s' is not in an actionable state.",
                     processorId,
                     customerId));
@@ -190,31 +241,29 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getName(), processorRequest.getName())) {
             throw new BadRequestException("It is not possible to update the Processor's name.");
         }
-        if (!Objects.equals(existingProcessor.getType(), processorRequest.getType())) {
+        if (!Objects.equals(existingProcessor.getType(), existingProcessorType)) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SINK) {
-            if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Action Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE) {
-            if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
-                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
-            }
+        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
         }
+
+        // for sensitive fields we may receive either a string with the new value or an empty object
+        // if it remains unchanged (since the caller can't know the current real value)
+        // thus, before comparing the requested action/source with the existing one, we must unmask
+        // the sensitive fields with the original values (if those are unchanged) or with the new ones
+        Action updatedAction = mergeGatewaySecrets(processorRequest.getAction(), existingAction);
+        Source updatedSource = mergeGatewaySecrets(processorRequest.getSource(), existingSource);
 
         // Construct updated definition
         Set<BaseFilter> updatedFilters = processorRequest.getFilters();
         String updatedTransformationTemplate = processorRequest.getTransformationTemplate();
-        Source updatedSource = processorRequest.getSource();
-        Action updatedAction = processorRequest.getAction();
         Action updatedResolvedAction = processorRequest.getType() == ProcessorType.SOURCE
-                ? resolveSource(processorRequest.getSource(), customerId, bridgeId, processorId)
-                : resolveAction(processorRequest.getAction(), customerId, bridgeId, processorId);
-        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
-                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
-                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+                ? resolveSource(updatedSource, customerId, bridgeId, processorId)
+                : resolveAction(updatedAction, customerId, bridgeId, processorId);
 
         // No need to update CRD if the definition is unchanged
         // This will need to change to compare _public_ and _secret_ Gateway parameters
@@ -228,12 +277,16 @@ public class ProcessorServiceImpl implements ProcessorService {
             return existingProcessor;
         }
 
+        ProcessorDefinition updatedDefinition = existingProcessor.getType() == ProcessorType.SOURCE
+                ? new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedSource, updatedResolvedAction)
+                : new ProcessorDefinition(updatedFilters, updatedTransformationTemplate, updatedAction, updatedResolvedAction);
+
         // Create new definition copying existing properties
         existingProcessor.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         existingProcessor.setStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
-        existingProcessor.setGeneration(existingProcessor.getGeneration() + 1);
+        existingProcessor.setGeneration(nextGeneration);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -249,33 +302,51 @@ public class ProcessorServiceImpl implements ProcessorService {
         return existingProcessor;
     }
 
-    @Transactional
-    @Override
-    public List<Processor> findByShardIdWithReadyDependencies(String shardId) {
-        return processorDAO.findByShardIdWithReadyDependencies(shardId);
+    private <T extends Gateway> T mergeGatewaySecrets(T requestedGateway, T existingGateway) {
+        if (requestedGateway == null || requestedGateway.getParameters() == null) {
+            return requestedGateway;
+        }
+        Map<String, String> secretValues = new HashMap<>();
+        Iterator<Map.Entry<String, JsonNode>> parametersIterator = requestedGateway.getParameters().fields();
+        while (parametersIterator.hasNext()) {
+            Map.Entry<String, JsonNode> parameterEntry = parametersIterator.next();
+            if (parameterEntry.getValue().equals(emptyObjectNode())) {
+                // this parameter is an unchanged sensitive field,
+                // so we must replace it with the current real value
+                secretValues.put(parameterEntry.getKey(), existingGateway.getParameter(parameterEntry.getKey()));
+            }
+        }
+        secretValues.forEach((key, value) -> requestedGateway.getParameters().set(key, new TextNode(value)));
+        return requestedGateway;
     }
 
     @Transactional
     @Override
-    public Processor updateProcessorStatus(ProcessorDTO processorDTO) {
-        Bridge bridge = bridgesService.getBridge(processorDTO.getBridgeId());
-        Processor p = processorDAO.findById(processorDTO.getId());
-        if (p == null) {
-            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", bridge.getId(), bridge.getCustomerId(),
-                    processorDTO.getCustomerId()));
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
+        return processorDAO.findByShardIdToDeployOrDelete(shardId);
+    }
+
+    @Transactional
+    @Override
+    public Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
+        Bridge bridge = bridgesService.getBridge(updateDTO.getBridgeId());
+        Processor p = processorDAO.findById(updateDTO.getId());
+        if (bridge == null || p == null) {
+            throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", updateDTO.getId(), updateDTO.getBridgeId(),
+                    updateDTO.getCustomerId()));
         }
 
-        if (ManagedResourceStatus.DELETED == processorDTO.getStatus()) {
+        if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
             p.setStatus(ManagedResourceStatus.DELETED);
-            processorDAO.deleteById(processorDTO.getId());
+            processorDAO.deleteById(updateDTO.getId());
             metricsService.onOperationComplete(p, MetricsOperation.DELETE);
             return p;
         }
 
         boolean provisioningCallback = p.getStatus() == ManagedResourceStatus.PROVISIONING;
-        p.setStatus(processorDTO.getStatus());
+        p.setStatus(updateDTO.getStatus());
 
-        if (ManagedResourceStatus.READY == processorDTO.getStatus()) {
+        if (ManagedResourceStatus.READY == updateDTO.getStatus()) {
             if (provisioningCallback) {
                 if (p.getPublishedAt() == null) {
                     p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
@@ -297,18 +368,12 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public ListResult<Processor> getUserVisibleProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
+    public ListResult<Processor> getProcessors(String bridgeId, String customerId, QueryProcessorResourceInfo queryInfo) {
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
-        if (!isManagedResourceActionable(bridge)) {
+        if (!bridge.isActionable()) {
             throw new BridgeLifecycleException(String.format("Bridge with id '%s' for customer '%s' is not in READY/FAILED state.", bridge.getId(), bridge.getCustomerId()));
         }
         return processorDAO.findUserVisibleByBridgeIdAndCustomerId(bridge.getId(), bridge.getCustomerId(), queryInfo);
-    }
-
-    @Transactional
-    @Override
-    public ListResult<Processor> getHiddenProcessors(String bridgeId, String customerId) {
-        return processorDAO.findHiddenByBridgeIdAndCustomerId(bridgeId, customerId, new QueryProcessorResourceInfo());
     }
 
     @Override
@@ -318,7 +383,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist on bridge '%s' for customer '%s'", processorId, bridgeId, customerId));
         }
-        if (!isManagedResourceActionable(processor)) {
+        if (!processor.isActionable()) {
             throw new ProcessorLifecycleException("Processor could only be deleted if its in READY/FAILED state.");
         }
 
@@ -335,10 +400,6 @@ public class ProcessorServiceImpl implements ProcessorService {
                 processor.getId(),
                 processor.getBridge().getCustomerId(),
                 processor.getBridge().getId());
-    }
-
-    private boolean isManagedResourceActionable(ManagedResource managedResource) {
-        return managedResource.getStatus() == ManagedResourceStatus.READY || managedResource.getStatus() == ManagedResourceStatus.FAILED;
     }
 
     @Override
@@ -388,14 +449,19 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorResponse.setStatus(processor.getStatus());
         processorResponse.setPublishedAt(processor.getPublishedAt());
         processorResponse.setSubmittedAt(processor.getSubmittedAt());
+        processorResponse.setModifiedAt(processor.getModifiedAt());
         processorResponse.setOwner(processor.getOwner());
 
         if (processor.getDefinition() != null) {
             ProcessorDefinition definition = processor.getDefinition();
             processorResponse.setFilters(definition.getFilters());
             processorResponse.setTransformationTemplate(definition.getTransformationTemplate());
-            processorResponse.setAction(definition.getRequestedAction());
-            processorResponse.setSource(definition.getRequestedSource());
+            if (definition.getRequestedAction() != null) {
+                processorResponse.setAction(gatewaySecretsHandler.mask(definition.getRequestedAction()));
+            }
+            if (definition.getRequestedSource() != null) {
+                processorResponse.setSource(gatewaySecretsHandler.mask(definition.getRequestedSource()));
+            }
         }
 
         if (processor.getBridge() != null) {
