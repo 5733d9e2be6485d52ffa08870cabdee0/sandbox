@@ -50,7 +50,7 @@ jobs:
       - name: Build Shard operator image and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
+          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquarkus.kubernetes.image-pull-policy=if-not-present -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
           working-directory: shard-operator
         # Load built image into KinD
       - name: Load Shard operator image into KinD
