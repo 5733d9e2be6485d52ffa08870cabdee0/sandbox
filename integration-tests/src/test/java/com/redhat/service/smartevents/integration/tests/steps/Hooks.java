@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Objects;
@@ -91,7 +92,8 @@ public class Hooks {
 
     @Before
     public void before(Scenario scenario) {
-        this.context.setScenario(scenario);
+        context.setScenario(scenario);
+        context.setStartTime(Instant.now());
     }
 
     @After

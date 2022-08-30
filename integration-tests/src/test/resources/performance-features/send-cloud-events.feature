@@ -65,7 +65,7 @@ Feature: Sending cloud events performance tests
           increasingRate:
             initialUsersPerSec: 1
             targetUsersPerSec: 10
-            maxSessions: 10
+            maxSessions: 20
             duration: 1m
             isWarmup: true
             scenario:
@@ -90,6 +90,7 @@ Feature: Sending cloud events performance tests
       """
     Then run benchmark "rhose-send-cloud-events" within 15 minutes
     And the benchmark run "rhose-send-cloud-events" was executed successfully
+    And store results of benchmark run "rhose-send-cloud-events" in Horreum test "send-cloud-events-<usersPerSec>-users"
     And the total of events received for benchmark "rhose-send-cloud-events" run of Bridge "my-perf-bridge" is equal to the total of cloud events sent in:
       | phase | steadyState |
       | metric | send-cloud-event |
