@@ -78,7 +78,7 @@ jobs:
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/minikube.yml
+          kubectl apply -f shard-operator/target/kubernetes/openshift.yml
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external -n $NAMESPACE
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID -n $NAMESPACE
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET -n $NAMESPACE
