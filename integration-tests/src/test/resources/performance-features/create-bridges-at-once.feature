@@ -103,6 +103,7 @@ Feature: Create Bridges performance tests
               - restartSequence
       """
     Then run benchmark "rhose-create-bridges" within 15 minutes
+    And the benchmark run "rhose-create-bridges" was executed successfully
 
     Examples:
       | bridges | shared-connections |

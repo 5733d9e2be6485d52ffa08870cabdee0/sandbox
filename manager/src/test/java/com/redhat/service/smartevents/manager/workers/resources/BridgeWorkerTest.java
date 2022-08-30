@@ -224,7 +224,7 @@ class BridgeWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
-        bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
+        bridge.setDefinition(new BridgeDefinition(createWebhookAction(), createWebhookAction()));
         bridgeDAO.persist(bridge);
 
         Work work = WorkerTestUtils.makeWork(bridge);
@@ -326,7 +326,7 @@ class BridgeWorkerTest {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(TestConstants.DEFAULT_BRIDGE_ID);
         bridge.setStatus(status);
-        bridge.setDefinition(new BridgeDefinition(createWebhookAction()));
+        bridge.setDefinition(new BridgeDefinition(createWebhookAction(), createWebhookAction()));
         bridgeDAO.persist(bridge);
 
         Work work = WorkerTestUtils.makeWork(bridge);
