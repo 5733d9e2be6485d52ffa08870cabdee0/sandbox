@@ -90,24 +90,26 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         if (PROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = createDependencies(work, managedResource);
-                complete = isProvisioningComplete(updated);
             } catch (Exception e) {
                 LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
                 recordError(work, e);
                 updated = load(id);
+            } finally {
+                complete = isProvisioningComplete(updated);
             }
         } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = deleteDependencies(work, managedResource);
-                complete = isDeprovisioningComplete(updated);
             } catch (Exception e) {
                 LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
                 recordError(work, e);
                 updated = load(id);
+            } finally {
+                complete = isDeprovisioningComplete(updated);
             }
         }
 

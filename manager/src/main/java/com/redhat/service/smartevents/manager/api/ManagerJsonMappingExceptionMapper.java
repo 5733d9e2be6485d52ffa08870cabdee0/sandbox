@@ -8,6 +8,9 @@ import javax.ws.rs.ext.Provider;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.mappers.JsonMappingExceptionMapper;
 
+import io.quarkus.runtime.Startup;
+
+@Startup
 @Provider
 @ApplicationScoped
 public class ManagerJsonMappingExceptionMapper extends JsonMappingExceptionMapper {

@@ -132,9 +132,9 @@ class ConnectorWorkerTest {
         verify(connectorsApiMock, times(throwRhoasError ? 0 : 1)).createConnector(connectorEntity);
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
-        verify(workManagerMock).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
 
-        // This emulates a subsequent invocation
+        // This emulates a subsequent invocation from the ProcessorWorker
         refreshed = worker.handleWork(work);
 
         verify(rhoasServiceMock, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
@@ -147,7 +147,7 @@ class ConnectorWorkerTest {
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        verify(workManagerMock, times(2)).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
 
         assertThat(processor.getBridgeErrorId()).isNull();
         assertThat(processor.getBridgeErrorUUID()).isNull();
@@ -193,7 +193,7 @@ class ConnectorWorkerTest {
             assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         }
 
-        verify(workManagerMock).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
     }
 
     @Transactional
@@ -223,7 +223,6 @@ class ConnectorWorkerTest {
         // Managed Connector will initially be available before it is deleted
         when(connectorsApiMock.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
-        int refreshCount = 1;
         ConnectorEntity refreshed = worker.handleWork(work);
 
         if (connectorState != ConnectorState.DELETED) {
@@ -232,9 +231,8 @@ class ConnectorWorkerTest {
             verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
             verify(connectorsApiMock).deleteConnector(connectorEntity.getConnectorExternalId());
 
-            // This emulates a subsequent invocation by WorkManager
+            // This emulates a subsequent invocation by WorkManager from the ProcessorWorker
             refreshed = worker.handleWork(work);
-            refreshCount = 2;
         }
 
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
@@ -242,7 +240,7 @@ class ConnectorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(workManagerMock, times(refreshCount)).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {

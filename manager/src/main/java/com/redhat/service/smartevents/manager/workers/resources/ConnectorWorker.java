@@ -159,9 +159,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected boolean isProvisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
+        // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
+        return true;
     }
 
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
@@ -218,9 +218,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
+        // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
+        return true;
     }
 
     @Override

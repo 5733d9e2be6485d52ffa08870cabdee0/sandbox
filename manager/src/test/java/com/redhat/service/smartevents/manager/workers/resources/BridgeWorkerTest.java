@@ -55,6 +55,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -200,6 +201,37 @@ class BridgeWorkerTest {
 
         verify(processorServiceMock,
                 times(throwRhoasError ? 0 : 1)).updateErrorHandlerProcessor(eq(bridge.getId()),
+                        anyString(),
+                        eq(bridge.getCustomerId()),
+                        any(ProcessorRequest.class));
+    }
+
+    @Transactional
+    @ParameterizedTest
+    @MethodSource("provisionWorkWithKnownResourceParamsWithErrorHandler")
+    void testProvisionWorkWithKnownResourceAndErrorHandlerPresentMultipleRetries(ManagedResourceStatus status,
+            ManagedResourceStatus dependencyStatusWhenComplete,
+            boolean throwRhoasError,
+            boolean throwDnsError,
+            boolean isWorkComplete,
+            ManagedResourceStatus errorHandlerStatus) {
+        doTestProvisionWorkWithKnownResourceAndErrorHandler(status,
+                dependencyStatusWhenComplete,
+                throwRhoasError,
+                throwDnsError,
+                isWorkComplete,
+                true,
+                errorHandlerStatus);
+
+        Bridge bridge = bridgeDAO.findById(TestConstants.DEFAULT_BRIDGE_ID);
+
+        Work work = WorkerTestUtils.makeWork(bridge);
+
+        // There should be no further interactions with ProcessorService during re-tries
+        worker.handleWork(work);
+
+        verify(processorServiceMock,
+                never()).updateErrorHandlerProcessor(eq(bridge.getId()),
                         anyString(),
                         eq(bridge.getCustomerId()),
                         any(ProcessorRequest.class));
