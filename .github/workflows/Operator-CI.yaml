@@ -50,7 +50,7 @@ jobs:
       - name: Build Shard operator image and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
+          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquarkus.kubernetes.image-pull-policy=if-not-present -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
           working-directory: shard-operator
         # Load built image into KinD
       - name: Load Shard operator image into KinD
@@ -78,7 +78,7 @@ jobs:
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/openshift.yml
+          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external -n $NAMESPACE
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID -n $NAMESPACE
           kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET -n $NAMESPACE
