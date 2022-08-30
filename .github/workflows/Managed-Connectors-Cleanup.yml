@@ -17,9 +17,20 @@ jobs:
         uses: ./.github/actions/free-disk-space
       - name: Add mask
         run: |
+          echo "::add-mask::${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}"
           echo "::add-mask::${{ secrets.MANAGED_CONNECTORS_CONTROL_PLANE_URL }}"
+      - name: Install OCM
+        shell: bash
+        run: |
+          mkdir -p $HOME/.local/bin
+          curl -Lo $HOME/.local/bin/ocm https://github.com/openshift-online/ocm-cli/releases/download/v0.1.64/ocm-linux-amd64
+          chmod +x $HOME/.local/bin/ocm
+          export PATH=$HOME/.local/bin/ocm:$PATH
       - name: Run Managed connector delete script
         env:
+          MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
           MANAGED_CONNECTORS_CONTROL_PLANE_URL: ${{ secrets.MANAGED_CONNECTORS_CONTROL_PLANE_URL }}
         run: |
+          ocm login --token $MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
+          chmod +x .github/scripts/delete-managed-connectors.sh
           ./.github/scripts/delete-managed-connectors.sh

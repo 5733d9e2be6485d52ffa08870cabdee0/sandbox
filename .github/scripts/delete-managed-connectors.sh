@@ -2,11 +2,10 @@
 
 # Script used to delete the Managed connectors
 # Managed connectors are identified using "ci-" prefix in their names , which are created older than 12 hours and deleted
-# Script uses the MANAGED_CONNECTORS_CONTROL_PLANE_URL env var from localconfig as a Connectors base path
+# Script uses the MANAGED_CONNECTORS_CONTROL_PLANE_URL env var as a Connectors base path
 # This requires the ocm command: https://github.com/openshift-online/ocm-cli
 # You will need to login with `ocm login --token [...]`.
 
-. $(dirname "${BASH_SOURCE[0]}")/../configure.sh
 
 export COS_BASE_PATH=${MANAGED_CONNECTORS_CONTROL_PLANE_URL}/api/connector_mgmt/v1
 export CONNECTORS_BASE=${COS_BASE_PATH}/kafka_connectors
