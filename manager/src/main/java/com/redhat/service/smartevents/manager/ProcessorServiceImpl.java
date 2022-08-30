@@ -245,11 +245,15 @@ public class ProcessorServiceImpl implements ProcessorService {
         if (!Objects.equals(existingProcessor.getType(), existingProcessorType)) {
             throw new BadRequestException("It is not possible to update the Processor's Type.");
         }
-        if (existingProcessor.getType() == ProcessorType.SINK && !Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
-            throw new BadRequestException("It is not possible to update the Processor's Action Type.");
+        if (existingProcessorType == ProcessorType.SINK) {
+            if (!Objects.equals(existingAction.getType(), processorRequest.getAction().getType())) {
+                throw new BadRequestException("It is not possible to update the Processor's Action Type.");
+            }
         }
-        if (existingProcessor.getType() == ProcessorType.SOURCE && !Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
-            throw new BadRequestException("It is not possible to update the Processor's Source Type.");
+        if (existingProcessorType == ProcessorType.SOURCE) {
+            if (!Objects.equals(existingSource.getType(), processorRequest.getSource().getType())) {
+                throw new BadRequestException("It is not possible to update the Processor's Source Type.");
+            }
         }
 
         ProcessorDefinition unmaskedExistingDefinition = secretsService.getUnmaskedProcessorDefinition(existingProcessor);
@@ -294,7 +298,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
     @Transactional
     @Override
-    public List<Processor> findByShardIdWithReadyDependencies(String shardId) {
+    public List<Processor> findByShardIdToDeployOrDelete(String shardId) {
         return processorDAO.findByShardIdToDeployOrDelete(shardId);
     }
 

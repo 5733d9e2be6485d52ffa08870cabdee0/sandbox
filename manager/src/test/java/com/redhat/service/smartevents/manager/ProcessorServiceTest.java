@@ -288,7 +288,7 @@ class ProcessorServiceTest {
         when(processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID))
                 .thenReturn(List.of(processor1, processor2));
 
-        List<Processor> processors = processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processors = processorService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
 
         assertThat(processors).hasSize(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn(processor1Name, processor2Name));

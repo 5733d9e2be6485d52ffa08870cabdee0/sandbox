@@ -1,16 +1,14 @@
 package com.redhat.service.smartevents.integration.tests.steps;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.awaitility.Awaitility;
-import org.hamcrest.Matchers;
 
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.context.PerfTestContext;
+import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.HorreumResource;
 import com.redhat.service.smartevents.integration.tests.resources.HyperfoilResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 
@@ -24,10 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class PerformanceSteps {
 
-    private final PerfTestContext context;
+    private final PerfTestContext perfContext;
+    private final TestContext context;
 
-    public PerformanceSteps(PerfTestContext context) {
+    public PerformanceSteps(TestContext context, PerfTestContext perfContext) {
         this.context = context;
+        this.perfContext = perfContext;
     }
 
     @When("^create benchmark with content:$")
@@ -35,68 +35,56 @@ public class PerformanceSteps {
         String resolvedBenchmarkRequest = ContextResolver.resolveWithScenarioContext(context, benchmarkRequest.getContent());
 
         context.getScenario().log("Benchmark created as below\n\"" + resolvedBenchmarkRequest + "\n\"");
-        HyperfoilResource.addBenchmark(context.getManagerToken(), resolvedBenchmarkRequest, benchmarkRequest.getContentType());
+        HyperfoilResource.addBenchmark(resolvedBenchmarkRequest, benchmarkRequest.getContentType());
     }
 
     @Then("^run benchmark \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
     public void runBenchmarkOnHyperfoilWithinMinutes(String perfTestName, int timeoutMinutes) {
-        context.addBenchmarkRun(perfTestName, HyperfoilResource.runBenchmark(context.getManagerToken(), perfTestName));
-        context.getScenario().log("Running benchmark ID " + context.getBenchmarkRun(perfTestName));
+        String runId = HyperfoilResource.runBenchmark(perfTestName);
+        perfContext.addBenchmarkRun(perfTestName, runId);
+        context.getScenario().log("Running benchmark ID " + perfContext.getBenchmarkRun(perfTestName));
 
         Awaitility.await()
-                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> HyperfoilResource
-                        .getRunStatusDetailsResponse(context.getManagerToken(), context.getBenchmarkRun(perfTestName)).then().log().all()))
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> context.getScenario().log("Unfinished performance run: " + HyperfoilResource.getCompleteRun(runId))))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
-                .pollInterval(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
-                        () -> HyperfoilResource
-                                .getRunStatusDetailsResponse(context.getManagerToken(), context.getBenchmarkRun(perfTestName))
-                                .then()
-                                .statusCode(200)
-                                .body("completed", Matchers.is(true)));
+                        () -> assertThat(HyperfoilResource.isRunCompleted(runId))
+                                .as("Waiting for performance run to finish")
+                                .isTrue());
     }
 
     @And("^the benchmark run \"([^\"]*)\" was executed successfully$")
     public void benchmarkExecutionWasSuccessfully(String perfTestName) {
-        if (context.getBenchmarkRun(perfTestName) == null) {
+        if (perfContext.getBenchmarkRun(perfTestName) == null) {
             throw new RuntimeException("there is no benchmark run executed for " + perfTestName + " scenario");
         }
-        assertThat(HyperfoilResource.getRunStatusDetailsResponse(context.getManagerToken(), context.getBenchmarkRun(perfTestName))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(200)
-                .extract()
-                .body()
-                .jsonPath().getList("phases", Map.class).stream()
-                .filter(map -> ((Boolean) map.get("failed")))
-                .count()).isZero();
+
+        assertThat(HyperfoilResource.containsFailedRunPhase(perfContext.getBenchmarkRun(perfTestName)))
+                .as("Checking if benchmark run contains failed phases: " + HyperfoilResource.getCompleteRun(perfContext.getBenchmarkRun(perfTestName)))
+                .isFalse();
     }
 
     @And("^the total of events received for benchmark \"([^\"]*)\" run of Bridge \"([^\"]*)\" is equal to the total of cloud events sent in:$")
     public void numberOfEventsReceivedIsEqualToEventsSent(String perfTestName, String bridgeName, DataTable parametersDatatable) {
         String bridgeId = context.getBridge(bridgeName).getId();
         Integer totalEventsReceived = WebhookPerformanceResource.getCountEventsReceived(bridgeId, Integer.class);
-        List<Integer> totalEventsSent = HyperfoilResource.getBenchmarkStatsDetailResponse(context.getManagerToken(), context.getBenchmarkRun(perfTestName))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(200)
-                .extract()
-                .body()
-                .jsonPath().getList("statistics", Map.class).stream()
-                .filter(map -> map.get("phase").equals(parametersDatatable.asMap().get("phase")) &&
-                        map.get("metric").equals(parametersDatatable.asMap().get("metric")))
-                .flatMap(map -> ((Map<String, Object>) map.get("summary")).entrySet().stream())
-                .filter(entry -> entry.getKey().equals("requestCount"))
-                .map(entry -> (Integer) entry.getValue())
-                .collect(Collectors.toList());
-
-        assertThat(totalEventsSent)
-                .withFailMessage("Unable to resolve 'requestCount' from the stats json response.\n" +
-                        "There should be just one and only one 'httpRequest' defined")
-                .hasSize(1);
+        int totalEventsSent = HyperfoilResource.getTotalRequestsSent(perfContext.getBenchmarkRun(perfTestName), parametersDatatable.asMap().get("phase"), parametersDatatable.asMap().get("metric"));
 
         assertThat(totalEventsReceived)
-                .isEqualTo(totalEventsSent.get(0))
+                .isEqualTo(totalEventsSent)
                 .isPositive();
+    }
+
+    @When("^store results of benchmark run \"([^\"]*)\" in Horreum test \"([^\"]*)\"$")
+    public void storeResultsInHorreumTest(String perfTestName, String testName) {
+        if (!HorreumResource.isResultsUploadEnabled()) {
+            context.getScenario().log("Horreum results upload disabled. Skipping the step.");
+            return;
+        }
+
+        String benchmarkRun = perfContext.getBenchmarkRun(perfTestName);
+        String testDescription = context.getScenario().getName();
+        HorreumResource.storePerformanceData(testName, testDescription, context.getStartTime(), benchmarkRun);
     }
 }
