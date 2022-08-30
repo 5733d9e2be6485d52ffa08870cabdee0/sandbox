@@ -8,6 +8,7 @@ import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeO
 import com.redhat.service.smartevents.integration.tests.context.PerfTestContext;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.HorreumResource;
 import com.redhat.service.smartevents.integration.tests.resources.HyperfoilResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
 
@@ -60,7 +61,7 @@ public class PerformanceSteps {
         }
 
         assertThat(HyperfoilResource.containsFailedRunPhase(perfContext.getBenchmarkRun(perfTestName)))
-                .as("Checking if benchmark run contains failed phases")
+                .as("Checking if benchmark run contains failed phases: " + HyperfoilResource.getCompleteRun(perfContext.getBenchmarkRun(perfTestName)))
                 .isFalse();
     }
 
@@ -73,5 +74,17 @@ public class PerformanceSteps {
         assertThat(totalEventsReceived)
                 .isEqualTo(totalEventsSent)
                 .isPositive();
+    }
+
+    @When("^store results of benchmark run \"([^\"]*)\" in Horreum test \"([^\"]*)\"$")
+    public void storeResultsInHorreumTest(String perfTestName, String testName) {
+        if (!HorreumResource.isResultsUploadEnabled()) {
+            context.getScenario().log("Horreum results upload disabled. Skipping the step.");
+            return;
+        }
+
+        String benchmarkRun = perfContext.getBenchmarkRun(perfTestName);
+        String testDescription = context.getScenario().getName();
+        HorreumResource.storePerformanceData(testName, testDescription, context.getStartTime(), benchmarkRun);
     }
 }

@@ -6,7 +6,6 @@ images:
   newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
   newTag: k8s-eb8bea25900ca9cf8523231307ae76fc37573f03-jvm
 resources:
-- keycloak
 - prometheus
 - shard
 - manager
