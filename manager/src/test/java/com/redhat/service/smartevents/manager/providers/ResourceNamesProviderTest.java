@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static com.redhat.service.smartevents.manager.providers.ResourceNamesProviderImpl.ERROR_TOPIC_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -22,7 +23,9 @@ class ResourceNamesProviderTest {
             { "number1234", "number1234-" },
             { "this-is-valid-", "this-is-valid-" },
             { "bla---xyz", "bla---xyz-" },
-            { "abc12345678987654321", "abc12345678987654321-" }
+            { "abc12345678987654", "abc12345678987654-" },
+            { "ci-2753611352-1", "ci-2753611352-1-" },
+            { "ci-2753611352-999", "ci-2753611352-999-" }
     };
 
     private static final String[] INVALID_PREFIXES = {
@@ -48,6 +51,10 @@ class ResourceNamesProviderTest {
         assertIsRFC1035Label(bridgeTopicName);
         assertThat(bridgeTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.BRIDGE_SHORTNAME + "-" + TEST_BRIDGE_ID);
 
+        String bridgeErrorTopicName = resourceNamesProvider.getBridgeErrorTopicName(TEST_BRIDGE_ID);
+        assertIsRFC1035Label(bridgeErrorTopicName);
+        assertThat(bridgeErrorTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.BRIDGE_SHORTNAME + "-" + TEST_BRIDGE_ID + "-" + ERROR_TOPIC_SUFFIX);
+
         String processorConnectorName = resourceNamesProvider.getProcessorConnectorName(TEST_PROCESSOR_ID);
         assertIsRFC1035Label(processorConnectorName);
         assertThat(processorConnectorName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
@@ -55,6 +62,10 @@ class ResourceNamesProviderTest {
         String processorTopicName = resourceNamesProvider.getProcessorTopicName(TEST_PROCESSOR_ID);
         assertIsRFC1035Label(processorTopicName);
         assertThat(processorTopicName).isEqualTo(expectedValidatedPrefix + ResourceNamesProviderImpl.PROCESSOR_SHORTNAME + "-" + TEST_PROCESSOR_ID);
+
+        String globalErrorTopicName = resourceNamesProvider.getGlobalErrorTopicName();
+        assertIsRFC1035Label(globalErrorTopicName);
+        assertThat(globalErrorTopicName).isEqualTo(expectedValidatedPrefix + ERROR_TOPIC_SUFFIX);
     }
 
     private static Stream<Arguments> validPrefixes() {
