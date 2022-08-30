@@ -111,7 +111,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
      */
     private void createOrUpdateOrDeleteErrorHandlerProcessor(Bridge bridge) {
         // If an ErrorHandler is not defined, consider it ready and delete any lingering instances
-        Action errorHandlerAction = bridge.getDefinition().getErrorHandler();
+        Action errorHandlerAction = bridge.getDefinition().getResolvedErrorHandler();
         boolean errorHandlerProcessorIsNotRequired = Objects.isNull(errorHandlerAction);
         if (errorHandlerProcessorIsNotRequired) {
             deleteErrorHandlingProcessor(bridge);
