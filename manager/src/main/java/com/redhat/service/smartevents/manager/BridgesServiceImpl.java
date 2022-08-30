@@ -38,6 +38,7 @@ import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
@@ -74,6 +75,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     DnsService dnsService;
 
+    @Inject
+    ProcessingErrorService processingErrorService;
+
     @Override
     @Transactional
     public Bridge createBridge(String customerId, String organisationId, String owner, BridgeRequest bridgeRequest) {
@@ -95,7 +99,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
-        bridge.setDefinition(new BridgeDefinition(Objects.nonNull(errorHandler) ? errorHandler : null));
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridge.getId(), errorHandler);
+        bridge.setDefinition(new BridgeDefinition(errorHandler, resolvedErrorHandler));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
@@ -137,7 +142,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Construct updated definition
         Action updatedErrorHandler = bridgeRequest.getErrorHandler();
-        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler);
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridgeId, updatedErrorHandler);
+        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolvedErrorHandler);
 
         // No need to update CRD if the definition is unchanged
         if (Objects.equals(existingDefinition, updatedDefinition)) {
@@ -295,6 +301,7 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
+
         return response;
     }
 }

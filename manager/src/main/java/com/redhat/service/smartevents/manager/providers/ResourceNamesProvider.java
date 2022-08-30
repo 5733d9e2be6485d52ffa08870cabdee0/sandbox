@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.manager.providers;
 
 public interface ResourceNamesProvider {
 
+    String getGlobalErrorTopicName();
+
     String getBridgeTopicName(String bridgeId);
 
     String getBridgeErrorTopicName(String bridgeId);

@@ -13,7 +13,7 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
     public static final String PROCESSOR_SHORTNAME = "prcs";
     public static final String ERROR_TOPIC_SUFFIX = "err";
 
-    private static final String VALIDATION_REGEX = "^[a-z][a-z0-9-]{0,19}$";
+    private static final String VALIDATION_REGEX = "^[a-z][a-z0-9-]{0,16}$";
 
     @ConfigProperty(name = RESOURCE_PREFIX_PROPERTY)
     String resourcePrefix;
@@ -26,6 +26,11 @@ public class ResourceNamesProviderImpl implements ResourceNamesProvider {
             throw new IllegalArgumentException(String.format("Property \"%s\" must match the regex \"%s\"", RESOURCE_PREFIX_PROPERTY, VALIDATION_REGEX));
         }
         validatedResourcePrefix = resourcePrefix + (resourcePrefix.endsWith("-") ? "" : "-");
+    }
+
+    @Override
+    public String getGlobalErrorTopicName() {
+        return String.format("%s%s", validatedResourcePrefix, ERROR_TOPIC_SUFFIX);
     }
 
     @Override
