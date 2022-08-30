@@ -40,7 +40,7 @@ public class ProcessingError {
     private Map<String, String> headers;
 
     @Type(type = JsonTypes.JSON_BIN)
-    @Column(name = "payload", nullable = false, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
+    @Column(name = "payload", nullable = true, updatable = false, columnDefinition = JsonTypes.JSON_BIN)
     private JsonNode payload;
 
     public Long getId() {
