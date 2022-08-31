@@ -173,32 +173,6 @@
 
   <profiles>
     <profile>
-      <id>minikube</id>
-      <properties>
-        <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
-        <quarkus.profile>minikube</quarkus.profile>
-        <event-bridge.k8s.orchestrator>minikube</event-bridge.k8s.orchestrator>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-minikube</artifactId>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>openshift</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <quarkus.openshift.deploy>false</quarkus.openshift.deploy>
-        <quarkus.profile>openshift</quarkus.profile>
-        <event-bridge.k8s.orchestrator>openshift</event-bridge.k8s.orchestrator>
-      </properties>
-    </profile>
-    <profile>
       <id>attach-kubernetes-resources</id>
       <build>
         <plugins>
@@ -215,7 +189,7 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${project.build.directory}/kubernetes/openshift.yml</file>
+                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>
                       <type>yml</type>
                       <classifier>kubernetes</classifier>
                     </artifact>
