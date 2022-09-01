@@ -134,11 +134,6 @@ class BridgeWorkerTest {
         verify(rhoasServiceMock).createTopicAndGrantAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).createDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(any());
-
-        if (throwRhoasError) {
-            assertThat(refreshed.getErrorId()).isNotNull();
-            assertThat(refreshed.getErrorUUID()).isNotNull();
-        }
     }
 
     @Transactional
@@ -300,11 +295,7 @@ class BridgeWorkerTest {
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
 
-        if (throwRhoasError || throwDnsError) {
-            // An error occurred provisioning the Bridge
-            assertThat(refreshed.getErrorId()).isNotNull();
-            assertThat(refreshed.getErrorUUID()).isNotNull();
-        } else {
+        if (!(throwRhoasError || throwDnsError)) {
             if (errorHandlerStatus == FAILED) {
                 assertThat(refreshed.getErrorId()).isNotNull();
                 assertThat(refreshed.getErrorUUID()).isNotNull();
@@ -369,11 +360,6 @@ class BridgeWorkerTest {
         verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(TEST_TOPIC_NAME, RhoasTopicAccessType.CONSUMER_AND_PRODUCER);
         verify(dnsServiceMock, times(throwRhoasError ? 0 : 1)).deleteDnsRecord(eq(bridge.getId()));
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
-
-        if (throwRhoasError) {
-            assertThat(refreshed.getErrorId()).isNotNull();
-            assertThat(refreshed.getErrorUUID()).isNotNull();
-        }
     }
 
     @Transactional
@@ -434,11 +420,7 @@ class BridgeWorkerTest {
             verify(workManagerMock, times(isWorkComplete ? 1 : 2)).reschedule(work);
         }
 
-        if (throwRhoasError || throwDnsError) {
-            // An error occurred provisioning the Bridge
-            assertThat(refreshed1.getErrorId()).isNotNull();
-            assertThat(refreshed1.getErrorUUID()).isNotNull();
-        } else if (!isErrorHandlerDeleted) {
+        if (!(throwRhoasError || throwDnsError) && !isErrorHandlerDeleted) {
             assertThat(refreshed1.getErrorId()).isNotNull();
             assertThat(refreshed1.getErrorUUID()).isNotNull();
 
