@@ -342,6 +342,13 @@ public class ProcessorServiceImpl implements ProcessorService {
                     updateDTO.getCustomerId()));
         }
 
+        if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
+            processor.setStatus(ManagedResourceStatus.DELETED);
+            processorDAO.deleteById(updateDTO.getId());
+            metricsService.onOperationComplete(processor, MetricsOperation.DELETE);
+            return processor;
+        }
+
         // If an exception happened; make sure to record it.
         BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
         if (Objects.nonNull(bridgeErrorInstance)) {
@@ -353,13 +360,6 @@ public class ProcessorServiceImpl implements ProcessorService {
             // to subsequently emit an update with a READY state when the CRD updates and succeeds.
             processor.setErrorId(null);
             processor.setErrorUUID(null);
-        }
-
-        if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
-            processor.setStatus(ManagedResourceStatus.DELETED);
-            processorDAO.deleteById(updateDTO.getId());
-            metricsService.onOperationComplete(processor, MetricsOperation.DELETE);
-            return processor;
         }
 
         boolean provisioningCallback = processor.getStatus() == ManagedResourceStatus.PROVISIONING;
