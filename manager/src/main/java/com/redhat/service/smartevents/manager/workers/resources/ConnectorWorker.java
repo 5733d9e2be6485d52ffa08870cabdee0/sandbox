@@ -17,6 +17,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
@@ -42,6 +45,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Inject
     ConnectorsApiClient connectorsApi;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     protected PanacheRepositoryBase<ConnectorEntity, String> getDao() {
@@ -145,7 +151,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
             connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
-            return persist(connectorEntity);
+            persist(connectorEntity);
+            return recordError(work, new ManagedConnectorException(status.getError()));
         }
 
         return connectorEntity;
@@ -224,8 +231,13 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
     }
 
     @Override
-    protected void recordError(Work work, Exception e) {
-        // NOP. Errors are recorded by ProcessorWorker.
+    protected ConnectorEntity recordError(Work work, Exception e) {
+        String connectorEntityId = getId(work);
+        ConnectorEntity connectorEntity = load(connectorEntityId);
+        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+        connectorEntity.setBridgeErrorId(bridgeErrorInstance.getId());
+        connectorEntity.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        return persist(connectorEntity);
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {

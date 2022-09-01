@@ -96,4 +96,25 @@ public class BridgeErrorHelperTest {
         assertThat(message).isNotNull().contains("[code]").contains("reason").contains("12345");
     }
 
+    @Test
+    void testMakeUserMessageCheckTrailingFullStopRemoval() {
+        HasBridgeErrorInformation hbei = new HasBridgeErrorInformation() {
+            @Override
+            public Integer getBridgeErrorId() {
+                return 1;
+            }
+
+            @Override
+            public String getBridgeErrorUUID() {
+                return "12345";
+            }
+        };
+
+        when(service.getError(1)).thenReturn(Optional.of(new BridgeError(1, "code", "reason.", BridgeErrorType.USER)));
+
+        String message = helper.makeUserMessage(hbei);
+
+        assertThat(message).isNotNull().doesNotContain("..");
+    }
+
 }

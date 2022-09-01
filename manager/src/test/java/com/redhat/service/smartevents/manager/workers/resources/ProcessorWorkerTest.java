@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -127,6 +128,10 @@ public class ProcessorWorkerTest {
         doAnswer((i) -> {
             //Emulate ConnectorWorker failing
             connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
+            if (dependencyStatusWhenComplete == FAILED) {
+                connectorEntity.setBridgeErrorId(1);
+                connectorEntity.setBridgeErrorUUID(UUID.randomUUID().toString());
+            }
             return connectorEntity;
         }).when(connectorWorker).handleWork(work);
 
@@ -134,6 +139,11 @@ public class ProcessorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+
+        if (dependencyStatusWhenComplete == FAILED) {
+            assertThat(refreshed.getBridgeErrorId()).isNotNull();
+            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+        }
 
         verify(connectorWorker).handleWork(work);
 
@@ -192,6 +202,10 @@ public class ProcessorWorkerTest {
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
             connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
+            if (dependencyStatusWhenComplete == FAILED) {
+                connectorEntity.setBridgeErrorId(1);
+                connectorEntity.setBridgeErrorUUID(UUID.randomUUID().toString());
+            }
             return connectorEntity;
         }).when(connectorWorker).handleWork(work);
 
@@ -199,6 +213,11 @@ public class ProcessorWorkerTest {
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
+
+        if (dependencyStatusWhenComplete == FAILED) {
+            assertThat(refreshed.getBridgeErrorId()).isNotNull();
+            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+        }
 
         verify(connectorWorker).handleWork(work);
 

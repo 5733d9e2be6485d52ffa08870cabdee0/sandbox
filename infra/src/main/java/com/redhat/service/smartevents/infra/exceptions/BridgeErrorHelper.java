@@ -64,7 +64,13 @@ public class BridgeErrorHelper {
         StringBuilder message = new StringBuilder();
         bridgeErrorService
                 .getError(bridgeErrorId)
-                .ifPresentOrElse(bei -> message.append(String.format(USER_MESSAGE, bei.getCode(), bei.getReason(), bridgeErrorUUID)),
+                .ifPresentOrElse(bei -> {
+                    String reason = bei.getReason();
+                    if (reason.endsWith(".")) {
+                        reason = reason.substring(0, reason.length() - 1);
+                    }
+                    message.append(String.format(USER_MESSAGE, bei.getCode(), reason, bridgeErrorUUID));
+                },
                         () -> message.append(String.format(USER_MESSAGE_UNKNOWN, bridgeErrorUUID)));
         return message.toString();
     }

@@ -213,13 +213,13 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
     }
 
     @Override
-    protected void recordError(Work work, Exception e) {
+    protected Bridge recordError(Work work, Exception e) {
         String bridgeId = work.getManagedResourceId();
         Bridge bridge = getDao().findById(bridgeId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
         bridge.setBridgeErrorId(bridgeErrorInstance.getId());
         bridge.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
-        persist(bridge);
+        return persist(bridge);
     }
 
     // The ErrorHandler Processor is a special type. It is not visible to Users and hence

@@ -80,9 +80,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                         work.getManagedResourceId()));
             }
 
-            recordError(work, failure);
-
-            return managedResource;
+            return recordError(work, failure);
         }
 
         boolean complete = false;
@@ -94,8 +92,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
-                recordError(work, e);
-                updated = load(id);
+                updated = recordError(work, e);
             } finally {
                 complete = isProvisioningComplete(updated);
             }
@@ -106,8 +103,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
                 LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
-                recordError(work, e);
-                updated = load(id);
+                updated = recordError(work, e);
             } finally {
                 complete = isDeprovisioningComplete(updated);
             }
@@ -170,6 +166,6 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     protected abstract boolean isDeprovisioningComplete(T managedResource);
 
-    protected abstract void recordError(Work work, Exception e);
+    protected abstract T recordError(Work work, Exception e);
 
 }

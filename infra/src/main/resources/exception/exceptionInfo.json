@@ -226,5 +226,11 @@
     "id": 39,
     "reason": "A ReplicaSet failed to be provisioned for your request. Please contact the Help Desk for support quoting the date and time of this error.",
     "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException",
+    "id": 40,
+    "reason": "A Managed Connector failed to be provisioned for your request. Please contact the Help Desk for support quoting the date and time of this error.",
+    "type": "PLATFORM"
   }
 ]
