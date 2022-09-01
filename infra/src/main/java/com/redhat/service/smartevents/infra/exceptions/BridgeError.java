@@ -7,10 +7,14 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Schema
 public class BridgeError {
 
-    private final int id;
-    private final String code;
-    private final String reason;
-    private final BridgeErrorType type;
+    private int id;
+    private String code;
+    private String reason;
+    private BridgeErrorType type;
+
+    protected BridgeError() {
+        //(De-)serialisation
+    }
 
     public BridgeError(int id, String code, String reason, BridgeErrorType type) {
         super();

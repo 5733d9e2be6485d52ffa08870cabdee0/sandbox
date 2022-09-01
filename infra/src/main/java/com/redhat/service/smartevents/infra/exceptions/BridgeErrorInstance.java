@@ -3,9 +3,16 @@ package com.redhat.service.smartevents.infra.exceptions;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+@Schema
 public class BridgeErrorInstance extends BridgeError {
 
-    private final String uuid;
+    private String uuid;
+
+    protected BridgeErrorInstance() {
+        //(De-)serialisation
+    }
 
     public BridgeErrorInstance(BridgeError bridgeError) {
         super(bridgeError.getId(), bridgeError.getCode(), bridgeError.getReason(), bridgeError.getType());
