@@ -247,12 +247,37 @@ public class BridgesServiceTest {
         // Emulate Shard setting Bridge status to FAILED with Error
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
-        bridgesService.updateBridgeStatus(updateDTO);
 
-        Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
-        assertThat(retrievedBridge.getStatus()).isEqualTo(FAILED);
-        assertThat(retrievedBridge.getBridgeErrorId()).isEqualTo(1);
-        assertThat(retrievedBridge.getBridgeErrorUUID()).isEqualTo(bei.getUUID());
+        Bridge updated = bridgesService.updateBridgeStatus(updateDTO);
+
+        assertThat(updated.getStatus()).isEqualTo(FAILED);
+        assertThat(updated.getBridgeErrorId()).isEqualTo(1);
+        assertThat(updated.getBridgeErrorUUID()).isEqualTo(bei.getUUID());
+    }
+
+    @Test
+    public void testUpdateBridgeStatusClearsBridgeErrorWhenUndefined() {
+        BridgeRequest request = new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        bridgesService.createBridge(DEFAULT_CUSTOMER_ID, DEFAULT_ORGANISATION_ID, DEFAULT_USER_NAME, request);
+
+        //Wait for Workers to complete
+        Bridge bridge = TestUtils.waitForBridgeToBeReady(bridgesService);
+
+        assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
+
+        // Emulate Shard setting Bridge status to FAILED with Error
+        BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
+        ManagedResourceStatusUpdateDTO updateDTOFailed = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), FAILED, bei);
+        bridgesService.updateBridgeStatus(updateDTOFailed);
+
+        // Emulate Shard setting Bridge status to READY
+        ManagedResourceStatusUpdateDTO updateDTOReady = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), READY);
+
+        Bridge updated = bridgesService.updateBridgeStatus(updateDTOReady);
+
+        assertThat(updated.getStatus()).isEqualTo(READY);
+        assertThat(updated.getBridgeErrorId()).isNull();
+        assertThat(updated.getBridgeErrorUUID()).isNull();
     }
 
     @Test

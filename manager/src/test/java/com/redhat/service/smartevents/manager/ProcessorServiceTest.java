@@ -367,6 +367,21 @@ class ProcessorServiceTest {
     }
 
     @Test
+    void testUpdateProcessorStatusClearsBridgeErrorWhenUndefined() {
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(READY);
+        assertThat(updated.getBridgeErrorId()).isNull();
+        assertThat(updated.getBridgeErrorUUID()).isNull();
+    }
+
+    @Test
     void testGetProcessor() {
         Processor found = processorService.getProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID);
         assertThat(found).isNotNull();
@@ -810,6 +825,8 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), FAILED);
         processor.setId(FAILED_PROCESSOR_ID);
         processor.setName(FAILED_PROCESSOR_NAME);
+        processor.setBridgeErrorId(1);
+        processor.setBridgeErrorUUID(UUID.randomUUID().toString());
         return processor;
     }
 

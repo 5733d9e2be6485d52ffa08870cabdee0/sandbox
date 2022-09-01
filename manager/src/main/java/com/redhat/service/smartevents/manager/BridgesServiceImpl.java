@@ -258,6 +258,12 @@ public class BridgesServiceImpl implements BridgesService {
         if (Objects.nonNull(bridgeErrorInstance)) {
             bridge.setBridgeErrorId(bridgeErrorInstance.getId());
             bridge.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        } else {
+            // If the User has updated a Bridge that was previously failed by k8s it has been observed
+            // that the reconciliation loop can first emit an update with the existing FAILED state
+            // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+            bridge.setBridgeErrorId(null);
+            bridge.setBridgeErrorUUID(null);
         }
 
         if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
