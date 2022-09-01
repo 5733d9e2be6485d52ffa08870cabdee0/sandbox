@@ -206,31 +206,31 @@
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException",
     "id": 36,
-    "reason": "An unspecified error occurred handling your request. Please contact the Help Desk for support quoting the date and time of this error.",
+    "reason": "An unspecified error occurred handling your request.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException",
     "id": 37,
-    "reason": "Your request was not complete within the configured time-out. Please contact the Help Desk for support quoting the date and time of this error.",
+    "reason": "Your request was not complete within the configured time-out.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException",
     "id": 38,
-    "reason": "Your request failed after the maximum number of configured re-try attempts. Please contact the Help Desk for support quoting the date and time of this error.",
+    "reason": "Your request failed after the maximum number of configured re-try attempts.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException",
     "id": 39,
-    "reason": "A ReplicaSet failed to be provisioned for your request. Please contact the Help Desk for support quoting the date and time of this error.",
+    "reason": "A ReplicaSet failed to be provisioned for your request.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException",
     "id": 40,
-    "reason": "A Managed Connector failed to be provisioned for your request. Please contact the Help Desk for support quoting the date and time of this error.",
+    "reason": "A Managed Connector failed to be provisioned for your request.",
     "type": "PLATFORM"
   }
 ]
