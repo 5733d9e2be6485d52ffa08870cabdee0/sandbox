@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -26,7 +26,7 @@ public class BridgeErrorHelperTest {
         this.helper = new BridgeErrorHelper();
         this.helper.bridgeErrorService = service;
 
-        when(service.getError(UnspecifiedProvisioningFailureException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.PLATFORM)));
+        when(service.getError(ProvisioningFailureException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.PLATFORM)));
 
         this.helper.setup();
     }

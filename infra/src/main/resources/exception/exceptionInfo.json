@@ -204,7 +204,7 @@
     "type": "PLATFORM"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException",
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException",
     "id": 36,
     "reason": "An unspecified error occurred handling your request.",
     "type": "PLATFORM"

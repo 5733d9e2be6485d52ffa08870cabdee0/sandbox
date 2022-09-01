@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnspecifiedProvisioningFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -30,17 +30,17 @@ public class BridgeErrorHelper {
 
     @PostConstruct
     protected void setup() {
-        Optional<BridgeError> error = bridgeErrorService.getError(UnspecifiedProvisioningFailureException.class);
+        Optional<BridgeError> error = bridgeErrorService.getError(ProvisioningFailureException.class);
         if (error.isPresent()) {
             deploymentFailedException = error.get();
         } else {
-            LOGGER.error("{} error is not defined in the ErrorsService.", UnspecifiedProvisioningFailureException.class.getSimpleName());
+            LOGGER.error("{} error is not defined in the ErrorsService.", ProvisioningFailureException.class.getSimpleName());
             Quarkus.asyncExit(1);
         }
     }
 
     public BridgeErrorInstance getBridgeErrorInstance(Exception e) {
-        LOGGER.info("Mapping '{}' to BridgeError", e.getClass().getName(), e);
+        LOGGER.debug("Mapping '{}' to BridgeError", e.getClass().getName(), e);
         return bridgeErrorService.getError(e.getClass())
                 .map(b -> {
                     BridgeErrorInstance bei = new BridgeErrorInstance(b);
@@ -48,7 +48,7 @@ public class BridgeErrorHelper {
                     return bei;
                 })
                 .orElseGet(() -> {
-                    LOGGER.info("'{}' not found in error catalog. Falling back to generic UnspecifiedProvisioningFailureException.", e.getClass().getName());
+                    LOGGER.debug("'{}' not found in error catalog. Falling back to generic ProvisioningFailureException.", e.getClass().getName());
                     BridgeErrorInstance bei = new BridgeErrorInstance(deploymentFailedException);
                     LOGGER.info("Mapped '{}' to '{}'", e.getClass().getName(), bei);
                     return bei;

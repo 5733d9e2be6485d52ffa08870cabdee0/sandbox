@@ -1,8 +1,8 @@
 package com.redhat.service.smartevents.infra.exceptions.definitions.platform;
 
-public abstract class ProvisioningFailureException extends InternalPlatformException {
+public class ProvisioningFailureException extends InternalPlatformException {
 
-    ProvisioningFailureException(String message) {
+    public ProvisioningFailureException(String message) {
         super(message);
     }
 
