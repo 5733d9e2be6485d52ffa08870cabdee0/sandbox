@@ -11,3 +11,4 @@ resources:
 - manager
 - localstack
 - istio
+- secrets
