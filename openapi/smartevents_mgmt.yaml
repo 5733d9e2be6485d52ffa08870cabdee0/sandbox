@@ -999,6 +999,20 @@ components:
           type: string
         type:
           $ref: '#/components/schemas/BridgeErrorType'
+    BridgeErrorInstance:
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        code:
+          type: string
+        reason:
+          type: string
+        type:
+          $ref: '#/components/schemas/BridgeErrorType'
+        uuid:
+          type: string
     BridgeErrorType:
       enum:
       - USER
