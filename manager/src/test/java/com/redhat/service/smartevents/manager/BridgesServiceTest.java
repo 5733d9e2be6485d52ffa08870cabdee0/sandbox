@@ -193,8 +193,8 @@ public class BridgesServiceTest {
 
         Bridge retrievedBridge = bridgesService.getBridge(bridge.getId(), DEFAULT_CUSTOMER_ID);
         assertThat(retrievedBridge.getStatus()).isEqualTo(PROVISIONING);
-        assertThat(retrievedBridge.getBridgeErrorId()).isNull();
-        assertThat(retrievedBridge.getBridgeErrorUUID()).isNull();
+        assertThat(retrievedBridge.getErrorId()).isNull();
+        assertThat(retrievedBridge.getErrorUUID()).isNull();
     }
 
     @Test
@@ -251,8 +251,8 @@ public class BridgesServiceTest {
         Bridge updated = bridgesService.updateBridgeStatus(updateDTO);
 
         assertThat(updated.getStatus()).isEqualTo(FAILED);
-        assertThat(updated.getBridgeErrorId()).isEqualTo(1);
-        assertThat(updated.getBridgeErrorUUID()).isEqualTo(bei.getUUID());
+        assertThat(updated.getErrorId()).isEqualTo(1);
+        assertThat(updated.getErrorUUID()).isEqualTo(bei.getUUID());
     }
 
     @Test
@@ -276,8 +276,8 @@ public class BridgesServiceTest {
         Bridge updated = bridgesService.updateBridgeStatus(updateDTOReady);
 
         assertThat(updated.getStatus()).isEqualTo(READY);
-        assertThat(updated.getBridgeErrorId()).isNull();
-        assertThat(updated.getBridgeErrorUUID()).isNull();
+        assertThat(updated.getErrorId()).isNull();
+        assertThat(updated.getErrorUUID()).isNull();
     }
 
     @Test
@@ -392,16 +392,16 @@ public class BridgesServiceTest {
     void testUpdateBridgeErrorHandlerWithNoChange() {
         // Create Bridge without an Error Handler defined
         Bridge existingBridge = createPersistBridge(TestConstants.DEFAULT_BRIDGE_ID, READY);
-        existingBridge.setBridgeErrorId(1);
-        existingBridge.setBridgeErrorUUID(UUID.randomUUID().toString());
+        existingBridge.setErrorId(1);
+        existingBridge.setErrorUUID(UUID.randomUUID().toString());
         bridgeDAO.persist(existingBridge);
 
         BridgeRequest request = new BridgeRequestForTests(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
         Bridge updatedBridge = bridgesService.updateBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
         BridgeResponse updatedResponse = bridgesService.toResponse(updatedBridge);
 
-        assertThat(updatedBridge.getBridgeErrorId()).isEqualTo(existingBridge.getBridgeErrorId());
-        assertThat(updatedBridge.getBridgeErrorUUID()).isEqualTo(existingBridge.getBridgeErrorUUID());
+        assertThat(updatedBridge.getErrorId()).isEqualTo(existingBridge.getErrorId());
+        assertThat(updatedBridge.getErrorUUID()).isEqualTo(existingBridge.getErrorUUID());
 
         // The Bridge created at the beginning of this test does not have an Error Handler
         // Therefore we do not expect there to have been any changes or Work scheduled.
@@ -418,8 +418,8 @@ public class BridgesServiceTest {
         Bridge updatedBridge = bridgesService.updateBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, request);
         BridgeResponse updatedResponse = bridgesService.toResponse(updatedBridge);
 
-        assertThat(updatedBridge.getBridgeErrorId()).isNull();
-        assertThat(updatedBridge.getBridgeErrorUUID()).isNull();
+        assertThat(updatedBridge.getErrorId()).isNull();
+        assertThat(updatedBridge.getErrorUUID()).isNull();
 
         // The Bridge should move into ACCEPTED state to provision the Error Handler
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);

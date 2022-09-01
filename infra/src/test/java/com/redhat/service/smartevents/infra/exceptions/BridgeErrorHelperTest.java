@@ -59,14 +59,14 @@ public class BridgeErrorHelperTest {
 
     @Test
     void testMakeUserMessageWhenNoBridgeErrorExists() {
-        HasBridgeErrorInformation hbei = new HasBridgeErrorInformation() {
+        HasErrorInformation hbei = new HasErrorInformation() {
             @Override
-            public Integer getBridgeErrorId() {
+            public Integer getErrorId() {
                 return null;
             }
 
             @Override
-            public String getBridgeErrorUUID() {
+            public String getErrorUUID() {
                 return null;
             }
         };
@@ -77,14 +77,14 @@ public class BridgeErrorHelperTest {
 
     @Test
     void testMakeUserMessageWhenBridgeErrorDoesExist() {
-        HasBridgeErrorInformation hbei = new HasBridgeErrorInformation() {
+        HasErrorInformation hbei = new HasErrorInformation() {
             @Override
-            public Integer getBridgeErrorId() {
+            public Integer getErrorId() {
                 return 1;
             }
 
             @Override
-            public String getBridgeErrorUUID() {
+            public String getErrorUUID() {
                 return "12345";
             }
         };
@@ -98,14 +98,14 @@ public class BridgeErrorHelperTest {
 
     @Test
     void testMakeUserMessageCheckTrailingFullStopRemoval() {
-        HasBridgeErrorInformation hbei = new HasBridgeErrorInformation() {
+        HasErrorInformation hbei = new HasErrorInformation() {
             @Override
-            public Integer getBridgeErrorId() {
+            public Integer getErrorId() {
                 return 1;
             }
 
             @Override
-            public String getBridgeErrorUUID() {
+            public String getErrorUUID() {
                 return "12345";
             }
         };

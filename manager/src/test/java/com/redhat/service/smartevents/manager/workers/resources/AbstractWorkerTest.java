@@ -66,8 +66,8 @@ public class AbstractWorkerTest {
         worker.handleWork(work);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-        assertThat(bridge.getBridgeErrorId()).isNotNull();
-        assertThat(bridge.getBridgeErrorUUID()).isNotNull();
+        assertThat(bridge.getErrorId()).isNotNull();
+        assertThat(bridge.getErrorUUID()).isNotNull();
     }
 
     @Test
@@ -82,8 +82,8 @@ public class AbstractWorkerTest {
         worker.handleWork(work);
 
         assertThat(bridge.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-        assertThat(bridge.getBridgeErrorId()).isNotNull();
-        assertThat(bridge.getBridgeErrorUUID()).isNotNull();
+        assertThat(bridge.getErrorId()).isNotNull();
+        assertThat(bridge.getErrorUUID()).isNotNull();
     }
 
 }

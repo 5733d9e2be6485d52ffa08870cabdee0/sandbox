@@ -129,8 +129,8 @@ public class ProcessorWorkerTest {
             //Emulate ConnectorWorker failing
             connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
             if (dependencyStatusWhenComplete == FAILED) {
-                connectorEntity.setBridgeErrorId(1);
-                connectorEntity.setBridgeErrorUUID(UUID.randomUUID().toString());
+                connectorEntity.setErrorId(1);
+                connectorEntity.setErrorUUID(UUID.randomUUID().toString());
             }
             return connectorEntity;
         }).when(connectorWorker).handleWork(work);
@@ -141,8 +141,8 @@ public class ProcessorWorkerTest {
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
         if (dependencyStatusWhenComplete == FAILED) {
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         }
 
         verify(connectorWorker).handleWork(work);
@@ -203,8 +203,8 @@ public class ProcessorWorkerTest {
             //Emulate ConnectorWorker completing work
             connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
             if (dependencyStatusWhenComplete == FAILED) {
-                connectorEntity.setBridgeErrorId(1);
-                connectorEntity.setBridgeErrorUUID(UUID.randomUUID().toString());
+                connectorEntity.setErrorId(1);
+                connectorEntity.setErrorUUID(UUID.randomUUID().toString());
             }
             return connectorEntity;
         }).when(connectorWorker).handleWork(work);
@@ -215,8 +215,8 @@ public class ProcessorWorkerTest {
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
         if (dependencyStatusWhenComplete == FAILED) {
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         }
 
         verify(connectorWorker).handleWork(work);

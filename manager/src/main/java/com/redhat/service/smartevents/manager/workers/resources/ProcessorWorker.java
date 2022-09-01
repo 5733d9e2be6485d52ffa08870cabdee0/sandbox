@@ -74,8 +74,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         // If the Connector failed we should mark the Processor as failed too
         if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
             processor.setStatus(ManagedResourceStatus.FAILED);
-            processor.setBridgeErrorId(updatedConnectorEntity.getBridgeErrorId());
-            processor.setBridgeErrorUUID(updatedConnectorEntity.getBridgeErrorUUID());
+            processor.setErrorId(updatedConnectorEntity.getErrorId());
+            processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }
 
         return persist(processor);
@@ -108,8 +108,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         // If the Connector failed we should mark the Processor as failed too
         if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
             processor.setStatus(ManagedResourceStatus.FAILED);
-            processor.setBridgeErrorId(updatedConnectorEntity.getBridgeErrorId());
-            processor.setBridgeErrorUUID(updatedConnectorEntity.getBridgeErrorUUID());
+            processor.setErrorId(updatedConnectorEntity.getErrorId());
+            processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }
 
         return persist(processor);
@@ -126,8 +126,8 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         String processorId = work.getManagedResourceId();
         Processor processor = getDao().findById(processorId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        processor.setBridgeErrorId(bridgeErrorInstance.getId());
-        processor.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        processor.setErrorId(bridgeErrorInstance.getId());
+        processor.setErrorUUID(bridgeErrorInstance.getUUID());
         return persist(processor);
     }
 

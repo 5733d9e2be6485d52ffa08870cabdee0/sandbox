@@ -235,8 +235,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         String connectorEntityId = getId(work);
         ConnectorEntity connectorEntity = load(connectorEntityId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        connectorEntity.setBridgeErrorId(bridgeErrorInstance.getId());
-        connectorEntity.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        connectorEntity.setErrorId(bridgeErrorInstance.getId());
+        connectorEntity.setErrorUUID(bridgeErrorInstance.getUUID());
         return persist(connectorEntity);
     }
 

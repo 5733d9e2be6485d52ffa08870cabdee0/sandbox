@@ -1,12 +1,12 @@
--- add new "error_code" column
+-- add new error columns
 alter table BRIDGE
-    add column "bridge_error_id" integer,
-    add column "bridge_error_uuid" varchar(255);
+    add column "error_id" integer,
+    add column "error_uuid" varchar(255);
 
 alter table PROCESSOR
-    add column "bridge_error_id" integer,
-    add column "bridge_error_uuid" varchar(255);
+    add column "error_id" integer,
+    add column "error_uuid" varchar(255);
 
 alter table CONNECTOR
-    add column "bridge_error_id" integer,
-    add column "bridge_error_uuid" varchar(255);
+    add column "error_id" integer,
+    add column "error_uuid" varchar(255);

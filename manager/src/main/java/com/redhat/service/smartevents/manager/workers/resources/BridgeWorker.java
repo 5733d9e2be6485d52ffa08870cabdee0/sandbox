@@ -217,8 +217,8 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         String bridgeId = work.getManagedResourceId();
         Bridge bridge = getDao().findById(bridgeId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        bridge.setBridgeErrorId(bridgeErrorInstance.getId());
-        bridge.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+        bridge.setErrorId(bridgeErrorInstance.getId());
+        bridge.setErrorUUID(bridgeErrorInstance.getUUID());
         return persist(bridge);
     }
 
@@ -230,8 +230,8 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         String customerId = bridge.getCustomerId();
         processorService.getErrorHandler(bridgeId, customerId)
                 .ifPresent(errorHandler -> {
-                    bridge.setBridgeErrorId(errorHandler.getBridgeErrorId());
-                    bridge.setBridgeErrorUUID(errorHandler.getBridgeErrorUUID());
+                    bridge.setErrorId(errorHandler.getErrorId());
+                    bridge.setErrorUUID(errorHandler.getErrorUUID());
                     persist(bridge);
                 });
     }

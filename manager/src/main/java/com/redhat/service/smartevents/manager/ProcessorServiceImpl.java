@@ -291,8 +291,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
         existingProcessor.setGeneration(nextGeneration);
-        existingProcessor.setBridgeErrorId(null);
-        existingProcessor.setBridgeErrorUUID(null);
+        existingProcessor.setErrorId(null);
+        existingProcessor.setErrorUUID(null);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -345,14 +345,14 @@ public class ProcessorServiceImpl implements ProcessorService {
         // If an exception happened; make sure to record it.
         BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
         if (Objects.nonNull(bridgeErrorInstance)) {
-            processor.setBridgeErrorId(bridgeErrorInstance.getId());
-            processor.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+            processor.setErrorId(bridgeErrorInstance.getId());
+            processor.setErrorUUID(bridgeErrorInstance.getUUID());
         } else {
             // If the User has updated a Processor that was previously failed by k8s it has been observed
             // that the reconciliation loop can first emit an update with the existing FAILED state
             // to subsequently emit an update with a READY state when the CRD updates and succeeds.
-            processor.setBridgeErrorId(null);
-            processor.setBridgeErrorUUID(null);
+            processor.setErrorId(null);
+            processor.setErrorUUID(null);
         }
 
         if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {

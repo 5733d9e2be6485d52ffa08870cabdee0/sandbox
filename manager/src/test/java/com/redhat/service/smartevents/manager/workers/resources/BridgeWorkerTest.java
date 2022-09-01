@@ -136,8 +136,8 @@ class BridgeWorkerTest {
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(any());
 
         if (throwRhoasError) {
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         }
     }
 
@@ -268,8 +268,8 @@ class BridgeWorkerTest {
 
         Processor errorHandler = createErrorHandlerProcessor(bridge, errorHandlerStatus);
         if (errorHandlerProcessorPresent && dependencyStatusWhenComplete == FAILED && errorHandlerStatus == FAILED) {
-            errorHandler.setBridgeErrorId(1);
-            errorHandler.setBridgeErrorUUID("uuid");
+            errorHandler.setErrorId(1);
+            errorHandler.setErrorUUID("uuid");
         }
 
         when(processorServiceMock.getErrorHandler(TestConstants.DEFAULT_BRIDGE_ID, TestConstants.DEFAULT_CUSTOMER_ID))
@@ -302,16 +302,16 @@ class BridgeWorkerTest {
 
         if (throwRhoasError || throwDnsError) {
             // An error occurred provisioning the Bridge
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         } else {
             if (errorHandlerStatus == FAILED) {
-                assertThat(refreshed.getBridgeErrorId()).isNotNull();
-                assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+                assertThat(refreshed.getErrorId()).isNotNull();
+                assertThat(refreshed.getErrorUUID()).isNotNull();
             }
             // An error occurred provisioning the Bridge's Error Handler. Check details were propagated.
-            assertThat(refreshed.getBridgeErrorId()).isEqualTo(errorHandler.getBridgeErrorId());
-            assertThat(refreshed.getBridgeErrorUUID()).isEqualTo(errorHandler.getBridgeErrorUUID());
+            assertThat(refreshed.getErrorId()).isEqualTo(errorHandler.getErrorId());
+            assertThat(refreshed.getErrorUUID()).isEqualTo(errorHandler.getErrorUUID());
         }
     }
 
@@ -371,8 +371,8 @@ class BridgeWorkerTest {
         verify(workManagerMock, times(isWorkComplete ? 0 : 1)).reschedule(work);
 
         if (throwRhoasError) {
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         }
     }
 
@@ -425,8 +425,8 @@ class BridgeWorkerTest {
             assertThat(refreshed1.getDependencyStatus()).isEqualTo(DELETING);
 
             errorHandler.setStatus(FAILED);
-            errorHandler.setBridgeErrorId(1);
-            errorHandler.setBridgeErrorUUID(UUID.randomUUID().toString());
+            errorHandler.setErrorId(1);
+            errorHandler.setErrorUUID(UUID.randomUUID().toString());
 
             Bridge refreshed2 = worker.handleWork(work);
 
@@ -436,15 +436,15 @@ class BridgeWorkerTest {
 
         if (throwRhoasError || throwDnsError) {
             // An error occurred provisioning the Bridge
-            assertThat(refreshed1.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed1.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed1.getErrorId()).isNotNull();
+            assertThat(refreshed1.getErrorUUID()).isNotNull();
         } else if (!isErrorHandlerDeleted) {
-            assertThat(refreshed1.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed1.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed1.getErrorId()).isNotNull();
+            assertThat(refreshed1.getErrorUUID()).isNotNull();
 
             // An error occurred provisioning the Bridge's Error Handler. Check details were propagated.
-            assertThat(refreshed1.getBridgeErrorId()).isEqualTo(errorHandler.getBridgeErrorId());
-            assertThat(refreshed1.getBridgeErrorUUID()).isEqualTo(errorHandler.getBridgeErrorUUID());
+            assertThat(refreshed1.getErrorId()).isEqualTo(errorHandler.getErrorId());
+            assertThat(refreshed1.getErrorUUID()).isEqualTo(errorHandler.getErrorUUID());
         }
     }
 

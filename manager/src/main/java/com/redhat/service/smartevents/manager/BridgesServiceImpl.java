@@ -161,8 +161,8 @@ public class BridgesServiceImpl implements BridgesService {
         existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingBridge.setDefinition(updatedDefinition);
         existingBridge.setGeneration(existingBridge.getGeneration() + 1);
-        existingBridge.setBridgeErrorId(null);
-        existingBridge.setBridgeErrorUUID(null);
+        existingBridge.setErrorId(null);
+        existingBridge.setErrorUUID(null);
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
@@ -256,14 +256,14 @@ public class BridgesServiceImpl implements BridgesService {
         // If an exception happened; make sure to record it.
         BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
         if (Objects.nonNull(bridgeErrorInstance)) {
-            bridge.setBridgeErrorId(bridgeErrorInstance.getId());
-            bridge.setBridgeErrorUUID(bridgeErrorInstance.getUUID());
+            bridge.setErrorId(bridgeErrorInstance.getId());
+            bridge.setErrorUUID(bridgeErrorInstance.getUUID());
         } else {
             // If the User has updated a Bridge that was previously failed by k8s it has been observed
             // that the reconciliation loop can first emit an update with the existing FAILED state
             // to subsequently emit an update with a READY state when the CRD updates and succeeds.
-            bridge.setBridgeErrorId(null);
-            bridge.setBridgeErrorUUID(null);
+            bridge.setErrorId(null);
+            bridge.setErrorUUID(null);
         }
 
         if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {

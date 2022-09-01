@@ -10,11 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
-import com.redhat.service.smartevents.infra.exceptions.HasBridgeErrorInformation;
+import com.redhat.service.smartevents.infra.exceptions.HasErrorInformation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 
 @MappedSuperclass
-public class ManagedResource implements HasBridgeErrorInformation {
+public class ManagedResource implements HasErrorInformation {
 
     public static final String ID_PARAM = "id";
 
@@ -53,11 +53,11 @@ public class ManagedResource implements HasBridgeErrorInformation {
     @Column(name = "deletion_requested_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime deletionRequestedAt;
 
-    @Column(name = "bridge_error_id")
-    private Integer bridgeErrorId;
+    @Column(name = "error_id")
+    private Integer errorId;
 
-    @Column(name = "bridge_error_uuid")
-    private String bridgeErrorUUID;
+    @Column(name = "error_uuid")
+    private String errorUUID;
 
     public String getId() {
         return id;
@@ -131,22 +131,20 @@ public class ManagedResource implements HasBridgeErrorInformation {
         this.generation = generation;
     }
 
-    @Override
-    public Integer getBridgeErrorId() {
-        return bridgeErrorId;
+    public Integer getErrorId() {
+        return errorId;
     }
 
-    public void setBridgeErrorId(Integer bridgeErrorId) {
-        this.bridgeErrorId = bridgeErrorId;
+    public void setErrorId(Integer errorId) {
+        this.errorId = errorId;
     }
 
-    @Override
-    public String getBridgeErrorUUID() {
-        return bridgeErrorUUID;
+    public String getErrorUUID() {
+        return errorUUID;
     }
 
-    public void setBridgeErrorUUID(String bridgeErrorUUID) {
-        this.bridgeErrorUUID = bridgeErrorUUID;
+    public void setErrorUUID(String errorUUID) {
+        this.errorUUID = errorUUID;
     }
 
     public boolean isActionable() {

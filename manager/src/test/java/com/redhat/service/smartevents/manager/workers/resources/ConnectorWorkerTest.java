@@ -148,13 +148,13 @@ class ConnectorWorkerTest {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
         if (expectedResourceStatus == ManagedResourceStatus.FAILED) {
-            assertThat(refreshed.getBridgeErrorId()).isNotNull();
-            assertThat(refreshed.getBridgeErrorUUID()).isNotNull();
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
         }
         verify(workManagerMock, never()).reschedule(work);
 
-        assertThat(processor.getBridgeErrorId()).isNull();
-        assertThat(processor.getBridgeErrorUUID()).isNull();
+        assertThat(processor.getErrorId()).isNull();
+        assertThat(processor.getErrorUUID()).isNull();
     }
 
     @Transactional

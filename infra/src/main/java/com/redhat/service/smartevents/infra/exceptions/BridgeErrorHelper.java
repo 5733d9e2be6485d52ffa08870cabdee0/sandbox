@@ -55,23 +55,23 @@ public class BridgeErrorHelper {
                 });
     }
 
-    public String makeUserMessage(HasBridgeErrorInformation hasBridgeErrorInformation) {
-        Integer bridgeErrorId = hasBridgeErrorInformation.getBridgeErrorId();
-        String bridgeErrorUUID = hasBridgeErrorInformation.getBridgeErrorUUID();
-        if (Objects.isNull(bridgeErrorId)) {
+    public String makeUserMessage(HasErrorInformation hasErrorInformation) {
+        Integer errorId = hasErrorInformation.getErrorId();
+        String errorUUID = hasErrorInformation.getErrorUUID();
+        if (Objects.isNull(errorId)) {
             return null;
         }
         StringBuilder message = new StringBuilder();
         bridgeErrorService
-                .getError(bridgeErrorId)
+                .getError(errorId)
                 .ifPresentOrElse(bei -> {
                     String reason = bei.getReason();
                     if (reason.endsWith(".")) {
                         reason = reason.substring(0, reason.length() - 1);
                     }
-                    message.append(String.format(USER_MESSAGE, bei.getCode(), reason, bridgeErrorUUID));
+                    message.append(String.format(USER_MESSAGE, bei.getCode(), reason, errorUUID));
                 },
-                        () -> message.append(String.format(USER_MESSAGE_UNKNOWN, bridgeErrorUUID)));
+                        () -> message.append(String.format(USER_MESSAGE_UNKNOWN, errorUUID)));
         return message.toString();
     }
 
