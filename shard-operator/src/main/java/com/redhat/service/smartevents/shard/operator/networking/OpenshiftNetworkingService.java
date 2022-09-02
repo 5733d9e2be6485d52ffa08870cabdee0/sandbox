@@ -52,7 +52,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
-        if (existing == null || !expected.getSpec().getTo().getName().equals(existing.getSpec().getTo().getName())) {
+        if (existing == null || !existing.getSpec().equals(expected.getSpec())) {
             client.routes()
                     .inNamespace(service.getMetadata().getNamespace())
                     .withName(bridgeIngress.getMetadata().getName())
