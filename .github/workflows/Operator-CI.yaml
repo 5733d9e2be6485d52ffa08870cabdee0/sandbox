@@ -59,30 +59,43 @@ jobs:
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
       - name: Istio Setup
         uses: ./.github/actions/istio-setup
-      - name: Install Knative, deploy istio resources and Prometheus ServiceMonitor CRD
+      - name: Install Knative
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-          kubectl apply -f kustomize/overlays/ci/istio/gateway.yaml
-          kubectl apply -f kustomize/overlays/ci/istio/virtual-service-kafka-broker.yaml
-          kubectl apply -f kustomize/overlays/ci/istio/jwt-request-authentication.yaml
-
+      - name: Deploy Istio resources
+        run: kustomize build overlays/ci/istio | oc apply -f -
+      - name: Deploy Prometheus ServiceMonitor CRD
+        run : |  
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
-          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
-      - name: Deploy Shard operator
+          kustomize build overlays/ci/prometheus | oc apply -f -
+      - name: Configure Red Hat SSO for shard
+        shell: bash
         env:
           DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
           DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
+          DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID: ${{ secrets.DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID }}
+          DEV_WEBHOOK_CLIENT_ID: ${{ secrets.DEV_WEBHOOK_CLIENT_ID }}
+          DEV_WEBHOOK_CLIENT_SECRET: ${{ secrets.DEV_WEBHOOK_CLIENT_SECRET }}
         run: |
-          kubectl create namespace $NAMESPACE
-          # Deploy operator
-          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID=).*|\1$DEV_EVENT_BRIDGE_SSO_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET=).*|\1$DEV_EVENT_BRIDGE_SSO_SECRET|"   event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID=).*|\1$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID|"   event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_ID=).*|\1$DEV_WEBHOOK_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET=).*|\1$DEV_WEBHOOK_CLIENT_SECRET|"   event-bridge-shard-operator-secrets.yaml
+        working-directory: kustomize/overlays/ci/shard
+      - name: Configure shard id
+        shell: bash
+        env:
+          DEV_SHARD_ID: ${{ secrets.DEV_SHARD_ID }}
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/shard/event-bridge-shard-operator-secrets.yaml
+      - name: Install all resources
+        run: kustomize build overlays/ci | oc apply -f -
+        working-directory: kustomize
+        continue-on-error: true
+      - name: Wait for operator to start
+        run: |
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
       - name: Run integration tests
         env:
