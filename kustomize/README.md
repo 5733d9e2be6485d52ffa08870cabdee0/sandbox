@@ -130,7 +130,33 @@ Before you start the deployment process, ensure that your `oc` CLI is authentica
 To do a deployment, use the following from your authenticated `oc` CLI (remember to change the `namespace` in the overlay):
 
 ```shell
-kustomize build overlays/prod | oc apply -f -
+kustomize build overlays/stable | oc apply -f -
 ```
 
 The command should complete and exit cleanly.
+
+## Deploying the infrastructure to another cluster
+
+Assuming that the infrastructure version you'd like to deploy is the `stable` one, then the requirements are the following:
+1) The `OpenShift Serverless` operator is [installed](https://docs.openshift.com/container-platform/4.9/serverless/install/install-serverless-operator.html)
+2) Install `Redhat OpenShift distributed tracing platform`, `Kiali`, `Red Hat OpenShift Service Mesh` according to [this documentation](https://docs.openshift.com/container-platform/4.9/service_mesh/v2x/installing-ossm.html).
+3) You have to provide all the secrets/configurations using AWS secret manager. Get in touch with the dev team for that. Assuming you have deployed new AWS secrets `myenv/fleet-manager` and `myenv/fleet-shard`, then 
+   1) Replace the `spec/dataFrom/extract/key` of the resources `event-bridge-manager-secrets.yaml` and `event-bridge-shard-operator-secrets.yaml` with `myenv/fleet-manager` and `myenv/fleet-shard`.
+   2) Replace the `overlays/stable/awssm-secret.yaml` with a plain `Secret` containing the AWS credentials like
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "awssm-secret"
+data:
+  access-key: <AWS ACCESS KEY B64 ENCODED>
+  secret-access-key: <SECRET ACCESS KEY B64 ENCODED>
+```
+
+Then, in order to do a deployment, use the following from your authenticated `oc` CLI:
+
+```shell
+kustomize build overlays/stable | oc apply -f -
+```
+
+The resources should be available under the namespace `event-bridge-stable`.
