@@ -98,7 +98,7 @@ jobs:
         working-directory: kustomize
       - name: Wait for operator to start
         run: |
-          kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
+          kubectl wait --for=condition=available --timeout=120s deployment/event-bridge-shard-operator -n $NAMESPACE
       - name: Run integration tests
         env:
           IT_SHARD_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.IT_SHARD_KAFKA_BOOTSTRAP_SERVERS }}
