@@ -94,8 +94,8 @@ jobs:
           sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/shard/event-bridge-shard-operator-secrets.yaml
       - name: Install shard resources
         run: kustomize build overlays/ci/shard | oc apply -f -
-        working-directory: kustomize
         continue-on-error: true
+        working-directory: kustomize
       - name: Wait for operator to start
         run: |
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
