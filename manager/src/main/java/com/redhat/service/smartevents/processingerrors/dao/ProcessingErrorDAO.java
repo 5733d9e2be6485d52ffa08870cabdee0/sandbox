@@ -13,14 +13,26 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.quarkus.panache.common.Parameters;
 
+import static com.redhat.service.smartevents.processingerrors.models.ProcessingError.FIND_BY_BRIDGE_ID_ORDERED_QUERY;
+
 @ApplicationScoped
 @Transactional
 public class ProcessingErrorDAO implements PanacheRepositoryBase<ProcessingError, Long> {
 
+    private static final String CLEANUP_PROCEDURE = "cleanup_processing_error";
+    private static final String CLEANUP_QUERY = String.format("CALL %s(?)", CLEANUP_PROCEDURE);
+
     public ListResult<ProcessingError> findByBridgeIdOrdered(String bridgeId, QueryResourceInfo queryInfo) {
-        PanacheQuery<ProcessingError> query = find("#PROCESSING_ERROR.findByBridgeIdOrdered", Parameters.with("bridgeId", bridgeId));
+        PanacheQuery<ProcessingError> query = find("#" + FIND_BY_BRIDGE_ID_ORDERED_QUERY, Parameters.with("bridgeId", bridgeId));
         long total = query.count();
         List<ProcessingError> processingErrors = query.page(queryInfo.getPageNumber(), queryInfo.getPageSize()).list();
         return new ListResult<>(processingErrors, queryInfo.getPageNumber(), total);
+    }
+
+    public void cleanup(int maxEventsPerBridge) {
+        getEntityManager()
+                .createNativeQuery(CLEANUP_QUERY)
+                .setParameter(1, maxEventsPerBridge)
+                .executeUpdate();
     }
 }
