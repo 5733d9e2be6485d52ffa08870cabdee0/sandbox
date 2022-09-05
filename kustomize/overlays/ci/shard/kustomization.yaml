@@ -3,7 +3,5 @@ patchesStrategicMerge:
 namespace: event-bridge-operator
 resources:
 - namespace.yaml
-- cluster-role.yaml
-- cluster-role-binding.yaml
 - event-bridge-shard-operator-secrets.yaml
 - ../../../base/shard

@@ -1,8 +1,7 @@
 commonLabels:
   app: event-bridge-shard-operator
 resources:
-  - resources/deploy.yaml
+  - ../../../shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+  - ../../../shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+  - ../../../shard-operator/target/kubernetes/kubernetes.yml
   - resources/deploy-config.yaml
-  - resources/bridgeingresses.com.redhat.service.bridge-v1.yml
-  - resources/bridgeexecutors.com.redhat.service.bridge-v1.yml
-  - resources/service-account.yaml
