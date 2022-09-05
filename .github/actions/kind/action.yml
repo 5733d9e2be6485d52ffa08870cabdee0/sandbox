@@ -29,6 +29,12 @@ runs:
     - name: Add ${{ inputs.kind-node-hostname }} host to machine hosts
       shell: bash
       run: echo "127.0.0.1 ${{ inputs.kind-node-hostname }}" | sudo tee -a /etc/hosts
+    - name: Install Helm
+      shell: bash
+      run: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        bash get_helm.sh
     # - name: Debug hosts
     #   shell: bash
     #   run: cat /etc/hosts
