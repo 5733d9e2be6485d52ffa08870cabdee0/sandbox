@@ -21,6 +21,8 @@ import io.fabric8.openshift.api.model.RouteTargetReferenceBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 
+import static com.redhat.service.smartevents.shard.operator.networking.OpenshiftRouteSpecMatchesHelper.matches;
+
 public class OpenshiftNetworkingService implements NetworkingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkingService.class);
@@ -52,7 +54,7 @@ public class OpenshiftNetworkingService implements NetworkingService {
                 .withName(bridgeIngress.getMetadata().getName())
                 .get();
 
-        if (existing == null || !existing.getSpec().equals(expected.getSpec())) {
+        if (existing == null || !matches(existing.getSpec(), expected.getSpec())) {
             client.routes()
                     .inNamespace(service.getMetadata().getNamespace())
                     .withName(bridgeIngress.getMetadata().getName())
