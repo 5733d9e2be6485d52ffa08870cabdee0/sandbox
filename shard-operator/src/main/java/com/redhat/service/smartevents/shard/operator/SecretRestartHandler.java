@@ -19,7 +19,7 @@ public class SecretRestartHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecretRestartHandler.class);
 
-    @ConfigProperty(name = "secret.name")
+    @ConfigProperty(name = "event-bridge.secret.name")
     String secretName;
 
     @Inject
