@@ -11,7 +11,7 @@ jobs:
     env:
       NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
-      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -65,10 +65,12 @@ jobs:
           ./dev/bin/knative-installer.sh
       - name: Deploy Istio resources
         run: kustomize build overlays/ci/istio | oc apply -f -
+        working-directory: kustomize
       - name: Deploy Prometheus ServiceMonitor CRD
         run : |  
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kustomize build overlays/ci/prometheus | oc apply -f -
+        working-directory: kustomize
       - name: Configure Red Hat SSO for shard
         shell: bash
         env:
