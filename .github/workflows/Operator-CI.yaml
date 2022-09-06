@@ -9,7 +9,7 @@ on:
 jobs:
   event-bridge-build:
     env:
-      NAMESPACE: event-bridge-operator
+      NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
       KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
@@ -33,7 +33,7 @@ jobs:
         uses: ./.github/actions/java-maven-setup
         with:
           cache-key-prefix: ${{ runner.os }}
-      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to check out the pull request branch again
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
         uses: actions/checkout@v2
         with:
           ref: "refs/pull/${{ github.event.number }}/merge"
@@ -59,46 +59,34 @@ jobs:
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
       - name: Istio Setup
         uses: ./.github/actions/istio-setup
-      - name: Install Knative
+      - name: Install Knative, deploy istio resources and Prometheus ServiceMonitor CRD
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-      - name: Deploy Istio resources
-        run: kustomize build overlays/ci/istio | oc apply -f -
-        working-directory: kustomize
-      - name: Deploy Prometheus ServiceMonitor CRD
-        run : |  
+          kubectl apply -f kustomize/overlays/ci/istio/gateway.yaml
+          kubectl apply -f kustomize/overlays/ci/istio/virtual-service-kafka-broker.yaml
+          kubectl apply -f kustomize/overlays/ci/istio/jwt-request-authentication.yaml
+
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
-          kustomize build overlays/ci/prometheus | oc apply -f -
-        working-directory: kustomize
-      - name: Configure Red Hat SSO for shard
-        shell: bash
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
+      - name: Deploy Shard operator
         env:
           DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
           DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
-          DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID: ${{ secrets.DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID }}
-          DEV_WEBHOOK_CLIENT_ID: ${{ secrets.DEV_WEBHOOK_CLIENT_ID }}
-          DEV_WEBHOOK_CLIENT_SECRET: ${{ secrets.DEV_WEBHOOK_CLIENT_SECRET }}
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID=).*|\1$DEV_EVENT_BRIDGE_SSO_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET=).*|\1$DEV_EVENT_BRIDGE_SSO_SECRET|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID=).*|\1$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_ID=).*|\1$DEV_WEBHOOK_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET=).*|\1$DEV_WEBHOOK_CLIENT_SECRET|"   event-bridge-shard-operator-secrets.yaml
-        working-directory: kustomize/overlays/ci/shard
-      - name: Configure shard id
-        shell: bash
-        env:
-          DEV_SHARD_ID: ${{ secrets.DEV_SHARD_ID }}
-        run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/shard/event-bridge-shard-operator-secrets.yaml
-      - name: Install shard resources
-        run: kustomize build overlays/ci/shard | oc apply -f -
-        continue-on-error: true
-        working-directory: kustomize
-      - name: Wait for operator to start
-        run: |
-          kubectl wait --for=condition=available --timeout=120s deployment/event-bridge-shard-operator -n $NAMESPACE
+          kubectl create namespace $NAMESPACE
+          # Create addon-smart-events-operator-parameters secret
+          kubectl create secret generic addon-smart-events-operator-parameters \
+          --from-literal=EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external \
+          --from-literal=EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID \
+          --from-literal=EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET \
+          -n $NAMESPACE
+          # Deploy operator
+          kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
+          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml          
+          kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
+          kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
       - name: Run integration tests
         env:
           IT_SHARD_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.IT_SHARD_KAFKA_BOOTSTRAP_SERVERS }}
@@ -118,4 +106,4 @@ jobs:
       - name: Print operator log
         if: always()
         run: |
-          kubectl logs deployment/event-bridge-shard-operator -n $NAMESPACE
+          kubectl logs deployment/shard-operator -n $NAMESPACE
