@@ -107,11 +107,11 @@ jobs:
           DEV_WEBHOOK_CLIENT_ID: ${{ secrets.DEV_WEBHOOK_CLIENT_ID }}
           DEV_WEBHOOK_CLIENT_SECRET: ${{ secrets.DEV_WEBHOOK_CLIENT_SECRET }}
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID=).*|\1$DEV_EVENT_BRIDGE_SSO_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET=).*|\1$DEV_EVENT_BRIDGE_SSO_SECRET|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID=).*|\1$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_ID=).*|\1$DEV_WEBHOOK_CLIENT_ID|"   event-bridge-shard-operator-secrets.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET=).*|\1$DEV_WEBHOOK_CLIENT_SECRET|"   event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID: ).*|\1$DEV_EVENT_BRIDGE_SSO_CLIENT_ID|" event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET: ).*|\1$DEV_EVENT_BRIDGE_SSO_SECRET|" event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID: ).*|\1$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID|" event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_ID: ).*|\1$DEV_WEBHOOK_CLIENT_ID|" event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET: ).*|\1$DEV_WEBHOOK_CLIENT_SECRET|" event-bridge-shard-operator-secrets.yaml
         working-directory: kustomize/overlays/ci/shard
       - name: Configure shard id
         shell: bash
@@ -119,7 +119,7 @@ jobs:
           DEV_SHARD_ID: ${{ secrets.DEV_SHARD_ID }}
         run: |
           sed -i -E "s|(.*SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/manager/kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/shard/event-bridge-shard-operator-secrets.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID: ).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/shard/event-bridge-shard-operator-secrets.yaml
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
