@@ -131,6 +131,7 @@ public class ManagedResource implements HasErrorInformation {
         this.generation = generation;
     }
 
+    @Override
     public Integer getErrorId() {
         return errorId;
     }
@@ -139,6 +140,7 @@ public class ManagedResource implements HasErrorInformation {
         this.errorId = errorId;
     }
 
+    @Override
     public String getErrorUUID() {
         return errorUUID;
     }

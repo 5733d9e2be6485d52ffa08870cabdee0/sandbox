@@ -8,8 +8,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
@@ -32,9 +30,6 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
     @Inject
     ConnectorWorker connectorWorker;
-
-    @Inject
-    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     protected PanacheRepositoryBase<Processor, String> getDao() {
@@ -119,16 +114,6 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
     protected boolean isDeprovisioningComplete(Processor managedResource) {
         //As far as the Worker mechanism is concerned work for a Processor is complete when the dependencies are complete.
         return DEPROVISIONING_COMPLETED.contains(managedResource.getDependencyStatus());
-    }
-
-    @Override
-    protected Processor recordError(Work work, Exception e) {
-        String processorId = work.getManagedResourceId();
-        Processor processor = getDao().findById(processorId);
-        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        processor.setErrorId(bridgeErrorInstance.getId());
-        processor.setErrorUUID(bridgeErrorInstance.getUuid());
-        return persist(processor);
     }
 
     protected boolean hasZeroConnectors(Processor processor) {

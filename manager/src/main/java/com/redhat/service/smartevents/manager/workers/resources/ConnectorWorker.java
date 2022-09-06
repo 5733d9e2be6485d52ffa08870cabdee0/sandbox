@@ -17,8 +17,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -45,9 +43,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Inject
     ConnectorsApiClient connectorsApi;
-
-    @Inject
-    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     protected PanacheRepositoryBase<ConnectorEntity, String> getDao() {
@@ -228,16 +223,6 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
         // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
         return true;
-    }
-
-    @Override
-    protected ConnectorEntity recordError(Work work, Exception e) {
-        String connectorEntityId = getId(work);
-        ConnectorEntity connectorEntity = load(connectorEntityId);
-        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
-        connectorEntity.setErrorId(bridgeErrorInstance.getId());
-        connectorEntity.setErrorUUID(bridgeErrorInstance.getUuid());
-        return persist(connectorEntity);
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {

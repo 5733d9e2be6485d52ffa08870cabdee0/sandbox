@@ -12,6 +12,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
@@ -51,6 +53,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
 
     @Inject
     WorkManager workManager;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     public T handleWork(Work work) {
@@ -146,6 +151,15 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return isTimeoutExceeded;
     }
 
+    protected T recordError(Work work, Exception e) {
+        String managedResourceId = getId(work);
+        T managedResource = load(managedResourceId);
+        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+        managedResource.setErrorId(bridgeErrorInstance.getId());
+        managedResource.setErrorUUID(bridgeErrorInstance.getUuid());
+        return persist(managedResource);
+    };
+
     protected abstract PanacheRepositoryBase<T, String> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
@@ -161,7 +175,5 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected abstract boolean isProvisioningComplete(T managedResource);
 
     protected abstract boolean isDeprovisioningComplete(T managedResource);
-
-    protected abstract T recordError(Work work, Exception e);
 
 }
