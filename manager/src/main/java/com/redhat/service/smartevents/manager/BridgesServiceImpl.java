@@ -51,7 +51,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     private String tlsKey;
 
-    // The tls certificate and the key is b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
+    // The tls certificate and the key are b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
     String b64TlsCertificate;
 
