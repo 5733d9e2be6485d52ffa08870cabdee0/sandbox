@@ -1261,8 +1261,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Error'
-    JsonNode:
-      type: array
     List:
       allOf:
       - $ref: '#/components/schemas/ListResponse'
@@ -1363,7 +1361,7 @@ components:
           additionalProperties:
             type: string
         payload:
-          $ref: '#/components/schemas/JsonNode'
+          type: object
     ProcessorCatalogResponse:
       required:
       - kind
