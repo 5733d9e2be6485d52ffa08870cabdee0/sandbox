@@ -1,12 +1,3 @@
-secretGenerator:
-- name: event-bridge-shard-operator-secrets
-  literals:
-  - WEBHOOK_CLIENT_ID=webhook-1
-  - WEBHOOK_CLIENT_SECRET=GMJiM0XNkp7b9bK0wP47odAtKxc4ufRv
-  - WEBHOOK_TECHNICAL_ACCOUNT_ID=402cf429-da04-4931-8089-e53ad452192b
-  - EVENT_BRIDGE_SSO_CLIENT_ID=shard-1
-  - EVENT_BRIDGE_SSO_SECRET=clhG7KwrwLk1rYr4yEjtjjiTM1iU8Vbc
-  - EVENT_BRIDGE_SHARD_ID=150b23e9-0b34-45b7-a91a-5ec388d03a1d
 patchesStrategicMerge:
 - patches/deploy-config.yaml
 namespace: event-bridge-operator
@@ -14,4 +5,5 @@ resources:
 - namespace.yaml
 - cluster-role.yaml
 - cluster-role-binding.yaml
+- addon-smart-events-operator-parameters.yaml
 - ../../../base/shard
