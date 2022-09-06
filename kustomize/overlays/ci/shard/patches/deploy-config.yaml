@@ -1,14 +1,11 @@
 apiVersion: v1
-data:
-  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:89403424b96672b7d73d584bdc6f39efb22a39ce-jvm
-  EVENT_BRIDGE_K8S_ORCHESTRATOR: minikube
-  EVENT_BRIDGE_MANAGER_URL: http://event-bridge.event-bridge-manager.svc.cluster.local:8080
-  EVENT_BRIDGE_SHARD_ID: 150b23e9-0b34-45b7-a91a-5ec388d03a1d
-  EVENT_BRIDGE_SSO_URL: https://sso.redhat.com/auth/realms/redhat-external
-  INGRESS_OVERRIDE_HOSTNAME: <REPLACE_WITH_KIND_HOSTNAME_OR_MINIKUBE_IP>
-  EVENT_BRIDGE_ISTIO_GATEWAY_NAME: istio-ingressgateway
-  EVENT_BRIDGE_ISTIO_GATEWAY_NAMESPACE: istio-system
-  EVENT_BRIDGE_WEBHOOK_TECHNICAL_ACCOUNT_ID: 402cf429-da04-4931-8089-e53ad452192b
 kind: ConfigMap
 metadata:
   name: event-bridge-shard-operator-config
+data:
+  EVENT_BRIDGE_EXECUTOR_IMAGE: quay.io/5733d9e2be6485d52ffa08870cabdee0/executor:89403424b96672b7d73d584bdc6f39efb22a39ce-jvm
+  EVENT_BRIDGE_K8S_ORCHESTRATOR: minikube
+  INGRESS_OVERRIDE_HOSTNAME: <REPLACE_WITH_KIND_HOSTNAME_OR_MINIKUBE_IP>
+  EVENT_BRIDGE_ISTIO_GATEWAY_NAME: istio-ingressgateway
+  EVENT_BRIDGE_ISTIO_GATEWAY_NAMESPACE: istio-system
+
