@@ -257,7 +257,7 @@ public class BridgesServiceImpl implements BridgesService {
         BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
         if (Objects.nonNull(bridgeErrorInstance)) {
             bridge.setErrorId(bridgeErrorInstance.getId());
-            bridge.setErrorUUID(bridgeErrorInstance.getUUID());
+            bridge.setErrorUUID(bridgeErrorInstance.getUuid());
         } else {
             // If the User has updated a Bridge that was previously failed by k8s it has been observed
             // that the reconciliation loop can first emit an update with the existing FAILED state

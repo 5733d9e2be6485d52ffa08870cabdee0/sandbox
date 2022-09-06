@@ -204,32 +204,26 @@
     "type": "PLATFORM"
   },
   {
-    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException",
-    "id": 36,
-    "reason": "An unspecified error occurred handling your request.",
-    "type": "PLATFORM"
-  },
-  {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException",
-    "id": 37,
+    "id": 36,
     "reason": "Your request was not complete within the configured time-out.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException",
-    "id": 38,
+    "id": 37,
     "reason": "Your request failed after the maximum number of configured re-try attempts.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException",
-    "id": 39,
+    "id": 38,
     "reason": "A ReplicaSet failed to be provisioned for your request.",
     "type": "PLATFORM"
   },
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException",
-    "id": 40,
+    "id": 39,
     "reason": "A Managed Connector failed to be provisioned for your request.",
     "type": "PLATFORM"
   }

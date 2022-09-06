@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 
 import io.quarkus.runtime.Quarkus;
 
@@ -30,11 +30,11 @@ public class BridgeErrorHelper {
 
     @PostConstruct
     protected void setup() {
-        Optional<BridgeError> error = bridgeErrorService.getError(ProvisioningFailureException.class);
+        Optional<BridgeError> error = bridgeErrorService.getError(InternalPlatformException.class);
         if (error.isPresent()) {
             deploymentFailedException = error.get();
         } else {
-            LOGGER.error("{} error is not defined in the ErrorsService.", ProvisioningFailureException.class.getSimpleName());
+            LOGGER.error("{} error is not defined in the ErrorsService.", InternalPlatformException.class.getSimpleName());
             Quarkus.asyncExit(1);
         }
     }

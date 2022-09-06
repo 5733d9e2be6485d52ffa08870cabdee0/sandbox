@@ -353,7 +353,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
         if (Objects.nonNull(bridgeErrorInstance)) {
             processor.setErrorId(bridgeErrorInstance.getId());
-            processor.setErrorUUID(bridgeErrorInstance.getUUID());
+            processor.setErrorUUID(bridgeErrorInstance.getUuid());
         } else {
             // If the User has updated a Processor that was previously failed by k8s it has been observed
             // that the reconciliation loop can first emit an update with the existing FAILED state

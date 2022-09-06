@@ -12,7 +12,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -23,6 +23,8 @@ import com.redhat.service.smartevents.manager.workers.Worker;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
+import static com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
+import static com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
@@ -32,9 +34,6 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 
 public abstract class AbstractWorker<T extends ManagedResource> implements Worker<T> {
-
-    private static final String RETRIES_FAILURE_MESSAGE = "The maximum number of re-tries for Resource of type '%s' with Id '%s' was exceeded.";
-    private static final String TIMEOUT_FAILURE_MESSAGE = "The timeout to process Work for Resource of type '%s' with Id '%s' was exceeded.";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorker.class);
 
@@ -69,7 +68,7 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
             managedResource.setStatus(FAILED);
             persist(managedResource);
 
-            ProvisioningFailureException failure;
+            InternalPlatformException failure;
             if (areRetriesExceeded) {
                 failure = new ProvisioningMaxRetriesExceededException(String.format(RETRIES_FAILURE_MESSAGE,
                         work.getType(),

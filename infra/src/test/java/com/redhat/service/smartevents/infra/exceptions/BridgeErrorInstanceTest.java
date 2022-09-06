@@ -10,6 +10,6 @@ public class BridgeErrorInstanceTest {
     void testUUID() {
         BridgeError be = new BridgeError(1, "code", "reason", BridgeErrorType.USER);
         BridgeErrorInstance bei = new BridgeErrorInstance(be);
-        assertThat(bei.getUUID()).isNotEmpty();
+        assertThat(bei.getUuid()).isNotEmpty();
     }
 }

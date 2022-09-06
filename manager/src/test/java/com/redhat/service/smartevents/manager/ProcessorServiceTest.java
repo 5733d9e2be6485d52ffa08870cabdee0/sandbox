@@ -363,7 +363,7 @@ class ProcessorServiceTest {
 
         assertThat(updated.getStatus()).isEqualTo(FAILED);
         assertThat(updated.getErrorId()).isEqualTo(1);
-        assertThat(updated.getErrorUUID()).isEqualTo(bei.getUUID());
+        assertThat(updated.getErrorUUID()).isEqualTo(bei.getUuid());
     }
 
     @Test

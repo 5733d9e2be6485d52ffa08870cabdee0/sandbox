@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -26,7 +26,7 @@ public class BridgeErrorHelperTest {
         this.helper = new BridgeErrorHelper();
         this.helper.bridgeErrorService = service;
 
-        when(service.getError(ProvisioningFailureException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.PLATFORM)));
+        when(service.getError(InternalPlatformException.class)).thenReturn(Optional.of(new BridgeError(1, "code", "reason", BridgeErrorType.PLATFORM)));
 
         this.helper.setup();
     }
@@ -42,7 +42,7 @@ public class BridgeErrorHelperTest {
         assertThat(bei.getCode()).isEqualTo("code2");
         assertThat(bei.getReason()).isEqualTo("reason2");
         assertThat(bei.getType()).isEqualTo(BridgeErrorType.USER);
-        assertThat(bei.getUUID()).isNotNull();
+        assertThat(bei.getUuid()).isNotNull();
     }
 
     @Test
@@ -54,7 +54,7 @@ public class BridgeErrorHelperTest {
         assertThat(bei.getCode()).isEqualTo("code");
         assertThat(bei.getReason()).isEqualTo("reason");
         assertThat(bei.getType()).isEqualTo(BridgeErrorType.PLATFORM);
-        assertThat(bei.getUUID()).isNotNull();
+        assertThat(bei.getUuid()).isNotNull();
     }
 
     @Test

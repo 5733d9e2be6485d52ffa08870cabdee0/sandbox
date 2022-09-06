@@ -127,7 +127,7 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         Processor processor = getDao().findById(processorId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
         processor.setErrorId(bridgeErrorInstance.getId());
-        processor.setErrorUUID(bridgeErrorInstance.getUUID());
+        processor.setErrorUUID(bridgeErrorInstance.getUuid());
         return persist(processor);
     }
 

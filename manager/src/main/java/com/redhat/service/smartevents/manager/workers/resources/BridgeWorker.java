@@ -218,7 +218,7 @@ public class BridgeWorker extends AbstractWorker<Bridge> {
         Bridge bridge = getDao().findById(bridgeId);
         BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
         bridge.setErrorId(bridgeErrorInstance.getId());
-        bridge.setErrorUUID(bridgeErrorInstance.getUUID());
+        bridge.setErrorUUID(bridgeErrorInstance.getUuid());
         return persist(bridge);
     }
 
