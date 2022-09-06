@@ -118,4 +118,4 @@ jobs:
       - name: Print operator log
         if: always()
         run: |
-          kubectl logs deployment/shard-operator -n $NAMESPACE
+          kubectl logs deployment/event-bridge-shard-operator -n $NAMESPACE
