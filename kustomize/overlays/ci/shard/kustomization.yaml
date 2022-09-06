@@ -5,5 +5,5 @@ resources:
 - namespace.yaml
 - cluster-role.yaml
 - cluster-role-binding.yaml
-- event-bridge-shard-operator-secrets.yaml
+- addon-smart-events-operator-parameters.yaml
 - ../../../base/shard
