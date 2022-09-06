@@ -11,7 +11,7 @@ jobs:
     env:
       NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
-      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -75,13 +75,16 @@ jobs:
           DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
         run: |
           kubectl create namespace $NAMESPACE
+          # Create addon-smart-events-operator-parameters secret
+          kubectl create secret generic addon-smart-events-operator-parameters \
+          --from-literal=EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external \
+          --from-literal=EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID \
+          --from-literal=EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET \
+          -n $NAMESPACE
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID -n $NAMESPACE
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET -n $NAMESPACE
+          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml          
           kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
       - name: Run integration tests
