@@ -1,4 +1,4 @@
-# Shard Operator
+# Shard Operator 
 
 Project scaffold for what about to be the Shard Operator.
 
