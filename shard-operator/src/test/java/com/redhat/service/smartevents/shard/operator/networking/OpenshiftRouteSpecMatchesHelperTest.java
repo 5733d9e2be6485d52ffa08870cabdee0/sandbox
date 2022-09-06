@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.shard.operator.networking;
 
 import java.util.Objects;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -52,22 +54,31 @@ public class OpenshiftRouteSpecMatchesHelperTest {
             RoutePort routePort,
             String port) {
         if (Objects.nonNull(spec)) {
+            setUncheckedProperty(spec::setPath);
             if (Objects.nonNull(tlsConfig)) {
                 spec.setTls(tlsConfig);
+                setUncheckedProperty(tlsConfig::setCaCertificate);
                 tlsConfig.setCertificate(tlsCertificate);
                 tlsConfig.setKey(tlsKey);
             }
             if (Objects.nonNull(to)) {
                 spec.setTo(to);
+                setUncheckedProperty(to::setKind);
                 to.setName(name);
             }
             if (Objects.nonNull(routePort)) {
                 spec.setPort(routePort);
+                setUncheckedProperty((v) -> routePort.setAdditionalProperty("unchecked", v));
                 routePort.setTargetPort(new IntOrString(port));
             }
         }
 
         return spec;
+    }
+
+    // Set a unique value for unchecked properties as they should make no difference on the comparisons
+    private void setUncheckedProperty(Consumer<String> setter) {
+        setter.accept(UUID.randomUUID().toString());
     }
 
     private static Stream<Arguments> routeSpecParameters() {
