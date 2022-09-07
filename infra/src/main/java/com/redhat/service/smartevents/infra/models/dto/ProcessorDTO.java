@@ -129,7 +129,8 @@ public class ProcessorDTO {
     @Override
     public String toString() {
         return "ProcessorDTO{" +
-                "id='" + id + '\'' +
+                "type=" + type +
+                ", id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", definition=" + definition +
                 ", bridgeId='" + bridgeId + '\'' +

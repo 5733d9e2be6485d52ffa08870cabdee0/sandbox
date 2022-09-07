@@ -6,15 +6,19 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -32,6 +36,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
@@ -39,6 +44,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -67,10 +73,17 @@ public class BridgeExecutorServiceTest {
     @InjectMock
     ManagerClient managerClient;
 
+    @InjectMock
+    TemplateProvider templateProvider;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesResourcePatcher.cleanUp();
+
+        when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorServiceTemplate(any(), any())).thenCallRealMethod();
     }
 
     @Test
@@ -263,6 +276,108 @@ public class BridgeExecutorServiceTest {
             assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
             assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
             assertThat(d.getStatus()).isEqualTo(READY);
+        });
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsFailed() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // By not mocking ServiceMonitor the Prometheus Custom Resource check will fail
+        // causing the Controller to update the BridgeExecutor status to FAILED.
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyDeploymentAsReady(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyService(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
+                });
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it has FAILED
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
+        });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
+        });
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsFailedMaxRetries() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // Mock an exception being thrown by the controller
+        // k8s max-reties is set to 1 in application.properties, overriding the default
+        // See https://github.com/quarkiverse/quarkus-operator-sdk/issues/380#issuecomment-1211343353
+        reset(templateProvider);
+        when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> {
+                        assertThat(d.getId()).isEqualTo(dto.getId());
+                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+                    });
+                });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
         });
     }
 

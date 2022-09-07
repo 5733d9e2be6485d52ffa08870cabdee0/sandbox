@@ -1,15 +1,17 @@
-package com.redhat.service.smartevents.infra;
+package com.redhat.service.smartevents.infra.exceptions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.redhat.service.smartevents.infra.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryPageInfo;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
@@ -17,6 +19,7 @@ import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @QuarkusTest
 class BridgeErrorServiceTest {
@@ -50,6 +53,41 @@ class BridgeErrorServiceTest {
     }
 
     @Test
+    void testGetError() {
+        Collection<Class<?>> allExceptionClasses = new ArrayList<>(userExceptionClasses);
+        allExceptionClasses.addAll(platformExceptionClasses);
+        for (BridgeError be : getBridgeErrors(allExceptionClasses)) {
+            Optional<BridgeError> oById = service.getError(be.getId());
+            assertThat(oById).isPresent();
+            assertThat(oById).contains(be);
+        }
+    }
+
+    @Test
+    void testGetUserError() {
+        for (BridgeError be : getBridgeErrors(userExceptionClasses)) {
+            Optional<BridgeError> oById = service.getUserError(be.getId());
+            assertThat(oById).isPresent();
+            assertThat(oById).contains(be);
+
+            int id = be.getId();
+            assertThatThrownBy(() -> service.getPlatformError(id)).isInstanceOf(ItemNotFoundException.class);
+        }
+    }
+
+    @Test
+    void testGetPlatformError() {
+        for (BridgeError be : getBridgeErrors(platformExceptionClasses)) {
+            Optional<BridgeError> oById = service.getPlatformError(be.getId());
+            assertThat(oById).isPresent();
+            assertThat(oById).contains(be);
+
+            int id = be.getId();
+            assertThatThrownBy(() -> service.getUserError(id)).isInstanceOf(ItemNotFoundException.class);
+        }
+    }
+
+    @Test
     void testUserErrorException() {
         userExceptionClasses.forEach(this::checkExceptionIsInCatalog);
     }
@@ -60,7 +98,7 @@ class BridgeErrorServiceTest {
     }
 
     private void checkId(BridgeError bridgeError) {
-        assertThat(service.getUserError(bridgeError.getId()).isPresent()).isTrue();
+        assertThat(service.getUserError(bridgeError.getId())).isPresent();
     }
 
     private void checkExceptionIsInCatalog(Class<?> clazz) {
@@ -81,6 +119,10 @@ class BridgeErrorServiceTest {
         assertThat(service.getUserError(bridgeError.getId()))
                 .withFailMessage(String.format("exception %s should not be in the user errors", clazz))
                 .isEmpty();
+    }
+
+    private List<BridgeError> getBridgeErrors(Collection<Class<?>> classes) {
+        return classes.stream().map(c -> service.getError(c)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
 
 }

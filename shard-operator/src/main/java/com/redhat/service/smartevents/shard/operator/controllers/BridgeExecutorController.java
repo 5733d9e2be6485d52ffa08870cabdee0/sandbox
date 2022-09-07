@@ -10,9 +10,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.exceptions.BridgeError;
-import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
@@ -34,16 +36,20 @@ import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
-        EventSourceInitializer<BridgeExecutor> {
+        EventSourceInitializer<BridgeExecutor>, ErrorStatusHandler<BridgeExecutor> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeExecutorController.class);
 
@@ -60,7 +66,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     ServiceMonitorService monitorService;
 
     @Inject
-    BridgeErrorService bridgeErrorService;
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
@@ -82,7 +88,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         if (secret == null) {
             LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
-            return UpdateControl.noUpdate();
+            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SECRETS_NOT_FOUND);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
 
         // Check if the image of the executor has to be updated
@@ -97,12 +105,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            bridgeExecutor.getStatus().setConditionsFromDeployment(deployment);
+            bridgeExecutor.getStatus().setStatusFromDeployment(deployment);
 
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+                notifyManagerOfFailure(bridgeExecutor,
+                        new ProvisioningTimeOutException(DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment)));
             } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
-                notifyDeploymentFailure(bridgeExecutor, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+                notifyManagerOfFailure(bridgeExecutor,
+                        new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
             }
 
             return UpdateControl.updateStatus(bridgeExecutor);
@@ -126,13 +136,10 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         } else {
             LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            BridgeError prometheusNotAvailableError = bridgeErrorService.getError(PrometheusNotInstalledException.class)
-                    .orElseThrow(() -> new RuntimeException("PrometheusNotInstalledException not found in error catalog"));
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY,
-                    ConditionReasonConstants.PROMETHEUS_UNAVAILABLE,
-                    prometheusNotAvailableError.getReason(),
-                    prometheusNotAvailableError.getCode());
-            notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
+            PrometheusNotInstalledException prometheusNotInstalledException = new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE);
+            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(prometheusNotInstalledException);
+            bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
+            notifyManagerOfFailure(bridgeExecutor, bei);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
@@ -162,10 +169,14 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         return DeleteControl.defaultDelete();
     }
 
-    private void notifyDeploymentFailure(BridgeExecutor bridgeExecutor, String failureReason) {
-        LOGGER.warn("Processor deployment BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
-                bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), failureReason);
-        notifyManager(bridgeExecutor, ManagedResourceStatus.FAILED);
+    @Override
+    public Optional<BridgeExecutor> updateErrorStatus(BridgeExecutor bridgeExecutor, RetryInfo retryInfo, RuntimeException e) {
+        if (retryInfo.isLastAttempt()) {
+            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+            bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
+            notifyManagerOfFailure(bridgeExecutor, bei);
+        }
+        return Optional.of(bridgeExecutor);
     }
 
     private void notifyManager(BridgeExecutor bridgeExecutor, ManagedResourceStatus status) {
@@ -176,4 +187,29 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                         success -> LOGGER.info("Updating Processor with id '{}' done", updateDTO.getId()),
                         failure -> LOGGER.error("Updating Processor with id '{}' FAILED", updateDTO.getId(), failure));
     }
+
+    private void notifyManagerOfFailure(BridgeExecutor bridgeExecutor, Exception e) {
+        BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+        notifyManagerOfFailure(bridgeExecutor, bei);
+    }
+
+    private void notifyManagerOfFailure(BridgeExecutor bridgeExecutor, BridgeErrorInstance bei) {
+        LOGGER.error("Processor BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), bei.getReason());
+
+        String id = bridgeExecutor.getSpec().getId();
+        String customerId = bridgeExecutor.getSpec().getCustomerId();
+        String bridgeId = bridgeExecutor.getSpec().getBridgeId();
+        ProcessorManagedResourceStatusUpdateDTO dto = new ProcessorManagedResourceStatusUpdateDTO(id,
+                customerId,
+                bridgeId,
+                FAILED,
+                bei);
+
+        managerClient.notifyProcessorStatusChange(dto)
+                .subscribe().with(
+                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
+    }
+
 }

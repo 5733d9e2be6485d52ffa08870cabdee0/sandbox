@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,6 +12,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
@@ -32,16 +35,20 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.RetryInfo;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
+
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 
 @ApplicationScoped
 @ControllerConfiguration(labelSelector = LabelsBuilder.RECONCILER_LABEL_SELECTOR)
 public class BridgeIngressController implements Reconciler<BridgeIngress>,
-        EventSourceInitializer<BridgeIngress> {
+        EventSourceInitializer<BridgeIngress>, ErrorStatusHandler<BridgeIngress> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgeIngressController.class);
 
@@ -59,6 +66,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -81,7 +91,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (secret == null) {
             LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
-            return UpdateControl.noUpdate();
+            bridgeIngress.getStatus().markConditionFalse(ConditionTypeConstants.READY);
+            bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SECRETS_NOT_FOUND);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
 
         ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
@@ -150,6 +162,18 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         return DeleteControl.defaultDelete();
     }
 
+    @Override
+    public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
+        if (retryInfo.isLastAttempt()) {
+            LOGGER.warn("Bridge BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+                    bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), e.getMessage());
+            BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(e);
+            bridgeIngress.getStatus().setStatusFromBridgeError(bei);
+            notifyManagerOfFailure(bridgeIngress, bei);
+        }
+        return Optional.of(bridgeIngress);
+    }
+
     private void notifyManager(BridgeIngress bridgeIngress, ManagedResourceStatus status) {
         ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO(bridgeIngress.getSpec().getId(), bridgeIngress.getSpec().getCustomerId(), status);
 
@@ -157,6 +181,23 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 .subscribe().with(
                         success -> LOGGER.info("Updating Bridge with id '{}' done", updateDTO.getId()),
                         failure -> LOGGER.error("Updating Bridge with id '{}' FAILED", updateDTO.getId(), failure));
+    }
+
+    private void notifyManagerOfFailure(BridgeIngress bridgeIngress, BridgeErrorInstance bei) {
+        LOGGER.error("Processor BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
+                bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace(), bei.getReason());
+
+        String id = bridgeIngress.getSpec().getId();
+        String customerId = bridgeIngress.getSpec().getCustomerId();
+        ManagedResourceStatusUpdateDTO dto = new ManagedResourceStatusUpdateDTO(id,
+                customerId,
+                FAILED,
+                bei);
+
+        managerClient.notifyBridgeStatusChange(dto)
+                .subscribe().with(
+                        success -> LOGGER.info("Updating Processor with id '{}' done", dto.getId()),
+                        failure -> LOGGER.error("Updating Processor with id '{}' FAILED", dto.getId(), failure));
     }
 
     private String extractBrokerPath(KnativeBroker broker) {

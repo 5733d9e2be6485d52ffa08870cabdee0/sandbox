@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
@@ -85,6 +87,9 @@ public class BridgesServiceImpl implements BridgesService {
     @Inject
     ProcessingErrorService processingErrorService;
 
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+    
     @PostConstruct
     void init() {
         if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
@@ -174,6 +179,8 @@ public class BridgesServiceImpl implements BridgesService {
         existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingBridge.setDefinition(updatedDefinition);
         existingBridge.setGeneration(existingBridge.getGeneration() + 1);
+        existingBridge.setErrorId(null);
+        existingBridge.setErrorUUID(null);
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
@@ -260,9 +267,22 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
         bridge.setStatus(updateDTO.getStatus());
+
+        // If an exception happened; make sure to record it.
+        BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
+        if (Objects.nonNull(bridgeErrorInstance)) {
+            bridge.setErrorId(bridgeErrorInstance.getId());
+            bridge.setErrorUUID(bridgeErrorInstance.getUuid());
+        } else {
+            // If the User has updated a Bridge that was previously failed by k8s it has been observed
+            // that the reconciliation loop can first emit an update with the existing FAILED state
+            // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+            bridge.setErrorId(null);
+            bridge.setErrorUUID(null);
+        }
 
         if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
@@ -319,7 +339,9 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
+        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
 
         return response;
     }
+
 }
