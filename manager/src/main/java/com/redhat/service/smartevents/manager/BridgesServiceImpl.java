@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -47,11 +49,16 @@ public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
+    private String tlsCertificate;
+
+    private String tlsKey;
+
+    // The tls certificate and the key are b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
-    String tlsCertificate;
+    String b64TlsCertificate;
 
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
-    String tlsKey;
+    String b64TlsKey;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -82,6 +89,17 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
+
+    @PostConstruct
+    void init() {
+        if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
+            LOGGER.info("Decoding base64 tls certificate and key");
+            tlsCertificate = new String(Base64.getDecoder().decode(b64TlsCertificate));
+            tlsKey = new String(Base64.getDecoder().decode(b64TlsKey));
+        } else {
+            LOGGER.info("Tls certificate and key were not configured.");
+        }
+    }
 
     @Override
     @Transactional
