@@ -52,6 +52,8 @@ jobs:
         uses: ./.github/actions/kind
         with:
           kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
+      - name: External Secret Operator Setup
+        uses: ./.github/actions/external-secret-operator-setup
       - uses: imranismail/setup-kustomize@v1
       - name: Use built Fleet manager and operator images
         run: |
