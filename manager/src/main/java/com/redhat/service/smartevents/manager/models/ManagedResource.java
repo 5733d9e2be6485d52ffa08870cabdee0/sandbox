@@ -10,10 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
+import com.redhat.service.smartevents.infra.exceptions.HasErrorInformation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 
 @MappedSuperclass
-public class ManagedResource {
+public class ManagedResource implements HasErrorInformation {
 
     public static final String ID_PARAM = "id";
 
@@ -51,6 +52,12 @@ public class ManagedResource {
 
     @Column(name = "deletion_requested_at", columnDefinition = "TIMESTAMP")
     private ZonedDateTime deletionRequestedAt;
+
+    @Column(name = "error_id")
+    private Integer errorId;
+
+    @Column(name = "error_uuid")
+    private String errorUUID;
 
     public String getId() {
         return id;
@@ -122,6 +129,24 @@ public class ManagedResource {
 
     public void setGeneration(long generation) {
         this.generation = generation;
+    }
+
+    @Override
+    public Integer getErrorId() {
+        return errorId;
+    }
+
+    public void setErrorId(Integer errorId) {
+        this.errorId = errorId;
+    }
+
+    @Override
+    public String getErrorUUID() {
+        return errorUUID;
+    }
+
+    public void setErrorUUID(String errorUUID) {
+        this.errorUUID = errorUUID;
     }
 
     public boolean isActionable() {

@@ -7,6 +7,8 @@ public interface BridgeErrorDAO {
 
     ListResult<BridgeError> findAllErrorsByType(QueryPageInfo queryInfo, BridgeErrorType type);
 
+    BridgeError findErrorById(int errorId);
+
     BridgeError findErrorByIdAndType(int errorId, BridgeErrorType type);
 
     BridgeError findByException(Exception ex);

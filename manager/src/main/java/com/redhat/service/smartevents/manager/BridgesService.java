@@ -28,7 +28,7 @@ public interface BridgesService {
 
     List<Bridge> findByShardIdToDeployOrDelete(String shardId);
 
-    Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO);
+    Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO);
 
     BridgeDTO toDTO(Bridge bridge);
 

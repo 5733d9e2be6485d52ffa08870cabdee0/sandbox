@@ -38,7 +38,15 @@ public class BridgeDTO {
     public BridgeDTO() {
     }
 
-    public BridgeDTO(String id, String name, String endpoint, String tlsCertificate, String tlsKey, String customerId, String owner, ManagedResourceStatus status, KafkaConnectionDTO kafkaConnection) {
+    public BridgeDTO(String id,
+            String name,
+            String endpoint,
+            String tlsCertificate,
+            String tlsKey,
+            String customerId,
+            String owner,
+            ManagedResourceStatus status,
+            KafkaConnectionDTO kafkaConnection) {
         this.id = id;
         this.name = name;
         this.endpoint = endpoint;
@@ -150,7 +158,7 @@ public class BridgeDTO {
                 ", endpoint='" + endpoint + '\'' +
                 ", customerId='" + customerId + '\'' +
                 ", owner='" + owner + '\'' +
-                ", status=" + status + '\'' +
+                ", status=" + status +
                 ", kafkaConnection=" + kafkaConnection +
                 '}';
     }

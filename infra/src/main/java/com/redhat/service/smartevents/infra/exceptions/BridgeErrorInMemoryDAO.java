@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -105,9 +106,14 @@ public class BridgeErrorInMemoryDAO implements BridgeErrorDAO {
     }
 
     @Override
+    public BridgeError findErrorById(int errorId) {
+        return bridgeErrorsFromId.get(errorId);
+    }
+
+    @Override
     public BridgeError findErrorByIdAndType(int errorId, BridgeErrorType type) {
         BridgeError error = bridgeErrorsFromId.get(errorId);
-        if (!error.getType().equals(type)) {
+        if (Objects.isNull(error) || !error.getType().equals(type)) {
             throw new ItemNotFoundException(String.format("Error with id %s and type %s not found in the catalog", errorId, type));
         }
         return error;
