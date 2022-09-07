@@ -89,7 +89,7 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
-    
+
     @PostConstruct
     void init() {
         if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
