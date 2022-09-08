@@ -284,6 +284,31 @@ public class BridgeIngressServiceTest {
         });
     }
 
+    @Test
+    public void testBridgeIngressCreationTimeout() {
+        // Given a PROVISIONING Bridge
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+
+        // When - KnativeBroker is not provisioned within the timeout. The deployment will fail.
+        bridgeIngressService.createBridgeIngress(dto);
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> {
+                        assertThat(d.getId()).isEqualTo(dto.getId());
+                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+                    });
+                });
+    }
+
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {
         return kubernetesClient
                 .resources(BridgeIngress.class)

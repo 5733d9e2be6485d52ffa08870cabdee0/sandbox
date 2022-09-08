@@ -10,10 +10,11 @@ import java.util.HashSet;
  */
 public class BridgeIngressStatus extends CustomResourceStatus {
 
-    private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<Condition>() {
+    private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<>() {
         {
             add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
             add(new Condition(ConditionTypeConstants.AUGMENTATION, ConditionStatus.Unknown));
+            add(new Condition(ConditionTypeConstants.PROGRESSING, ConditionStatus.Unknown));
         }
     };
 

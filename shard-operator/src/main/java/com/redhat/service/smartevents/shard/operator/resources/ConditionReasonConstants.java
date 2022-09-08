@@ -11,6 +11,7 @@ package com.redhat.service.smartevents.shard.operator.resources;
  *      Properties</a>
  */
 public class ConditionReasonConstants {
+    public static final String DEPLOYMENT_INITIATED = "DeploymentInitiated";
     public static final String DEPLOYMENT_AVAILABLE = "DeploymentAvailable";
     public static final String DEPLOYMENT_PROGRESSING = "DeploymentProgressing";
     public static final String DEPLOYMENT_FAILED = "DeploymentFailed";
@@ -20,4 +21,12 @@ public class ConditionReasonConstants {
     public static final String KNATIVE_BROKER_NOT_READY = "KnativeBrokerNotReady";
     public static final String PROMETHEUS_UNAVAILABLE = "PrometheusUnavailable";
     public static final String SECRETS_NOT_FOUND = "SecretsNotFound";
+    public static final String IMAGE_NOT_CORRECT = "ImageNotCorrect";
+
+    public static final String SECRETS_FOUND = "SecretsFound";
+    public static final String KNATIVE_BROKER_READY = "KnativeBrokerReady";
+    public static final String NETWORK_RESOURCE_READY = "NetworkResourceReady";
+    public static final String IMAGE_CORRECT = "ImageCorrect";
+    public static final String SERVICE_READY = "ServiceReady";
+
 }

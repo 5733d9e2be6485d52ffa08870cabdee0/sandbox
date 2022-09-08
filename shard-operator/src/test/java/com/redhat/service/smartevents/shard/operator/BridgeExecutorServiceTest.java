@@ -43,6 +43,8 @@ import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -317,7 +319,7 @@ public class BridgeExecutorServiceTest {
 
         // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it has FAILED
         assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
-        verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+        verify(managerClient, atLeastOnce()).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> {
             assertThat(d.getId()).isEqualTo(dto.getId());
             assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
@@ -328,7 +330,7 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        verify(managerClient, atLeast(2)).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> {
             assertThat(d.getId()).isEqualTo(dto.getId());
             assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
@@ -361,7 +363,7 @@ public class BridgeExecutorServiceTest {
                 .untilAsserted(() -> {
                     // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
-                    verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+                    verify(managerClient, atLeastOnce()).notifyProcessorStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> {
                         assertThat(d.getId()).isEqualTo(dto.getId());
                         assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
@@ -372,13 +374,39 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        verify(managerClient, atLeast(2)).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> {
             assertThat(d.getId()).isEqualTo(dto.getId());
             assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
             assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
             assertThat(d.getStatus()).isEqualTo(FAILED);
         });
+    }
+
+    @Test
+    public void testBridgeExecutorCreationTimeout() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // When - No dependencies are provisioned within the timeout. The deployment will fail.
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> {
+                        assertThat(d.getId()).isEqualTo(dto.getId());
+                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+                    });
+                });
     }
 
     private BridgeExecutor fetchBridgeExecutor(ProcessorDTO dto) {
