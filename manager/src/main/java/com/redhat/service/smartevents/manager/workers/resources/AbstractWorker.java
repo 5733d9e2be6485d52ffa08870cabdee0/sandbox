@@ -12,6 +12,11 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
 import com.redhat.service.smartevents.manager.workers.Work;
@@ -20,6 +25,8 @@ import com.redhat.service.smartevents.manager.workers.Worker;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
+import static com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException.RETRIES_FAILURE_MESSAGE;
+import static com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
@@ -47,6 +54,9 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     @Inject
     WorkManager workManager;
 
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
     @Override
     public T handleWork(Work work) {
         String id = getId(work);
@@ -57,36 +67,51 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         }
 
         // Fail when we've had enough
-        if (areRetriesExceeded(work, managedResource) || isTimeoutExceeded(work, managedResource)) {
+        boolean areRetriesExceeded = areRetriesExceeded(work, managedResource);
+        boolean isTimeoutExceeded = isTimeoutExceeded(work, managedResource);
+        if (areRetriesExceeded || isTimeoutExceeded) {
             managedResource.setStatus(FAILED);
             persist(managedResource);
-            return managedResource;
+
+            InternalPlatformException failure;
+            if (areRetriesExceeded) {
+                failure = new ProvisioningMaxRetriesExceededException(String.format(RETRIES_FAILURE_MESSAGE,
+                        work.getType(),
+                        work.getManagedResourceId()));
+            } else {
+                failure = new ProvisioningTimeOutException(String.format(TIMEOUT_FAILURE_MESSAGE,
+                        work.getType(),
+                        work.getManagedResourceId()));
+            }
+
+            return recordError(work, failure);
         }
 
-        boolean complete = false;
         T updated = managedResource;
         if (PROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = createDependencies(work, managedResource);
-                complete = isProvisioningComplete(updated);
             } catch (Exception e) {
                 LOGGER.error(String.format("Failed to create dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
+            } finally {
+                if (!isProvisioningComplete(updated)) {
+                    workManager.reschedule(work);
+                }
             }
         } else if (DEPROVISIONING_STARTED.contains(managedResource.getStatus())) {
             try {
                 updated = deleteDependencies(work, managedResource);
-                complete = isDeprovisioningComplete(updated);
             } catch (Exception e) {
                 LOGGER.info(String.format("Failed to delete dependencies for resource of type '%s' with id '%s'.", work.getType(), id), e);
                 // Something has gone wrong. We need to retry.
                 workManager.rescheduleAfterFailure(work);
+            } finally {
+                if (!isDeprovisioningComplete(updated)) {
+                    workManager.reschedule(work);
+                }
             }
-        }
-
-        if (!complete) {
-            workManager.reschedule(work);
         }
 
         return updated;
@@ -126,6 +151,15 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
         return isTimeoutExceeded;
     }
 
+    protected T recordError(Work work, Exception e) {
+        String managedResourceId = getId(work);
+        T managedResource = load(managedResourceId);
+        BridgeErrorInstance bridgeErrorInstance = bridgeErrorHelper.getBridgeErrorInstance(e);
+        managedResource.setErrorId(bridgeErrorInstance.getId());
+        managedResource.setErrorUUID(bridgeErrorInstance.getUuid());
+        return persist(managedResource);
+    };
+
     protected abstract PanacheRepositoryBase<T, String> getDao();
 
     protected abstract T createDependencies(Work work, T managedResource);
@@ -141,4 +175,5 @@ public abstract class AbstractWorker<T extends ManagedResource> implements Worke
     protected abstract boolean isProvisioningComplete(T managedResource);
 
     protected abstract boolean isDeprovisioningComplete(T managedResource);
+
 }

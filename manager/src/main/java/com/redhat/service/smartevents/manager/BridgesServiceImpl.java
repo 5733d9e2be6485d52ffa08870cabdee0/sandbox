@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -15,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
@@ -45,11 +49,16 @@ public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
+    private String tlsCertificate;
+
+    private String tlsKey;
+
+    // The tls certificate and the key are b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
-    String tlsCertificate;
+    String b64TlsCertificate;
 
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
-    String tlsKey;
+    String b64TlsKey;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -77,6 +86,20 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Inject
     ProcessingErrorService processingErrorService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
+    @PostConstruct
+    void init() {
+        if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
+            LOGGER.info("Decoding base64 tls certificate and key");
+            tlsCertificate = new String(Base64.getDecoder().decode(b64TlsCertificate));
+            tlsKey = new String(Base64.getDecoder().decode(b64TlsKey));
+        } else {
+            LOGGER.info("Tls certificate and key were not configured.");
+        }
+    }
 
     @Override
     @Transactional
@@ -156,6 +179,8 @@ public class BridgesServiceImpl implements BridgesService {
         existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingBridge.setDefinition(updatedDefinition);
         existingBridge.setGeneration(existingBridge.getGeneration() + 1);
+        existingBridge.setErrorId(null);
+        existingBridge.setErrorUUID(null);
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
@@ -242,9 +267,22 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
         bridge.setStatus(updateDTO.getStatus());
+
+        // If an exception happened; make sure to record it.
+        BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
+        if (Objects.nonNull(bridgeErrorInstance)) {
+            bridge.setErrorId(bridgeErrorInstance.getId());
+            bridge.setErrorUUID(bridgeErrorInstance.getUuid());
+        } else {
+            // If the User has updated a Bridge that was previously failed by k8s it has been observed
+            // that the reconciliation loop can first emit an update with the existing FAILED state
+            // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+            bridge.setErrorId(null);
+            bridge.setErrorUUID(null);
+        }
 
         if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
             bridgeDAO.deleteById(bridge.getId());
@@ -301,7 +339,9 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
+        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
 
         return response;
     }
+
 }

@@ -81,7 +81,7 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(hidden = true, summary = "Update a Processor.", description = "Update a Processor.")
+    @Operation(hidden = true, summary = "Update a Processor status.", description = "Update a Processor status.")
     @PUT
     @Path("processors")
     public Response updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
@@ -149,13 +149,13 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(hidden = true, summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
+    @Operation(hidden = true, summary = "Update a Bridge status.", description = "Update a Bridge status.")
     @PUT
-    public Response updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Response updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
         String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
         LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", updateDTO.getId(), updateDTO.getStatus());
-        bridgesService.updateBridge(updateDTO);
+        bridgesService.updateBridgeStatus(updateDTO);
         return Response.ok().build();
     }
 

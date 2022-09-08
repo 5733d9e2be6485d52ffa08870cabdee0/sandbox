@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -83,10 +85,12 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Inject
     MetricsService metricsService;
 
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
     @Transactional
     @Override
     public Processor getProcessor(String bridgeId, String processorId, String customerId) {
-
         Bridge bridge = bridgesService.getBridge(bridgeId, customerId);
         Processor processor = processorDAO.findByIdBridgeIdAndCustomerId(bridge.getId(), processorId, bridge.getCustomerId());
         if (processor == null) {
@@ -287,6 +291,8 @@ public class ProcessorServiceImpl implements ProcessorService {
         existingProcessor.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingProcessor.setDefinition(updatedDefinition);
         existingProcessor.setGeneration(nextGeneration);
+        existingProcessor.setErrorId(null);
+        existingProcessor.setErrorUUID(null);
 
         // Processor, Connector and Work should always be created in the same transaction
         // Since updates to the Action are unsupported we do not need to update the Connector record.
@@ -330,34 +336,47 @@ public class ProcessorServiceImpl implements ProcessorService {
     @Override
     public Processor updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = bridgesService.getBridge(updateDTO.getBridgeId());
-        Processor p = processorDAO.findById(updateDTO.getId());
-        if (bridge == null || p == null) {
+        Processor processor = processorDAO.findById(updateDTO.getId());
+        if (bridge == null || processor == null) {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", updateDTO.getId(), updateDTO.getBridgeId(),
                     updateDTO.getCustomerId()));
         }
 
         if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
-            p.setStatus(ManagedResourceStatus.DELETED);
+            processor.setStatus(ManagedResourceStatus.DELETED);
             processorDAO.deleteById(updateDTO.getId());
-            metricsService.onOperationComplete(p, MetricsOperation.DELETE);
-            return p;
+            metricsService.onOperationComplete(processor, MetricsOperation.DELETE);
+            return processor;
         }
 
-        boolean provisioningCallback = p.getStatus() == ManagedResourceStatus.PROVISIONING;
-        p.setStatus(updateDTO.getStatus());
+        // If an exception happened; make sure to record it.
+        BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
+        if (Objects.nonNull(bridgeErrorInstance)) {
+            processor.setErrorId(bridgeErrorInstance.getId());
+            processor.setErrorUUID(bridgeErrorInstance.getUuid());
+        } else {
+            // If the User has updated a Processor that was previously failed by k8s it has been observed
+            // that the reconciliation loop can first emit an update with the existing FAILED state
+            // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+            processor.setErrorId(null);
+            processor.setErrorUUID(null);
+        }
+
+        boolean provisioningCallback = processor.getStatus() == ManagedResourceStatus.PROVISIONING;
+        processor.setStatus(updateDTO.getStatus());
 
         if (ManagedResourceStatus.READY == updateDTO.getStatus()) {
             if (provisioningCallback) {
-                if (p.getPublishedAt() == null) {
-                    p.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                    metricsService.onOperationComplete(p, MetricsOperation.PROVISION);
+                if (processor.getPublishedAt() == null) {
+                    processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                    metricsService.onOperationComplete(processor, MetricsOperation.PROVISION);
                 } else {
-                    metricsService.onOperationComplete(p, MetricsOperation.MODIFY);
+                    metricsService.onOperationComplete(processor, MetricsOperation.MODIFY);
                 }
             }
         }
 
-        return p;
+        return processor;
     }
 
     @Transactional
@@ -468,6 +487,9 @@ public class ProcessorServiceImpl implements ProcessorService {
             processorResponse.setHref(APIConstants.USER_API_BASE_PATH + processor.getBridge().getId() + "/processors/" + processor.getId());
         }
 
+        processorResponse.setStatusMessage(bridgeErrorHelper.makeUserMessage(processor));
+
         return processorResponse;
     }
+
 }

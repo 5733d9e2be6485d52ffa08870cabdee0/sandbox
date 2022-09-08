@@ -1,0 +1,17 @@
+name: 'External Secrets Operator setup'
+description: 'External Secrets Operator setup'
+inputs:
+  external-secrets-operator-version:
+    description: "The external secrets operator version"
+    default: 0.5.9
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install External Secret Operator
+      shell: bash
+      run: |
+        helm repo add external-secrets https://charts.external-secrets.io
+        helm repo update
+        helm upgrade --namespace external-secrets --create-namespace --install --wait external-secrets external-secrets/external-secrets --version ${{ inputs.external-secrets-operator-version }}

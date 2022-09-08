@@ -12,13 +12,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.SchedulerException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsApiClient;
@@ -42,7 +42,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.atMostOnce;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -56,13 +56,13 @@ class ConnectorWorkerTest {
     private static final String TEST_RESOURCE_ID = "123";
 
     @InjectMock
-    RhoasService rhoasService;
+    RhoasService rhoasServiceMock;
 
     @InjectMock
-    ConnectorsApiClient connectorsApi;
+    ConnectorsApiClient connectorsApiMock;
 
     @InjectMock
-    WorkManager workManager;
+    WorkManager workManagerMock;
 
     @Inject
     ConnectorWorker worker;
@@ -97,9 +97,10 @@ class ConnectorWorkerTest {
     void handleWorkProvisioningWithKnownResourceMultiplePasses(
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
+            boolean throwRhoasError,
             boolean useSourceConnectorEntity,
             RhoasTopicAccessType expectedTopicAccessType,
-            ManagedResourceStatus expectedResourceStatus) throws SchedulerException {
+            ManagedResourceStatus expectedResourceStatus) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
@@ -118,37 +119,48 @@ class ConnectorWorkerTest {
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
         connector.setConnector(new TextNode("definition"));
 
-        when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(null, connector);
-        when(connectorsApi.createConnector(connectorEntity)).thenReturn(connector);
+        when(connectorsApiMock.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(null, connector);
+        when(connectorsApiMock.createConnector(connectorEntity)).thenReturn(connector);
+
+        if (throwRhoasError) {
+            when(rhoasServiceMock.createTopicAndGrantAccessFor(any(), any())).thenThrow(new InternalPlatformException("error"));
+        }
 
         ConnectorEntity refreshed = worker.handleWork(work);
 
-        verify(rhoasService).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
-        verify(connectorsApi).createConnector(connectorEntity);
+        verify(rhoasServiceMock).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
+        verify(connectorsApiMock, times(throwRhoasError ? 0 : 1)).createConnector(connectorEntity);
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.PREPARING);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.PROVISIONING);
-        verify(workManager).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
 
-        // This emulates a subsequent invocation
+        // This emulates a subsequent invocation from the ProcessorWorker
         refreshed = worker.handleWork(work);
 
-        verify(rhoasService, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
-        verify(connectorsApi, atMostOnce()).createConnector(connectorEntity);
+        verify(rhoasServiceMock, times(2)).createTopicAndGrantAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
+        verify(connectorsApiMock, times(throwRhoasError ? 0 : 1)).createConnector(connectorEntity);
 
-        assertThat(refreshed.getStatus()).isEqualTo(expectedResourceStatus);
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(expectedResourceStatus);
+        assertThat(refreshed.getStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatus.PREPARING : expectedResourceStatus);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(throwRhoasError ? ManagedResourceStatus.PROVISIONING : expectedResourceStatus);
         if (expectedResourceStatus == ManagedResourceStatus.READY) {
             assertThat(refreshed.getPublishedAt()).isNotNull();
         } else {
             assertThat(refreshed.getPublishedAt()).isNull();
         }
-        verify(workManager, times(2)).reschedule(work);
+        if (expectedResourceStatus == ManagedResourceStatus.FAILED) {
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
+        }
+        verify(workManagerMock, never()).reschedule(work);
+
+        assertThat(processor.getErrorId()).isNull();
+        assertThat(processor.getErrorUUID()).isNull();
     }
 
     @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForUpdateTest")
-    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) throws SchedulerException {
+    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setGeneration(patchConnector ? 1 : 0);
@@ -174,18 +186,18 @@ class ConnectorWorkerTest {
         // ConnectorWorker accepts the Processor Id and looks up the applicable Connector
         Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
-        when(connectorsApi.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
+        when(connectorsApiMock.getConnector(TEST_CONNECTOR_EXTERNAL_ID)).thenReturn(connector);
 
         ConnectorEntity refreshed = worker.handleWork(work);
 
         if (patchConnector) {
-            verify(connectorsApi).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
+            verify(connectorsApiMock).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
         } else {
             assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.READY);
             assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
         }
 
-        verify(workManager).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
     }
 
     @Transactional
@@ -195,7 +207,7 @@ class ConnectorWorkerTest {
             ManagedResourceStatus resourceStatus,
             ConnectorState connectorState,
             boolean useSourceConnectorEntity,
-            RhoasTopicAccessType expectedTopicAccessType) throws SchedulerException {
+            RhoasTopicAccessType expectedTopicAccessType) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         ConnectorEntity connectorEntity = useSourceConnectorEntity
@@ -213,40 +225,43 @@ class ConnectorWorkerTest {
         connector.setStatus(new ConnectorStatusStatus().state(connectorState));
 
         // Managed Connector will initially be available before it is deleted
-        when(connectorsApi.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
+        when(connectorsApiMock.getConnector(connectorEntity.getConnectorExternalId())).thenReturn(connector, (Connector) null);
 
-        int refreshCount = 1;
         ConnectorEntity refreshed = worker.handleWork(work);
 
         if (connectorState != ConnectorState.DELETED) {
             assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETING);
             assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETING);
-            verify(rhoasService, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
-            verify(connectorsApi).deleteConnector(connectorEntity.getConnectorExternalId());
+            verify(rhoasServiceMock, never()).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), RhoasTopicAccessType.PRODUCER);
+            verify(connectorsApiMock).deleteConnector(connectorEntity.getConnectorExternalId());
 
-            // This emulates a subsequent invocation by WorkManager
+            // This emulates a subsequent invocation by WorkManager from the ProcessorWorker
             refreshed = worker.handleWork(work);
-            refreshCount = 2;
         }
 
-        verify(rhoasService).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
+        verify(rhoasServiceMock).deleteTopicAndRevokeAccessFor(connectorEntity.getTopicName(), expectedTopicAccessType);
         assertThat(connectorsDAO.findById(connectorEntity.getId())).isNull();
 
         assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.DELETED);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
-        verify(workManager, times(refreshCount)).reschedule(work);
+        verify(workManagerMock, never()).reschedule(work);
     }
 
     private static Stream<Arguments> provideArgsForCreateTest() {
         Object[][] arguments = {
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PREPARING, ConnectorState.READY, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
-                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
-                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED }
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.ACCEPTED, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
+                { ManagedResourceStatus.PREPARING, ConnectorState.READY, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.READY },
+                { ManagedResourceStatus.PREPARING, ConnectorState.FAILED, false, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.FAILED },
+
+                { ManagedResourceStatus.ACCEPTED, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.PROVISIONING },
+                { ManagedResourceStatus.PREPARING, null, true, true, RhoasTopicAccessType.CONSUMER, ManagedResourceStatus.PROVISIONING },
+                { ManagedResourceStatus.ACCEPTED, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.PROVISIONING },
+                { ManagedResourceStatus.PREPARING, null, true, false, RhoasTopicAccessType.PRODUCER, ManagedResourceStatus.PROVISIONING }
         };
         return Stream.of(arguments).map(Arguments::of);
     }

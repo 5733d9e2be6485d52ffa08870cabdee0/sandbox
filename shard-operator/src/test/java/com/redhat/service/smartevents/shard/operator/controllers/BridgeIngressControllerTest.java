@@ -61,7 +61,7 @@ public class BridgeIngressControllerTest {
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isNoUpdate()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
     }
 
     @Test

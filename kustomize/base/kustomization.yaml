@@ -1,3 +1,4 @@
 resources:
   - manager
   - shard
+  - cluster-secret-store.yaml

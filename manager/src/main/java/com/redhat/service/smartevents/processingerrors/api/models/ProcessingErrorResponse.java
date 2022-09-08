@@ -3,6 +3,8 @@ package com.redhat.service.smartevents.processingerrors.api.models;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ public class ProcessingErrorResponse {
     private Map<String, String> headers;
 
     @JsonProperty("payload")
+    @Schema(implementation = Object.class)
     private JsonNode payload;
 
     public ZonedDateTime getRecordedAt() {

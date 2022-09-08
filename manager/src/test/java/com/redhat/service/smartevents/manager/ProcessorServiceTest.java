@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -21,6 +22,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -346,6 +350,38 @@ class ProcessorServiceTest {
     }
 
     @Test
+    void testUpdateProcessorStatusIncludingBridgeError() {
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(FAILED);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+        updateDto.setBridgeErrorInstance(bei);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(FAILED);
+        assertThat(updated.getErrorId()).isEqualTo(1);
+        assertThat(updated.getErrorUUID()).isEqualTo(bei.getUuid());
+    }
+
+    @Test
+    void testUpdateProcessorStatusClearsBridgeErrorWhenUndefined() {
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(READY);
+        assertThat(updated.getErrorId()).isNull();
+        assertThat(updated.getErrorUUID()).isNull();
+    }
+
+    @Test
     void testGetProcessor() {
         Processor found = processorService.getProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID);
         assertThat(found).isNotNull();
@@ -549,6 +585,9 @@ class ProcessorServiceTest {
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
 
+        assertThat(updatedProcessor.getErrorId()).isNull();
+        assertThat(updatedProcessor.getErrorUUID()).isNull();
+
         assertThat(updatedResponse.getFilters()).isNull();
         assertThat(updatedResponse.getTransformationTemplate()).isEqualTo(updatedTransformationTemplate);
     }
@@ -640,6 +679,9 @@ class ProcessorServiceTest {
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
 
+        assertThat(updatedProcessor.getErrorId()).isNull();
+        assertThat(updatedProcessor.getErrorUUID()).isNull();
+
         assertThat(updatedResponse.getFilters()).hasSize(1);
         BaseFilter updatedFilter = updatedResponse.getFilters().iterator().next();
         assertThat(updatedFilter.getKey()).isEqualTo("key");
@@ -658,6 +700,9 @@ class ProcessorServiceTest {
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);
+        existingProcessor.setErrorId(1);
+        existingProcessor.setErrorUUID(UUID.randomUUID().toString());
+
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -665,6 +710,8 @@ class ProcessorServiceTest {
 
         assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
         assertThat(updatedProcessor).isEqualTo(existingProcessor);
+        assertThat(updatedProcessor.getErrorId()).isEqualTo(existingProcessor.getErrorId());
+        assertThat(updatedProcessor.getErrorUUID()).isEqualTo(existingProcessor.getErrorUUID());
     }
 
     @Test
@@ -698,6 +745,7 @@ class ProcessorServiceTest {
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(r.getStatusMessage()).isNull();
     }
 
     @Test
@@ -777,6 +825,8 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), FAILED);
         processor.setId(FAILED_PROCESSOR_ID);
         processor.setName(FAILED_PROCESSOR_NAME);
+        processor.setErrorId(1);
+        processor.setErrorUUID(UUID.randomUUID().toString());
         return processor;
     }
 
