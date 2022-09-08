@@ -29,10 +29,10 @@ public class ProcessingErrorDAO implements PanacheRepositoryBase<ProcessingError
         return new ListResult<>(processingErrors, queryInfo.getPageNumber(), total);
     }
 
-    public void cleanup(int maxEventsPerBridge) {
+    public void cleanup(int maxErrorsPerBridge) {
         getEntityManager()
                 .createNativeQuery(CLEANUP_QUERY)
-                .setParameter(1, maxEventsPerBridge)
+                .setParameter(1, maxErrorsPerBridge)
                 .executeUpdate();
     }
 }

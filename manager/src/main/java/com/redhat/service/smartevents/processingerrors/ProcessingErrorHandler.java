@@ -33,8 +33,8 @@ public class ProcessingErrorHandler {
     public static final String RHOSE_BRIDGE_ID_HEADER = "rhose-bridge-id";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorHandler.class);
 
-    @ConfigProperty(name = "event-bridge.processing-errors.max-events-per-bridge")
-    int maxEventsPerBridge;
+    @ConfigProperty(name = "event-bridge.processing-errors.max-errors-per-bridge")
+    int maxErrorsPerBridge;
 
     @Inject
     ProcessingErrorDAO processingErrorDAO;
@@ -87,6 +87,6 @@ public class ProcessingErrorHandler {
     @Scheduled(cron = "{event-bridge.processing-errors.cleanup.schedule}")
     void cleanup() {
         LOGGER.debug("Processing errors cleanup triggered");
-        processingErrorDAO.cleanup(maxEventsPerBridge);
+        processingErrorDAO.cleanup(maxErrorsPerBridge);
     }
 }
