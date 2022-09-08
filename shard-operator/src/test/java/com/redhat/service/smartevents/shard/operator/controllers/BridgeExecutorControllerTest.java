@@ -51,6 +51,7 @@ public class BridgeExecutorControllerTest {
     void testCreateNewBridgeExecutorWithoutSecrets() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
 
         // When
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
@@ -63,6 +64,7 @@ public class BridgeExecutorControllerTest {
     void testCreateNewBridgeExecutor() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -85,6 +87,7 @@ public class BridgeExecutorControllerTest {
     void testBridgeExecutorDeployment() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -105,6 +108,7 @@ public class BridgeExecutorControllerTest {
     void testBridgeExecutorDeployment_deploymentReplicaFailure() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -124,6 +128,7 @@ public class BridgeExecutorControllerTest {
     void testBridgeExecutorDeployment_deploymentTimeoutFailure() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -143,6 +148,7 @@ public class BridgeExecutorControllerTest {
     void testBridgeExecutorNewImage() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
+        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         String oldImage = "oldImage";
         bridgeExecutor.getSpec().setImage(oldImage);
         deployBridgeExecutorSecret(bridgeExecutor);
