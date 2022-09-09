@@ -12,7 +12,7 @@ metadata:
       uid: ""
   annotations:
     eventing.knative.dev/broker.class: Kafka
-    x-kafka.eventing.knative.dev/external.topic: ""
+    kafka.eventing.knative.dev/external.topic: ""
   name: ""
 spec:
   config:
