@@ -8,4 +8,5 @@ resources:
   - ../../../base/manager
   - ingress.yaml
   - event-bridge-manager-secrets.yaml
+  - cluster-secret-store.yaml
   - awssm-secret.yaml
