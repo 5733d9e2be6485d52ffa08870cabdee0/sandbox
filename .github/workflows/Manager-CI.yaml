@@ -78,9 +78,11 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" awssm-secret.yaml
-          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" awssm-secret.yaml
-        working-directory: kustomize/overlays/ci/manager
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" shard/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" shard/awssm-secret.yaml
+        working-directory: kustomize/overlays/ci
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
