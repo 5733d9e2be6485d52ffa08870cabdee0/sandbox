@@ -68,6 +68,7 @@ jobs:
         working-directory: kustomize
       - name: Set Kind hostname in the Manager configuration
         run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX:).*|\1 ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" overlays/ci/manager/patches/deploy-config.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/manager/patches/deploy-config.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/manager/patches/deploy-config.yaml
         working-directory: kustomize
@@ -77,8 +78,8 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          sed -i -E "s|(.*access-key:).*|\1$AWS_ACCESS_KEY|" awssm-secret.yaml
-          sed -i -E "s|(.*secret-access-key:).*|\1$AWS_SECRET_ACCESS_KEY|" awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" awssm-secret.yaml
         working-directory: kustomize/overlays/ci/manager
       - name: Build all images and resources
         uses: ./.github/actions/maven
