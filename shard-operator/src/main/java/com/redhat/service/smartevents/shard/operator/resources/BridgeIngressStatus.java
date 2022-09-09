@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import java.util.HashSet;
 
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>
  * <p>
@@ -10,15 +12,41 @@ import java.util.HashSet;
  */
 public class BridgeIngressStatus extends CustomResourceStatus {
 
+    public static final String SECRET_AVAILABLE = "SecretAvailable";
+    public static final String CONFIG_MAP_AVAILABLE = "ConfigMapAvailable";
+    public static final String KNATIVE_BROKER_AVAILABLE = "KNativeBrokerAvailable";
+    public static final String AUTHORISATION_POLICY_AVAILABLE = "AuthorisationPolicyAvailable";
+    public static final String NETWORK_RESOURCE_AVAILABLE = "NetworkResourceAvailable";
+
     private static final HashSet<Condition> INGRESS_CONDITIONS = new HashSet<>() {
         {
             add(new Condition(ConditionTypeConstants.READY, ConditionStatus.Unknown));
-            add(new Condition(ConditionTypeConstants.AUGMENTATION, ConditionStatus.Unknown));
-            add(new Condition(ConditionTypeConstants.PROGRESSING, ConditionStatus.Unknown));
+            add(new Condition(SECRET_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(CONFIG_MAP_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(KNATIVE_BROKER_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(AUTHORISATION_POLICY_AVAILABLE, ConditionStatus.Unknown));
+            add(new Condition(NETWORK_RESOURCE_AVAILABLE, ConditionStatus.Unknown));
         }
     };
 
     public BridgeIngressStatus() {
         super(INGRESS_CONDITIONS);
     }
+
+    @Override
+    public ManagedResourceStatus inferManagedResourceStatus() {
+        if (isReady()) {
+            return ManagedResourceStatus.READY;
+        }
+        if (isConditionTypeFalse(ConditionTypeConstants.READY)
+                && !isConditionTypeTrue(BridgeIngressStatus.SECRET_AVAILABLE)
+                && !isConditionTypeTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)
+                && !isConditionTypeTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)
+                && !isConditionTypeTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)
+                && !isConditionTypeTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
+            return ManagedResourceStatus.FAILED;
+        }
+        return ManagedResourceStatus.PROVISIONING;
+    }
+
 }

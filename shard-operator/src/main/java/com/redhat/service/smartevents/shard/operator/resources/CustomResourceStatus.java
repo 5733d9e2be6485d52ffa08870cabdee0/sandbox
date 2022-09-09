@@ -135,14 +135,5 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
         }
     }
 
-    public final ManagedResourceStatus inferManagedResourceStatus() {
-        if (isReady()) {
-            return ManagedResourceStatus.READY;
-        }
-        if (isConditionTypeFalse(ConditionTypeConstants.READY) && isConditionTypeFalse(ConditionTypeConstants.AUGMENTATION)) {
-            return ManagedResourceStatus.FAILED;
-        }
-        return ManagedResourceStatus.PROVISIONING;
-    }
-
+    public abstract ManagedResourceStatus inferManagedResourceStatus();
 }

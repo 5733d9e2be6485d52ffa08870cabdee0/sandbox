@@ -222,7 +222,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
             bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeExecutor);
         }
 
         return UpdateControl.noUpdate();

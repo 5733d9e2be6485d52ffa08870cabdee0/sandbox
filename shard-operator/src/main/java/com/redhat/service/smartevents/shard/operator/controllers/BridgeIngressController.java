@@ -32,8 +32,6 @@ import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvi
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.resources.Condition;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -106,14 +104,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 bridgeIngress.getMetadata().getName(),
                 bridgeIngress.getMetadata().getNamespace());
 
-        // Set a "start" time on the creation
         BridgeIngressStatus status = bridgeIngress.getStatus();
-        if (status.getConditionByType(ConditionTypeConstants.PROGRESSING).isPresent()) {
-            if (status.getConditionByType(ConditionTypeConstants.PROGRESSING).get().getStatus() == ConditionStatus.Unknown) {
-                status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.DEPLOYMENT_INITIATED);
-                return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
-            }
-        }
 
         if (isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
@@ -121,8 +112,11 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                             bridgeIngress.getClass().getSimpleName(),
                             bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            status.markConditionFalse(ConditionTypeConstants.PROGRESSING);
+            status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -130,21 +124,22 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         if (secret == null) {
             LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
-            status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SECRETS_NOT_FOUND);
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeIngressStatus.SECRET_AVAILABLE)) {
+                status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
+            }
             return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.SECRETS_NOT_FOUND)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.SECRETS_FOUND);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeIngressStatus.SECRET_AVAILABLE)) {
+            status.markConditionTrue(BridgeIngressStatus.SECRET_AVAILABLE);
         }
 
-        ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
-
         // Nothing to check for ConfigMap
+        ConfigMap configMap = bridgeIngressService.fetchOrCreateBridgeIngressConfigMap(bridgeIngress, secret);
+        if (!status.isConditionTypeTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)) {
+            status.markConditionTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
+        }
 
         KnativeBroker knativeBroker = bridgeIngressService.fetchOrCreateBridgeIngressBroker(bridgeIngress, configMap);
         String path = extractBrokerPath(knativeBroker);
@@ -152,37 +147,37 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         if (path == null) {
             LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)) {
+                status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
+            }
             return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.KNATIVE_BROKER_NOT_READY)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.KNATIVE_BROKER_READY);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)) {
+            status.markConditionTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
         }
 
-        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress, path);
-
         // Nothing to check for Authorization Policy
+        bridgeIngressService.fetchOrCreateBridgeIngressAuthorizationPolicy(bridgeIngress, path);
+        if (!status.isConditionTypeTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)) {
+            status.markConditionTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
+        }
 
         NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, path);
 
         if (!networkResource.isReady()) {
             LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
-            status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY);
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
+                status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
+            }
             return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.NETWORK_RESOURCE_NOT_READY)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.NETWORK_RESOURCE_READY);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
+            status.markConditionTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
         }
 
         LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is ready", bridgeIngress.getMetadata().getName(), bridgeIngress.getMetadata().getNamespace());
@@ -192,24 +187,27 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!status.isReady()) {
             status.markConditionTrue(ConditionTypeConstants.READY);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            status.markConditionFalse(ConditionTypeConstants.PROGRESSING);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
-            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeIngress);
         }
 
         return UpdateControl.noUpdate();
     }
 
     private boolean isTimedOut(BridgeIngressStatus status) {
-        Optional<Condition> progress = status.getConditionByType(ConditionTypeConstants.PROGRESSING);
-        if (progress.isPresent()) {
-            Date lastTransitionTime = progress.get().getLastTransitionTime();
-            ZonedDateTime zonedLastTransition = ZonedDateTime.ofInstant(lastTransitionTime.toInstant(), ZoneOffset.UTC);
-            ZonedDateTime zonedNow = ZonedDateTime.now(ZoneOffset.UTC);
-            return zonedNow.minus(Duration.of(ingressTimeoutSeconds, ChronoUnit.SECONDS)).isAfter(zonedLastTransition);
+        Optional<Date> lastTransitionDate = status.getConditions()
+                .stream()
+                .filter(c -> Objects.nonNull(c.getLastTransitionTime()))
+                .reduce((c1, c2) -> c1.getLastTransitionTime().after(c2.getLastTransitionTime()) ? c1 : c2)
+                .map(Condition::getLastTransitionTime);
+
+        if (lastTransitionDate.isEmpty()) {
+            return false;
         }
-        return false;
+
+        ZonedDateTime zonedLastTransition = ZonedDateTime.ofInstant(lastTransitionDate.get().toInstant(), ZoneOffset.UTC);
+        ZonedDateTime zonedNow = ZonedDateTime.now(ZoneOffset.UTC);
+        return zonedNow.minus(Duration.of(ingressTimeoutSeconds, ChronoUnit.SECONDS)).isAfter(zonedLastTransition);
     }
 
     @Override
@@ -237,6 +235,15 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @Override
     public Optional<BridgeIngress> updateErrorStatus(BridgeIngress bridgeIngress, RetryInfo retryInfo, RuntimeException e) {
         if (retryInfo.isLastAttempt()) {
+
+            BridgeIngressStatus status = bridgeIngress.getStatus();
+            status.markConditionFalse(ConditionTypeConstants.READY);
+            status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
+            status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
+
             LOGGER.warn("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
                     bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace(),

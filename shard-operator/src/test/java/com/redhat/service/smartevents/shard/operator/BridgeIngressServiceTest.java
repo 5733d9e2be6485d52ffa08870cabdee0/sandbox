@@ -296,7 +296,8 @@ public class BridgeIngressServiceTest {
 
         Awaitility.await()
                 .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
+                .pollDelay(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
                     // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
