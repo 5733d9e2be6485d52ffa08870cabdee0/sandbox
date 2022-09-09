@@ -12,7 +12,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>shard-operator</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>SmartEvents :: Shard Operator</name>
+  <name>SmartEvents :: Shard Operator</name> 
 
   <dependencies>
     <dependency>
