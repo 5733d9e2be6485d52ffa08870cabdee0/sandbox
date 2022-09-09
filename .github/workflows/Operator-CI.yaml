@@ -11,7 +11,7 @@ jobs:
     env:
       NAMESPACE: mynamespace
       # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
-      KIND_MAIN_NODE_HOSTNAME: kind-control-plane 
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
     concurrency:
       group: event-bridge-operator-pr-${{ github.head_ref }}
       cancel-in-progress: true
@@ -50,7 +50,7 @@ jobs:
       - name: Build Shard operator image and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Pminikube -Dquarkus.container-image.tag=$GITHUB_SHA -Dnamespace=$NAMESPACE -Dquickly
+          maven-command: clean install --errors --quiet -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=$GITHUB_SHA -Dquarkus.kubernetes.image-pull-policy=if-not-present -Dquickly -Dquarkus.kubernetes.namespace=$NAMESPACE
           working-directory: shard-operator
         # Load built image into KinD
       - name: Load Shard operator image into KinD
@@ -59,32 +59,34 @@ jobs:
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
       - name: Istio Setup
         uses: ./.github/actions/istio-setup
-      - name: Install Knative and deploy istio resources
+      - name: Install Knative, deploy istio resources and Prometheus ServiceMonitor CRD
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-          kubectl apply -f kustomize/overlays/minikube/istio/gateway.yaml
-          kubectl apply -f kustomize/overlays/minikube/istio/virtual-service-kafka-broker.yaml
-          kubectl apply -f kustomize/overlays/minikube/istio/jwt-request-authentication.yaml
+          kubectl apply -f kustomize/overlays/ci/istio/gateway.yaml
+          kubectl apply -f kustomize/overlays/ci/istio/virtual-service-kafka-broker.yaml
+          kubectl apply -f kustomize/overlays/ci/istio/jwt-request-authentication.yaml
+
+          # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
       - name: Deploy Shard operator
+        env:
+          DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
+          DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
         run: |
           kubectl create namespace $NAMESPACE
-          # Operator requires Keycloak instance to be available, install it
-          kubectl create secret generic keycloak-realm --from-file=event-bridge-fm-realm-sample.json=kustomize/overlays/minikube/keycloak/event-bridge-fm-realm-sample.json -n $NAMESPACE
-          kubectl create secret generic keycloak-secrets --from-literal=KEYCLOAK_USER=admin --from-literal=KEYCLOAK_PASSWORD=123 -n $NAMESPACE
-          # Not ideal as kustomize is used for different purposes but it is the easiest approach without duplications
-          kubectl create -f kustomize/overlays/minikube/keycloak/keycloak.yaml -n $NAMESPACE
-          kubectl wait --for=condition=available --timeout=120s deployment/keycloak -n $NAMESPACE
+          # Create addon-smart-events-operator-parameters secret
+          kubectl create secret generic addon-smart-events-operator-parameters \
+          --from-literal=EVENT_BRIDGE_SSO_URL=https://sso.redhat.com/auth/realms/redhat-external \
+          --from-literal=EVENT_BRIDGE_SSO_CLIENT_ID=$DEV_EVENT_BRIDGE_SSO_CLIENT_ID \
+          --from-literal=EVENT_BRIDGE_SSO_SECRET=$DEV_EVENT_BRIDGE_SSO_SECRET \
+          -n $NAMESPACE
           # Deploy operator
           kubectl apply -f shard-operator/target/kubernetes/bridgeexecutors.com.redhat.service.bridge-v1.yml
           kubectl apply -f shard-operator/target/kubernetes/bridgeingresses.com.redhat.service.bridge-v1.yml
-          kubectl apply -f shard-operator/target/kubernetes/minikube.yml
-          # Point SSO URL to the Keycloak Service port, use HTTP to avoid complications with certificate
-          kubectl set env deployment/shard-operator EVENT_BRIDGE_SSO_URL=http://keycloak:8180/auth/realms/event-bridge-fm -n $NAMESPACE
+          kubectl apply -f shard-operator/target/kubernetes/kubernetes.yml          
           kubectl set env deployment/shard-operator EVENT_BRIDGE_EXECUTOR_IMAGE=quay.io/5733d9e2be6485d52ffa08870cabdee0/empty-it-image:1.0 -n $NAMESPACE
           kubectl wait --for=condition=available --timeout=120s deployment/shard-operator -n $NAMESPACE
-          # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
-          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
       - name: Run integration tests
         env:
           IT_SHARD_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.IT_SHARD_KAFKA_BOOTSTRAP_SERVERS }}
@@ -105,7 +107,3 @@ jobs:
         if: always()
         run: |
           kubectl logs deployment/shard-operator -n $NAMESPACE
-      - name: Print Keycloak log
-        if: always()
-        run: |
-          kubectl logs deployment/keycloak -n $NAMESPACE

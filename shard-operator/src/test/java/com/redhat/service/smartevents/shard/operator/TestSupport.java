@@ -27,6 +27,9 @@ public class TestSupport {
     public static final String BRIDGE_ID = "my-id";
     public static final String BRIDGE_NAME = "my-name";
     public static final String BRIDGE_ENDPOINT = "http://localhost:8080";
+    public static final String BRIDGE_HOST = "localhost";
+    public static final String BRIDGE_TLS_CERTIFICATE = "tlsCertificate";
+    public static final String BRIDGE_TLS_KEY = "tlsKey";
     public static final ProcessorType PROCESSOR_TYPE = ProcessorType.SINK;
     public static final String PROCESSOR_ID = "my-processor-id";
     public static final String PROCESSOR_NAME = "my-processor-name";
@@ -48,15 +51,15 @@ public class TestSupport {
             KAFKA_ERROR_TOPIC);
 
     public static BridgeDTO newRequestedBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, PREPARING, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY, CUSTOMER_ID, USER_NAME, PREPARING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newProvisioningBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, PROVISIONING, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY, CUSTOMER_ID, USER_NAME, PROVISIONING, KAFKA_CONNECTION_DTO);
     }
 
     public static BridgeDTO newAvailableBridgeDTO() {
-        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, CUSTOMER_ID, USER_NAME, READY, KAFKA_CONNECTION_DTO);
+        return new BridgeDTO(BRIDGE_ID, BRIDGE_NAME, BRIDGE_ENDPOINT, BRIDGE_TLS_CERTIFICATE, BRIDGE_TLS_KEY, CUSTOMER_ID, USER_NAME, READY, KAFKA_CONNECTION_DTO);
     }
 
     public static ProcessorDTO newRequestedProcessorDTO() {

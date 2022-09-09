@@ -11,7 +11,12 @@ public interface BridgeErrorService {
 
     Optional<BridgeError> getUserError(int errorId);
 
+    Optional<BridgeError> getPlatformError(int errorId);
+
     Optional<BridgeError> getError(Exception e);
 
     Optional<BridgeError> getError(Class clazz);
+
+    Optional<BridgeError> getError(int errorId);
+
 }

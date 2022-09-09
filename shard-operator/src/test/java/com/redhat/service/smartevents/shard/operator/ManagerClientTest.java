@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
@@ -45,21 +47,15 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
-        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1",
-                "myName-1",
-                "myEndpoint",
-                "myCustomerId",
-                "myUserName",
-                PROVISIONING,
-                KAFKA_CONNECTION_DTO);
+        ManagedResourceStatusUpdateDTO updateDTO = new ManagedResourceStatusUpdateDTO("bridgeStatusChange-1", "myCustomerId", PROVISIONING);
         stubBridgeUpdate();
         String expectedJsonUpdate =
-                "{\"id\": \"bridgeStatusChange-1\", \"name\": \"myName-1\", \"endpoint\": \"myEndpoint\", \"customerId\": \"myCustomerId\", \"owner\": \"myUserName\", \"status\": \"provisioning\"}";
+                "{\"id\": \"bridgeStatusChange-1\", \"customerId\": \"myCustomerId\", \"status\": \"provisioning\"}";
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addBridgeUpdateRequestListener(latch);
 
-        managerClient.notifyBridgeStatusChange(dto).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyBridgeStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(30, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH))
@@ -69,17 +65,17 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void notifyProcessorStatusChange() throws Exception {
-        ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
+        ProcessorManagedResourceStatusUpdateDTO updateDTO = new ProcessorManagedResourceStatusUpdateDTO("processorStatusChange-1", "myCustomerId", "bridgeId", PROVISIONING);
         stubProcessorUpdate();
 
         CountDownLatch latch = new CountDownLatch(1); // One update to the manager is expected
         addProcessorUpdateRequestListener(latch);
 
-        managerClient.notifyProcessorStatusChange(processor).await().atMost(Duration.ofSeconds(5));
+        managerClient.notifyProcessorStatusChange(updateDTO).await().atMost(Duration.ofSeconds(5));
 
         assertThat(latch.await(60, SECONDS)).isTrue();
         wireMockServer.verify(putRequestedFor(urlEqualTo(SHARD_API_BASE_PATH + "processors"))
-                .withRequestBody(equalToJson(objectMapper.writeValueAsString(processor), true, true))
+                .withRequestBody(equalToJson(objectMapper.writeValueAsString(updateDTO), true, true))
                 .withHeader("Content-Type", equalTo("application/json")));
     }
 
@@ -115,8 +111,17 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void fetchBridgesToDeployOrDelete() throws JsonProcessingException {
-        BridgeDTO dto = new BridgeDTO("bridgeStatusChange-1", "myName-1", "myEndpoint", "myCustomerId", "myUserName", PROVISIONING, KAFKA_CONNECTION_DTO);
-        stubBridgesToDeployOrDelete(List.of(dto));
+        BridgeDTO updateDTO = new BridgeDTO(
+                "bridgeStatusChange-1",
+                "myName-1",
+                "myEndpoint",
+                null,
+                null,
+                "myCustomerId",
+                "myUserName",
+                PROVISIONING,
+                KAFKA_CONNECTION_DTO);
+        stubBridgesToDeployOrDelete(List.of(updateDTO));
 
         assertThat(managerClient.fetchBridgesToDeployOrDelete().await().atMost(Duration.ofSeconds(10)).size()).isEqualTo(1);
     }

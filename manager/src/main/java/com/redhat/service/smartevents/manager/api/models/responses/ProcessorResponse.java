@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.manager.api.models.responses;
 
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,6 +21,7 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
         super("Processor");
     }
 
+    @NotNull
     @JsonProperty("type")
     private ProcessorType type;
 
@@ -33,6 +36,9 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
 
     @JsonProperty("source")
     private Source source;
+
+    @JsonProperty("status_message")
+    private String statusMessage;
 
     public ProcessorType getType() {
         return type;
@@ -73,4 +79,13 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     public void setSource(Source source) {
         this.source = source;
     }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
 }

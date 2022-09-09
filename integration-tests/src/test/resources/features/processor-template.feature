@@ -2,7 +2,7 @@ Feature: Tests of Processor Transformation template
 
   Background:
     Given authenticate against Manager
-    And create a new Bridge "mybridge"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
@@ -14,7 +14,7 @@ Feature: Tests of Processor Transformation template
      "name": "myProcessor",
       "action": {
         "parameters": {
-            "endpoint": "${env.slack.webhook.url}"
+            "endpoint": "${slack.channel.mc.webhook.url}"
        },
         "type": "webhook_sink_0.1"
       },
@@ -35,7 +35,7 @@ Feature: Tests of Processor Transformation template
     }
     """
     
-    Then Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
+    Then Slack channel "${slack.channel.mc.name}" contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
 
 
   Scenario: Transformation template is properly updated
@@ -45,7 +45,7 @@ Feature: Tests of Processor Transformation template
      "name": "myProcessor",
       "action": {
         "parameters": {
-            "endpoint": "${env.slack.webhook.url}"
+            "endpoint": "${slack.channel.mc.webhook.url}"
        },
         "type": "webhook_sink_0.1"
       },
@@ -65,7 +65,7 @@ Feature: Tests of Processor Transformation template
       }
     }
     """
-    And Slack channel contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
+    And Slack channel "${slack.channel.mc.name}" contains message with text "hello world by ${cloud-event.my-id.id}" within 1 minute
 
     When update the Processor "myProcessor" of the Bridge "mybridge" with body:
     """
@@ -73,7 +73,7 @@ Feature: Tests of Processor Transformation template
      "name": "myProcessor",
       "action": {
         "parameters": {
-            "endpoint": "${env.slack.webhook.url}"
+            "endpoint": "${slack.channel.mc.webhook.url}"
        },
         "type": "webhook_sink_0.1"
       },
@@ -96,4 +96,4 @@ Feature: Tests of Processor Transformation template
     }
     """
 
-    Then Slack channel contains message with text "hello world by updated template ${cloud-event.second-event-id.id}" within 1 minute
+    Then Slack channel "${slack.channel.mc.name}" contains message with text "hello world by updated template ${cloud-event.second-event-id.id}" within 1 minute

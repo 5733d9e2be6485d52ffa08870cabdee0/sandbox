@@ -162,7 +162,7 @@
             <container.image.keycloak>${container.image.keycloak}</container.image.keycloak>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
-            <event-bridge.k8s.platform>${event-bridge.k8s.platform}</event-bridge.k8s.platform>
+            <event-bridge.k8s.orchestrator>${event-bridge.k8s.orchestrator}</event-bridge.k8s.orchestrator>
           </systemPropertyVariables>
           <!-- Don't reuse VM forks for different test classes, seems that Quarkus classloader is not properly garbaged, causing OOM. -->
           <reuseForks>false</reuseForks>
@@ -172,36 +172,6 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>minikube</id>
-      <properties>
-        <namespace>default</namespace>
-        <quarkus.kubernetes.namespace>${namespace}</quarkus.kubernetes.namespace>
-        <quarkus.kubernetes.deploy>false</quarkus.kubernetes.deploy>
-        <quarkus.profile>minikube</quarkus.profile>
-        <event-bridge.k8s.platform>k8s</event-bridge.k8s.platform>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-minikube</artifactId>
-          <optional>true</optional>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>openshift</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <namespace>default</namespace>
-        <quarkus.openshift.namespace>${namespace}</quarkus.openshift.namespace>
-        <quarkus.openshift.deploy>false</quarkus.openshift.deploy>
-        <quarkus.profile>openshift</quarkus.profile>
-        <event-bridge.k8s.platform>openshift</event-bridge.k8s.platform>
-      </properties>
-    </profile>
     <profile>
       <id>attach-kubernetes-resources</id>
       <build>
@@ -219,7 +189,7 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>${project.build.directory}/kubernetes/openshift.yml</file>
+                      <file>${project.build.directory}/kubernetes/kubernetes.yml</file>
                       <type>yml</type>
                       <classifier>kubernetes</classifier>
                     </artifact>

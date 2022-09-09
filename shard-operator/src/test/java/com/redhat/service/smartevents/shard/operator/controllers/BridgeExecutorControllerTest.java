@@ -56,7 +56,7 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
 
         // Then
-        assertThat(updateControl.isNoUpdate()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
     }
 
     @Test
@@ -72,12 +72,12 @@ public class BridgeExecutorControllerTest {
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(bridgeExecutor.getStatus()).isNotNull();
         assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
-        });
         assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE);
+        });
+        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
         });
     }
 

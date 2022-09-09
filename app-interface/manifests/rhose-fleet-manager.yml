@@ -28,19 +28,19 @@ objects:
                 - podAffinityTerm:
                     labelSelector:
                       matchExpressions:
-                      - key: app
-                        operator: In
-                        values:
-                        - rhose-fleet-manager
+                        - key: app
+                          operator: In
+                          values:
+                            - rhose-fleet-manager
                     topologyKey: kubernetes.io/hostname
                   weight: 90
                 - podAffinityTerm:
                     labelSelector:
                       matchExpressions:
-                      - key: app
-                        operator: In
-                        values:
-                        - rhose-fleet-manager
+                        - key: app
+                          operator: In
+                          values:
+                            - rhose-fleet-manager
                     topologyKey: topology.kubernetes.io/zone
                   weight: 100
           serviceAccount: registry-rhose-appsre
@@ -51,11 +51,11 @@ objects:
               name: rhose-fleet-manager
               resources:
                 limits:
-                  cpu: 4
-                  memory: 8192Mi
+                  cpu: ${FLEET_MANAGER_LIMITS_CPU}
+                  memory: ${FLEET_MANAGER_LIMITS_MEMORY}
                 requests:
-                  cpu: 2
-                  memory: 4096Mi
+                  cpu: ${FLEET_MANAGER_REQUESTS_CPU}
+                  memory: ${FLEET_MANAGER_REQUESTS_MEMORY}
               env:
                 - name: AWS_REGION
                   valueFrom:
@@ -199,46 +199,48 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET
-                - name: MC_AUTH_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_CLIENT_ID
-                - name: MC_AUTH_OFFLINE_TOKEN
+                      key: MANAGED_CONNECTORS_AUTH_CLIENT_ID
+                - name: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_OFFLINE_TOKEN
-                - name: MC_AUTH_SERVER_URL
+                      key: MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN
+                - name: MANAGED_CONNECTORS_AUTH_SERVER_URL
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_SERVER_URL
-                - name: MC_AUTH_TOKEN_PATH
+                      key: MANAGED_CONNECTORS_AUTH_SERVER_URL
+                - name: MANAGED_CONNECTORS_AUTH_TOKEN_PATH
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_AUTH_TOKEN_PATH
-                - name: MC_CLUSTER_ID
+                      key: MANAGED_CONNECTORS_AUTH_TOKEN_PATH
+                - name: MANAGED_CONNECTORS_CLUSTER_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_CLUSTER_ID
-                - name: MC_NAMESPACE_ID
+                      key: MANAGED_CONNECTORS_CLUSTER_ID
+                - name: MANAGED_CONNECTORS_NAMESPACE_ID
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_NAMESPACE_ID
-                - name: MC_SERVICES_URL
+                      key: MANAGED_CONNECTORS_NAMESPACE_ID
+                - name: MANAGED_CONNECTORS_SERVICES_URL
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_SERVICES_URL
-                - name: MC_TOPIC_NAME
+                      key: MANAGED_CONNECTORS_SERVICES_URL
+                - name: MANAGED_CONNECTORS_TOPIC_NAME
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MC_TOPIC_NAME
+                      key: MANAGED_CONNECTORS_TOPIC_NAME
+                - name: QUARKUS_LOG_LEVEL
+                  value: ${QUARKUS_LOG_LEVEL}
                 - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
@@ -249,6 +251,31 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: SHARD_ID
+                - name: SHARD_ROUTER_CANONICAL_HOSTNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: SHARD_ROUTER_CANONICAL_HOSTNAME
+                - name: EVENT_BRIDGE_DNS_HOSTED_ZONE_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_HOSTED_ZONE_ID
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_CERTIFICATE
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_CERTIFICATE
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN_TLS_KEY
+                - name: EVENT_BRIDGE_DNS_SUBDOMAIN
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_DNS_SUBDOMAIN
               ports:
                 - containerPort: 8080
               livenessProbe:
@@ -264,16 +291,18 @@ objects:
                 initialDelaySeconds: 10
                 periodSeconds: 10
               volumeMounts:
-              - name: rds
-                mountPath: /secrets/rds
+                - name: rds
+                  mountPath: /secrets/rds
           volumes:
-          - name: rds
-            secret:
-              secretName: ${RDS_SECRET_NAME}
+            - name: rds
+              secret:
+                secretName: ${RDS_SECRET_NAME}
   - apiVersion: v1
     kind: Service
     metadata:
       name: rhose-fleet-manager
+      labels:
+        app: rhose-fleet-manager
     spec:
       ports:
         - name: web
@@ -291,13 +320,28 @@ parameters:
     description: the connection parameters for secure rds instance
   - name: FLEET_MANAGER_IMAGE
     value: "quay.io/app-sre/rhose-fleet-manager"
-    description: the image of fleet-manager to deploy
+    description: the fleet-manager image name
   - name: FLEET_MANAGER_IMAGE_TAG
     value: "latest"
-    description: the tag of fleet-manager to deploy
+    description: the fleet-manager image tag
+  - name: FLEET_MANAGER_LIMITS_CPU
+    value: "2"
+    description: the fleet-manager cpu limit
+  - name: FLEET_MANAGER_LIMITS_MEMORY
+    value: "4000Mi"
+    description: the fleet-manager memory limit
+  - name: FLEET_MANAGER_REQUESTS_CPU
+    value: "1"
+    description: the fleet-manager cpu request
+  - name: FLEET_MANAGER_REQUESTS_MEMORY
+    value: "2000Mi"
+    description: the fleet-manager memory request
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
     description: the fleet-manager vault secret
+  - name: QUARKUS_LOG_LEVEL
+    value: "INFO"
+    description: the quarkus log level
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
     description: the aws rds secret

@@ -1,9 +1,12 @@
 package com.redhat.service.smartevents.manager;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -15,7 +18,13 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorType;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
@@ -24,7 +33,8 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotF
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.filters.StringBeginsWith;
 import com.redhat.service.smartevents.infra.models.filters.StringContains;
@@ -41,7 +51,6 @@ import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.utils.Fixtures;
-import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
 import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
@@ -52,8 +61,10 @@ import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.infra.models.processors.ProcessorType.ERROR_HANDLER;
@@ -62,8 +73,9 @@ import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_BRIDG
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_CUSTOMER_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_ID;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_NAME;
-import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_PROCESSOR_TYPE;
 import static com.redhat.service.smartevents.manager.TestConstants.DEFAULT_USER_NAME;
+import static com.redhat.service.smartevents.manager.utils.TestUtils.createWebhookAction;
+import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.AdditionalMatchers.not;
@@ -239,7 +251,7 @@ class ProcessorServiceTest {
 
     @Test
     void testCreateErrorHandlerProcessor() {
-        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        ProcessorRequest processorRequest = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
         Processor processor = processorService.createErrorHandlerProcessor(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, DEFAULT_USER_NAME, processorRequest);
         doAssertProcessorCreation(processor, processorRequest, ERROR_HANDLER);
     }
@@ -271,10 +283,10 @@ class ProcessorServiceTest {
         processor2.setStatus(DEPROVISION);
         processor2.setDependencyStatus(DELETED);
 
-        when(processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID))
+        when(processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID))
                 .thenReturn(List.of(processor1, processor2));
 
-        List<Processor> processors = processorService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processors = processorService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
 
         assertThat(processors).hasSize(2);
         processors.forEach((px) -> assertThat(px.getName()).isIn(processor1Name, processor2Name));
@@ -282,12 +294,11 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatus() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor updated = processorService.updateProcessorStatus(updateDto);
 
@@ -296,14 +307,14 @@ class ProcessorServiceTest {
 
     @Test
     void testUpdateProcessorStatusReadyPublishedAt() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(DEFAULT_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         Processor publishedProcessor = processorService.updateProcessorStatus(updateDto);
+        ZonedDateTime modifiedAt = publishedProcessor.getModifiedAt();
 
         assertThat(publishedProcessor.getStatus()).isEqualTo(READY);
         assertThat(publishedProcessor.getPublishedAt()).isNotNull();
@@ -312,27 +323,62 @@ class ProcessorServiceTest {
         Processor publishedProcessor2 = processorService.updateProcessorStatus(updateDto);
 
         assertThat(publishedProcessor2.getStatus()).isEqualTo(READY);
+        assertThat(publishedProcessor2.getModifiedAt()).isEqualTo(modifiedAt);
         assertThat(publishedProcessor2.getPublishedAt()).isEqualTo(publishedProcessor.getPublishedAt());
     }
 
     @Test
     void testUpdateProcessorStatus_bridgeDoesNotExist() {
-        ProcessorDTO processor = new ProcessorDTO();
-        processor.setBridgeId(NON_EXISTING_BRIDGE_ID);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(NON_EXISTING_BRIDGE_ID);
 
-        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(processor));
+        assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
     }
 
     @Test
     void testUpdateProcessorStatus_processorDoesNotExist() {
-        ProcessorDTO updateDto = new ProcessorDTO();
-        updateDto.setType(DEFAULT_PROCESSOR_TYPE);
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         updateDto.setId(NON_EXISTING_PROCESSOR_ID);
-        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
 
         assertThatExceptionOfType(ItemNotFoundException.class).isThrownBy(() -> processorService.updateProcessorStatus(updateDto));
+    }
+
+    @Test
+    void testUpdateProcessorStatusIncludingBridgeError() {
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(FAILED);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+        updateDto.setBridgeErrorInstance(bei);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(FAILED);
+        assertThat(updated.getErrorId()).isEqualTo(1);
+        assertThat(updated.getErrorUUID()).isEqualTo(bei.getUuid());
+    }
+
+    @Test
+    void testUpdateProcessorStatusClearsBridgeErrorWhenUndefined() {
+        ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
+        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
+        updateDto.setStatus(READY);
+        updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
+
+        Processor updated = processorService.updateProcessorStatus(updateDto);
+
+        assertThat(updated.getStatus()).isEqualTo(READY);
+        assertThat(updated.getErrorId()).isNull();
+        assertThat(updated.getErrorUUID()).isNull();
     }
 
     @Test
@@ -358,7 +404,7 @@ class ProcessorServiceTest {
 
     @Test
     void testGetUserVisibleProcessors() {
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isEqualTo(3L);
@@ -373,7 +419,7 @@ class ProcessorServiceTest {
         when(processorDAO.findUserVisibleByBridgeIdAndCustomerId(eq(DEFAULT_BRIDGE_ID), eq(DEFAULT_CUSTOMER_ID), any()))
                 .thenReturn(new ListResult<>(Collections.emptyList(), 0, 0));
 
-        ListResult<Processor> results = processorService.getUserVisibleProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
         assertThat(results).isNotNull();
         assertThat(results.getPage()).isZero();
         assertThat(results.getSize()).isZero();
@@ -383,7 +429,40 @@ class ProcessorServiceTest {
     @Test
     void testGetUserVisibleProcessors_bridgeDoesNotExist() {
         assertThatExceptionOfType(ItemNotFoundException.class)
-                .isThrownBy(() -> processorService.getUserVisibleProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+                .isThrownBy(() -> processorService.getProcessors(NON_EXISTING_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+    }
+
+    @Test
+    void testGetUserVisibleProcessorsWhenBridgeHasFailed() {
+        Bridge bridge = createFailedBridge();
+
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
+
+        ListResult<Processor> results = processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO);
+        assertThat(results).isNotNull();
+        assertThat(results.getPage()).isZero();
+        assertThat(results.getSize()).isEqualTo(3L);
+        assertThat(results.getTotal()).isEqualTo(3L);
+        assertThat(results.getItems().get(0).getId()).isEqualTo(DEFAULT_PROCESSOR_ID);
+        assertThat(results.getItems().get(1).getId()).isEqualTo(PROVISIONING_PROCESSOR_ID);
+        assertThat(results.getItems().get(2).getId()).isEqualTo(FAILED_PROCESSOR_ID);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getUserVisibleProcessorsWhenBridgeIsStatus")
+    void testGetUserVisibleProcessorsWhenBridgeIsPreparing(ManagedResourceStatus status) {
+        Bridge bridge = createBridge(status);
+        when(bridgesServiceMock.getBridge(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID)).thenReturn(bridge);
+
+        assertThatExceptionOfType(BridgeLifecycleException.class)
+                .isThrownBy(() -> processorService.getProcessors(DEFAULT_BRIDGE_ID, DEFAULT_CUSTOMER_ID, QUERY_INFO));
+    }
+
+    private static Stream<Arguments> getUserVisibleProcessorsWhenBridgeIsStatus() {
+        Object[][] arguments = {
+                { PREPARING }, { PROVISIONING }, { DEPROVISION }, { DELETING }
+        };
+        return Stream.of(arguments).map(Arguments::of);
     }
 
     @Test
@@ -435,15 +514,17 @@ class ProcessorServiceTest {
     private static Stream<Arguments> updateProcessorParams() {
         Object[] arguments = {
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createKafkaTopicAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource())
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createdMaskedWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createMaskedSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
     }
 
     private static Stream<Arguments> updateProcessorGatewayParams() {
         Object[] arguments = {
-                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, TestUtils.createWebhookAction()),
+                new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createWebhookAction()),
                 new ProcessorRequestForTests(DEFAULT_PROCESSOR_NAME, createSlackSource())
         };
         return Stream.of(arguments).map(Arguments::of);
@@ -481,6 +562,10 @@ class ProcessorServiceTest {
     @ParameterizedTest
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithName(ProcessorRequestForTests request) {
+        Processor existingProcessor = createReadyProcessorFromRequest(request);
+        when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
+                .thenReturn(existingProcessor);
+
         request.setName(request.getName() + "-updated");
         assertThatExceptionOfType(BadRequestException.class)
                 .isThrownBy(() -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
@@ -500,6 +585,9 @@ class ProcessorServiceTest {
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
 
+        assertThat(updatedProcessor.getErrorId()).isNull();
+        assertThat(updatedProcessor.getErrorUUID()).isNull();
+
         assertThat(updatedResponse.getFilters()).isNull();
         assertThat(updatedResponse.getTransformationTemplate()).isEqualTo(updatedTransformationTemplate);
     }
@@ -508,7 +596,6 @@ class ProcessorServiceTest {
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithGateway(ProcessorRequestForTests request) {
         Processor existingProcessor = createReadyProcessorFromRequest(request);
-
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -530,7 +617,6 @@ class ProcessorServiceTest {
     @MethodSource("updateProcessorParams")
     void testUpdateProcessorWithGatewayWithOppositeType(ProcessorRequestForTests request) {
         Processor existingProcessor = createReadyProcessorFromRequest(request);
-
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
 
@@ -565,7 +651,7 @@ class ProcessorServiceTest {
                     SlackSource.TOKEN_PARAM, "test-token-updated"));
             request.setSource(updatedSource);
         } else if (request.getType() == SINK) {
-            Action updatedAction = TestUtils.createWebhookAction();
+            Action updatedAction = createWebhookAction();
             updatedAction.setMapParameters(Map.of(WebhookAction.ENDPOINT_PARAM, "https://webhook.site/updated"));
             request.setAction(updatedAction);
         }
@@ -593,6 +679,9 @@ class ProcessorServiceTest {
         ProcessorResponse updatedResponse = processorService.toResponse(updatedProcessor);
         assertThat(updatedResponse.getStatus()).isEqualTo(ACCEPTED);
 
+        assertThat(updatedProcessor.getErrorId()).isNull();
+        assertThat(updatedProcessor.getErrorUUID()).isNull();
+
         assertThat(updatedResponse.getFilters()).hasSize(1);
         BaseFilter updatedFilter = updatedResponse.getFilters().iterator().next();
         assertThat(updatedFilter.getKey()).isEqualTo("key");
@@ -611,6 +700,8 @@ class ProcessorServiceTest {
         request.setFilters(filters);
 
         Processor existingProcessor = createReadyProcessorFromRequest(request);
+        existingProcessor.setErrorId(1);
+        existingProcessor.setErrorUUID(UUID.randomUUID().toString());
 
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
                 .thenReturn(existingProcessor);
@@ -619,11 +710,13 @@ class ProcessorServiceTest {
 
         assertThat(updatedProcessor.getStatus()).isEqualTo(READY);
         assertThat(updatedProcessor).isEqualTo(existingProcessor);
+        assertThat(updatedProcessor.getErrorId()).isEqualTo(existingProcessor.getErrorId());
+        assertThat(updatedProcessor.getErrorUUID()).isEqualTo(existingProcessor.getErrorUUID());
     }
 
     @Test
     void testUpdateErrorHandlerProcessorFails() {
-        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction());
+        ProcessorRequest request = new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction());
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(
                 () -> processorService.updateProcessor(DEFAULT_BRIDGE_ID, ERROR_HANDLER_PROCESSOR_ID, DEFAULT_CUSTOMER_ID, request));
     }
@@ -632,6 +725,7 @@ class ProcessorServiceTest {
     void testToResponse() {
         Bridge b = Fixtures.createBridge();
         Processor p = Fixtures.createProcessor(b, READY);
+        p.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
         Action action = Fixtures.createKafkaAction();
 
         ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", action);
@@ -647,15 +741,56 @@ class ProcessorServiceTest {
         assertThat(r.getId()).isEqualTo(p.getId());
         assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
         assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getModifiedAt()).isEqualTo(p.getModifiedAt());
         assertThat(r.getKind()).isEqualTo("Processor");
         assertThat(r.getTransformationTemplate()).isEmpty();
         assertThat(r.getAction().getType()).isEqualTo(KafkaTopicAction.TYPE);
+        assertThat(r.getStatusMessage()).isNull();
+    }
+
+    @Test
+    void testToResponseWithMask() {
+        Bridge b = Fixtures.createBridge();
+        Processor p = Fixtures.createProcessor(b, READY);
+
+        Source source = new Source();
+        source.setType(SlackSource.TYPE);
+        source.setMapParameters(Map.of(
+                SlackSource.CHANNEL_PARAM, "mychannel",
+                SlackSource.TOKEN_PARAM, "mytoken"));
+
+        ProcessorDefinition definition = new ProcessorDefinition(Collections.emptySet(), "", source, null);
+        p.setDefinition(definition);
+
+        ProcessorResponse r = processorService.toResponse(p);
+        assertThat(r).isNotNull();
+
+        assertThat(r.getHref()).isEqualTo(APIConstants.USER_API_BASE_PATH + b.getId() + "/processors/" + p.getId());
+        assertThat(r.getName()).isEqualTo(p.getName());
+        assertThat(r.getStatus()).isEqualTo(p.getStatus());
+        assertThat(r.getType()).isEqualTo(p.getType());
+        assertThat(r.getId()).isEqualTo(p.getId());
+        assertThat(r.getSubmittedAt()).isEqualTo(p.getSubmittedAt());
+        assertThat(r.getPublishedAt()).isEqualTo(p.getPublishedAt());
+        assertThat(r.getKind()).isEqualTo("Processor");
+        assertThat(r.getTransformationTemplate()).isEmpty();
+        assertThat(r.getSource().getType()).isEqualTo(SlackSource.TYPE);
+        assertThat(r.getSource().getParameter(SlackSource.CHANNEL_PARAM)).isEqualTo("mychannel");
+        assertThat(r.getSource().getParameters().get(SlackSource.TOKEN_PARAM)).isEqualTo(emptyObjectNode());
     }
 
     private static Bridge createReadyBridge() {
+        return createBridge(READY);
+    }
+
+    private static Bridge createFailedBridge() {
+        return createBridge(FAILED);
+    }
+
+    private static Bridge createBridge(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
         bridge.setId(DEFAULT_BRIDGE_ID);
-        bridge.setStatus(READY);
+        bridge.setStatus(status);
         return bridge;
     }
 
@@ -690,11 +825,13 @@ class ProcessorServiceTest {
         Processor processor = Fixtures.createProcessor(createReadyBridge(), FAILED);
         processor.setId(FAILED_PROCESSOR_ID);
         processor.setName(FAILED_PROCESSOR_NAME);
+        processor.setErrorId(1);
+        processor.setErrorUUID(UUID.randomUUID().toString());
         return processor;
     }
 
     private static Processor createErrorHandlerProcessor() {
-        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, TestUtils.createWebhookAction()));
+        Processor processor = createReadyProcessorFromRequest(new ProcessorRequest(ERROR_HANDLER_PROCESSOR_NAME, createWebhookAction()));
         processor.setId(ERROR_HANDLER_PROCESSOR_ID);
         processor.setType(ERROR_HANDLER);
         return processor;
@@ -708,12 +845,28 @@ class ProcessorServiceTest {
         return action;
     }
 
+    private static Action createdMaskedWebhookAction() {
+        Action webhookAction = createWebhookAction();
+        webhookAction.getParameters().set(WebhookAction.BASIC_AUTH_USERNAME_PARAM, new TextNode("myusername"));
+        webhookAction.getParameters().set(WebhookAction.BASIC_AUTH_PASSWORD_PARAM, emptyObjectNode());
+        return webhookAction;
+    }
+
     private static Source createSlackSource() {
         Source source = new Source();
         source.setType(SlackSource.TYPE);
         source.setMapParameters(Map.of(
                 SlackSource.CHANNEL_PARAM, "test-channel",
                 SlackSource.TOKEN_PARAM, "test-token"));
+        return source;
+    }
+
+    private static Source createMaskedSlackSource() {
+        Source source = new Source();
+        source.setType(SlackSource.TYPE);
+        source.setParameters(new ObjectNode(JsonNodeFactory.instance, Map.of(
+                SlackSource.CHANNEL_PARAM, new TextNode("test-channel"),
+                SlackSource.TOKEN_PARAM, emptyObjectNode())));
         return source;
     }
 

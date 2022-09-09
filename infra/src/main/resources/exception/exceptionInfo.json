@@ -14,7 +14,7 @@
   {
     "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ExternalUserException",
     "id": 3,
-    "reason": "The requested item does not exist in out repository",
+    "reason": "We were unable to process your request. Please contact Red Hat support if the error persists.",
     "type": "USER"
   },
   {
@@ -178,5 +178,53 @@
     "id": 30,
     "reason": "The specified ErrorHandler Action is unsupported.",
     "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorFilterDefinitionException",
+    "id": 32,
+    "reason": "Unable to deserialize Filter definition.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidCloudProviderException",
+    "id": 33,
+    "reason": "The selected Cloud Provider is not valid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException",
+    "id": 34,
+    "reason": "The selected Region is not valid.",
+    "type": "USER"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.InvalidURLException",
+    "id": 35,
+    "reason": "Shard Operator received an invalid URL for the BridgeIngress endpoint.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException",
+    "id": 36,
+    "reason": "Your request was not complete within the configured time-out.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningMaxRetriesExceededException",
+    "id": 37,
+    "reason": "Your request failed after the maximum number of configured re-try attempts.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException",
+    "id": 38,
+    "reason": "A ReplicaSet failed to be provisioned for your request.",
+    "type": "PLATFORM"
+  },
+  {
+    "exception": "com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException",
+    "id": 39,
+    "reason": "A Managed Connector failed to be provisioned for your request.",
+    "type": "PLATFORM"
   }
 ]

@@ -2,7 +2,7 @@ Feature: Tests of Processor Filter update
 
   Background:
     Given authenticate against Manager
-    And create a new Bridge "mybridge"
+    And create a new Bridge "mybridge" in cloud provider "aws" and region "us-east-1"
     And the Bridge "mybridge" is existing with status "ready" within 4 minutes
     And the Ingress of Bridge "mybridge" is available within 2 minutes
 
@@ -73,7 +73,7 @@ Feature: Tests of Processor Filter update
       }
     }
     """
-    Then Webhook site contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
+    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text "${cloud-event.filter-event-test.id}" within 1 minute
 
     And send a cloud event to the Ingress of the Bridge "mybridge":
     """
@@ -87,7 +87,7 @@ Feature: Tests of Processor Filter update
       }
     }
     """
-    Then Webhook site does not contains request with text "${cloud-event.filter-InvalidEvent-test.id}" within 10 seconds
+    Then Webhook site with id "${env.webhook.site.uuid}" does not contains request with text "${cloud-event.filter-InvalidEvent-test.id}" within 10 seconds
 
 
   Scenario: Messages are sent to Processor with matching filter
@@ -127,7 +127,7 @@ Feature: Tests of Processor Filter update
         }
     }
     """
-    Then Webhook site contains request with text "${cloud-event.filter-test.id}" within 1 minute
+    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text "${cloud-event.filter-test.id}" within 1 minute
 
 
     When send a cloud event to the Ingress of the Bridge "mybridge":
@@ -143,7 +143,7 @@ Feature: Tests of Processor Filter update
     }
     """
 
-    Then Webhook site does not contains request with text "${cloud-event.filter-invalidtest.id}" within 10 seconds
+    Then Webhook site with id "${env.webhook.site.uuid}" does not contains request with text "${cloud-event.filter-invalidtest.id}" within 10 seconds
 
 
 

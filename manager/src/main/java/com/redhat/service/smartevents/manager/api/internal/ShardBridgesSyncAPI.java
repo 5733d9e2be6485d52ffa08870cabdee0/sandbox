@@ -29,7 +29,9 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.auth.IdentityResolver;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ForbiddenRequestException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.manager.BridgesService;
 import com.redhat.service.smartevents.manager.ProcessorService;
 import com.redhat.service.smartevents.manager.ShardService;
@@ -79,18 +81,17 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(hidden = true, summary = "Update a Processor.", description = "Update a Processor.")
+    @Operation(hidden = true, summary = "Update a Processor status.", description = "Update a Processor status.")
     @PUT
     @Path("processors")
-    public Response updateProcessorStatus(ProcessorDTO processorDTO) {
+    public Response updateProcessorStatus(ProcessorManagedResourceStatusUpdateDTO updateDTO) {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
-        LOGGER.info("Processing update from shard for Processor with id '{}' for bridge '{}' for customer '{}' with status '{}'",
-                processorDTO.getId(),
-                processorDTO.getBridgeId(),
-                processorDTO.getCustomerId(),
-                processorDTO.getStatus());
-        processorService.updateProcessorStatus(processorDTO);
+        LOGGER.info("Processing update from shard for Processor with id '{}' and bridgeId '{}' with status '{}'",
+                updateDTO.getId(),
+                updateDTO.getBridgeId(),
+                updateDTO.getStatus());
+        processorService.updateProcessorStatus(updateDTO);
         return Response.ok().build();
     }
 
@@ -109,7 +110,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Request from Shard for Processors to deploy or delete.");
-        List<Processor> processorToDeployOrDelete = processorService.findByShardIdWithReadyDependencies(shardId);
+        List<Processor> processorToDeployOrDelete = processorService.findByShardIdToDeployOrDelete(shardId);
         LOGGER.info("Found {} processor(s) to deploy or delete", processorToDeployOrDelete.size());
         return Response.ok(processorToDeployOrDelete
                 .stream()
@@ -132,7 +133,7 @@ public class ShardBridgesSyncAPI {
         String shardId = identityResolver.resolve(jwt);
         failIfNotAuthorized(shardId);
         LOGGER.info("Shard asks for Bridges to deploy or delete");
-        List<Bridge> bridgesToDeployOrDelete = bridgesService.findByShardIdWithReadyDependencies(shardId);
+        List<Bridge> bridgesToDeployOrDelete = bridgesService.findByShardIdToDeployOrDelete(shardId);
         LOGGER.info("Found {} bridge(s) to deploy or delete", bridgesToDeployOrDelete.size());
         return Response.ok(bridgesToDeployOrDelete
                 .stream()
@@ -148,13 +149,13 @@ public class ShardBridgesSyncAPI {
             @APIResponse(description = "Forbidden.", responseCode = "403"),
             @APIResponse(description = "Internal error.", responseCode = "500", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     })
-    @Operation(hidden = true, summary = "Update a Bridge instance.", description = "Update a Bridge instance.")
+    @Operation(hidden = true, summary = "Update a Bridge status.", description = "Update a Bridge status.")
     @PUT
-    public Response updateBridge(BridgeDTO dto) {
+    public Response updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
         String subject = identityResolver.resolve(jwt);
         failIfNotAuthorized(subject);
-        LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", dto.getId(), dto.getStatus());
-        bridgesService.updateBridge(dto);
+        LOGGER.info("Shard wants to update the Bridge with id '{}' with the status '{}'", updateDTO.getId(), updateDTO.getStatus());
+        bridgesService.updateBridgeStatus(updateDTO);
         return Response.ok().build();
     }
 

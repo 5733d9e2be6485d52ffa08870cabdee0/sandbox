@@ -9,9 +9,7 @@ import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
 import com.redhat.service.smartevents.manager.dao.ShardDAO;
-import com.redhat.service.smartevents.manager.dao.WorkDAO;
 import com.redhat.service.smartevents.manager.models.Shard;
-import com.redhat.service.smartevents.manager.models.ShardType;
 
 /**
  * This bean must be injected in every test class that uses the database.
@@ -34,9 +32,6 @@ public class DatabaseManagerUtils {
 
     @Inject
     ShardDAO shardDAO;
-
-    @Inject
-    WorkDAO workDAO;
 
     /**
      * Until the Processor is "immutable", meaning that it is not possible to add/remove filters dynamically, the processor
@@ -62,7 +57,6 @@ public class DatabaseManagerUtils {
     @Transactional
     public void cleanUp() {
         // Clean up
-        deleteAllWork();
         deleteAllConnectors();
         deleteAllProcessors();
         deleteAllBridges();
@@ -77,10 +71,6 @@ public class DatabaseManagerUtils {
         bridgeDAO.getEntityManager().createQuery("DELETE FROM Bridge").executeUpdate();
     }
 
-    private void deleteAllWork() {
-        workDAO.getEntityManager().createQuery("DELETE FROM Work").executeUpdate();
-    }
-
     private void deleteAllConnectors() {
         connectorsDAO.getEntityManager().createQuery("DELETE FROM ConnectorEntity").executeUpdate();
     }
@@ -90,9 +80,9 @@ public class DatabaseManagerUtils {
     }
 
     private void registerDefaultShard() {
-        Shard traditional = new Shard();
-        traditional.setId(TestConstants.SHARD_ID);
-        traditional.setType(ShardType.TRADITIONAL);
-        shardDAO.persist(traditional);
+        Shard shard = new Shard();
+        shard.setId(TestConstants.SHARD_ID);
+        shard.setRouterCanonicalHostname(TestConstants.DEFAULT_SHARD_ROUTER_CANONICAL_HOSTNAME);
+        shardDAO.persist(shard);
     }
 }

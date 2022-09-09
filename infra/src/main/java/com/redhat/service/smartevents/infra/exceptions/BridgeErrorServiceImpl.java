@@ -25,6 +25,11 @@ public class BridgeErrorServiceImpl implements BridgeErrorService {
     }
 
     @Override
+    public Optional<BridgeError> getPlatformError(int errorId) {
+        return Optional.ofNullable(repository.findErrorByIdAndType(errorId, BridgeErrorType.PLATFORM));
+    }
+
+    @Override
     public Optional<BridgeError> getError(Exception e) {
         return Optional.ofNullable(repository.findByException(e));
     }
@@ -32,5 +37,10 @@ public class BridgeErrorServiceImpl implements BridgeErrorService {
     @Override
     public Optional<BridgeError> getError(Class clazz) {
         return Optional.ofNullable(repository.findByException(clazz));
+    }
+
+    @Override
+    public Optional<BridgeError> getError(int errorId) {
+        return Optional.ofNullable(repository.findErrorById(errorId));
     }
 }

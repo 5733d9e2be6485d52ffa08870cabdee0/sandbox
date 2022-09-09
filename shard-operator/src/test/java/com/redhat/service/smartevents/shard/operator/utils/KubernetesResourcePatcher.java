@@ -107,6 +107,10 @@ public class KubernetesResourcePatcher {
 
     public void patchReadyDeploymentAsReady(String name, String namespace) {
         Deployment deployment = getDeployment(name, namespace);
+
+        // Fail if it has not been deployed yet
+        assertThat(deployment).isNotNull();
+
         DeploymentStatus deploymentStatus = new DeploymentStatusBuilder().withAvailableReplicas(1).withReplicas(1).build();
         updateDeploymentStatus(deployment, deploymentStatus);
     }

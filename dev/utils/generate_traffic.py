@@ -26,7 +26,7 @@ def create_bridge():
             print('[bridge] Creating a valid request')
             body = {'name': str(uuid.uuid4())}
 
-        response = requests.post(url + '/api/v1/bridges', data=json.dumps(body), 
+        response = requests.post(url + '/api/smartevents_mgmt/v1/bridges', data=json.dumps(body),
         headers={'Content-type': 'application/json', 'Authorization': 'Bearer {0}'.format(get_bearer_token())})
         if (response.status_code == 401):
             authenticate()
@@ -54,7 +54,7 @@ def create_processor():
                 }
     
         bridge = random.choice(bridges)
-        response = requests.post(url + '/api/v1/bridges/' + bridge + '/processors', data=json.dumps(body),
+        response = requests.post(url + '/api/smartevents_mgmt/v1/bridges/' + bridge + '/processors', data=json.dumps(body),
                 headers={'Content-type': 'application/json', 'Authorization': 'Bearer {0}'.format(get_bearer_token())})
         if (response.status_code == 401):
             authenticate()

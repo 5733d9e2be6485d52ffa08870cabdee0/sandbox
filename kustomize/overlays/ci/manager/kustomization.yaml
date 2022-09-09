@@ -1,0 +1,11 @@
+patchesStrategicMerge:
+  - patches/deploy.yaml
+  - patches/deploy-config.yaml
+  - patches/postgres-config.yaml
+namespace: event-bridge-manager
+resources:
+  - namespace.yaml
+  - ../../../base/manager
+  - ingress.yaml
+  - event-bridge-manager-secrets.yaml
+  - awssm-secret.yaml

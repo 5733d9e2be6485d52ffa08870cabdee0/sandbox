@@ -25,6 +25,7 @@ import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -49,16 +50,12 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubBridgeUpdate();
 
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
                         bridge.getId(),
-                        bridge.getName(),
-                        bridge.getEndpoint(),
                         bridge.getCustomerId());
         String expectedJsonUpdateFailedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
                         bridge.getId(),
-                        bridge.getName(),
-                        bridge.getEndpoint(),
                         bridge.getCustomerId());
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 FAILED)
@@ -81,17 +78,13 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubBridgeUpdate();
 
         String expectedJsonUpdateDeletingRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                         bridge.getId(),
-                        bridge.getName(),
-                        bridge.getEndpoint(),
                         bridge.getCustomerId());
         String expectedJsonUpdateDeletedRequest =
                 String.format(
-                        "{\"id\": \"%s\", \"name\": \"%s\", \"endpoint\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                        "{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                         bridge.getId(),
-                        bridge.getName(),
-                        bridge.getEndpoint(),
                         bridge.getCustomerId());
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 FAILED)
@@ -105,6 +98,28 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
     }
 
     @Test
+    public void testBridgeProvisioningContinues() throws JsonProcessingException {
+        // This replicates the Operator crashing after the Manager had been notified but before the resource was READY
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.PROVISIONING, 1);
+        stubBridgesToDeployOrDelete(List.of(bridge1));
+
+        managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
+
+        verify(bridgeIngressService).createBridgeIngress(bridge1);
+    }
+
+    @Test
+    public void testBridgeDeletingContinues() throws JsonProcessingException {
+        // This replicates the Operator crashing after the Manager had been notified but before the resource was DELETED
+        BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.DELETING, 1);
+        stubBridgesToDeployOrDelete(List.of(bridge1));
+
+        managerSyncService.doBridges().await().atMost(Duration.ofSeconds(5));
+
+        verify(bridgeIngressService).deleteBridgeIngress(bridge1);
+    }
+
+    @Test
     public void testProcessorDeployment() throws JsonProcessingException, InterruptedException {
         doThrow(new IllegalStateException()).when(bridgeExecutorService).createBridgeExecutor(any());
 
@@ -113,14 +128,12 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubProcessorUpdate();
 
         String expectedJsonUpdateProvisioningRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"provisioning\"}",
                         processor.getId(),
-                        processor.getName(),
                         processor.getCustomerId());
         String expectedJsonUpdateFailedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"failed\"}",
                         processor.getId(),
-                        processor.getName(),
                         processor.getCustomerId());
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 FAILED)
@@ -143,14 +156,12 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         stubProcessorUpdate();
 
         String expectedJsonUpdateDeletingRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleting\"}",
                         processor.getId(),
-                        processor.getName(),
                         processor.getCustomerId());
         String expectedJsonUpdateDeletedRequest =
-                String.format("{\"id\": \"%s\", \"name\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
+                String.format("{\"id\": \"%s\", \"customerId\": \"%s\", \"status\": \"deleted\"}",
                         processor.getId(),
-                        processor.getName(),
                         processor.getCustomerId());
 
         CountDownLatch latch = new CountDownLatch(2); // Two updates to the manager are expected (1 PROVISIONING + 1 FAILED)
@@ -161,6 +172,30 @@ public class ManagerSyncServiceMockedTest extends AbstractManagerSyncServiceTest
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateDeletingRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
         assertJsonRequest(expectedJsonUpdateDeletedRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
+    }
+
+    @Test
+    public void testProcessorProvisioningContinues() throws JsonProcessingException {
+        // This replicates the Operator crashing after the Manager had been notified but before the resource was READY
+        ProcessorDTO processor1 = TestSupport.newRequestedProcessorDTO();
+        processor1.setStatus(ManagedResourceStatus.PROVISIONING);
+        stubProcessorsToDeployOrDelete(List.of(processor1));
+
+        managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
+
+        verify(bridgeExecutorService).createBridgeExecutor(processor1);
+    }
+
+    @Test
+    public void testProcessorDeletingContinues() throws JsonProcessingException {
+        // This replicates the Operator crashing after the Manager had been notified but before the resource was DELETED
+        ProcessorDTO processor1 = TestSupport.newRequestedProcessorDTO();
+        processor1.setStatus(ManagedResourceStatus.DELETING);
+        stubProcessorsToDeployOrDelete(List.of(processor1));
+
+        managerSyncService.doProcessors().await().atMost(Duration.ofSeconds(5));
+
+        verify(bridgeExecutorService).deleteBridgeExecutor(processor1);
     }
 
 }

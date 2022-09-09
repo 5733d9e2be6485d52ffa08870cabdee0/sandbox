@@ -1,5 +1,6 @@
 package com.redhat.service.smartevents.manager.connectors;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    private void createConnectorEntity(Processor processor, Action action) {
+    protected void createConnectorEntity(Processor processor, Action action) {
         if (!processorCatalogService.isConnector(ProcessorType.SINK, action.getType())) {
             return;
         }
@@ -76,7 +77,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     // Connector should always be marked for creation in the same transaction as a Processor
-    public void createConnectorEntity(Processor processor, Source source) {
+    protected void createConnectorEntity(Processor processor, Source source) {
         if (!processorCatalogService.isConnector(ProcessorType.SOURCE, source.getType())) {
             return;
         }
@@ -94,7 +95,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         newConnectorEntity.setName(newConnectorName);
         newConnectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
         newConnectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
-        newConnectorEntity.setSubmittedAt(ZonedDateTime.now());
+        newConnectorEntity.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC));
         newConnectorEntity.setProcessor(processor);
         newConnectorEntity.setTopicName(topicName);
         newConnectorEntity.setConnectorTypeId(connectorTypeId);
@@ -133,7 +134,7 @@ public class ConnectorsServiceImpl implements ConnectorsService {
         }
 
         if (processor.getGeneration() > 0) {
-            connectorEntity.setModifiedAt(ZonedDateTime.now());
+            connectorEntity.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC));
             connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
             connectorEntity.setDefinition(updatedConnectionDefinition);

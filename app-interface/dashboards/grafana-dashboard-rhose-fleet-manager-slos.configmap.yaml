@@ -1,0 +1,497 @@
+apiVersion: v1
+data:
+  FleetManagerDashboard.json: |-
+    {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 5,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 15,
+          "w": 9,
+          "x": 0,
+          "y": 0
+        },
+        "hiddenSeries": false,
+        "id": 2,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "9.0.7",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "(sum(rate(haproxy_backend_http_responses_total{route=\"rhose-fleet-manager\",exported_namespace=\"rhose-production\",code!=\"5xx\"}[5m]))/sum(rate(haproxy_backend_http_responses_total{route=\"rhose-fleet-manager\",exported_namespace=\"rhose-production\"}[5m]))) * 100",
+            "interval": "",
+            "legendFormat": "rhose-fleet-manager",
+            "refId": "A"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "API Availability",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "percent",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "iLX_mMBnk"
+        },
+        "description": "Calculated over the last 28 days\n\n",
+        "gridPos": {
+          "h": 3,
+          "w": 4,
+          "x": 9,
+          "y": 0
+        },
+        "id": 19,
+        "options": {
+          "content": "Calculated over the last 28 days",
+          "mode": "markdown"
+        },
+        "pluginVersion": "9.0.7",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "iLX_mMBnk"
+            },
+            "refId": "A"
+          }
+        ],
+        "title": "SLOs",
+        "type": "text"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 15,
+          "w": 9,
+          "x": 13,
+          "y": 0
+        },
+        "hiddenSeries": false,
+        "id": 4,
+        "legend": {
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": true,
+          "total": false,
+          "values": false
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "connected",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "9.0.7",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "histogram_quantile(0.99, sum(rate(api_inbound_request_duration_bucket{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\",code!~\"5..\"}[5m])) by (le))",
+            "interval": "",
+            "legendFormat": "p99",
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "histogram_quantile(0.90, sum(rate(api_inbound_request_duration_bucket{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\",code!~\"5..\"}[5m])) by (le))",
+            "interval": "",
+            "legendFormat": "p90",
+            "refId": "B"
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "API Latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "",
+            "logBase": 1,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 2,
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 95
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 9,
+          "y": 3
+        },
+        "id": 10,
+        "links": [],
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "9.0.7",
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "(sum(rate(haproxy_backend_http_responses_total{route=\"rhose-fleet-manager\",exported_namespace=\"rhose-production\",code!=\"5xx\"}[28d]))/sum(rate(haproxy_backend_http_responses_total{route=\"rhose-fleet-manager\",exported_namespace=\"rhose-production\"}[28d]))) * 100",
+            "interval": "",
+            "legendFormat": "Create Operation",
+            "refId": "A"
+          }
+        ],
+        "title": "API Availability (95%) ",
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 99
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 9,
+          "y": 7
+        },
+        "id": 11,
+        "links": [],
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "9.0.7",
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "(sum(rate(api_inbound_request_duration_bucket{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\",le=\"1\",code!~\"5..\"}[$__range]))/sum(rate(api_inbound_request_duration_count{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\"}[$__range]))) * 100",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "title": "API Latency p99 < 1s",
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "uid": "$datasource"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 90
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 9,
+          "y": 11
+        },
+        "id": 14,
+        "links": [],
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "mean"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "pluginVersion": "9.0.7",
+        "targets": [
+          {
+            "datasource": {
+              "uid": "$datasource"
+            },
+            "expr": "(sum(rate(api_inbound_request_duration_bucket{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\",le=\"0.1\",code!~\"5..\"}[$__range]))/sum(rate(api_inbound_request_duration_count{job=\"rhose-fleet-manager-metrics\",namespace=\"rhose-production\"}[$__range]))) * 100",
+            "interval": "",
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "title": "API Latency p90 < 0.1s",
+        "type": "gauge"
+      }
+    ],
+    "refresh": false,
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [
+      "rhose-fleet-manager"
+    ],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "No data sources found",
+            "value": ""
+          },
+          "hide": 0,
+          "includeAll": false,
+          "multi": false,
+          "name": "datasource",
+          "options": [],
+          "query": "prometheus",
+          "queryValue": "",
+          "refresh": 1,
+          "regex": "/app-sre-.*/",
+          "skipUrlSync": false,
+          "type": "datasource"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-3h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "RHOSE Fleet Manager SLOs",
+    "uid": "Aba1eG2kA",
+    "version": 1,
+    "weekStart": ""
+    }
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rhose-fleet-manager-slos
+  labels:
+    grafana_dashboard: "true"
+  annotations:
+    grafana-folder: /grafana-dashboard-definitions/RHOSE

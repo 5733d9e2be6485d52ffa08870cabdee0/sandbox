@@ -1,0 +1,13 @@
+images:
+- name: event-bridge-manager
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-manager
+  newTag: 4147190794984531652a9e10af3d8194928fee9d-jvm
+- name: event-bridge-shard-operator
+  newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
+  newTag: k8s-bb8b2870d7391f5a3e6147a7ff6e96399dd139be-jvm
+resources:
+- prometheus
+- shard
+- manager
+- localstack
+- istio

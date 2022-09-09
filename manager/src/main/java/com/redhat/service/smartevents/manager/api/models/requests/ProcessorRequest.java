@@ -8,6 +8,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.redhat.service.smartevents.infra.models.filters.BaseFilter;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Gateway;
@@ -24,6 +25,7 @@ public class ProcessorRequest {
     protected String name;
 
     @JsonProperty("filters")
+    @JsonDeserialize(using = FiltersDeserializer.class)
     protected Set<@Valid BaseFilter> filters;
 
     @JsonProperty("transformationTemplate")

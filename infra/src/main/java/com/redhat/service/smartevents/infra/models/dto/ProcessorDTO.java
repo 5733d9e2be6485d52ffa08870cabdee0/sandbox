@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.infra.models.dto;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinition;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessorDTO {
 
     @JsonProperty("type")
@@ -127,7 +129,8 @@ public class ProcessorDTO {
     @Override
     public String toString() {
         return "ProcessorDTO{" +
-                "id='" + id + '\'' +
+                "type=" + type +
+                ", id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", definition=" + definition +
                 ", bridgeId='" + bridgeId + '\'' +

@@ -2,16 +2,23 @@ package com.redhat.service.smartevents.shard.operator;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
+import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
@@ -20,13 +27,28 @@ import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.openshift.api.model.monitoring.v1.ServiceMonitor;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @WithOpenShiftTestServer
@@ -45,10 +67,23 @@ public class BridgeExecutorServiceTest {
     @Inject
     KubernetesResourcePatcher kubernetesResourcePatcher;
 
+    @InjectMock
+    ServiceMonitorService monitorService;
+
+    @InjectMock
+    ManagerClient managerClient;
+
+    @InjectMock
+    TemplateProvider templateProvider;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
         kubernetesResourcePatcher.cleanUp();
+
+        when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorServiceTemplate(any(), any())).thenCallRealMethod();
     }
 
     @Test
@@ -90,34 +125,32 @@ public class BridgeExecutorServiceTest {
         bridgeExecutorService.createBridgeExecutor(dto);
 
         // Then
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            // The deployment is deployed by the controller
-                            Deployment deployment = kubernetesClient.apps().deployments()
-                                    .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                                    .withName(BridgeExecutor.resolveResourceName(dto.getId()))
-                                    .get();
-                            assertThat(deployment).isNotNull();
-                            assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(60);
-                            List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    // The deployment is deployed by the controller
+                    Deployment deployment = kubernetesClient.apps().deployments()
+                            .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
+                            .withName(BridgeExecutor.resolveResourceName(dto.getId()))
+                            .get();
+                    assertThat(deployment).isNotNull();
+                    assertThat(deployment.getSpec().getProgressDeadlineSeconds()).isEqualTo(60);
+                    List<EnvVar> environmentVariables = deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getEnv();
+                    assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.CUSTOMER_ID_CONFIG_ENV_VAR)).findFirst().get().getValue().length())
+                            .isGreaterThan(0);
+                    assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR)).findFirst().get().getValue().length())
+                            .isGreaterThan(0);
+                    assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR)).findFirst().get().getValue()
+                            .length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_PROCESSOR_DEFINITION_ENV_VAR)).findFirst().get().getValue().length())
+                    assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_ID_ENV_VAR)).findFirst().get().getValue()
+                            .length())
                                     .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_SSO_ENV_VAR)).findFirst().get().getValue()
-                                    .length())
-                                            .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_ID_ENV_VAR)).findFirst().get().getValue()
-                                    .length())
-                                            .isGreaterThan(0);
-                            assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue()
-                                    .length())
-                                            .isGreaterThan(0);
+                    assertThat(environmentVariables.stream().filter(x -> x.getName().equals(Constants.BRIDGE_EXECUTOR_WEBHOOK_CLIENT_SECRET_ENV_VAR)).findFirst().get().getValue()
+                            .length())
+                                    .isGreaterThan(0);
 
-                        });
+                });
     }
 
     @Test
@@ -130,15 +163,13 @@ public class BridgeExecutorServiceTest {
         bridgeExecutorService.createBridgeExecutor(dto);
 
         // Wait until deployment is created by the controller.
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(2))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            // The deployment is deployed by the controller
-                            Deployment deployment = fetchBridgeExecutorDeployment(dto);
-                            assertThat(deployment).isNotNull();
-                        });
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    // The deployment is deployed by the controller
+                    Deployment deployment = fetchBridgeExecutorDeployment(dto);
+                    assertThat(deployment).isNotNull();
+                });
 
         // Patch the deployment and replace
         Deployment deployment = fetchBridgeExecutorDeployment(dto);
@@ -146,12 +177,12 @@ public class BridgeExecutorServiceTest {
         kubernetesClient.apps().deployments().inNamespace(deployment.getMetadata().getNamespace()).createOrReplace(deployment);
 
         // Then
-        deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(fetchBridgeIngress(dto), fetchBridgeExecutorSecret(dto));
+        deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(fetchBridgeExecutor(dto), fetchBridgeExecutorSecret(dto));
         assertThat(deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getImage()).isEqualTo(TestSupport.EXECUTOR_IMAGE);
     }
 
     @Test
-    public void testBridgeIngressDeletion() {
+    public void testBridgeExecutorDeletion() {
         // Given
         ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
 
@@ -160,15 +191,197 @@ public class BridgeExecutorServiceTest {
         bridgeExecutorService.deleteBridgeExecutor(dto);
 
         // Then
-        BridgeExecutor bridgeExecutor = kubernetesClient
-                .resources(BridgeExecutor.class)
-                .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
-                .withName(BridgeExecutor.resolveResourceName(dto.getId()))
-                .get();
+        BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
         assertThat(bridgeExecutor).isNull();
     }
 
-    private BridgeExecutor fetchBridgeIngress(ProcessorDTO dto) {
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsProvisioning() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        // Manager is not notified
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Manager is still not notified as the BridgeExecutor is not yet ready
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verifyNoInteractions(managerClient);
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsReady() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // Mock the presence of Prometheus Custom Resource
+        ServiceMonitor serviceMonitor = mock(ServiceMonitor.class);
+        when(monitorService.fetchOrCreateServiceMonitor(any(BridgeExecutor.class),
+                any(Service.class),
+                eq(BridgeExecutor.COMPONENT_NAME)))
+                        .thenReturn(Optional.of(serviceMonitor));
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyDeploymentAsReady(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyService(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    assertThat(bridgeExecutor.getStatus().isReady()).isTrue();
+                });
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is READY
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(READY);
+        });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(READY);
+        });
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsFailed() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // By not mocking ServiceMonitor the Prometheus Custom Resource check will fail
+        // causing the Controller to update the BridgeExecutor status to FAILED.
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Then
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyDeploymentAsReady(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    kubernetesResourcePatcher.patchReadyService(bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+                });
+
+        await(Duration.ofMinutes(2),
+                Duration.ofSeconds(5),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    assertThat(bridgeExecutor.getStatus().isReady()).isFalse();
+                });
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it has FAILED
+        assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+        verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
+        });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
+        });
+    }
+
+    @Test
+    public void testBridgeExecutorCreationWhenSpecAlreadyExistsAsFailedMaxRetries() {
+        // Given a PROVISIONING Processor
+        ProcessorDTO dto = TestSupport.newRequestedProcessorDTO();
+        dto.setStatus(PROVISIONING);
+
+        // Mock an exception being thrown by the controller
+        // k8s max-reties is set to 1 in application.properties, overriding the default
+        // See https://github.com/quarkiverse/quarkus-operator-sdk/issues/380#issuecomment-1211343353
+        reset(templateProvider);
+        when(templateProvider.loadBridgeExecutorSecretTemplate(any(), any())).thenCallRealMethod();
+        when(templateProvider.loadBridgeExecutorDeploymentTemplate(any(), any())).thenThrow(new InternalPlatformException("template-provider-error"));
+
+        // When
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        ArgumentCaptor<ProcessorManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ProcessorManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollInterval(Duration.ofSeconds(5))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> {
+                        assertThat(d.getId()).isEqualTo(dto.getId());
+                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
+                    });
+                });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> {
+            assertThat(d.getId()).isEqualTo(dto.getId());
+            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
+            assertThat(d.getBridgeId()).isEqualTo(dto.getBridgeId());
+            assertThat(d.getStatus()).isEqualTo(FAILED);
+        });
+    }
+
+    private BridgeExecutor fetchBridgeExecutor(ProcessorDTO dto) {
         return kubernetesClient
                 .resources(BridgeExecutor.class)
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))

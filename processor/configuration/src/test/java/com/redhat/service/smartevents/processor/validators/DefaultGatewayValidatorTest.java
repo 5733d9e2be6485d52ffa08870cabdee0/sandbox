@@ -18,6 +18,8 @@ import com.redhat.service.smartevents.processor.actions.webhook.WebhookAction;
 import com.redhat.service.smartevents.processor.resolvers.AbstractGatewayValidatorTest;
 import com.redhat.service.smartevents.processor.sources.aws.AwsS3Source;
 import com.redhat.service.smartevents.processor.sources.aws.AwsSqsSource;
+import com.redhat.service.smartevents.processor.sources.azure.AzureEventHubSource;
+import com.redhat.service.smartevents.processor.sources.google.GooglePubSubSource;
 import com.redhat.service.smartevents.processor.sources.slack.SlackSource;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -57,6 +59,28 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
     }
 
     @Test
+    void testGooglePubSubSource() {
+        Map<String, String> params = new HashMap<>();
+        params.put(GooglePubSubSource.GCP_SERVICE_ACCOUNT_KEY_PARAM, "key");
+        params.put(GooglePubSubSource.GCP_PROJECT_ID_PARAM, "id");
+        params.put(GooglePubSubSource.GCP_SUBSCRIPTION_NAME, "sub");
+        assertValidationIsValid(sourceWith(GooglePubSubSource.TYPE, params));
+    }
+
+    @Test
+    void testAzureEventHubSource() {
+        Map<String, String> params = new HashMap<>();
+        params.put(AzureEventHubSource.AZURE_NAMESPACE_NAME, "namespace");
+        params.put(AzureEventHubSource.AZURE_EVENTHUB_NAME, "name");
+        params.put(AzureEventHubSource.AZURE_SHARED_ACCESS_NAME, "sharedAccessName");
+        params.put(AzureEventHubSource.AZURE_SHARD_ACCESS_KEY, "sharedAccessKey");
+        params.put(AzureEventHubSource.AZURE_BLOB_ACCOUNT_NAME, "blobAccountName");
+        params.put(AzureEventHubSource.AZURE_BLOB_ACCESS_KEY, "blobAccessKey");
+        params.put(AzureEventHubSource.AZURE_BLOB_CONTAINER_NAME, "blobContainerName");
+        assertValidationIsValid(sourceWith(AzureEventHubSource.TYPE, params));
+    }
+
+    @Test
     void testGooglePubsubAction() {
         Map<String, String> validParams = new HashMap<>();
         validParams.put(GooglePubSubAction.GCP_PROJECT_ID_PARAM, "id");
@@ -86,23 +110,13 @@ public class DefaultGatewayValidatorTest extends AbstractGatewayValidatorTest {
 
     @Test
     void testAwsSqsSource() {
-        Map<String, String> invalidParams = new HashMap<>();
-        invalidParams.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        invalidParams.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        invalidParams.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        invalidParams.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "notavalidurl");
+        Map<String, String> params = new HashMap<>();
+        params.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
+        params.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
+        params.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
+        params.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "QUEUENAME");
 
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, invalidParams),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
-
-        invalidParams.clear();
-        invalidParams.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");
-        invalidParams.put(AwsSqsSource.AWS_ACCESS_KEY_ID_PARAM, "key");
-        invalidParams.put(AwsSqsSource.AWS_SECRET_ACCESS_KEY_PARAM, "secret");
-        invalidParams.put(AwsSqsSource.AWS_QUEUE_URL_PARAM, "https://localhost:8080");
-
-        assertValidationIsInvalid(sourceWith(AwsSqsSource.TYPE, invalidParams),
-                List.of("$.aws_queue_name_or_arn: does not match the regex pattern ^https://sqs\\.([a-z]+-[a-z]+-[0-9])\\.amazonaws\\.com/[0-9]{12}/([^/]+)$"));
+        assertValidationIsValid(sourceWith(AwsSqsSource.TYPE, params));
 
         Map<String, String> validParams = new HashMap<>();
         validParams.put(AwsSqsSource.AWS_REGION_PARAM, "af-south-1");

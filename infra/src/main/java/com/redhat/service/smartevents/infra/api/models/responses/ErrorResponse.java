@@ -2,17 +2,23 @@ package com.redhat.service.smartevents.infra.api.models.responses;
 
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(name = "Error")
 public class ErrorResponse extends BaseResponse {
 
     @JsonProperty("code")
     private String code;
 
+    @NotNull
     @JsonProperty("reason")
     private String reason;
 
@@ -27,6 +33,26 @@ public class ErrorResponse extends BaseResponse {
 
     protected ErrorResponse() {
         super("Error");
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getHref() {
+        return href;
+    }
+
+    @Override
+    public void setHref(String href) {
+        this.href = href;
     }
 
     public String getCode() {
@@ -47,7 +73,7 @@ public class ErrorResponse extends BaseResponse {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, reason);
+        return Objects.hash(id, href, name, code, reason);
     }
 
     @Override
@@ -59,6 +85,6 @@ public class ErrorResponse extends BaseResponse {
         if (getClass() != obj.getClass())
             return false;
         ErrorResponse other = (ErrorResponse) obj;
-        return Objects.equals(code, other.code) && Objects.equals(reason, other.reason);
+        return Objects.equals(id, other.id) && Objects.equals(href, other.href) && Objects.equals(name, other.name) && Objects.equals(code, other.code) && Objects.equals(reason, other.reason);
     }
 }

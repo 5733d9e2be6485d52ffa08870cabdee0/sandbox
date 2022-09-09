@@ -63,6 +63,14 @@
       <artifactId>quarkus-scheduler</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-quartz</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.redhat.service.smartevents</groupId>
       <artifactId>infra</artifactId>
     </dependency>
@@ -85,6 +93,10 @@
     <dependency>
       <groupId>io.quarkiverse.amazonservices</groupId>
       <artifactId>quarkus-amazon-secretsmanager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-route53</artifactId>
     </dependency>
     <!-- needed for aws secret manager async client   -->
     <dependency>
@@ -272,3 +284,4 @@
     </profile>
   </profiles>
 </project>
+

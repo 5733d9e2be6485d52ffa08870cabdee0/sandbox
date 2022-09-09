@@ -35,7 +35,6 @@ import com.redhat.service.smartevents.test.resource.PostgresResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
@@ -60,7 +59,6 @@ import static org.mockito.Mockito.when;
  * Test interaction between {@link ProcessorService} and Managed Connectors client APIs
  */
 @QuarkusTest
-@TestProfile(WorkerSchedulerProfile.class)
 @QuarkusTestResource(PostgresResource.class)
 class ProcessorServiceConnectorTest {
 
@@ -292,12 +290,12 @@ class ProcessorServiceConnectorTest {
     }
 
     private void assertShardAsksForProcessorToBeDeletedIncludes(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).contains(processor.getId());
     }
 
     private void assertShardAsksForProcessorToBeDeletedDoesNotInclude(Processor processor) {
-        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID);
+        List<Processor> processorsToBeDeleted = processorDAO.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID);
         assertThat(processorsToBeDeleted.stream().map(Processor::getId)).doesNotContain(processor.getId());
     }
 
