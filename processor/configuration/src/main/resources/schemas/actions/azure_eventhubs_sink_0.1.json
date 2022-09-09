@@ -8,38 +8,34 @@
     "azure_shared_access_key"
   ],
   "properties": {
-    "azure_namespace_name": {
-      "title": "Eventhubs Namespace",
-      "description": "The eventhubs namespace",
-      "type": "string"
+    "azure_namespace_name" : {
+      "title" : "Eventhubs Namespace",
+      "description" : "The eventhubs namespace",
+      "type" : "string"
     },
-    "azure_eventhub_name": {
-      "title": "Eventhubs Name",
-      "description": "The eventhub name",
-      "type": "string"
+    "azure_eventhub_name" : {
+      "title" : "Eventhubs Name",
+      "description" : "The eventhub name",
+      "type" : "string"
     },
-    "azure_shared_access_name": {
-      "title": "Share Access Name",
-      "description": "EventHubs SAS key name",
-      "type": "string",
-      "x-group": "credentials"
+    "azure_shared_access_name" : {
+      "title" : "Share Access Name",
+      "description" : "EventHubs SAS key name",
+      "type" : "string",
+      "x-group" : "credentials"
     },
-    "azure_shared_access_key": {
-      "title": "Share Access Key",
-      "x-group": "credentials",
-      "oneOf": [
-        {
-          "title": "Share Access Key",
-          "description": "The key for EventHubs SAS key name",
-          "type": "string",
-          "format": "password"
-        },
-        {
-          "description": "An opaque reference to the azure_shared_access_key",
-          "type": "object",
-          "properties": {}
-        }
-      ]
-    }
+    "azure_shared_access_key" : {
+      "title" : "Share Access Key",
+      "x-group" : "credentials",
+      "oneOf" : [ {
+        "title" : "Share Access Key",
+        "description" : "The key for EventHubs SAS key name",
+        "type" : "string",
+        "format" : "password"
+      }, {
+        "description" : "An opaque reference to the azure_shared_access_key",
+        "type" : "object",
+        "properties" : { }
+      } ]
   }
 }
