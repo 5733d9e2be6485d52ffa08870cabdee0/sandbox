@@ -9,6 +9,7 @@ import com.redhat.service.smartevents.infra.models.processors.ProcessorDefinitio
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
@@ -51,7 +52,6 @@ public class BridgeExecutorControllerTest {
     void testCreateNewBridgeExecutorWithoutSecrets() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
 
         // When
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
@@ -64,7 +64,6 @@ public class BridgeExecutorControllerTest {
     void testCreateNewBridgeExecutor() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -78,16 +77,12 @@ public class BridgeExecutorControllerTest {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE);
         });
-        assertThat(bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
-            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
-        });
     }
 
     @Test
     void testBridgeExecutorDeployment() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -108,7 +103,6 @@ public class BridgeExecutorControllerTest {
     void testBridgeExecutorDeployment_deploymentReplicaFailure() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -121,14 +115,13 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.False);
     }
 
     @Test
     void testBridgeExecutorDeployment_deploymentTimeoutFailure() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeExecutorSecret(bridgeExecutor);
 
         // When
@@ -141,14 +134,13 @@ public class BridgeExecutorControllerTest {
         UpdateControl<BridgeExecutor> updateControl = bridgeExecutorController.reconcile(bridgeExecutor, null);
         assertThat(updateControl.isUpdateStatus()).isTrue();
         assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.READY).get().getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
-        assertThat(updateControl.getResource().getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION).get().getStatus()).isEqualTo(ConditionStatus.False);
+        assertThat(updateControl.getResource().getStatus().getConditionByType(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE).get().getStatus()).isEqualTo(ConditionStatus.False);
     }
 
     @Test
     void testBridgeExecutorNewImage() {
         // Given
         BridgeExecutor bridgeExecutor = buildBridgeExecutor();
-        bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         String oldImage = "oldImage";
         bridgeExecutor.getSpec().setImage(oldImage);
         deployBridgeExecutorSecret(bridgeExecutor);

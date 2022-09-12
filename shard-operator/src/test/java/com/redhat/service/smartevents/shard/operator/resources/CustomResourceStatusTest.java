@@ -25,7 +25,7 @@ public class CustomResourceStatusTest {
 
         // When
         resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
-        resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION);
+        resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
         assertThat(resourceStatus.isReady()).isTrue();
@@ -38,7 +38,7 @@ public class CustomResourceStatusTest {
 
         // When
         resourceStatus.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, "");
-        resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION);
+        resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
         assertThat(resourceStatus.isReady()).isFalse();
@@ -59,9 +59,9 @@ public class CustomResourceStatusTest {
             resourceStatus.markConditionFalse(ConditionTypeConstants.READY);
         }
         if (True.equals(augmentation)) {
-            resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION);
+            resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
         } else if (False.equals(augmentation)) {
-            resourceStatus.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            resourceStatus.markConditionFalse(FooResourceStatus.AUGMENTATION);
         }
 
         assertThat(resourceStatus.inferManagedResourceStatus()).isEqualTo(inferred);

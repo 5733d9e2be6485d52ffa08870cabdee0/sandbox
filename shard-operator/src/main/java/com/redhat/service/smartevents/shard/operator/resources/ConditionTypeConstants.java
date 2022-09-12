@@ -8,6 +8,4 @@ package com.redhat.service.smartevents.shard.operator.resources;
  */
 public class ConditionTypeConstants {
     public static final String READY = "Ready";
-    public static final String AUGMENTATION = "Augmentation";
-    public static final String PROGRESSING = "Progressing";
 }

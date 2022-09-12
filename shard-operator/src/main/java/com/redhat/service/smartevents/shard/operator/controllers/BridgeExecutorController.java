@@ -31,7 +31,6 @@ import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.resources.Condition;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 import com.redhat.service.smartevents.shard.operator.utils.EventSourceFactory;
@@ -102,56 +101,46 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                 bridgeExecutor.getMetadata().getName(),
                 bridgeExecutor.getMetadata().getNamespace());
 
-        // Set a "start" time on the creation
         BridgeExecutorStatus status = bridgeExecutor.getStatus();
-        if (status.getConditionByType(ConditionTypeConstants.PROGRESSING).isPresent()) {
-            if (status.getConditionByType(ConditionTypeConstants.PROGRESSING).get().getStatus() == ConditionStatus.Unknown) {
-                status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.DEPLOYMENT_INITIATED);
-                return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
-            }
-        }
 
-        if (isTimedOut(bridgeExecutor)) {
+        if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeExecutor,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeExecutor.getClass().getSimpleName(),
                             bridgeExecutor.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            status.markConditionFalse(ConditionTypeConstants.PROGRESSING);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
 
         Secret secret = bridgeExecutorService.fetchBridgeExecutorSecret(bridgeExecutor);
 
         if (secret == null) {
-            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.", bridgeExecutor.getMetadata().getName());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
-            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SECRETS_NOT_FOUND);
+            LOGGER.info("Secrets for the BridgeProcessor '{}' have been not created yet.",
+                    bridgeExecutor.getMetadata().getName());
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SECRET_AVAILABLE)) {
+                status.markConditionFalse(BridgeExecutorStatus.SECRET_AVAILABLE);
+            }
             return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.SECRETS_NOT_FOUND)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.SECRETS_FOUND);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SECRET_AVAILABLE)) {
+            status.markConditionTrue(BridgeExecutorStatus.SECRET_AVAILABLE);
         }
 
         // Check if the image of the executor has to be updated
         String image = bridgeExecutorService.getExecutorImage();
         if (!image.equals(bridgeExecutor.getSpec().getImage())) {
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
-            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.IMAGE_NOT_CORRECT);
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeExecutorStatus.IMAGE_NAME_CORRECT)) {
+                status.markConditionFalse(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
+            }
             bridgeExecutor.getSpec().setImage(image);
             return UpdateControl.updateResourceAndStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.IMAGE_NOT_CORRECT)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.IMAGE_CORRECT);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT)) {
+            status.markConditionTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
         }
 
         Deployment deployment = bridgeExecutorService.fetchOrCreateBridgeExecutorDeployment(bridgeExecutor, secret);
@@ -160,7 +149,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                     bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
 
-            bridgeExecutor.getStatus().setStatusFromDeployment(deployment);
+            status.setStatusFromDeployment(deployment);
 
             if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
                 notifyManagerOfFailure(bridgeExecutor,
@@ -172,55 +161,64 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
             return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
         } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.DEPLOYMENT_PROGRESSING)
-                        || Objects.equals(c.getReason(), ConditionReasonConstants.DEPLOYMENT_FAILED)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.DEPLOYMENT_AVAILABLE);
-                }
-            });
+            LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready",
+                    bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
+            if (!status.isConditionTypeTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                status.markConditionTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+            }
         }
-        LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
 
         // Create Service
         Service service = bridgeExecutorService.fetchOrCreateBridgeExecutorService(bridgeExecutor, deployment);
         if (service.getStatus() == null) {
-            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready", bridgeExecutor.getMetadata().getName(),
+            LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is NOT ready",
+                    bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.READY);
-            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.SERVICE_NOT_READY);
+            if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
+                status.markConditionFalse(ConditionTypeConstants.READY);
+            }
+            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
+                status.markConditionFalse(BridgeExecutorStatus.SERVICE_AVAILABLE);
+            }
             return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
-        } else {
-            // Update "Last Transition Time", effectively resetting time-out.
-            status.getConditionByType(ConditionTypeConstants.AUGMENTATION).ifPresent(c -> {
-                if (Objects.equals(c.getReason(), ConditionReasonConstants.SERVICE_NOT_READY)) {
-                    status.markConditionTrue(ConditionTypeConstants.PROGRESSING, ConditionReasonConstants.SERVICE_READY);
-                }
-            });
+        } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
+            status.markConditionTrue(BridgeExecutorStatus.SERVICE_AVAILABLE);
         }
 
         Optional<ServiceMonitor> serviceMonitor = monitorService.fetchOrCreateServiceMonitor(bridgeExecutor, service, BridgeExecutor.COMPONENT_NAME);
-        if (serviceMonitor.isPresent()) {
-            // this is an optional resource
-            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
-        } else {
-            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.", bridgeExecutor.getMetadata().getName(),
+        if (serviceMonitor.isEmpty()) {
+            LOGGER.warn("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is failed to deploy, Prometheus not installed.",
+                    bridgeExecutor.getMetadata().getName(),
                     bridgeExecutor.getMetadata().getNamespace());
+            if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
+                status.markConditionFalse(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
+            }
             PrometheusNotInstalledException prometheusNotInstalledException = new PrometheusNotInstalledException(ConditionReasonConstants.PROMETHEUS_UNAVAILABLE);
             BridgeErrorInstance bei = bridgeErrorHelper.getBridgeErrorInstance(prometheusNotInstalledException);
-            bridgeExecutor.getStatus().setStatusFromBridgeError(bei);
+            status.setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeExecutor, bei);
+
             return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+        } else {
+            // this is an optional resource
+            LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready",
+                    bridgeExecutor.getMetadata().getName(),
+                    bridgeExecutor.getMetadata().getNamespace());
+            if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE)) {
+                status.markConditionTrue(BridgeExecutorStatus.SERVICE_MONITOR_AVAILABLE);
+            }
         }
 
-        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready", bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace());
+        LOGGER.info("Executor service BridgeProcessor: '{}' in namespace '{}' is ready",
+                bridgeExecutor.getMetadata().getName(),
+                bridgeExecutor.getMetadata().getNamespace());
 
         // Only issue a Status Update once.
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!bridgeExecutor.getStatus().isReady()) {
-            bridgeExecutor.getStatus().markConditionTrue(ConditionTypeConstants.READY);
-            bridgeExecutor.getStatus().markConditionFalse(ConditionTypeConstants.AUGMENTATION);
+            status.markConditionTrue(ConditionTypeConstants.READY);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
         }
@@ -228,15 +226,20 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         return UpdateControl.noUpdate();
     }
 
-    private boolean isTimedOut(BridgeExecutor bridgeExecutor) {
-        Optional<Condition> progress = bridgeExecutor.getStatus().getConditionByType(ConditionTypeConstants.PROGRESSING);
-        if (progress.isPresent()) {
-            Date lastTransitionTime = progress.get().getLastTransitionTime();
-            ZonedDateTime zonedLastTransition = ZonedDateTime.ofInstant(lastTransitionTime.toInstant(), ZoneOffset.UTC);
-            ZonedDateTime zonedNow = ZonedDateTime.now(ZoneOffset.UTC);
-            return zonedNow.minus(Duration.of(executorTimeoutSeconds, ChronoUnit.SECONDS)).isAfter(zonedLastTransition);
+    private boolean isTimedOut(BridgeExecutorStatus status) {
+        Optional<Date> lastTransitionDate = status.getConditions()
+                .stream()
+                .filter(c -> Objects.nonNull(c.getLastTransitionTime()))
+                .reduce((c1, c2) -> c1.getLastTransitionTime().after(c2.getLastTransitionTime()) ? c1 : c2)
+                .map(Condition::getLastTransitionTime);
+
+        if (lastTransitionDate.isEmpty()) {
+            return false;
         }
-        return false;
+
+        ZonedDateTime zonedLastTransition = ZonedDateTime.ofInstant(lastTransitionDate.get().toInstant(), ZoneOffset.UTC);
+        ZonedDateTime zonedNow = ZonedDateTime.now(ZoneOffset.UTC);
+        return zonedNow.minus(Duration.of(executorTimeoutSeconds, ChronoUnit.SECONDS)).isAfter(zonedLastTransition);
     }
 
     @Override

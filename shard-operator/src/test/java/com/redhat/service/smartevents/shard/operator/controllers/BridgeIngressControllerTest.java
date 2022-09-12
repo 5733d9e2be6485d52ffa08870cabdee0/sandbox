@@ -55,7 +55,6 @@ public class BridgeIngressControllerTest {
     void testCreateNewBridgeIngressWithoutSecrets() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
-        bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
 
         // When
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
@@ -68,7 +67,6 @@ public class BridgeIngressControllerTest {
     void testCreateNewBridgeIngress() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
-        bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeIngressSecret(bridgeIngress);
 
         // When
@@ -102,7 +100,6 @@ public class BridgeIngressControllerTest {
     void testBridgeIngressKnativeBroker() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
-        bridgeIngress.getStatus().markConditionTrue(ConditionTypeConstants.PROGRESSING);
         deployBridgeIngressSecret(bridgeIngress);
 
         // When

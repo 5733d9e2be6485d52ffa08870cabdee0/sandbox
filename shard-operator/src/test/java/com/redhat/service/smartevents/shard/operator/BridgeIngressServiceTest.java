@@ -82,6 +82,16 @@ public class BridgeIngressServiceTest {
         when(templateProvider.loadBridgeIngressBrokerTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(any(), any())).thenCallRealMethod();
+
+        // Far from ideal... but each test assumes there are no other BridgeIngress instances in existence.
+        // Unfortunately, however, some tests only check that provisioning either progressed to a certain
+        // point of failed completely. There is therefore a good chance there's an incomplete BridgeIngress
+        // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
+        // This ensures each test has a "clean" k8s environment.
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        await(Duration.ofMinutes(1),
+                Duration.ofSeconds(10),
+                () -> assertThat(kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().list().getItems().isEmpty()).isTrue());
     }
 
     @Test
@@ -317,7 +327,7 @@ public class BridgeIngressServiceTest {
         deployIngressSuccessfully(dto);
 
         // Delete KNative Broker (mimicking a change in the environment). This re-triggers the reconcile loop.
-        // However, we're not mocking its successful re-provision (nor the Network Resource). This will lead
+        // However, we're not mocking its successful re-provision (nor other dependencies). This will lead
         // to a timeout of the BridgeIngress re-provisioning.
         kubernetesClient.resources(KnativeBroker.class).inAnyNamespace().delete();
 

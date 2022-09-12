@@ -39,11 +39,11 @@ public class BridgeIngressStatus extends CustomResourceStatus {
             return ManagedResourceStatus.READY;
         }
         if (isConditionTypeFalse(ConditionTypeConstants.READY)
-                && !isConditionTypeTrue(BridgeIngressStatus.SECRET_AVAILABLE)
-                && !isConditionTypeTrue(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)
-                && !isConditionTypeTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)
-                && !isConditionTypeTrue(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)
-                && !isConditionTypeTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
+                && !isConditionTypeTrue(SECRET_AVAILABLE)
+                && !isConditionTypeTrue(CONFIG_MAP_AVAILABLE)
+                && !isConditionTypeTrue(KNATIVE_BROKER_AVAILABLE)
+                && !isConditionTypeTrue(AUTHORISATION_POLICY_AVAILABLE)
+                && !isConditionTypeTrue(NETWORK_RESOURCE_AVAILABLE)) {
             return ManagedResourceStatus.FAILED;
         }
         return ManagedResourceStatus.PROVISIONING;

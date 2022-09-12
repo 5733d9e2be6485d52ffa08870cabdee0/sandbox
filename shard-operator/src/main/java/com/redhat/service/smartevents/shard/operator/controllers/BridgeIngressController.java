@@ -118,7 +118,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         Secret secret = bridgeIngressService.fetchBridgeIngressSecret(bridgeIngress);
 
         if (secret == null) {
-            LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.", bridgeIngress.getMetadata().getName());
+            LOGGER.info("Secrets for the BridgeIngress '{}' have been not created yet.",
+                    bridgeIngress.getMetadata().getName());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
             }
@@ -140,7 +141,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         String path = extractBrokerPath(knativeBroker);
 
         if (path == null) {
-            LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Knative broker resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
+                    bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
@@ -162,7 +164,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         NetworkResource networkResource = networkingService.fetchOrCreateBrokerNetworkIngress(bridgeIngress, secret, path);
 
         if (!networkResource.isReady()) {
-            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready", bridgeIngress.getMetadata().getName(),
+            LOGGER.info("Ingress networking resource BridgeIngress: '{}' in namespace '{}' is NOT ready",
+                    bridgeIngress.getMetadata().getName(),
                     bridgeIngress.getMetadata().getNamespace());
             if (!status.isConditionTypeFalse(ConditionTypeConstants.READY)) {
                 status.markConditionFalse(ConditionTypeConstants.READY);
