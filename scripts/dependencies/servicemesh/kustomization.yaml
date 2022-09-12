@@ -1,0 +1,4 @@
+resources:
+  - resources/istio-system-namespace.yaml
+  - resources/service-mesh-control-plane.yaml
+  - resources/service-mesh-member-roll.yaml

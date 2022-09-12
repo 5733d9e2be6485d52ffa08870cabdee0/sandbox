@@ -1,0 +1,14 @@
+# https://issues.redhat.com/browse/SRVKE-1206
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: eventing-webhook
+  namespace: knative-eventing
+  labels:
+    app: eventing-webhook
+spec:
+  podSelector:
+    matchLabels:
+      app: eventing-webhook
+  ingress:
+    - {}
