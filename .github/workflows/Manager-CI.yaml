@@ -68,59 +68,21 @@ jobs:
         working-directory: kustomize
       - name: Set Kind hostname in the Manager configuration
         run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX:).*|\1 ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" overlays/ci/manager/patches/deploy-config.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/manager/patches/deploy-config.yaml
           sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/manager/patches/deploy-config.yaml
         working-directory: kustomize
       - name: Configure external Managed Kafka cluster
         shell: bash
         env:
-          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
-          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
-          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
-          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
-          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
-          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID }}
-          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET }}
-          MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
-          MANAGED_CONNECTORS_NAMESPACE_ID: ${{ secrets.MANAGED_CONNECTORS_NAMESPACE_ID }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_OPS_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=).*|\1https://admin-server-$MANAGED_KAFKA_BOOTSTRAP_SERVER/rest|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1$MANAGED_CONNECTORS_NAMESPACE_ID|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
-          sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
-        working-directory: kustomize/overlays/ci/manager
-      - name: Configure Red Hat SSO for shard
-        shell: bash
-        env:
-          DEV_EVENT_BRIDGE_SSO_CLIENT_ID: ${{ secrets.DEV_EVENT_BRIDGE_SSO_CLIENT_ID }}
-          DEV_EVENT_BRIDGE_SSO_SECRET: ${{ secrets.DEV_EVENT_BRIDGE_SSO_SECRET }}
-          DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID: ${{ secrets.DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID }}
-          DEV_WEBHOOK_CLIENT_ID: ${{ secrets.DEV_WEBHOOK_CLIENT_ID }}
-          DEV_WEBHOOK_CLIENT_SECRET: ${{ secrets.DEV_WEBHOOK_CLIENT_SECRET }}
-        run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_CLIENT_ID: ).*|\1'$DEV_EVENT_BRIDGE_SSO_CLIENT_ID'|" addon-smart-events-operator-parameters.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_SSO_SECRET: ).*|\1'$DEV_EVENT_BRIDGE_SSO_SECRET'|" addon-smart-events-operator-parameters.yaml
-          sed -i -E "s|(.*WEBHOOK_TECHNICAL_ACCOUNT_ID: ).*|\1'$DEV_WEBHOOK_TECHNICAL_ACCOUNT_ID'|" addon-smart-events-operator-parameters.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_ID: ).*|\1'$DEV_WEBHOOK_CLIENT_ID'|" addon-smart-events-operator-parameters.yaml
-          sed -i -E "s|(.*WEBHOOK_CLIENT_SECRET: ).*|\1'$DEV_WEBHOOK_CLIENT_SECRET'|" addon-smart-events-operator-parameters.yaml
-        working-directory: kustomize/overlays/ci/shard
-      - name: Configure shard id
-        shell: bash
-        env:
-          DEV_SHARD_ID: ${{ secrets.DEV_SHARD_ID }}
-        run: |
-          sed -i -E "s|(.*SHARD_ID=).*|\1$DEV_SHARD_ID|" kustomize/overlays/ci/manager/kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_SHARD_ID: ).*|\1'$DEV_SHARD_ID'|" kustomize/overlays/ci/shard/addon-smart-events-operator-parameters.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" shard/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" shard/awssm-secret.yaml
+        working-directory: kustomize/overlays/ci
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
