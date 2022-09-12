@@ -106,17 +106,12 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
         BridgeIngressStatus status = bridgeIngress.getStatus();
 
-        if (isTimedOut(status)) {
+        if (!status.isReady() && isTimedOut(status)) {
             notifyManagerOfFailure(bridgeIngress,
                     new ProvisioningTimeOutException(String.format(ProvisioningTimeOutException.TIMEOUT_FAILURE_MESSAGE,
                             bridgeIngress.getClass().getSimpleName(),
                             bridgeIngress.getSpec().getId())));
             status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
             return UpdateControl.updateStatus(bridgeIngress);
         }
 
@@ -238,11 +233,6 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
             BridgeIngressStatus status = bridgeIngress.getStatus();
             status.markConditionFalse(ConditionTypeConstants.READY);
-            status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.CONFIG_MAP_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE);
-            status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
 
             LOGGER.warn("BridgeIngress: '{}' in namespace '{}' has failed with reason: '{}'",
                     bridgeIngress.getMetadata().getName(),
