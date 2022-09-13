@@ -25,17 +25,21 @@
       "x-group" : "credentials"
     },
     "azure_shared_access_key" : {
-      "title" : "Share Access Key",
-      "x-group" : "credentials",
-      "oneOf" : [ {
-        "title" : "Share Access Key",
-        "description" : "The key for EventHubs SAS key name",
-        "type" : "string",
-        "format" : "password"
-      }, {
-        "description" : "An opaque reference to the azure_shared_access_key",
-        "type" : "object",
-        "properties" : { }
-      } ]
+      "title": "Share Access Key",
+      "x-group": "credentials",
+      "oneOf": [
+        {
+          "title": "Share Access Key",
+          "description": "The key for EventHubs SAS key name",
+          "type": "string",
+          "format": "password"
+        },
+        {
+          "description": "An opaque reference to the azure_shared_access_key",
+          "type": "object",
+          "properties": {}
+        }
+      ]
+    }
   }
 }
