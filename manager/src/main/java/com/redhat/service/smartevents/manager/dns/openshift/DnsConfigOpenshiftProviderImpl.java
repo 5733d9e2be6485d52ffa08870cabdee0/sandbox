@@ -63,7 +63,7 @@ public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvide
                     .await()
                     .atMost(Duration.ofSeconds(20));
         } catch (RuntimeException e) {
-            LOGGER.error("Failed to interact with AWS to retrieve the hosted zone id for the hosted zone with name '{}'.", hostedZoneName, e);
+            LOGGER.error("Failed to interact with AWS to retrieve the hosted zone id for the hosted zone with name '{}'. The application is going to stop.", hostedZoneName, e);
             Quarkus.asyncExit(1);
             return null;
         }
@@ -75,12 +75,12 @@ public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvide
                 .findFirst();
 
         if (hostedZoneOpt.isEmpty()) {
-            LOGGER.error("Hosted zone with name '{}' not found.", hostedZoneName);
+            LOGGER.error("Hosted zone with name '{}' not found. The application is going to stop.", hostedZoneName);
             Quarkus.asyncExit(1);
             return null;
         }
 
-        LOGGER.debug("Hosted zone id for the hosted zone '{}' is '{}'", hostedZoneName, hostedZoneOpt.get().getId());
+        LOGGER.info("Hosted zone id for the hosted zone '{}' is '{}'", hostedZoneName, hostedZoneOpt.get().getId());
         return hostedZoneOpt.get().getId();
     }
 
