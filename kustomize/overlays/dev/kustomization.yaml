@@ -37,18 +37,6 @@ patchesJson6902:
   # resources in /kustomize/base-openshift/shard/service-mesh/
   - target:
       group: ""
-      version: v1alpha3
-      kind: Gateway
-      name: broker-gateway
-    path: patch-with-knative-eventing-namespace.yaml
-  - target:
-      group: ""
-      version: v1beta1
-      kind: RequestAuthentication
-      name: jwt-rh-sso
-    path: patch-with-istio-system-namespace.yaml
-  - target:
-      group: ""
       version: v2
       kind: ServiceMeshControlPlane
       name: basic
@@ -59,9 +47,3 @@ patchesJson6902:
       kind: ServiceMeshMemberRoll
       name: default
     path: patch-with-istio-system-namespace.yaml
-  - target:
-      group: ""
-      version: v1alpha3
-      kind: VirtualService
-      name: broker-virtual-service
-    path: patch-with-knative-eventing-namespace.yaml
