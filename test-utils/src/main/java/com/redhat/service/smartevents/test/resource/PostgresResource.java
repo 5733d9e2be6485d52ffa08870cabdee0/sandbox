@@ -9,7 +9,7 @@ import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class PostgresResource implements QuarkusTestResourceLifecycleManager {
 
-    private final PostgreSQLContainer postgres = new PostgreSQLContainer<>("postgres:10.5")
+    private final PostgreSQLContainer postgres = new PostgreSQLContainer<>("postgres:13.1")
             .withDatabaseName("event-bridge-test")
             .withUsername("event-bridge-test")
             .withPassword("event-bridge-test")

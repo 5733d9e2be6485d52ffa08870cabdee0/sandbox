@@ -7,3 +7,5 @@ resources:
 - cluster-role-binding.yaml
 - addon-smart-events-operator-parameters.yaml
 - ../../../base/shard
+- cluster-secret-store.yaml
+- awssm-secret.yaml

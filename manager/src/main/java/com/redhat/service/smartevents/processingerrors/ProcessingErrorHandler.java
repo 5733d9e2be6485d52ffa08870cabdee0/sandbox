@@ -12,6 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.service.smartevents.processingerrors.dao.ProcessingErrorDAO;
 import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
+import io.quarkus.scheduler.Scheduled;
 import io.smallrye.reactive.messaging.annotations.Blocking;
 import io.smallrye.reactive.messaging.kafka.IncomingKafkaRecord;
 
@@ -30,6 +32,9 @@ public class ProcessingErrorHandler {
 
     public static final String RHOSE_BRIDGE_ID_HEADER = "rhose-bridge-id";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingErrorHandler.class);
+
+    @ConfigProperty(name = "event-bridge.processing-errors.max-errors-per-bridge")
+    int maxErrorsPerBridge;
 
     @Inject
     ProcessingErrorDAO processingErrorDAO;
@@ -77,5 +82,11 @@ public class ProcessingErrorHandler {
 
     private JsonNode parsePayload(String payload) throws JsonProcessingException {
         return payload == null ? null : objectMapper.readTree(payload);
+    }
+
+    @Scheduled(cron = "{event-bridge.processing-errors.cleanup.schedule}")
+    void cleanup() {
+        LOGGER.debug("Processing errors cleanup triggered");
+        processingErrorDAO.cleanup(maxErrorsPerBridge);
     }
 }

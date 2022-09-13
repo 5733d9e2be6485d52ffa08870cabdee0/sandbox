@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: "dev"
+          ref: "main"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
       - name: Add mask
