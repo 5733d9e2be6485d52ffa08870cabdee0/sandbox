@@ -51,6 +51,7 @@ if [ "${disable_extra_components}" != 'true' ]; then
   yes | istioctl manifest apply --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
   sed -i -E "s|<REPLACE_WITH_MINIKUBE_IP>|$(minikube -p "${MINIKUBE_PROFILE}" ip)|" ${KUSTOMIZE_DIR}/overlays/local/istio/jwt-request-authentication.yaml
   kustomize build ${KUSTOMIZE_DIR}/overlays/local/istio | kubectl apply -f -
+  sed -i -E "s|$(minikube -p "${MINIKUBE_PROFILE}" ip)|<REPLACE_WITH_MINIKUBE_IP>|" ${KUSTOMIZE_DIR}/overlays/local/istio/jwt-request-authentication.yaml
 fi
 
 set +x
