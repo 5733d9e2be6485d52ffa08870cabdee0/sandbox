@@ -118,6 +118,19 @@ rules:
       - delete
       - patch
       - update
+  - apiGroups:
+      - networking.istio.io
+    resources:
+      - gateways
+      - virtualservices
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
   # add here the core resources we need to manage
   #- apiGroups:
   #    - ""
