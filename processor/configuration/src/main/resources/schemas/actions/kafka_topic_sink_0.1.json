@@ -5,7 +5,7 @@
     "topic": {
       "type": "string",
       "title": "Topic Name",
-      "description": "The topic where to send the event.",
+      "description": "The topic where to send the event. The topic must exists already. It won't be created automatically.",
       "example": "my-topic"
     },
     "kafka_broker_url": {
@@ -17,7 +17,7 @@
     "kafka_client_id": {
       "type": "string",
       "title": "Client Id",
-      "description": "The Client Id part of the credentials to authenticate to Kafka"
+      "description": "The Client Id part of the credentials to authenticate to Kafka. It is recommended the client has no 'admin' rights."
     },
     "kafka_client_secret": {
       "title": "Client Secret",
@@ -25,7 +25,7 @@
       "oneOf": [
         {
           "title": "Client Secret",
-          "description": "The Client Secret part of the credentials to authenticate to Kafka",
+          "description": "The Client Secret part of the credentials to authenticate to Kafka.",
           "type": "string",
           "format": "password"
         },

@@ -18,11 +18,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
-@NamedQuery(name = "PROCESSING_ERROR.findByBridgeIdOrdered",
+@NamedQuery(name = ProcessingError.FIND_BY_BRIDGE_ID_ORDERED_QUERY,
         query = "from ProcessingError where bridge_id=:bridgeId order by id desc")
 @Entity
 @Table(name = "PROCESSING_ERROR")
 public class ProcessingError {
+
+    public static final String FIND_BY_BRIDGE_ID_ORDERED_QUERY = "PROCESSING_ERROR.findByBridgeIdOrdered";
 
     @Id
     @SequenceGenerator(name = "errorId", sequenceName = "PROCESSING_ERROR_ID_SEQUENCE", allocationSize = 1)
