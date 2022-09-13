@@ -30,9 +30,9 @@ Allows you to send an `Event` to a Kafka Topic on a RHOSAK Kafka Cluster
 
 #### KafkaTopic Configuration Parameters
 
-* `topic` - The topic name to send the Event to
+* `topic` - The topic name to send the Event to. The topic must exists already. It won't be created automatically.
 * `kafka_broker_url` - The RHOSAK Broker URL
-* `kafka_client_id` - The Client Id part of the credentials to authenticate to Kafka
+* `kafka_client_id` - The Client Id part of the credentials to authenticate to Kafka. It is recommended the client has no 'admin' rights. 
 * `kafka_client_secret` - The Client Secret part of the credentials to authenticate to Kafka
 
 #### KafkaTopic Example

@@ -58,11 +58,6 @@ mvn \
   -Dmanaged-connectors.auth.offline-token=${MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN} \
   \
   -Dquarkus.devservices.enabled=false \
-  -Dkafka.client.id=${mc_client_id} \
-  -Dkafka.client.secret=${mc_client_secret} \
-  -Dkafka.security.protocol=SASL_SSL \
-  -Dkafka.sasl.jaas.config="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${mc_client_id}\" password=\"${mc_client_secret}\";" \
-  -Dkafka.sasl.mechanism=PLAIN \
   \
   -f "$( dirname "$0" )/../../manager/pom.xml" \
   clean compile quarkus:dev $@
