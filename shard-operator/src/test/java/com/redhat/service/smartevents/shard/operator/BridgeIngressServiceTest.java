@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.shard.operator;
 
 import java.time.Duration;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -32,7 +33,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
 import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,6 +82,16 @@ public class BridgeIngressServiceTest {
         when(templateProvider.loadBridgeIngressBrokerTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressKubernetesIngressTemplate(any(), any())).thenCallRealMethod();
         when(templateProvider.loadBridgeIngressOpenshiftRouteTemplate(any(), any())).thenCallRealMethod();
+
+        // Far from ideal... but each test assumes there are no other BridgeIngress instances in existence.
+        // Unfortunately, however, some tests only check that provisioning either progressed to a certain
+        // point of failed completely. There is therefore a good chance there's an incomplete BridgeIngress
+        // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
+        // This ensures each test has a "clean" k8s environment.
+        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
+        await(Duration.ofMinutes(1),
+                Duration.ofSeconds(10),
+                () -> assertThat(kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().list().getItems().isEmpty()).isTrue());
     }
 
     @Test
@@ -194,6 +207,19 @@ public class BridgeIngressServiceTest {
         // Given a PROVISIONING Bridge
         BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
 
+        deployIngressSuccessfully(dto);
+
+        // Re-try creation
+        bridgeIngressService.createBridgeIngress(dto);
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+
+        // (1) READY from original deployment, (2) READY from this subsequent re-deployment
+        verify(managerClient, times(2)).notifyBridgeStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), READY));
+    }
+
+    private void deployIngressSuccessfully(BridgeDTO dto) {
         // When
         bridgeIngressService.createBridgeIngress(dto);
 
@@ -224,22 +250,17 @@ public class BridgeIngressServiceTest {
 
         // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is READY
         assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
-        verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
-        updateDTO.getAllValues().forEach((d) -> {
-            assertThat(d.getId()).isEqualTo(dto.getId());
-            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
-            assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+        verify(managerClient).notifyBridgeStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), READY));
+    }
 
-        // Re-try creation
-        bridgeIngressService.createBridgeIngress(dto);
-
-        verify(managerClient, times(2)).notifyBridgeStatusChange(updateDTO.capture());
-        updateDTO.getAllValues().forEach((d) -> {
-            assertThat(d.getId()).isEqualTo(dto.getId());
-            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
-            assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-        });
+    private void assertManagedResourceStatusUpdateDTOUpdate(ManagedResourceStatusUpdateDTO update,
+            String expectedId,
+            String expectedCustomerId,
+            ManagedResourceStatus expectedStatus) {
+        assertThat(update.getId()).isEqualTo(expectedId);
+        assertThat(update.getCustomerId()).isEqualTo(expectedCustomerId);
+        assertThat(update.getStatus()).isEqualTo(expectedStatus);
     }
 
     @Test
@@ -266,22 +287,64 @@ public class BridgeIngressServiceTest {
                     // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
                     verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
-                    updateDTO.getAllValues().forEach((d) -> {
-                        assertThat(d.getId()).isEqualTo(dto.getId());
-                        assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
-                        assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-                    });
+                    updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
                 });
 
         // Re-try creation
         bridgeIngressService.createBridgeIngress(dto);
 
         verify(managerClient, times(2)).notifyBridgeStatusChange(updateDTO.capture());
-        updateDTO.getAllValues().forEach((d) -> {
-            assertThat(d.getId()).isEqualTo(dto.getId());
-            assertThat(d.getCustomerId()).isEqualTo(dto.getCustomerId());
-            assertThat(d.getStatus()).isEqualTo(ManagedResourceStatus.FAILED);
-        });
+        updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
+    }
+
+    @Test
+    public void testBridgeIngressCreationTimeout() {
+        // Given a PROVISIONING Bridge
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+
+        // When - KnativeBroker is not provisioned within the timeout. The deployment will fail.
+        bridgeIngressService.createBridgeIngress(dto);
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollDelay(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                    // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
+                    assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
+                    verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
+                    updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
+                });
+    }
+
+    @Test
+    public void testBridgeIngressRecreationTimeout() {
+        // Given a PROVISIONING Bridge
+        BridgeDTO dto = TestSupport.newProvisioningBridgeDTO();
+
+        deployIngressSuccessfully(dto);
+
+        // Delete KNative Broker (mimicking a change in the environment). This re-triggers the reconcile loop.
+        // However, we're not mocking its successful re-provision (nor other dependencies). This will lead
+        // to a timeout of the BridgeIngress re-provisioning.
+        kubernetesClient.resources(KnativeBroker.class).inAnyNamespace().delete();
+
+        ArgumentCaptor<ManagedResourceStatusUpdateDTO> updateDTO = ArgumentCaptor.forClass(ManagedResourceStatusUpdateDTO.class);
+
+        Awaitility.await()
+                .atMost(Duration.ofMinutes(2))
+                .pollDelay(Duration.ofSeconds(30))
+                .pollInterval(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                    verify(managerClient, times(2)).notifyBridgeStatusChange(updateDTO.capture());
+                    List<ManagedResourceStatusUpdateDTO> values = updateDTO.getAllValues();
+                    // The first notification is for the original, successful, provisioning.
+                    assertManagedResourceStatusUpdateDTOUpdate(values.get(0), dto.getId(), dto.getCustomerId(), READY);
+                    // The second notification is for the subsequent, unsuccessful, re-provisioning.
+                    assertManagedResourceStatusUpdateDTOUpdate(values.get(1), dto.getId(), dto.getCustomerId(), FAILED);
+                });
     }
 
     private BridgeIngress fetchBridgeIngress(BridgeDTO dto) {
