@@ -4,6 +4,7 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
     branches:
       - 'main'
+      - 'MGDOBR-1025'
     paths-ignore:
       - 'LICENSE'
       - '**/.gitignore'
