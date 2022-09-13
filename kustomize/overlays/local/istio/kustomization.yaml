@@ -1,4 +1,0 @@
-resources:
-  - gateway.yaml
-  - virtual-service-kafka-broker.yaml
-  - jwt-request-authentication.yaml

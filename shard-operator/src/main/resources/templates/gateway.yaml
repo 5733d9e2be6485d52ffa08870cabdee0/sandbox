@@ -1,8 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: broker-gateway
-  namespace: knative-eventing
+  name: ""
 spec:
   selector:
     istio: ingressgateway
