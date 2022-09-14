@@ -84,6 +84,10 @@ public class DnsConfigOpenshiftProviderImpl implements DnsConfigOpenshiftProvide
         return hostedZoneOpt.get().getId();
     }
 
+    protected void setHostedZoneId(String hostedZoneId) {
+        this.hostedZoneId = hostedZoneId;
+    }
+
     @Override
     public AmazonRoute53Async getAmazonRouteClient() {
         return this.client;
