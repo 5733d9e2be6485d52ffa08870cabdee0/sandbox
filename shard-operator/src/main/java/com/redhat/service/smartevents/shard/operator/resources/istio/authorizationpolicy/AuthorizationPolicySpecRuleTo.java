@@ -1,4 +1,4 @@
-package com.redhat.service.smartevents.shard.operator.resources.istio;
+package com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy;
 
 import java.util.Objects;
 

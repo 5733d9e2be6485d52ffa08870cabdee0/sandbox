@@ -59,13 +59,10 @@ jobs:
           kind load docker-image openbridge/shard-operator:$GITHUB_SHA
       - name: Istio Setup
         uses: ./.github/actions/istio-setup
-      - name: Install Knative, deploy istio resources and Prometheus ServiceMonitor CRD
+      - name: Install Knative resources and Prometheus ServiceMonitor CRD
         run: |
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
-          kubectl apply -f kustomize/overlays/ci/istio/gateway.yaml
-          kubectl apply -f kustomize/overlays/ci/istio/virtual-service-kafka-broker.yaml
-          kubectl apply -f kustomize/overlays/ci/istio/jwt-request-authentication.yaml
 
           # Add Prometheus ServiceMonitor CRD to avoid BridgeIngress Condition Ready: False Type: PrometheusUnavailable
           kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
