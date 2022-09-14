@@ -92,7 +92,6 @@ public class BridgeExecutorServiceTest {
         // point of failed completely. There is therefore a good chance there's an incomplete BridgeExecutor
         // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
         // This ensures each test has a "clean" k8s environment.
-        kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().delete();
         await(Duration.ofMinutes(1),
                 Duration.ofSeconds(10),
                 () -> assertThat(kubernetesClient.resources(BridgeExecutor.class).inAnyNamespace().list().getItems().isEmpty()).isTrue());

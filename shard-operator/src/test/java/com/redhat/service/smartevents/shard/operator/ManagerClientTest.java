@@ -10,16 +10,18 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.HTTPResponseException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestStatus;
-import com.redhat.service.smartevents.shard.operator.metrics.ManagerRequestType;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.test.resource.KeycloakResource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -44,6 +46,9 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Inject
     ManagerClient managerClient;
+
+    @InjectMock
+    OperatorMetricsService metricsService;
 
     @Test
     public void testNotifyBridgeStatusChange() throws InterruptedException {
@@ -82,31 +87,31 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
     @Test
     @SuppressWarnings("unchecked")
     public void updateManagerRequestMetricsOnSuccess() {
-        ManagerRequestType requestType = ManagerRequestType.FETCH;
+        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
         HttpResponse<Buffer> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(200);
-        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnSuccess(requestType, response);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnSuccess(operation, response);
 
-        verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.SUCCESS, "200");
+        verify(metricsService).updateManagerRequestMetrics(operation, ManagerRequestStatus.SUCCESS, "200");
     }
 
     @Test
     public void updateManagerRequestMetricsOnFailure() {
-        ManagerRequestType requestType = ManagerRequestType.FETCH;
+        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
         Throwable error = mock(Throwable.class);
-        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(requestType, error);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(operation, error);
 
-        verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, "null");
+        verify(metricsService).updateManagerRequestMetrics(operation, ManagerRequestStatus.FAILURE, "null");
     }
 
     @Test
     public void updateManagerRequestMetricsOnFailureWithHTTPResponseException() {
-        ManagerRequestType requestType = ManagerRequestType.FETCH;
+        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
         HTTPResponseException error = mock(HTTPResponseException.class);
         when(error.getStatusCode()).thenReturn(404);
-        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(requestType, error);
+        ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(operation, error);
 
-        verify(metricsService).updateManagerRequestMetrics(requestType, ManagerRequestStatus.FAILURE, "404");
+        verify(metricsService).updateManagerRequestMetrics(operation, ManagerRequestStatus.FAILURE, "404");
     }
 
     @Test

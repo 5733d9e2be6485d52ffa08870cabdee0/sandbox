@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.awaitility.Awaitility;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,7 +28,10 @@ import com.redhat.service.smartevents.test.resource.KeycloakResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.WithOpenShiftTestServer;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
@@ -46,6 +50,15 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
     @Inject
     IstioGatewayProvider istioGatewayProvider;
+
+    @ConfigProperty(name = "rhose.metrics-name.manager-requests-total-count")
+    String managerRequestsTotalCountMetricName;
+
+    @ConfigProperty(name = "rhose.metrics-name.operator.operation-total-count")
+    String operatorTotalCountMetricName;
+
+    @ConfigProperty(name = "rhose.metrics-name.operator.operation-success-total-count")
+    String operatorTotalSuccessCountMetricName;
 
     @Test
     @WithPrometheus
@@ -231,4 +244,45 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         assertJsonRequest(expectedJsonUpdateRequestForDeprovisioning, APIConstants.SHARD_API_BASE_PATH + "processors");
         assertJsonRequest(expectedJsonUpdateRequest, APIConstants.SHARD_API_BASE_PATH + "processors");
     }
+
+    @Test
+    public void bridgeMetricsAreProduced() throws JsonProcessingException, InterruptedException {
+        doBridgeDeployment();
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test
+        assertThat(metrics).contains(managerRequestsTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalSuccessCountMetricName);
+    }
+
+    @Test
+    public void processorMetricsAreProduced() throws JsonProcessingException, InterruptedException {
+        doProcessorDeployment();
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test
+        assertThat(metrics).contains(managerRequestsTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalSuccessCountMetricName);
+    }
+
 }

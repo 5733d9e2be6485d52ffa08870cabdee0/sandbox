@@ -28,6 +28,7 @@ import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadReque
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorLifecycleException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryProcessorResourceInfo;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
@@ -44,8 +45,8 @@ import com.redhat.service.smartevents.manager.api.models.requests.ProcessorReque
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorResponse;
 import com.redhat.service.smartevents.manager.connectors.ConnectorsService;
 import com.redhat.service.smartevents.manager.dao.ProcessorDAO;
-import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
+import com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
+import com.redhat.service.smartevents.manager.metrics.ManagerMetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
@@ -54,6 +55,7 @@ import com.redhat.service.smartevents.manager.workers.WorkManager;
 import com.redhat.service.smartevents.processor.GatewayConfigurator;
 import com.redhat.service.smartevents.processor.GatewaySecretsHandler;
 
+import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 import static com.redhat.service.smartevents.processor.GatewaySecretsHandler.emptyObjectNode;
 
 @ApplicationScoped
@@ -83,7 +85,7 @@ public class ProcessorServiceImpl implements ProcessorService {
     WorkManager workManager;
 
     @Inject
-    MetricsService metricsService;
+    ManagerMetricsService metricsService;
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
@@ -165,7 +167,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorDAO.persist(newProcessor);
         connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
-        metricsService.onOperationStart(newProcessor, MetricsOperation.PROVISION);
+        metricsService.onOperationStart(newProcessor, MetricsOperation.RESOURCE_PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 newProcessor.getId(),
@@ -298,7 +300,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.MODIFY);
+        metricsService.onOperationStart(existingProcessor, MetricsOperation.RESOURCE_MODIFY);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -341,39 +343,44 @@ public class ProcessorServiceImpl implements ProcessorService {
             throw new ItemNotFoundException(String.format("Processor with id '%s' does not exist for Bridge '%s' for customer '%s'", updateDTO.getId(), updateDTO.getBridgeId(),
                     updateDTO.getCustomerId()));
         }
-
-        if (ManagedResourceStatus.DELETED == updateDTO.getStatus()) {
-            processor.setStatus(ManagedResourceStatus.DELETED);
-            processorDAO.deleteById(updateDTO.getId());
-            metricsService.onOperationComplete(processor, MetricsOperation.DELETE);
-            return processor;
-        }
-
-        // If an exception happened; make sure to record it.
-        BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
-        if (Objects.nonNull(bridgeErrorInstance)) {
-            processor.setErrorId(bridgeErrorInstance.getId());
-            processor.setErrorUUID(bridgeErrorInstance.getUuid());
-        } else {
-            // If the User has updated a Processor that was previously failed by k8s it has been observed
-            // that the reconciliation loop can first emit an update with the existing FAILED state
-            // to subsequently emit an update with a READY state when the CRD updates and succeeds.
-            processor.setErrorId(null);
-            processor.setErrorUUID(null);
-        }
-
-        boolean provisioningCallback = processor.getStatus() == ManagedResourceStatus.PROVISIONING;
+        ManagedResourceOperation operation = inferOperation(processor, updateDTO);
         processor.setStatus(updateDTO.getStatus());
 
-        if (ManagedResourceStatus.READY == updateDTO.getStatus()) {
-            if (provisioningCallback) {
-                if (processor.getPublishedAt() == null) {
-                    processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                    metricsService.onOperationComplete(processor, MetricsOperation.PROVISION);
-                } else {
-                    metricsService.onOperationComplete(processor, MetricsOperation.MODIFY);
+        // If the User has updated a Processor that was previously failed by k8s it has been observed
+        // that the reconciliation loop can first emit an update with the existing FAILED state
+        // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+        processor.setErrorId(null);
+        processor.setErrorUUID(null);
+
+        switch (operation) {
+            case UNDETERMINED:
+                break;
+            case CREATE:
+                processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
+                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_PROVISION);
+                break;
+
+            case UPDATE:
+                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_MODIFY);
+                break;
+
+            case DELETE:
+                processorDAO.deleteById(updateDTO.getId());
+                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_DELETE);
+                break;
+
+            case FAILED_CREATE:
+            case FAILED_UPDATE:
+            case FAILED_DELETE:
+                // If an exception happened; make sure to record it.
+                BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
+                if (Objects.nonNull(bridgeErrorInstance)) {
+                    processor.setErrorId(bridgeErrorInstance.getId());
+                    processor.setErrorUUID(bridgeErrorInstance.getUuid());
                 }
-            }
+
+                metricsService.onOperationFailed(processor, operation.getMetricsOperation());
+                break;
         }
 
         return processor;
@@ -413,7 +420,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
-        metricsService.onOperationStart(processor, MetricsOperation.DELETE);
+        metricsService.onOperationStart(processor, MetricsOperation.RESOURCE_DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),
