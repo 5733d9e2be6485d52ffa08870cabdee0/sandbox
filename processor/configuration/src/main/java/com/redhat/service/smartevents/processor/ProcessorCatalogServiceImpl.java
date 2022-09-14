@@ -97,6 +97,7 @@ public class ProcessorCatalogServiceImpl implements ProcessorCatalogService {
     @Override
     public ValidationResult validate(String id, ProcessorType type, ObjectNode data) {
         if (ProcessorType.SOURCE.equals(type)) {
+            System.out.println("Test for code coverage");
             return getSourceJsonSchema(id).validateAndCollect(data);
         }
         if (ProcessorType.SINK.equals(type)) {
