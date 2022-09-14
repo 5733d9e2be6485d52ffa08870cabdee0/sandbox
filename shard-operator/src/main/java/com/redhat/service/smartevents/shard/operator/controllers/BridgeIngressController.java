@@ -64,8 +64,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
     @ConfigProperty(name = "event-bridge.ingress.deployment.timeout-seconds")
     int ingressTimeoutSeconds;
 
-    @ConfigProperty(name = "event-bridge.ingress.poll-interval.seconds")
-    int ingressPollIntervalSeconds;
+    @ConfigProperty(name = "event-bridge.ingress.poll-interval.milliseconds")
+    int ingressPollIntervalMilliseconds;
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -126,7 +126,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             if (!status.isConditionTypeFalse(BridgeIngressStatus.SECRET_AVAILABLE)) {
                 status.markConditionFalse(BridgeIngressStatus.SECRET_AVAILABLE);
             }
-            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeIngressStatus.SECRET_AVAILABLE)) {
             status.markConditionTrue(BridgeIngressStatus.SECRET_AVAILABLE);
         }
@@ -150,7 +150,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             if (!status.isConditionTypeFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)) {
                 status.markConditionFalse(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
             }
-            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)) {
             status.markConditionTrue(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE);
         }
@@ -173,7 +173,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
             if (!status.isConditionTypeFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
                 status.markConditionFalse(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
             }
-            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeIngress).rescheduleAfter(ingressPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)) {
             status.markConditionTrue(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE);
         }
