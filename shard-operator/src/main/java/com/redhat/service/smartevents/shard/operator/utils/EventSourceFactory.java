@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorClient;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;

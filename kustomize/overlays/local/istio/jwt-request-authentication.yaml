@@ -1,9 +1,0 @@
-apiVersion: security.istio.io/v1beta1
-kind: RequestAuthentication
-metadata:
-  name: "jwt-example"
-  namespace: istio-system
-spec:
-  jwtRules:
-    - issuer: "http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm"
-      jwksUri: "http://keycloak.keycloak:8180/auth/realms/event-bridge-fm/protocol/openid-connect/certs"

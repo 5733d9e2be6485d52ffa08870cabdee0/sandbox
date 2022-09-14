@@ -8,7 +8,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.gateway.Gateway;
+import com.redhat.service.smartevents.shard.operator.resources.istio.requestauthentication.RequestAuthentication;
+import com.redhat.service.smartevents.shard.operator.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
@@ -39,6 +42,12 @@ public class TemplateProviderImpl implements TemplateProvider {
     private static final String BRIDGE_EXECUTOR_SECRET_PATH = TEMPLATES_DIR + "/bridge-executor-secret.yaml";
 
     private static final String SERVICE_MONITOR_PATH = TEMPLATES_DIR + "/service-monitor.yaml";
+
+    private static final String ISTIO_GATEWAY_PATH = TEMPLATES_DIR + "/gateway.yaml";
+
+    private static final String ISTIO_VIRTUAL_SERVICE_PATH = TEMPLATES_DIR + "/virtual-service-kafka-broker.yaml";
+
+    private static final String JWT_REQUEST_AUTHENTICATION_PATH = TEMPLATES_DIR + "/jwt-request-authentication.yaml";
 
     @Override
     public Deployment loadBridgeExecutorDeploymentTemplate(BridgeExecutor bridgeExecutor, TemplateImportConfig config) {
@@ -108,6 +117,21 @@ public class TemplateProviderImpl implements TemplateProvider {
         AuthorizationPolicy authorizationPolicy = loadYaml(AuthorizationPolicy.class, BRIDGE_INGRESS_AUTHORIZATION_POLICY_PATH);
         updateMetadata(bridgeIngress, authorizationPolicy.getMetadata(), config);
         return authorizationPolicy;
+    }
+
+    @Override
+    public Gateway loadIstioGatewayTemplate() {
+        return loadYaml(Gateway.class, ISTIO_GATEWAY_PATH);
+    }
+
+    @Override
+    public VirtualService loadIstioVirtualServiceTemplate() {
+        return loadYaml(VirtualService.class, ISTIO_VIRTUAL_SERVICE_PATH);
+    }
+
+    @Override
+    public RequestAuthentication loadJWTRequestAuthenticationTemplate() {
+        return loadYaml(RequestAuthentication.class, JWT_REQUEST_AUTHENTICATION_PATH);
     }
 
     private <T> T loadYaml(Class<T> clazz, String yaml) {
