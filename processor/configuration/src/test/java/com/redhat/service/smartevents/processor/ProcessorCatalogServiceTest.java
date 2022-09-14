@@ -118,6 +118,7 @@ public class ProcessorCatalogServiceTest {
                 { "ansible_tower_job_template_sink_0.1", List.of("basic_auth_password") },
                 { "aws_lambda_sink_0.1", List.of("aws_access_key", "aws_secret_key") },
                 { "google_pubsub_sink_0.1", List.of("gcp_service_account_key") },
+                { "azure_eventhubs_sink_0.1", List.of("azure_shared_access_key") },
                 { "kafka_topic_sink_0.1", List.of("kafka_client_secret") },
                 { "send_to_bridge_sink_0.1", Collections.emptyList() },
                 { "slack_sink_0.1", List.of("slack_webhook_url") },
