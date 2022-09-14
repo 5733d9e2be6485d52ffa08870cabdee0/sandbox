@@ -65,8 +65,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     @ConfigProperty(name = "event-bridge.executor.deployment.timeout-seconds")
     int executorTimeoutSeconds;
 
-    @ConfigProperty(name = "event-bridge.executor.poll-interval.seconds")
-    int executorPollIntervalSeconds;
+    @ConfigProperty(name = "event-bridge.executor.poll-interval.milliseconds")
+    int executorPollIntervalMilliseconds;
 
     @Inject
     KubernetesClient kubernetesClient;
@@ -123,7 +123,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             if (!status.isConditionTypeFalse(BridgeExecutorStatus.SECRET_AVAILABLE)) {
                 status.markConditionFalse(BridgeExecutorStatus.SECRET_AVAILABLE);
             }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SECRET_AVAILABLE)) {
             status.markConditionTrue(BridgeExecutorStatus.SECRET_AVAILABLE);
         }
@@ -138,7 +138,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                 status.markConditionFalse(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
             }
             bridgeExecutor.getSpec().setImage(image);
-            return UpdateControl.updateResourceAndStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateResourceAndStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT)) {
             status.markConditionTrue(BridgeExecutorStatus.IMAGE_NAME_CORRECT);
         }
@@ -159,7 +159,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
                         new ProvisioningReplicaFailureException(DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment)));
             }
 
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else {
             LOGGER.info("Executor deployment BridgeProcessor: '{}' in namespace '{}' is ready",
                     bridgeExecutor.getMetadata().getName(),
@@ -181,7 +181,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             if (!status.isConditionTypeFalse(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
                 status.markConditionFalse(BridgeExecutorStatus.SERVICE_AVAILABLE);
             }
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else if (!status.isConditionTypeTrue(BridgeExecutorStatus.SERVICE_AVAILABLE)) {
             status.markConditionTrue(BridgeExecutorStatus.SERVICE_AVAILABLE);
         }
@@ -199,7 +199,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
             status.setStatusFromBridgeError(bei);
             notifyManagerOfFailure(bridgeExecutor, bei);
 
-            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalSeconds);
+            return UpdateControl.updateStatus(bridgeExecutor).rescheduleAfter(executorPollIntervalMilliseconds);
         } else {
             // this is an optional resource
             LOGGER.info("Executor service monitor resource BridgeExecutor: '{}' in namespace '{}' is ready",
