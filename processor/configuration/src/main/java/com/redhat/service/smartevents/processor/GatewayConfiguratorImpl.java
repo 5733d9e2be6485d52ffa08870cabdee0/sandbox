@@ -59,6 +59,7 @@ public class GatewayConfiguratorImpl implements GatewayConfigurator {
 
         // All the connectors resolve to the SinkConnectorResolver
         if (catalogEntry.get().isConnector()) {
+            System.out.println("Test coverage");
             return Optional.of(sinkConnectorResolver);
         }
 
