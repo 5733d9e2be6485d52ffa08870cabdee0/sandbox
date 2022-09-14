@@ -15,7 +15,7 @@
   <name>SmartEvents :: Shard Operator</name>
 
   <dependencies>
-    <dependency>
+    <dependency> 
       <groupId>io.quarkiverse.operatorsdk</groupId>
       <artifactId>quarkus-operator-sdk</artifactId>
     </dependency>
