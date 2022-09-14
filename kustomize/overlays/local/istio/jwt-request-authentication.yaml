@@ -5,5 +5,5 @@ metadata:
   namespace: istio-system
 spec:
   jwtRules:
-    - "http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm"
+    - issuer: "http://<REPLACE_WITH_MINIKUBE_IP>:30007/auth/realms/event-bridge-fm"
       jwksUri: "http://keycloak.keycloak:8180/auth/realms/event-bridge-fm/protocol/openid-connect/certs"
