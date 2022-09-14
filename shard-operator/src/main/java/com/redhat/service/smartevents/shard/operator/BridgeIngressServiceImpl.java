@@ -20,8 +20,8 @@ import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvi
 import com.redhat.service.smartevents.shard.operator.providers.TemplateImportConfig;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicySpecRuleWhen;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicySpecRuleWhen;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;

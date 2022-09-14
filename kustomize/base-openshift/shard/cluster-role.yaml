@@ -63,6 +63,24 @@ rules:
     verbs:
       - create
   - apiGroups:
+      - config.openshift.io
+    resources:
+      - ingresses
+    verbs:
+      - get
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
       - monitoring.coreos.com
     resources:
       - servicemonitors
@@ -74,12 +92,6 @@ rules:
       - delete
       - patch
       - update
-  - apiGroups:
-      - config.openshift.io
-    resources:
-      - ingresses
-    verbs:
-      - get
   - apiGroups:
       - eventing.knative.dev
     resources:
@@ -98,6 +110,19 @@ rules:
     resources:
       - requestauthentications
       - authorizationpolicies
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update
+  - apiGroups:
+      - networking.istio.io
+    resources:
+      - gateways
+      - virtualservices
     verbs:
       - get
       - list

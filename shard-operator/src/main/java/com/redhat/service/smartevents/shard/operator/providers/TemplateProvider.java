@@ -2,7 +2,10 @@ package com.redhat.service.smartevents.shard.operator.providers;
 
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.gateway.Gateway;
+import com.redhat.service.smartevents.shard.operator.resources.istio.requestauthentication.RequestAuthentication;
+import com.redhat.service.smartevents.shard.operator.resources.istio.virtualservice.VirtualService;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -34,4 +37,10 @@ public interface TemplateProvider {
     KnativeBroker loadBridgeIngressBrokerTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
 
     AuthorizationPolicy loadBridgeIngressAuthorizationPolicyTemplate(BridgeIngress bridgeIngress, TemplateImportConfig config);
+
+    Gateway loadIstioGatewayTemplate();
+
+    VirtualService loadIstioVirtualServiceTemplate();
+
+    RequestAuthentication loadJWTRequestAuthenticationTemplate();
 }
