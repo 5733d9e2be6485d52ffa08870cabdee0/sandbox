@@ -326,7 +326,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${version.surefire.plugin}</version>
           <configuration>
-            <!-- ${argLine} placeholder needed due to surefire & jacoco issue -->
+            <!-- @{argLine} placeholder needed due to surefire & jacoco issue -->
             <!-- https://stackoverflow.com/questions/23190107/cannot-use-jacoco-jvm-args-and-surefire-jvm-args-together-in-maven -->
             <argLine>-Xmx1024m -Dfile.encoding=UTF-8 @{argLine}</argLine>
             <systemPropertyVariables>
