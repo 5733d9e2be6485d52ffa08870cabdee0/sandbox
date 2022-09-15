@@ -150,3 +150,28 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: shard-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shard-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/version: latest
+      app.kubernetes.io/name: shard-operator
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /q/metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scheme: http
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: addon-smart-events-operator-parameters
+                optional: true
+          name: shard-operator
