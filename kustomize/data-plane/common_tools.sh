@@ -34,16 +34,27 @@ function waitForSuccess() {
     done
 }
 
-# Waits until an operator with given subscription name installation finishes (phase=Succeeded), params: operatorSubscriptionName
+# Installs an operator according to given subscription resource and waits, params: operatorSubscriptionResource
 # Example:
-#  wait_until_operator_installed smart-events-shard-operator-subscription
+#  install_operator_and_wait serverless/serverlessSub.yaml
 #
-function wait_until_operator_installed()
+function install_operator_and_wait()
 {
-  local name=$1
+  local resource=$1
+
+  echo "Applying $resource"
+  oc apply -f "$resource"
+  sleep 2
+
+  echo "Waiting for operator installation plan"
+  OPERATOR_INST_PLAN=$(waitForOpResult 30 oc get -f "$resource" -n openshift-operators -o jsonpath={.status.installplan.name})
+  echo "Operator installation plan found: $OPERATOR_INST_PLAN"
+
+  echo "Approving operator installation plan"
+  waitForSuccess 3 oc patch installplan.operators.coreos.com $OPERATOR_INST_PLAN -n openshift-operators --patch-file approve-ip-patch.json --type json
 
   echo "Waiting for operator CSV"
-  OPERATOR_CSV=$(waitForOpResult 30 oc get subscription.operators.coreos.com "$name" -n openshift-operators -o jsonpath={.status.currentCSV})
+  OPERATOR_CSV=$(waitForOpResult 30 oc get -f "$resource" -n openshift-operators -o jsonpath={.status.currentCSV})
 
   echo "Operator CSV found: $OPERATOR_CSV"
   # wait for the resource to be available, oc wait might fail otherwise
@@ -59,4 +70,17 @@ function wait_until_operator_installed()
     echo "Operator failed to install, exitcode: $status"
     exit 1
   fi
+}
+
+# Removes operator CSV and subscription, params: operatorSubscriptionResource
+function uninstall_operator()
+{
+  local resource=$1
+
+  echo "Deleting CSV and subscription for $resource"
+  # Find the operator CSV first
+  OPERATOR_CSV=$(waitForOpResult 3 oc get -f "$resource" -n openshift-operators -o jsonpath={.status.installedCSV})
+  echo "Found operator CSV for removal: $OPERATOR_CSV"
+  waitForSuccess 3 oc delete -f "$resource" -n openshift-operators --ignore-not-found=true
+  waitForSuccess 3 oc delete csv $OPERATOR_CSV -n openshift-operators --ignore-not-found=true
 }

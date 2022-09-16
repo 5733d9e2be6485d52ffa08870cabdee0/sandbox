@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: addon-smart-events-operator-parameters
+  namespace: openshift-operators
+data:
+  EVENT_BRIDGE_SSO_CLIENT_ID: $(EVENT_BRIDGE_SSO_CLIENT_ID)
+  EVENT_BRIDGE_SSO_SECRET: $(EVENT_BRIDGE_SSO_SECRET)
+stringData:
+  EVENT_BRIDGE_MANAGER_URL: $(EVENT_BRIDGE_MANAGER_URL)
+  EVENT_BRIDGE_SSO_URL: $(EVENT_BRIDGE_SSO_URL)

@@ -1,9 +1,0 @@
-apiVersion: security.istio.io/v1beta1
-kind: RequestAuthentication
-metadata:
-  name: "jwt-event-bridge-sso"
-  namespace: istio-system
-spec:
-  jwtRules:
-    - issuer: $(EVENT_BRIDGE_SSO_URL)
-      jwksUri: "$(EVENT_BRIDGE_SSO_URL)/protocol/openid-connect/certs"

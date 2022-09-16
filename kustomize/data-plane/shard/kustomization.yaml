@@ -1,4 +1,3 @@
 resources:
   - resources/operator-catalog-source.yaml
-  - resources/operator-subscription.yaml
-  - resources/operator-config.yaml
+  - resources/addon-operator-parameters.yaml
