@@ -1,0 +1,16 @@
+name: CI Topics Clean up
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 6'
+jobs:
+  run-ci-topics-delete-script:
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "main"
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
