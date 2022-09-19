@@ -1,6 +1,8 @@
 package com.redhat.service.smartevents.integration.tests.resources.webhook.site;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,6 +13,9 @@ public class WebhookSiteRequest {
 
     @JsonProperty
     private String uuid;
+
+    @JsonProperty
+    private Map<String, List<String>> headers;
 
     @JsonProperty
     private String content;
@@ -25,6 +30,14 @@ public class WebhookSiteRequest {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Map<String, List<String>> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
     }
 
     public String getContent() {

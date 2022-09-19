@@ -7,6 +7,9 @@ runs:
     - name: Configure test config file for E2E tests and copy it to integration-tests module
       shell: bash
       run: |
+        sed -i "s|<IT_AWS_ACCESS_KEY_ID>|$IT_AWS_ACCESS_KEY_ID|" e2e-test-config.yaml
+        sed -i "s|<IT_AWS_ACCOUNT_ID>|$IT_AWS_ACCOUNT_ID|" e2e-test-config.yaml
+        sed -i "s|<IT_AWS_SECRET_ACCESS_KEY>|$IT_AWS_SECRET_ACCESS_KEY|" e2e-test-config.yaml
         sed -i "s|<SLACK_WEBHOOK_TOKEN>|$SLACK_WEBHOOK_TOKEN|" e2e-test-config.yaml
         sed -i "s|<SLACK_WEBHOOK_URL>|$SLACK_WEBHOOK_URL|" e2e-test-config.yaml
         sed -i "s|<SLACK_CHANNEL>|$SLACK_CHANNEL|" e2e-test-config.yaml

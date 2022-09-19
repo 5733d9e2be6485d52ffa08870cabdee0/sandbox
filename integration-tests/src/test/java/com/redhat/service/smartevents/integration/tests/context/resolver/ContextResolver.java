@@ -16,12 +16,17 @@ public class ContextResolver {
     private static final boolean UNDEFINED_PLACEHOLDER_CHECK_ENABLED = Boolean.getBoolean("undefined.placeholder.check.enabled");
 
     private static final List<Resolver> RESOLVERS = Arrays.asList(
+            new AwsAccessKeyResolver(),
+            new AwsRegionResolver(),
+            new AwsSecretKeyResolver(),
+            new AwsSqsQueueNameResolver(),
             new BridgeEndpointBaseResolver(),
             new BridgeEndpointPathResolver(),
             new BridgeIdResolver(),
             new CloudEventIdResolver(),
             new KafkaTopicResolver(),
             new ManagerAuthenticationTokenResolver(),
+            new ProcessorIdResolver(),
             new SlackChannelNameResolver(),
             new SlackChannelWebHookUrlResolver(),
             new SlackTokenResolver(),
@@ -30,15 +35,17 @@ public class ContextResolver {
             new UuidResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
-        if (isPlaceholderFound(content)) {
-            for (Resolver resolver : RESOLVERS) {
-                if (resolver.match(content)) {
-                    content = resolver.replace(content, context);
+        if (content != null && !content.isEmpty()) {
+            if (isPlaceholderFound(content)) {
+                for (Resolver resolver : RESOLVERS) {
+                    if (resolver.match(content)) {
+                        content = resolver.replace(content, context);
+                    }
                 }
             }
-        }
-        if (UNDEFINED_PLACEHOLDER_CHECK_ENABLED) {
-            verifyNoPlaceholderAvailableInContent(content);
+            if (UNDEFINED_PLACEHOLDER_CHECK_ENABLED) {
+                verifyNoPlaceholderAvailableInContent(content);
+            }
         }
         return content;
     }
