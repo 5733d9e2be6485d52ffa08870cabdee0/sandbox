@@ -14,3 +14,15 @@ jobs:
           ref: "main"
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}"
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}"
+      - name: Run CI topics delete script
+        env:
+          BOOSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          KAFKA_ADMIN_USERNAME: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          KAFKA_ADMIN_PASSWORD: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+        run: |
+          ./.github/scripts/delete-kafka-ci-topics.sh
