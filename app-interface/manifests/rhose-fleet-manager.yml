@@ -276,6 +276,16 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: EVENT_BRIDGE_DNS_SUBDOMAIN
+                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${EXTERNAL_DNS_ROUTE53_CREDS}
+                      key: aws_access_key_id
+                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${EXTERNAL_DNS_ROUTE53_CREDS}
+                      key: aws_secret_access_key
               ports:
                 - containerPort: 8080
               livenessProbe:
@@ -345,3 +355,6 @@ parameters:
   - name: RDS_SECRET_NAME
     value: rhosedb-rds
     description: the aws rds secret
+  - name: EXTERNAL_DNS_ROUTE53_CREDS
+    value: external-dns-route53-creds
+    description: The kubernetes secret resource name that contains the aws route53 credentials
