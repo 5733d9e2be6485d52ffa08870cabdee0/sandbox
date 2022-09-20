@@ -87,4 +87,15 @@ public class PerformanceSteps {
         String testDescription = context.getScenario().getName();
         HorreumResource.storePerformanceData(testName, testDescription, context.getStartTime(), benchmarkRun);
     }
+
+    @When("^store Manager metrics in Horreum test \"([^\"]*)\"$")
+    public void storeManagerMetricsInHorreumTest(String testName) {
+        if (!HorreumResource.isResultsUploadEnabled()) {
+            context.getScenario().log("Horreum results upload disabled. Skipping the step.");
+            return;
+        }
+
+        String testDescription = context.getScenario().getName();
+        HorreumResource.storeManagerPerformanceData(testName, testDescription, context.getStartTime());
+    }
 }

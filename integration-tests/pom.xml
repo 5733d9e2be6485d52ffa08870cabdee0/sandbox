@@ -22,6 +22,7 @@
     <performance.hyperfoil.url></performance.hyperfoil.url>
     <performance.horreum.team.name>rhose-team</performance.horreum.team.name>
     <performance.horreum.test.schema>http://hyperfoil.io/run-schema/v3.0</performance.horreum.test.schema>
+    <performance.manager.metrics.test.schema>urn:rhose-manager-metrics:0.1</performance.manager.metrics.test.schema>
     <performance.horreum.results.upload>false</performance.horreum.results.upload>
   </properties>
 
@@ -270,6 +271,7 @@
                 <performance.hyperfoil.url>${performance.hyperfoil.url}</performance.hyperfoil.url>
                 <performance.horreum.team.name>${performance.horreum.team.name}</performance.horreum.team.name>
                 <performance.horreum.test.schema>${performance.horreum.test.schema}</performance.horreum.test.schema>
+                <performance.manager.metrics.test.schema>${performance.manager.metrics.test.schema}</performance.manager.metrics.test.schema>
                 <performance.horreum.results.upload>${performance.horreum.results.upload}</performance.horreum.results.upload>
               </systemProperties>
             </configuration>

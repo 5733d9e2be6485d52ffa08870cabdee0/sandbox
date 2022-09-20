@@ -2,6 +2,8 @@ package com.redhat.service.smartevents.integration.tests.resources;
 
 import java.time.Instant;
 
+import com.google.gson.JsonObject;
+import com.redhat.service.smartevents.integration.tests.common.MetricsConverter;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 
 import io.cucumber.java.AfterAll;
@@ -16,6 +18,7 @@ public class HorreumResource {
 
     private static String HORREUM_TEAM_NAME;
     private static String HORREUM_TEST_SCHEMA;
+    private static String MANAGER_METRICS_TEST_SCHEMA;
 
     public static Horreum horreum = ServiceFactory.create(Horreum.class);
 
@@ -27,6 +30,7 @@ public class HorreumResource {
             horreum.beforeAll(null);
             HORREUM_TEAM_NAME = Utils.getSystemProperty("performance.horreum.team.name");
             HORREUM_TEST_SCHEMA = Utils.getSystemProperty("performance.horreum.test.schema");
+            MANAGER_METRICS_TEST_SCHEMA = Utils.getSystemProperty("performance.manager.metrics.test.schema");
         }
     }
 
@@ -45,6 +49,17 @@ public class HorreumResource {
         Object totalStats = HyperfoilResource.getAllStatsJson(benchmarkRun);
         try {
             horreum.validation().postRunData(testDescription, HORREUM_TEAM_NAME, HORREUM_TEST_SCHEMA, startTime.toString(), Instant.now().toString(), testName, HORREUM_TEST_RESULT_SCOPE, totalStats);
+        } catch (Exception e) {
+            throw new RuntimeException("error while sending performance data to Horreum", e);
+        }
+    }
+
+    public static void storeManagerPerformanceData(String testName, String testDescription, Instant startTime) {
+        String managerMetrics = ManagerResource.getManagerMetrics();
+        JsonObject convertedMetrics = MetricsConverter.convertToJson(managerMetrics);
+        try {
+            horreum.validation().postRunData(testDescription, HORREUM_TEAM_NAME, MANAGER_METRICS_TEST_SCHEMA, startTime.toString(), Instant.now().toString(), testName, HORREUM_TEST_RESULT_SCOPE,
+                    convertedMetrics);
         } catch (Exception e) {
             throw new RuntimeException("error while sending performance data to Horreum", e);
         }
