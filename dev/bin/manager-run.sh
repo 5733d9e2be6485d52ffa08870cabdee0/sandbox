@@ -38,7 +38,7 @@ mvn \
   -Devent-bridge.kafka.client.id=${ops_client_id} \
   -Devent-bridge.kafka.client.secret=${ops_client_secret} \
   -Devent-bridge.kafka.security.protocol=SASL_SSL \
-  -Devent-bridge.rhoas.instance-api.host=https://admin-server-${bootstrap_server_host}/rest \
+  -Devent-bridge.rhoas.instance-api.host=https://admin-server-${bootstrap_server_host} \
   -Devent-bridge.rhoas.mgmt-api.host=https://api.openshift.com \
   -Devent-bridge.rhoas.sso.mas.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Devent-bridge.rhoas.sso.mas.client-id=${admin_client_id} \

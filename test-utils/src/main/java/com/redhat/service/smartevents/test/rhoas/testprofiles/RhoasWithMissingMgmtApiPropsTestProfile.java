@@ -11,7 +11,7 @@ public class RhoasWithMissingMgmtApiPropsTestProfile implements QuarkusTestProfi
     public Map<String, String> getConfigOverrides() {
         Map<String, String> config = new HashMap<>();
 
-        config.put("event-bridge.rhoas.instance-api.host", "${rhoas-mock-server.url:}${rhoas-mock-server.instance-api.base-path}/rest");
+        config.put("event-bridge.rhoas.instance-api.host", "${rhoas-mock-server.url:}${rhoas-mock-server.instance-api.base-path}");
 
         config.put("event-bridge.rhoas.sso.mas.auth-server-url", "${rhoas-mock-server.url:}${rhoas-mock-server.sso.mas.base-path}");
         config.put("event-bridge.rhoas.sso.mas.client-id", "${rhoas-mock-server.sso.mas.client-id}");
