@@ -29,7 +29,7 @@ public class KafkaConnectionParameters {
             KafkaConnectionParameters instance = new KafkaConnectionParameters();
             instance.authServerURL = Utils.getSystemProperty(AUTH_SERVER_URL_PROPERTY);
             instance.kafkaBootstrapServer = Utils.getSystemProperty(KAFKA_BOOTSTRAP_SERVERS_PROPERTY);
-            instance.managedKafkaRestURL = "https://admin-server-" + instance.kafkaBootstrapServer + "/rest";
+            instance.managedKafkaRestURL = "https://admin-server-" + instance.kafkaBootstrapServer;
             instance.adminClientID = Utils.getSystemProperty(KAFKA_ADMIN_CLIENT_ID_PROPERTY);
             instance.adminClientSecret = Utils.getSystemProperty(KAFKA_ADMIN_CLIENT_SECRET_PROPERTY);
             instance.opsClientID = Utils.getSystemProperty(KAFKA_OPS_CLIENT_ID_PROPERTY);
