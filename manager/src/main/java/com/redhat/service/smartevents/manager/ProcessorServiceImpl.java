@@ -167,7 +167,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         processorDAO.persist(newProcessor);
         connectorService.createConnectorEntity(newProcessor);
         workManager.schedule(newProcessor);
-        metricsService.onOperationStart(newProcessor, MetricsOperation.RESOURCE_PROVISION);
+        metricsService.onOperationStart(newProcessor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for creation",
                 newProcessor.getId(),
@@ -300,7 +300,7 @@ public class ProcessorServiceImpl implements ProcessorService {
         // Since updates to the Action are unsupported we do not need to update the Connector record.
         connectorService.updateConnectorEntity(existingProcessor);
         workManager.schedule(existingProcessor);
-        metricsService.onOperationStart(existingProcessor, MetricsOperation.RESOURCE_MODIFY);
+        metricsService.onOperationStart(existingProcessor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for update",
                 existingProcessor.getId(),
@@ -357,16 +357,16 @@ public class ProcessorServiceImpl implements ProcessorService {
                 break;
             case CREATE:
                 processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_PROVISION);
+                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                 break;
 
             case UPDATE:
-                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_MODIFY);
+                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_MODIFY);
                 break;
 
             case DELETE:
                 processorDAO.deleteById(updateDTO.getId());
-                metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_DELETE);
+                metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 break;
 
             case FAILED_CREATE:
@@ -420,7 +420,7 @@ public class ProcessorServiceImpl implements ProcessorService {
 
         connectorService.deleteConnectorEntity(processor);
         workManager.schedule(processor);
-        metricsService.onOperationStart(processor, MetricsOperation.RESOURCE_DELETE);
+        metricsService.onOperationStart(processor, MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         LOGGER.info("Processor with id '{}' for customer '{}' on bridge '{}' has been marked for deletion",
                 processor.getId(),

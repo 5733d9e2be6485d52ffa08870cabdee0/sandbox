@@ -58,7 +58,7 @@ public class MetricsServiceImplTest {
     public void onOperationStart_forBridge(MetricsOperation metricsOperation) {
 
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
         bridge.setStatus(status);
         metricsService.onOperationStart(bridge, metricsOperation);
 
@@ -70,7 +70,7 @@ public class MetricsServiceImplTest {
     @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
         Processor processor = Fixtures.createProcessor(bridge, status);
 
         metricsService.onOperationStart(processor, metricsOperation);
@@ -83,7 +83,7 @@ public class MetricsServiceImplTest {
     @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forBridge(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
         bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
         bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
@@ -101,7 +101,7 @@ public class MetricsServiceImplTest {
     @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
         Processor processor = Fixtures.createProcessor(bridge, status);
         processor.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
         processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
@@ -121,9 +121,9 @@ public class MetricsServiceImplTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.FAILED);
 
-        metricsService.onOperationComplete(processor, MetricsOperation.RESOURCE_PROVISION);
+        metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
-        List<Tag> expectedTags = createdExpectedTags(processor, MetricsOperation.RESOURCE_PROVISION);
+        List<Tag> expectedTags = createdExpectedTags(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(0.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0.0);
     }
@@ -134,9 +134,9 @@ public class MetricsServiceImplTest {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(ManagedResourceStatus.FAILED);
 
-        metricsService.onOperationComplete(bridge, MetricsOperation.RESOURCE_PROVISION);
+        metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
-        List<Tag> expectedTags = createdExpectedTags(bridge, MetricsOperation.RESOURCE_PROVISION);
+        List<Tag> expectedTags = createdExpectedTags(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(0.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0.0);
     }

@@ -64,7 +64,7 @@ public class MetricsServiceImpl implements ManagerMetricsService {
     }
 
     private boolean isOperationSuccessful(ManagedResource managedResource, MetricsOperation operation) {
-        if (MetricsOperation.RESOURCE_PROVISION == operation || MetricsOperation.RESOURCE_MODIFY == operation) {
+        if (MetricsOperation.MANAGER_RESOURCE_PROVISION == operation || MetricsOperation.MANAGER_RESOURCE_MODIFY == operation) {
             return ManagedResourceStatus.READY == managedResource.getStatus();
         }
 
@@ -90,11 +90,11 @@ public class MetricsServiceImpl implements ManagerMetricsService {
 
     private Duration calculateOperationDuration(ManagedResource managedResource, MetricsOperation operation) {
         switch (operation) {
-            case RESOURCE_PROVISION:
+            case MANAGER_RESOURCE_PROVISION:
                 return Duration.between(managedResource.getSubmittedAt(), ZonedDateTime.now(ZoneOffset.UTC));
-            case RESOURCE_MODIFY:
+            case MANAGER_RESOURCE_MODIFY:
                 return Duration.between(managedResource.getModifiedAt(), ZonedDateTime.now(ZoneOffset.UTC));
-            case RESOURCE_DELETE:
+            case MANAGER_RESOURCE_DELETE:
                 return Duration.between(managedResource.getDeletionRequestedAt(), ZonedDateTime.now(ZoneOffset.UTC));
             default:
                 throw new IllegalStateException(String.format("Unable to calculate operation duration for MetricsOperation '%s'", operation));

@@ -22,10 +22,12 @@ import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.PrometheusNotInstalledException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningReplicaFailureException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeExecutorService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
@@ -82,6 +84,9 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
+
+    @Inject
+    OperatorMetricsService metricsService;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeExecutor> eventSourceContext) {
@@ -218,6 +223,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!bridgeExecutor.getStatus().isReady()) {
+            metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             notifyManager(bridgeExecutor, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeExecutor);
@@ -248,6 +254,7 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
 
         // Linked resources are automatically deleted
 
+        metricsService.onOperationComplete(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
         notifyManager(bridgeExecutor, ManagedResourceStatus.DELETED);
 
         return DeleteControl.defaultDelete();
@@ -280,6 +287,8 @@ public class BridgeExecutorController implements Reconciler<BridgeExecutor>,
     private void notifyManagerOfFailure(BridgeExecutor bridgeExecutor, BridgeErrorInstance bei) {
         LOGGER.error("BridgeExecutor: '{}' in namespace '{}' has failed with reason: '{}'",
                 bridgeExecutor.getMetadata().getName(), bridgeExecutor.getMetadata().getNamespace(), bei.getReason());
+
+        metricsService.onOperationFailed(bridgeExecutor, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeExecutor.getSpec().getId();
         String customerId = bridgeExecutor.getSpec().getCustomerId();

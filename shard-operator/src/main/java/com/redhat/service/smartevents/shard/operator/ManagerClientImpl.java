@@ -50,8 +50,8 @@ public class ManagerClientImpl implements ManagerClient {
     @Override
     public Uni<List<BridgeDTO>> fetchBridgesToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH), HttpRequest::send)
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.MANAGER_FETCH, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.MANAGER_FETCH, failure))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
                 .onItem().transform(this::getBridges);
     }
 
@@ -63,8 +63,8 @@ public class ManagerClientImpl implements ManagerClient {
     @Override
     public Uni<List<ProcessorDTO>> fetchProcessorsToDeployOrDelete() {
         return getAuthenticatedRequest(webClientManager.get(APIConstants.SHARD_API_BASE_PATH + "processors"), HttpRequest::send)
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.MANAGER_FETCH, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.MANAGER_FETCH, failure))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_FETCH, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_FETCH, failure))
                 .onItem().transform(this::getProcessors);
     }
 
@@ -77,8 +77,8 @@ public class ManagerClientImpl implements ManagerClient {
     public Uni<HttpResponse<Buffer>> notifyBridgeStatusChange(ManagedResourceStatusUpdateDTO dto) {
         LOGGER.debug("Notifying manager about the new status of the Bridge '{}'", dto.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH), request -> request.sendJson(dto))
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.MANAGER_UPDATE, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.MANAGER_UPDATE, failure))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 
@@ -86,8 +86,8 @@ public class ManagerClientImpl implements ManagerClient {
     public Uni<HttpResponse<Buffer>> notifyProcessorStatusChange(ProcessorManagedResourceStatusUpdateDTO dto) {
         LOGGER.debug("Notifying manager about the new status of the Processor '{}'", dto.getId());
         return getAuthenticatedRequest(webClientManager.put(APIConstants.SHARD_API_BASE_PATH + "processors"), request -> request.sendJson(dto))
-                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.MANAGER_UPDATE, success))
-                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.MANAGER_UPDATE, failure))
+                .onItem().invoke(success -> updateManagerRequestMetricsOnSuccess(MetricsOperation.OPERATOR_MANAGER_UPDATE, success))
+                .onFailure().invoke(failure -> updateManagerRequestMetricsOnFailure(MetricsOperation.OPERATOR_MANAGER_UPDATE, failure))
                 .onFailure().retry().withBackOff(WebClientUtils.DEFAULT_BACKOFF).withJitter(WebClientUtils.DEFAULT_JITTER).atMost(WebClientUtils.MAX_RETRIES);
     }
 

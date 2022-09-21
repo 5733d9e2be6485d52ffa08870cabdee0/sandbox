@@ -32,7 +32,7 @@ public class MetricsServiceImplTest {
     @Test
     public void testUpdateManagerRequestMetrics() {
         Mockito.doNothing().when(meterRegistry.counter(anyString(), anyList()));
-        MetricsOperation operation = MetricsOperation.MANAGER_UPDATE;
+        MetricsOperation operation = MetricsOperation.OPERATOR_MANAGER_UPDATE;
         ManagerRequestStatus status = ManagerRequestStatus.FAILURE;
         String statusCode = "408";
         metricsService.updateManagerRequestMetrics(operation, status, statusCode);
@@ -45,7 +45,7 @@ public class MetricsServiceImplTest {
     @Test
     public void testUpdateManagerRequestMetrics_whenStatusIsNull() {
         Mockito.doNothing().when(meterRegistry.counter(anyString(), anyList()));
-        MetricsOperation operation = MetricsOperation.MANAGER_UPDATE;
+        MetricsOperation operation = MetricsOperation.OPERATOR_MANAGER_UPDATE;
         ManagerRequestStatus status = ManagerRequestStatus.FAILURE;
         metricsService.updateManagerRequestMetrics(operation, status, null);
         ArgumentCaptor<List<Tag>> argumentCaptor = forClass(List.class);

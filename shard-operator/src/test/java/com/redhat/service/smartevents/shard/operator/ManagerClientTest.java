@@ -87,7 +87,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
     @Test
     @SuppressWarnings("unchecked")
     public void updateManagerRequestMetricsOnSuccess() {
-        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
+        MetricsOperation operation = MetricsOperation.OPERATOR_MANAGER_FETCH;
         HttpResponse<Buffer> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(200);
         ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnSuccess(operation, response);
@@ -97,7 +97,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void updateManagerRequestMetricsOnFailure() {
-        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
+        MetricsOperation operation = MetricsOperation.OPERATOR_MANAGER_FETCH;
         Throwable error = mock(Throwable.class);
         ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(operation, error);
 
@@ -106,7 +106,7 @@ public class ManagerClientTest extends AbstractShardWireMockTest {
 
     @Test
     public void updateManagerRequestMetricsOnFailureWithHTTPResponseException() {
-        MetricsOperation operation = MetricsOperation.MANAGER_FETCH;
+        MetricsOperation operation = MetricsOperation.OPERATOR_MANAGER_FETCH;
         HTTPResponseException error = mock(HTTPResponseException.class);
         when(error.getStatusCode()).thenReturn(404);
         ((ManagerClientImpl) managerClient).updateManagerRequestMetricsOnFailure(operation, error);

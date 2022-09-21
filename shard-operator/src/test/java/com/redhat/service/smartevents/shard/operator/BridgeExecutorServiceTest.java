@@ -12,9 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.monitoring.ServiceMonitorService;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
@@ -77,6 +79,9 @@ public class BridgeExecutorServiceTest {
 
     @InjectMock
     TemplateProvider templateProvider;
+
+    @InjectMock
+    OperatorMetricsService metricsService;
 
     @BeforeEach
     public void setup() {
@@ -292,6 +297,7 @@ public class BridgeExecutorServiceTest {
                 dto.getCustomerId(),
                 dto.getBridgeId(),
                 READY));
+        verify(metricsService).onOperationComplete(any(BridgeExecutor.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
     }
 
     private void assertProcessorManagedResourceStatusUpdateDTOUpdate(ProcessorManagedResourceStatusUpdateDTO update,
@@ -391,6 +397,7 @@ public class BridgeExecutorServiceTest {
                             dto.getCustomerId(),
                             dto.getBridgeId(),
                             FAILED));
+                    verify(metricsService).onOperationFailed(any(BridgeExecutor.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
 
         // Re-try creation
@@ -427,6 +434,7 @@ public class BridgeExecutorServiceTest {
                             dto.getCustomerId(),
                             dto.getBridgeId(),
                             FAILED));
+                    verify(metricsService).onOperationFailed(any(BridgeExecutor.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
     }
 

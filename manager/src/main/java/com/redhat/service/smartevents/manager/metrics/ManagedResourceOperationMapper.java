@@ -18,17 +18,17 @@ public final class ManagedResourceOperationMapper {
         // An inference was undetermined
         UNDETERMINED(null),
         // The ManagedResource has been created
-        CREATE(MetricsOperation.RESOURCE_PROVISION),
+        CREATE(MetricsOperation.MANAGER_RESOURCE_PROVISION),
         // The ManagedResource has been modified
-        UPDATE(MetricsOperation.RESOURCE_MODIFY),
+        UPDATE(MetricsOperation.MANAGER_RESOURCE_MODIFY),
         // The ManagedResource has been deleted
-        DELETE(MetricsOperation.RESOURCE_DELETE),
+        DELETE(MetricsOperation.MANAGER_RESOURCE_DELETE),
         // The ManagedResource failed to be created
-        FAILED_CREATE(MetricsOperation.RESOURCE_PROVISION),
+        FAILED_CREATE(MetricsOperation.MANAGER_RESOURCE_PROVISION),
         // The ManagedResource failed to be modified
-        FAILED_UPDATE(MetricsOperation.RESOURCE_MODIFY),
+        FAILED_UPDATE(MetricsOperation.MANAGER_RESOURCE_MODIFY),
         // The ManagedResource failed to be deleted
-        FAILED_DELETE(MetricsOperation.RESOURCE_DELETE);
+        FAILED_DELETE(MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         private final MetricsOperation metricsOperation;
 

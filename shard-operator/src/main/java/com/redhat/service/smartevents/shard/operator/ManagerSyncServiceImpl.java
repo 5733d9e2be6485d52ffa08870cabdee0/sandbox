@@ -26,8 +26,8 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
 
     private enum FallibleOperation {
-        PROVISIONING("Provisioning", MetricsOperation.RESOURCE_PROVISION),
-        DELETING("Deleting", MetricsOperation.RESOURCE_DELETE);
+        PROVISIONING("Provisioning", MetricsOperation.OPERATOR_RESOURCE_PROVISION),
+        DELETING("Deleting", MetricsOperation.OPERATOR_RESOURCE_DELETE);
 
         String prettyName;
         MetricsOperation metricsOperation;

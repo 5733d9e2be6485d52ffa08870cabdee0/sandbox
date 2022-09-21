@@ -131,7 +131,7 @@ public class BridgesServiceImpl implements BridgesService {
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
-        metricsService.onOperationStart(bridge, MetricsOperation.RESOURCE_PROVISION);
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
@@ -187,7 +187,7 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
-        metricsService.onOperationStart(existingBridge, MetricsOperation.RESOURCE_MODIFY);
+        metricsService.onOperationStart(existingBridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for update",
                 existingBridge.getId(),
@@ -251,7 +251,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         bridge.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
         workManager.schedule(bridge);
-        metricsService.onOperationStart(bridge, MetricsOperation.RESOURCE_DELETE);
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -286,16 +286,16 @@ public class BridgesServiceImpl implements BridgesService {
                 break;
             case CREATE:
                 bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                metricsService.onOperationComplete(bridge, MetricsOperation.RESOURCE_PROVISION);
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
                 break;
 
             case UPDATE:
-                metricsService.onOperationComplete(bridge, MetricsOperation.RESOURCE_MODIFY);
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
                 break;
 
             case DELETE:
                 bridgeDAO.deleteById(bridge.getId());
-                metricsService.onOperationComplete(bridge, MetricsOperation.RESOURCE_DELETE);
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
                 break;
 
             case FAILED_CREATE:

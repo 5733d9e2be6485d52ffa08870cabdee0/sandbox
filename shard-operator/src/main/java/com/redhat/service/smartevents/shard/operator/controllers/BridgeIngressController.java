@@ -22,10 +22,12 @@ import org.slf4j.LoggerFactory;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ProvisioningTimeOutException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.shard.operator.BridgeIngressService;
 import com.redhat.service.smartevents.shard.operator.ManagerClient;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkResource;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingService;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -84,6 +86,9 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
 
     @Inject
     BridgeErrorHelper bridgeErrorHelper;
+
+    @Inject
+    OperatorMetricsService metricsService;
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<BridgeIngress> eventSourceContext) {
@@ -184,6 +189,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // This is a work-around for non-deterministic Unit Tests.
         // See https://issues.redhat.com/browse/MGDOBR-1002
         if (!status.isReady()) {
+            metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
             status.markConditionTrue(ConditionTypeConstants.READY);
             notifyManager(bridgeIngress, ManagedResourceStatus.READY);
             return UpdateControl.updateStatus(bridgeIngress);
@@ -225,6 +231,7 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
         // we can not set the owner reference. We have to delete the resource manually.
         networkingService.delete(bridgeIngress.getMetadata().getName(), istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
 
+        metricsService.onOperationComplete(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_DELETE);
         notifyManager(bridgeIngress, ManagedResourceStatus.DELETED);
 
         return DeleteControl.defaultDelete();
@@ -267,6 +274,8 @@ public class BridgeIngressController implements Reconciler<BridgeIngress>,
                 bridgeIngress.getMetadata().getName(),
                 bridgeIngress.getMetadata().getNamespace(),
                 bei.getReason());
+
+        metricsService.onOperationFailed(bridgeIngress, MetricsOperation.CONTROLLER_RESOURCE_PROVISION);
 
         String id = bridgeIngress.getSpec().getId();
         String customerId = bridgeIngress.getSpec().getCustomerId();
