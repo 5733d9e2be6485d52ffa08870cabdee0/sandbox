@@ -54,7 +54,7 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart_forBridge(MetricsOperation metricsOperation) {
 
         Bridge bridge = Fixtures.createBridge();
@@ -67,7 +67,7 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
         ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
@@ -80,7 +80,7 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forBridge(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
         ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
@@ -98,7 +98,7 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = MetricsOperation.class, names = { "RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
         ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
