@@ -40,8 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class Hooks {
 
-    private static final String WEBHOOK_ID = Utils.getSystemProperty("webhook.site.uuid");
-    private static final String WEBHOOK_ID_SECOND = Utils.getSystemProperty("webhook.site.uuid.second");
+    static String WEBHOOK_ID;
+    static String WEBHOOK_ID_SECOND;
     private static final String DISABLE_CLEANUP = Utils.getSystemProperty("cleanup.disable");
 
     private TestContext context;
@@ -59,16 +59,19 @@ public class Hooks {
                 Properties prop = System.getProperties();
                 prop.load(inputStream);
                 System.setProperties(prop);
+                WEBHOOK_ID = Utils.getSystemProperty("webhook.site.uuid");
+                WEBHOOK_ID_SECOND = Utils.getSystemProperty("webhook.site.uuid.second");
             } catch (IOException e) {
                 throw new RuntimeException("Failed to set properties.", e);
             }
         }
+
     }
 
     @BeforeAll(order = 1)
     public static void deleteWebhookSiteRequestHistory() {
-        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID);
-        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID_SECOND);
+        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID = Utils.getSystemProperty("webhook.site.uuid"));
+        webhookSiteRequestHistoryIsCleared(WEBHOOK_ID_SECOND = Utils.getSystemProperty("webhook.site.uuid.second"));
     }
 
     public static void webhookSiteRequestHistoryIsCleared(String webhookId) {
