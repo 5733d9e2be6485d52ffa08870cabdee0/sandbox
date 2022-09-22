@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +31,8 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
+import static com.redhat.service.smartevents.integration.tests.common.EndPointParser.ENDPOINT_URL_REGEX;
+import static com.redhat.service.smartevents.processingerrors.ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeSteps {
@@ -208,9 +211,54 @@ public class BridgeSteps {
         });
     }
 
+    @And("^the Bridge \"([^\"]*)\" has a polling error handler endpoint$")
+    public void bridgeHasPollingErrorHandlerEndpoint(String testBridgeName) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        BridgeResponse response = BridgeResource
+                .getBridgeDetails(context.getManagerToken(), bridgeContext.getId());
+        assertThat(response.getErrorHandler().getType()).isEqualTo(ENDPOINT_ERROR_HANDLER_TYPE);
+        assertThat(BridgeUtils.getOrRetrieveBridgePollingErrorHandlerEndpoint(context, testBridgeName)).matches(ENDPOINT_URL_REGEX);
+    }
+
+    @Then("^the polling error handler endpoint of the Bridge \"([^\"]*)\" contains message \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
+    public void pollingErrorHandlerContainsMessage(String testBridgeName, String errorMessage, int timeoutMinutes) {
+        String resolvedErrorMessage = ContextResolver.resolveWithScenarioContext(context, errorMessage);
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String errorHandlerEndpoint = bridgeContext.getErrorHandlerEndpoint();
+        Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> BridgeResource
+                        .getBridgeErrorHandlerResponse(context.getManagerToken(), errorHandlerEndpoint).then().log().all()))
+                .atMost(Duration.ofMinutes(timeoutMinutes))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(() -> assertThat(BridgeResource.getBridgeErrorHandlerResponse(context.getManagerToken(), errorHandlerEndpoint)
+                        .then()
+                        .log().ifValidationFails()
+                        .statusCode(200)
+                        .extract()
+                        .jsonPath().getList("items")).anyMatch(
+                                item -> ((Map<String, Object>) ((Map<String, Object>) item).get("payload")).get("data")
+                                        .toString().contains(resolvedErrorMessage)));
+    }
+
     private boolean isBridgeExisting(String bridgeName) {
         return BridgeResource.getBridgeList(context.getManagerToken()).getItems().stream()
                 .anyMatch(b -> b.getName().equals(bridgeName));
     }
 
+    @And("^the polling error handler endpoint of the Bridge \"([^\"]*)\" has only (\\d+) error (?:message|messages) within (\\d+) (?:minute|minutes)$")
+    public void thePollingErrorHandlerContainsNErrorMessages(String testBridgeName, int numberErrors, int timeoutMinutes) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+        String errorHandlerEndpoint = bridgeContext.getErrorHandlerEndpoint();
+        Awaitility.await()
+                .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> BridgeResource
+                        .getBridgeErrorHandlerResponse(context.getManagerToken(), errorHandlerEndpoint).then().log().all()))
+                .atMost(Duration.ofMinutes(timeoutMinutes))
+                .pollInterval(Duration.ofSeconds(1))
+                .untilAsserted(() -> assertThat(BridgeResource.getBridgeErrorHandlerResponse(context.getManagerToken(), errorHandlerEndpoint)
+                        .then()
+                        .log().ifValidationFails()
+                        .statusCode(200)
+                        .extract()
+                        .jsonPath().getList("items")).hasSize(numberErrors));
+    }
 }
