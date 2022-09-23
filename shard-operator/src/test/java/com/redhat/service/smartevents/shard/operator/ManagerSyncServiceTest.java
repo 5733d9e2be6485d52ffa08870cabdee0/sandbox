@@ -60,6 +60,9 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     @ConfigProperty(name = "rhose.metrics-name.operator.operation-success-total-count")
     String operatorTotalSuccessCountMetricName;
 
+    @ConfigProperty(name = "rhose.metrics-name.operator.operation-failure-total-count")
+    String operatorTotalFailureCountMetricName;
+
     @Test
     @WithPrometheus
     public void testBridgesAreDeployed() throws JsonProcessingException, InterruptedException {
@@ -67,6 +70,10 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     }
 
     private void doBridgeDeployment() throws JsonProcessingException, InterruptedException {
+        doBridgeDeployment(true);
+    }
+
+    private void doBridgeDeployment(boolean isSuccessful) throws JsonProcessingException, InterruptedException {
         BridgeDTO bridge1 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 1);
         BridgeDTO bridge2 = makeBridgeDTO(ManagedResourceStatus.PREPARING, 2);
         stubBridgesToDeployOrDelete(List.of(bridge1, bridge2));
@@ -90,20 +97,29 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String firstBridgeName = BridgeIngress.resolveResourceName(bridge1.getId());
         String secondBridgeName = BridgeIngress.resolveResourceName(bridge2.getId());
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
-                            kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
-                        });
 
+        if (isSuccessful) {
+            // If the deployment is to succeed we need to mock provisioning of the dependencies
+            Awaitility.await()
+                    .atMost(Duration.ofMinutes(3))
+                    .pollInterval(Duration.ofSeconds(5))
+                    .untilAsserted(
+                            () -> {
+                                kubernetesResourcePatcher.patchReadyKnativeBroker(firstBridgeName, customerNamespace);
+                                kubernetesResourcePatcher.patchReadyKnativeBroker(secondBridgeName, customerNamespace);
+                                kubernetesResourcePatcher.patchReadyNetworkResource(firstBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+                                kubernetesResourcePatcher.patchReadyNetworkResource(secondBridgeName, istioGatewayProvider.getIstioGatewayService().getMetadata().getNamespace());
+                            });
+        }
+
+        // This time-out needs to be (at least) as long as the Controller's configured timeout
+        // See application.properties#event-bridge.ingress.deployment.timeout-seconds
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
         assertJsonRequest(expectedJsonUpdateProvisioningRequest, APIConstants.SHARD_API_BASE_PATH);
-        assertJsonRequest(expectedJsonUpdateAvailableRequest, APIConstants.SHARD_API_BASE_PATH);
+
+        if (isSuccessful) {
+            assertJsonRequest(expectedJsonUpdateAvailableRequest, APIConstants.SHARD_API_BASE_PATH);
+        }
     }
 
     @Test
@@ -161,6 +177,10 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     }
 
     private void doProcessorDeployment() throws JsonProcessingException, InterruptedException {
+        doProcessorDeployment(true);
+    }
+
+    private void doProcessorDeployment(boolean isSuccessful) throws JsonProcessingException, InterruptedException {
         ProcessorDTO processor = TestSupport.newRequestedProcessorDTO();
 
         stubProcessorsToDeployOrDelete(Collections.singletonList(processor));
@@ -172,19 +192,28 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
 
         String customerNamespace = customerNamespaceProvider.resolveName(TestSupport.CUSTOMER_ID);
         String sanitizedName = BridgeExecutor.resolveResourceName(processor.getId());
-        Awaitility.await()
-                .atMost(Duration.ofMinutes(3))
-                .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> {
-                            kubernetesResourcePatcher.patchReadyDeploymentAsReady(sanitizedName, customerNamespace);
-                            kubernetesResourcePatcher.patchReadyService(sanitizedName, customerNamespace);
-                        });
+
+        if (isSuccessful) {
+            // If the deployment is to succeed we need to mock provisioning of the dependencies
+            Awaitility.await()
+                    .atMost(Duration.ofMinutes(3))
+                    .pollInterval(Duration.ofSeconds(5))
+                    .untilAsserted(
+                            () -> {
+                                kubernetesResourcePatcher.patchReadyDeploymentAsReady(sanitizedName, customerNamespace);
+                                kubernetesResourcePatcher.patchReadyService(sanitizedName, customerNamespace);
+                            });
+        }
+
+        // This time-out needs to be (at least) as long as the Controller's configured timeout
+        // See application.properties#event-bridge.executor.deployment.timeout-seconds
         assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 
-        assertJsonRequest(
-                objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatus.READY)),
-                APIConstants.SHARD_API_BASE_PATH + "processors");
+        if (isSuccessful) {
+            assertJsonRequest(
+                    objectMapper.writeValueAsString(new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), ManagedResourceStatus.READY)),
+                    APIConstants.SHARD_API_BASE_PATH + "processors");
+        }
     }
 
     @Test
@@ -246,7 +275,7 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
     }
 
     @Test
-    public void bridgeMetricsAreProduced() throws JsonProcessingException, InterruptedException {
+    public void bridgeMetricsAreProducedForSuccessfulDeployment() throws JsonProcessingException, InterruptedException {
         doBridgeDeployment();
 
         String metrics = given()
@@ -259,14 +288,34 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                 .body()
                 .asString();
 
-        // Not all metrics are recorded by this test
+        // Not all metrics are recorded by this test. Only the "successful" path in this test.
         assertThat(metrics).contains(managerRequestsTotalCountMetricName);
         assertThat(metrics).contains(operatorTotalCountMetricName);
         assertThat(metrics).contains(operatorTotalSuccessCountMetricName);
     }
 
     @Test
-    public void processorMetricsAreProduced() throws JsonProcessingException, InterruptedException {
+    public void bridgeMetricsAreProducedForFailedDeployment() throws JsonProcessingException, InterruptedException {
+        doBridgeDeployment(false);
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test. Only the "failure" path in this test.
+        assertThat(metrics).contains(managerRequestsTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalFailureCountMetricName);
+    }
+
+    @Test
+    public void processorMetricsAreProducedForSuccessfulDeployment() throws JsonProcessingException, InterruptedException {
         doProcessorDeployment();
 
         String metrics = given()
@@ -279,10 +328,30 @@ public class ManagerSyncServiceTest extends AbstractManagerSyncServiceTest {
                 .body()
                 .asString();
 
-        // Not all metrics are recorded by this test
+        // Not all metrics are recorded by this test. Only the "successful" path in this test.
         assertThat(metrics).contains(managerRequestsTotalCountMetricName);
         assertThat(metrics).contains(operatorTotalCountMetricName);
         assertThat(metrics).contains(operatorTotalSuccessCountMetricName);
+    }
+
+    @Test
+    public void processorMetricsAreProducedForFailedDeployment() throws JsonProcessingException, InterruptedException {
+        doProcessorDeployment(false);
+
+        String metrics = given()
+                .filter(new ResponseLoggingFilter())
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/q/metrics")
+                .then()
+                .extract()
+                .body()
+                .asString();
+
+        // Not all metrics are recorded by this test. Only the "failure" path in this test.
+        assertThat(metrics).contains(managerRequestsTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalCountMetricName);
+        assertThat(metrics).contains(operatorTotalFailureCountMetricName);
     }
 
 }
