@@ -19,6 +19,7 @@ import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurati
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
@@ -188,6 +189,13 @@ public class BridgeIngressServiceTest {
 
         // When
         bridgeIngressService.createBridgeIngress(dto);
+        // Wait until secret is created and Ingress is reconciled
+        await(Duration.ofSeconds(5),
+                Duration.ofMillis(100),
+                () -> {
+                    BridgeIngress fetched = fetchBridgeIngress(dto);
+                    assertThat(fetched.getStatus().isConditionTypeTrue(BridgeIngressStatus.SECRET_AVAILABLE)).isTrue();
+                });
 
         // Then
         // Manager is not notified
