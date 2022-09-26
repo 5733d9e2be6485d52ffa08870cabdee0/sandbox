@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.ManagedResource;
@@ -29,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MetricsServiceImplTest {
 
     @Inject
-    MetricsService metricsService;
+    ManagerMetricsService metricsService;
 
     @Inject
     MeterRegistry meterRegistry;
@@ -53,11 +54,11 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(MetricsOperation.class)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart_forBridge(MetricsOperation metricsOperation) {
 
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
         bridge.setStatus(status);
         metricsService.onOperationStart(bridge, metricsOperation);
 
@@ -66,10 +67,10 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(MetricsOperation.class)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationStart_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DEPROVISION : ManagedResourceStatus.ACCEPTED;
         Processor processor = Fixtures.createProcessor(bridge, status);
 
         metricsService.onOperationStart(processor, metricsOperation);
@@ -79,10 +80,10 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(MetricsOperation.class)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forBridge(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
         bridge.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
         bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
         bridge.setModifiedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
@@ -97,10 +98,10 @@ public class MetricsServiceImplTest {
     }
 
     @ParameterizedTest
-    @EnumSource(MetricsOperation.class)
+    @EnumSource(value = MetricsOperation.class, names = { "MANAGER_RESOURCE_.+" }, mode = EnumSource.Mode.MATCH_ALL)
     public void onOperationComplete_forProcessor(MetricsOperation metricsOperation) {
         Bridge bridge = Fixtures.createBridge();
-        ManagedResourceStatus status = metricsOperation == MetricsOperation.DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
+        ManagedResourceStatus status = metricsOperation == MetricsOperation.MANAGER_RESOURCE_DELETE ? ManagedResourceStatus.DELETED : ManagedResourceStatus.READY;
         Processor processor = Fixtures.createProcessor(bridge, status);
         processor.setSubmittedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(4));
         processor.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(3));
@@ -120,9 +121,9 @@ public class MetricsServiceImplTest {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.FAILED);
 
-        metricsService.onOperationComplete(processor, MetricsOperation.PROVISION);
+        metricsService.onOperationComplete(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
-        List<Tag> expectedTags = createdExpectedTags(processor, MetricsOperation.PROVISION);
+        List<Tag> expectedTags = createdExpectedTags(processor, MetricsOperation.MANAGER_RESOURCE_PROVISION);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(0.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0.0);
     }
@@ -133,9 +134,9 @@ public class MetricsServiceImplTest {
         Bridge bridge = Fixtures.createBridge();
         bridge.setStatus(ManagedResourceStatus.FAILED);
 
-        metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
+        metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
-        List<Tag> expectedTags = createdExpectedTags(bridge, MetricsOperation.PROVISION);
+        List<Tag> expectedTags = createdExpectedTags(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
         assertThat(meterRegistry.counter(operationTotalSuccessCountMetricName, expectedTags).count()).isEqualTo(0.0);
         assertThat(meterRegistry.timer(operatonDurationMetricName, expectedTags).totalTime(TimeUnit.MINUTES)).isEqualTo(0.0);
     }

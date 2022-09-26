@@ -13,12 +13,10 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
-import com.redhat.service.smartevents.shard.operator.metrics.MetricsService;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
 import com.redhat.service.smartevents.test.wiremock.AbstractWireMockTest;
 
 import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.junit.mockito.InjectMock;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -33,9 +31,6 @@ public abstract class AbstractShardWireMockTest extends AbstractWireMockTest {
 
     @Inject
     protected ObjectMapper objectMapper;
-
-    @InjectMock
-    protected MetricsService metricsService;
 
     // TODO: revisit processor tests when they will be integrated
     //    @InjectMock

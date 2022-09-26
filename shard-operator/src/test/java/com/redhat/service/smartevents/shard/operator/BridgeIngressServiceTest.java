@@ -11,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespaceProvider;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.IstioGatewayProvider;
@@ -39,6 +41,7 @@ import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceSta
 import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil.await;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -71,6 +74,9 @@ public class BridgeIngressServiceTest {
     @InjectMock
     TemplateProvider templateProvider;
 
+    @InjectMock
+    OperatorMetricsService metricsService;
+
     @BeforeEach
     public void setup() {
         // Kubernetes Server must be cleaned up at startup of every test.
@@ -88,7 +94,6 @@ public class BridgeIngressServiceTest {
         // point of failed completely. There is therefore a good chance there's an incomplete BridgeIngress
         // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
         // This ensures each test has a "clean" k8s environment.
-        kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().delete();
         await(Duration.ofMinutes(1),
                 Duration.ofSeconds(10),
                 () -> assertThat(kubernetesClient.resources(BridgeIngress.class).inAnyNamespace().list().getItems().isEmpty()).isTrue());
@@ -252,6 +257,7 @@ public class BridgeIngressServiceTest {
         assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
         verify(managerClient).notifyBridgeStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), READY));
+        verify(metricsService).onOperationComplete(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
     }
 
     private void assertManagedResourceStatusUpdateDTOUpdate(ManagedResourceStatusUpdateDTO update,
@@ -288,6 +294,7 @@ public class BridgeIngressServiceTest {
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
                     verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
+                    verify(metricsService).onOperationFailed(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
 
         // Re-try creation
@@ -316,6 +323,7 @@ public class BridgeIngressServiceTest {
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
                     verify(managerClient, times(1)).notifyBridgeStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertManagedResourceStatusUpdateDTOUpdate(d, dto.getId(), dto.getCustomerId(), FAILED));
+                    verify(metricsService).onOperationFailed(any(BridgeIngress.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
     }
 

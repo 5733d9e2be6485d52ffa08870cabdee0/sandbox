@@ -149,6 +149,8 @@ class ProcessorServiceTest {
 
         when(processorDAO.findById(DEFAULT_PROCESSOR_ID))
                 .thenReturn(processor);
+        when(processorDAO.findById(PROVISIONING_PROCESSOR_ID))
+                .thenReturn(provisioningProcessor);
         when(processorDAO.findByBridgeIdAndName(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_NAME))
                 .thenReturn(processor);
         when(processorDAO.findByIdBridgeIdAndCustomerId(DEFAULT_BRIDGE_ID, DEFAULT_PROCESSOR_ID, DEFAULT_CUSTOMER_ID))
@@ -353,7 +355,7 @@ class ProcessorServiceTest {
     void testUpdateProcessorStatusIncludingBridgeError() {
         ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO();
         BridgeErrorInstance bei = new BridgeErrorInstance(new BridgeError(1, "code", "reason", BridgeErrorType.USER));
-        updateDto.setId(DEFAULT_PROCESSOR_ID);
+        updateDto.setId(PROVISIONING_PROCESSOR_ID);
         updateDto.setCustomerId(DEFAULT_CUSTOMER_ID);
         updateDto.setStatus(FAILED);
         updateDto.setBridgeId(DEFAULT_BRIDGE_ID);
