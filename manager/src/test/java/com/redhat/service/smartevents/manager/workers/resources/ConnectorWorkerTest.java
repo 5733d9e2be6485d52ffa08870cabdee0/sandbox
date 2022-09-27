@@ -160,7 +160,11 @@ class ConnectorWorkerTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("provideArgsForUpdateTest")
-    void handleWorkUpdatingWithKnownResource(boolean useSourceConnectorEntity, JsonNode updatedDefinition, boolean patchConnector) {
+    void handleWorkUpdatingWithKnownResource(
+            ConnectorState connectorState,
+            boolean useSourceConnectorEntity,
+            JsonNode updatedDefinition,
+            boolean patchConnector) {
         Bridge bridge = Fixtures.createBridge();
         Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
         processor.setGeneration(patchConnector ? 1 : 0);
@@ -177,7 +181,7 @@ class ConnectorWorkerTest {
         // Set-up ManagedConnector to match ConnectorEntity so subsequent update is detected
         Connector connector = new Connector();
         connector.setId(TEST_CONNECTOR_EXTERNAL_ID);
-        connector.setStatus(new ConnectorStatusStatus().state(ConnectorState.READY));
+        connector.setStatus(new ConnectorStatusStatus().state(connectorState));
         connector.setConnector(connectorEntity.getDefinition());
 
         // Update ConnectorEntity with new definition
@@ -193,8 +197,9 @@ class ConnectorWorkerTest {
         if (patchConnector) {
             verify(connectorsApiMock).updateConnector(connectorEntity.getConnectorExternalId(), updatedDefinition);
         } else {
-            assertThat(refreshed.getStatus()).isEqualTo(ManagedResourceStatus.READY);
-            assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+            ManagedResourceStatus expectedStatus = connectorState == ConnectorState.READY ? ManagedResourceStatus.READY : ManagedResourceStatus.FAILED;
+            assertThat(refreshed.getStatus()).isEqualTo(expectedStatus);
+            assertThat(refreshed.getDependencyStatus()).isEqualTo(expectedStatus);
         }
 
         verify(workManagerMock, never()).reschedule(work);
@@ -286,8 +291,10 @@ class ConnectorWorkerTest {
 
     private static Stream<Arguments> provideArgsForUpdateTest() {
         Object[][] arguments = {
-                { true, new TextNode("definition"), false },
-                { true, new TextNode("definition-updated"), true }
+                { ConnectorState.READY, true, new TextNode("definition"), false },
+                { ConnectorState.READY, true, new TextNode("definition-updated"), true },
+                { ConnectorState.FAILED, true, new TextNode("definition"), false },
+                { ConnectorState.FAILED, true, new TextNode("definition-updated"), true }
         };
         return Stream.of(arguments).map(Arguments::of);
     }
