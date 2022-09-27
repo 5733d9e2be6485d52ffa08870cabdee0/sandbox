@@ -5,10 +5,10 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
+import com.redhat.service.smartevents.infra.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 
 public class InternalPlatformExceptionMapper extends BaseExceptionMapper<InternalPlatformException> {
 

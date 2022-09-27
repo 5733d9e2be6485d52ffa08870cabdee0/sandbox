@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.shard.operator.resources;
 
 import java.util.HashSet;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 
 /**
  * To be defined on <a href="MGDOBR-91">https://issues.redhat.com/browse/MGDOBR-91</a>

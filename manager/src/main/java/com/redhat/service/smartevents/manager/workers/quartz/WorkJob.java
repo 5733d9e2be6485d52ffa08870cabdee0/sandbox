@@ -7,12 +7,12 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.platform.InternalPlatformException;
-import com.redhat.service.smartevents.manager.models.Bridge;
-import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Bridge;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Processor;
 import com.redhat.service.smartevents.manager.workers.Work;
 import com.redhat.service.smartevents.manager.workers.Worker;
-import com.redhat.service.smartevents.manager.workers.resources.BridgeWorker;
-import com.redhat.service.smartevents.manager.workers.resources.ProcessorWorker;
+import com.redhat.service.smartevents.manager.workers.resources.v1.BridgeWorker;
+import com.redhat.service.smartevents.manager.workers.resources.v1.ProcessorWorker;
 
 import static com.redhat.service.smartevents.manager.workers.quartz.QuartzWorkConvertor.convertFromJobData;
 

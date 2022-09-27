@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryPageInfo;
+import com.redhat.service.smartevents.infra.models.queries.QueryPageInfo;
 import com.redhat.service.smartevents.test.exceptions.ExceptionHelper;
 
 import io.quarkus.test.junit.QuarkusTest;

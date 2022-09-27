@@ -13,14 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.gateways.Action;
 import com.redhat.service.smartevents.infra.models.gateways.Source;
 import com.redhat.service.smartevents.infra.models.processors.ProcessorType;
-import com.redhat.service.smartevents.manager.dao.ConnectorsDAO;
-import com.redhat.service.smartevents.manager.models.ConnectorEntity;
-import com.redhat.service.smartevents.manager.models.Processor;
+import com.redhat.service.smartevents.manager.persistence.v1.dao.ConnectorsDAO;
+import com.redhat.service.smartevents.manager.persistence.v1.models.ConnectorEntity;
+import com.redhat.service.smartevents.manager.persistence.v1.models.Processor;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.processor.GatewayConfiguratorService;
 import com.redhat.service.smartevents.processor.GatewayConnector;

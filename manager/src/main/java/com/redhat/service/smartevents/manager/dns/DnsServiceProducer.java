@@ -7,12 +7,12 @@ import javax.inject.Singleton;
 
 import com.redhat.service.smartevents.infra.app.Orchestrator;
 import com.redhat.service.smartevents.infra.app.OrchestratorConfigProvider;
-import com.redhat.service.smartevents.manager.ShardService;
 import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceKindImpl;
 import com.redhat.service.smartevents.manager.dns.kubernetes.DnsServiceMinikubeImpl;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProvider;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsConfigOpenshiftProviderImpl;
 import com.redhat.service.smartevents.manager.dns.openshift.DnsServiceOpenshiftImpl;
+import com.redhat.service.smartevents.manager.services.v1.ShardService;
 
 @Singleton
 public class DnsServiceProducer {

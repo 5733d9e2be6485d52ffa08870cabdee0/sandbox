@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.executor;
 
 import java.util.Map;
 
-import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
+import com.redhat.service.smartevents.infra.api.v1.models.dto.ProcessorDTO;
 
 import io.cloudevents.CloudEvent;
 

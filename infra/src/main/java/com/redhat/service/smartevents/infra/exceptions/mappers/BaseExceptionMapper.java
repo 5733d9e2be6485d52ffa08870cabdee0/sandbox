@@ -8,10 +8,10 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
-import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeError;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorService;
+import com.redhat.service.smartevents.infra.models.responses.ErrorResponse;
+import com.redhat.service.smartevents.infra.models.responses.ErrorsResponse;
 
 import io.quarkus.runtime.Quarkus;
 

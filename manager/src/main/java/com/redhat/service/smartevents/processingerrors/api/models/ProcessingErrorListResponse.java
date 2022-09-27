@@ -2,7 +2,7 @@ package com.redhat.service.smartevents.processingerrors.api.models;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import com.redhat.service.smartevents.infra.api.models.responses.PagedListResponse;
+import com.redhat.service.smartevents.infra.models.responses.PagedListResponse;
 
 @Schema
 public class ProcessingErrorListResponse extends PagedListResponse<ProcessingErrorResponse> {

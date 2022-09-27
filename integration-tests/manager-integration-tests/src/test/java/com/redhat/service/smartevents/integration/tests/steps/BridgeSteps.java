@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.integration.tests.common.AwaitilityOnTimeOutHandler;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
@@ -22,8 +22,8 @@ import com.redhat.service.smartevents.integration.tests.context.BridgeContext;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
 import com.redhat.service.smartevents.integration.tests.resources.BridgeResource;
-import com.redhat.service.smartevents.manager.api.models.responses.BridgeListResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.BridgeListResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.BridgeResponse;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -31,7 +31,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-import static com.redhat.service.smartevents.processingerrors.ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE;
+import static com.redhat.service.smartevents.manager.services.v1.ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeSteps {

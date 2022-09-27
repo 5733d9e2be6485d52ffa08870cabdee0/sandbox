@@ -12,7 +12,7 @@ import java.util.Properties;
 
 import org.awaitility.Awaitility;
 
-import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+import com.redhat.service.smartevents.infra.models.ManagedResourceStatus;
 import com.redhat.service.smartevents.integration.tests.common.BridgeUtils;
 import com.redhat.service.smartevents.integration.tests.common.Utils;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
@@ -21,8 +21,8 @@ import com.redhat.service.smartevents.integration.tests.resources.BridgeResource
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
 import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
-import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
-import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.BridgeResponse;
+import com.redhat.service.smartevents.manager.api.v1.models.responses.ProcessorListResponse;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;

@@ -1,6 +1,7 @@
 package com.redhat.service.smartevents.infra.models.processors;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.redhat.service.smartevents.infra.models.BaseEnumeration;
 
 public enum ProcessorType implements BaseEnumeration {
     SOURCE(Constants.SOURCE_VALUE),

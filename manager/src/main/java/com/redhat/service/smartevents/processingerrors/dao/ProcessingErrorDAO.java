@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
 import com.redhat.service.smartevents.infra.models.ListResult;
-import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
+import com.redhat.service.smartevents.infra.models.queries.QueryResourceInfo;
 import com.redhat.service.smartevents.processingerrors.models.ProcessingError;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;

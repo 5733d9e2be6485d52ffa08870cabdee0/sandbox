@@ -281,12 +281,12 @@
         <version>${version.software.tnb}</version>
         <scope>test</scope>
       </dependency>
-    <dependency>
-      <groupId>software.tnb</groupId>
-      <artifactId>system-x-webhook</artifactId>
-      <version>${version.software.tnb}</version>
-      <scope>test</scope>
-    </dependency>
+      <dependency>
+        <groupId>software.tnb</groupId>
+        <artifactId>system-x-webhook</artifactId>
+        <version>${version.software.tnb}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
