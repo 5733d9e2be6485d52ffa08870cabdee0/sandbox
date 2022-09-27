@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public class EndPointParser {
 
-    private static final Pattern ENDPOINT_URL_REGEX = Pattern.compile("^(https?:\\/\\/[^/?#]+)([a-z0-9\\-._~%!$&'()*+,;=:@/]*)");
+    public static final Pattern ENDPOINT_URL_REGEX = Pattern.compile("^(https?:\\/\\/[^/?#]+)([a-z0-9\\-._~%!$&'()*+,;=:@/]*)");
 
     private EndPointParser() {
     }

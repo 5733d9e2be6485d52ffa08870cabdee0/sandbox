@@ -20,6 +20,7 @@ public class BridgeContext {
     private String endPoint;
     private String endPointBaseUrl;
     private String endPointPath;
+    private String errorHandlerEndpoint;
 
     private boolean deleted;
 
@@ -51,12 +52,20 @@ public class BridgeContext {
         return endPointPath;
     }
 
+    public String getErrorHandlerEndpoint() {
+        return errorHandlerEndpoint;
+    }
+
     public void setEndPoint(String endPoint) {
         this.endPoint = endPoint;
         endPointBaseUrl = EndPointParser.getEndpointBaseUrl(endPoint)
                 .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint base url for " + endPoint));
         endPointPath = EndPointParser.getEndpointPathUrl(endPoint)
                 .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint path for " + endPoint));
+    }
+
+    public void setErrorHandlerEndpoint(String errorHandlerEndpoint) {
+        this.errorHandlerEndpoint = errorHandlerEndpoint;
     }
 
     public ProcessorContext newProcessor(String processorName, String processorId) {

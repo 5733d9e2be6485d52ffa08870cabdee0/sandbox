@@ -71,6 +71,11 @@ public class BridgeResource {
                 .as(BridgeResponse.class);
     }
 
+    public static Response getBridgeErrorHandlerResponse(String token, String errorHandlerEndpoint) {
+        return ResourceUtils.newRequest(token, Constants.JSON_CONTENT_TYPE)
+                .get(errorHandlerEndpoint);
+    }
+
     public static BridgeListResponse getBridgeList(String token) {
         return getBridgeListResponse(token)
                 .then()
