@@ -22,6 +22,7 @@ import com.redhat.service.smartevents.shard.operator.providers.CustomerNamespace
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.providers.TemplateProvider;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutorStatus;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
 import com.redhat.service.smartevents.shard.operator.utils.Constants;
 import com.redhat.service.smartevents.shard.operator.utils.KubernetesResourcePatcher;
@@ -219,6 +220,7 @@ public class BridgeExecutorServiceTest {
 
         // When
         bridgeExecutorService.createBridgeExecutor(dto);
+        waitUntilBridgeExecutorSecretAvailable(dto);
 
         // Then
         // Manager is not notified
@@ -495,5 +497,14 @@ public class BridgeExecutorServiceTest {
                 .inNamespace(customerNamespaceProvider.resolveName(dto.getCustomerId()))
                 .withName(BridgeExecutor.resolveResourceName(dto.getId()))
                 .get();
+    }
+
+    private void waitUntilBridgeExecutorSecretAvailable(ProcessorDTO dto) {
+        await(Duration.ofSeconds(5),
+                Duration.ofMillis(100),
+                () -> {
+                    BridgeExecutor bridgeExecutor = fetchBridgeExecutor(dto);
+                    assertThat(bridgeExecutor.getStatus().isConditionTypeTrue(BridgeExecutorStatus.SECRET_AVAILABLE)).isTrue();
+                });
     }
 }
