@@ -1,10 +1,16 @@
-Feature: Continuous create Bridges performance tests
+Feature: Continuous create Processors performance tests
 
-  @continuously-create-bridges
-  Scenario Outline: Continuously create Bridges by <users> users
+  Background:
+    Given authenticate against Manager
+    And create a new Bridge "my-perf-bridge" in cloud provider "aws" and region "us-east-1"
+    And the Bridge "my-perf-bridge" is existing with status "ready" within 4 minutes
+    And the Ingress of Bridge "my-perf-bridge" is available within 2 minutes
+
+  @continuously-create-processors
+  Scenario Outline: Continuously create Processors by <users> users
     When run benchmark with content:
       """text/vnd.yaml
-      name: rhose-continuously-create-bridges
+      name: rhose-continuously-create-processors
       http:
       - host: ${env.event-bridge.manager.url}
         name: manager
@@ -15,7 +21,7 @@ Feature: Continuous create Bridges performance tests
       phases:
       - bridgeCreatingUser:
           always:
-            # Using 60 minutes for max duration to make sure that all Bridges are created and deleted within the specified duration
+            # Using 60 minutes for max duration to make sure that all Processors are created and deleted within the specified duration
             maxDuration: 60m
             users: <users>
             maxIterations: 10
@@ -35,16 +41,21 @@ Feature: Continuous create Bridges performance tests
                         query: .access_token
                         toVar: accessToken
             - create:
-              # Create a Bridge with random name suffix
-              - randomUUID: bridgeNameSuffix
+              # Create a Processor with random name suffix
+              - set: bridgeId <- ${bridge.my-perf-bridge.id}
+              - randomUUID: processorNameSuffix
               - httpRequest:
                   endpoint: manager
-                  POST: /api/smartevents_mgmt/v1/bridges
+                  POST: /api/smartevents_mgmt/v1/bridges/${bridgeId}/processors
                   body: |
                     {
-                      "name": "perf-${bridgeNameSuffix}",
-                      "cloud_provider": "aws",
-                      "region": "us-east-1"
+                      "name": "perf-${processorNameSuffix}",
+                      "action": {
+                        "type": "webhook_sink_0.1",
+                        "parameters": {
+                          "endpoint": "https://example.com/my-webhook-endpoint"
+                        }
+                      }
                     }
                   headers:
                     content-type: application/json
@@ -53,12 +64,12 @@ Feature: Continuous create Bridges performance tests
                     body:
                       json:
                         query: .id
-                        toVar: bridgeId
+                        toVar: processorId
             - create-poll:
-              # Wait until the Bridge is in either in ready or failed state
+              # Wait until the Processor is in either in ready or failed state
               - httpRequest:
                   endpoint: manager
-                  GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}
+                  GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}/processors/${processorId}
                   headers:
                     content-type: application/json
                     authorization: Bearer ${accessToken}
@@ -67,10 +78,10 @@ Feature: Continuous create Bridges performance tests
                     body:
                       json:
                         query: .status
-                        toVar: bridgeStatus
+                        toVar: processorStatus
               - breakSequence:
                   stringCondition:
-                    fromVar: bridgeStatus
+                    fromVar: processorStatus
                     equalTo: ready
                   onBreak:
                     newSequence:
@@ -78,24 +89,24 @@ Feature: Continuous create Bridges performance tests
                       forceSameIndex: true
               - fail:
                   stringCondition:
-                    fromVar: bridgeStatus
+                    fromVar: processorStatus
                     equalTo: failed
-                  message: "Bridge creation failed"
+                  message: "Processor creation failed"
               - thinkTime:
                   duration: 5s
               - restartSequence
             - delete:
-              # Delete Bridge
+              # Delete Processor
               - httpRequest:
                   endpoint: manager
-                  DELETE: /api/smartevents_mgmt/v1/bridges/${bridgeId}
+                  DELETE: /api/smartevents_mgmt/v1/bridges/${bridgeId}/processors/${processorId}
                   headers:
                     authorization: Bearer ${accessToken}
             - delete-poll:
-              # Wait until the Bridge is in either deleted or in failed state
+              # Wait until the Processor is in either deleted or in failed state
               - httpRequest:
                   endpoint: manager
-                  GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}
+                  GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}/processors/${processorId}
                   headers:
                     content-type: application/json
                     authorization: Bearer ${accessToken}
@@ -107,23 +118,23 @@ Feature: Continuous create Bridges performance tests
                     body:
                       json:
                         query: .status
-                        toVar: bridgeStatus
+                        toVar: processorStatus
               - breakSequence:
                   intCondition:
                     fromVar: reponseStatus
                     equalTo: 404
               - fail:
                   stringCondition:
-                    fromVar: bridgeStatus
+                    fromVar: processorStatus
                     equalTo: failed
-                  message: "Bridge deletion failed"
+                  message: "Processor deletion failed"
               - thinkTime:
                   duration: 5s
               - restartSequence
       """
 
-    Then the benchmark run "rhose-continuously-create-bridges" was executed successfully
-    And store Manager metrics in Horreum test "continuously-create-bridges-<users>-users"
+    Then the benchmark run "rhose-continuously-create-processors" was executed successfully
+    And store Manager metrics in Horreum test "continuously-create-processors-<users>-users"
 
     Examples:
       | users | shared-connections |
