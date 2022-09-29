@@ -22,3 +22,6 @@ target/
 
 # Ignore BitNami Sealed Secrets Private Key
 mycert.pem
+
+# Ignore saved test context
+context.json

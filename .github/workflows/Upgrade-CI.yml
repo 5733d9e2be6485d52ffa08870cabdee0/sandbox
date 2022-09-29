@@ -1,0 +1,284 @@
+name: Upgrade - CI
+on:
+  pull_request_target:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    branches:
+      - 'main'
+    paths-ignore:
+      - 'LICENSE'
+      - '**/.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+      - '.github/**'
+      - 'kustomize/**'
+      - 'dev/**'
+      - 'app-interface/**'
+jobs:
+  event-bridge-build:
+    env:
+      ORIGINAL_BRANCH: ${{ github.base_ref }}
+      NEW_BRANCH: refs/pull/${{ github.event.number }}/merge
+      # This hostname will be used as hostname for the ingress in Kind and is set in the hosts file of the machine
+      KIND_MAIN_NODE_HOSTNAME: kind-control-plane
+    concurrency:
+      group: upgrade-tests-pr-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set context file path
+        run: |
+          echo "CONTEXT_FILE_PATH=$(mktemp -d)/context.yaml" >> $GITHUB_ENV
+      - name: Change image names
+        run: |
+          echo "FLEET_MANAGER_CONTAINER_NAME=openbridge/fleet-manager:$ORIGINAL_BRANCH" >> $GITHUB_ENV
+          echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:$ORIGINAL_BRANCH" >> $GITHUB_ENV
+          echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:$ORIGINAL_BRANCH" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ env.ORIGINAL_BRANCH }}"
+      - name: Check labels
+        # Security due to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'safe to test') }}
+        run: |
+          echo "Please add the 'safe to test' label in order to run 'Manager - CI' pipeline if it's safe to test this code"
+          exit 1
+      - name: Java and Maven Setup
+        uses: ./.github/actions/java-maven-setup
+        with:
+          cache-key-prefix: ${{ runner.os }}
+      - name: Re-Checkout  # since Java And Maven Setup step is checking out the main branch, we have to checkout the pull request branch again
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ env.ORIGINAL_BRANCH }}"
+      - name: Set up KinD
+        uses: ./.github/actions/kind
+        with:
+          kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
+      - name: External Secret Operator Setup
+        uses: ./.github/actions/external-secret-operator-setup
+      - uses: imranismail/setup-kustomize@v1
+      - name: Use built Fleet manager and operator images
+        run: |
+          kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
+          kustomize edit set image event-bridge-shard-operator=$FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+        working-directory: kustomize/overlays/ci
+      - name: Use built Ingress and Executor images
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/shard/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Set Kind hostname in the Manager configuration
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX:).*|\1 ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/manager/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Configure external Managed Kafka cluster
+        shell: bash
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" shard/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" shard/awssm-secret.yaml
+        working-directory: kustomize/overlays/ci
+      - name: Build all images and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Dquickly
+      - name: Build and Publish JVM Container - Fleet Manager
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
+          kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Executor
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
+          kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Istio Setup
+        uses: ./.github/actions/istio-setup
+      - name: Install knative
+        run: |
+          chmod +x dev/bin/knative-installer.sh
+          ./dev/bin/knative-installer.sh
+      - name: Install all resources
+        run: kustomize build overlays/ci | oc apply -f -
+        working-directory: kustomize
+        continue-on-error: true
+      - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
+        run: kustomize build overlays/ci | oc apply -f -
+        working-directory: kustomize
+      - name: Update all resources and delete current operator pod(to refresh operator config)
+        run: |
+          kustomize build overlays/ci | oc apply -f -
+          oc delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
+        working-directory: kustomize
+      - name: Wait for operator and manager to start
+        run: |
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_ACCOUNT_ID: ${{ secrets.IT_AWS_ACCOUNT_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+      - name: Run integration tests
+        env:
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pupgrade-test -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dgroups=upgradetest1 -Dcleanup.disable
+          working-directory: integration-tests
+
+      - name: Print info about the original cluster
+        run: |
+          echo $HOME
+
+          kubectl get namespaces
+          echo "============================= event-bridge-manager ============================="
+          kubectl describe pod -n event-bridge-manager
+          echo "============================= event-bridge-operator ============================"
+          kubectl describe pod -n event-bridge-operator
+
+
+      - name: Change image names
+        run: |
+          echo "FLEET_MANAGER_CONTAINER_NAME=openbridge/fleet-manager:$NEW_BRANCH" >> $GITHUB_ENV
+          echo "FLEET_SHARD_MINIKUBE_CONTAINER_NAME=openbridge/fleet-shard:$NEW_BRANCH" >> $GITHUB_ENV
+          echo "EXECUTOR_CONTAINER_NAME=openbridge/executor:$NEW_BRANCH" >> $GITHUB_ENV
+      - name: Checkout to new version
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ env.NEW_BRANCH }}"
+      - name: Build all images and resources
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean install --errors --quiet -Dquickly
+      - name: Build and Publish JVM Container - Fleet Manager
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
+          kind load docker-image $FLEET_MANAGER_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Minikube Fleet Shard
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $FLEET_SHARD_MINIKUBE_CONTAINER_NAME shard-operator/
+          kind load docker-image $FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+      - name: Build and Publish JVM Container - Executor
+        run: |
+          docker build -f docker/Dockerfile.jvm -t $EXECUTOR_CONTAINER_NAME executor/
+          kind load docker-image $EXECUTOR_CONTAINER_NAME
+      - name: Use built Fleet manager and operator images
+        run: |
+          kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
+          kustomize edit set image event-bridge-shard-operator=$FLEET_SHARD_MINIKUBE_CONTAINER_NAME
+        working-directory: kustomize/overlays/ci
+      - name: Use built Ingress and Executor images
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/shard/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Set Kind hostname in the Manager configuration
+        run: |
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX:).*|\1 ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/manager/patches/deploy-config.yaml
+        working-directory: kustomize
+      - name: Configure external Managed Kafka cluster
+        shell: bash
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" shard/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" shard/awssm-secret.yaml
+        working-directory: kustomize/overlays/ci
+      - name: Install all resources
+        run: kustomize build overlays/ci | oc apply -f -
+        working-directory: kustomize
+        continue-on-error: true
+      - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
+        run: kustomize build overlays/ci | oc apply -f -
+        working-directory: kustomize
+      - name: Update all resources and delete current operator pod(to refresh operator config)
+        run: |
+          kustomize build overlays/ci | oc apply -f -
+          oc delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
+        working-directory: kustomize
+      - name: Wait for operator and manager to start
+        run: |
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge -n event-bridge-manager
+          kubectl wait --for=condition=available --timeout=600s deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Prepare test configuration for E2E tests
+        uses: ./.github/actions/e2e-test-config
+        env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_ACCOUNT_ID: ${{ secrets.IT_AWS_ACCOUNT_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_WEBHOOK_URL_SECOND: ${{ secrets.SLACK_WEBHOOK_URL_SECOND }}
+          SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+      - name: Run integration tests
+        env:
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
+          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
+          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
+        uses: ./.github/actions/maven
+        with:
+          maven-command: clean verify -Pupgrade-test -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml -Dgroups=upgradetest2
+          working-directory: integration-tests
+
+      - name: Print info about the upgraded cluster
+        run: |
+          kubectl get namespaces
+          echo "============================= event-bridge-manager ============================="
+          kubectl describe pod -n event-bridge-manager
+          echo "============================= event-bridge-operator ============================"
+          kubectl describe pod -n event-bridge-operator
+
+      - name: Print operator log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge-shard-operator -n event-bridge-operator
+      - name: Print manager log
+        if: always()
+        run: |
+          kubectl logs deployment/event-bridge -n event-bridge-manager
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: ./integration-tests/target/cucumber-logs/
