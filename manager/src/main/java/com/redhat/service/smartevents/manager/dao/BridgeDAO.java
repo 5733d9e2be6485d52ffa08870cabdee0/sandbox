@@ -45,7 +45,7 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         String filterName = queryInfo.getFilterInfo().getFilterName();
         Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
         if (Objects.nonNull(filterName)) {
-            query.filter("byName", Parameters.with("name", filterName + "%"));
+            query.filter("byName", Parameters.with("name", filterName));
         }
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query.filter("byStatus", Parameters.with("status", filterStatus));

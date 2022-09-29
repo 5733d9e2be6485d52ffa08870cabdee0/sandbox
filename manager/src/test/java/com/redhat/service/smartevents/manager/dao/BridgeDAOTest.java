@@ -156,8 +156,8 @@ public class BridgeDAOTest {
         ListResult<Bridge> retrievedBridges = bridgeDAO.findByCustomerId(DEFAULT_CUSTOMER_ID,
                 new QueryResourceInfo(DEFAULT_PAGE, DEFAULT_PAGE_SIZE, filter().by(DEFAULT_BRIDGE_NAME.substring(0, 5)).build()));
         assertThat(retrievedBridges).isNotNull();
-        assertThat(retrievedBridges.getSize()).isEqualTo(1);
-        assertThat(retrievedBridges.getTotal()).isEqualTo(1);
+        assertThat(retrievedBridges.getSize()).isEqualTo(0);
+        assertThat(retrievedBridges.getTotal()).isEqualTo(0);
         assertThat(retrievedBridges.getPage()).isZero();
 
         assertThat(retrievedBridges.getItems().get(0).getId()).isEqualTo(bridge1.getId());
