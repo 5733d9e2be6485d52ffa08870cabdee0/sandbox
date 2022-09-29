@@ -46,7 +46,6 @@ import static com.redhat.service.smartevents.shard.operator.utils.AwaitilityUtil
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -95,7 +94,7 @@ public class BridgeExecutorServiceTest {
 
         // Far from ideal... but each test assumes there are no other BridgeExecutor instances in existence.
         // Unfortunately, however, some tests only check that provisioning either progressed to a certain
-        // point of failed completely. There is therefore a good chance there's an incomplete BridgeExecutor
+        // point or failed completely. There is therefore a good chance there's an incomplete BridgeExecutor
         // in k8s when a subsequent test starts. This leads to non-deterministic behaviour of tests.
         // This ensures each test has a "clean" k8s environment.
         await(Duration.ofMinutes(1),
@@ -361,7 +360,8 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        verify(managerClient, atLeast(2)).notifyProcessorStatusChange(updateDTO.capture());
+        // Since the DTO remained in PROVISIONING the manager is not notified again.
+        verify(managerClient, atLeastOnce()).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                 dto.getId(),
                 dto.getCustomerId(),
@@ -393,7 +393,7 @@ public class BridgeExecutorServiceTest {
                 .untilAsserted(() -> {
                     // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
-                    verify(managerClient, atLeastOnce()).notifyProcessorStatusChange(updateDTO.capture());
+                    verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                             dto.getId(),
                             dto.getCustomerId(),
@@ -405,7 +405,8 @@ public class BridgeExecutorServiceTest {
         // Re-try creation
         bridgeExecutorService.createBridgeExecutor(dto);
 
-        verify(managerClient, atLeast(2)).notifyProcessorStatusChange(updateDTO.capture());
+        // Re-trying infers the status as FAILED and notifies the manager again.
+        verify(managerClient, times(2)).notifyProcessorStatusChange(updateDTO.capture());
         updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                 dto.getId(),
                 dto.getCustomerId(),
@@ -430,7 +431,7 @@ public class BridgeExecutorServiceTest {
                 .untilAsserted(() -> {
                     // When the reconciliation completes the DTO remains in PROVISIONING, but we've notified the Manager that it is FAILED
                     assertThat(dto.getStatus()).isEqualTo(PROVISIONING);
-                    verify(managerClient, times(1)).notifyProcessorStatusChange(updateDTO.capture());
+                    verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
                     updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
                             dto.getId(),
                             dto.getCustomerId(),
@@ -438,6 +439,17 @@ public class BridgeExecutorServiceTest {
                             FAILED));
                     verify(metricsService).onOperationFailed(any(BridgeExecutor.class), eq(MetricsOperation.CONTROLLER_RESOURCE_PROVISION));
                 });
+
+        // Re-try creation
+        bridgeExecutorService.createBridgeExecutor(dto);
+
+        // Since the DTO remained in PROVISIONING the manager is not notified again.
+        verify(managerClient).notifyProcessorStatusChange(updateDTO.capture());
+        updateDTO.getAllValues().forEach((d) -> assertProcessorManagedResourceStatusUpdateDTOUpdate(d,
+                dto.getId(),
+                dto.getCustomerId(),
+                dto.getBridgeId(),
+                FAILED));
     }
 
     @Test

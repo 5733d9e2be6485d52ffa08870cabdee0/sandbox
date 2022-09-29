@@ -46,8 +46,34 @@ public class BridgeErrorHelperTest {
     }
 
     @Test
+    void testGetBridgeErrorInstanceWithKnownErrorId() {
+        when(service.getError(2)).thenReturn(Optional.of(new BridgeError(2, "code2", "reason2", BridgeErrorType.USER)));
+
+        BridgeErrorInstance bei = helper.getBridgeErrorInstance(2, "UUID");
+
+        assertThat(bei).isNotNull();
+        assertThat(bei.getId()).isEqualTo(2);
+        assertThat(bei.getCode()).isEqualTo("code2");
+        assertThat(bei.getReason()).isEqualTo("reason2");
+        assertThat(bei.getType()).isEqualTo(BridgeErrorType.USER);
+        assertThat(bei.getUuid()).isEqualTo("UUID");
+    }
+
+    @Test
     void testGetBridgeErrorInstanceWithUnknownException() {
         BridgeErrorInstance bei = helper.getBridgeErrorInstance(new NullPointerException());
+
+        assertThat(bei).isNotNull();
+        assertThat(bei.getId()).isEqualTo(1);
+        assertThat(bei.getCode()).isEqualTo("code");
+        assertThat(bei.getReason()).isEqualTo("reason");
+        assertThat(bei.getType()).isEqualTo(BridgeErrorType.PLATFORM);
+        assertThat(bei.getUuid()).isNotNull();
+    }
+
+    @Test
+    void testGetBridgeErrorInstanceWithUnknownErrorId() {
+        BridgeErrorInstance bei = helper.getBridgeErrorInstance(2, "UUID");
 
         assertThat(bei).isNotNull();
         assertThat(bei.getId()).isEqualTo(1);
