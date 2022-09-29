@@ -38,11 +38,11 @@ import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
 })
 @Entity
 @FilterDefs({
-        @FilterDef(name = "byName", parameters = { @ParamDef(name = "name", type = "string") }),
+        @FilterDef(name = "byNamePrefix", parameters = { @ParamDef(name = "namePrefix", type = "string") }),
         @FilterDef(name = "byStatus", parameters = { @ParamDef(name = "status", type = "com.redhat.service.smartevents.manager.dao.EnumTypeManagedResourceStatus") })
 })
 @Filters({
-        @Filter(name = "byName", condition = "name like :name"),
+        @Filter(name = "byNamePrefix", condition = "name like :namePrefix"),
         @Filter(name = "byStatus", condition = "status in (:status)")
 })
 @Table(name = "BRIDGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "customer_id" }) })

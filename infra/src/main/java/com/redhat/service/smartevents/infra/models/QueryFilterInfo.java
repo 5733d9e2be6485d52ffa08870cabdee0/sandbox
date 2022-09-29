@@ -7,13 +7,13 @@ import javax.ws.rs.QueryParam;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 
-import static com.redhat.service.smartevents.infra.api.APIConstants.FILTER_NAME;
 import static com.redhat.service.smartevents.infra.api.APIConstants.FILTER_STATUS;
+import static com.redhat.service.smartevents.infra.api.APIConstants.PREFIX;
 
 public class QueryFilterInfo {
 
-    @QueryParam(FILTER_NAME)
-    private String filterName;
+    @QueryParam(PREFIX)
+    private String filterPrefix;
 
     @QueryParam(FILTER_STATUS)
     private Set<ManagedResourceStatus> filterStatus;
@@ -47,13 +47,13 @@ public class QueryFilterInfo {
 
     }
 
-    protected QueryFilterInfo(String filterName, Set<ManagedResourceStatus> filterStatus) {
-        this.filterName = filterName;
+    protected QueryFilterInfo(String filterPrefix, Set<ManagedResourceStatus> filterStatus) {
+        this.filterPrefix = filterPrefix;
         this.filterStatus = filterStatus;
     }
 
-    public String getFilterName() {
-        return filterName;
+    public String getFilterPrefix() {
+        return filterPrefix;
     }
 
     public Set<ManagedResourceStatus> getFilterStatus() {
@@ -63,7 +63,7 @@ public class QueryFilterInfo {
     @Override
     public String toString() {
         return "QueryFilterInfo{" +
-                "filterName='" + filterName + '\'' +
+                "filterPrefix='" + filterPrefix + '\'' +
                 ", filterStatus=" + filterStatus +
                 '}';
     }

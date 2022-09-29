@@ -113,9 +113,9 @@ public class APIConstants {
     public static final String SIZE_DEFAULT = "100";
 
     /**
-     * The name query filter parameter name
+     * The name query filter parameter prefix
      */
-    public static final String FILTER_NAME = "name";
+    public static final String PREFIX = "namePrefix";
 
     /**
      * The status query filter parameter name

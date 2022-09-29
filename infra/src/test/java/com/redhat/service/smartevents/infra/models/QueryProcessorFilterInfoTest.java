@@ -14,7 +14,7 @@ public class QueryProcessorFilterInfoTest {
         QueryProcessorFilterInfo query = QueryProcessorFilterInfo.QueryProcessorFilterInfoBuilder
                 .filter().by("name").by(ACCEPTED).by(READY).by(SINK).build();
 
-        assertThat(query.getFilterName()).isEqualTo("name");
+        assertThat(query.getFilterPrefix()).isEqualTo("name");
         assertThat(query.getFilterStatus()).containsOnly(ACCEPTED, READY);
         assertThat(query.getFilterType()).isEqualTo(SINK);
     }

@@ -40,7 +40,7 @@ paths:
       description: Get the list of Bridge instances for the authenticated user.
       operationId: BridgesAPI_getBridges
       parameters:
-      - name: name
+      - name: namePrefix
         in: query
         schema:
           type: string
@@ -300,7 +300,7 @@ paths:
           minLength: 1
           type: string
           nullable: false
-      - name: name
+      - name: namePrefix
         in: query
         schema:
           type: string
