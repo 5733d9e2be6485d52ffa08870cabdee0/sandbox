@@ -1,7 +1,5 @@
 package com.redhat.service.smartevents.infra.utils;
 
-//@NoArgsConstructor(access= AccessLevel.PRIVATE)
-//@SuppressWarnings("java:S1118")
 public class Constants {
     private Constants() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
