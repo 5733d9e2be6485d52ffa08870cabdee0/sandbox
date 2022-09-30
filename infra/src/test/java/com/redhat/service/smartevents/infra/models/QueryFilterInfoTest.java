@@ -13,7 +13,7 @@ public class QueryFilterInfoTest {
         QueryFilterInfo query = QueryFilterInfo.QueryFilterInfoBuilder
                 .filter().by("name").by(ACCEPTED).by(READY).build();
 
-        assertThat(query.getFilterPrefix()).isEqualTo("name");
+        assertThat(query.getFilterNamePrefix()).isEqualTo("name");
         assertThat(query.getFilterStatus()).containsOnly(ACCEPTED, READY);
     }
 }

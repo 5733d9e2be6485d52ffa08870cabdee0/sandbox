@@ -115,7 +115,7 @@ public class APIConstants {
     /**
      * The name query filter parameter prefix
      */
-    public static final String PREFIX = "namePrefix";
+    public static final String FILTER_NAME_PREFIX = "namePrefix";
 
     /**
      * The status query filter parameter name

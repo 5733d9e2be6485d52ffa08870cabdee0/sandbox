@@ -141,9 +141,9 @@ public class ProcessorDAO implements PanacheRepositoryBase<Processor, String> {
         PanacheQuery<Processor> query = find("#PROCESSOR.findByBridgeIdAndCustomerIdNoFilter", parameters);
 
         // filter by name
-        String filterPrefix = queryInfo.getFilterInfo().getFilterPrefix();
-        if (Objects.nonNull(filterPrefix)) {
-            query.filter("byNamePrefix", Parameters.with("namePrefix", filterPrefix + "%"));
+        String filterNamePrefix = queryInfo.getFilterInfo().getFilterNamePrefix();
+        if (Objects.nonNull(filterNamePrefix)) {
+            query.filter("byNamePrefix", Parameters.with("namePrefix", filterNamePrefix + "%"));
         }
 
         // filter by status

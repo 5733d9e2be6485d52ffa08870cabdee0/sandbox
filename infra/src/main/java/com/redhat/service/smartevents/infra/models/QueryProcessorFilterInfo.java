@@ -62,7 +62,7 @@ public class QueryProcessorFilterInfo extends QueryFilterInfo {
     @Override
     public String toString() {
         return "QueryProcessorFilterInfo{" +
-                "filterPrefix='" + getFilterPrefix() + '\'' +
+                "filterNamePrefix='" + getFilterNamePrefix() + '\'' +
                 ", filterStatus=" + getFilterStatus() +
                 ", filterType=" + filterType +
                 '}';

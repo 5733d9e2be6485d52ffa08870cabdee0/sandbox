@@ -42,10 +42,10 @@ public class BridgeDAO implements PanacheRepositoryBase<Bridge, String> {
         Parameters parameters = Parameters.with("customerId", customerId);
         PanacheQuery<Bridge> query = find("#BRIDGE.findByCustomerId", parameters);
 
-        String filterPrefix = queryInfo.getFilterInfo().getFilterPrefix();
+        String filterNamePrefix = queryInfo.getFilterInfo().getFilterNamePrefix();
         Set<ManagedResourceStatus> filterStatus = queryInfo.getFilterInfo().getFilterStatus();
-        if (Objects.nonNull(filterPrefix)) {
-            query.filter("byNamePrefix", Parameters.with("namePrefix", filterPrefix + "%"));
+        if (Objects.nonNull(filterNamePrefix)) {
+            query.filter("byNamePrefix", Parameters.with("namePrefix", filterNamePrefix + "%"));
         }
         if (Objects.nonNull(filterStatus) && !filterStatus.isEmpty()) {
             query.filter("byStatus", Parameters.with("status", filterStatus));
