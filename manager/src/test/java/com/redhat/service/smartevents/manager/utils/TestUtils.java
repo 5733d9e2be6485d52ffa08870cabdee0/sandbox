@@ -52,7 +52,7 @@ public class TestUtils {
 
     public static Response getBridgesFilterByNamePrefix(String prefixName) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + "?filterNamePrefix=" + prefixName);
+                .get(APIConstants.USER_API_BASE_PATH + "?namePrefix=" + prefixName);
     }
 
     public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
@@ -67,7 +67,7 @@ public class TestUtils {
 
     public static Response getBridgesFilterByNamePrefixAndStatus(String prefixName, ManagedResourceStatus... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
-        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?filterNamePrefix=" + prefixName + "&" + queryString);
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?namePrefix=" + prefixName + "&" + queryString);
     }
 
     public static Response getBridge(String id) {
@@ -82,7 +82,7 @@ public class TestUtils {
 
     public static Response listProcessorsFilterByNamePrefix(String bridgeId, String prefixName) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?namePrefix=" + prefixName);
     }
 
     public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
@@ -106,12 +106,12 @@ public class TestUtils {
     public static Response listProcessorsFilterByNamePrefixAndStatus(String bridgeId, String prefixName, ManagedResourceStatus... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName + "&" + queryString);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?namePrefix=" + prefixName + "&" + queryString);
     }
 
     public static Response listProcessorsFilterByNamePrefixAndType(String bridgeId, String prefixName, ProcessorType type) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName + "&type=" + type.getValue());
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?namePrefix=" + prefixName + "&type=" + type.getValue());
     }
 
     public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatus status, ProcessorType type) {
