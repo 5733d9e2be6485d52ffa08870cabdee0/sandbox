@@ -1,6 +1,10 @@
 package com.redhat.service.smartevents.shard.operator.providers;
 
 public class GlobalConfigurationsConstants {
+    private GlobalConfigurationsConstants() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static final String KAFKA_BOOTSTRAP_SERVERS_ENV_VAR = "KAFKA_BOOTSTRAP_SERVERS";
     public static final String KAFKA_CLIENT_ID_ENV_VAR = "KAFKA_CLIENT_ID";
     public static final String KAFKA_CLIENT_SECRET_ENV_VAR = "KAFKA_CLIENT_SECRET";
