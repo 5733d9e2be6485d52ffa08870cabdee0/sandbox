@@ -125,7 +125,7 @@ public class ProcessorAPITest {
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByName(bridgeResponse.getId(), "myProcessor2").as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNamePrefix(bridgeResponse.getId(), "myProcessor2").as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(1L);
@@ -222,7 +222,7 @@ public class ProcessorAPITest {
         setProcessorStatus(p1.getId(), ACCEPTED);
         setProcessorStatus(p2.getId(), READY);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndStatus(bridgeResponse.getId(), "myProcessor", READY).as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNamePrefixAndStatus(bridgeResponse.getId(), "myProcessor", READY).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(1L);
@@ -238,7 +238,7 @@ public class ProcessorAPITest {
         TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor", TestUtils.createKafkaAction())).as(ProcessorResponse.class);
         ProcessorResponse p2 = TestUtils.addProcessorToBridge(bridgeResponse.getId(), new ProcessorRequest("myProcessor2", TestUtils.createSlackSource())).as(ProcessorResponse.class);
 
-        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNameAndType(bridgeResponse.getId(), "myProcessor", SOURCE).as(ProcessorListResponse.class);
+        ProcessorListResponse listResponse = TestUtils.listProcessorsFilterByNamePrefixAndType(bridgeResponse.getId(), "myProcessor", SOURCE).as(ProcessorListResponse.class);
         assertThat(listResponse.getPage()).isZero();
         assertThat(listResponse.getSize()).isEqualTo(1L);
         assertThat(listResponse.getTotal()).isEqualTo(1L);

@@ -296,7 +296,7 @@ public class BridgesAPITest {
         bridge2.setStatus(ACCEPTED);
         bridgeDAO.persist(bridge2);
 
-        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByName(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByNamePrefix(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
 
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
@@ -393,7 +393,7 @@ public class BridgesAPITest {
         bridge2.setStatus(READY);
         bridgeDAO.persist(bridge2);
 
-        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByNameAndStatus(DEFAULT_BRIDGE_NAME + "1", READY).as(BridgeListResponse.class);
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByNamePrefixAndStatus(DEFAULT_BRIDGE_NAME + "1", READY).as(BridgeListResponse.class);
 
         assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);

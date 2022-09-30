@@ -50,9 +50,9 @@ public class TestUtils {
                 .get(APIConstants.USER_API_BASE_PATH);
     }
 
-    public static Response getBridgesFilterByName(String name) {
+    public static Response getBridgesFilterByNamePrefix(String prefixName) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + "?name=" + name);
+                .get(APIConstants.USER_API_BASE_PATH + "?filterNamePrefix=" + prefixName);
     }
 
     public static Response getBridgesFilterByStatus(ManagedResourceStatus... status) {
@@ -65,9 +65,9 @@ public class TestUtils {
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?" + queryString);
     }
 
-    public static Response getBridgesFilterByNameAndStatus(String name, ManagedResourceStatus... status) {
+    public static Response getBridgesFilterByNamePrefixAndStatus(String prefixName, ManagedResourceStatus... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
-        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?name=" + name + "&" + queryString);
+        return jsonRequest().get(APIConstants.USER_API_BASE_PATH + "?filterNamePrefix=" + prefixName + "&" + queryString);
     }
 
     public static Response getBridge(String id) {
@@ -80,9 +80,9 @@ public class TestUtils {
                 .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?size=" + size + "&page=" + page);
     }
 
-    public static Response listProcessorsFilterByName(String bridgeId, String name) {
+    public static Response listProcessorsFilterByNamePrefix(String bridgeId, String prefixName) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName);
     }
 
     public static Response listProcessorsFilterByStatus(String bridgeId, ManagedResourceStatus... status) {
@@ -103,15 +103,15 @@ public class TestUtils {
         return jsonRequest().get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?type=" + type);
     }
 
-    public static Response listProcessorsFilterByNameAndStatus(String bridgeId, String name, ManagedResourceStatus... status) {
+    public static Response listProcessorsFilterByNamePrefixAndStatus(String bridgeId, String prefixName, ManagedResourceStatus... status) {
         String queryString = Arrays.stream(status).map(s -> "status=" + s.getValue()).collect(Collectors.joining("&"));
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&" + queryString);
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName + "&" + queryString);
     }
 
-    public static Response listProcessorsFilterByNameAndType(String bridgeId, String name, ProcessorType type) {
+    public static Response listProcessorsFilterByNamePrefixAndType(String bridgeId, String prefixName, ProcessorType type) {
         return jsonRequest()
-                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?name=" + name + "&type=" + type.getValue());
+                .get(APIConstants.USER_API_BASE_PATH + bridgeId + "/processors?filterNamePrefix=" + prefixName + "&type=" + type.getValue());
     }
 
     public static Response listProcessorsFilterByStatusAndType(String bridgeId, ManagedResourceStatus status, ProcessorType type) {
