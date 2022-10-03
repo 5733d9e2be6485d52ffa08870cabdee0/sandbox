@@ -281,7 +281,7 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: AWS_ACCESS_KEY_ID
-                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_ACCESS_KEY_ID
+                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
