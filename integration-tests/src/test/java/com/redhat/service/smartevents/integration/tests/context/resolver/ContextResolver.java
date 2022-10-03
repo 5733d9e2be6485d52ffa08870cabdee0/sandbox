@@ -33,7 +33,8 @@ public class ContextResolver {
             new SlackTokenResolver(),
             new SystemPropertyResolver(),
             new TestDataResolver(),
-            new UuidResolver());
+            new UuidResolver(),
+            new WebhookSiteTokenResolver());
 
     public static String resolveWithScenarioContext(TestContext context, String content) {
         if (content != null && !content.isEmpty()) {
