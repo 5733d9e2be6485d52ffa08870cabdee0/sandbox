@@ -14,7 +14,7 @@ Feature: Error handling tests
         "error_handler": {
             "type": "webhook_sink_0.1",
             "parameters": {
-                "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+                "endpoint": "https://webhook.site/${webhook.site.token.first}"
             }
         }
     }
@@ -53,7 +53,7 @@ Feature: Error handling tests
         }
     }
     """
-    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text ""id":"${cloud-event.error-handling-test.id}","source":"mySource","type":"myType","subject":"mySubject"" within 1 minute
+    Then Webhook site with id "${webhook.site.token.first}" contains request with text ""id":"${cloud-event.error-handling-test.id}","source":"mySource","type":"myType","subject":"mySubject"" within 1 minute
 
 
   @errorhandlingupdate
@@ -84,14 +84,14 @@ Feature: Error handling tests
         "error_handler": {
             "type": "webhook_sink_0.1",
             "parameters": {
-                "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+                "endpoint": "https://webhook.site/${webhook.site.token.first}"
             }
         }
     }
     """
     And the Bridge "ehBridgeUpdate" is existing with status "ready" within 4 minutes
     And the Bridge "ehBridgeUpdate" has errorHandler of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid} |
+      | endpoint | https://webhook.site/${webhook.site.token.first} |
     And the Ingress of Bridge "ehBridgeUpdate" is available within 2 minutes
 
     And add a Processor to the Bridge "ehBridgeUpdate" with body:
@@ -101,7 +101,7 @@ Feature: Error handling tests
         "action": {
             "type": "webhook_sink_0.1",
             "parameters": {
-                "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+                "endpoint": "https://webhook.site/${webhook.site.token.first}"
             }
         },
         "transformationTemplate": "{\"sender_name\":\"{data.sender.name}\"}"
@@ -110,7 +110,7 @@ Feature: Error handling tests
     And the list of Processor instances of the Bridge "ehBridgeUpdate" is containing the Processor "whProcessor"
     And the Processor "whProcessor" of the Bridge "ehBridgeUpdate" is existing with status "ready" within 3 minutes
     And the Processor "whProcessor" of the Bridge "ehBridgeUpdate" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid} |
+      | endpoint | https://webhook.site/${webhook.site.token.first} |
 
     When send a cloud event to the Ingress of the Bridge "ehBridgeUpdate":
     """
@@ -125,7 +125,7 @@ Feature: Error handling tests
         }
     }
     """
-    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text ""id":"${cloud-event.error-handling-update-test.id}","source":"mySource","type":"myType","subject":"mySubject"" within 1 minute
+    Then Webhook site with id "${webhook.site.token.first}" contains request with text ""id":"${cloud-event.error-handling-update-test.id}","source":"mySource","type":"myType","subject":"mySubject"" within 1 minute
 
   @pollingerrorhandler
   Scenario: Poll based error handling strategy is configured and an endpoint is available to fetch the last 'N' errors sent to the DLQ for the Bridge

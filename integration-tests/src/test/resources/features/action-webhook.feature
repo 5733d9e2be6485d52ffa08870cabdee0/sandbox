@@ -16,7 +16,7 @@ Feature: Webhook Action tests
       "action": {
         "type": "webhook_sink_0.1",
         "parameters": {
-            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+            "endpoint": "https://webhook.site/${webhook.site.token.first}"
         }
       },
       "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
@@ -25,7 +25,7 @@ Feature: Webhook Action tests
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "myProcessor"
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
     And the Processor "myProcessor" of the Bridge "mybridge" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid} |
+      | endpoint | https://webhook.site/${webhook.site.token.first} |
 
     When send a cloud event to the Ingress of the Bridge "mybridge":
     """
@@ -39,7 +39,7 @@ Feature: Webhook Action tests
         }
     }
     """
-    Then Webhook site with id "${env.webhook.site.uuid}" contains request with text "hello world by ${cloud-event.webhook-test.id}" within 1 minute
+    Then Webhook site with id "${webhook.site.token.first}" contains request with text "hello world by ${cloud-event.webhook-test.id}" within 1 minute
 
 
   Scenario: Webhook Processor is correctly updated
@@ -51,7 +51,7 @@ Feature: Webhook Action tests
         "action": {
           "type": "webhook_sink_0.1",
           "parameters": {
-              "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+              "endpoint": "https://webhook.site/${webhook.site.token.first}"
           }
         },
         "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
@@ -67,7 +67,7 @@ Feature: Webhook Action tests
         "action": {
           "type": "webhook_sink_0.1",
           "parameters": {
-              "endpoint": "https://webhook.site/${env.webhook.site.uuid.second}"
+              "endpoint": "https://webhook.site/${webhook.site.token.second}"
           }
         },
         "transformationTemplate" : "{\"text\": \"hello {data.name} by {id}\"}"
@@ -75,7 +75,7 @@ Feature: Webhook Action tests
       """
 
     And the Processor "testProcessor" of the Bridge "mybridge" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid.second} |
+      | endpoint | https://webhook.site/${webhook.site.token.second} |
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "testProcessor"
     And the Processor "testProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
     And wait for 10 seconds
@@ -93,4 +93,4 @@ Feature: Webhook Action tests
       }
       """
 
-    Then Webhook site with id "${env.webhook.site.uuid.second}" contains request with text "hello world by ${cloud-event.webhook-test-update.id}" within 1 minute
+    Then Webhook site with id "${webhook.site.token.second}" contains request with text "hello world by ${cloud-event.webhook-test-update.id}" within 1 minute

@@ -63,6 +63,7 @@ Currently, there is a possibility to use these placeholders in feature files:
 - ${slack.token} to use a token for communication with Slack
 - ${topic.`<Topic name>`} to use a unique Kafka topic name
 - ${uuid.`<Uuid name>`} to use unique identifier. Useful to distinguish historical data produced by the same test for example.
+- ${webhook.site.token.`<Token name>`} to use a webhook.site token with specified alias
 
 ## Test execution
 

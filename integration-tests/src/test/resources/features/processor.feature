@@ -13,7 +13,7 @@ Feature: Processor tests
       "action": {
         "type": "webhook_sink_0.1",
         "parameters": {
-            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+            "endpoint": "https://webhook.site/${webhook.site.token.first}"
         }
       }
     }
@@ -21,7 +21,7 @@ Feature: Processor tests
     And the list of Processor instances of the Bridge "mybridge" is containing the Processor "myProcessor"
     And the Processor "myProcessor" of the Bridge "mybridge" is existing with status "ready" within 3 minutes
     And the Processor "myProcessor" of the Bridge "mybridge" has action of type "webhook_sink_0.1" and parameters:
-      | endpoint | https://webhook.site/${env.webhook.site.uuid} |
+      | endpoint | https://webhook.site/${webhook.site.token.first} |
 
     When delete the Processor "myProcessor" of the Bridge "mybridge"
 

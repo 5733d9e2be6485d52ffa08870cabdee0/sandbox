@@ -12,9 +12,9 @@ import org.awaitility.Awaitility;
 import com.redhat.service.smartevents.integration.tests.common.ChronoUnitConverter;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.context.resolver.ContextResolver;
+import com.redhat.service.smartevents.integration.tests.resources.WebhookSiteResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteRequest;
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;

@@ -121,6 +121,11 @@
       <artifactId>system-x-aws-sqs</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>software.tnb</groupId>
+      <artifactId>system-x-webhook</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -174,9 +179,6 @@
             <!--Manager and key-cloak url-->
             <event-bridge.manager.url></event-bridge.manager.url>
             <keycloak.realm.url></keycloak.realm.url>
-
-            <webhook.site.uuid>${env.WEBHOOK_SITE_UUID}</webhook.site.uuid>
-            <webhook.site.uuid.second>${env.WEBHOOK_SITE_UUID_SECOND}</webhook.site.uuid.second>
 
             <!-- Managed Kafka properties -->
             <managed.kafka.sso.auth-server-url>${keycloak.realm.url}</managed.kafka.sso.auth-server-url>

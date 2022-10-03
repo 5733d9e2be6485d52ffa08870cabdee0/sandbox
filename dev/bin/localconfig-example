@@ -19,6 +19,3 @@ export EVENT_BRIDGE_RESOURCE_PREFIX=my_username
 # MINIKUBE_DRIVER=podman
 # MINIKUBE_CONTAINER_RUNTIME=cri-o
 
-# integration-tests
-# TODO - check where to document/store
-# webhook.site.uuid=
