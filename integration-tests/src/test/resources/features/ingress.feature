@@ -12,7 +12,7 @@ Feature: Ingress tests
       "action": {
         "type": "webhook_sink_0.1",
         "parameters": {
-            "endpoint": "https://webhook.site/${env.webhook.site.uuid}"
+            "endpoint": "https://webhook.site/${webhook.site.token.first}"
         }
       }
     }

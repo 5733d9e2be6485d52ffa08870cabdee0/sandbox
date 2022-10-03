@@ -1,28 +1,18 @@
 package com.redhat.service.smartevents.integration.tests.resources.webhook.site;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class WebhookSiteRequest {
 
-    @JsonProperty
     private String uuid;
 
-    @JsonProperty
     private Map<String, List<String>> headers;
 
-    @JsonProperty
     private String content;
 
-    @JsonProperty("created_at")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     public String getUuid() {
         return uuid;
@@ -48,11 +38,11 @@ public class WebhookSiteRequest {
         this.content = content;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }
