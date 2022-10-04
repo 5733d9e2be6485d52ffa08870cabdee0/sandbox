@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -23,8 +21,6 @@ import com.redhat.service.smartevents.integration.tests.resources.BridgeResource
 import com.redhat.service.smartevents.integration.tests.resources.ProcessorResource;
 import com.redhat.service.smartevents.integration.tests.resources.kafka.KafkaResource;
 import com.redhat.service.smartevents.integration.tests.resources.webhook.performance.WebhookPerformanceResource;
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteQuerySorting;
-import com.redhat.service.smartevents.integration.tests.resources.webhook.site.WebhookSiteResource;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.api.models.responses.ProcessorListResponse;
 
@@ -65,25 +61,6 @@ public class Hooks {
     }
 
     @BeforeAll(order = 1)
-    public static void deleteWebhookSiteRequestHistory() {
-        webhookSiteRequestHistoryIsCleared(Utils.getSystemProperty("webhook.site.uuid"));
-        webhookSiteRequestHistoryIsCleared(Utils.getSystemProperty("webhook.site.uuid.second"));
-    }
-
-    public static void webhookSiteRequestHistoryIsCleared(String webhookId) {
-        if (WebhookSiteResource.isSpecified()) {
-            final LocalDate yesterday = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-            WebhookSiteResource.requests(webhookId, WebhookSiteQuerySorting.OLDEST)
-                    .stream()
-                    .filter(request -> {
-                        final LocalDate requestCreatedAt = request.getCreatedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        return yesterday.isAfter(requestCreatedAt);
-                    })
-                    .forEach(request -> WebhookSiteResource.deleteRequest(request, webhookId));
-        }
-    }
-
-    @BeforeAll(order = 2)
     public static void webhookPerformanceCleanUp() {
         if (WebhookPerformanceResource.isSpecified()) {
             WebhookPerformanceResource.deleteAll();

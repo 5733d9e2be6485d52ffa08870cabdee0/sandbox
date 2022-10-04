@@ -1,0 +1,26 @@
+name: Webhook Requests Cleanup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  run-webhoook-cleanup-script:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "main"
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID }}"
+          echo "::add-mask::${{ secrets.WEBHOOK_SITE_UUID_SECOND }}"
+      - name: Run Webhook requests delete script
+        env:
+          WEBHOOK_SITE_UUID: ${{ secrets.WEBHOOK_SITE_UUID }}
+          WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
+        run: |
+          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_UUID
+          ./.github/scripts/delete-webhook-requests.sh $WEBHOOK_SITE_UUID_SECOND
