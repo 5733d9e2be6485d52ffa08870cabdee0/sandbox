@@ -45,8 +45,6 @@ public class AbstractOidcClientTest {
             super.init();
         }
 
-
-
         @Override
         public void checkAndRefresh() {
             super.checkAndRefresh();
