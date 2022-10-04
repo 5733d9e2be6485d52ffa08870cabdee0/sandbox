@@ -10,7 +10,7 @@ public class ProcessorCatalogResponse {
 
     @NotNull
     @JsonProperty("kind")
-    private final String kind = "SchemaCatalog";
+    private static final String kind = "SchemaCatalog";
 
     @JsonProperty("items")
     private List<ProcessorSchemaEntryResponse> items;
