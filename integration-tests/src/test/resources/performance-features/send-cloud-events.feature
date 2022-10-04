@@ -22,7 +22,7 @@ Feature: Sending cloud events performance tests
 
   @send-cloud-events
   Scenario Outline: Sending Cloud Event scenario with usersPerSec <usersPerSec>
-    When create benchmark with content:
+    When run benchmark with content:
       """text/vnd.yaml
       name: rhose-send-cloud-events
       agents:
@@ -88,15 +88,14 @@ Feature: Sending cloud events performance tests
                     content-type: application/cloudevents+json
                     authorization: Bearer ${manager.authentication.token}
       """
-    Then run benchmark "rhose-send-cloud-events" within 15 minutes
-    And the benchmark run "rhose-send-cloud-events" was executed successfully
+    Then the benchmark run "rhose-send-cloud-events" was executed successfully
     And store results of benchmark run "rhose-send-cloud-events" in Horreum test "send-cloud-events-<usersPerSec>-users"
     And the total of events received for benchmark "rhose-send-cloud-events" run of Bridge "my-perf-bridge" is equal to the total of cloud events sent in:
-      | phase | steadyState |
+      | phase  | steadyState      |
       | metric | send-cloud-event |
 
     Examples:
       | usersPerSec |
-      | 1         |
-      | 4         |
-      | 8         |
+      | 1           |
+      | 4           |
+      | 8           |

@@ -16,7 +16,7 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: 3
+      replicas: ${FLEET_MANAGER_REPLICAS}
       template:
         metadata:
           labels:
@@ -279,13 +279,13 @@ objects:
                 - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_ACCESS_KEY_ID
                   valueFrom:
                     secretKeyRef:
-                      name: ${EXTERNAL_DNS_ROUTE53_CREDS}
-                      key: aws_access_key_id
-                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_ACCESS_KEY_ID
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_ACCESS_KEY_ID
+                - name: EVENT_BRIDGE_DNS_AWS_ROUTE53_SECRET_ACCESS_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: ${EXTERNAL_DNS_ROUTE53_CREDS}
-                      key: aws_secret_access_key
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: AWS_SECRET_ACCESS_KEY
               ports:
                 - containerPort: 8080
               livenessProbe:
@@ -349,6 +349,9 @@ parameters:
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
     description: the fleet-manager vault secret
+  - name: FLEET_MANAGER_REPLICAS
+    value: "3"
+    description: the fleet-manager replicas
   - name: QUARKUS_LOG_LEVEL
     value: "INFO"
     description: the quarkus log level

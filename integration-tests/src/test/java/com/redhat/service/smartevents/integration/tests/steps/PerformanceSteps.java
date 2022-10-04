@@ -15,7 +15,6 @@ import com.redhat.service.smartevents.integration.tests.resources.webhook.perfor
 import io.cucumber.datatable.DataTable;
 import io.cucumber.docstring.DocString;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,23 +29,22 @@ public class PerformanceSteps {
         this.perfContext = perfContext;
     }
 
-    @When("^create benchmark with content:$")
+    @When("^run benchmark with content:$")
     public void createBenchmarkOnHyperfoilWithContent(DocString benchmarkRequest) {
         String resolvedBenchmarkRequest = ContextResolver.resolveWithScenarioContext(context, benchmarkRequest.getContent());
 
         context.getScenario().log("Benchmark created as below\n\"" + resolvedBenchmarkRequest + "\n\"");
-        HyperfoilResource.addBenchmark(resolvedBenchmarkRequest, benchmarkRequest.getContentType());
-    }
+        String perfTestName = HyperfoilResource.addBenchmark(resolvedBenchmarkRequest, benchmarkRequest.getContentType());
 
-    @Then("^run benchmark \"([^\"]*)\" within (\\d+) (?:minute|minutes)$")
-    public void runBenchmarkOnHyperfoilWithinMinutes(String perfTestName, int timeoutMinutes) {
         String runId = HyperfoilResource.runBenchmark(perfTestName);
         perfContext.addBenchmarkRun(perfTestName, runId);
-        context.getScenario().log("Running benchmark ID " + perfContext.getBenchmarkRun(perfTestName));
+        context.getScenario().log("Running benchmark ID " + runId);
 
+        // Wait until scenario execution finish, by default the timeout is specified as part of Hyperfoil scenario
+        // In case of some issue with Hyperfoil timeout the hardcoded waiting time here is 4 hours.
         Awaitility.await()
                 .conditionEvaluationListener(new AwaitilityOnTimeOutHandler(() -> context.getScenario().log("Unfinished performance run: " + HyperfoilResource.getCompleteRun(runId))))
-                .atMost(Duration.ofMinutes(timeoutMinutes))
+                .atMost(Duration.ofHours(4L))
                 .pollInterval(Duration.ofSeconds(5))
                 .untilAsserted(
                         () -> assertThat(HyperfoilResource.isRunCompleted(runId))

@@ -2,7 +2,7 @@ Feature: Continuous create Bridges performance tests
 
   @continuously-create-bridges
   Scenario Outline: Continuously create Bridges by <users> users
-    When create benchmark with content:
+    When run benchmark with content:
       """text/vnd.yaml
       name: rhose-continuously-create-bridges
       http:
@@ -121,8 +121,7 @@ Feature: Continuous create Bridges performance tests
                   duration: 5s
               - restartSequence
       """
-    Then run benchmark "rhose-continuously-create-bridges" within 60 minutes
-    And the benchmark run "rhose-continuously-create-bridges" was executed successfully
+    Then the benchmark run "rhose-continuously-create-bridges" was executed successfully
     And store Manager metrics in Horreum test "continuously-create-bridges-<users>-users"
 
     Examples:
