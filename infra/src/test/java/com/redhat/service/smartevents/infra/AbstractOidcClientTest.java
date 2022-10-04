@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.infra;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,17 +32,20 @@ public class AbstractOidcClientTest {
     private OidcClient oidcClient;
     private Tokens tokens;
     private TestOidcClient client;
+    private ScheduledExecutorService executorService;
 
     private static class TestOidcClient extends AbstractOidcClient {
 
-        public TestOidcClient(String name, OidcClients oidcClients) {
-            super(name, oidcClients);
+        public TestOidcClient(String name, OidcClients oidcClients, ScheduledExecutorService executorService) {
+            super(name, oidcClients, executorService);
         }
 
         @Override
         public void init() {
             super.init();
         }
+
+
 
         @Override
         public void checkAndRefresh() {
@@ -56,10 +61,6 @@ public class AbstractOidcClientTest {
         protected OidcClientConfig getOidcClientConfig() {
             return new OidcClientConfig();
         }
-
-        @Override
-        protected void scheduledLoop() {
-        }
     }
 
     @BeforeEach
@@ -68,13 +69,14 @@ public class AbstractOidcClientTest {
         OidcClients oidcClients = mock(OidcClients.class);
         oidcClient = mock(OidcClient.class);
         tokens = mock(Tokens.class);
+        executorService = mock(ScheduledExecutorService.class);
         when(tokens.getAccessToken()).thenReturn(ACCESS_TOKEN);
         when(tokens.getRefreshToken()).thenReturn(REFRESH_TOKEN);
         when(oidcClient.getTokens()).thenReturn(Uni.createFrom().item(tokens));
         when(oidcClient.refreshTokens(any(String.class))).thenReturn(Uni.createFrom().item(tokens));
         when(oidcClients.newClient(any(OidcClientConfig.class))).thenReturn(Uni.createFrom().item(oidcClient));
 
-        client = new TestOidcClient(NAME, oidcClients);
+        client = new TestOidcClient(NAME, oidcClients, executorService);
     }
 
     @Test
