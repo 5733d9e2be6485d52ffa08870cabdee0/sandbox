@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.openshift.cloud.api.connector.models.Connector;
 import com.openshift.cloud.api.connector.models.ConnectorState;
 import com.openshift.cloud.api.connector.models.ConnectorStatusStatus;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.ManagedConnectorException;
 import com.redhat.service.smartevents.infra.models.connectors.ConnectorType;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.RhoasService;
@@ -145,7 +146,8 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
             // Deployment of the Connector has failed. Bubble FAILED state up to ProcessorWorker.
             connectorEntity.setStatus(ManagedResourceStatus.FAILED);
             connectorEntity.setDependencyStatus(ManagedResourceStatus.FAILED);
-            return persist(connectorEntity);
+            persist(connectorEntity);
+            return recordError(work, new ManagedConnectorException(status.getError()));
         }
 
         return connectorEntity;
@@ -159,9 +161,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected boolean isProvisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
+        // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
+        return true;
     }
 
     private ConnectorEntity deployConnector(ConnectorEntity connectorEntity) {
@@ -218,9 +220,9 @@ public class ConnectorWorker extends AbstractWorker<ConnectorEntity> {
 
     @Override
     protected boolean isDeprovisioningComplete(ConnectorEntity managedResource) {
-        // As far as the Worker mechanism is concerned work for a Connector is never
+        // As far as the Worker mechanism is concerned work for a Connector is ALWAYS
         // complete as removal of the Work is controlled by the ProcessorWorker.
-        return false;
+        return true;
     }
 
     private ConnectorEntity deleteTopic(ConnectorEntity connectorEntity) {

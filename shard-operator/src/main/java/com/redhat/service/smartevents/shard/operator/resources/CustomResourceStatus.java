@@ -3,12 +3,15 @@ package com.redhat.service.smartevents.shard.operator.resources;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.smartevents.infra.exceptions.BridgeError;
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.shard.operator.utils.DeploymentStatusUtils;
 
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -51,25 +54,15 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     }
 
     @JsonIgnore
-    public void setConditionsFromDeployment(final Deployment d) {
-        if (d.getStatus() == null) {
-            this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
-            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        } else if (Readiness.isDeploymentReady(d)) {
-            this.markConditionTrue(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_AVAILABLE);
-            this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-        } else {
-            if (DeploymentStatusUtils.isTimeoutFailure(d)) {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(d));
-                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            } else if (DeploymentStatusUtils.isStatusReplicaFailure(d)) {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(d));
-                this.markConditionFalse(ConditionTypeConstants.AUGMENTATION);
-            } else {
-                this.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE, "");
-                this.markConditionTrue(ConditionTypeConstants.AUGMENTATION, ConditionReasonConstants.DEPLOYMENT_PROGRESSING);
-            }
-        }
+    public final boolean isConditionTypeFalse(final String conditionType) {
+        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType()) && ConditionStatus.False.equals(c.getStatus()));
+    }
+
+    @JsonIgnore
+    public final boolean isConditionTypeFalse(final String conditionType, final String reason) {
+        return conditions.stream().anyMatch(c -> conditionType.equals(c.getType())
+                && Objects.equals(c.getReason(), reason)
+                && ConditionStatus.False.equals(c.getStatus()));
     }
 
     public void markConditionFalse(final String conditionType, final String reason, final String message, final String errorCode) {
@@ -106,4 +99,66 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     public void markConditionTrue(final String conditionType) {
         markConditionTrue(conditionType, null);
     }
+
+    @JsonIgnore
+    public final void setStatusFromBridgeError(BridgeError bridgeError) {
+        markConditionFalse(ConditionTypeConstants.READY,
+                bridgeError.getReason(),
+                bridgeError.getReason(),
+                bridgeError.getCode());
+    }
+
+    @JsonIgnore
+    public final void setStatusFromDeployment(Deployment deployment) {
+        if (deployment.getStatus() == null) {
+            if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE)) {
+                markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE,
+                        "");
+            }
+            if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+            }
+        } else if (Readiness.isDeploymentReady(deployment)) {
+            if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_AVAILABLE)) {
+                markConditionFalse(ConditionTypeConstants.READY,
+                        ConditionReasonConstants.DEPLOYMENT_AVAILABLE,
+                        "");
+            }
+            if (!isConditionTypeTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                markConditionTrue(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+            }
+        } else {
+            if (DeploymentStatusUtils.isTimeoutFailure(deployment)) {
+                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED)) {
+                    markConditionFalse(ConditionTypeConstants.READY,
+                            ConditionReasonConstants.DEPLOYMENT_FAILED,
+                            DeploymentStatusUtils.getReasonAndMessageForTimeoutFailure(deployment));
+                }
+                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+                }
+            } else if (DeploymentStatusUtils.isStatusReplicaFailure(deployment)) {
+                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED)) {
+                    markConditionFalse(ConditionTypeConstants.READY,
+                            ConditionReasonConstants.DEPLOYMENT_FAILED,
+                            DeploymentStatusUtils.getReasonAndMessageForReplicaFailure(deployment));
+                }
+                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+                }
+            } else {
+                if (!isConditionTypeFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE)) {
+                    markConditionFalse(ConditionTypeConstants.READY,
+                            ConditionReasonConstants.DEPLOYMENT_NOT_AVAILABLE,
+                            "");
+                }
+                if (!isConditionTypeFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE)) {
+                    markConditionFalse(BridgeExecutorStatus.DEPLOYMENT_AVAILABLE);
+                }
+            }
+        }
+    }
+
+    public abstract ManagedResourceStatus inferManagedResourceStatus();
 }

@@ -2,10 +2,12 @@ package com.redhat.service.smartevents.manager;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -15,10 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.redhat.service.smartevents.infra.api.APIConstants;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BadRequestException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.BridgeLifecycleException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.ItemNotFoundException;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.ListResult;
 import com.redhat.service.smartevents.infra.models.QueryResourceInfo;
 import com.redhat.service.smartevents.infra.models.bridges.BridgeDefinition;
@@ -31,24 +36,32 @@ import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
 import com.redhat.service.smartevents.manager.dns.DnsService;
-import com.redhat.service.smartevents.manager.metrics.MetricsOperation;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
+import com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.ManagedResourceOperation;
+import com.redhat.service.smartevents.manager.metrics.ManagerMetricsService;
 import com.redhat.service.smartevents.manager.models.Bridge;
 import com.redhat.service.smartevents.manager.models.Processor;
 import com.redhat.service.smartevents.manager.providers.InternalKafkaConfigurationProvider;
 import com.redhat.service.smartevents.manager.providers.ResourceNamesProvider;
 import com.redhat.service.smartevents.manager.workers.WorkManager;
+import com.redhat.service.smartevents.processingerrors.ProcessingErrorService;
+
+import static com.redhat.service.smartevents.manager.metrics.ManagedResourceOperationMapper.inferOperation;
 
 @ApplicationScoped
 public class BridgesServiceImpl implements BridgesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BridgesServiceImpl.class);
 
+    private String tlsCertificate;
+
+    private String tlsKey;
+
+    // The tls certificate and the key are b64 encoded. See https://issues.redhat.com/browse/MGDOBR-1068 .
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.certificate")
-    String tlsCertificate;
+    String b64TlsCertificate;
 
     @ConfigProperty(name = "event-bridge.dns.subdomain.tls.key")
-    String tlsKey;
+    String b64TlsKey;
 
     @Inject
     BridgeDAO bridgeDAO;
@@ -69,10 +82,27 @@ public class BridgesServiceImpl implements BridgesService {
     WorkManager workManager;
 
     @Inject
-    MetricsService metricsService;
+    ManagerMetricsService metricsService;
 
     @Inject
     DnsService dnsService;
+
+    @Inject
+    ProcessingErrorService processingErrorService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
+    @PostConstruct
+    void init() {
+        if (!Objects.isNull(b64TlsCertificate) && !b64TlsCertificate.isEmpty()) {
+            LOGGER.info("Decoding base64 tls certificate and key");
+            tlsCertificate = new String(Base64.getDecoder().decode(b64TlsCertificate));
+            tlsKey = new String(Base64.getDecoder().decode(b64TlsKey));
+        } else {
+            LOGGER.info("Tls certificate and key were not configured.");
+        }
+    }
 
     @Override
     @Transactional
@@ -95,12 +125,13 @@ public class BridgesServiceImpl implements BridgesService {
 
         //Ensure we connect the ErrorHandler Action to the ErrorHandler back-channel
         Action errorHandler = bridgeRequest.getErrorHandler();
-        bridge.setDefinition(new BridgeDefinition(Objects.nonNull(errorHandler) ? errorHandler : null));
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridge.getId(), errorHandler);
+        bridge.setDefinition(new BridgeDefinition(errorHandler, resolvedErrorHandler));
 
         // Bridge and Work creation should always be in the same transaction
         bridgeDAO.persist(bridge);
         workManager.schedule(bridge);
-        metricsService.onOperationStart(bridge, MetricsOperation.PROVISION);
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
 
         LOGGER.info("Bridge with id '{}' has been created for customer '{}'", bridge.getId(), bridge.getCustomerId());
 
@@ -137,7 +168,8 @@ public class BridgesServiceImpl implements BridgesService {
 
         // Construct updated definition
         Action updatedErrorHandler = bridgeRequest.getErrorHandler();
-        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler);
+        Action resolvedErrorHandler = processingErrorService.resolveAndUpdateErrorHandler(bridgeId, updatedErrorHandler);
+        BridgeDefinition updatedDefinition = new BridgeDefinition(updatedErrorHandler, resolvedErrorHandler);
 
         // No need to update CRD if the definition is unchanged
         if (Objects.equals(existingDefinition, updatedDefinition)) {
@@ -150,10 +182,12 @@ public class BridgesServiceImpl implements BridgesService {
         existingBridge.setDependencyStatus(ManagedResourceStatus.ACCEPTED);
         existingBridge.setDefinition(updatedDefinition);
         existingBridge.setGeneration(existingBridge.getGeneration() + 1);
+        existingBridge.setErrorId(null);
+        existingBridge.setErrorUUID(null);
 
         // Bridge and Work should always be created in the same transaction
         workManager.schedule(existingBridge);
-        metricsService.onOperationStart(existingBridge, MetricsOperation.MODIFY);
+        metricsService.onOperationStart(existingBridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for update",
                 existingBridge.getId(),
@@ -217,7 +251,7 @@ public class BridgesServiceImpl implements BridgesService {
         bridge.setStatus(ManagedResourceStatus.DEPROVISION);
         bridge.setDeletionRequestedAt(ZonedDateTime.now(ZoneOffset.UTC));
         workManager.schedule(bridge);
-        metricsService.onOperationStart(bridge, MetricsOperation.DELETE);
+        metricsService.onOperationStart(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
 
         LOGGER.info("Bridge with id '{}' for customer '{}' has been marked for deletion", bridge.getId(), bridge.getCustomerId());
     }
@@ -230,24 +264,52 @@ public class BridgesServiceImpl implements BridgesService {
 
     @Transactional
     @Override
-    public List<Bridge> findByShardIdWithReadyDependencies(String shardId) {
+    public List<Bridge> findByShardIdToDeployOrDelete(String shardId) {
         return bridgeDAO.findByShardIdToDeployOrDelete(shardId);
     }
 
     @Transactional
     @Override
-    public Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO) {
+    public Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO) {
         Bridge bridge = getBridge(updateDTO.getId(), updateDTO.getCustomerId());
+        ManagedResourceOperation operation = inferOperation(bridge, updateDTO);
         bridge.setStatus(updateDTO.getStatus());
 
-        if (updateDTO.getStatus().equals(ManagedResourceStatus.DELETED)) {
-            bridgeDAO.deleteById(bridge.getId());
-            metricsService.onOperationComplete(bridge, MetricsOperation.DELETE);
-        } else if (updateDTO.getStatus().equals(ManagedResourceStatus.READY)) {
-            if (Objects.isNull(bridge.getPublishedAt())) {
+        // If the User has updated a Bridge that was previously failed by k8s it has been observed
+        // that the reconciliation loop can first emit an update with the existing FAILED state
+        // to subsequently emit an update with a READY state when the CRD updates and succeeds.
+        bridge.setErrorId(null);
+        bridge.setErrorUUID(null);
+
+        switch (operation) {
+            case UNDETERMINED:
+                break;
+            case CREATE:
                 bridge.setPublishedAt(ZonedDateTime.now(ZoneOffset.UTC));
-                metricsService.onOperationComplete(bridge, MetricsOperation.PROVISION);
-            }
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_PROVISION);
+                break;
+
+            case UPDATE:
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_MODIFY);
+                break;
+
+            case DELETE:
+                bridgeDAO.deleteById(bridge.getId());
+                metricsService.onOperationComplete(bridge, MetricsOperation.MANAGER_RESOURCE_DELETE);
+                break;
+
+            case FAILED_CREATE:
+            case FAILED_UPDATE:
+            case FAILED_DELETE:
+                // If an exception happened; make sure to record it.
+                BridgeErrorInstance bridgeErrorInstance = updateDTO.getBridgeErrorInstance();
+                if (Objects.nonNull(bridgeErrorInstance)) {
+                    bridge.setErrorId(bridgeErrorInstance.getId());
+                    bridge.setErrorUUID(bridgeErrorInstance.getUuid());
+                }
+
+                metricsService.onOperationFailed(bridge, operation.getMetricsOperation());
+                break;
         }
 
         LOGGER.info("Bridge with id '{}' has been updated for customer '{}'", bridge.getId(), bridge.getCustomerId());
@@ -295,6 +357,9 @@ public class BridgesServiceImpl implements BridgesService {
         response.setErrorHandler(bridge.getDefinition().getErrorHandler());
         response.setCloudProvider(bridge.getCloudProvider());
         response.setRegion(bridge.getRegion());
+        response.setStatusMessage(bridgeErrorHelper.makeUserMessage(bridge));
+
         return response;
     }
+
 }

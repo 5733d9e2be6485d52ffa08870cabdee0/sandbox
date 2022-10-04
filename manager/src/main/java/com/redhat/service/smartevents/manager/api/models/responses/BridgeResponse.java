@@ -19,6 +19,9 @@ public class BridgeResponse extends BaseManagedResourceResponse {
     @JsonProperty("region")
     private String region;
 
+    @JsonProperty("status_message")
+    private String statusMessage;
+
     public BridgeResponse() {
         super("Bridge");
     }
@@ -53,5 +56,13 @@ public class BridgeResponse extends BaseManagedResourceResponse {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
     }
 }

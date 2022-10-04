@@ -14,6 +14,7 @@ import java.util.Map;
 
 import javax.net.ssl.SSLException;
 
+import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 
@@ -55,9 +56,16 @@ public class IngressSteps {
                         }))
                 .atMost(Duration.ofMinutes(timeoutMinutes))
                 .pollInterval(Duration.ofSeconds(5))
-                .untilAsserted(() -> IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
-                        .then()
-                        .statusCode(405));
+                .untilAsserted(() -> {
+                    try {
+                        IngressResource.optionsJsonEmptyEventResponse(context.getManagerToken(), endpoint)
+                                .then()
+                                .statusCode(405);
+                    } catch (UnknownHostException | SSLException e) {
+                        // The DNS entry was not propagated into DNS resolvers yet
+                        Assertions.fail("Ingress DNS entry is not available yet", e);
+                    }
+                });
     }
 
     @And("^the Ingress of Bridge \"([^\"]*)\" is not available within (\\d+) (?:minute|minutes)$")

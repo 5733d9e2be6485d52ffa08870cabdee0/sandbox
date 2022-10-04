@@ -38,7 +38,7 @@ mvn \
   -Devent-bridge.kafka.client.id=${ops_client_id} \
   -Devent-bridge.kafka.client.secret=${ops_client_secret} \
   -Devent-bridge.kafka.security.protocol=SASL_SSL \
-  -Devent-bridge.rhoas.instance-api.host=https://admin-server-${bootstrap_server_host}/rest \
+  -Devent-bridge.rhoas.instance-api.host=https://admin-server-${bootstrap_server_host} \
   -Devent-bridge.rhoas.mgmt-api.host=https://api.openshift.com \
   -Devent-bridge.rhoas.sso.mas.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external \
   -Devent-bridge.rhoas.sso.mas.client-id=${admin_client_id} \
@@ -58,11 +58,6 @@ mvn \
   -Dmanaged-connectors.auth.offline-token=${MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN} \
   \
   -Dquarkus.devservices.enabled=false \
-  -Dkafka.client.id=${mc_client_id} \
-  -Dkafka.client.secret=${mc_client_secret} \
-  -Dkafka.security.protocol=SASL_SSL \
-  -Dkafka.sasl.jaas.config="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${mc_client_id}\" password=\"${mc_client_secret}\";" \
-  -Dkafka.sasl.mechanism=PLAIN \
   \
   -f "$( dirname "$0" )/../../manager/pom.xml" \
   clean compile quarkus:dev $@

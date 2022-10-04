@@ -22,6 +22,9 @@ tags:
   description: List Supported Cloud Providers and Regions
 - name: Error Catalog
   description: List and get the error definitions from the error catalog.
+- name: Processing Errors
+  description: The API that allow the user to retrieve processing errors of a specific
+    bridge instance.
 - name: Processors
   description: "The API that allow the user to retrieve, create or delete Processors\
     \ of a Bridge instance."
@@ -917,6 +920,20 @@ components:
           type: string
         type:
           $ref: '#/components/schemas/BridgeErrorType'
+    BridgeErrorInstance:
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        code:
+          type: string
+        reason:
+          type: string
+        type:
+          $ref: '#/components/schemas/BridgeErrorType'
+        uuid:
+          type: string
     BridgeErrorType:
       enum:
       - USER
@@ -1015,6 +1032,8 @@ components:
         cloud_provider:
           type: string
         region:
+          type: string
+        status_message:
           type: string
     CloudProviderListResponse:
       required:
@@ -1241,6 +1260,45 @@ components:
         href:
           type: string
           nullable: false
+    ProcessingErrorListResponse:
+      required:
+      - kind
+      - page
+      - size
+      - total
+      type: object
+      properties:
+        kind:
+          type: string
+          nullable: false
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessingErrorResponse'
+        page:
+          format: int64
+          type: integer
+          nullable: false
+        size:
+          format: int64
+          type: integer
+          nullable: false
+        total:
+          format: int64
+          type: integer
+          nullable: false
+    ProcessingErrorResponse:
+      type: object
+      properties:
+        recorded_at:
+          format: date-time
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        payload:
+          type: object
     ProcessorCatalogResponse:
       required:
       - kind
@@ -1354,6 +1412,8 @@ components:
           $ref: '#/components/schemas/Action'
         source:
           $ref: '#/components/schemas/Source'
+        status_message:
+          type: string
     ProcessorSchemaEntryResponse:
       required:
       - kind

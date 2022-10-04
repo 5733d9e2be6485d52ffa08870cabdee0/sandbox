@@ -26,9 +26,9 @@ public interface BridgesService {
 
     ListResult<Bridge> getBridges(String customerId, QueryResourceInfo queryInfo);
 
-    List<Bridge> findByShardIdWithReadyDependencies(String shardId);
+    List<Bridge> findByShardIdToDeployOrDelete(String shardId);
 
-    Bridge updateBridge(ManagedResourceStatusUpdateDTO updateDTO);
+    Bridge updateBridgeStatus(ManagedResourceStatusUpdateDTO updateDTO);
 
     BridgeDTO toDTO(Bridge bridge);
 

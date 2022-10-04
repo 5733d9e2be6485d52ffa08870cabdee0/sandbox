@@ -87,10 +87,20 @@ public class BridgeExecutorServiceImpl implements BridgeExecutorService {
 
             // create or update the secrets for the bridgeExecutor
             createOrUpdateBridgeExecutorSecret(bridgeExecutor, processorDTO);
-        } else if (existing.getStatus().isReady()) {
-            LOGGER.info("BridgeExecutor '{}' already exists and is ready. Notifying manager that it is ready.", processorDTO.getId());
-            ProcessorManagedResourceStatusUpdateDTO updateDTO =
-                    new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(), processorDTO.getCustomerId(), processorDTO.getBridgeId(), ManagedResourceStatus.READY);
+        } else {
+            ManagedResourceStatus inferredStatus = existing.getStatus().inferManagedResourceStatus();
+            // The Controller would have notified the Manager with PROVISIONING before it first started.
+            if (inferredStatus == ManagedResourceStatus.PROVISIONING) {
+                return;
+            }
+            LOGGER.info("BridgeExecutor '{}' already exists and is '{}'. Notifying manager that it is '{}'.",
+                    processorDTO.getId(),
+                    inferredStatus,
+                    inferredStatus);
+            ProcessorManagedResourceStatusUpdateDTO updateDTO = new ProcessorManagedResourceStatusUpdateDTO(processorDTO.getId(),
+                    processorDTO.getCustomerId(),
+                    processorDTO.getBridgeId(),
+                    inferredStatus);
             managerClient.notifyProcessorStatusChange(updateDTO).subscribe().with(
                     success -> LOGGER.debug("Ready notification for BridgeExecutor '{}' has been sent to the manager successfully", processorDTO.getId()),
                     failure -> LOGGER.error("Failed to send updated status to Manager for entity of type '{}'", ProcessorDTO.class.getSimpleName(), failure));

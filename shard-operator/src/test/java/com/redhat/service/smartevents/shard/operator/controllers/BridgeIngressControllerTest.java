@@ -10,11 +10,10 @@ import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.providers.GlobalConfigurationsConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.ConditionReasonConstants;
+import com.redhat.service.smartevents.shard.operator.resources.BridgeIngressStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionStatus;
 import com.redhat.service.smartevents.shard.operator.resources.ConditionTypeConstants;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
@@ -61,11 +60,11 @@ public class BridgeIngressControllerTest {
         UpdateControl<BridgeIngress> updateControl = bridgeIngressController.reconcile(bridgeIngress, null);
 
         // Then
-        assertThat(updateControl.isNoUpdate()).isTrue();
+        assertThat(updateControl.isUpdateStatus()).isTrue();
     }
 
     @Test
-    void testCreateNewBridgeIngress() throws JsonProcessingException {
+    void testCreateNewBridgeIngress() {
         // Given
         BridgeIngress bridgeIngress = buildBridgeIngress();
         deployBridgeIngressSecret(bridgeIngress);
@@ -80,9 +79,20 @@ public class BridgeIngressControllerTest {
         assertThat(bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.READY)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
         });
-        assertThat(bridgeIngress.getStatus().getConditionByType(ConditionTypeConstants.AUGMENTATION)).isPresent().hasValueSatisfying(c -> {
+        assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.SECRET_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
             assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
-            assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.KNATIVE_BROKER_NOT_READY);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.CONFIG_MAP_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.True);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.KNATIVE_BROKER_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.False);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.AUTHORISATION_POLICY_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
+        });
+        assertThat(bridgeIngress.getStatus().getConditionByType(BridgeIngressStatus.NETWORK_RESOURCE_AVAILABLE)).isPresent().hasValueSatisfying(c -> {
+            assertThat(c.getStatus()).isEqualTo(ConditionStatus.Unknown);
         });
     }
 

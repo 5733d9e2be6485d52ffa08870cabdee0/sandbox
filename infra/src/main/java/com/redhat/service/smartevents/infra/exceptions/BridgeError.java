@@ -1,14 +1,20 @@
 package com.redhat.service.smartevents.infra.exceptions;
 
+import java.util.Objects;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema
 public class BridgeError {
 
-    private final int id;
-    private final String code;
-    private final String reason;
-    private final BridgeErrorType type;
+    private int id;
+    private String code;
+    private String reason;
+    private BridgeErrorType type;
+
+    protected BridgeError() {
+        //(De-)serialisation
+    }
 
     public BridgeError(int id, String code, String reason, BridgeErrorType type) {
         super();
@@ -32,6 +38,23 @@ public class BridgeError {
 
     public BridgeErrorType getType() {
         return type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BridgeError)) {
+            return false;
+        }
+        BridgeError that = (BridgeError) o;
+        return getId() == that.getId() && Objects.equals(getCode(), that.getCode()) && Objects.equals(getReason(), that.getReason()) && getType() == that.getType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getCode(), getReason(), getType());
     }
 
     @Override

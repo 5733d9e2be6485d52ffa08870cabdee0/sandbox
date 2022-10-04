@@ -246,7 +246,7 @@ public class TestUtils {
         final List<Bridge> bridges = new ArrayList<>();
         await().atMost(5, SECONDS).untilAsserted(() -> {
             bridges.clear();
-            bridges.addAll(bridgesService.findByShardIdWithReadyDependencies(TestConstants.SHARD_ID));
+            bridges.addAll(bridgesService.findByShardIdToDeployOrDelete(TestConstants.SHARD_ID));
             assertThat(bridges.size()).isEqualTo(1);
         });
         return bridges.get(0);

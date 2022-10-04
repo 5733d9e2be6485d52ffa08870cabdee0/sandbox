@@ -20,7 +20,7 @@ public class KafkaInstanceAdminMockServerConfigurator extends AbstractApiMockSer
     String basePath;
 
     public KafkaInstanceAdminMockServerConfigurator() {
-        super("/rest", MasSSOMockServerConfigurator.TEST_ACCESS_TOKEN);
+        super("/api/v1", MasSSOMockServerConfigurator.TEST_ACCESS_TOKEN);
     }
 
     @Override

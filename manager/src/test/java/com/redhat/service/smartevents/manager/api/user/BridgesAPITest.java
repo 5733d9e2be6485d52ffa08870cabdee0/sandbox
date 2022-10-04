@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.api.user;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -13,8 +14,11 @@ import com.redhat.service.smartevents.infra.api.APIConstants;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorResponse;
 import com.redhat.service.smartevents.infra.api.models.responses.ErrorsResponse;
 import com.redhat.service.smartevents.infra.exceptions.BridgeErrorDAO;
+import com.redhat.service.smartevents.infra.exceptions.definitions.platform.UnclassifiedConstraintViolationException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.AlreadyExistingItemException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidCloudProviderException;
 import com.redhat.service.smartevents.infra.exceptions.definitions.user.InvalidRegionException;
+import com.redhat.service.smartevents.infra.exceptions.definitions.user.ProcessorGatewayParametersMissingException;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.KafkaConnectionDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
@@ -170,17 +174,59 @@ public class BridgesAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getBridgeWithNoNameWithIncompleteErrorHandler() {
+        Action incompleteErrorHandler = new Action();
+        incompleteErrorHandler.setType(WebhookAction.TYPE);
+        ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest("",
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                incompleteErrorHandler))
+                .as(ErrorsResponse.class);
+
+        // Missing name and Incomplete Error Handler definition
+        assertErrorResponses(errorsResponse, Set.of(UnclassifiedConstraintViolationException.class, ProcessorGatewayParametersMissingException.class));
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    public void getBridgeWithDuplicateNameWithIncompleteErrorHandler() {
+        // Create the first Bridge successfully.
+        TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION))
+                .then().statusCode(202);
+
+        // Create another Bridge with the same name but incomplete Error Handler definition.
+        Action incompleteErrorHandler = new Action();
+        incompleteErrorHandler.setType(WebhookAction.TYPE);
+        ErrorsResponse errorsResponse1 = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME,
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                incompleteErrorHandler))
+                .as(ErrorsResponse.class);
+
+        // Incomplete Error Handler definition. Note the duplicate name is NOT detected with this configuration.
+        // See https://issues.redhat.com/browse/MGDOBR-947
+        assertErrorResponses(errorsResponse1, Set.of(ProcessorGatewayParametersMissingException.class));
+
+        // Try creating the other Bridge again with the same name and complete Error Handler definition.
+        Action completeErrorHandler = TestUtils.createWebhookAction();
+        ErrorsResponse errorsResponse2 = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME,
+                DEFAULT_CLOUD_PROVIDER,
+                DEFAULT_REGION,
+                completeErrorHandler))
+                .as(ErrorsResponse.class);
+
+        // Now the duplicate name IS detected and reported.
+        // See https://issues.redhat.com/browse/MGDOBR-947
+        assertErrorResponses(errorsResponse2, Set.of(AlreadyExistingItemException.class));
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void createBridge_withInvalidCloudProvider() {
         ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, "dodgyCloudProvider", DEFAULT_REGION))
                 .as(ErrorsResponse.class);
 
-        Set<String> expectedErrorCodes = Set.of(
-                errorDAO.findByException(InvalidCloudProviderException.class).getCode(),
-                errorDAO.findByException(InvalidRegionException.class).getCode());
-
-        assertThat(errorsResponse.getItems())
-                .hasSize(2)
-                .allSatisfy((e) -> expectedErrorCodes.contains(e.getCode()));
+        assertErrorResponses(errorsResponse, Set.of(InvalidCloudProviderException.class, InvalidRegionException.class));
     }
 
     @Test
@@ -189,12 +235,16 @@ public class BridgesAPITest {
         ErrorsResponse errorsResponse = TestUtils.createBridge(new BridgeRequest(DEFAULT_BRIDGE_NAME, DEFAULT_CLOUD_PROVIDER, "dodgyRegion"))
                 .as(ErrorsResponse.class);
 
-        Set<String> expectedErrorCodes = Set.of(
-                errorDAO.findByException(InvalidRegionException.class).getCode());
+        assertErrorResponses(errorsResponse, Set.of(InvalidRegionException.class));
+    }
+
+    private void assertErrorResponses(ErrorsResponse errorsResponse, Set<Class<? extends RuntimeException>> exceptions) {
+        Set<String> expectedErrorCodes = exceptions.stream().map(e -> errorDAO.findByException(e).getCode()).collect(Collectors.toSet());
 
         assertThat(errorsResponse.getItems())
-                .hasSize(1)
-                .allSatisfy((e) -> expectedErrorCodes.contains(e));
+                .hasSize(expectedErrorCodes.size())
+                .map(ErrorResponse::getCode)
+                .allSatisfy(expectedErrorCodes::contains);
     }
 
     @Test
@@ -252,6 +302,28 @@ public class BridgesAPITest {
         BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
         assertThat(bridgeResponse.getName()).isEqualTo(bridge1.getName());
         assertThat(bridgeResponse.getStatus()).isEqualTo(bridge1.getStatus());
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNull();
+        assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    // See https://issues.redhat.com/browse/MGDOBR-1113
+    public void testGetBridgesFilterByNameWithCreationByApi() {
+        BridgeRequest bridge1 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "1", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        BridgeRequest bridge2 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "2", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        TestUtils.createBridge(bridge1);
+        TestUtils.createBridge(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByName(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
+
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
+        BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(ACCEPTED);
         assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
         assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
         assertThat(bridgeResponse.getEndpoint()).isNull();

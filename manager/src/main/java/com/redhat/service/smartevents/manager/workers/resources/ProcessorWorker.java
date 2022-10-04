@@ -63,14 +63,14 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
 
         // If we have to deploy a Managed Connector, delegate to the ConnectorWorker.
         // The Processor will be provisioned by the Shard when it is in ACCEPTED state *and* Connectors are READY (or null).
-        String processorId = work.getManagedResourceId();
-        ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
-        ConnectorEntity updatedConnectorEntity = connectorWorker.createDependencies(work, connectorEntity);
+        ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(work);
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too
         if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
             processor.setStatus(ManagedResourceStatus.FAILED);
+            processor.setErrorId(updatedConnectorEntity.getErrorId());
+            processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }
 
         return persist(processor);
@@ -97,14 +97,14 @@ public class ProcessorWorker extends AbstractWorker<Processor> {
         }
 
         // If we have to delete a Managed Connector, delegate to the ConnectorWorker.
-        String processorId = work.getManagedResourceId();
-        ConnectorEntity connectorEntity = connectorsDAO.findByProcessorId(processorId);
-        ConnectorEntity updatedConnectorEntity = connectorWorker.deleteDependencies(work, connectorEntity);
+        ConnectorEntity updatedConnectorEntity = connectorWorker.handleWork(work);
         processor.setDependencyStatus(updatedConnectorEntity.getStatus());
 
         // If the Connector failed we should mark the Processor as failed too
         if (updatedConnectorEntity.getStatus() == ManagedResourceStatus.FAILED) {
             processor.setStatus(ManagedResourceStatus.FAILED);
+            processor.setErrorId(updatedConnectorEntity.getErrorId());
+            processor.setErrorUUID(updatedConnectorEntity.getErrorUUID());
         }
 
         return persist(processor);

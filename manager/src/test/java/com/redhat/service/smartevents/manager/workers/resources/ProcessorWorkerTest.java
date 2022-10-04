@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.manager.workers.resources;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -13,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.quartz.SchedulerException;
 
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.manager.dao.BridgeDAO;
@@ -32,6 +32,14 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.ACCEPTED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DELETING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.DEPROVISION;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PREPARING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
 import static com.redhat.service.smartevents.manager.workers.resources.WorkerTestUtils.makeWork;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -83,9 +91,9 @@ public class ProcessorWorkerTest {
     @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "ACCEPTED", "PREPARING" })
-    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) throws SchedulerException {
+    void handleWorkProvisioningWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -94,7 +102,7 @@ public class ProcessorWorkerTest {
 
         Processor refreshed = worker.handleWork(work);
 
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.READY);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(READY);
         verify(workManager, never()).reschedule(any());
     }
 
@@ -104,12 +112,13 @@ public class ProcessorWorkerTest {
     void handleWorkProvisioningWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) throws SchedulerException {
+            boolean isWorkComplete,
+            boolean throwsConnectorError) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
-        connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ACCEPTED);
+        connectorEntity.setStatus(ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
@@ -117,37 +126,48 @@ public class ProcessorWorkerTest {
         Work work = makeWork(processor.getId(), 0, ZonedDateTime.now(ZoneOffset.UTC));
 
         doAnswer((i) -> {
-            //Emulate ConnectorWorker completing work
-            connectorEntity.setStatus(dependencyStatusWhenComplete);
+            //Emulate ConnectorWorker failing
+            connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
+            if (dependencyStatusWhenComplete == FAILED) {
+                connectorEntity.setErrorId(1);
+                connectorEntity.setErrorUUID(UUID.randomUUID().toString());
+            }
             return connectorEntity;
-        }).when(connectorWorker).createDependencies(work, connectorEntity);
+        }).when(connectorWorker).handleWork(work);
 
         Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
-        verify(connectorWorker).createDependencies(work, connectorEntity);
+        if (dependencyStatusWhenComplete == FAILED) {
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
+        }
+
+        verify(connectorWorker).handleWork(work);
 
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(work);
     }
 
     private static Stream<Arguments> srcHandleWorkProvisioningWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.ACCEPTED, ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, false),
-                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PREPARING, ManagedResourceStatus.READY, true),
-                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.PREPARING, ManagedResourceStatus.PREPARING, ManagedResourceStatus.PROVISIONING, false));
+                Arguments.of(ACCEPTED, PREPARING, READY, true, false),
+                Arguments.of(ACCEPTED, FAILED, FAILED, true, false),
+                Arguments.of(ACCEPTED, PREPARING, PROVISIONING, false, false),
+                Arguments.of(PREPARING, PREPARING, READY, true, false),
+                Arguments.of(PREPARING, FAILED, FAILED, true, false),
+                Arguments.of(PREPARING, PREPARING, PROVISIONING, false, false),
+                Arguments.of(ACCEPTED, FAILED, FAILED, true, true),
+                Arguments.of(ACCEPTED, FAILED, FAILED, true, true));
     }
 
     @Transactional
     @ParameterizedTest
     @EnumSource(value = ManagedResourceStatus.class, names = { "DEPROVISION", "DELETING" })
-    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) throws SchedulerException {
+    void handleWorkDeletingWithKnownResourceWithoutConnector(ManagedResourceStatus status) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
@@ -156,7 +176,7 @@ public class ProcessorWorkerTest {
 
         Processor refreshed = worker.handleWork(work);
 
-        assertThat(refreshed.getDependencyStatus()).isEqualTo(ManagedResourceStatus.DELETED);
+        assertThat(refreshed.getDependencyStatus()).isEqualTo(DELETED);
         verify(workManager, never()).reschedule(any());
     }
 
@@ -166,12 +186,13 @@ public class ProcessorWorkerTest {
     void handleWorkDeletingWithKnownResourceWithConnector(ManagedResourceStatus status,
             ManagedResourceStatus statusWhenComplete,
             ManagedResourceStatus dependencyStatusWhenComplete,
-            boolean isWorkComplete) throws SchedulerException {
+            boolean isWorkComplete,
+            boolean throwsConnectorError) {
         Bridge bridge = Fixtures.createBridge();
-        Processor processor = Fixtures.createProcessor(bridge, ManagedResourceStatus.READY);
+        Processor processor = Fixtures.createProcessor(bridge, READY);
         processor.setStatus(status);
-        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ManagedResourceStatus.ACCEPTED);
-        connectorEntity.setStatus(ManagedResourceStatus.ACCEPTED);
+        ConnectorEntity connectorEntity = Fixtures.createSinkConnector(processor, ACCEPTED);
+        connectorEntity.setStatus(ACCEPTED);
         bridgeDAO.persist(bridge);
         processorDAO.persist(processor);
         connectorsDAO.persist(connectorEntity);
@@ -180,28 +201,39 @@ public class ProcessorWorkerTest {
 
         doAnswer((i) -> {
             //Emulate ConnectorWorker completing work
-            connectorEntity.setStatus(dependencyStatusWhenComplete);
+            connectorEntity.setStatus(throwsConnectorError ? FAILED : dependencyStatusWhenComplete);
+            if (dependencyStatusWhenComplete == FAILED) {
+                connectorEntity.setErrorId(1);
+                connectorEntity.setErrorUUID(UUID.randomUUID().toString());
+            }
             return connectorEntity;
-        }).when(connectorWorker).deleteDependencies(work, connectorEntity);
+        }).when(connectorWorker).handleWork(work);
 
         Processor refreshed = worker.handleWork(work);
 
         assertThat(refreshed.getStatus()).isEqualTo(statusWhenComplete);
         assertThat(refreshed.getDependencyStatus()).isEqualTo(dependencyStatusWhenComplete);
 
-        verify(connectorWorker).deleteDependencies(work, connectorEntity);
+        if (dependencyStatusWhenComplete == FAILED) {
+            assertThat(refreshed.getErrorId()).isNotNull();
+            assertThat(refreshed.getErrorUUID()).isNotNull();
+        }
+
+        verify(connectorWorker).handleWork(work);
 
         verify(workManager, times(isWorkComplete ? 0 : 1)).reschedule(any());
     }
 
     private static Stream<Arguments> srcHandleWorkDeletingWithKnownResourceWithConnector() {
         return Stream.of(
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DEPROVISION, ManagedResourceStatus.DELETING, false),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.FAILED, ManagedResourceStatus.FAILED, true),
-                Arguments.of(ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, ManagedResourceStatus.DELETING, false));
+                Arguments.of(DEPROVISION, DEPROVISION, DELETED, true, false),
+                Arguments.of(DEPROVISION, FAILED, FAILED, true, false),
+                Arguments.of(DEPROVISION, DEPROVISION, DELETING, false, false),
+                Arguments.of(DELETING, DELETING, DELETED, true, false),
+                Arguments.of(DELETING, FAILED, FAILED, true, false),
+                Arguments.of(DELETING, DELETING, DELETING, false, false),
+                Arguments.of(DEPROVISION, FAILED, FAILED, true, true),
+                Arguments.of(DELETING, FAILED, FAILED, true, true));
     }
 
 }

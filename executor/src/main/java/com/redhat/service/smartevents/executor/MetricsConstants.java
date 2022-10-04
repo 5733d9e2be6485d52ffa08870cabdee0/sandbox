@@ -1,6 +1,10 @@
 package com.redhat.service.smartevents.executor;
 
 public class MetricsConstants {
+    private MetricsConstants() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static final String BRIDGE_ID_TAG = "bridgeId";
     public static final String PROCESSOR_ID_TAG = "processorId";
     public static final String PROCESSOR_PROCESSING_TIME_METRIC_NAME = "executor.entire.processing.evaluation";

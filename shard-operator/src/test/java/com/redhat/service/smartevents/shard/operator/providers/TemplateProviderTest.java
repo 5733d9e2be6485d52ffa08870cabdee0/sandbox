@@ -8,7 +8,7 @@ import com.redhat.service.smartevents.shard.operator.TestSupport;
 import com.redhat.service.smartevents.shard.operator.networking.NetworkingConstants;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeExecutor;
 import com.redhat.service.smartevents.shard.operator.resources.BridgeIngress;
-import com.redhat.service.smartevents.shard.operator.resources.istio.AuthorizationPolicy;
+import com.redhat.service.smartevents.shard.operator.resources.istio.authorizationpolicy.AuthorizationPolicy;
 import com.redhat.service.smartevents.shard.operator.resources.knative.KnativeBroker;
 import com.redhat.service.smartevents.shard.operator.utils.LabelsBuilder;
 
@@ -103,7 +103,7 @@ public class TemplateProviderTest {
         assertOwnerReference(BRIDGE_INGRESS, broker.getMetadata());
         assertLabels(broker.getMetadata(), BridgeIngress.COMPONENT_NAME);
         assertThat(broker.getMetadata().getAnnotations().get("eventing.knative.dev/broker.class")).isEqualTo("Kafka");
-        assertThat(broker.getMetadata().getAnnotations().get("x-kafka.eventing.knative.dev/external.topic")).isBlank();
+        assertThat(broker.getMetadata().getAnnotations().get("kafka.eventing.knative.dev/external.topic")).isBlank();
         assertThat(broker.getSpec().getConfig().getKind()).isEqualTo("ConfigMap");
         assertThat(broker.getSpec().getConfig().getApiVersion()).isEqualTo("v1");
     }

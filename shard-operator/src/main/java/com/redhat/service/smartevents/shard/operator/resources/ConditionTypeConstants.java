@@ -7,6 +7,9 @@ package com.redhat.service.smartevents.shard.operator.resources;
  *      Properties</a>
  */
 public class ConditionTypeConstants {
+    private ConditionTypeConstants() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static final String READY = "Ready";
-    public static final String AUGMENTATION = "Augmentation";
 }

@@ -1,0 +1,11 @@
+patchesStrategicMerge:
+- patches/deploy-config.yaml
+namespace: event-bridge-operator
+resources:
+- namespace.yaml
+- cluster-role.yaml
+- cluster-role-binding.yaml
+- addon-smart-events-operator-parameters.yaml
+- ../../../base/shard
+- cluster-secret-store.yaml
+- awssm-secret.yaml

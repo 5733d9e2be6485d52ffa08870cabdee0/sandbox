@@ -1,0 +1,28 @@
+name: CI Topics Clean up
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 6'
+jobs:
+  run-ci-topics-delete-script:
+    runs-on: ubuntu-latest
+    if: github.repository == '5733d9e2be6485d52ffa08870cabdee0/sandbox'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: "main"
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+      - name: Add mask
+        run: |
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}"
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}"
+          echo "::add-mask::${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}"
+      - name: Run CI topics delete script
+        env:
+          BOOSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
+          KAFKA_ADMIN_USERNAME: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
+          KAFKA_ADMIN_PASSWORD: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
+        run: |
+          ./.github/scripts/delete-kafka-ci-topics.sh

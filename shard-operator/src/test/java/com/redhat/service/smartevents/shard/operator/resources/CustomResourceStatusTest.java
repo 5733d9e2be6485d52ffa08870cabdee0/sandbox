@@ -1,7 +1,19 @@
 package com.redhat.service.smartevents.shard.operator.resources;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
+
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.FAILED;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.PROVISIONING;
+import static com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus.READY;
+import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.False;
+import static com.redhat.service.smartevents.shard.operator.resources.ConditionStatus.True;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomResourceStatusTest {
@@ -13,7 +25,7 @@ public class CustomResourceStatusTest {
 
         // When
         resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
-        resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION);
+        resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
         assertThat(resourceStatus.isReady()).isTrue();
@@ -26,7 +38,7 @@ public class CustomResourceStatusTest {
 
         // When
         resourceStatus.markConditionFalse(ConditionTypeConstants.READY, ConditionReasonConstants.DEPLOYMENT_FAILED, "");
-        resourceStatus.markConditionTrue(ConditionTypeConstants.AUGMENTATION);
+        resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
 
         // Then
         assertThat(resourceStatus.isReady()).isFalse();
@@ -35,4 +47,32 @@ public class CustomResourceStatusTest {
             assertThat(c.getReason()).isEqualTo(ConditionReasonConstants.DEPLOYMENT_FAILED);
         });
     }
+
+    @ParameterizedTest
+    @MethodSource("inferManagedResourceStatusParams")
+    public void testInferManagedResourceStatus(ConditionStatus ready, ConditionStatus augmentation, ManagedResourceStatus inferred) {
+        final CustomResourceStatus resourceStatus = new FooResourceStatus();
+
+        if (True.equals(ready)) {
+            resourceStatus.markConditionTrue(ConditionTypeConstants.READY);
+        } else if (False.equals(ready)) {
+            resourceStatus.markConditionFalse(ConditionTypeConstants.READY);
+        }
+        if (True.equals(augmentation)) {
+            resourceStatus.markConditionTrue(FooResourceStatus.AUGMENTATION);
+        } else if (False.equals(augmentation)) {
+            resourceStatus.markConditionFalse(FooResourceStatus.AUGMENTATION);
+        }
+
+        assertThat(resourceStatus.inferManagedResourceStatus()).isEqualTo(inferred);
+    }
+
+    private static Stream<Arguments> inferManagedResourceStatusParams() {
+        return Stream.of(
+                Arguments.of(True, null, READY),
+                Arguments.of(False, False, FAILED),
+                Arguments.of(True, False, READY),
+                Arguments.of(False, True, PROVISIONING));
+    }
+
 }

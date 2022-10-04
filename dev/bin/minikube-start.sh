@@ -42,17 +42,13 @@ minikube -p "${MINIKUBE_PROFILE}" addons enable ingress-dns
 sleep 5
 
 if [ "${disable_extra_components}" != 'true' ]; then
-  kustomize build ${KUSTOMIZE_DIR}/overlays/minikube/keycloak | kubectl apply -f -
+  kustomize build ${KUSTOMIZE_DIR}/overlays/local/keycloak | kubectl apply -f -
   sleep 5
   kubectl wait pod -l app-component=keycloak --for=condition=Ready --timeout=600s -n keycloak
   sleep 5
   kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/v0.9.0/manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
   . "${SCRIPT_DIR_PATH}/knative-installer.sh"
   yes | istioctl manifest apply --set profile=default --set values.gateways.istio-ingressgateway.type="ClusterIP"
-  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/gateway.yaml
-  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/virtual-service-kafka-broker.yaml
-  kubectl apply -f ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml
-  cat ${KUSTOMIZE_DIR}/overlays/minikube/istio/jwt-request-authentication.yaml | sed -E "s|<REPLACE_WITH_MINIKUBE_IP>|$(minikube -p "${MINIKUBE_PROFILE}" ip)|" | kubectl apply -f -
 fi
 
 set +x

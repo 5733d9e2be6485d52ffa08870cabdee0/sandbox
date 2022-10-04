@@ -44,6 +44,9 @@ jobs:
       - name: Prepare test configuration for E2E tests
         uses: ./.github/actions/e2e-test-config
         env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_ACCOUNT_ID: ${{ secrets.IT_AWS_ACCOUNT_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
@@ -63,7 +66,7 @@ jobs:
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=$STABLE_CLUSTER_MANAGER_URL -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$STABLE_SSO_CLIENT_ID -Dbridge.client.secret=$STABLE_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Get Sheriff Name
         if: ${{ failure() }}
@@ -81,7 +84,7 @@ jobs:
           subject: Stable cluster CI - Check failed
           to: openbridge-dev@redhat.com
           from: Stable cluster CI
-          body: Stable cluster CI check failed.Sheriff https://github.com/${{ steps.findUser.outputs.USER_NAME }} please analyze the issue on https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stable-cluster-check.yml and implement a proper fix.
+          html_body: Stable cluster CI check failed.Sheriff <a href="https://github.com/${{ steps.findUser.outputs.USER_NAME }}">${{ steps.findUser.outputs.USER_NAME }}</a> please analyze the issue on <a href="https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/actions/workflows/stable-cluster-check.yml">clustercheckyaml</a> and implement a proper fix and update the <a href="https://docs.google.com/spreadsheets/d/1Fl_NZOo-CO6GgBvDjgAXA_Ms-2zspAa8dF_TBvxKtag/edit">spreadsheet</a> in case of issues.
       - name: Publish Test Report
         if: ${{ always() }}
         uses: scacap/action-surefire-report@v1.0.10

@@ -835,13 +835,13 @@ public class ProcessorAPITest {
         });
 
         //Emulate Shard updating Bridge status
-        BridgeDTO dto = new BridgeDTO();
-        dto.setId(bridgeResponse.getId());
-        dto.setStatus(READY);
-        dto.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
-        dto.setEndpoint("https://foo.bridges.redhat.com");
+        BridgeDTO bridgeDTO = new BridgeDTO();
+        bridgeDTO.setId(bridgeResponse.getId());
+        bridgeDTO.setStatus(READY);
+        bridgeDTO.setCustomerId(TestConstants.DEFAULT_CUSTOMER_ID);
+        bridgeDTO.setEndpoint("https://foo.bridges.redhat.com");
 
-        Response deployment = TestUtils.updateBridge(dto);
+        Response deployment = TestUtils.updateBridge(bridgeDTO);
         assertThat(deployment.getStatusCode()).isEqualTo(200);
         return bridgeResponse;
     }

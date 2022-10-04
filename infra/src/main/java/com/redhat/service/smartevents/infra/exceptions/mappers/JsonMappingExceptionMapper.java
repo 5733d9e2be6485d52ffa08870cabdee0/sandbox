@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.infra.exceptions.mappers;
 
+import java.util.Objects;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -30,7 +32,7 @@ public class JsonMappingExceptionMapper extends BaseExceptionMapper<JsonMappingE
     @Override
     public Response toResponse(JsonMappingException e) {
         LOGGER.debug("Failure", e);
-        Throwable cause = e.getCause();
+        Throwable cause = Objects.nonNull(e.getCause()) ? e.getCause() : e;
         ResponseBuilder builder = mapError(cause, getStatusCode(cause));
         return builder.build();
     }

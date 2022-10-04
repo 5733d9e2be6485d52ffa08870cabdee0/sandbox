@@ -37,6 +37,9 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     @JsonProperty("source")
     private Source source;
 
+    @JsonProperty("status_message")
+    private String statusMessage;
+
     public ProcessorType getType() {
         return type;
     }
@@ -76,4 +79,13 @@ public class ProcessorResponse extends BaseManagedResourceResponse {
     public void setSource(Source source) {
         this.source = source;
     }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
 }

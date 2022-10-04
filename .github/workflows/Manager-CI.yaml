@@ -52,61 +52,41 @@ jobs:
         uses: ./.github/actions/kind
         with:
           kind-node-hostname: ${{ env.KIND_MAIN_NODE_HOSTNAME }}
+      - name: External Secret Operator Setup
+        uses: ./.github/actions/external-secret-operator-setup
       - uses: imranismail/setup-kustomize@v1
       - name: Use built Fleet manager and operator images
         run: |
           kustomize edit set image event-bridge-manager=$FLEET_MANAGER_CONTAINER_NAME
           kustomize edit set image event-bridge-shard-operator=$FLEET_SHARD_MINIKUBE_CONTAINER_NAME
-        working-directory: kustomize/overlays/minikube
+        working-directory: kustomize/overlays/ci
       - name: Use built Ingress and Executor images
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/minikube/shard/patches/deploy-config.yaml
-          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/shard/patches/deploy-config.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_EXECUTOR_IMAGE:).*|\1 $EXECUTOR_CONTAINER_NAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/shard/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/shard/patches/deploy-config.yaml
         working-directory: kustomize
       - name: Set Kind hostname in the Manager configuration
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/minikube/manager/patches/deploy-config.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/minikube/manager/patches/deploy-config.yaml
-        working-directory: kustomize
-      - name: Configure correct Keycloak endpoints for Fleet manager, operator and istio
-        run: |
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/shard/patches/deploy-config.yaml
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/manager/patches/deploy-config.yaml
-          sed -i -E "s|(.*http://).*:30007(.*)|\1keycloak.keycloak.svc.cluster.local:8180\2|" overlays/minikube/istio/jwt-request-authentication.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX:).*|\1 ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_DNS_INGRESS_OVERRIDE_HOSTNAME:).*|\1 $KIND_MAIN_NODE_HOSTNAME|" overlays/ci/manager/patches/deploy-config.yaml
+          sed -i -E "s|(.*EVENT_BRIDGE_K8S_ORCHESTRATOR:).*|\1 kind|" overlays/ci/manager/patches/deploy-config.yaml
         working-directory: kustomize
       - name: Configure external Managed Kafka cluster
         shell: bash
         env:
-          MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
-          MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
-          MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
-          MANAGED_KAFKA_OPS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_ID }}
-          MANAGED_KAFKA_OPS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_OPS_CLIENT_SECRET }}
-          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID }}
-          MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET }}
-          MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN: ${{ secrets.MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN }}
-          MANAGED_CONNECTORS_NAMESPACE_ID: ${{ secrets.MANAGED_CONNECTORS_NAMESPACE_ID }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_OPS_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_INSTANCE_API_HOST=).*|\1https://admin-server-$MANAGED_KAFKA_BOOTSTRAP_SERVER/rest|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_ID=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RHOAS_SSO_MAS_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_ADMIN_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*RHOAS_OPS_ACCOUNT_CLIENT_ID=).*|\1$MANAGED_KAFKA_OPS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*EVENT_BRIDGE_RESOURCE_PREFIX=).*|\1ci-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_NAMESPACE_ID=).*|\1$MANAGED_CONNECTORS_NAMESPACE_ID|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_BOOTSTRAP_SERVERS=).*|\1$MANAGED_KAFKA_BOOTSTRAP_SERVER|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_ID=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_ID|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_KAFKA_CLIENT_SECRET=).*|\1$MANAGED_KAFKA_MANAGED_CONNECTORS_CLIENT_SECRET|" kustomization.yaml
-          sed -i -E "s|(.*MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN=).*|\1$MANAGED_CONNECTORS_AUTH_OFFLINE_TOKEN|" kustomization.yaml
-          sed -e ':a;s/^\(  - [A-Z_]\+_SECRET\=[^=]\{4\}x*\)[^x]/\1x/;t a' -e ':b;s/^\(  - [A-Z_]\+\=[^=]\{12\}x*\)[^x]/\1x/;t b' kustomization.yaml
-        working-directory: kustomize/overlays/minikube/manager
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" manager/awssm-secret.yaml
+          sed -i -E "s|(.*access-key:).*|\1 $AWS_ACCESS_KEY|" shard/awssm-secret.yaml
+          sed -i -E "s|(.*secret-access-key:).*|\1 $AWS_SECRET_ACCESS_KEY|" shard/awssm-secret.yaml
+        working-directory: kustomize/overlays/ci
       - name: Build all images and resources
         uses: ./.github/actions/maven
         with:
-          maven-command: clean install --errors --quiet -Pminikube -Dquickly
+          maven-command: clean install --errors --quiet -Dquickly
       - name: Build and Publish JVM Container - Fleet Manager
         run: |
           docker build -f docker/Dockerfile.jvm -t $FLEET_MANAGER_CONTAINER_NAME manager/
@@ -126,24 +106,15 @@ jobs:
           chmod +x dev/bin/knative-installer.sh
           ./dev/bin/knative-installer.sh
       - name: Install all resources
-        run: kustomize build overlays/minikube | oc apply -f -
+        run: kustomize build overlays/ci | oc apply -f -
         working-directory: kustomize
         continue-on-error: true
       - name: Install all resources, second attempt (first one fails as CRD is not properly propagated fast enough)
-        run: kustomize build overlays/minikube | oc apply -f -
-        working-directory: kustomize
-      - name: Wait for Keycloak to start
-        run: |
-          kubectl wait --for=condition=available --timeout=300s deployment/keycloak -n keycloak
-          timeout 120 bash -c 'while [[ "$(curl --insecure -s -o /dev/null -w ''%{http_code}'' http://localhost:30007/auth)" != "303" ]]; do sleep 5; done'
-      - name: Configure bearer token for tests
-        run: |
-          TOKEN=$(kubectl exec -n keycloak deployment/keycloak -- curl --insecure -X POST http://keycloak.keycloak.svc.cluster.local:8180/auth/realms/event-bridge-fm/protocol/openid-connect/token --user event-bridge:secret -H 'content-type: application/x-www-form-urlencoded' -d 'username=kermit&password=thefrog&grant_type=password' | jq --raw-output '.access_token')
-          echo "OB_TOKEN=$TOKEN" >> $GITHUB_ENV
+        run: kustomize build overlays/ci | oc apply -f -
         working-directory: kustomize
       - name: Update all resources and delete current operator pod(to refresh operator config)
         run: |
-          kustomize build overlays/minikube | oc apply -f -
+          kustomize build overlays/ci | oc apply -f -
           oc delete pod --selector=app=event-bridge-shard-operator -n event-bridge-operator
         working-directory: kustomize
       - name: Wait for operator and manager to start
@@ -153,6 +124,9 @@ jobs:
       - name: Prepare test configuration for E2E tests
         uses: ./.github/actions/e2e-test-config
         env:
+          IT_AWS_ACCESS_KEY_ID: ${{ secrets.IT_AWS_ACCESS_KEY_ID }}
+          IT_AWS_ACCOUNT_ID: ${{ secrets.IT_AWS_ACCOUNT_ID }}
+          IT_AWS_SECRET_ACCESS_KEY: ${{ secrets.IT_AWS_SECRET_ACCESS_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TOKEN: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
@@ -160,6 +134,8 @@ jobs:
           SLACK_CHANNEL_SECOND: ${{ secrets.SLACK_CHANNEL_SECOND }}
       - name: Run integration tests
         env:
+          DEV_SSO_CLIENT_ID: ${{ secrets.DEV_SSO_CLIENT_ID }}
+          DEV_SSO_CLIENT_SECRET: ${{ secrets.DEV_SSO_CLIENT_SECRET }}
           MANAGED_KAFKA_BOOTSTRAP_SERVER: ${{ secrets.MANAGED_KAFKA_BOOTSTRAP_SERVER }}
           MANAGED_KAFKA_ADMIN_CLIENT_ID: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_ID }}
           MANAGED_KAFKA_ADMIN_CLIENT_SECRET: ${{ secrets.MANAGED_KAFKA_ADMIN_CLIENT_SECRET }}
@@ -169,7 +145,7 @@ jobs:
           WEBHOOK_SITE_UUID_SECOND: ${{ secrets.WEBHOOK_SITE_UUID_SECOND }}
         uses: ./.github/actions/maven
         with:
-          maven-command: clean verify -Dgroups=\!slacksource -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
+          maven-command: clean verify -Pcucumber -Dparallel -Devent-bridge.manager.url=http://localhost:80/manager -Dkeycloak.realm.url=https://sso.redhat.com/auth/realms/redhat-external -Dbridge.client.id=$DEV_SSO_CLIENT_ID -Dbridge.client.secret=$DEV_SSO_CLIENT_SECRET -Dmanaged.kafka.sso.auth-server-url=https://sso.redhat.com/auth/realms/redhat-external -Dtest.credentials.file=e2e-test-config.yaml
           working-directory: integration-tests
       - name: Print operator log
         if: always()

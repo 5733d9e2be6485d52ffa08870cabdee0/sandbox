@@ -8,11 +8,14 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorHelper;
+import com.redhat.service.smartevents.infra.metrics.MetricsOperation;
 import com.redhat.service.smartevents.infra.models.dto.BridgeDTO;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatus;
 import com.redhat.service.smartevents.infra.models.dto.ManagedResourceStatusUpdateDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorDTO;
 import com.redhat.service.smartevents.infra.models.dto.ProcessorManagedResourceStatusUpdateDTO;
+import com.redhat.service.smartevents.shard.operator.metrics.OperatorMetricsService;
 
 import io.quarkus.scheduler.Scheduled;
 import io.smallrye.mutiny.Uni;
@@ -23,19 +26,24 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSyncServiceImpl.class);
 
     private enum FallibleOperation {
-        PROVISIONING("Provisioning"),
-        DELETING("Deleting");
+        PROVISIONING("Provisioning", MetricsOperation.OPERATOR_RESOURCE_PROVISION),
+        DELETING("Deleting", MetricsOperation.OPERATOR_RESOURCE_DELETE);
 
         String prettyName;
+        MetricsOperation metricsOperation;
 
-        FallibleOperation(String prettyName) {
+        FallibleOperation(String prettyName, MetricsOperation metricsOperation) {
             this.prettyName = prettyName;
+            this.metricsOperation = metricsOperation;
         }
 
         String getPrettyName() {
             return prettyName;
         }
 
+        public MetricsOperation getMetricsOperation() {
+            return metricsOperation;
+        }
     }
 
     @Inject
@@ -46,6 +54,12 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
 
     @Inject
     BridgeExecutorService bridgeExecutorService;
+
+    @Inject
+    BridgeErrorHelper bridgeErrorHelper;
+
+    @Inject
+    OperatorMetricsService metricsService;
 
     @Override
     @Scheduled(every = "30s")
@@ -161,10 +175,17 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             ManagedResourceStatus failedStatus,
             BridgeDTO bridge) {
         try {
+            metricsService.onOperationStart(bridge, operation.getMetricsOperation());
             runnable.run();
+            metricsService.onOperationComplete(bridge, operation.getMetricsOperation());
         } catch (Exception e) {
             LOGGER.warn("{} of Bridge '{}' failed", operation.getPrettyName(), bridge.getId(), e);
-            ManagedResourceStatusUpdateDTO updateDto = new ManagedResourceStatusUpdateDTO(bridge.getId(), bridge.getCustomerId(), failedStatus);
+            ManagedResourceStatusUpdateDTO updateDto = new ManagedResourceStatusUpdateDTO(bridge.getId(),
+                    bridge.getCustomerId(),
+                    failedStatus,
+                    bridgeErrorHelper.getBridgeErrorInstance(e));
+
+            metricsService.onOperationFailed(bridge, operation.getMetricsOperation());
             managerClient.notifyBridgeStatusChange(updateDto)
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Bridge '{}' has been sent to the manager successfully", bridge.getId()),
@@ -193,10 +214,18 @@ public class ManagerSyncServiceImpl implements ManagerSyncService {
             ManagedResourceStatus failedStatus,
             ProcessorDTO processor) {
         try {
+            metricsService.onOperationStart(processor, operation.getMetricsOperation());
             runnable.run();
+            metricsService.onOperationComplete(processor, operation.getMetricsOperation());
         } catch (Exception e) {
             LOGGER.warn("{} of Processor '{}' failed", operation.getPrettyName(), processor.getId(), e);
-            ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO(processor.getId(), processor.getCustomerId(), processor.getBridgeId(), failedStatus);
+            ProcessorManagedResourceStatusUpdateDTO updateDto = new ProcessorManagedResourceStatusUpdateDTO(processor.getId(),
+                    processor.getCustomerId(),
+                    processor.getBridgeId(),
+                    failedStatus,
+                    bridgeErrorHelper.getBridgeErrorInstance(e));
+
+            metricsService.onOperationFailed(processor, operation.getMetricsOperation());
             managerClient.notifyProcessorStatusChange(updateDto)
                     .subscribe()
                     .with(success -> LOGGER.info("Failure notification for Processor '{}' has been sent to the manager successfully", processor.getId()),

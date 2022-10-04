@@ -20,7 +20,8 @@ spec:
             - configMapRef:
                 name: event-bridge-shard-operator-config
             - secretRef:
-                name: event-bridge-shard-operator-secrets
+                name: addon-smart-events-operator-parameters
+                optional: true
           livenessProbe:
             httpGet:
               path: /q/health/live

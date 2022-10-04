@@ -2,6 +2,7 @@ package com.redhat.service.smartevents.infra.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.redhat.service.smartevents.infra.exceptions.BridgeErrorInstance;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ManagedResourceStatusUpdateDTO {
@@ -15,13 +16,26 @@ public class ManagedResourceStatusUpdateDTO {
     @JsonProperty("status")
     private ManagedResourceStatus status;
 
+    @JsonProperty("bridgeErrorInstance")
+    private BridgeErrorInstance bridgeErrorInstance;
+
     public ManagedResourceStatusUpdateDTO() {
     }
 
-    public ManagedResourceStatusUpdateDTO(String id, String customerId, ManagedResourceStatus status) {
+    public ManagedResourceStatusUpdateDTO(String id,
+            String customerId,
+            ManagedResourceStatus status) {
+        this(id, customerId, status, null);
+    }
+
+    public ManagedResourceStatusUpdateDTO(String id,
+            String customerId,
+            ManagedResourceStatus status,
+            BridgeErrorInstance bridgeErrorInstance) {
         this.id = id;
         this.customerId = customerId;
         this.status = status;
+        this.bridgeErrorInstance = bridgeErrorInstance;
     }
 
     public String getId() {
@@ -47,4 +61,13 @@ public class ManagedResourceStatusUpdateDTO {
     public void setStatus(ManagedResourceStatus status) {
         this.status = status;
     }
+
+    public BridgeErrorInstance getBridgeErrorInstance() {
+        return bridgeErrorInstance;
+    }
+
+    public void setBridgeErrorInstance(BridgeErrorInstance bridgeErrorInstance) {
+        this.bridgeErrorInstance = bridgeErrorInstance;
+    }
+
 }
