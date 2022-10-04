@@ -16,7 +16,7 @@ objects:
       selector:
         matchLabels:
           app-component: rhose-fleet-manager
-      replicas: 3
+      replicas: ${FLEET_MANAGER_REPLICAS}
       template:
         metadata:
           labels:
@@ -349,6 +349,9 @@ parameters:
   - name: FLEET_MANAGER_SECRET_NAME
     value: fleet-manager
     description: the fleet-manager vault secret
+  - name: FLEET_MANAGER_REPLICAS
+    value: "3"
+    description: the fleet-manager replicas
   - name: QUARKUS_LOG_LEVEL
     value: "INFO"
     description: the quarkus log level
