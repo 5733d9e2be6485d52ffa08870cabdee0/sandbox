@@ -20,7 +20,6 @@ public class BadRequestException extends ExternalUserException {
      *
      * @return - The HTTP Status code to return to the client.
      */
-    @Override
     public int getStatusCode() {
         return Response.Status.BAD_REQUEST.getStatusCode();
     }
