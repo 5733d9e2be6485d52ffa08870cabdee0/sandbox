@@ -3,8 +3,13 @@
 source common_tools.sh
 
 echo "Installing Serverless Operator"
-# based on https://docs.openshift.com/container-platform/4.11/serverless/install/install-serverless-operator.html
-install_operator_and_wait serverless/serverlessSub.yaml
+# based on https://github.com/openshift-knative/serverless-operator/blob/main/docs/install-midstream.md
+waitForSuccess 10 oc apply -f serverless/serverless-system-namespace.yaml
+waitForSuccess 10 oc apply -f serverless/serverless-operator-group.yaml
+waitForSuccess 10 oc apply -f serverless/serverless-catalog-source.yaml
+# TODO: do we want to wait until catalog source is ready?
+# oc wait catalogsources -n openshift-marketplace serverless-operator-v1-24-0 --for=jsonpath='{.status.connectionState.lastObservedState}'="READY" --timeout=5m
+install_operator_and_wait serverless/serverlessSub.yaml openshift-serverless
 # set up serverless resources
 waitForSuccess 10 oc apply -k serverless
 

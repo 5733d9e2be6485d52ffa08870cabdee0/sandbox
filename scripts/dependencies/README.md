@@ -22,6 +22,6 @@ oc login --token=... --server=...
 ```
 
 ## References
-[1] https://docs.openshift.com/container-platform/4.11/serverless/install/install-serverless-operator.html
+[1] https://github.com/openshift-knative/serverless-operator/blob/main/docs/install-midstream.md
 
 [2] https://docs.openshift.com/container-platform/4.11/service_mesh/v2x/installing-ossm.html

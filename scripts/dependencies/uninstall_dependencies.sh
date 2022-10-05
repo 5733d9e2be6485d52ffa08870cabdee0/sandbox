@@ -16,5 +16,5 @@ echo "Removing Serverless resources"
 waitForSuccess 3 oc kustomize serverless | oc delete --ignore-not-found=true -f -
 
 echo "Removing Serverless Operator"
-# based on https://docs.openshift.com/container-platform/4.11/serverless/install/install-serverless-operator.html
-uninstall_operator serverless/serverlessSub.yaml
+# based on https://github.com/openshift-knative/serverless-operator/blob/main/docs/install-midstream.md
+uninstall_operator serverless/serverlessSub.yaml openshift-serverless
