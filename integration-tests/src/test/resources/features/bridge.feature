@@ -9,5 +9,5 @@ Feature: Bridge tests
 
     When delete the Bridge "mybridge"
 
-    Then the Bridge "mybridge" is not existing within 2 minutes
+    Then the Bridge "mybridge" is not existing within 4 minutes
     And the Ingress of Bridge "mybridge" is not available within 1 minute
