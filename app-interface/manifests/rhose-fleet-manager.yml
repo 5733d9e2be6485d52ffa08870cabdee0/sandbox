@@ -286,6 +286,11 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: AWS_SECRET_ACCESS_KEY
+                - name: EVENT_BRIDGE_RESOURCE_PREFIX
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${FLEET_MANAGER_SECRET_NAME}
+                      key: EVENT_BRIDGE_RESOURCE_PREFIX
               ports:
                 - containerPort: 8080
               livenessProbe:
