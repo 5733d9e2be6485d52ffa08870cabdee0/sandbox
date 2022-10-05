@@ -8,6 +8,7 @@ namespace: event-bridge-prod
 resources:
 - ../../base/shard
 - ../../base-openshift/shard
+- namespace.yaml
 - secrets
 - shard
 - awssm-secret.yaml
