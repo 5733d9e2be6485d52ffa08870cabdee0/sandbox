@@ -63,15 +63,19 @@ public class PerformanceSteps {
                 .isFalse();
     }
 
-    @And("^the total of events received for benchmark \"([^\"]*)\" run of Bridge \"([^\"]*)\" is equal to the total of cloud events sent in:$")
-    public void numberOfEventsReceivedIsEqualToEventsSent(String perfTestName, String bridgeName, DataTable parametersDatatable) {
-        String bridgeId = context.getBridge(bridgeName).getId();
-        Integer totalEventsReceived = WebhookPerformanceResource.getCountEventsReceived(bridgeId, Integer.class);
-        int totalEventsSent = HyperfoilResource.getTotalRequestsSent(perfContext.getBenchmarkRun(perfTestName), parametersDatatable.asMap().get("phase"), parametersDatatable.asMap().get("metric"));
-
-        assertThat(totalEventsReceived)
-                .isEqualTo(totalEventsSent)
-                .isPositive();
+    @And("^the total of events received for benchmark \"([^\"]*)\" run in \"([^\"]*)\" phase is equal to the total of cloud events sent in:$")
+    public void numberOfEventsReceivedIsEqualToEventsSent(String perfTestName, String phase, DataTable parametersDatatable) {
+        parametersDatatable.entries()
+                .forEach(entry -> {
+                    String runId = perfContext.getBenchmarkRun(perfTestName);
+                    String bridgeId = context.getBridge(entry.get("bridge")).getId();
+                    String metric = entry.get("metric");
+                    Integer totalEventsReceived = WebhookPerformanceResource.getCountEventsReceived(bridgeId, Integer.class);
+                    int totalEventsSent = HyperfoilResource.getTotalRequestsSent(runId, phase, metric);
+                    assertThat(totalEventsReceived)
+                            .isEqualTo(totalEventsSent)
+                            .isPositive();
+                });
     }
 
     @When("^store results of benchmark run \"([^\"]*)\" in Horreum test \"([^\"]*)\"$")

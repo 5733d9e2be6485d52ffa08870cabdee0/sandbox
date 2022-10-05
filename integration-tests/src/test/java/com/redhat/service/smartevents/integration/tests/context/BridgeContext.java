@@ -1,9 +1,10 @@
 package com.redhat.service.smartevents.integration.tests.context;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.redhat.service.smartevents.integration.tests.common.EndPointParser;
+import java.util.Optional;
 
 import io.cucumber.java.Scenario;
 
@@ -17,9 +18,7 @@ public class BridgeContext {
 
     private Map<String, ProcessorContext> processors = new HashMap<>();
 
-    private String endPoint;
-    private String endPointBaseUrl;
-    private String endPointPath;
+    private Optional<URL> endPoint = Optional.empty();
     private String errorHandlerEndpoint;
 
     private boolean deleted;
@@ -40,16 +39,20 @@ public class BridgeContext {
         return id;
     }
 
+    public String getEndPointAuthority() {
+        return endPoint.map(URL::getAuthority).orElse(null);
+    }
+
     public String getEndPoint() {
-        return this.endPoint;
+        return endPoint.map(URL::toString).orElse(null);
     }
 
     public String getEndPointBaseUrl() {
-        return endPointBaseUrl;
+        return endPoint.map(url -> url.getProtocol() + "://" + url.getAuthority()).orElse(null);
     }
 
     public String getEndPointPath() {
-        return endPointPath;
+        return endPoint.map(URL::getPath).orElse(null);
     }
 
     public String getErrorHandlerEndpoint() {
@@ -57,11 +60,11 @@ public class BridgeContext {
     }
 
     public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
-        endPointBaseUrl = EndPointParser.getEndpointBaseUrl(endPoint)
-                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint base url for " + endPoint));
-        endPointPath = EndPointParser.getEndpointPathUrl(endPoint)
-                .orElseThrow(() -> new RuntimeException("Unable to resolve an endpoint path for " + endPoint));
+        try {
+            this.endPoint = Optional.of(new URL(endPoint));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Invalid URL provided for bridge endpoint", e);
+        }
     }
 
     public void setErrorHandlerEndpoint(String errorHandlerEndpoint) {
