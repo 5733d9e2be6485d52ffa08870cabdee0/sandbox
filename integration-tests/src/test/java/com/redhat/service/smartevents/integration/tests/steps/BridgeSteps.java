@@ -31,13 +31,13 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-import static com.redhat.service.smartevents.integration.tests.common.EndPointParser.ENDPOINT_URL_REGEX;
 import static com.redhat.service.smartevents.processingerrors.ProcessingErrorService.ENDPOINT_ERROR_HANDLER_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BridgeSteps {
 
     private static final int BRIDGE_NAME_CREATE_RETRY = 20;
+    private static final String ENDPOINT_URL_REGEX = "^(https?:\\/\\/[^/?#]+)([a-z0-9\\-._~%!$&'()*+,;=:@/]*)";
     private static final String NAME_REGEX = "\"name\": \"([^\"]+)\"";
     private static final Pattern NAME_PATTERN = Pattern.compile(NAME_REGEX);
     private static final String NAME_REPLACE_TEMPLATE = "\"name\": \"%s\"";

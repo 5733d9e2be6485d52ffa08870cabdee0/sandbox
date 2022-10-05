@@ -76,7 +76,7 @@ public class HyperfoilResource {
 
             if (requestCounts.size() != 1) {
                 throw new RuntimeException("Unable to resolve 'requestCount' from the stats json response.\n" +
-                        "There should be just one and only one 'httpRequest' defined");
+                        "There should only be just one 'httpRequest' defined");
             }
 
             return requestCounts.get(0).intValue();

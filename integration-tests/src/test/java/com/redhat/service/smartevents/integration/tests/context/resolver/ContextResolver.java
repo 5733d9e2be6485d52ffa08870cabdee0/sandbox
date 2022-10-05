@@ -20,6 +20,7 @@ public class ContextResolver {
             new AwsRegionResolver(),
             new AwsSecretKeyResolver(),
             new AwsSqsQueueNameResolver(),
+            new BridgeEndpointAuthorityResolver(),
             new BridgeEndpointBaseResolver(),
             new BridgeEndpointPathResolver(),
             new BridgeIdResolver(),
