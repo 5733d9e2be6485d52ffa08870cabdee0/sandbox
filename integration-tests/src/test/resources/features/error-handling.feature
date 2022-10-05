@@ -19,7 +19,7 @@ Feature: Error handling tests
         }
     }
     """
-    And the Bridge "ehBridge" is existing with status "ready" within 4 minutes
+    And the Bridge "ehBridge" is existing with status "ready" within 6 minutes
     And the Ingress of Bridge "ehBridge" is available within 2 minutes
 
     And add a Processor to the Bridge "ehBridge" with body:
@@ -72,7 +72,7 @@ Feature: Error handling tests
         }
     }
     """
-    And the Bridge "ehBridgeUpdate" is existing with status "ready" within 4 minutes
+    And the Bridge "ehBridgeUpdate" is existing with status "ready" within 6 minutes
     And the Ingress of Bridge "ehBridgeUpdate" is available within 2 minutes
 
     When update the Bridge "ehBridgeUpdate" with body:
@@ -89,7 +89,7 @@ Feature: Error handling tests
         }
     }
     """
-    And the Bridge "ehBridgeUpdate" is existing with status "ready" within 4 minutes
+    And the Bridge "ehBridgeUpdate" is existing with status "ready" within 6 minutes
     And the Bridge "ehBridgeUpdate" has errorHandler of type "webhook_sink_0.1" and parameters:
       | endpoint | https://webhook.site/${env.webhook.site.uuid} |
     And the Ingress of Bridge "ehBridgeUpdate" is available within 2 minutes
@@ -140,7 +140,7 @@ Feature: Error handling tests
         }
     }
     """
-    And the Bridge "pollingEhBridge" is existing with status "ready" within 4 minutes
+    And the Bridge "pollingEhBridge" is existing with status "ready" within 6 minutes
     And the Bridge "pollingEhBridge" has a polling error handler endpoint
     And the Ingress of Bridge "pollingEhBridge" is available within 2 minutes
 
