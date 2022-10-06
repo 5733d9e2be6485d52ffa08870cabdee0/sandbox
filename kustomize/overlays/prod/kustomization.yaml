@@ -1,0 +1,74 @@
+images:
+  - name: event-bridge-shard-operator
+    newName: quay.io/5733d9e2be6485d52ffa08870cabdee0/fleet-shard
+    newTag: ocp-2a356529e4161079849b88e3f1135190a685af04-jvm
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: event-bridge-prod
+resources:
+- ../../base/shard
+- ../../base-openshift/shard
+- namespace.yaml
+- secrets
+- shard
+- awssm-secret.yaml
+patchesStrategicMerge:
+- patches/deploy-config.yaml
+patchesJson6902:
+  # due to the issue https://github.com/kubernetes-sigs/kustomize/issues/880 we have to patch all the resources here
+  # resources in /kustomize/base-openshift/shard/knative/
+  - target:
+      group: ""
+      version: v1
+      kind: NetworkPolicy
+      name: kafka-broker-receiver
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha1
+      kind: KnativeEventing
+      name: knative-eventing
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha1
+      kind: KnativeKafka
+      name: knative-kafka
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1
+      kind: NetworkPolicy
+      name: eventing-webhook
+    path: patch-with-knative-eventing-namespace.yaml
+  # resources in /kustomize/base-openshift/shard/service-mesh/
+  - target:
+      group: ""
+      version: v1alpha3
+      kind: Gateway
+      name: broker-gateway
+    path: patch-with-knative-eventing-namespace.yaml
+  - target:
+      group: ""
+      version: v1beta1
+      kind: RequestAuthentication
+      name: jwt-rh-sso
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v2
+      kind: ServiceMeshControlPlane
+      name: basic
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v1
+      kind: ServiceMeshMemberRoll
+      name: default
+    path: patch-with-istio-system-namespace.yaml
+  - target:
+      group: ""
+      version: v1alpha3
+      kind: VirtualService
+      name: broker-virtual-service
+    path: patch-with-knative-eventing-namespace.yaml
