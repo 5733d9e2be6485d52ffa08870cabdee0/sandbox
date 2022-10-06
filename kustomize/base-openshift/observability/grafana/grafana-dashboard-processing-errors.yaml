@@ -62,7 +62,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "increase(http_server_requests_seconds_count{method=\"GET\",outcome=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m])",
+              "expr": "sum(increase(http_server_requests_seconds_count{method=\"GET\",outcome=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))",
               "refId": "A"
             }
           ],
@@ -148,7 +148,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "increase(http_server_requests_seconds_count{method=\"GET\",outcome!=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m])",
+              "expr": "sum(increase(http_server_requests_seconds_count{method=\"GET\",outcome!=\"SUCCESS\",uri=\"/api/smartevents_mgmt/v1/bridges/{bridgeId}/errors\",}[1m]))",
               "refId": "A"
             }
           ],
@@ -267,7 +267,7 @@ data:
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Unsuccessful bridge creation rate over 1 minute average",
+          "title": "Unsuccessful poll requests rate over 1 minute average",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -345,7 +345,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "increase(kafka_consumer_fetch_manager_records_consumed_total{topic!=\"\"}[1m])",
+              "expr": "sum(increase(kafka_consumer_fetch_manager_records_consumed_total{topic!=\"\"}[1m]))",
               "refId": "A"
             }
           ],
