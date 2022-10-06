@@ -24,7 +24,7 @@ import com.redhat.service.smartevents.manager.api.models.requests.BridgeRequest;
 import com.redhat.service.smartevents.manager.api.models.requests.ProcessorRequest;
 import com.redhat.service.smartevents.manager.api.models.responses.BridgeResponse;
 import com.redhat.service.smartevents.manager.dns.DnsService;
-import com.redhat.service.smartevents.manager.metrics.MetricsService;
+import com.redhat.service.smartevents.manager.metrics.ManagerMetricsService;
 import com.redhat.service.smartevents.manager.utils.DatabaseManagerUtils;
 import com.redhat.service.smartevents.manager.utils.TestUtils;
 import com.redhat.service.smartevents.processor.actions.kafkatopic.KafkaTopicAction;
@@ -71,7 +71,7 @@ public class ShardBridgesSyncAPITest {
     DatabaseManagerUtils databaseManagerUtils;
 
     @Inject
-    MetricsService metricsService;
+    ManagerMetricsService metricsService;
 
     @Inject
     DnsService dnsService;

@@ -11,6 +11,10 @@ package com.redhat.service.smartevents.shard.operator.resources;
  *      Properties</a>
  */
 public class ConditionReasonConstants {
+    private ConditionReasonConstants() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static final String DEPLOYMENT_AVAILABLE = "DeploymentAvailable";
     public static final String DEPLOYMENT_FAILED = "DeploymentFailed";
     public static final String DEPLOYMENT_NOT_AVAILABLE = "DeploymentNotAvailable";

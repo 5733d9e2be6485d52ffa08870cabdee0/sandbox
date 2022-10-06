@@ -1,28 +1,44 @@
-Feature: Create Bridges performance tests
+Feature: Continuous create Bridges performance tests
 
-  Background:
-    Given authenticate against Manager
-
-  @create-bridges-at-once
-  Scenario Outline: Create and delete many Bridges at once
+  @continuously-create-bridges
+  Scenario Outline: Continuously create Bridges by <users> users
     When run benchmark with content:
       """text/vnd.yaml
-      name: rhose-create-bridges
+      name: rhose-continuously-create-bridges
       http:
       - host: ${env.event-bridge.manager.url}
+        name: manager
         sharedConnections: <shared-connections>
         connectionStrategy: ALWAYS_NEW
+      - host: https://sso.redhat.com
+        name: sso
       phases:
       - bridgeCreatingUser:
-          atOnce:
-            # Using 15 minutes for max duration to make sure that all Bridges are created and deleted within the specified duration
-            maxDuration: 15m
-            users: <bridges>
+          always:
+            # Using 60 minutes for max duration to make sure that all Bridges are created and deleted within the specified duration
+            maxDuration: 60m
+            users: <users>
+            maxIterations: 10
             scenario:
+            - authenticate:
+              - set: clientId <- ${env.bridge.client.id}
+              - set: clientSecret <- ${env.bridge.client.secret}
+              - httpRequest:
+                  endpoint: sso
+                  POST: /auth/realms/redhat-external/protocol/openid-connect/token
+                  body: client_id=${clientId}&grant_type=client_credentials&client_secret=${clientSecret}
+                  headers:
+                    content-type: application/x-www-form-urlencoded
+                  handler:
+                    body:
+                      json:
+                        query: .access_token
+                        toVar: accessToken
             - create:
               # Create a Bridge with random name suffix
               - randomUUID: bridgeNameSuffix
               - httpRequest:
+                  endpoint: manager
                   POST: /api/smartevents_mgmt/v1/bridges
                   body: |
                     {
@@ -32,7 +48,7 @@ Feature: Create Bridges performance tests
                     }
                   headers:
                     content-type: application/json
-                    authorization: Bearer ${manager.authentication.token}
+                    authorization: Bearer ${accessToken}
                   handler:
                     body:
                       json:
@@ -41,10 +57,11 @@ Feature: Create Bridges performance tests
             - create-poll:
               # Wait until the Bridge is in either in ready or failed state
               - httpRequest:
+                  endpoint: manager
                   GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}
                   headers:
                     content-type: application/json
-                    authorization: Bearer ${manager.authentication.token}
+                    authorization: Bearer ${accessToken}
                     cache-control: no-cache
                   handler:
                     body:
@@ -70,16 +87,18 @@ Feature: Create Bridges performance tests
             - delete:
               # Delete Bridge
               - httpRequest:
+                  endpoint: manager
                   DELETE: /api/smartevents_mgmt/v1/bridges/${bridgeId}
                   headers:
-                    authorization: Bearer ${manager.authentication.token}
+                    authorization: Bearer ${accessToken}
             - delete-poll:
               # Wait until the Bridge is in either deleted or in failed state
               - httpRequest:
+                  endpoint: manager
                   GET: /api/smartevents_mgmt/v1/bridges/${bridgeId}
                   headers:
                     content-type: application/json
-                    authorization: Bearer ${manager.authentication.token}
+                    authorization: Bearer ${accessToken}
                     cache-control: no-cache
                   handler:
                     status:
@@ -102,8 +121,9 @@ Feature: Create Bridges performance tests
                   duration: 5s
               - restartSequence
       """
-    Then the benchmark run "rhose-create-bridges" was executed successfully
+    Then the benchmark run "rhose-continuously-create-bridges" was executed successfully
+    And store Manager metrics in Horreum test "continuously-create-bridges-<users>-users"
 
     Examples:
-      | bridges | shared-connections |
-      | 20      | 20                 |
+      | users | shared-connections |
+      | 1     | 1                  |

@@ -311,6 +311,28 @@ public class BridgesAPITest {
 
     @Test
     @TestSecurity(user = DEFAULT_CUSTOMER_ID)
+    // See https://issues.redhat.com/browse/MGDOBR-1113
+    public void testGetBridgesFilterByNameWithCreationByApi() {
+        BridgeRequest bridge1 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "1", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        BridgeRequest bridge2 = new BridgeRequest(DEFAULT_BRIDGE_NAME + "2", DEFAULT_CLOUD_PROVIDER, DEFAULT_REGION);
+        TestUtils.createBridge(bridge1);
+        TestUtils.createBridge(bridge2);
+
+        BridgeListResponse bridgeListResponse = TestUtils.getBridgesFilterByName(DEFAULT_BRIDGE_NAME + "1").as(BridgeListResponse.class);
+
+        assertThat(bridgeListResponse.getItems().size()).isEqualTo(1);
+        BridgeResponse bridgeResponse = bridgeListResponse.getItems().get(0);
+        assertThat(bridgeResponse.getName()).isEqualTo(bridge1.getName());
+        assertThat(bridgeResponse.getStatus()).isEqualTo(ACCEPTED);
+        assertThat(bridgeResponse.getHref()).isEqualTo(USER_API_BASE_PATH + bridgeResponse.getId());
+        assertThat(bridgeResponse.getSubmittedAt()).isNotNull();
+        assertThat(bridgeResponse.getEndpoint()).isNull();
+        assertThat(bridgeResponse.getCloudProvider()).isEqualTo(DEFAULT_CLOUD_PROVIDER);
+        assertThat(bridgeResponse.getRegion()).isEqualTo(DEFAULT_REGION);
+    }
+
+    @Test
+    @TestSecurity(user = DEFAULT_CUSTOMER_ID)
     public void testGetBridgesFilterByStatus() {
         Bridge bridge1 = Fixtures.createBridge();
         bridge1.setName(DEFAULT_BRIDGE_NAME + "1");

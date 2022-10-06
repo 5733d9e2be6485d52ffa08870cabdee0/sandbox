@@ -25,7 +25,7 @@ public class HyperfoilResource {
     // Creating validation object directly as TNB Hyperfoil default service starts/stops Hyperfoil, causing tests to fail on environment without Docker environment
     public static HyperfoilValidation validation = new HyperfoilValidation(HYPERFOIL_URL);
 
-    public static void addBenchmark(String benchmarkContent, String contentType) {
+    public static String addBenchmark(String benchmarkContent, String contentType) {
         // Currently TNB expects the benchmark to be provided either on classpath or as URL, so storing the benchmark content in dedicated file
         try {
             URL benchmarkResource = HyperfoilResource.class.getClassLoader().getResource(BENCHMARK_CONTENT_FILE);
@@ -35,7 +35,7 @@ public class HyperfoilResource {
             throw new RuntimeException("Exception while storing benchmark content into file on classpath", e);
         }
 
-        validation.addBenchmark(BENCHMARK_CONTENT_FILE);
+        return validation.addBenchmark(BENCHMARK_CONTENT_FILE);
     }
 
     public static String getCompleteRun(String idRun) {
@@ -76,7 +76,7 @@ public class HyperfoilResource {
 
             if (requestCounts.size() != 1) {
                 throw new RuntimeException("Unable to resolve 'requestCount' from the stats json response.\n" +
-                        "There should be just one and only one 'httpRequest' defined");
+                        "There should only be just one 'httpRequest' defined");
             }
 
             return requestCounts.get(0).intValue();

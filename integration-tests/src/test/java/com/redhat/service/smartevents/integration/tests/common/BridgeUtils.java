@@ -77,7 +77,25 @@ public class BridgeUtils {
             }
             bridgeContext.setEndPoint(endPoint);
         }
-
+        context.getScenario().log("Resolved Bridge endpoint " + bridgeContext.getEndPoint());
         return bridgeContext.getEndPoint();
+    }
+
+    public static String getOrRetrieveBridgePollingErrorHandlerEndpoint(TestContext context, String testBridgeName) {
+        BridgeContext bridgeContext = context.getBridge(testBridgeName);
+
+        if (bridgeContext.getErrorHandlerEndpoint() == null) {
+            // store bridge eh endpoint details
+            String ehEndPoint = BridgeResource.getBridgeDetails(context.getManagerToken(), bridgeContext.getId())
+                    .getErrorHandler().getParameter("endpoint");
+            // If an endpoint contains localhost without port then default port has to be
+            // defined, otherwise rest-assured will use port 8080
+            if (ehEndPoint.matches("http://localhost/.*")) {
+                ehEndPoint = ehEndPoint.replace("http://localhost/", "http://localhost:80/");
+            }
+            bridgeContext.setErrorHandlerEndpoint(ehEndPoint);
+        }
+        context.getScenario().log("Resolved Bridge error handler endpoint " + bridgeContext.getErrorHandlerEndpoint());
+        return bridgeContext.getErrorHandlerEndpoint();
     }
 }
