@@ -1,5 +1,7 @@
 package com.redhat.service.smartevents.shard.operator;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -9,7 +11,6 @@ import com.redhat.service.smartevents.infra.auth.AbstractOidcClient;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
-import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
 public class EventBridgeOidcClient extends AbstractOidcClient {
@@ -26,8 +27,8 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
     String secret;
 
     @Inject
-    public EventBridgeOidcClient(OidcClients oidcClients) {
-        super(NAME, oidcClients);
+    public EventBridgeOidcClient(OidcClients oidcClients, ScheduledExecutorService executorService) {
+        super(NAME, oidcClients, executorService);
     }
 
     @Override
@@ -40,11 +41,5 @@ public class EventBridgeOidcClient extends AbstractOidcClient {
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         return oidcClientConfig;
-    }
-
-    @Override
-    @Scheduled(every = AbstractOidcClient.SCHEDULER_TIME)
-    protected void scheduledLoop() {
-        super.checkAndRefresh();
     }
 }

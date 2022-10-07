@@ -1,8 +1,11 @@
 package com.redhat.service.smartevents.infra.auth;
 
 import java.time.Duration;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,28 +31,36 @@ public abstract class AbstractOidcClient implements com.redhat.service.smarteven
     private OidcClients oidcClients;
     protected Duration timeout;
     protected Tokens currentTokens;
+    protected ScheduledExecutorService executorService;
 
     public AbstractOidcClient() {
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout) {
+    public AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout, ScheduledExecutorService executorService) {
         this.name = name;
         this.oidcClients = oidcClients;
         this.timeout = timeout;
+        this.executorService = executorService;
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients) {
-        this(name, oidcClients, SSO_CONNECTION_TIMEOUT);
+    public AbstractOidcClient(String name, OidcClients oidcClients, ScheduledExecutorService executorService) {
+        this(name, oidcClients, SSO_CONNECTION_TIMEOUT, executorService);
     }
 
     protected abstract OidcClientConfig getOidcClientConfig();
-
-    protected abstract void scheduledLoop();
 
     @PostConstruct
     protected void init() {
         this.client = oidcClients.newClient(getOidcClientConfig()).await().atMost(timeout);
         retrieveTokens();
+        this.executorService.scheduleWithFixedDelay(() -> checkAndRefresh(), timeout.toSeconds(), timeout.toSeconds(), TimeUnit.SECONDS);
+    }
+
+    @PreDestroy
+    protected void destroy() {
+        if (this.executorService != null && !this.executorService.isShutdown()) {
+            this.executorService.shutdownNow();
+        }
     }
 
     protected void checkAndRefresh() {

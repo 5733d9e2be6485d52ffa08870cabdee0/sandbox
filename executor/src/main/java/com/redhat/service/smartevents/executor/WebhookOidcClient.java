@@ -1,6 +1,9 @@
 package com.redhat.service.smartevents.executor;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -10,7 +13,7 @@ import com.redhat.service.smartevents.infra.auth.OidcClientConstants;
 
 import io.quarkus.oidc.client.OidcClientConfig;
 import io.quarkus.oidc.client.OidcClients;
-import io.quarkus.scheduler.Scheduled;
+import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
 public class WebhookOidcClient extends AbstractOidcClient {
@@ -26,9 +29,13 @@ public class WebhookOidcClient extends AbstractOidcClient {
     @ConfigProperty(name = "event-bridge.sso.credentials.webhook-client-secret")
     String secret;
 
+    public void init(@Observes StartupEvent event) {
+        // force instantiation of bean - see https://github.com/5733d9e2be6485d52ffa08870cabdee0/sandbox/pull/1196#pullrequestreview-1134203409
+    }
+
     @Inject
-    public WebhookOidcClient(OidcClients oidcClients) {
-        super(NAME, oidcClients);
+    public WebhookOidcClient(OidcClients oidcClients, ScheduledExecutorService executorService) {
+        super(NAME, oidcClients, executorService);
     }
 
     @Override
@@ -41,11 +48,5 @@ public class WebhookOidcClient extends AbstractOidcClient {
         oidcClientConfig.setRefreshTokenTimeSkew(AbstractOidcClient.REFRESH_TOKEN_TIME_SKEW);
 
         return oidcClientConfig;
-    }
-
-    @Override
-    @Scheduled(every = AbstractOidcClient.SCHEDULER_TIME)
-    protected void scheduledLoop() {
-        super.checkAndRefresh();
     }
 }
