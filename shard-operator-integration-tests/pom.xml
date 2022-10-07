@@ -65,6 +65,12 @@
       <artifactId>agent-java-cucumber6</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.redhat.service.smartevents</groupId>
+      <artifactId>test-commons</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

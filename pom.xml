@@ -47,6 +47,7 @@
     <module>shard-operator</module>
     <module>infra</module>
     <module>rhoas-client</module>
+      <module>test-commons</module>
   </modules>
 
   <profiles>
