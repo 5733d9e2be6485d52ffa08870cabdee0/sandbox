@@ -6,19 +6,18 @@ import java.util.regex.Pattern;
 import com.redhat.service.smartevents.integration.tests.context.TestContext;
 import com.redhat.service.smartevents.integration.tests.resources.SlackResource;
 
-public class SlackChannelWebHookUrlResolver implements Resolver {
+public class SlackTokenResolver implements Resolver {
 
-    private static final Pattern SLACK_CHANNEL_WEBHOOK_URL_REGEX = Pattern.compile("\\$\\{slack\\.channel\\.([^\\.]+)\\.webhook\\.url\\}");
+    private static final Pattern SLACK_TOKEN_REGEX = Pattern.compile("\\$\\{slack\\.token\\}");
 
     public boolean match(String placeholder) {
-        return SLACK_CHANNEL_WEBHOOK_URL_REGEX.matcher(placeholder).find();
+        return SLACK_TOKEN_REGEX.matcher(placeholder).find();
     }
 
     public String replace(String content, TestContext context) {
-        Matcher matcher = SLACK_CHANNEL_WEBHOOK_URL_REGEX.matcher(content);
+        Matcher matcher = SLACK_TOKEN_REGEX.matcher(content);
         return matcher.replaceAll(match -> {
-            String channelName = match.group(1);
-            return SlackResource.account().webhookUrl(channelName);
+            return SlackResource.account().token();
         });
     }
 }
