@@ -9,7 +9,7 @@ public class CloudRegionResponse {
 
     @NotNull
     @JsonProperty("kind")
-    private final String kind = "CloudRegion";
+    private static final String kind = "CloudRegion";
 
     @NotNull
     @JsonProperty("name")

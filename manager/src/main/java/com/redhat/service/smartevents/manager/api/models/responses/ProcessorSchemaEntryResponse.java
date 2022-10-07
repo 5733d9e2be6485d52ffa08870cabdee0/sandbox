@@ -8,7 +8,7 @@ public class ProcessorSchemaEntryResponse {
 
     @NotNull
     @JsonProperty("kind")
-    private final String kind = "ProcessorSchemaEntry";
+    private static final String kind = "ProcessorSchemaEntry";
 
     @NotNull
     @JsonProperty("id")
