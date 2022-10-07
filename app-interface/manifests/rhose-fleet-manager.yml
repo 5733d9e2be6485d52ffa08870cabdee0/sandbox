@@ -234,11 +234,6 @@ objects:
                     secretKeyRef:
                       name: ${FLEET_MANAGER_SECRET_NAME}
                       key: MANAGED_CONNECTORS_SERVICES_URL
-                - name: MANAGED_CONNECTORS_TOPIC_NAME
-                  valueFrom:
-                    secretKeyRef:
-                      name: ${FLEET_MANAGER_SECRET_NAME}
-                      key: MANAGED_CONNECTORS_TOPIC_NAME
                 - name: QUARKUS_LOG_LEVEL
                   value: ${QUARKUS_LOG_LEVEL}
                 - name: RHOAS_OPS_ACCOUNT_CLIENT_ID
