@@ -355,7 +355,7 @@ parameters:
     value: fleet-manager
     description: the fleet-manager vault secret
   - name: FLEET_MANAGER_REPLICAS
-    value: "3"
+    value: "1"
     description: the fleet-manager replicas
   - name: QUARKUS_LOG_LEVEL
     value: "INFO"
