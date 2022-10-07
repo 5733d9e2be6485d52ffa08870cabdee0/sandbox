@@ -29,16 +29,16 @@ public abstract class AbstractOidcClient implements com.redhat.service.smarteven
     protected Duration timeout;
     protected Tokens currentTokens;
 
-    public AbstractOidcClient() {
+    protected AbstractOidcClient() {
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout) {
+    protected AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout) {
         this.name = name;
         this.oidcClients = oidcClients;
         this.timeout = timeout;
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients) {
+    protected AbstractOidcClient(String name, OidcClients oidcClients) {
         this(name, oidcClients, SSO_CONNECTION_TIMEOUT);
     }
 
