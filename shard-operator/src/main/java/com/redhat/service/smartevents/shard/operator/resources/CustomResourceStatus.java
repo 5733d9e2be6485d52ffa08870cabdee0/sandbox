@@ -26,7 +26,7 @@ public abstract class CustomResourceStatus extends ObservedGenerationAwareStatus
     private final Set<Condition> conditions;
 
     @JsonCreator
-    public CustomResourceStatus(@JsonProperty("conditions") final HashSet<Condition> initialConditions) {
+    protected CustomResourceStatus(@JsonProperty("conditions") final HashSet<Condition> initialConditions) {
         if (initialConditions == null) {
             throw new IllegalArgumentException("initialConditions can't be null");
         }

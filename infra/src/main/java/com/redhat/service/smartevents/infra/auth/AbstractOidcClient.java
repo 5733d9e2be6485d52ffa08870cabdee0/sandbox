@@ -33,17 +33,17 @@ public abstract class AbstractOidcClient implements com.redhat.service.smarteven
     protected Tokens currentTokens;
     protected ScheduledExecutorService executorService;
 
-    public AbstractOidcClient() {
+    protected AbstractOidcClient() {
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout, ScheduledExecutorService executorService) {
+    protected AbstractOidcClient(String name, OidcClients oidcClients, Duration timeout, ScheduledExecutorService executorService) {
         this.name = name;
         this.oidcClients = oidcClients;
         this.timeout = timeout;
         this.executorService = executorService;
     }
 
-    public AbstractOidcClient(String name, OidcClients oidcClients, ScheduledExecutorService executorService) {
+    protected AbstractOidcClient(String name, OidcClients oidcClients, ScheduledExecutorService executorService) {
         this(name, oidcClients, SSO_CONNECTION_TIMEOUT, executorService);
     }
 
